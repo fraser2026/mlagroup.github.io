@@ -1,11 +1,112 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>MLA Group</title>
-  </head>
-  <body>
-    <h1>MLA Group</h1>
-    <p>If you can see this, your website is live 🚀</p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MLA Group</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #002251;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: white;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .container {
+      max-width: 700px;
+      padding: 40px;
+      animation: fadeIn 1.2s ease forwards;
+      opacity: 0;
+    }
+
+    .logo {
+      max-width: 220px;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+
+    .accent-line {
+      width: 60px;
+      height: 4px;
+      background: #0000FF;
+      margin: 0 auto 30px auto;
+      box-shadow: 0 0 15px #0000FF;
+    }
+
+    p {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.85);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .footer {
+      margin-top: 60px;
+      font-size: 0.9rem;
+      opacity: 0.5;
+    }
+
+    /* subtle tech glow background */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0,0,255,0.2) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Change filename below if different -->
+    <img src="Asset 2SVG.svg" alt="MLA Group Logo" class="logo">
+
+    <div class="accent-line"></div>
+
+    <h1>Coming Soon</h1>
+
+    <p>
+      Building intelligent systems with clarity, structure, and precision.
+    </p>
+
+    <div class="footer">
+      © 2026 MLA Group
+    </div>
+
+  </div>
+
+</body>
 </html>
+
