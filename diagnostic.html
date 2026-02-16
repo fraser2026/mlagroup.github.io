@@ -1,0 +1,117 @@
+<div id="mla-diagnostic-container">
+    <div class="diagnostic-card">
+        <h2>AI Governance Diagnostic</h2>
+        <p class="subtitle">Identify legal and operational blind spots in 60 seconds.</p>
+        
+        <form action="https://formsubmit.co/fraser@mlagroup.co.uk" method="POST">
+            
+            <input type="text" name="_capcha" style="display:none">
+            
+            <div class="q-group">
+                <label>1. Is your company using "Shadow AI"? (Unvetted personal accounts)</label>
+                <select name="1_Shadow_AI" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Secure">No, we have a strict approved list.</option>
+                    <option value="At Risk">Yes, or we don't have technical blocks in place.</option>
+                </select>
+            </div>
+
+            <div class="q-group">
+                <label>2. Can you produce an "Audit Trail" for AI decisions?</label>
+                <select name="2_Audit_Trail" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Secure">Yes, we have full explainability.</option>
+                    <option value="At Risk">No, our AI is currently a "Black Box".</option>
+                </select>
+            </div>
+
+            <div class="q-group">
+                <label>3. What is your Human-in-the-Loop (HITL) protocol?</label>
+                <select name="3_Human_Oversight" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Secure">Every output is reviewed by a human.</option>
+                    <option value="High Risk">The AI runs autonomously with no review.</option>
+                </select>
+            </div>
+
+            <div class="q-group">
+                <label>4. Do you know the "Data Lineage" of your AI?</label>
+                <select name="4_Data_Lineage" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Secure">Yes, we use vetted/proprietary data.</option>
+                    <option value="At Risk">No, we rely on the vendor's safety claims.</option>
+                </select>
+            </div>
+
+            <div class="q-group">
+                <label>5. Do you have a designated AI Compliance Officer?</label>
+                <select name="5_Compliance_Officer" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="Secure">Yes, it is a formal role.</option>
+                    <option value="At Risk">No, no one is specifically tasked with this.</option>
+                </select>
+            </div>
+
+            <hr>
+            
+            <div class="q-group">
+                <label>Where should we send your Risk Report?</label>
+                <input type="email" name="email" placeholder="Your Professional Email" required>
+            </div>
+
+            <button type="submit">Generate My Risk Report</button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="index.html" style="color: #8b949e; text-decoration: none; font-size: 0.8em;">← Return to Homepage</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    #mla-diagnostic-container {
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+        background: #0a0e14;
+        min-height: 100vh;
+    }
+    .diagnostic-card {
+        background: #161b22;
+        color: #c9d1d9;
+        padding: 30px;
+        border-radius: 8px;
+        border: 1px solid #30363d;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    h2 { color: #58a6ff; margin-top: 0; text-align: center; }
+    .subtitle { font-size: 0.9em; color: #8b949e; margin-bottom: 25px; text-align: center; }
+    .q-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.85em; }
+    select, input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 4px;
+        border: 1px solid #30363d;
+        background: #0d1117;
+        color: white;
+        box-sizing: border-box;
+    }
+    button {
+        width: 100%;
+        padding: 15px;
+        background: #238636;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    button:hover { background: #2ea043; }
+    hr { border: 0; border-top: 1px solid #30363d; margin: 25px 0; }
+</style>
