@@ -363,6 +363,15 @@
       border-top: 1px solid rgba(255,255,255,0.06);
     }
 
+    /* ── SCROLL HIGHLIGHT FOR STEP CARDS ── */
+    .step.in-view {
+      border-color: rgba(26,107,255,0.45) !important;
+      background-color: rgba(26,107,255,0.08) !important;
+      transform: translateY(-3px);
+    }
+
+    .step.in-view::after { opacity: 1 !important; }
+
     @media (max-width: 768px) {
       nav { padding: 16px 16px; }
       .features { grid-template-columns: 1fr; }
@@ -497,5 +506,38 @@
     </footer>
 
   </div>
+  <script>
+    // Highlight only the step card whose centre is closest to the viewport centre
+    function highlightClosestStep() {
+      var steps = document.querySelectorAll('.step');
+      var viewportCentre = window.innerHeight / 2;
+      var closest = null;
+      var closestDist = Infinity;
+
+      steps.forEach(function(step) {
+        var rect = step.getBoundingClientRect();
+        var stepCentre = rect.top + rect.height / 2;
+        var dist = Math.abs(stepCentre - viewportCentre);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closest = step;
+        }
+      });
+
+      steps.forEach(function(step) {
+        // Only highlight if the step is actually visible on screen
+        var rect = step.getBoundingClientRect();
+        var onScreen = rect.bottom > 0 && rect.top < window.innerHeight;
+        if (step === closest && onScreen) {
+          step.classList.add('in-view');
+        } else {
+          step.classList.remove('in-view');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', highlightClosestStep, { passive: true });
+    highlightClosestStep();
+  </script>
 </body>
 </html>
