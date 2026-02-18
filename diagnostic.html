@@ -1,170 +1,414 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="UTF-8">
-    <title>AI Governance Diagnostic | MLA Group</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #0a0e14;
-        }
-        #mla-diagnostic-container {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px; /* Reduced padding for mobile */
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        .diagnostic-card {
-            background: #161b22;
-            color: #c9d1d9;
-            padding: 25px;
-            border-radius: 12px; /* Smoother corners */
-            border: 1px solid #30363d;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            box-sizing: border-box;
-        }
-        h2 { 
-            color: #58a6ff; 
-            margin-top: 0; 
-            text-align: center;
-            font-size: 1.5rem; /* Larger for readability */
-        }
-        .subtitle { 
-            font-size: 1rem; 
-            color: #8b949e; 
-            margin-bottom: 25px; 
-            text-align: center; 
-            line-height: 1.4;
-        }
-        .q-group { margin-bottom: 22px; }
-        label { 
-            display: block; 
-            margin-bottom: 10px; 
-            font-weight: bold; 
-            font-size: 0.95rem; /* Better for mobile eyes */
-            line-height: 1.3;
-        }
-        select, input {
-            width: 100%;
-            padding: 14px; /* Thicker touch targets for thumbs */
-            border-radius: 8px;
-            border: 1px solid #30363d;
-            background: #0d1117;
-            color: white;
-            box-sizing: border-box;
-            font-size: 16px; /* 16px prevents iOS from auto-zooming on focus */
-        }
-        button {
-            width: 100%;
-            padding: 18px;
-            background: #238636;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 10px;
-        }
-        button:hover { background: #2ea043; }
-        hr { border: 0; border-top: 1px solid #30363d; margin: 25px 0; }
-        .footer-link {
-            text-align: center; 
-            margin-top: 30px;
-            padding-bottom: 20px;
-        }
-        .footer-link a {
-            color: #8b949e; 
-            text-decoration: none; 
-            font-size: 0.9rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Governance Diagnostic | MLA Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swapdisplay=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+```
+:root {
+  --navy: #001a3a;
+  --navy-mid: #002251;
+  --blue: #1a6bff;
+  --blue-bright: #3d8bff;
+  --blue-glow: rgba(26, 107, 255, 0.35);
+  --white: #ffffff;
+  --white-dim: rgba(255,255,255,0.65);
+  --card-bg: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.09);
+}
+
+body {
+  background: #001a3a;
+  color: var(--white);
+  font-family: 'IBM Plex Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(26,107,255,0.15) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 10% 80%, rgba(26,107,255,0.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(26,107,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26,107,255,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── NAV ── */
+nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 48px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,26,58,0.7);
+  backdrop-filter: blur(12px);
+}
+
+nav img { height: 32px; }
+
+.nav-back {
+  color: var(--white-dim);
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: color 0.2s;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.nav-back:hover { color: white; }
+
+/* ── MAIN ── */
+main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding: 52px 24px 80px;
+}
+
+.card {
+  background: rgba(0, 34, 81, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 560px;
+  padding: 48px 44px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  animation: fadeUp 0.8s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.card-header img {
+  height: 38px;
+  margin-bottom: 28px;
+}
+
+.card-header h1 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.card-header p {
+  color: var(--white-dim);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.accent-line {
+  width: 48px;
+  height: 3px;
+  background: var(--blue);
+  border-radius: 2px;
+  margin: 16px auto 0;
+  box-shadow: 0 0 12px var(--blue-glow);
+}
+
+/* ── PROGRESS ── */
+.progress-bar-wrap {
+  margin-bottom: 36px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--white-dim);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.progress-track {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--blue-bright));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  width: 0%;
+  box-shadow: 0 0 8px var(--blue-glow);
+}
+
+/* ── QUESTIONS ── */
+.q-group {
+  margin-bottom: 28px;
+}
+
+label {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.45;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.q-number {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--blue-bright);
+  display: block;
+  margin-bottom: 5px;
+}
+
+select, input[type="email"] {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: white;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 16px; /* prevents iOS zoom */
+  transition: border-color 0.2s;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233d8bff' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-color: rgba(0,0,0,0.25);
+  padding-right: 40px;
+}
+
+select option { background: #001a3a; }
+
+select:focus, input[type="email"]:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(26,107,255,0.15);
+}
+
+select:required:invalid { color: var(--white-dim); }
+
+/* ── DIVIDER ── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
+
+.email-label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--blue-bright);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.email-sub {
+  font-size: 0.85rem;
+  color: var(--white-dim);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+input[type="email"]::placeholder { color: rgba(255,255,255,0.3); }
+
+/* ── BUTTON ── */
+.submit-btn {
+  width: 100%;
+  padding: 17px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 4px 24px rgba(26,107,255,0.35);
+  letter-spacing: 0.3px;
+  margin-top: 8px;
+}
+
+.submit-btn:hover {
+  background: var(--blue-bright);
+  box-shadow: 0 6px 32px rgba(26,107,255,0.55);
+  transform: translateY(-1px);
+}
+
+.disclaimer {
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.3);
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  nav { padding: 18px 20px; }
+  .card { padding: 32px 24px; }
+}
+```
+
+  </style>
 </head>
 <body>
 
-<div id="mla-diagnostic-container">
-    <div class="diagnostic-card">
-        <div style="text-align: center; margin-bottom: 25px;">
-    <img src="logowhite.svg.svg" alt="MLA Group Logo" style="max-width: 180px; height: auto;">
-</div>
-        <h2>AI Governance Diagnostic</h2>
-        <p class="subtitle">Identify legal and operational blind spots in 60 seconds.</p>
-        
-        <form action="https://formsubmit.co/fraser@mlagroup.co.uk" method="POST">
-                <input type="hidden" name="_next" value="https://www.mlagroup.co.uk/thanks.html">
-    <input type="hidden" name="_subject" value="New AI Diagnostic Submission!">
+  <!-- NAV -->
 
-            <input type="text" name="_captcha" style="display:none">
-            
-            <div class="q-group">
-                <label>1. Is your company using "Shadow AI"? (Unvetted personal accounts)</label>
-                <select name="1_Shadow_AI" required>
-                    <option value="" disabled selected>Select an option</option>
-                    <option value="Secure">No, we have a strict approved list.</option>
-                    <option value="At Risk">Yes, or we don't have technical blocks in place.</option>
-                </select>
-            </div>
+  <nav>
+    <img src="logowhite.svg.svg" alt="MLA Group">
+    <a href="index.html" class="nav-back">← Return to homepage</a>
+  </nav>
 
-            <div class="q-group">
-                <label>2. Can you produce an "Audit Trail" for AI decisions?</label>
-                <select name="2_Audit_Trail" required>
-                    <option value="" disabled selected>Select an option</option>
-                    <option value="Secure">Yes, we have full explainability.</option>
-                    <option value="At Risk">No, our AI is currently a "Black Box".</option>
-                </select>
-            </div>
+  <main>
+    <div class="card">
 
-            <div class="q-group">
-                <label>3. What is your Human-in-the-Loop (HITL) protocol?</label>
-                <select name="3_Human_Oversight" required>
-                    <option value="" disabled selected>Select an option</option>
-                    <option value="Secure">Every output is reviewed by a human.</option>
-                    <option value="High Risk">The AI runs autonomously with no review.</option>
-                </select>
-            </div>
+```
+  <div class="card-header">
+    <h1>AI Governance Diagnostic</h1>
+    <p>Identify legal and operational blind spots in your AI processes — in 60 seconds.</p>
+    <div class="accent-line"></div>
+  </div>
 
-            <div class="q-group">
-                <label>4. Do you know the "Data Lineage" of your AI?</label>
-                <select name="4_Data_Lineage" required>
-                    <option value="" disabled selected>Select an option</option>
-                    <option value="Secure">Yes, we use vetted/proprietary data.</option>
-                    <option value="At Risk">No, we rely on the vendor's safety claims.</option>
-                </select>
-            </div>
-
-            <div class="q-group">
-                <label>5. Do you have a designated AI Compliance Officer?</label>
-                <select name="5_Compliance_Officer" required>
-                    <option value="" disabled selected>Select an option</option>
-                    <option value="Secure">Yes, it is a formal role.</option>
-                    <option value="At Risk">No, no one is specifically tasked with this.</option>
-                </select>
-            </div>
-
-            <hr>
-            
-            <div class="q-group">
-                <label>Where should we send your Risk Report?</label>
-                <input type="email" name="email" placeholder="Your Professional Email" required>
-            </div>
-
-            <button type="submit">Generate My Risk Report</button>
-        </form>
-        
-        <div class="footer-link">
-            <a href="index.html">← Return to Homepage</a>
-        </div>
+  <!-- PROGRESS -->
+  <div class="progress-bar-wrap">
+    <div class="progress-label">
+      <span>Progress</span>
+      <span id="progress-text">0 of 5 answered</span>
     </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <form action="https://formsubmit.co/fraser@mlagroup.co.uk" method="POST" id="diagnostic-form">
+
+    <input type="hidden" name="_next" value="https://www.mlagroup.co.uk/thanks.html">
+    <input type="hidden" name="_subject" value="New AI Diagnostic Submission!">
+    <input type="text" name="_captcha" style="display:none">
+
+    <div class="q-group">
+      <span class="q-number">QUESTION 01 OF 05</span>
+      <label>Is your company using "Shadow AI"? (Unvetted personal AI accounts)</label>
+      <select name="1_Shadow_AI" required onchange="updateProgress()">
+        <option value="" disabled selected>Select an answer...</option>
+        <option value="Secure">No — we have a strict approved tools list</option>
+        <option value="At Risk">Yes, or we have no technical blocks in place</option>
+      </select>
+    </div>
+
+    <div class="q-group">
+      <span class="q-number">QUESTION 02 OF 05</span>
+      <label>Can you produce an "Audit Trail" for AI-assisted decisions?</label>
+      <select name="2_Audit_Trail" required onchange="updateProgress()">
+        <option value="" disabled selected>Select an answer...</option>
+        <option value="Secure">Yes — we have full explainability and logging</option>
+        <option value="At Risk">No — our AI is currently a "Black Box"</option>
+      </select>
+    </div>
+
+    <div class="q-group">
+      <span class="q-number">QUESTION 03 OF 05</span>
+      <label>What is your Human-in-the-Loop (HITL) protocol?</label>
+      <select name="3_Human_Oversight" required onchange="updateProgress()">
+        <option value="" disabled selected>Select an answer...</option>
+        <option value="Secure">Every AI output is reviewed by a human before action</option>
+        <option value="High Risk">The AI operates autonomously with no human review</option>
+      </select>
+    </div>
+
+    <div class="q-group">
+      <span class="q-number">QUESTION 04 OF 05</span>
+      <label>Do you know the "Data Lineage" of your AI systems?</label>
+      <select name="4_Data_Lineage" required onchange="updateProgress()">
+        <option value="" disabled selected>Select an answer...</option>
+        <option value="Secure">Yes — we use vetted or proprietary data sources</option>
+        <option value="At Risk">No — we rely solely on the vendor's safety claims</option>
+      </select>
+    </div>
+
+    <div class="q-group">
+      <span class="q-number">QUESTION 05 OF 05</span>
+      <label>Do you have a designated AI Compliance Officer or equivalent?</label>
+      <select name="5_Compliance_Officer" required onchange="updateProgress()">
+        <option value="" disabled selected>Select an answer...</option>
+        <option value="Secure">Yes — it is a formal, named role</option>
+        <option value="At Risk">No — no one is specifically responsible for this</option>
+      </select>
+    </div>
+
+    <hr class="divider">
+
+    <span class="email-label">Send my risk report to</span>
+    <p class="email-sub">We'll email you a personalised risk summary and, where relevant, connect you with specialist support.</p>
+    <div class="q-group">
+      <input type="email" name="email" placeholder="your@email.com" required>
+    </div>
+
+    <button type="submit" class="submit-btn">Generate My Risk Report →</button>
+
+    <p class="disclaimer">Free & confidential. No spam, no obligation.</p>
+
+  </form>
 </div>
+```
+
+  </main>
+
+  <script>
+    function updateProgress() {
+      const selects = document.querySelectorAll('select[required]');
+      let answered = 0;
+      selects.forEach(s => { if (s.value) answered++; });
+      const pct = (answered / selects.length) * 100;
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-text').textContent = answered + ' of ' + selects.length + ' answered';
+    }
+  </script>
 
 </body>
 </html>
-
