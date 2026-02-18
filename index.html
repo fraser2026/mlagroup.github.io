@@ -1,111 +1,586 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MLA Group</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <title>MLA Group | AI Risk & Governance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swapdisplay=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #002251;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      color: white;
-      text-align: center;
-      overflow: hidden;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .container {
-      max-width: 700px;
-      padding: 40px;
-      animation: fadeIn 1.2s ease forwards;
-      opacity: 0;
-    }
+```
+:root {
+  --navy: #001a3a;
+  --navy-mid: #002251;
+  --navy-light: #002d6b;
+  --blue: #1a6bff;
+  --blue-bright: #3d8bff;
+  --blue-glow: rgba(26, 107, 255, 0.35);
+  --white: #ffffff;
+  --white-dim: rgba(255,255,255,0.7);
+  --white-faint: rgba(255,255,255,0.08);
+}
 
-    .logo {
-      max-width: 220px;
-      margin-bottom: 40px;
-    }
+html, body {
+  height: 100%;
+  background: var(--navy);
+  color: var(--white);
+  font-family: 'IBM Plex Sans', sans-serif;
+  overflow-x: hidden;
+}
 
-    h1 {
-      font-size: 2.8rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-    }
+/* ── BACKGROUND EFFECTS ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(26,107,255,0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(26,107,255,0.08) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-    .accent-line {
-      width: 60px;
-      height: 4px;
-      background: #0000FF;
-      margin: 0 auto 30px auto;
-      box-shadow: 0 0 15px #0000FF;
-    }
+/* subtle grid */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(26,107,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26,107,255,0.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
 
-    p {
-      font-size: 1.2rem;
-      line-height: 1.6;
-      color: rgba(255,255,255,0.85);
-      max-width: 500px;
-      margin: 0 auto;
-    }
+/* ── LAYOUT ── */
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-    .footer {
-      margin-top: 60px;
-      font-size: 0.9rem;
-      opacity: 0.5;
-    }
+/* ── NAV ── */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(12px);
+  background: rgba(0,26,58,0.6);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 
-    /* subtle tech glow background */
-    body::before {
-      content: "";
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(0,0,255,0.2) 0%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 0;
-    }
+nav img {
+  height: 36px;
+  width: auto;
+}
 
-    .container {
-      position: relative;
-      z-index: 1;
-    }
+.nav-cta {
+  background: var(--blue);
+  color: white;
+  text-decoration: none;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
 
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-      }
-    }
+.nav-cta:hover {
+  background: var(--blue-bright);
+  box-shadow: 0 0 20px var(--blue-glow);
+}
+
+/* ── HERO ── */
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 80px 32px 60px;
+  animation: fadeUp 1s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(26,107,255,0.12);
+  border: 1px solid rgba(26,107,255,0.3);
+  color: var(--blue-bright);
+  font-size: 0.78rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 7px 16px;
+  border-radius: 100px;
+  margin-bottom: 36px;
+}
+
+.badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--blue-bright);
+  box-shadow: 0 0 8px var(--blue-bright);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+h1 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  max-width: 780px;
+  margin-bottom: 28px;
+}
+
+h1 span {
+  background: linear-gradient(135deg, #3d8bff 0%, #a0c4ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--white-dim);
+  max-width: 540px;
+  line-height: 1.7;
+  margin-bottom: 52px;
+  font-weight: 300;
+}
+
+.cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 80px;
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: white;
+  text-decoration: none;
+  padding: 16px 36px;
+  border-radius: 8px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.3px;
+  transition: all 0.25s;
+  box-shadow: 0 4px 24px rgba(26,107,255,0.4);
+}
+
+.btn-primary:hover {
+  background: var(--blue-bright);
+  box-shadow: 0 6px 32px rgba(26,107,255,0.6);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--white-dim);
+  text-decoration: none;
+  padding: 16px 36px;
+  border-radius: 8px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: all 0.25s;
+}
+
+.btn-secondary:hover {
+  border-color: rgba(255,255,255,0.35);
+  color: white;
+}
+
+/* ── FEATURES ── */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  animation: fadeUp 1s ease 0.3s forwards;
+  opacity: 0;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 36px 40px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+
+.feature:last-child { border-right: none; }
+
+.feature-icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  background: rgba(26,107,255,0.12);
+  border: 1px solid rgba(26,107,255,0.25);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--blue-bright);
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.feature-text h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: white;
+}
+
+.feature-text p {
+  font-size: 0.83rem;
+  color: var(--white-dim);
+  line-height: 1.55;
+}
+
+@media (max-width: 768px) {
+  .features { grid-template-columns: 1fr; }
+  .feature {
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 28px 24px;
+  }
+  .feature:last-child { border-bottom: none; }
+}
+
+/* ── HOW IT WORKS ── */
+.section {
+  padding: 80px 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeUp 1s ease 0.5s forwards;
+  opacity: 0;
+}
+
+.section-label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--blue-bright);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 700;
+  margin-bottom: 52px;
+  max-width: 480px;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.step {
+  background: var(--white-faint);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 32px 28px;
+  transition: border-color 0.25s, background 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.step::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), transparent);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.step:hover {
+  border-color: rgba(26,107,255,0.3);
+  background: rgba(26,107,255,0.05);
+}
+
+.step:hover::before { opacity: 1; }
+
+.step-num {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--blue-bright);
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.step h3 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.step p {
+  font-size: 0.92rem;
+  color: var(--white-dim);
+  line-height: 1.6;
+}
+
+/* ── RISK LEVELS ── */
+.risk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 48px;
+}
+
+.risk-card {
+  border-radius: 12px;
+  padding: 28px 24px;
+  border: 1px solid;
+}
+
+.risk-card.high {
+  background: rgba(255,59,48,0.07);
+  border-color: rgba(255,59,48,0.25);
+}
+
+.risk-card.medium {
+  background: rgba(255,159,10,0.07);
+  border-color: rgba(255,159,10,0.25);
+}
+
+.risk-card.low {
+  background: rgba(48,209,88,0.07);
+  border-color: rgba(48,209,88,0.25);
+}
+
+.risk-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-bottom: 14px;
+}
+
+.high .risk-dot { background: #ff3b30; box-shadow: 0 0 10px rgba(255,59,48,0.5); }
+.medium .risk-dot { background: #ff9f0a; box-shadow: 0 0 10px rgba(255,159,10,0.5); }
+.low .risk-dot { background: #30d158; box-shadow: 0 0 10px rgba(48,209,88,0.5); }
+
+.risk-card h4 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.risk-card p {
+  font-size: 0.85rem;
+  color: var(--white-dim);
+  line-height: 1.55;
+}
+
+/* ── FINAL CTA ── */
+.cta-block {
+  text-align: center;
+  padding: 80px 32px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  animation: fadeUp 1s ease 0.7s forwards;
+  opacity: 0;
+}
+
+.cta-block h2 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.cta-block p {
+  color: var(--white-dim);
+  margin-bottom: 36px;
+  font-size: 1.05rem;
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  padding: 28px 32px;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.3);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  nav { padding: 20px 24px; }
+  .stats { gap: 32px; }
+  .step { padding: 24px 20px; }
+}
+```
 
   </style>
 </head>
 <body>
+  <div class="page">
 
-  <div class="container">
+```
+<!-- NAV -->
+<nav>
+  <img src="logowhite.svg.svg" alt="MLA Group">
+  <a href="diagnostic.html" class="nav-cta">Free Risk Diagnostic →</a>
+</nav>
 
-    <!-- Change filename below if different -->
-    <img src="logowhite.svg.svg" alt="MLA Group Logo" class="logo">
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">AI Governance & Risk</div>
+  <h1>Is Your Business <span>Exposed</span> to AI Risk?</h1>
+  <p class="hero-sub">
+    In 60 seconds, our free diagnostic identifies legal and operational blind spots in your AI decision-making — and connects you with the experts to fix them.
+  </p>
+  <div class="cta-group">
+    <a href="diagnostic.html" class="btn-primary">Start Free AI Risk Diagnostic</a>
+    <a href="#how-it-works" class="btn-secondary">How it works</a>
+  </div>
+</section>
 
-    <div style="margin-top: 30px; text-align: center;">
-    <a href="diagnostic.html" style="background-color: #238636; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-family: 'Helvetica Neue', Arial, sans-serif; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: transform 0.2s;">
-        Start Free AI Risk Diagnostic
-    </a>
+<!-- FEATURES -->
+<div class="features">
+  <div class="feature">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#3d8bff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div class="feature-text">
+      <h4>Completed in 60 Seconds</h4>
+      <p>Five focused questions covering the areas that matter most to regulators and risk teams.</p>
+    </div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#3d8bff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div class="feature-text">
+      <h4>Confidential &amp; Unbiased</h4>
+      <p>Your responses are used solely to produce your risk report — no data is sold or shared.</p>
+    </div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#3d8bff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="feature-text">
+      <h4>Expert Introduction Included</h4>
+      <p>Where risk is identified, we connect you directly with specialist governance partners.</p>
+    </div>
+  </div>
 </div>
 
-
-    <div class="footer">
-      © 2026 MLA Group. All Rights Reserved.
+<!-- HOW IT WORKS -->
+<section class="section" id="how-it-works">
+  <div class="section-label">Process</div>
+  <h2 class="section-title">How the diagnostic works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01 — ASSESS</div>
+      <h3>Answer 5 questions</h3>
+      <p>We assess your exposure across shadow AI, audit trails, human oversight, data lineage, and compliance structure.</p>
     </div>
+    <div class="step">
+      <div class="step-num">02 — SCORE</div>
+      <h3>Receive your risk rating</h3>
+      <p>Your answers are scored to produce a High, Medium, or Low risk profile — with a personalised report sent to your inbox.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03 — CONNECT</div>
+      <h3>Get expert guidance</h3>
+      <p>Where risk is identified, we connect you with specialist partners who can implement the right governance frameworks.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RISK LEVELS -->
+<section class="section" style="padding-top: 0;">
+  <div class="section-label">Risk Framework</div>
+  <h2 class="section-title">What we look for</h2>
+  <div class="risk-grid">
+    <div class="risk-card high">
+      <div class="risk-dot"></div>
+      <h4>High Risk</h4>
+      <p>Autonomous AI decisions with no human oversight, no audit trail, and unvetted data sources.</p>
+    </div>
+    <div class="risk-card medium">
+      <div class="risk-dot"></div>
+      <h4>Medium Risk</h4>
+      <p>Partial controls in place but gaps in compliance ownership or AI usage policy.</p>
+    </div>
+    <div class="risk-card low">
+      <div class="risk-dot"></div>
+      <h4>Low Risk</h4>
+      <p>Formal governance structure with explainable AI, designated compliance officer, and vetted data.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-block">
+  <h2>Find out where you stand — <span style="color: var(--blue-bright);">in 60 seconds</span></h2>
+  <p>Free. Confidential. No sales call required.</p>
+  <a href="diagnostic.html" class="btn-primary">Start the Diagnostic</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  © 2026 MLA Group. All Rights Reserved.
+</footer>
+```
 
   </div>
-
 </body>
 </html>
-
