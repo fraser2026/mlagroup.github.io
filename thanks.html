@@ -1,21 +1,493 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="UTF-8">
-    <title>Thank You | MLA Group</title>
-    <style>
-        body { margin: 0; background: #0a0e14; color: #c9d1d9; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; }
-        .card { background: #161b22; padding: 40px; border-radius: 12px; border: 1px solid #30363d; max-width: 400px; }
-        h1 { color: #58a6ff; }
-        a { color: #58a6ff; text-decoration: none; border: 1px solid #58a6ff; padding: 10px 20px; border-radius: 5px; display: inline-block; margin-top: 20px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>Your AI Risk Results | MLA Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { background-color: #001a3a; color-scheme: dark; }
+
+    body {
+      background-color: #001a3a;
+      color: #ffffff;
+      font-family: 'IBM Plex Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .bg-glow {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(26,107,255,0.18) 0%, transparent 65%);
+    }
+
+    .bg-grid {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(26,107,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,107,255,0.06) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    nav {
+      position: relative; z-index: 10;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 22px 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background-color: rgba(0,26,58,0.9);
+    }
+
+    nav img { height: 28px; max-width: 120px; width: auto; display: block; }
+
+    .nav-back {
+      color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.88rem;
+    }
+
+    main {
+      position: relative; z-index: 1;
+      display: flex; justify-content: center;
+      padding: 52px 24px 80px;
+    }
+
+    .card {
+      background-color: rgba(0,34,81,0.7);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px;
+      width: 100%; max-width: 580px;
+      padding: 44px 40px;
+      animation: fadeUp 0.8s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RISK BADGE ── */
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .risk-badge .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .badge-high {
+      background-color: rgba(255,59,48,0.12);
+      border: 1px solid rgba(255,59,48,0.35);
+      color: #ff6b60;
+    }
+    .badge-high .dot { background-color: #ff3b30; }
+
+    .badge-medium {
+      background-color: rgba(255,159,10,0.12);
+      border: 1px solid rgba(255,159,10,0.35);
+      color: #ffb830;
+    }
+    .badge-medium .dot { background-color: #ff9f0a; }
+
+    .badge-low {
+      background-color: rgba(48,209,88,0.12);
+      border: 1px solid rgba(48,209,88,0.35);
+      color: #34d159;
+    }
+    .badge-low .dot { background-color: #30d158; }
+
+    /* ── SCORE DISPLAY ── */
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .score-circle {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-weight: 700;
+      min-width: 80px;
+      border: 3px solid;
+    }
+
+    .score-circle .num {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .score-circle .label {
+      font-size: 0.6rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .circle-high { border-color: #ff3b30; color: #ff6b60; background-color: rgba(255,59,48,0.1); }
+    .circle-medium { border-color: #ff9f0a; color: #ffb830; background-color: rgba(255,159,10,0.1); }
+    .circle-low { border-color: #30d158; color: #34d159; background-color: rgba(48,209,88,0.1); }
+
+    .score-text h1 {
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .score-text p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.5;
+    }
+
+    /* ── RISK MATRIX ── */
+    .matrix-section {
+      margin-bottom: 32px;
+    }
+
+    .matrix-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #3d8bff;
+      margin-bottom: 14px;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .matrix-cell {
+      border-radius: 6px;
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 600;
+      opacity: 0.35;
+      transition: opacity 0.3s;
+    }
+
+    .matrix-cell.active { opacity: 1; }
+
+    .cell-low { background-color: rgba(48,209,88,0.2); border: 1px solid rgba(48,209,88,0.3); color: #30d158; }
+    .cell-medium { background-color: rgba(255,159,10,0.2); border: 1px solid rgba(255,159,10,0.3); color: #ff9f0a; }
+    .cell-high { background-color: rgba(255,59,48,0.2); border: 1px solid rgba(255,59,48,0.3); color: #ff3b30; }
+
+    /* ── FLAGS ── */
+    .flags-section { margin-bottom: 32px; }
+
+    .flag-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      background-color: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.4;
+    }
+
+    .flag-icon {
+      width: 18px; height: 18px; min-width: 18px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    .flag-risk { background-color: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.3); }
+    .flag-ok   { background-color: rgba(48,209,88,0.2); color: #30d158; border: 1px solid rgba(48,209,88,0.3); }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin: 28px 0;
+    }
+
+    /* ── CTA SECTION ── */
+    .cta-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #3d8bff;
+      margin-bottom: 8px;
+    }
+
+    .cta-heading {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .cta-sub {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      background-color: #1a6bff;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 15px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-align: center;
+      margin-bottom: 12px;
+      -webkit-appearance: none;
+    }
+
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      background-color: transparent;
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      padding: 15px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.2);
+      margin-bottom: 12px;
+    }
+
+    /* ── HIGH RISK FORM ── */
+    .intake-form { margin-top: 20px; }
+
+    .intake-form input,
+    .intake-form textarea {
+      width: 100%;
+      padding: 13px 16px;
+      background-color: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #ffffff;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 16px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .intake-form textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .intake-form input::placeholder,
+    .intake-form textarea::placeholder { color: rgba(255,255,255,0.3); }
+
+    .intake-form input:focus,
+    .intake-form textarea:focus {
+      outline: none;
+      border-color: #1a6bff;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 15px;
+      background-color: #1a6bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    .disclaimer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.3);
+      margin-top: 16px;
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 16px; }
+      .card { padding: 30px 22px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Submission Received</h1>
-        <p>Thank you. Your AI Risk Report is being generated and will be sent to your inbox shortly.</p>
-        <a href="index.html">Return Home</a>
+
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+
+  <nav>
+    <img src="logowhite.svg.svg" alt="MLA Group">
+    <a href="index.html" class="nav-back">&#8592; Return to homepage</a>
+  </nav>
+
+  <main>
+    <div class="card" id="results-card">
+      <!-- Populated by JavaScript -->
     </div>
+  </main>
+
+  <script>
+    // ── READ SCORE FROM URL ──
+    var params = new URLSearchParams(window.location.search);
+    var score = parseInt(params.get('score')) || 0;
+    var flags = params.get('flags') ? params.get('flags').split(',') : [];
+
+    var flagLabels = {
+      '1': 'Shadow AI usage detected — unvetted tools in use',
+      '2': 'No audit trail for AI-assisted decisions',
+      '3': 'No Human-in-the-Loop oversight protocol',
+      '4': 'Unknown data lineage — relying on vendor claims',
+      '5': 'No designated AI Compliance Officer'
+    };
+
+    // ── DETERMINE RISK LEVEL ──
+    var level, badgeClass, circleClass, heading, summary, matrixActive;
+
+    if (score >= 3) {
+      level = 'High Risk';
+      badgeClass = 'badge-high';
+      circleClass = 'circle-high';
+      heading = 'Immediate action recommended';
+      summary = 'Your responses indicate significant exposure across multiple AI governance areas. Businesses at this level face elevated regulatory, legal and operational risk. We recommend speaking with a specialist as soon as possible.';
+      matrixActive = 'high';
+    } else if (score >= 1) {
+      level = 'Medium Risk';
+      badgeClass = 'badge-medium';
+      circleClass = 'circle-medium';
+      heading = 'Some areas need attention';
+      summary = 'Your responses suggest partial controls are in place, but there are gaps that could expose your business to compliance issues or operational disruption. A consultation can help you close those gaps efficiently.';
+      matrixActive = 'medium';
+    } else {
+      level = 'Low Risk';
+      badgeClass = 'badge-low';
+      circleClass = 'circle-low';
+      heading = 'You\'re in good shape';
+      summary = 'Your current AI governance posture is strong. However, AI regulation is evolving rapidly — an annual review ensures you stay ahead of any new requirements before they become liabilities.';
+      matrixActive = 'low';
+    }
+
+    // ── BUILD FLAG LIST ──
+    var flagHTML = '';
+    if (flags.length > 0) {
+      flagHTML += '<div class="flags-section">';
+      flagHTML += '<div class="matrix-title">Areas flagged in your assessment</div>';
+      for (var i = 1; i <= 5; i++) {
+        var isRisk = flags.indexOf(String(i)) !== -1;
+        flagHTML += '<div class="flag-item">';
+        flagHTML += '<span class="flag-icon ' + (isRisk ? 'flag-risk' : 'flag-ok') + '">' + (isRisk ? '!' : '&#10003;') + '</span>';
+        flagHTML += flagLabels[String(i)];
+        flagHTML += '</div>';
+      }
+      flagHTML += '</div>';
+    }
+
+    // ── BUILD CTA BASED ON RISK ──
+    var ctaHTML = '';
+
+    if (score >= 3) {
+      ctaHTML = '<div class="cta-label">Next Step</div>' +
+        '<div class="cta-heading">Speak to a specialist</div>' +
+        '<div class="cta-sub">Given your risk level, we\'d like to connect you with one of our governance specialists. You can book a call directly, or tell us a little about your business first and we\'ll reach out to you.</div>' +
+        '<a href="https://calendly.com/fraser-mlagroup/30min" class="btn-primary" target="_blank">&#128222; Book a Call Now</a>' +
+        '<div style="text-align:center; font-size:0.8rem; color:rgba(255,255,255,0.4); margin: 10px 0;">or</div>' +
+        '<div class="cta-label" style="margin-top:4px;">Tell us about your business</div>' +
+        '<div class="intake-form">' +
+        '<form action="https://formsubmit.co/fraser@mlagroup.co.uk" method="POST">' +
+        '<input type="hidden" name="_subject" value="High Risk Lead - Business Intake Form">' +
+        '<input type="hidden" name="_next" value="https://www.mlagroup.co.uk/thanks.html?score=' + score + '&flags=' + flags.join(',') + '">' +
+        '<input type="text" name="name" placeholder="Your name" required>' +
+        '<input type="text" name="company" placeholder="Company name" required>' +
+        '<input type="email" name="email" placeholder="Your email" required>' +
+        '<textarea name="ai_concern" placeholder="Briefly describe how your business currently uses AI..."></textarea>' +
+        '<button type="submit" class="btn-submit">Send &#8594; Connect me with a specialist</button>' +
+        '</form></div>';
+    } else if (score >= 1) {
+      ctaHTML = '<div class="cta-label">Next Step</div>' +
+        '<div class="cta-heading">Book a free consultation</div>' +
+        '<div class="cta-sub">A 30-minute call with one of our specialists will help identify the quickest way to close your governance gaps and reduce your exposure.</div>' +
+        '<a href="https://calendly.com/fraser-mlagroup/30min" class="btn-primary" target="_blank">&#128222; Book a Free Call</a>' +
+        '<a href="index.html" class="btn-secondary">Return to homepage</a>';
+    } else {
+      ctaHTML = '<div class="cta-label">Next Step</div>' +
+        '<div class="cta-heading">Stay ahead of the curve</div>' +
+        '<div class="cta-sub">AI regulation is evolving fast. A free annual review ensures your governance framework stays ahead of new requirements before they become liabilities.</div>' +
+        '<a href="https://calendly.com/fraser-mlagroup/30min" class="btn-primary" target="_blank">Book a Free Annual Review</a>' +
+        '<a href="index.html" class="btn-secondary">Return to homepage</a>';
+    }
+
+    // ── RENDER PAGE ──
+    document.getElementById('results-card').innerHTML =
+      '<div class="risk-badge ' + badgeClass + '">' +
+        '<span class="dot"></span>' + level +
+      '</div>' +
+      '<div class="score-row">' +
+        '<div class="score-circle ' + circleClass + '">' +
+          '<span class="num">' + score + '/5</span>' +
+          '<span class="label">score</span>' +
+        '</div>' +
+        '<div class="score-text">' +
+          '<h1>' + heading + '</h1>' +
+          '<p>' + summary + '</p>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="matrix-section">' +
+        '<div class="matrix-title">Risk Matrix Position</div>' +
+        '<div class="matrix">' +
+          '<div class="matrix-cell cell-medium ' + (matrixActive === 'medium' ? 'active' : '') + '">Medium</div>' +
+          '<div class="matrix-cell cell-high ' + (matrixActive === 'high' ? 'active' : '') + '">High</div>' +
+          '<div class="matrix-cell cell-high ' + (matrixActive === 'high' ? 'active' : '') + '">High</div>' +
+          '<div class="matrix-cell cell-low ' + (matrixActive === 'low' ? 'active' : '') + '">Low</div>' +
+          '<div class="matrix-cell cell-medium ' + (matrixActive === 'medium' ? 'active' : '') + '">Medium</div>' +
+          '<div class="matrix-cell cell-high ' + (matrixActive === 'high' ? 'active' : '') + '">High</div>' +
+          '<div class="matrix-cell cell-low ' + (matrixActive === 'low' ? 'active' : '') + '">Low</div>' +
+          '<div class="matrix-cell cell-low ' + (matrixActive === 'low' ? 'active' : '') + '">Low</div>' +
+          '<div class="matrix-cell cell-medium ' + (matrixActive === 'medium' ? 'active' : '') + '">Medium</div>' +
+        '</div>' +
+      '</div>' +
+
+      flagHTML +
+      '<hr class="divider">' +
+      ctaHTML +
+      '<p class="disclaimer">Your data is handled confidentially and never shared without your consent.</p>';
+  </script>
+
 </body>
 </html>
