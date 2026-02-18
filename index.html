@@ -71,11 +71,12 @@
       background-color: #1a6bff;
       color: #ffffff;
       text-decoration: none;
-      padding: 10px 22px;
+      padding: 8px 14px;
       border-radius: 6px;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       display: inline-block;
+      white-space: nowrap;
     }
 
     .hero {
@@ -259,7 +260,29 @@
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px;
       padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s, background-color 0.25s, transform 0.25s;
+      cursor: default;
     }
+
+    .step::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #1a6bff, transparent);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .step:hover {
+      border-color: rgba(26,107,255,0.4);
+      background-color: rgba(26,107,255,0.07);
+      transform: translateY(-3px);
+    }
+
+    .step:hover::after { opacity: 1; }
 
     .step-num {
       font-size: 0.72rem;
