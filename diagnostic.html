@@ -1,5 +1,4 @@
-
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -185,7 +184,7 @@
       font-size: 0.72rem; letter-spacing: 2px;
       text-transform: uppercase; color: #3d8bff;
       font-weight: 600; margin-bottom: 8px;
-    }
+  }
     .section-title { font-size: 1.3rem; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
     .section-desc { font-size: 0.85rem; color: rgba(255,255,255,0.55); line-height: 1.6; margin-bottom: 28px; font-weight: 300; }
 
@@ -364,7 +363,7 @@
     <a href="index.html" class="nav-back">&#8592; Return to homepage</a>
   </nav>
 
-  <div class="progress-wrap" id="progressWrap">
+  <div class="progress-wrap visible" id="progressWrap">
     <div class="progress-meta">
       <span class="progress-label" id="progressLabel">About You</span>
       <span class="progress-count" id="progressCount">Step 1 of 9</span>
@@ -377,7 +376,7 @@
   <div class="wrapper">
 
     <!-- LANDING -->
-    <div class="screen active" id="screen-landing">
+    <div class="screen" id="screen-landing">
       <div class="landing-hero">
         <div class="badge"><span class="badge-dot"></span>AI Governance &amp; Risk</div>
         <h1>Is Your Business <span class="h1-highlight">Exposed</span> to AI Risk?</h1>
@@ -401,7 +400,7 @@
     </div>
 
     <!-- PRE-SCREEN -->
-    <div class="screen" id="screen-prescreen">
+    <div class="screen active" id="screen-prescreen">
       <div class="card">
         <div class="section-label">About You</div>
         <div class="section-title">Tell us about yourself &amp; your organisation</div>
@@ -980,101 +979,241 @@ function makePDF(){
   const pct=document.getElementById('res-score').textContent;
   const title=document.getElementById('res-title').textContent;
   const summary=document.getElementById('res-summary').textContent;
-  const bcol={critical:[255,85,85],high:[255,112,112],moderate:[255,159,10],low:[48,209,88]}[bc]||[26,107,255];
-  const W=210,M=20;let y=0;
 
-  // Header
-  doc.setFillColor(0,26,58);doc.rect(0,0,W,52,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(255,255,255);
-  doc.text('MLA GROUP',M,16);
-  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(150,180,220);
-  doc.text('AI GOVERNANCE RISK ASSESSMENT',M,24);
-  doc.text('Prepared: '+today,M,31);
-  doc.text('Prepared for: '+name+' | '+role+' | '+org,M,38);
-  doc.text('Sector: '+sector+' | Organisation size: '+size+' employees',M,45);
-  y=62;
+  // Colour palette per risk band
+  const bcol={critical:[220,53,53],high:[210,70,70],moderate:[210,130,20],low:[34,160,80]}[bc]||[26,107,255];
+  const bcolLight={critical:[255,240,240],high:[255,242,242],moderate:[255,248,235],low:[236,252,243]}[bc]||[235,242,255];
+  const W=210,M=18;let y=0;
 
-  // Risk band
-  doc.setFillColor(...bcol);
-  doc.roundedRect(M,y,W-M*2,30,3,3,'F');
-  // overdraw with navy at low opacity manually via second rect
+  // ── HEADER (navy bar) ──
   doc.setFillColor(0,26,58);
-  // Use stroke only for the box
+  doc.rect(0,0,W,42,'F');
+
+  // White accent line under header
+  doc.setFillColor(...bcol);
+  doc.rect(0,42,W,2,'F');
+
+  // Logo text
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(16);
+  doc.setTextColor(255,255,255);
+  doc.text('MLA GROUP',M,15);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(160,185,220);
+  doc.text('AI GOVERNANCE RISK ASSESSMENT — CONFIDENTIAL',M,22);
+
+  // Right side: date
+  doc.setFontSize(7);
+  doc.setTextColor(120,155,200);
+  doc.text('Report date: '+today,W-M,15,{align:'right'});
+  doc.text('Prepared for: '+name,W-M,21,{align:'right'});
+  doc.text(org+' | '+sector,W-M,27,{align:'right'});
+  doc.text('Organisation size: '+size+' employees',W-M,33,{align:'right'});
+
+  y=52;
+
+  // ── RISK BAND SUMMARY BOX ──
+  // Coloured left bar
+  doc.setFillColor(...bcol);
+  doc.rect(M,y,4,36,'F');
+
+  // Light background box
+  doc.setFillColor(...bcolLight);
+  doc.rect(M+4,y,W-M*2-4,36,'F');
+
+  // Thin border
   doc.setDrawColor(...bcol);
-  doc.roundedRect(M,y,W-M*2,30,3,3,'S');
-  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...bcol);
-  doc.text(band,M+8,y+12);
-  doc.setFontSize(20);doc.text(pct,W-M-20,y+16);
-  doc.setFontSize(7);doc.setTextColor(160,185,215);doc.text('MATURITY',W-M-21,y+22);
-  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(200,215,235);doc.text(title,M+8,y+22);
-  y+=38;
+  doc.setLineWidth(0.4);
+  doc.rect(M,y,W-M*2,36,'S');
 
-  // Summary
-  doc.setFillColor(15,30,55);
-  const sl=doc.splitTextToSize(summary,W-M*2-10);
-  const sh=sl.length*4+8;
-  doc.roundedRect(M,y,W-M*2,sh,2,2,'F');
-  doc.setFontSize(8);doc.setTextColor(175,195,220);doc.text(sl,M+5,y+6);
-  y+=sh+8;
+  // Band label
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(14);
+  doc.setTextColor(...bcol);
+  doc.text(band,M+10,y+13);
 
-  // Section breakdown
-  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(61,139,255);
-  doc.text('SECTION MATURITY BREAKDOWN',M,y);y+=5;
-  Object.values(SD).forEach(s=>{
+  // Score circle (text only)
+  doc.setFontSize(22);
+  doc.text(pct,W-M-8,y+16,{align:'right'});
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(100,100,100);
+  doc.text('MATURITY SCORE',W-M-8,y+22,{align:'right'});
+
+  // Title line
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(40,40,40);
+  doc.text(title,M+10,y+24);
+
+  // Summary text
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(70,70,70);
+  const sumLines=doc.splitTextToSize(summary,W-M*2-30);
+  doc.text(sumLines,M+10,y+31);
+
+  y+=44;
+
+  // ── DIVIDER ──
+  function divider(label){
+    doc.setFillColor(...bcol);
+    doc.rect(M,y,W-M*2,6,'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(255,255,255);
+    doc.text(label,M+3,y+4.3);
+    y+=10;
+  }
+
+  // ── SECTION BREAKDOWN ──
+  divider('SECTION MATURITY BREAKDOWN');
+
+  Object.values(SD).forEach((s,i)=>{
     const p=Math.round((s.score/s.max)*100);
-    const c=p>=75?[48,209,88]:p>=40?[255,159,10]:[255,85,85];
-    const l=p>=75?'Low':p>=40?'Moderate':'High';
-    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(190,205,225);doc.text(s.name,M,y);
-    doc.setFillColor(20,40,70);doc.rect(M+82,y-3,58,3.5,'F');
-    doc.setFillColor(...c);doc.rect(M+82,y-3,Math.round(p*0.58),3.5,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...c);doc.text(l,M+145,y);
-    y+=6.5;
-  });
-  y+=4;
+    const color=p>=75?[34,160,80]:p>=40?[210,130,20]:[210,53,53];
+    const lbl=p>=75?'Low Risk':p>=40?'Moderate':'High Risk';
+    const rowBg=i%2===0?[250,251,253]:[255,255,255];
 
-  // Flags
+    doc.setFillColor(...rowBg);
+    doc.rect(M,y,W-M*2,8,'F');
+
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.setTextColor(40,40,40);
+    doc.text(s.name,M+3,y+5.5);
+
+    // Bar track
+    const barX=M+90, barW=60, barH=3;
+    doc.setFillColor(220,225,232);
+    doc.rect(barX,y+2.5,barW,barH,'F');
+    doc.setFillColor(...color);
+    doc.rect(barX,y+2.5,Math.round(p*barW/100),barH,'F');
+
+    // Label
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...color);
+    doc.text(lbl,M+155,y+5.5,{align:'right'});
+
+    // Light border
+    doc.setDrawColor(220,225,232);
+    doc.setLineWidth(0.2);
+    doc.line(M,y+8,M+W-M*2,y+8);
+
+    y+=8;
+  });
+
+  y+=6;
+  if(y>245){doc.addPage();y=18;}
+
+  // ── FLAGS ──
   const fEls=document.querySelectorAll('#flags .flag-item');
   if(fEls.length){
-    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(61,139,255);
-    doc.text('AREAS FLAGGED IN YOUR ASSESSMENT',M,y);y+=5;
-    fEls.forEach(el=>{
-      const txt=el.textContent.replace('⚠','').trim();
-      const lines=doc.splitTextToSize('! '+txt,W-M*2-8);
-      const h=lines.length*4+5;
-      if(y+h>272){doc.addPage();y=20;}
-      doc.setFillColor(40,15,15);doc.roundedRect(M,y,W-M*2,h,2,2,'F');
-      doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(215,130,130);doc.text(lines,M+4,y+5);
-      y+=h+3;
-    });
-  }
-  y+=4;
+    divider('AREAS FLAGGED IN YOUR ASSESSMENT');
+    fEls.forEach((el,i)=>{
+      const txt=el.textContent.replace(/[⚠!]/g,'').trim();
+      const lines=doc.splitTextToSize(txt,W-M*2-14);
+      const h=Math.max(10,lines.length*4.5+5);
+      if(y+h>272){doc.addPage();y=18;}
 
-  // Recs
+      // Alternating row bg with red left accent
+      doc.setFillColor(i%2===0?[255,247,247]:[255,252,252]);
+      doc.rect(M,y,W-M*2,h,'F');
+      doc.setFillColor(210,53,53);
+      doc.rect(M,y,3,h,'F');
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(50,50,50);
+      doc.text(lines,M+7,y+5);
+
+      doc.setDrawColor(240,220,220);
+      doc.setLineWidth(0.2);
+      doc.line(M,y+h,M+W-M*2,y+h);
+
+      y+=h+1;
+    });
+    y+=5;
+  }
+
+  if(y>245){doc.addPage();y=18;}
+
+  // ── RECOMMENDATIONS ──
   const rEls=document.querySelectorAll('#recs .rec-item');
   if(rEls.length){
-    if(y>245){doc.addPage();y=20;}
-    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(61,139,255);
-    doc.text('PRIORITY RECOMMENDATIONS',M,y);y+=5;
+    divider('PRIORITY RECOMMENDATIONS');
     rEls.forEach((el,i)=>{
       const txt=el.textContent.replace(/^\d+/,'').trim();
-      const lines=doc.splitTextToSize((i+1)+'. '+txt,W-M*2-8);
-      const h=lines.length*4+5;
-      if(y+h>272){doc.addPage();y=20;}
-      doc.setFillColor(10,22,48);doc.roundedRect(M,y,W-M*2,h,2,2,'F');
-      doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(145,170,215);doc.text(lines,M+4,y+5);
-      y+=h+3;
+      const lines=doc.splitTextToSize(txt,W-M*2-16);
+      const h=Math.max(11,lines.length*4.5+6);
+      if(y+h>272){doc.addPage();y=18;}
+
+      doc.setFillColor(i%2===0?[245,248,255]:[250,252,255]);
+      doc.rect(M,y,W-M*2,h,'F');
+
+      // Number circle
+      doc.setFillColor(26,107,255);
+      doc.circle(M+5.5,y+h/2,3.5,'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(7);
+      doc.setTextColor(255,255,255);
+      doc.text(String(i+1),M+5.5,y+h/2+2.5,{align:'center'});
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(40,40,40);
+      doc.text(lines,M+12,y+5);
+
+      doc.setDrawColor(220,228,245);
+      doc.setLineWidth(0.2);
+      doc.line(M,y+h,M+W-M*2,y+h);
+
+      y+=h+1;
     });
+    y+=5;
   }
 
-  // Footer
+  // ── NEXT STEPS BOX ──
+  if(y>255){doc.addPage();y=18;}
+  doc.setFillColor(235,242,255);
+  doc.rect(M,y,W-M*2,22,'F');
+  doc.setFillColor(26,107,255);
+  doc.rect(M,y,3,22,'F');
+  doc.setDrawColor(26,107,255);
+  doc.setLineWidth(0.4);
+  doc.rect(M,y,W-M*2,22,'S');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(0,26,58);
+  doc.text('Ready to take action?',M+7,y+8);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(40,60,100);
+  doc.text('Book a free 30-minute governance consultation with MLA Group.',M+7,y+14);
+  doc.setTextColor(26,107,255);
+  doc.text('calendly.com/fraser-mlagroup/30min',M+7,y+20);
+  y+=28;
+
+  // ── FOOTER on all pages ──
   const pages=doc.getNumberOfPages();
   for(let i=1;i<=pages;i++){
-    doc.setPage(i);doc.setFillColor(0,18,40);doc.rect(0,284,W,14,'F');
-    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(80,110,150);
-    doc.text('MLA Group | AI Governance Risk Assessment | mlagroup.co.uk',M,290);
-    doc.text('This report is for informational purposes. MLA Group is not a certified audit regulator.',M,295);
-    doc.text('Page '+i+' of '+pages,W-M-8,290);
+    doc.setPage(i);
+    doc.setFillColor(0,26,58);
+    doc.rect(0,286,W,11,'F');
+    doc.setFillColor(...bcol);
+    doc.rect(0,286,W,1,'F');
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(140,170,210);
+    doc.text('MLA Group | AI Governance Risk Assessment | mlagroup.co.uk',M,292);
+    doc.text('This report is produced for informational purposes. MLA Group is not a certified audit regulator.',M,296);
+    doc.setTextColor(180,200,230);
+    doc.text('Page '+i+' of '+pages,W-M,292,{align:'right'});
   }
+
   doc.save('MLA-AI-Risk-Report-'+org.replace(/\s+/g,'-')+'-'+today.replace(/\s/g,'-')+'.pdf');
 }
 </script>
