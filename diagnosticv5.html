@@ -601,3 +601,698 @@
       </div>
     </div>
     
+    <!-- S4 -->
+    <div class="screen" id="screen-s4">
+      <div class="card">
+        <div class="section-label">Section 4 of 7</div>
+        <div class="section-title">Human Oversight &amp; Decision Controls</div>
+        <div class="section-desc">Evaluating how human judgement integrates with AI-driven decisions.</div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">4.1</span>Do AI decision processes include human review for high-impact outcomes?</div>
+          <div class="options" id="q4_1">
+            <label class="option" onclick="pick(this,'q4_1',3)"><span class="option-dot"></span>Yes, always &#8212; human review is mandatory</label>
+            <label class="option" onclick="pick(this,'q4_1',2)"><span class="option-dot"></span>Yes, conditionally based on risk level</label>
+            <label class="option" onclick="pick(this,'q4_1',1)"><span class="option-dot"></span>Rarely</label>
+            <label class="option" onclick="pick(this,'q4_1',0)"><span class="option-dot"></span>Not at all</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">4.2</span>Are override protocols documented for when a human reviewer disagrees with an AI outcome?</div>
+          <div class="options" id="q4_2">
+            <label class="option" onclick="pick(this,'q4_2',3)"><span class="option-dot"></span>Yes, formally documented</label>
+            <label class="option" onclick="pick(this,'q4_2',1)"><span class="option-dot"></span>Planned but not yet in place</label>
+            <label class="option" onclick="pick(this,'q4_2',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">4.3</span>Do staff responsible for reviewing AI decisions receive adequate and documented training?</div>
+          <div class="options" id="q4_3">
+            <label class="option" onclick="pick(this,'q4_3',3)"><span class="option-dot"></span>Yes, with records maintained</label>
+            <label class="option" onclick="pick(this,'q4_3',1)"><span class="option-dot"></span>Partially &#8212; some training exists</label>
+            <label class="option" onclick="pick(this,'q4_3',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">4.4</span>Are escalation pathways defined for decisions that require additional review or challenge?</div>
+          <div class="options" id="q4_4">
+            <label class="option" onclick="pick(this,'q4_4',3)"><span class="option-dot"></span>Yes, clearly documented</label>
+            <label class="option" onclick="pick(this,'q4_4',1)"><span class="option-dot"></span>Informal pathways exist</label>
+            <label class="option" onclick="pick(this,'q4_4',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div id="s4-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s3')">&#8592; Back</button>
+          <button class="btn-primary" onclick="next(['q4_1','q4_2','q4_3','q4_4'],'s4-error','screen-s5')">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5 -->
+    <div class="screen" id="screen-s5">
+      <div class="card">
+        <div class="section-label">Section 5 of 7</div>
+        <div class="section-title">Explainability &amp; Transparency</div>
+        <div class="section-desc">Assessing whether AI-assisted decisions are explainable, traceable, and defensible.</div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">5.1</span>Can your organisation provide clear explanations for AI-assisted decisions when required by an individual or regulator?</div>
+          <div class="options" id="q5_1">
+            <label class="option" onclick="pick(this,'q5_1',3)"><span class="option-dot"></span>Yes, consistently</label>
+            <label class="option" onclick="pick(this,'q5_1',2)"><span class="option-dot"></span>In most cases</label>
+            <label class="option" onclick="pick(this,'q5_1',1)"><span class="option-dot"></span>Only in limited circumstances</label>
+            <label class="option" onclick="pick(this,'q5_1',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">5.2</span>Do you maintain logs of AI input features and decision outputs?</div>
+          <div class="options" id="q5_2">
+            <label class="option" onclick="pick(this,'q5_2',3)"><span class="option-dot"></span>Yes, detailed and retained</label>
+            <label class="option" onclick="pick(this,'q5_2',1)"><span class="option-dot"></span>Partial logs exist</label>
+            <label class="option" onclick="pick(this,'q5_2',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">5.3</span>Are decision logic and model versions recorded and accessible for audit?</div>
+          <div class="options" id="q5_3">
+            <label class="option" onclick="pick(this,'q5_3',3)"><span class="option-dot"></span>Yes</label>
+            <label class="option" onclick="pick(this,'q5_3',1)"><span class="option-dot"></span>Partially</label>
+            <label class="option" onclick="pick(this,'q5_3',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">5.4</span>Can a specific AI decision be traced back to its source inputs and the model version used?</div>
+          <div class="options" id="q5_4">
+            <label class="option" onclick="pick(this,'q5_4',3)"><span class="option-dot"></span>Always</label>
+            <label class="option" onclick="pick(this,'q5_4',2)"><span class="option-dot"></span>Sometimes</label>
+            <label class="option" onclick="pick(this,'q5_4',1)"><span class="option-dot"></span>Rarely</label>
+            <label class="option" onclick="pick(this,'q5_4',0)"><span class="option-dot"></span>Never</label>
+          </div>
+        </div>
+        <div id="s5-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s4')">&#8592; Back</button>
+          <button class="btn-primary" onclick="next(['q5_1','q5_2','q5_3','q5_4'],'s5-error','screen-s6')">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S6 -->
+    <div class="screen" id="screen-s6">
+      <div class="card">
+        <div class="section-label">Section 6 of 7</div>
+        <div class="section-title">Compliance &amp; Legal Alignment</div>
+        <div class="section-desc">Confirming awareness and alignment with current UK and EU legal expectations.</div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">6.1</span>Has your organisation conducted a formal Data Protection Impact Assessment (DPIA) for AI systems that handle personal data?</div>
+          <div class="options" id="q6_1">
+            <label class="option" onclick="pick(this,'q6_1',3)"><span class="option-dot"></span>Yes, completed and reviewed</label>
+            <label class="option" onclick="pick(this,'q6_1',1)"><span class="option-dot"></span>Planned</label>
+            <label class="option" onclick="pick(this,'q6_1',0)"><span class="option-dot"></span>No</label>
+            <label class="option" onclick="pick(this,'q6_1',2)"><span class="option-dot"></span>Not required for our use case</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">6.2</span>Are individuals informed when automated or AI-assisted decisions are made that affect them?</div>
+          <div class="options" id="q6_2">
+            <label class="option" onclick="pick(this,'q6_2',3)"><span class="option-dot"></span>Yes, always</label>
+            <label class="option" onclick="pick(this,'q6_2',1)"><span class="option-dot"></span>Partially</label>
+            <label class="option" onclick="pick(this,'q6_2',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">6.3</span>Is there a documented process allowing individuals to request a review or challenge an AI-assisted decision?</div>
+          <div class="options" id="q6_3">
+            <label class="option" onclick="pick(this,'q6_3',3)"><span class="option-dot"></span>Yes, formally documented</label>
+            <label class="option" onclick="pick(this,'q6_3',1)"><span class="option-dot"></span>Limited process exists</label>
+            <label class="option" onclick="pick(this,'q6_3',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div id="s6-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s5')">&#8592; Back</button>
+          <button class="btn-primary" onclick="next(['q6_1','q6_2','q6_3'],'s6-error','screen-s7')">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S7 -->
+    <div class="screen" id="screen-s7">
+      <div class="card">
+        <div class="section-label">Section 7 of 7</div>
+        <div class="section-title">Operational Controls &amp; Resilience</div>
+        <div class="section-desc">Assessing the robustness of risk controls and operational resilience around AI systems.</div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">7.1</span>Are AI systems included in your organisation&#8217;s formal risk and control self-assessments?</div>
+          <div class="options" id="q7_1">
+            <label class="option" onclick="pick(this,'q7_1',3)"><span class="option-dot"></span>Yes</label>
+            <label class="option" onclick="pick(this,'q7_1',1)"><span class="option-dot"></span>Partially</label>
+            <label class="option" onclick="pick(this,'q7_1',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">7.2</span>Do third-party AI providers undergo structured risk assessment and contractual controls review?</div>
+          <div class="options" id="q7_2">
+            <label class="option" onclick="pick(this,'q7_2',3)"><span class="option-dot"></span>Yes</label>
+            <label class="option" onclick="pick(this,'q7_2',1)"><span class="option-dot"></span>Partially</label>
+            <label class="option" onclick="pick(this,'q7_2',0)"><span class="option-dot"></span>No</label>
+            <label class="option" onclick="pick(this,'q7_2',3)"><span class="option-dot"></span>We do not use third-party AI providers</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">7.3</span>Are cybersecurity and adversarial vulnerabilities assessed for AI systems?</div>
+          <div class="q-hint">e.g. prompt injection, model manipulation, data poisoning</div>
+          <div class="options" id="q7_3">
+            <label class="option" onclick="pick(this,'q7_3',3)"><span class="option-dot"></span>Yes, formally tested</label>
+            <label class="option" onclick="pick(this,'q7_3',1)"><span class="option-dot"></span>Partially assessed</label>
+            <label class="option" onclick="pick(this,'q7_3',0)"><span class="option-dot"></span>No</label>
+            <label class="option" onclick="pick(this,'q7_3',2)"><span class="option-dot"></span>Not currently applicable to our scale</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">7.4</span>Do you monitor AI model performance and detect drift or degradation over time?</div>
+          <div class="options" id="q7_4">
+            <label class="option" onclick="pick(this,'q7_4',3)"><span class="option-dot"></span>Yes, with automated monitoring</label>
+            <label class="option" onclick="pick(this,'q7_4',2)"><span class="option-dot"></span>Yes, manually reviewed</label>
+            <label class="option" onclick="pick(this,'q7_4',1)"><span class="option-dot"></span>Partially</label>
+            <label class="option" onclick="pick(this,'q7_4',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div id="s7-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s6')">&#8592; Back</button>
+          <button class="btn-primary" onclick="calcResults()">Generate My Risk Report &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="screen" id="screen-results">
+      <div class="result-top">
+        <div class="risk-badge" id="res-badge">HIGH RISK</div>
+        <div class="score-ring" id="res-ring"><div class="score-num" id="res-score">&#8212;</div><div class="score-sub">MATURITY</div></div>
+        <div class="result-title" id="res-title">Immediate Action Recommended</div>
+        <p class="result-summary" id="res-summary"></p>
+      </div>
+      <div class="card">
+        <div class="section-label">Section Maturity Breakdown</div>
+        <div id="breakdown"></div>
+      </div>
+      <div class="card">
+        <div class="section-label" style="margin-bottom:12px">Risk Matrix Position</div>
+        <div class="risk-matrix" id="rmatrix"></div>
+        <p class="matrix-note">Based on likelihood of regulatory exposure &#215; impact on governance maturity</p>
+      </div>
+      <div class="card">
+        <div class="section-label">Areas Flagged in Your Assessment</div>
+        <div id="flags"></div>
+      </div>
+      <div class="card">
+        <div class="section-label">Priority Recommendations</div>
+        <div id="recs"></div>
+      </div>
+      <div class="cta-card">
+        <h3>Next Step: Speak to a Specialist</h3>
+        <p>Given your risk profile, we&#8217;d like to connect you with one of our governance specialists. Book a free 30-minute consultation directly.</p>
+        <a href="https://calendly.com/fraser-mlagroup/30min" target="_blank" class="btn-primary" style="text-decoration:none">&#128222;&nbsp; Book a Call Now</a>
+        <p class="cta-privacy">Your data is handled confidentially and never shared without your consent.</p>
+      </div>
+      <button class="btn-pdf" onclick="makePDF()">&#8595;&nbsp; Download Full PDF Report</button>
+      <div class="result-footer">
+        MLA Group &nbsp;|&nbsp; AI Governance Risk Assessment &nbsp;|&nbsp; mlagroup.co.uk<br>
+        This report is produced for informational purposes. MLA Group is not a certified audit regulator.<br>
+        &#169; 2026 MLA Group. All Rights Reserved.
+      </div>
+    </div>
+
+  </div><!-- /wrapper -->
+</div><!-- /page -->
+
+<script>
+const S={};
+const SD={
+  s1:{name:'AI Inventory & Classification',max:9,score:0},
+  s2:{name:'Governance & Accountability',max:15,score:0},
+  s3:{name:'Data Quality & Lineage',max:12,score:0},
+  s4:{name:'Human Oversight & Controls',max:12,score:0},
+  s5:{name:'Explainability & Transparency',max:12,score:0},
+  s6:{name:'Compliance & Legal Alignment',max:9,score:0},
+  s7:{name:'Operational Controls',max:12,score:0}
+};
+const ORDER=['screen-landing','screen-prescreen','screen-s1','screen-s2','screen-s3','screen-s4','screen-s5','screen-s6','screen-s7','screen-results'];
+const LABELS=['','About You','Section 1 of 7','Section 2 of 7','Section 3 of 7','Section 4 of 7','Section 5 of 7','Section 6 of 7','Section 7 of 7','Your Results'];
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  const idx=ORDER.indexOf(id);
+  const w=document.getElementById('progressWrap');
+  if(id==='screen-landing'){w.classList.remove('visible');return;}
+  w.classList.add('visible');
+  document.getElementById('progressLabel').textContent=LABELS[idx]||'';
+  document.getElementById('progressFill').style.width=Math.round((idx/(ORDER.length-1))*100)+'%';
+  document.getElementById('progressCount').textContent=id==='screen-results'?'Complete':`Step ${idx} of ${ORDER.length-2}`;
+}
+
+function pick(el,gid,score){
+  document.querySelectorAll('#'+gid+' .option:not(.cb)').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  S[gid]=score;
+}
+
+function toggleCb(el){el.classList.toggle('selected');}
+
+function validatePrescreen(){
+  const n=document.getElementById('ps-name').value.trim();
+  const r=document.getElementById('ps-role').value.trim();
+  const e=document.getElementById('ps-email').value.trim();
+  const o=document.getElementById('ps-org').value.trim();
+  const sec=document.getElementById('ps-sector').value;
+  const sz=document.getElementById('ps-size').value;
+  const err=document.getElementById('ps-error');
+  if(!n||!r||!e||!o||!sec||!sz){err.textContent='Please complete all required fields.';err.style.display='block';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){err.textContent='Please enter a valid email address.';err.style.display='block';return;}
+  err.style.display='none';
+  goTo('screen-s1');
+}
+
+function next(qs,errId,nxt){
+  for(const q of qs){if(S[q]===undefined){document.getElementById(errId).textContent='Please answer all questions before continuing.';document.getElementById(errId).style.display='block';return;}}
+  document.getElementById(errId).style.display='none';
+  goTo(nxt);
+}
+
+function calcResults(){
+  for(const q of ['q7_1','q7_2','q7_3','q7_4']){
+    if(S[q]===undefined){document.getElementById('s7-error').textContent='Please answer all questions before continuing.';document.getElementById('s7-error').style.display='block';return;}
+  }
+  document.getElementById('s7-error').style.display='none';
+  SD.s1.score=(S.q1_1||0)+(S.q1_3||0)+(S.q1_4||0);
+  SD.s2.score=(S.q2_1||0)+(S.q2_2||0)+(S.q2_3||0)+(S.q2_4||0)+(S.q2_5||0);
+  SD.s3.score=(S.q3_1||0)+(S.q3_2||0)+(S.q3_3||0)+(S.q3_4||0);
+  SD.s4.score=(S.q4_1||0)+(S.q4_2||0)+(S.q4_3||0)+(S.q4_4||0);
+  SD.s5.score=(S.q5_1||0)+(S.q5_2||0)+(S.q5_3||0)+(S.q5_4||0);
+  SD.s6.score=(S.q6_1||0)+(S.q6_2||0)+(S.q6_3||0);
+  SD.s7.score=(S.q7_1||0)+(S.q7_2||0)+(S.q7_3||0)+(S.q7_4||0);
+  const hiRisk=[];
+  document.querySelectorAll('#q1_2 .cb.selected').forEach(el=>{const v=el.getAttribute('data-val');if(['bio','credit','health'].includes(v))hiRisk.push(v);});
+  const total=Object.values(SD).reduce((a,b)=>a+b.score,0);
+  const maxT=Object.values(SD).reduce((a,b)=>a+b.max,0);
+  const pct=Math.round((total/maxT)*100);
+  let band,bc;
+  if(pct>=75){band='Low Risk';bc='low';}
+  else if(pct>=50){band='Moderate Risk';bc='moderate';}
+  else if(pct>=25){band='High Risk';bc='high';}
+  else{band='Critical Risk';bc='critical';}
+  if(hiRisk.length>=2&&bc==='moderate'){band='High Risk';bc='high';}
+  renderResults(pct,band,bc,hiRisk);
+  goTo('screen-results');
+  // Send emails after short delay to allow DOM to render
+  setTimeout(()=>sendEmails(band,pct),800);
+}
+
+function renderResults(pct,band,bc,hiRisk){
+  const badge=document.getElementById('res-badge');
+  badge.textContent=band.toUpperCase();badge.className='risk-badge '+bc;
+  const ring=document.getElementById('res-ring');
+  ring.className='score-ring '+bc;
+  document.getElementById('res-score').textContent=pct+'%';
+  const titles={critical:'Immediate Intervention Required',high:'Immediate Action Recommended',moderate:'Governance Gaps Identified',low:'Strong Governance Foundation'};
+  const summaries={
+    critical:'Your responses indicate critical gaps across multiple AI governance areas. Your organisation faces significant regulatory, legal, and reputational exposure. Immediate specialist engagement is strongly recommended.',
+    high:'Your responses indicate significant exposure across multiple AI governance areas. Organisations at this level face elevated regulatory, legal, and operational risk. We recommend speaking with a specialist as soon as possible.',
+    moderate:'Your organisation has some governance foundations in place, but meaningful gaps remain. Addressing these proactively will reduce regulatory exposure and strengthen operational resilience.',
+    low:'Your organisation demonstrates strong AI governance maturity. Maintaining and evolving these frameworks as AI systems develop will ensure continued regulatory alignment.'
+  };
+  document.getElementById('res-title').textContent=titles[bc];
+  document.getElementById('res-summary').textContent=summaries[bc];
+
+  // Breakdown
+  const bd=document.getElementById('breakdown');bd.innerHTML='';
+  Object.values(SD).forEach(s=>{
+    const p=Math.round((s.score/s.max)*100);
+    const color=p>=75?'#30d158':p>=40?'#ff9f0a':'#ff5555';
+    const lbl=p>=75?'Low':p>=40?'Moderate':'High';
+    bd.innerHTML+=`<div class="breakdown-row"><span class="breakdown-name">${s.name}</span><div class="breakdown-bar-track"><div class="breakdown-bar-fill" style="width:${p}%;background:${color}"></div></div><span class="breakdown-label" style="color:${color}">${lbl}</span></div>`;
+  });
+
+  // Matrix
+  const mdef=[{t:'high'},{t:'high'},{t:'high'},{t:'moderate'},{t:'moderate'},{t:'high'},{t:'low'},{t:'low'},{t:'moderate'}];
+  const mlbls=['High','High','High','Med','Med','High','Low','Low','Med'];
+  const ai={critical:2,high:5,moderate:7,low:8}[bc];
+  document.getElementById('rmatrix').innerHTML=mdef.map((c,i)=>`<div class="matrix-cell ${c.t}${i===ai?' active':''}">${mlbls[i]}</div>`).join('');
+
+  // Flags
+  const fl=[];
+  if((S.q1_1||0)<2)fl.push('No formal AI inventory — unable to establish regulatory scope');
+  if((S.q2_2||0)===0)fl.push('No designated AI governance owner — accountability gap identified');
+  if((S.q4_1||0)<2)fl.push('Insufficient human oversight of high-impact AI decisions');
+  if((S.q5_2||0)===0)fl.push('No decision logging — audit trail non-existent');
+  if((S.q6_1||0)===0)fl.push('No DPIA conducted — potential UK GDPR non-compliance');
+  if((S.q6_2||0)===0)fl.push('Individuals not informed of automated decisions — legal exposure');
+  if((S.q3_1||0)===0)fl.push('Data provenance undocumented — model reliability unverifiable');
+  if((S.q2_4||0)===0)fl.push('No AI usage policies in place — unmanaged operational risk');
+  if(hiRisk.length>0)fl.push('High-risk AI category detected — heightened EU AI Act exposure');
+  if(fl.length===0)fl.push('No critical flags identified — continue to maintain and develop governance frameworks');
+  document.getElementById('flags').innerHTML=fl.slice(0,6).map(f=>`<div class="flag-item"><span class="flag-icon">&#9888;</span>${f}</div>`).join('');
+
+  // Recs
+  const rm={
+    critical:['Urgently appoint a named AI governance lead with defined accountability and board-level reporting line','Commission an immediate AI inventory audit to establish scope and regulatory exposure','Restrict high-impact automated decisions until human oversight controls are operational','Engage legal counsel to assess GDPR and EU AI Act obligations specific to your sector','Develop and implement an AI policy framework within 30 days'],
+    high:['Formalise AI governance ownership with documented responsibilities across risk, compliance, and technical teams','Conduct a Data Protection Impact Assessment (DPIA) for all AI systems handling personal data','Implement decision logging and audit trail capability for all high-impact AI outputs','Establish human-in-the-loop review protocols with documented override procedures','Review third-party AI provider contracts for data, liability, and transparency obligations'],
+    moderate:['Elevate informal governance arrangements into formally documented policies and ownership structures','Complete a full DPIA review and ensure individuals are informed of automated decision-making','Strengthen data lineage documentation to support model explainability and auditability','Develop escalation pathways and override protocols for AI-assisted decisions','Introduce scheduled model performance monitoring to detect drift and degradation'],
+    low:['Continue to develop and refresh your AI governance framework as systems evolve','Conduct periodic external review of governance maturity against EU AI Act updates','Ensure new AI deployments are automatically included in your inventory and DPIA process','Share governance best practices internally to maintain organisational awareness','Consider ISO/IEC AI governance certification to formalise your maturity posture']
+  };
+  document.getElementById('recs').innerHTML=(rm[bc]||[]).map((r,i)=>`<div class="rec-item"><span class="rec-num">${i+1}</span>${r}</div>`).join('');
+}
+
+function sendEmails(band, pct){
+  const name    = document.getElementById('ps-name').value;
+  const email   = document.getElementById('ps-email').value;
+  const org     = document.getElementById('ps-org').value;
+  const role    = document.getElementById('ps-role').value;
+  const sector  = document.getElementById('ps-sector').value;
+  const size    = document.getElementById('ps-size').value;
+  const today   = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  // Collect flags
+  const flagText = Array.from(document.querySelectorAll('#flags .flag-item'))
+    .map((el,i)=>(i+1)+'. '+el.textContent.replace(/[⚠!]/g,'').trim()).join('\n');
+
+  // Collect recs
+  const recText = Array.from(document.querySelectorAll('#recs .rec-item'))
+    .map((el,i)=>(i+1)+'. '+el.textContent.replace(/^\d+/,'').trim()).join('\n');
+
+  const summary = document.getElementById('res-summary').textContent;
+
+  const templateParams = {
+    // Client email fields
+    email:          email,
+    to_email:       email,
+    client_name:    name,
+    risk_band:      band,
+    risk_score:     pct+'%',
+    risk_summary:   summary,
+    recommendations:recText,
+    flags:          flagText,
+    report_date:    today,
+    // Also send full lead info so you get it all
+    organisation:   org,
+    client_role:    role,
+    sector:         sector,
+    org_size:       size,
+    fraser_email:   'fraser@mlagroup.co.uk'
+  };
+
+  // Send to client
+  emailjs.send('service_amfeqty','template_xczn8bt', templateParams)
+    .then(()=>console.log('Client email sent'))
+    .catch(e=>console.log('Email error:',e));
+
+  // Also send you a notification via FormSubmit
+  const form = document.createElement('form');
+  form.action = 'https://formsubmit.co/fraser@mlagroup.co.uk';
+  form.method = 'POST';
+  form.style.display = 'none';
+  const fields = {
+    '_subject': 'New AI Diagnostic Submission — '+band,
+    '_captcha': 'false',
+    '_next': 'https://mlagroup.co.uk/diagnostic-v2.html',
+    'Full Name': name,
+    'Email': email,
+    'Organisation': org,
+    'Role': role,
+    'Sector': sector,
+    'Org Size': size,
+    'Risk Band': band,
+    'Maturity Score': pct+'%',
+    'Flags': flagText,
+    'Recommendations': recText,
+    'Date': today
+  };
+  Object.entries(fields).forEach(([k,v])=>{
+    const i=document.createElement('input');
+    i.type='hidden'; i.name=k; i.value=v;
+    form.appendChild(i);
+  });
+  document.body.appendChild(form);
+  fetch(form.action,{
+    method:'POST',
+    body:new FormData(form)
+  }).then(()=>console.log('Lead notification sent'))
+    .catch(e=>console.log('FormSubmit error:',e));
+  document.body.removeChild(form);
+}
+
+function makePDF(){
+  const {jsPDF}=window.jspdf;
+  if(!jsPDF){alert('PDF library not loaded yet, please try again in a moment.');return;}
+  try{
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const name   =document.getElementById('ps-name').value;
+  const org    =document.getElementById('ps-org').value;
+  const role   =document.getElementById('ps-role').value;
+  const sector =document.getElementById('ps-sector').value;
+  const size   =document.getElementById('ps-size').value;
+  const today  =new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const bEl    =document.getElementById('res-badge');
+  const bc     =bEl.className.replace('risk-badge ','').trim();
+  const band   =bEl.textContent;
+  const pct    =document.getElementById('res-score').textContent;
+  const title  =document.getElementById('res-title').textContent;
+  const summary=document.getElementById('res-summary').textContent;
+
+  // Risk colour (used only for accents/text - never as a fill background)
+  const rc={critical:[200,40,40],high:[190,60,60],moderate:[180,110,0],low:[30,140,70]}[bc]||[26,107,255];
+  const W=210, M=18; let y=0;
+
+  // ── PAGE BACKGROUND: pure white ──
+  doc.setFillColor(255,255,255);
+  doc.rect(0,0,W,297,'F');
+
+  // ── HEADER: navy bar top ──
+  doc.setFillColor(0,26,58);
+  doc.rect(0,0,W,38,'F');
+
+  // Coloured accent strip under header
+  doc.setFillColor(rc[0],rc[1],rc[2]);
+  doc.rect(0,38,W,1.5,'F');
+
+  // Header text
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
+  doc.setTextColor(255,255,255);
+  doc.text('MLA GROUP',M,13);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(160,185,220);
+  doc.text('AI GOVERNANCE RISK ASSESSMENT — CONFIDENTIAL',M,20);
+  doc.text('Report date: '+today,M,27);
+  doc.text('Prepared for: '+name+' | '+role+' | '+org,M,33);
+
+  // Right side of header
+  doc.setTextColor(120,155,200);
+  doc.text(sector+' | '+size+' employees',W-M,27,{align:'right'});
+
+  y=48;
+
+  // ── RISK SUMMARY BOX: white bg, coloured left bar + border ──
+  // Outer border
+  doc.setDrawColor(rc[0],rc[1],rc[2]);
+  doc.setLineWidth(0.5);
+  doc.rect(M,y,W-M*2,32,'S');
+
+  // Left colour bar
+  doc.setFillColor(rc[0],rc[1],rc[2]);
+  doc.rect(M,y,4,32,'F');
+
+  // Risk band label
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(14);
+  doc.setTextColor(rc[0],rc[1],rc[2]);
+  doc.text(band,M+8,y+11);
+
+  // Score — right side
+  doc.setFontSize(24);
+  doc.setTextColor(rc[0],rc[1],rc[2]);
+  doc.text(pct,W-M-6,y+17,{align:'right'});
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(130,130,130);
+  doc.text('MATURITY SCORE',W-M-6,y+23,{align:'right'});
+
+  // Title
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(30,30,30);
+  doc.text(title,M+8,y+21);
+
+  // Summary text
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(70,70,70);
+  const sumLines=doc.splitTextToSize(summary,W-M*2-30);
+  doc.text(sumLines,M+8,y+28);
+
+  y+=40;
+
+  // ── SECTION HEADING helper ──
+  function sectionHead(label){
+    if(y>262){doc.addPage();doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');y=18;}
+    doc.setFillColor(0,26,58);
+    doc.rect(M,y,W-M*2,7,'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(255,255,255);
+    doc.text(label,M+4,y+5);
+    y+=11;
+  }
+
+  // ── SECTION BREAKDOWN ──
+  sectionHead('SECTION MATURITY BREAKDOWN');
+
+  Object.values(SD).forEach((s,i)=>{
+    const p=Math.round((s.score/s.max)*100);
+    const barColor=p>=75?[34,160,80]:p>=40?[200,130,0]:[200,50,50];
+    const lbl=p>=75?'Low Risk':p>=40?'Moderate':'High Risk';
+
+    // Alternating very light row tint
+    if(i%2===0){doc.setFillColor(248,249,252);}else{doc.setFillColor(255,255,255);}
+    doc.rect(M,y,W-M*2,8,'F');
+
+    // Light border
+    doc.setDrawColor(220,225,235);
+    doc.setLineWidth(0.15);
+    doc.rect(M,y,W-M*2,8,'S');
+
+    // Section name
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.setTextColor(40,40,40);
+    doc.text(s.name,M+3,y+5.5);
+
+    // Progress bar track (light grey)
+    doc.setFillColor(220,225,232);
+    doc.rect(M+90,y+2.5,62,3,'F');
+
+    // Progress bar fill (coloured)
+    doc.setFillColor(barColor[0],barColor[1],barColor[2]);
+    doc.rect(M+90,y+2.5,Math.round(p*62/100),3,'F');
+
+    // Risk label
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(barColor[0],barColor[1],barColor[2]);
+    doc.text(lbl,W-M-2,y+5.5,{align:'right'});
+
+    y+=8;
+  });
+
+  y+=6;
+
+  // ── FLAGS ──
+  const fEls=document.querySelectorAll('#flags .flag-item');
+  if(fEls.length){
+    sectionHead('AREAS FLAGGED IN YOUR ASSESSMENT');
+    fEls.forEach((el,i)=>{
+      const txt=el.textContent.replace(/[⚠!]/g,'').trim();
+      const lines=doc.splitTextToSize(txt,W-M*2-12);
+      const h=Math.max(9,lines.length*4.5+5);
+      if(y+h>272){doc.addPage();doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');y=18;}
+
+      // White bg, red left accent, light border
+      doc.setFillColor(255,255,255);
+      doc.rect(M,y,W-M*2,h,'F');
+      doc.setFillColor(200,50,50);
+      doc.rect(M,y,3,h,'F');
+      doc.setDrawColor(230,210,210);
+      doc.setLineWidth(0.15);
+      doc.rect(M,y,W-M*2,h,'S');
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(50,50,50);
+      doc.text(lines,M+7,y+5);
+      y+=h+2;
+    });
+    y+=4;
+  }
+
+  // ── RECOMMENDATIONS ──
+  const rEls=document.querySelectorAll('#recs .rec-item');
+  if(rEls.length){
+    sectionHead('PRIORITY RECOMMENDATIONS');
+    rEls.forEach((el,i)=>{
+      const txt=el.textContent.replace(/^\d+/,'').trim();
+      const lines=doc.splitTextToSize(txt,W-M*2-14);
+      const h=Math.max(10,lines.length*4.5+5);
+      if(y+h>272){doc.addPage();doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');y=18;}
+
+      // White bg, blue left accent, light border
+      doc.setFillColor(255,255,255);
+      doc.rect(M,y,W-M*2,h,'F');
+      doc.setFillColor(26,107,255);
+      doc.rect(M,y,3,h,'F');
+      doc.setDrawColor(210,220,240);
+      doc.setLineWidth(0.15);
+      doc.rect(M,y,W-M*2,h,'S');
+
+      // Number
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.setTextColor(26,107,255);
+      doc.text(String(i+1)+'.',M+5,y+5);
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(40,40,40);
+      doc.text(lines,M+10,y+5);
+      y+=h+2;
+    });
+    y+=4;
+  }
+
+  // ── NEXT STEPS BOX ──
+  if(y>258){doc.addPage();doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');y=18;}
+  doc.setFillColor(240,245,255);
+  doc.rect(M,y,W-M*2,20,'F');
+  doc.setFillColor(26,107,255);
+  doc.rect(M,y,3,20,'F');
+  doc.setDrawColor(180,200,240);
+  doc.setLineWidth(0.3);
+  doc.rect(M,y,W-M*2,20,'S');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(0,26,58);
+  doc.text('Ready to take action? Book a free consultation.',M+7,y+8);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(26,107,255);
+  doc.text('calendly.com/fraser-mlagroup/30min',M+7,y+15);
+
+  // ── FOOTER on every page ──
+  const pages=doc.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setFillColor(0,26,58);
+    doc.rect(0,284,W,13,'F');
+    doc.setFillColor(rc[0],rc[1],rc[2]);
+    doc.rect(0,284,W,1,'F');
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(140,170,210);
+    doc.text('MLA Group  |  AI Governance Risk Assessment  |  mlagroup.co.uk',M,290);
+    doc.text('This report is produced for informational purposes. MLA Group is not a certified audit regulator.',M,295);
+    doc.setTextColor(180,200,230);
+    doc.text('Page '+i+' of '+pages,W-M,290,{align:'right'});
+  }
+
+  doc.save('MLA-AI-Risk-Report-'+org.replace(/\s+/g,'-')+'-'+today.replace(/\s/g,'-')+'.pdf');
+  }catch(err){alert('PDF error: '+err.message);}
+}
+
+</script>
+</body>
+</html>
