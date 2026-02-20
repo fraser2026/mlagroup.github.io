@@ -351,6 +351,17 @@
       .form-row { grid-template-columns:1fr; }
       .result-top { padding:28px 20px; }
     }
+    @media print {
+  .bg-glow, .bg-grid, nav, .progress-wrap,
+  .cta-card, .btn-pdf, .result-footer { display: none !important; }
+  body { background: white !important; color: #000 !important; }
+  .card, .result-top { border: 1px solid #ddd !important; background: white !important; margin-bottom: 12px !important; }
+  .section-label { color: #1a6bff !important; }
+  .flag-item { background: #fff5f5 !important; border-left: 3px solid #e53e3e !important; color: #333 !important; }
+  .rec-item { background: #f0f4ff !important; border-left: 3px solid #1a6bff !important; color: #333 !important; }
+  .breakdown-name, .result-summary, .result-title { color: #111 !important; }
+}
+
   </style>
 </head>
 <body>
@@ -964,7 +975,8 @@ function renderResults(pct,band,bc,hiRisk){
 }
 
 function makePDF(){
-  const {jsPDF}=window.jspdf;
+  window.print(); return;
+
   if(!jsPDF){alert('PDF library not available.');return;}
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const name=document.getElementById('ps-name').value;
