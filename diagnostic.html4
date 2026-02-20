@@ -910,3 +910,143 @@ function calcResults(){
   // Send emails after short delay to allow DOM to render
   setTimeout(()=>sendEmails(band,pct),800);
 }
+function renderResults(pct,band,bc,hiRisk){
+  const badge=document.getElementById('res-badge');
+  badge.textContent=band.toUpperCase();badge.className='risk-badge '+bc;
+  const ring=document.getElementById('res-ring');
+  ring.className='score-ring '+bc;
+  document.getElementById('res-score').textContent=pct+'%';
+  const titles={critical:'Immediate Intervention Required',high:'Immediate Action Recommended',moderate:'Governance Gaps Identified',low:'Strong Governance Foundation'};
+  const summaries={
+    critical:'Your responses indicate critical gaps across multiple AI governance areas. Your organisation faces significant regulatory, legal, and reputational exposure. Immediate specialist engagement is strongly recommended.',
+    high:'Your responses indicate significant exposure across multiple AI governance areas. Organisations at this level face elevated regulatory, legal, and operational risk. We recommend speaking with a specialist as soon as possible.',
+    moderate:'Your organisation has some governance foundations in place, but meaningful gaps remain. Addressing these proactively will reduce regulatory exposure and strengthen operational resilience.',
+    low:'Your organisation demonstrates strong AI governance maturity. Maintaining and evolving these frameworks as AI systems develop will ensure continued regulatory alignment.'
+  };
+  document.getElementById('res-title').textContent=titles[bc];
+  document.getElementById('res-summary').textContent=summaries[bc];
+
+  // Breakdown
+  const bd=document.getElementById('breakdown');bd.innerHTML='';
+  Object.values(SD).forEach(s=>{
+    const p=Math.round((s.score/s.max)*100);
+    const color=p>=75?'#30d158':p>=40?'#ff9f0a':'#ff5555';
+    const lbl=p>=75?'Low':p>=40?'Moderate':'High';
+    bd.innerHTML+=`<div class="breakdown-row"><span class="breakdown-name">${s.name}</span><div class="breakdown-bar-track"><div class="breakdown-bar-fill" style="width:${p}%;background:${color}"></div></div><span class="breakdown-label" style="color:${color}">${lbl}</span></div>`;
+  });
+
+  // Matrix
+  const mdef=[{t:'high'},{t:'high'},{t:'high'},{t:'moderate'},{t:'moderate'},{t:'high'},{t:'low'},{t:'low'},{t:'moderate'}];
+  const mlbls=['High','High','High','Med','Med','High','Low','Low','Med'];
+  const ai={critical:2,high:5,moderate:7,low:8}[bc];
+  document.getElementById('rmatrix').innerHTML=mdef.map((c,i)=>`<div class="matrix-cell ${c.t}${i===ai?' active':''}">${mlbls[i]}</div>`).join('');
+
+  // Flags
+  const fl=[];
+  if((S.q1_1||0)<2)fl.push('No formal AI inventory — unable to establish regulatory scope');
+  if((S.q2_2||0)===0)fl.push('No designated AI governance owner — accountability gap identified');
+  if((S.q4_1||0)<2)fl.push('Insufficient human oversight of high-impact AI decisions');
+  if((S.q5_2||0)===0)fl.push('No decision logging — audit trail non-existent');
+  if((S.q6_1||0)===0)fl.push('No DPIA conducted — potential UK GDPR non-compliance');
+  if((S.q6_2||0)===0)fl.push('Individuals not informed of automated decisions — legal exposure');
+  if((S.q3_1||0)===0)fl.push('Data provenance undocumented — model reliability unverifiable');
+  if((S.q2_4||0)===0)fl.push('No AI usage policies in place — unmanaged operational risk');
+  if(hiRisk.length>0)fl.push('High-risk AI category detected — heightened EU AI Act exposure');
+  if(fl.length===0)fl.push('No critical flags identified — continue to maintain and develop governance frameworks');
+  document.getElementById('flags').innerHTML=fl.slice(0,6).map(f=>`<div class="flag-item"><span class="flag-icon">&#9888;</span>${f}</div>`).join('');
+
+  // Recs
+  const rm={
+    critical:['Urgently appoint a named AI governance lead with defined accountability and board-level reporting line','Commission an immediate AI inventory audit to establish scope and regulatory exposure','Restrict high-impact automated decisions until human oversight controls are operational','Engage legal counsel to assess GDPR and EU AI Act obligations specific to your sector','Develop and implement an AI policy framework within 30 days'],
+    high:['Formalise AI governance ownership with documented responsibilities across risk, compliance, and technical teams','Conduct a Data Protection Impact Assessment (DPIA) for all AI systems handling personal data','Implement decision logging and audit trail capability for all high-impact AI outputs','Establish human-in-the-loop review protocols with documented override procedures','Review third-party AI provider contracts for data, liability, and transparency obligations'],
+    moderate:['Elevate informal governance arrangements into formally documented policies and ownership structures','Complete a full DPIA review and ensure individuals are informed of automated decision-making','Strengthen data lineage documentation to support model explainability and auditability','Develop escalation pathways and override protocols for AI-assisted decisions','Introduce scheduled model performance monitoring to detect drift and degradation'],
+    low:['Continue to develop and refresh your AI governance framework as systems evolve','Conduct periodic external review of governance maturity against EU AI Act updates','Ensure new AI deployments are automatically included in your inventory and DPIA process','Share governance best practices internally to maintain organisational awareness','Consider ISO/IEC AI governance certification to formalise your maturity posture']
+  };
+  document.getElementById('recs').innerHTML=(rm[bc]||[]).map((r,i)=>`<div class="rec-item"><span class="rec-num">${i+1}</span>${r}</div>`).join('');
+}
+
+function sendEmails(band, pct){
+  const name    = document.getElementById('ps-name').value;
+  const email   = document.getElementById('ps-email').value;
+  const org     = document.getElementById('ps-org').value;
+  const role    = document.getElementById('ps-role').value;
+  const sector  = document.getElementById('ps-sector').value;
+  const size    = document.getElementById('ps-size').value;
+  const today   = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  // Collect flags
+  const flagText = Array.from(document.querySelectorAll('#flags .flag-item'))
+    .map((el,i)=>(i+1)+'. '+el.textContent.replace(/[⚠!]/g,'').trim()).join('\n');
+
+  // Collect recs
+  const recText = Array.from(document.querySelectorAll('#recs .rec-item'))
+    .map((el,i)=>(i+1)+'. '+el.textContent.replace(/^\d+/,'').trim()).join('\n');
+
+  const summary = document.getElementById('res-summary').textContent;
+
+  const templateParams = {
+    // Client email fields
+    email:          email,
+    to_email:       email,
+    client_name:    name,
+    risk_band:      band,
+    risk_score:     pct+'%',
+    risk_summary:   summary,
+    recommendations:recText,
+    flags:          flagText,
+    report_date:    today,
+    // Also send full lead info so you get it all
+    organisation:   org,
+    client_role:    role,
+    sector:         sector,
+    org_size:       size,
+    fraser_email:   'fraser@mlagroup.co.uk'
+  };
+
+  // Send to client
+  emailjs.send('service_amfeqty','template_xczn8bt', templateParams)
+    .then(()=>console.log('Client email sent'))
+    .catch(e=>console.log('Email error:',e));
+
+  // Also send you a notification via FormSubmit
+  const form = document.createElement('form');
+  form.action = 'https://formsubmit.co/fraser@mlagroup.co.uk';
+  form.method = 'POST';
+  form.style.display = 'none';
+  const fields = {
+    '_subject': 'New AI Diagnostic Submission — '+band,
+    '_captcha': 'false',
+    '_next': 'https://mlagroup.co.uk/diagnostic-v2.html',
+    'Full Name': name,
+    'Email': email,
+    'Organisation': org,
+    'Role': role,
+    'Sector': sector,
+    'Org Size': size,
+    'Risk Band': band,
+    'Maturity Score': pct+'%',
+    'Flags': flagText,
+    'Recommendations': recText,
+    'Date': today
+  };
+  Object.entries(fields).forEach(([k,v])=>{
+    const i=document.createElement('input');
+    i.type='hidden'; i.name=k; i.value=v;
+    form.appendChild(i);
+  });
+  document.body.appendChild(form);
+  fetch(form.action,{
+    method:'POST',
+    body:new FormData(form)
+  }).then(()=>console.log('Lead notification sent'))
+    .catch(e=>console.log('FormSubmit error:',e));
+  document.body.removeChild(form);
+}
+
+function makePDF(){
+  window.print();
+}
+
+</script>
+</body>
+</html>
