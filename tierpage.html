@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --navy:   #001A3A;
     --blue:   #0000FF;
@@ -16,7 +15,6 @@
     --muted:  #6B7A92;
     --border: #E2E8F4;
   }
-
   body {
     font-family: 'DM Sans', sans-serif;
     background: #F4F6FB;
@@ -24,242 +22,67 @@
     padding: 60px 24px 80px;
     color: var(--ink);
   }
-
-  /* ── HEADER ─────────────────────────────────── */
-  .header {
-    text-align: center;
-    margin-bottom: 52px;
-  }
-
-  .logo {
-    display: inline-block;
-    margin-bottom: 40px;
-    height: 48px;
-  }
-  .logo img {
-    height: 48px;
-    width: auto;
-  }
-
+  .header { text-align: center; margin-bottom: 52px; }
+  .logo { display: inline-block; margin-bottom: 40px; height: 48px; }
+  .logo img { height: 48px; width: auto; }
   .header-eyebrow {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--blue);
-    margin-bottom: 14px;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--blue); margin-bottom: 14px;
   }
-
   .header h1 {
     font-family: 'Instrument Serif', serif;
     font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 400;
-    color: var(--navy);
-    line-height: 1.15;
-    margin-bottom: 16px;
+    font-weight: 400; color: var(--navy); line-height: 1.15; margin-bottom: 16px;
   }
-  .header h1 em {
-    font-style: italic;
-    color: var(--blue);
-  }
+  .header h1 em { font-style: italic; color: var(--blue); }
+  .header p { font-size: 1rem; color: var(--muted); max-width: 520px; margin: 0 auto; line-height: 1.65; }
 
-  .header p {
-    font-size: 1rem;
-    color: var(--muted);
-    max-width: 520px;
-    margin: 0 auto;
-    line-height: 1.65;
-  }
-
-  /* ── TOGGLE ─────────────────────────────────── */
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 48px;
-  }
+  .toggle-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 48px; }
   .toggle-label { font-size: 0.85rem; color: var(--muted); }
   .toggle-label.active { color: var(--ink); font-weight: 500; }
-  .toggle {
-    width: 44px; height: 24px;
-    background: var(--blue);
-    border-radius: 12px;
-    position: relative;
-    cursor: pointer;
-  }
-  .toggle-thumb {
-    position: absolute;
-    top: 3px; left: 3px;
-    width: 18px; height: 18px;
-    background: white;
-    border-radius: 50%;
-  }
-  .save-badge {
-    background: #E8F5E9;
-    color: #2E7D32;
-    font-size: 0.68rem;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 20px;
-    letter-spacing: 0.04em;
-  }
+  .toggle { width: 44px; height: 24px; background: var(--blue); border-radius: 12px; position: relative; cursor: pointer; }
+  .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; }
+  .save-badge { background: #E8F5E9; color: #2E7D32; font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.04em; }
 
-  /* ── CARDS GRID ──────────────────────────────── */
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-    gap: 24px;
-    max-width: 1060px;
-    margin: 0 auto;
-    align-items: start;
-  }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 24px; max-width: 1060px; margin: 0 auto; align-items: start; }
 
-  /* ── BASE CARD ───────────────────────────────── */
-  .card {
-    background: #fff;
-    border-radius: 20px;
-    border: 1.5px solid var(--border);
-    padding: 36px 32px 32px;
-    position: relative;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 48px rgba(0,0,255,0.08);
-  }
+  .card { background: #fff; border-radius: 20px; border: 1.5px solid var(--border); padding: 36px 32px 32px; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(0,0,255,0.08); }
 
-  /* ── PREMIUM CARD ────────────────────────────── */
-  .card.featured {
-    border-color: var(--blue);
-    border-width: 2px;
-    padding-top: 52px;
-    transform: translateY(-8px);
-    box-shadow: 0 24px 56px rgba(0,0,255,0.12);
-  }
-  .card.featured:hover {
-    transform: translateY(-12px);
-    box-shadow: 0 32px 64px rgba(0,0,255,0.16);
-  }
+  .card.featured { border-color: var(--blue); border-width: 2px; padding-top: 52px; transform: translateY(-8px); box-shadow: 0 24px 56px rgba(0,0,255,0.12); }
+  .card.featured:hover { transform: translateY(-12px); box-shadow: 0 32px 64px rgba(0,0,255,0.16); }
 
-  .popular-badge {
-    position: absolute;
-    top: -1px; left: 50%;
-    transform: translateX(-50%);
-    background: var(--blue);
-    color: white;
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 5px 18px;
-    border-radius: 0 0 10px 10px;
-    white-space: nowrap;
-  }
+  .popular-badge { position: absolute; top: -1px; left: 50%; transform: translateX(-50%); background: var(--blue); color: white; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 18px; border-radius: 0 0 10px 10px; white-space: nowrap; }
 
-  /* ── ENTERPRISE CARD ─────────────────────────── */
-  .card.enterprise {
-    background: var(--navy);
-    border-color: transparent;
-  }
-  .card.enterprise:hover {
-    box-shadow: 0 20px 48px rgba(0,26,58,0.25);
-  }
+  .card.enterprise { background: var(--navy); border-color: transparent; }
+  .card.enterprise:hover { box-shadow: 0 20px 48px rgba(0,26,58,0.25); }
 
-  /* ── CARD HEADER ─────────────────────────────── */
-  .card-tier {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
+  .card-tier { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
   .card.enterprise .card-tier { color: rgba(255,255,255,0.45); }
 
-  .card-name {
-    font-family: 'Instrument Serif', serif;
-    font-size: 1.55rem;
-    font-weight: 400;
-    color: var(--navy);
-    margin-bottom: 6px;
-  }
+  .card-name { font-family: 'Instrument Serif', serif; font-size: 1.55rem; font-weight: 400; color: var(--navy); margin-bottom: 6px; }
   .card.enterprise .card-name { color: white; }
 
-  .card-desc {
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.55;
-    min-height: 52px;
-  }
+  .card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; min-height: 52px; }
   .card.enterprise .card-desc { color: rgba(255,255,255,0.55); }
 
-  /* ── PRICE ───────────────────────────────────── */
-  .price-row {
-    margin: 24px 0 28px;
-    display: flex;
-    align-items: flex-end;
-    gap: 4px;
-  }
-  .price-amount {
-    font-family: 'Instrument Serif', serif;
-    font-size: 3rem;
-    font-weight: 400;
-    line-height: 1;
-    color: var(--navy);
-  }
+  .price-row { margin: 24px 0 28px; display: flex; align-items: flex-end; gap: 4px; }
+  .price-amount { font-family: 'Instrument Serif', serif; font-size: 3rem; font-weight: 400; line-height: 1; color: var(--navy); }
   .card.enterprise .price-amount { color: white; font-size: 2rem; margin-bottom: 4px; }
-  .card.featured .price-amount   { color: var(--blue); }
-
-  .price-currency {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
+  .card.featured .price-amount { color: var(--blue); }
+  .price-currency { font-size: 1.1rem; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
   .card.featured .price-currency { color: var(--blue); opacity: 0.75; }
+  .price-period { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; margin-left: 4px; }
 
-  .price-period {
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-bottom: 10px;
-    margin-left: 4px;
-  }
-
-  /* ── DIVIDER ─────────────────────────────────── */
-  .card-divider {
-    height: 1px;
-    background: var(--border);
-    margin-bottom: 24px;
-  }
+  .card-divider { height: 1px; background: var(--border); margin-bottom: 24px; }
   .card.enterprise .card-divider { background: rgba(255,255,255,0.1); }
 
-  /* ── FEATURES ────────────────────────────────── */
-  .features {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 32px;
-  }
-  .features li {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 0.84rem;
-    color: var(--ink);
-    line-height: 1.45;
-  }
+  .features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+  .features li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.84rem; color: var(--ink); line-height: 1.45; }
   .card.enterprise .features li { color: rgba(255,255,255,0.82); }
 
-  .check {
-    flex-shrink: 0;
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin-top: 1px;
-  }
-  .check.blue  { background: var(--light); }
+  .check { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .check.blue { background: var(--light); }
   .check.blue svg { stroke: var(--blue); }
   .check.white { background: rgba(255,255,255,0.12); }
   .check.white svg { stroke: rgba(255,255,255,0.85); }
@@ -267,93 +90,25 @@
   .check.muted svg { stroke: var(--muted); }
 
   .feature-muted { color: var(--muted) !important; font-style: italic; }
-  .card.enterprise .feature-muted { color: rgba(255,255,255,0.35) !important; }
 
-  /* ── NEW TAG ─────────────────────────────────── */
-  .feature-tag {
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    background: #E8F0FF;
-    color: var(--blue);
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-left: 4px;
-    vertical-align: middle;
-  }
+  .feature-tag { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; background: #E8F0FF; color: var(--blue); padding: 1px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
 
-  /* ── FOOTNOTE ────────────────────────────────── */
-  .footnote {
-    font-size: 0.73rem;
-    color: var(--muted);
-    margin-top: -20px;
-    margin-bottom: 24px;
-    padding-left: 2px;
-    line-height: 1.5;
-  }
-  .card.enterprise .footnote { color: rgba(255,255,255,0.4); }
+  .footnote { font-size: 0.73rem; color: var(--muted); margin-top: -20px; margin-bottom: 24px; padding-left: 2px; line-height: 1.5; }
 
-  /* ── CTA BUTTONS ─────────────────────────────── */
-  .btn {
-    display: block;
-    width: 100%;
-    padding: 13px 20px;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    text-align: center;
-    cursor: pointer;
-    border: none;
-    transition: all 0.18s;
-    letter-spacing: 0.01em;
-    text-decoration: none;
-  }
-  .btn-outline {
-    background: transparent;
-    border: 1.5px solid var(--border);
-    color: var(--navy);
-  }
+  .btn { display: block; width: 100%; padding: 13px 20px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; text-align: center; cursor: pointer; border: none; transition: all 0.18s; letter-spacing: 0.01em; text-decoration: none; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--navy); }
   .btn-outline:hover { border-color: var(--blue); color: var(--blue); background: var(--light); }
-
-  .btn-primary {
-    background: var(--blue);
-    color: white;
-  }
+  .btn-primary { background: var(--blue); color: white; }
   .btn-primary:hover { background: #0000CC; box-shadow: 0 6px 20px rgba(0,0,255,0.28); }
-
-  .btn-white {
-    background: white;
-    color: var(--navy);
-  }
+  .btn-white { background: white; color: var(--navy); }
   .btn-white:hover { background: #EEF3FF; box-shadow: 0 6px 20px rgba(0,0,0,0.10); }
 
-  /* ── COMPARE & TRUST ─────────────────────────── */
-  .compare-link {
-    text-align: center;
-    margin-top: 28px;
-    font-size: 0.82rem;
-    color: var(--muted);
-  }
+  .compare-link { text-align: center; margin-top: 28px; font-size: 0.82rem; color: var(--muted); }
   .compare-link a { color: var(--blue); text-decoration: none; font-weight: 500; }
   .compare-link a:hover { text-decoration: underline; }
 
-  .trust-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 32px;
-    margin-top: 52px;
-    flex-wrap: wrap;
-  }
-  .trust-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.78rem;
-    color: var(--muted);
-  }
+  .trust-bar { display: flex; align-items: center; justify-content: center; gap: 32px; margin-top: 52px; flex-wrap: wrap; }
+  .trust-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--muted); }
   .trust-icon { width: 16px; height: 16px; opacity: 0.5; }
 
   @media (max-width: 700px) {
@@ -364,17 +119,13 @@
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <div class="logo">
-    <img src="logoblue.svg" alt="MLA Group">
-  </div>
+  <div class="logo"><img src="logoblue.svg" alt="MLA Group"></div>
   <p class="header-eyebrow">AI Governance Diagnostic</p>
   <h1>Choose your <em>report</em> depth</h1>
   <p>Your diagnostic is complete. Select the level of insight that matches your organisation's needs — upgrade anytime.</p>
 </div>
 
-<!-- TOGGLE -->
 <div class="toggle-row">
   <span class="toggle-label">One-time</span>
   <div class="toggle"><div class="toggle-thumb"></div></div>
@@ -382,7 +133,6 @@
   <span class="save-badge">Save 20%</span>
 </div>
 
-<!-- CARDS -->
 <div class="cards">
 
   <!-- FREE -->
@@ -390,9 +140,7 @@
     <p class="card-tier">Starter</p>
     <h2 class="card-name">Free Report</h2>
     <p class="card-desc">Instant risk score and top-line findings. Understand where you stand before committing to a full review.</p>
-    <div class="price-row">
-      <span class="price-amount">£0</span>
-    </div>
+    <div class="price-row"><span class="price-amount">£0</span></div>
     <div class="card-divider"></div>
     <ul class="features">
       <li><span class="check muted"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></span>Overall governance maturity score</li>
@@ -404,7 +152,7 @@
       <li class="feature-muted"><span class="check muted"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="6" x2="10" y2="6"/></svg></span>No detailed regulatory citations</li>
       <li class="feature-muted"><span class="check muted"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="6" x2="10" y2="6"/></svg></span>No benchmarking or scoring rationale</li>
     </ul>
-    <button class="btn btn-outline">Download Free Report</button>
+    <button class="btn btn-outline" onclick="window.history.back()">Download Free Report</button>
   </div>
 
   <!-- PREMIUM -->
@@ -430,7 +178,7 @@
       <li><span class="check blue"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></span>Board-ready PDF, branded* &amp; confidential</li>
     </ul>
     <p class="footnote">* Custom branding applied upon request after purchase. Contact us with your logo to initiate.</p>
-    <button class="btn btn-primary">Get Premium Report — £79</button>
+    <a href="https://buy.stripe.com/14A7sN2Pe27w6GD8oZgYU00" class="btn btn-primary">Get Premium Report — £79</a>
   </div>
 
   <!-- ENTERPRISE -->
@@ -438,9 +186,7 @@
     <p class="card-tier">Enterprise</p>
     <h2 class="card-name">Managed Review</h2>
     <p class="card-desc">A specialist-led governance engagement. Tailored for regulated firms, complex deployments, or board-level assurance requirements.</p>
-    <div class="price-row">
-      <span class="price-amount">Bespoke</span>
-    </div>
+    <div class="price-row"><span class="price-amount">Bespoke</span></div>
     <div class="card-divider"></div>
     <ul class="features">
       <li><span class="check white"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></span>Everything in Premium</li>
@@ -452,15 +198,13 @@
       <li><span class="check white"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></span>6-month follow-up reassessment included</li>
       <li><span class="check white"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></span>ISO/IEC 42001 alignment roadmap</li>
     </ul>
-    <a href="https://calendly.com/fraser-mlagroup/30min" target="_blank" class="btn btn-white">Speak to a Specialist →</a>
+    <a href="https://calendly.com/fraser-mlagroup/30min" target="_blank" class="btn btn-white">Speak to a Specialist &rarr;</a>
   </div>
 
 </div>
 
-<!-- COMPARE LINK -->
 <p class="compare-link">Not sure which is right for you? <a href="#">Compare all features in detail</a></p>
 
-<!-- TRUST BAR -->
 <div class="trust-bar">
   <div class="trust-item">
     <svg class="trust-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8l2 2 4-4"/></svg>
@@ -472,7 +216,7 @@
   </div>
   <div class="trust-item">
     <svg class="trust-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l1.5 4.5H14l-3.5 2.5 1.5 4.5L8 11l-4 2.5 1.5-4.5L2 6.5h4.5z"/></svg>
-    Framework v2.0 · Feb 2026
+    Framework v2.0 &middot; Feb 2026
   </div>
   <div class="trust-item">
     <svg class="trust-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8s1.5-4 4-4 4 4 4 4-1.5 4-4 4-4-4-4-4z"/><circle cx="8" cy="8" r="1.5"/></svg>
