@@ -1282,10 +1282,7 @@ function pdfPageHeader(doc, W, M, navy, rc, sectionTitle, today) {
   doc.rect(0, 0, W, 34, 'F');
   doc.setFillColor(...rc);
   doc.rect(0, 34, W, 1.5, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(255, 255, 255);
-  doc.text('MLA GROUP', M, 12);
+  doc.addImage(LOGO_B64, 'PNG', M, 4, 22, 8.3);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
   doc.setTextColor(120, 155, 200);
@@ -1453,10 +1450,7 @@ function makePDF() {
     doc.setFillColor(...rc);
     doc.rect(0, 0, W, 6, 'F');
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.setTextColor(...white);
-    doc.text('MLA GROUP', M, 22);
+    doc.addImage(LOGO_B64, 'PNG', M, 10, 38, 14.3);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(100, 140, 190);
