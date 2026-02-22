@@ -240,6 +240,61 @@
   .hero-left > *:nth-child(5){animation-delay:.40s;}
   .hero-right{animation:fadeUp 0.7s 0.28s ease both;}
 
+ /* ── NEW METHODOLOGY GRID STYLES ── */
+.methodology-grid-section { background: white; }
+.methodology-header { margin-bottom: 64px; }
+
+.method-static-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 32px;
+  margin-top: 40px;
+}
+
+.method-static-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 32px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.method-static-card:hover {
+  border-color: var(--blue);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 255, 0.05);
+}
+
+.method-number {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.2rem;
+  color: var(--blue);
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.method-static-card h3 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--navy);
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.method-static-card p {
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Ensure the grid centers nicely if there's a leftover card on the bottom row */
+.method-static-card:last-child:nth-child(3n-1) {
+  grid-column-end: -2;
+}
+ 
   @media(max-width:960px){
     nav{padding:0 20px;}.nav-links{display:none;}
     .hero{padding:100px 20px 64px;}.hero-inner{grid-template-columns:1fr;}.hero-right{display:none;}
@@ -339,25 +394,44 @@
 </section>
 
 <!-- 3. METHODOLOGY TICKER -->
-<section class="ticker-section" id="methodology">
-  <div class="ticker-header">
-    <p class="eyebrow">Our Methodology</p>
-    <h2 class="section-title">A Data-Driven Framework<br>for AI <em>Assurance</em></h2>
-  </div>
-  <div class="ticker-outer" id="method-outer">
-    <div class="ticker-belt" id="method-belt">
-      <!-- Set A -->
-      <div class="method-card"><h3>Structural Mapping</h3><p>We analyse your AI decision-making pathways across seven governance domains against current legal and ethical benchmarks — producing a weighted maturity score aligned to FCA, ICO, and EU AI Act expectations.</p></div>
-      <div class="method-card"><h3>Integrity Audit</h3><p>A structured assessment of the data sources, oversight controls, and audit trail mechanisms informing your AI systems — identifying gaps in data lineage, bias exposure, and human override documentation.</p></div>
-      <div class="method-card"><h3>Regulatory Alignment</h3><p>Precise mapping of your governance posture against ISO/IEC 42001, UK GDPR, EU AI Act Annex III, and FCA operational resilience requirements — with sector multipliers applied for your industry.</p></div>
-      <div class="method-card"><h3>Priority Flag Analysis</h3><p>Automated detection of critical compliance gaps — including missing DPIAs, unassigned AI accountability under SM&CR, shadow AI deployments, and unmet EU AI Act high-risk system obligations.</p></div>
-      <div class="method-card"><h3>Sector Exposure Scoring</h3><p>Identical governance gaps carry different regulatory consequences by sector. Our multipliers ensure Financial Services, Healthcare, and SaaS organisations receive accurately weighted risk scores.</p></div>
-      <!-- Set B — identical clone for seamless loop -->
-      <div class="method-card"><h3>Structural Mapping</h3><p>We analyse your AI decision-making pathways across seven governance domains against current legal and ethical benchmarks — producing a weighted maturity score aligned to FCA, ICO, and EU AI Act expectations.</p></div>
-      <div class="method-card"><h3>Integrity Audit</h3><p>A structured assessment of the data sources, oversight controls, and audit trail mechanisms informing your AI systems — identifying gaps in data lineage, bias exposure, and human override documentation.</p></div>
-      <div class="method-card"><h3>Regulatory Alignment</h3><p>Precise mapping of your governance posture against ISO/IEC 42001, UK GDPR, EU AI Act Annex III, and FCA operational resilience requirements — with sector multipliers applied for your industry.</p></div>
-      <div class="method-card"><h3>Priority Flag Analysis</h3><p>Automated detection of critical compliance gaps — including missing DPIAs, unassigned AI accountability under SM&CR, shadow AI deployments, and unmet EU AI Act high-risk system obligations.</p></div>
-      <div class="method-card"><h3>Sector Exposure Scoring</h3><p>Identical governance gaps carry different regulatory consequences by sector. Our multipliers ensure Financial Services, Healthcare, and SaaS organisations receive accurately weighted risk scores.</p></div>
+<section class="section methodology-grid-section" id="methodology">
+  <div class="section-inner">
+    <div class="methodology-header">
+      <p class="eyebrow">Our Methodology</p>
+      <h2 class="section-title">A Data-Driven Framework<br>for AI <em>Assurance</em></h2>
+      <p class="section-body">Our diagnostic evaluates your posture across five critical dimensions of regulatory readiness.</p>
+    </div>
+
+    <div class="method-static-grid">
+      <div class="method-static-card">
+        <div class="method-number">01</div>
+        <h3>Structural Mapping</h3>
+        <p>We analyse your AI decision-making pathways across seven governance domains against legal benchmarks — aligned to FCA, ICO, and EU AI Act expectations.</p>
+      </div>
+
+      <div class="method-static-card">
+        <div class="method-number">02</div>
+        <h3>Integrity Audit</h3>
+        <p>A structured assessment of data sources and oversight controls, identifying gaps in data lineage, bias exposure, and human override documentation.</p>
+      </div>
+
+      <div class="method-static-card">
+        <div class="method-number">03</div>
+        <h3>Regulatory Alignment</h3>
+        <p>Precise mapping against ISO/IEC 42001, UK GDPR, and EU AI Act Annex III, with sector multipliers applied for your specific industry.</p>
+      </div>
+
+      <div class="method-static-card">
+        <div class="method-number">04</div>
+        <h3>Priority Flag Analysis</h3>
+        <p>Automated detection of critical gaps — including missing DPIAs, unassigned AI accountability, and shadow AI deployments.</p>
+      </div>
+
+      <div class="method-static-card">
+        <div class="method-number">05</div>
+        <h3>Sector Exposure Scoring</h3>
+        <p>Identical gaps carry different risks by sector. We ensure Financial Services and Healthcare receive accurately weighted exposure analysis.</p>
+      </div>
     </div>
   </div>
 </section>
