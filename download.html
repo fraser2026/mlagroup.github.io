@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLA Group — Your Premium Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #001A3A;
+    --blue: #0000FF;
+    --light: #EEEEFF;
+    --ink: #0D1B2A;
+    --muted: #6B7A92;
+    --border: #E2E8F4;
+    --green: #1a7a3a;
+    --green-light: #e8f5ed;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F4F6FB;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px 60px;
+    color: var(--ink);
+  }
+
+  .logo { margin-bottom: 48px; }
+  .logo img { height: 44px; width: auto; }
+
+  /* ── SUCCESS CARD ── */
+  .card {
+    background: white;
+    border-radius: 24px;
+    border: 1.5px solid var(--border);
+    padding: 48px 44px;
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 16px 48px rgba(0,0,255,0.07);
+  }
+
+  .success-icon {
+    width: 64px; height: 64px;
+    background: var(--green-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+  }
+  .success-icon svg { stroke: var(--green); }
+
+  .card h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.9rem;
+    font-weight: 400;
+    color: var(--navy);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .card h1 em { font-style: italic; color: var(--blue); }
+
+  .card .subtitle {
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 36px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── PRIMARY BUTTON ── */
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--blue);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 15px 32px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.18s;
+    margin-bottom: 12px;
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-download:hover {
+    background: #0000CC;
+    box-shadow: 0 8px 24px rgba(0,0,255,0.28);
+    transform: translateY(-1px);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 28px 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── TAB CLOSED BOX ── */
+  .tab-closed {
+    background: #F8F9FC;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    text-align: left;
+  }
+  .tab-closed h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tab-closed h3 svg { stroke: var(--muted); flex-shrink: 0; }
+  .tab-closed p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .tab-closed a {
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .tab-closed a:hover { text-decoration: underline; }
+
+  /* ── BRANDING NOTE ── */
+  .branding-note {
+    margin-top: 28px;
+    padding: 18px 20px;
+    background: var(--light);
+    border-radius: 12px;
+    font-size: 0.82rem;
+    color: var(--navy);
+    line-height: 1.6;
+    text-align: left;
+  }
+  .branding-note strong { font-weight: 600; }
+  .branding-note a { color: var(--blue); text-decoration: none; font-weight: 500; }
+  .branding-note a:hover { text-decoration: underline; }
+
+  /* ── RECEIPT NOTE ── */
+  .receipt-note {
+    margin-top: 20px;
+    font-size: 0.76rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 40px;
+    font-size: 0.76rem;
+    color: var(--muted);
+    text-align: center;
+  }
+  .footer a { color: var(--muted); text-decoration: none; }
+  .footer a:hover { color: var(--blue); }
+
+  @media (max-width: 600px) {
+    .card { padding: 36px 24px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="logoblue.svg" alt="MLA Group">
+  </div>
+
+  <div class="card">
+
+    <!-- Success icon -->
+    <div class="success-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+
+    <h1>Payment confirmed —<br><em>thank you.</em></h1>
+
+    <p class="subtitle">
+      Your Premium AI Governance Report is ready. Return to the browser tab where you completed your assessment and click <strong>Download Premium Report</strong> to access your full report instantly.
+    </p>
+
+    <!-- Primary CTA - links back to diagnostic -->
+    <a href="https://mlagroup.co.uk/diagnosticversion2.1.html" class="btn-download">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Return to My Report
+    </a>
+
+    <div class="divider">closed your browser tab?</div>
+
+    <!-- Tab closed fallback -->
+    <div class="tab-closed">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Can't access your report?
+      </h3>
+      <p>
+        If you closed the tab before downloading, your session data will no longer be available. Email us at <a href="mailto:fraser@mlagroup.co.uk">fraser@mlagroup.co.uk</a> with your payment receipt and we will arrange your report promptly — usually within one business day.
+      </p>
+    </div>
+
+    <!-- Branding note -->
+    <div class="branding-note">
+      <strong>Want your report branded with your logo?</strong><br>
+      Reply to your Stripe receipt email with your logo file and we will generate a custom branded version of your report. Turnaround is typically one business day.
+    </div>
+
+    <!-- Receipt note -->
+    <p class="receipt-note">A receipt has been sent to your email address by Stripe. Please keep this for your records.</p>
+
+  </div>
+
+  <div class="footer">
+    <p>MLA Group &nbsp;|&nbsp; AI Governance &amp; Risk Advisory &nbsp;|&nbsp; <a href="https://mlagroup.co.uk">mlagroup.co.uk</a></p>
+  </div>
+
+</body>
+</html>
