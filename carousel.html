@@ -331,22 +331,42 @@
   grid-column-end: -2;
 }
  
- @media(max-width:960px){
+@media(max-width:960px){
+    /* ── Mobile Nav & Hero ── */
     nav{padding:0 20px;}.nav-links{display:none;}
-    .hero{padding:100px 20px 64px;}.hero-inner{grid-template-columns:1fr;}.hero-right{display:none;}
-    .section{padding:64px 20px;}
-    .problem-grid,.report-grid{grid-template-columns:1fr;gap:40px;}
+    .hero{padding:80px 20px 48px;}.hero-inner{grid-template-columns:1fr;}.hero-right{display:none;}
     
-    /* This part fixes your iPhone view */
+    /* ── Section Spacing ── */
+    .section{padding:48px 20px;}
+    .problem-grid,.report-grid{grid-template-columns:1fr;gap:32px;}
+    
+    /* ── The Grid Fix (Compact Mode) ── */
     .method-static-grid, .why-static-grid { 
       grid-template-columns: 1fr !important; 
-      gap: 20px; 
+      gap: 12px; 
     }
     
-    .ticker-section{padding:64px 20px;}
-    .ticker-header{padding:0;}
+    .method-static-card, .why-card-static {
+      padding: 24px 20px !important; 
+    }
+
+    /* ── Mobile Typography ── */
+    .method-static-card h3, .why-card-static h4 {
+      font-size: 1.5rem !important; 
+      margin-bottom: 8px;
+    }
+
+    .method-static-card p, .why-card-static p {
+      font-size: 0.92rem !important; 
+      line-height: 1.5;
+    }
+
+    /* ── Ticker Cleanup ── */
+    .ticker-section{padding:48px 20px;}
+    .ticker-header{padding:0; margin-bottom: 24px;}
     
-    .lead-section{padding:64px 20px;}.lead-box{padding:36px 24px;}.form-row{grid-template-columns:1fr;}
+    /* ── Lead Form & Footer ── */
+    .lead-section{padding:48px 20px;}.lead-box{padding:32px 20px;}.form-row{grid-template-columns:1fr;}
     footer{padding:40px 20px;}.footer-top{flex-direction:column;}
   }
 
@@ -354,6 +374,7 @@
   @media(prefers-reduced-motion: reduce){
     .ticker-belt { animation: none; }
   }
+ 
 </style>
 </head>
 <body>
