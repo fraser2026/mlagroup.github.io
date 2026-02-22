@@ -331,13 +331,21 @@
   grid-column-end: -2;
 }
  
-  @media(max-width:960px){
+ @media(max-width:960px){
     nav{padding:0 20px;}.nav-links{display:none;}
     .hero{padding:100px 20px 64px;}.hero-inner{grid-template-columns:1fr;}.hero-right{display:none;}
     .section{padding:64px 20px;}
     .problem-grid,.report-grid{grid-template-columns:1fr;gap:40px;}
-    .ticker-section{padding:64px 0;}.ticker-header{padding:0 20px;}
-    .method-card,.why-card{width:280px;}
+    
+    /* This part fixes your iPhone view */
+    .method-static-grid, .why-static-grid { 
+      grid-template-columns: 1fr !important; 
+      gap: 20px; 
+    }
+    
+    .ticker-section{padding:64px 20px;}
+    .ticker-header{padding:0;}
+    
     .lead-section{padding:64px 20px;}.lead-box{padding:36px 24px;}.form-row{grid-template-columns:1fr;}
     footer{padding:40px 20px;}.footer-top{flex-direction:column;}
   }
