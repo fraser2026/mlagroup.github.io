@@ -331,29 +331,30 @@
   grid-column-end: -2;
 }
 
- /* This is the 'Active' state for mobile */
-.method-static-card.active, .why-card-static.active {
+ /* Optimized 'Active' state for high readability on Mobile */
+.method-static-card.active {
   border-color: var(--blue) !important;
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 255, 0.1);
-}
-
- /* Update your existing active classes to look like this */
-.method-static-card, .why-card-static {
-  transition: border-color 0.4s ease, background 0.4s ease, transform 0.4s ease !important;
-}
-
-.method-static-card.active, .why-card-static.active {
-  border-color: var(--blue) !important;
-  background: rgba(0, 0, 255, 0.05) !important;
-  transform: translateY(-8px) !important; /* Slight lift to emphasize the 'active' one */
-  z-index: 10;
+  background-color: #FFFFFF !important; /* Pure white for maximum text contrast */
+  transform: translateY(-8px) !important;
+  box-shadow: 0 15px 30px rgba(0, 0, 255, 0.1) !important;
 }
 
 .why-card-static.active {
-  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--blue) !important;
+  /* Matches your navy background but keeps it 'rich' and sharp */
+  background-color: #001A3A !important; 
+  transform: translateY(-8px) !important;
 }
+
+/* Forces the text to stay crisp and dark when the card is 'lit' */
+.method-static-card.active p {
+  color: var(--muted) !important;
+}
+
+.why-card-static.active p {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+ 
 @media(max-width:960px){
     /* ── Mobile Nav & Hero ── */
     nav{padding:0 20px;}.nav-links{display:none;}
