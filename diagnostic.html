@@ -1118,36 +1118,32 @@ function calcResults() {
     frameworkDate: FRAMEWORK.date
   };
   
-  // Save to Supabase
-async function saveToSupabase() {
-  console.log('RESULTS:', JSON.stringify(RESULTS));
-  try {
-  async function saveToSupabase() {
-    try {
-      const { error } = await supabaseClient
-        .from('diagnostic_results')
-        .insert({
-          organisation: document.getElementById('ps-org')?.value || '',
-          sector: RESULTS.sector || '',
-          org_size: RESULTS.orgSize || '',
-          weighted_score: RESULTS.weightedScore || 0,
-          adjusted_score: RESULTS.adjustedScore || 0,
-          risk_band: RESULTS.band?.id || '',
-          section_scores: RESULTS.sectionPcts || {},
-          priority_flags: RESULTS.priorityFlags || [],
-          framework_version: RESULTS.frameworkVersion || '2.0.0'
-        });
-      if (error) console.log('Supabase error:', error);
-    } catch(e) {
-      console.log('Save error:', e);
-    }
-  }
-  saveToSupabase();
-
   renderResults();
-  goTo('screen-results');
-  setTimeout(() => sendEmails(), 800);
+goTo('screen-results');
+setTimeout(() => sendEmails(), 800);
 }
+
+async function saveToSupabase() {
+  try {
+    const { error } = await supabaseClient
+      .from('diagnostic_results')
+      .insert({
+        organisation: document.getElementById('ps-org')?.value || '',
+        sector: RESULTS.sector || '',
+        org_size: RESULTS.orgSize || '',
+        weighted_score: RESULTS.weightedScore || 0,
+        adjusted_score: RESULTS.adjustedScore || 0,
+        risk_band: RESULTS.band?.id || '',
+        section_scores: RESULTS.sectionPcts || {},
+        priority_flags: RESULTS.priorityFlags || [],
+        framework_version: RESULTS.frameworkVersion || '2.0.0'
+      });
+    if (error) console.log('Supabase error:', error);
+  } catch(e) {
+    console.log('Save error:', e);
+  }
+}
+
 
 // ─── RENDER RESULTS ──────────────────────────────────────────────
 function renderResults() {
