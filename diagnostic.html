@@ -1116,6 +1116,29 @@ function calcResults() {
     frameworkVersion: FRAMEWORK.version,
     frameworkDate: FRAMEWORK.date
   };
+  
+  // Save to Supabase
+  async function saveToSupabase() {
+    try {
+      const { error } = await supabase
+        .from('diagnostic_results')
+        .insert({
+          organisation: RESULTS.orgName || '',
+          sector: RESULTS.sector || '',
+          org_size: RESULTS.orgSize || '',
+          weighted_score: RESULTS.weightedScore || 0,
+          adjusted_score: RESULTS.adjustedScore || 0,
+          risk_band: RESULTS.band?.id || '',
+          section_scores: RESULTS.sectionPcts || {},
+          priority_flags: RESULTS.priorityFlags || [],
+          framework_version: RESULTS.frameworkVersion || '2.0.0'
+        });
+      if (error) console.log('Supabase error:', error);
+    } catch(e) {
+      console.log('Save error:', e);
+    }
+  }
+  saveToSupabase();
 
   renderResults();
   goTo('screen-results');
