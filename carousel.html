@@ -275,84 +275,72 @@
   opacity: 0.6;
 }
 
- /* ── WHY MLA STATIC GRID ── */
-.why-static-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  padding-bottom: 60px;
+/* ── 1. BASE CARD STYLES (Applies to both PC & Mobile) ── */
+.method-static-card, .why-card-static {
+  transition: all 0.4s ease !important;
+  border-radius: 16px;
+  cursor: default;
+}
+
+.method-static-card {
+  background: white;
+  border: 1.5px solid #E5E7EB;
+  padding: 40px 32px;
 }
 
 .why-card-static {
   background: rgba(255, 255, 255, 0.03);
   border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 40px 32px; /* Increased padding for better framing */
-  transition: all 0.3s ease;
+  padding: 40px 32px;
 }
 
-.why-card-static:hover {
-  border-color: var(--blue);
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-5px);
+/* ── 2. PC ONLY: HOVER EFFECTS (961px and up) ── */
+@media (min-width: 961px) {
+  .method-static-card:hover {
+    border-color: var(--blue) !important;
+    transform: translateY(-8px) !important;
+    box-shadow: 0 15px 30px rgba(0, 0, 255, 0.1) !important;
+  }
+  
+  .why-card-static:hover {
+    border-color: var(--blue) !important;
+    background: #001A3A !important;
+    transform: translateY(-8px) !important;
+  }
 }
 
-.why-card-static h4 {
-  font-family: 'Instrument Serif', serif;
-  font-size: 1.75rem;
-  font-weight: 400;
-  color: white;
-  margin-bottom: 12px;
-}
+/* ── 3. IPHONE ONLY: SCROLL HIGHLIGHT & STACKING (960px and down) ── */
+@media (max-width: 960px) {
+  /* Grid Stacking */
+  .method-static-grid, .why-static-grid { 
+    grid-template-columns: 1fr !important; 
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important; 
+  }
 
-.why-card-static p {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.5);
-  line-height: 1.6;
-}
- 
-.method-static-card h3 {
-  font-family: 'Instrument Serif', serif;
-  font-size: 1.8rem;
-  font-weight: 400;
-  color: var(--navy);
-  margin-bottom: 16px;
-  line-height: 1.2;
-}
+  .method-static-card, .why-card-static {
+    padding: 24px 20px !important;
+    width: 100% !important;
+  }
 
-.method-static-card p {
-  font-size: 0.95rem;
-  color: var(--muted);
-  line-height: 1.6;
-}
+  /* The 'Active' state triggered by JS scroll */
+  .method-static-card.active {
+    border-color: var(--blue) !important;
+    background-color: #FFFFFF !important;
+    transform: translateY(-8px) !important;
+    box-shadow: 0 15px 30px rgba(0, 0, 255, 0.1) !important;
+  }
 
-/* Ensure the grid centers nicely if there's a leftover card on the bottom row */
-.method-static-card:last-child:nth-child(3n-1) {
-  grid-column-end: -2;
-}
+  .why-card-static.active {
+    border-color: var(--blue) !important;
+    background-color: #001A3A !important;
+    transform: translateY(-8px) !important;
+  }
 
- /* Optimized 'Active' state for high readability on Mobile */
-.method-static-card.active {
-  border-color: var(--blue) !important;
-  background-color: #FFFFFF !important; /* Pure white for maximum text contrast */
-  transform: translateY(-8px) !important;
-  box-shadow: 0 15px 30px rgba(0, 0, 255, 0.1) !important;
-}
-
-.why-card-static.active {
-  border-color: var(--blue) !important;
-  /* Matches your navy background but keeps it 'rich' and sharp */
-  background-color: #001A3A !important; 
-  transform: translateY(-8px) !important;
-}
-
-/* Forces the text to stay crisp and dark when the card is 'lit' */
-.method-static-card.active p {
-  color: var(--muted) !important;
-}
-
-.why-card-static.active p {
-  color: rgba(255, 255, 255, 0.6) !important;
+  /* Text Protection for Active state */
+  .method-static-card.active p { color: var(--muted) !important; }
+  .why-card-static.active p { color: rgba(255, 255, 255, 0.8) !important; }
 }
  
 @media(max-width:960px){
@@ -647,27 +635,37 @@
 </footer>
 
  <script>
-  // This creates a narrow 'hot zone' in the center of the screen
-  const observerOptions = {
-    root: null,
-    rootMargin: '-40% 0px -40% 0px', 
-    threshold: 0
-  };
+  // This combined script handles mobile ONLY
+  function initMobileScrollGlow() {
+    if (window.innerWidth <= 960) {
+      const observerOptions = {
+        root: null,
+        rootMargin: '-45% 0px -45% 0px', // Creates a narrow center 'hot zone'
+        threshold: 0
+      };
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        // Light it up
-        entry.target.classList.add('active');
-      } else {
-        // Turn it off
-        entry.target.classList.remove('active');
-      }
-    });
-  }, observerOptions);
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          } else {
+            entry.target.classList.remove('active');
+          }
+        });
+      }, observerOptions);
 
-  document.querySelectorAll('.method-static-card, .why-card-static').forEach(card => {
-    observer.observe(card);
+      document.querySelectorAll('.method-static-card, .why-card-static').forEach(card => {
+        observer.observe(card);
+      });
+    }
+  }
+
+  // Run on load
+  initMobileScrollGlow();
+
+  // Also check if the window is resized (e.g., rotating an iPad)
+  window.addEventListener('resize', () => {
+    // Optional: could re-init if needed, but usually a refresh is enough
   });
 </script>
  
