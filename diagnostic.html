@@ -1674,8 +1674,10 @@ function makePDF() {
     doc.text('Governance Domain',  M + 3,   y + 6);
     doc.text('Wt.',                M + 103, y + 6);
     doc.text('Score',              M + 118, y + 6);
-    doc.text('Maturity',           M + 136, y + 6);
-    doc.text('Risk Level',         W-M-2,   y + 6, { align: 'right' });
+          doc.text('Maturity',           M + 136, y + 6);
+      doc.text('%',                  M + 167, y + 6);
+      doc.text('Risk Level',         W-M-2,   y + 6, { align: 'right' });
+
     y += 8.5;
 
     ['s1','s2','s3','s4','s5','s6','s7'].forEach((sec, i) => {
@@ -1703,16 +1705,17 @@ function makePDF() {
       doc.text(wt + '%',       M + 103, y + 6.8);
       doc.text(rs + '/' + mx,  M + 118, y + 6.8);
 
-      // Progress bar (fixed: visible colours, correct position)
-      drawBar(doc, M + 136, y + 3.5, 22, 3, p, barColor);
-      doc.setFontSize(6.5);
+            // Progress bar — bar + % inside bar zone, Risk Level in its own column
+      drawBar(doc, M + 136, y + 3, 28, 4, p, barColor);
+      doc.setFontSize(6);
       doc.setTextColor(90, 105, 125);
-      doc.text(p + '%', M + 160, y + 6.8);
+      doc.text(p + '%', M + 136 + 30, y + 6.8);
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7.5);
       doc.setTextColor(...barColor);
       doc.text(riskLbl, W - M - 2, y + 6.8, { align: 'right' });
+
       y += 10;
     });
 
