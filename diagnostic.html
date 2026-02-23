@@ -867,7 +867,8 @@
 <script>
 const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 
 // ═══════════════════════════════════════════════════════════════════
 //  MLA AI GOVERNANCE RISK DIAGNOSTIC — SCORING ENGINE v2.0.0
@@ -1120,7 +1121,7 @@ function calcResults() {
   // Save to Supabase
   async function saveToSupabase() {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('diagnostic_results')
         .insert({
           organisation: RESULTS.orgName || '',
