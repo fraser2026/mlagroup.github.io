@@ -1117,7 +1117,9 @@ function calcResults() {
     frameworkVersion: FRAMEWORK.version,
     frameworkDate: FRAMEWORK.date
   };
-  
+
+saveToSupabase();
+
   renderResults();
 goTo('screen-results');
 setTimeout(() => sendEmails(), 800);
