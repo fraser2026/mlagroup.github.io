@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLA Group — Defensible AI Governance. Audit-Ready Compliance.</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:   #000D1D; /* Deepened for more visual weight */
+    --blue:   #0000FF;
+    --ink:    #0D1B2A;
+    --muted:  #5A6B82;
+    --border: rgba(0, 26, 58, 0.1); /* Softer, transparent borders */
+    --bg:     #F7F8FC;
+    --light:  #EEEEFF;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; color: var(--ink); background: white; overflow-x: hidden; font-size: 17px; line-height: 1.6; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(255,255,255,0.9); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    height: 72px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px;
+  }
+  .nav-logo { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 1.4rem; color: var(--navy); display: flex; align-items: center; }
+  .nav-logo span { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; color: var(--blue); margin-left: 2px; }
+  
+  .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
+  .nav-links a { font-size: 0.88rem; font-weight: 500; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .nav-links a:hover { color: var(--navy); }
+  .nav-cta { background: var(--navy) !important; color: white !important; padding: 10px 22px; border-radius: 8px; font-weight: 600 !important; }
+
+  /* ── SHARED TYPOGRAPHY ── */
+  .eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; display: block; }
+  .section-title { 
+    font-family: 'Instrument Serif', serif; 
+    font-size: clamp(3rem, 6vw, 4.8rem); /* Massively increased scale */
+    font-weight: 400; 
+    line-height: 0.95; /* Tighter line height for elegance */
+    letter-spacing: -0.02em;
+    color: var(--navy); 
+    margin-bottom: 28px; 
+  }
+  .section-title em { font-style: italic; color: var(--blue); }
+  .section-body { font-size: 1.15rem; color: var(--muted); line-height: 1.7; max-width: 650px; }
+  .section { padding: 140px 48px; }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+
+  /* ── HERO ── */
+  .hero { 
+    min-height: 100vh; 
+    background: radial-gradient(circle at top right, #001A3A 0%, #000D1D 100%); 
+    display: flex; 
+    align-items: center; 
+    padding: 160px 48px 100px; 
+    position: relative; 
+    overflow: hidden; 
+  }
+  /* Blueprint Texture */
+  .hero::before { 
+    content: ''; 
+    position: absolute; 
+    inset: 0; 
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); 
+    background-size: 45px 45px; 
+    pointer-events: none; 
+  }
+  .hero-inner { 
+    max-width: 1200px; margin: 0 auto; width: 100%; 
+    display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 80px; 
+    align-items: center; position: relative; z-index: 2; 
+  }
+  .hero h1 { font-family: 'Instrument Serif', serif; font-size: clamp(3.2rem, 5.5vw, 5rem); font-weight: 400; color: white; line-height: 0.95; margin-bottom: 32px; letter-spacing: -0.02em; }
+  .hero h1 em { font-style: italic; color: #6699FF; }
+  .hero-sub { font-size: 1.2rem; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 48px; max-width: 520px; }
+  
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px; border-radius: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+  .btn-blue { background: var(--blue); color: white; box-shadow: 0 10px 30px rgba(0,0,255,0.3); }
+  .btn-blue:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(0,0,255,0.4); }
+  .btn-ghost { color: rgba(255,255,255,0.7); font-weight: 500; }
+
+  /* ── THE CARD (Depth Upgrade) ── */
+  .hero-card { 
+    background: rgba(255,255,255,0.04); 
+    border: 1px solid rgba(255,255,255,0.15); 
+    border-radius: 24px; padding: 32px; 
+    backdrop-filter: blur(12px); 
+    transform: perspective(1000px) rotateY(-8deg); /* 3D depth */
+    box-shadow: -30px 30px 60px rgba(0,0,0,0.4);
+  }
+  .hc-band { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px; margin: 20px 0; display: flex; justify-content: space-between; align-items: center; }
+  .hc-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .hc-track { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+  .hc-fill { height: 100%; border-radius: 10px; }
+  .f-red{background:#EF4444;}.f-amber{background:#F59E0B;}.f-blue{background:#6699FF;}
+
+  /* ── METHODOLOGY GRID ── */
+  .method-static-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 60px; }
+  .method-static-card { 
+    background: white; border: 1px solid var(--border); border-radius: 20px; padding: 48px 40px; 
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+  }
+  .method-static-card.active, .method-static-card:hover { 
+    border-color: var(--blue); transform: translateY(-10px); 
+    box-shadow: 0 30px 60px rgba(0,0,255,0.08); 
+  }
+
+  /* ── REPORT SECTION ── */
+  .report-section { background: var(--navy); }
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .pdf-mockup { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 50px 100px rgba(0,0,0,0.5); }
+
+  /* ── MOBILE ── */
+  @media(max-width:960px){
+    nav { padding: 0 24px; }
+    .nav-links { display: none; }
+    .section { padding: 80px 24px; }
+    .hero { padding-top: 120px; text-align: center; }
+    .hero-inner { grid-template-columns: 1fr; gap: 60px; }
+    .hero-sub { margin: 0 auto 40px; }
+    .hero-actions { justify-content: center; }
+    .hero-right { display: block !important; transform: scale(0.9) rotateY(0deg); }
+    .method-static-grid { grid-template-columns: 1fr; }
+    .report-grid { grid-template-columns: 1fr; }
+    .section-title { font-size: 3.2rem; }
+  }
+
+  /* Animations */
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .live-dot { width: 8px; height: 8px; background: #4ADE80; border-radius: 50%; animation: pulse 2s infinite; display: inline-block; margin-right: 6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">mla<span>group.</span></div>
+  <ul class="nav-links">
+    <li><a href="#problem">The Challenge</a></li>
+    <li><a href="#methodology">Methodology</a></li>
+    <li><a href="#report">The Report</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="diagnosticversion2.1.html" class="nav-cta">Start Diagnostic &rarr;</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <span class="eyebrow" style="color: #6699FF;">AI Governance &amp; Risk Advisory</span>
+      <h1>Defensible AI Governance.<br><em>Audit-Ready</em> Compliance.</h1>
+      <p class="hero-sub">Bridge the gap between AI innovation and regulatory accountability with rigorous risk analysis and board-level reporting.</p>
+      <div class="hero-actions">
+        <a href="diagnosticversion2.1.html" class="btn btn-blue">Start Diagnostic &rarr;</a>
+        <a href="#report" class="btn btn-ghost">View Sample Report &rarr;</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card">
+        <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:12px;">
+          <span>Risk Diagnostic</span>
+          <span><span class="live-dot"></span>Active Analysis</span>
+        </div>
+        <div style="font-family:'Instrument Serif'; font-size:1.4rem; color:white; margin-bottom:4px;">Acme Financial Services Ltd</div>
+        <div style="font-size:0.75rem; color:rgba(255,255,255,0.3); margin-bottom:24px;">Financial Services · Feb 2026</div>
+        
+        <div class="hc-band">
+          <span style="color:#FCA5A5; font-weight:700; font-size:0.85rem;">● High Risk Exposure</span>
+          <span style="font-family:'Instrument Serif'; font-size:2rem; color:#EF4444;">33%</span>
+        </div>
+
+        <div class="hc-row"><span style="color:rgba(255,255,255,0.5); font-size:0.7rem; width:80px;">Governance</span><div class="hc-track"><div class="hc-fill f-red" style="width:28%"></div></div></div>
+        <div class="hc-row"><span style="color:rgba(255,255,255,0.5); font-size:0.7rem; width:80px;">Compliance</span><div class="hc-track"><div class="hc-fill f-red" style="width:19%"></div></div></div>
+        <div class="hc-row"><span style="color:rgba(255,255,255,0.5); font-size:0.7rem; width:80px;">Resilience</span><div class="hc-track"><div class="hc-fill f-blue" style="width:73%"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="methodology">
+  <div class="section-inner">
+    <span class="eyebrow">Our Methodology</span>
+    <h2 class="section-title">A Data-Driven Framework<br>for AI <em>Assurance</em></h2>
+    <p class="section-body">We evaluate your posture across five critical dimensions to ensure your AI deployments aren't just innovative, but legally defensible.</p>
+    
+    <div class="method-static-grid">
+      <div class="method-static-card">
+        <div style="font-family:'Instrument Serif'; color:var(--blue); font-size:1.5rem; margin-bottom:20px;">01</div>
+        <h3 style="font-family:'Instrument Serif'; font-size:1.8rem; margin-bottom:15px; font-weight:400;">Structural Mapping</h3>
+        <p style="font-size:0.95rem; color:var(--muted);">Analysing decision pathways across seven governance domains against legal benchmarks.</p>
+      </div>
+      <div class="method-static-card">
+        <div style="font-family:'Instrument Serif'; color:var(--blue); font-size:1.5rem; margin-bottom:20px;">02</div>
+        <h3 style="font-family:'Instrument Serif'; font-size:1.8rem; margin-bottom:15px; font-weight:400;">Integrity Audit</h3>
+        <p style="font-size:0.95rem; color:var(--muted);">A structured assessment of data sources, bias exposure, and human override documentation.</p>
+      </div>
+      <div class="method-static-card">
+        <div style="font-family:'Instrument Serif'; color:var(--blue); font-size:1.5rem; margin-bottom:20px;">03</div>
+        <h3 style="font-family:'Instrument Serif'; font-size:1.8rem; margin-bottom:15px; font-weight:400;">Regulatory Alignment</h3>
+        <p style="font-size:0.95rem; color:var(--muted);">Precise mapping against ISO/IEC 42001, UK GDPR, and EU AI Act Annex III.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('active');
+      else entry.target.classList.remove('active');
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('.method-static-card').forEach(card => observer.observe(card));
+</script>
+
+</body>
+</html>
