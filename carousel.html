@@ -338,7 +338,22 @@
   transform: translateY(-5px);
   box-shadow: 0 12px 24px rgba(0, 0, 255, 0.1);
 }
- 
+
+ /* Update your existing active classes to look like this */
+.method-static-card, .why-card-static {
+  transition: border-color 0.4s ease, background 0.4s ease, transform 0.4s ease !important;
+}
+
+.method-static-card.active, .why-card-static.active {
+  border-color: var(--blue) !important;
+  background: rgba(0, 0, 255, 0.05) !important;
+  transform: translateY(-8px) !important; /* Slight lift to emphasize the 'active' one */
+  z-index: 10;
+}
+
+.why-card-static.active {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
 @media(max-width:960px){
     /* ── Mobile Nav & Hero ── */
     nav{padding:0 20px;}.nav-links{display:none;}
@@ -631,25 +646,25 @@
 </footer>
 
  <script>
+  // This creates a narrow 'hot zone' in the center of the screen
   const observerOptions = {
     root: null,
-    rootMargin: '0px',
-    threshold: 0.6 // Triggers when 60% of the card is visible
+    rootMargin: '-40% 0px -40% 0px', 
+    threshold: 0
   };
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        // Add the glow when it enters the middle of the screen
+        // Light it up
         entry.target.classList.add('active');
       } else {
-        // Remove it when it leaves
+        // Turn it off
         entry.target.classList.remove('active');
       }
     });
   }, observerOptions);
 
-  // Target all cards
   document.querySelectorAll('.method-static-card, .why-card-static').forEach(card => {
     observer.observe(card);
   });
