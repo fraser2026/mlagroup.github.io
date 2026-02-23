@@ -1706,10 +1706,7 @@ function makePDF() {
       doc.text(rs + '/' + mx,  M + 118, y + 6.8);
 
             // Progress bar — bar + % inside bar zone, Risk Level in its own column
-      drawBar(doc, M + 136, y + 3, 28, 4, p, barColor);
-      doc.setFontSize(6);
-      doc.setTextColor(90, 105, 125);
-      doc.text(p + '%', M + 136 + 30, y + 6.8);
+            drawBar(doc, M + 136, y + 3, 20, 4, p, barColor);
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7.5);
