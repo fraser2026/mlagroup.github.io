@@ -1119,6 +1119,9 @@ function calcResults() {
   };
   
   // Save to Supabase
+async function saveToSupabase() {
+  console.log('RESULTS:', JSON.stringify(RESULTS));
+  try {
   async function saveToSupabase() {
     try {
       const { error } = await supabaseClient
