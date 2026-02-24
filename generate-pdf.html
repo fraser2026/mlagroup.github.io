@@ -32,140 +32,152 @@
 </head>
 <body>
   <div class="spinner"></div>
-  <p id="status-text">Synthesising diagnostic data and generating full report...</p>
+  <p id="status">Generating your comprehensive AI Governance report...</p>
   <iframe id="pdf-frame" src="diagnostic.html"></iframe>
 
 <script>
-  // ==========================================
-  // 1. GLOBAL HELPERS & CONFIG
-  // ==========================================
-  const navy = [0, 26, 58], blue = [26, 107, 255], white = [255, 255, 255];
-  const rcMap = { critical:[180,35,35], high:[165,55,55], moderate:[185,115,0], lowmod:[170,120,0], low:[22,145,65] };
+// ==========================================
+// 1. GLOBAL HELPERS & CONSTANTS
+// ==========================================
+const WEIGHTS = { s1:0.20, s2:0.18, s3:0.16, s4:0.16, s5:0.14, s6:0.10, s7:0.06 };
+const navy = [0, 26, 58], blue = [26, 107, 255], white = [255, 255, 255];
+const rcMap = { critical:[180,35,35], high:[165,55,55], moderate:[185,115,0], lowmod:[170,120,0], low:[22,145,65] };
 
-  function ps(str) {
-    if (!str) return '';
-    return str.toString()
-      .replace(/\u2014|\u2013/g, '-')
-      .replace(/\u2018|\u2019/g, "'")
-      .replace(/\u201C|\u201D/g, '"')
-      .replace(/\u2026/g, '...')
-      .replace(/[^\x00-\xFF]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+function ps(str) {
+  if (!str) return '';
+  return str.toString()
+    .replace(/\u2014|\u2013/g, '-')
+    .replace(/\u2018|\u2019/g, "'")
+    .replace(/\u201C|\u201D/g, '"')
+    .replace(/[^\x00-\xFF]/g, '')
+    .trim();
+}
+
+function drawBar(doc, x, y, totalW, h, pct, fillRGB) {
+  doc.setFillColor(215, 222, 232).rect(x, y, totalW, h, 'F');
+  if (pct > 0) {
+    doc.setFillColor(...fillRGB);
+    doc.rect(x, y, Math.max(1, (pct * totalW / 100)), h, 'F');
   }
+}
 
-  function textBlock(doc, text, x, y, maxW, fontSize, fontStyle, colorRGB) {
-    doc.setFont('helvetica', fontStyle || 'normal').setFontSize(fontSize || 8).setTextColor(...(colorRGB || [50, 60, 75]));
-    const lines = doc.splitTextToSize(text, maxW);
-    doc.text(lines, x, y);
-    return y + (lines.length * 5);
+function pdfPageHeader(doc, W, M, rc, sectionTitle, today) {
+  doc.setFillColor(...navy).rect(0, 0, W, 34, 'F');
+  doc.setFillColor(...rc).rect(0, 34, W, 1.5, 'F');
+  doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(255, 255, 255).text('MLA GROUP', M, 12);
+  doc.setFont('helvetica', 'normal').setFontSize(6.5).setTextColor(120, 155, 200).text('AI GOVERNANCE RISK ASSESSMENT | CONFIDENTIAL', M, 19);
+  doc.setFontSize(7.5).setTextColor(160, 185, 215).text(sectionTitle, M, 28);
+  doc.setFontSize(6.5).setTextColor(80, 110, 155).text(today, W - M, 19, { align: 'right' });
+}
+
+function pdfPageFooter(doc, W, M, rc, pageNum) {
+  doc.setFillColor(...navy).rect(0, 284, W, 13, 'F');
+  doc.setFillColor(...rc).rect(0, 284, W, 1, 'F');
+  doc.setFont('helvetica', 'normal').setFontSize(6.5).setTextColor(140, 170, 210);
+  doc.text('MLA Group | AI Governance Risk Assessment', M, 291);
+  doc.text('Page ' + pageNum, W - M, 291, { align: 'right' });
+}
+
+// ==========================================
+// 2. TRIGGER LOGIC
+// ==========================================
+const frame = document.getElementById('pdf-frame');
+frame.addEventListener('load', function() {
+  const data = sessionStorage.getItem('portal_result');
+  if (!data) return;
+  const RESULTS = JSON.parse(data);
+  
+  // Scrape recommendations from iframe DOM before generating
+  const recommendations = Array.from(frame.contentWindow.document.querySelectorAll('#recs .rec-item'))
+    .map(el => ps(el.textContent));
+
+  setTimeout(() => {
+    makeFullPDF(RESULTS, recommendations);
+  }, 1500);
+});
+
+// ==========================================
+// 3. THE COMPLETE PDF ENGINE
+// ==========================================
+function makeFullPDF(RESULTS, recommendations) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 18, TW = W - (M * 2);
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const rc = rcMap[RESULTS.band?.id] || blue;
+  let pageNum = 1;
+
+  try {
+    // --- PAGE 1: COVER ---
+    doc.setFillColor(...navy).rect(0, 0, W, 297, 'F');
+    doc.setFillColor(...rc).rect(0, 0, W, 6, 'F');
+    doc.setFont('helvetica', 'bold').setFontSize(24).setTextColor(255, 255, 255);
+    doc.text(ps(RESULTS.organisation), M, 70);
+    doc.setFontSize(18).setTextColor(...rc).text(ps(RESULTS.band?.label), M, 82);
+    doc.setFontSize(28).setTextColor(255, 255, 255).text(RESULTS.adjustedScore + '%', M, 105);
+    doc.setFontSize(8).setTextColor(100, 130, 170).text('GOVERNANCE MATURITY SCORE', M, 112);
+
+    // --- PAGE 2: EXECUTIVE SUMMARY ---
+    doc.addPage(); pageNum++;
+    pdfPageHeader(doc, W, M, rc, '1. EXECUTIVE SUMMARY', today);
+    let y = 50;
+    doc.setFont('helvetica', 'bold').setFontSize(11).setTextColor(...navy).text('Maturity Overview', M, y);
+    y += 8;
+    const summaryLines = doc.splitTextToSize(ps(RESULTS.band?.summary), TW);
+    doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(60, 70, 80).text(summaryLines, M, y);
+    pdfPageFooter(doc, W, M, rc, pageNum);
+
+    // --- PAGE 3: SECTION BREAKDOWN ---
+    doc.addPage(); pageNum++;
+    pdfPageHeader(doc, W, M, rc, '2. DOMAIN MATURITY BREAKDOWN', today);
+    y = 50;
+    Object.keys(RESULTS.sectionNames || {}).forEach((key) => {
+      const p = RESULTS.sectionPcts[key] || 0;
+      doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(...navy).text(ps(RESULTS.sectionNames[key]), M, y);
+      drawBar(doc, M, y + 3, TW, 4, p, p > 70 ? [22, 145, 65] : [185, 115, 0]);
+      doc.setFontSize(8).text(p + '%', W - M, y, { align: 'right' });
+      y += 18;
+    });
+    pdfPageFooter(doc, W, M, rc, pageNum);
+
+    // --- PAGE 4+: DETAILED FINDINGS ---
+    doc.addPage(); pageNum++;
+    pdfPageHeader(doc, W, M, rc, '3. DETAILED FINDINGS', today);
+    y = 50;
+    (RESULTS.priorityFlags || []).forEach((f, i) => {
+      if (y > 240) { doc.addPage(); pageNum++; pdfPageHeader(doc, W, M, rc, '3. FINDINGS (CONT.)', today); y = 50; }
+      doc.setFillColor(245, 248, 252).rect(M, y, TW, 22, 'F');
+      doc.setFillColor(...(rcMap[f.severity] || blue)).rect(M, y, 2, 22, 'F');
+      doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(...navy).text(ps(f.label), M + 5, y + 7);
+      const basisLines = doc.splitTextToSize(ps(f.basis), TW - 10);
+      doc.setFont('helvetica', 'normal').setFontSize(7.5).setTextColor(80, 90, 100).text(basisLines, M + 5, y + 13);
+      y += 28;
+    });
+    pdfPageFooter(doc, W, M, rc, pageNum);
+
+    // --- PAGE 5: RECOMMENDATIONS ---
+    doc.addPage(); pageNum++;
+    pdfPageHeader(doc, W, M, rc, '4. PRIORITY RECOMMENDATIONS', today);
+    y = 50;
+    recommendations.forEach((rec, i) => {
+      if (y > 250) { doc.addPage(); pageNum++; pdfPageHeader(doc, W, M, rc, '4. RECS (CONT.)', today); y = 50; }
+      doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(...blue).text((i + 1) + '.', M, y);
+      const recLines = doc.splitTextToSize(rec, TW - 10);
+      doc.setFont('helvetica', 'normal').setFontSize(8.5).setTextColor(40, 50, 60).text(recLines, M + 8, y);
+      y += (recLines.length * 5) + 5;
+    });
+    pdfPageFooter(doc, W, M, rc, pageNum);
+
+    // --- FINAL SAVE ---
+    doc.save('MLA-AI-Governance-Report.pdf');
+    document.getElementById('status').innerText = "Report Complete. Closing...";
+    setTimeout(() => window.close(), 2500);
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('status').innerText = "Error generating report.";
   }
-
-  // ==========================================
-  // 2. THE TRIGGER
-  // ==========================================
-  window.addEventListener('load', () => {
-    const data = sessionStorage.getItem('portal_result');
-    if (!data) return;
-    const RESULTS = JSON.parse(data);
-    
-    // Allow the iframe a moment to render so we can scrape recommendations if needed
-    setTimeout(() => {
-      generateFullReport(RESULTS);
-    }, 2000);
-  });
-
-  // ==========================================
-  // 3. FULL LOGIC ENGINE
-  // ==========================================
-  function generateFullReport(RESULTS) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = 210, M = 18, TW = W - (M*2);
-    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-    
-    try {
-      const rc = rcMap[RESULTS.band?.id] || blue;
-      const org = ps(RESULTS.organisation || "Organisation");
-
-      // --- PAGE 1: COVER (FULL LOGIC) ---
-      doc.setFillColor(...navy).rect(0, 0, W, 297, 'F');
-      doc.setFillColor(...rc).rect(0, 0, W, 6, 'F');
-      
-      doc.setFont('helvetica', 'bold').setFontSize(24).setTextColor(...white);
-      doc.text(org, M, 70);
-      
-      doc.setFontSize(18).setTextColor(...rc);
-      doc.text(ps(RESULTS.band?.label || "Report"), M, 85);
-      
-      doc.setFontSize(32).text(RESULTS.adjustedScore + '%', M, 105);
-      doc.setFontSize(10).setTextColor(100, 130, 170).text('AI GOVERNANCE MATURITY SCORE', M, 115);
-
-      // --- PAGE 2: EXECUTIVE SUMMARY ---
-      doc.addPage();
-      doc.setFillColor(...navy).rect(0, 0, W, 34, 'F');
-      doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(...white).text('1. EXECUTIVE SUMMARY', M, 20);
-      
-      let y = 50;
-      doc.setFont('helvetica', 'bold').setFontSize(12).setTextColor(...navy).text('Assessment Overview', M, y);
-      y += 10;
-      y = textBlock(doc, ps(RESULTS.band?.summary || ""), M, y, TW, 9, 'normal', [60, 70, 80]);
-      
-      // --- PAGE 3: FINDINGS LOGIC ---
-      doc.addPage();
-      y = 30;
-      doc.setFont('helvetica', 'bold').setFontSize(12).setTextColor(...navy).text('2. DETAILED FINDINGS', M, y);
-      y += 12;
-
-      const findings = [];
-      if (RESULTS.priorityFlags) {
-        RESULTS.priorityFlags.forEach(f => {
-          findings.push({ label: f.label, basis: f.basis, severity: f.severity || 'high' });
-        });
-      }
-
-      findings.forEach((f, i) => {
-        if (y > 260) { doc.addPage(); y = 30; }
-        doc.setFillColor(245, 248, 252).rect(M, y, TW, 20, 'F');
-        doc.setFillColor(...(rcMap[f.severity] || blue)).rect(M, y, 2, 20, 'F');
-        
-        doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(...navy);
-        doc.text(ps(f.label), M + 5, y + 7);
-        
-        doc.setFont('helvetica', 'normal').setFontSize(7.5).setTextColor(100, 110, 130);
-        const basisLines = doc.splitTextToSize(ps("Basis: " + f.basis), TW - 10);
-        doc.text(basisLines, M + 5, y + 13);
-        y += 25;
-      });
-
-      // --- PAGE 4: REGULATORY ALIGNMENT ---
-      doc.addPage();
-      doc.setFont('helvetica', 'bold').setFontSize(12).text('3. REGULATORY FRAMEWORK ALIGNMENT', M, 30);
-      y = 45;
-      
-      const regs = [
-        ['EU AI Act', 'Governance, risk classification, and transparency obligations.'],
-        ['UK GDPR', 'Automated decision-making and DPIA requirements.'],
-        ['FCA Resilience', 'Operational risk and senior manager accountability.']
-      ];
-
-      regs.forEach(([title, desc]) => {
-        doc.setFont('helvetica', 'bold').setFontSize(9).text(title, M, y);
-        doc.setFont('helvetica', 'normal').setFontSize(9).text(desc, M + 50, y);
-        y += 10;
-      });
-
-      // --- SAVE ---
-      doc.save(`MLA-Full-Report-${org.replace(/\s+/g, '-')}.pdf`);
-      
-      document.getElementById('status-text').innerText = "Report Complete.";
-      setTimeout(() => window.close(), 3000);
-
-    } catch (err) {
-      console.error(err);
-      document.getElementById('status-text').innerText = "Error in logic: " + err.message;
-    }
-  }
+}
 </script>
 </body>
 </html>
