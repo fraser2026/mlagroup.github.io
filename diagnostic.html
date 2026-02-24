@@ -869,19 +869,28 @@ const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // Auto-generate PDF if coming from portal
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('generate') === 'true') {
-  const portalResult = sessionStorage.getItem('portal_result');
-  if (portalResult) {
-    RESULTS = JSON.parse(portalResult);
-    sessionStorage.removeItem('portal_result');
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        makePDF();
-        window.history.back();
-      }, 1500);
-    });
+// Auto-generate PDF if coming from portal
+(function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('generate') === 'true') {
+    const portalResult = sessionStorage.getItem('portal_result');
+    if (portalResult) {
+      const r = JSON.parse(portalResult);
+      sessionStorage.removeItem('portal_result');
+      // Populate the org field that makePDF reads
+      window.addEventListener('load', function() {
+        const orgField = document.getElementById('ps-org');
+        if (orgField) orgField.value = r.organisation || '';
+        RESULTS = r;
+        setTimeout(function() {
+          makePDF();
+          setTimeout(function() { window.history.back(); }, 500);
+        }, 800);
+      });
+    }
   }
+})();
+
 }
 
 
