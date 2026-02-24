@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Generating your report...</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   body {
     font-family: sans-serif;
@@ -33,160 +32,119 @@
 </head>
 <body>
   <div class="spinner"></div>
-  <p>Generating your report...</p>
+  <p id="status-text">Building your bespoke AI Governance report...</p>
   <iframe id="pdf-frame" src="diagnostic.html"></iframe>
 
 <script>
   // ==========================================
-  // 1. GLOBAL DATA & HELPERS
+  // 1. HELPERS (Must be Global)
   // ==========================================
-  let RESULTS = {};
-  const WEIGHTS = { s1:0.20, s2:0.18, s3:0.16, s4:0.16, s5:0.14, s6:0.10, s7:0.06 };
-  const FINDING_DATA = {}; 
-  const REGIME_FINDING = { section:'Regulatory', severity:'high', impact:'Significant regulatory misalignment.', rec:'Review alignment.' };
-  const FRAMEWORK = { nextReview: 'August 2026' };
-
-  // Text cleaning to prevent PDF crashes
   function ps(str) {
     if (!str) return '';
     return str.toString()
       .replace(/\u2014|\u2013/g, '-')
       .replace(/\u2018|\u2019/g, "'")
       .replace(/\u201C|\u201D/g, '"')
-      .replace(/\u2026/g, '...')
       .replace(/[^\x00-\xFF]/g, '')
-      .replace(/\s+/g, ' ')
       .trim();
   }
 
-  // Layout Helpers
-  function pdfPageHeader(doc, W, M, navy, rc, sectionTitle, today) {
-    doc.setFillColor(...navy).rect(0, 0, W, 34, 'F');
-    doc.setFillColor(...rc).rect(0, 34, W, 1.5, 'F');
-    doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(255, 255, 255).text('MLA GROUP', M, 12);
-    doc.setFont('helvetica', 'normal').setFontSize(6.5).setTextColor(120, 155, 200).text('AI GOVERNANCE RISK ASSESSMENT  |  CONFIDENTIAL', M, 19);
-    doc.setFontSize(7.5).setTextColor(160, 185, 215).text(sectionTitle, M, 28);
-    doc.setFontSize(6.5).setTextColor(80, 110, 155).text(today, W - M, 19, { align: 'right' });
-  }
-
-  function pdfPageFooter(doc, W, M, navy, rc, today, pageNum) {
-    doc.setFillColor(...navy).rect(0, 284, W, 13, 'F');
-    doc.setFillColor(...rc).rect(0, 284, W, 1, 'F');
-    doc.setFont('helvetica', 'normal').setFontSize(6.5).setTextColor(140, 170, 210);
-    doc.text('MLA Group  |  AI Governance Risk Assessment  |  mlagroup.co.uk', M, 290);
-    doc.text('Page ' + pageNum, W - M, 290, { align: 'right' });
-  }
-
-  function newPage(doc, W, M, navy, rc, heading, today, pageNum) {
-    doc.addPage();
-    pdfPageHeader(doc, W, M, navy, rc, heading, today);
-    return 44; 
-  }
-
   function drawBar(doc, x, y, totalW, h, pct, fillRGB) {
-    doc.setFillColor(215, 222, 232).rect(x, y, totalW, h, 'F');
+    doc.setFillColor(230, 235, 240).rect(x, y, totalW, h, 'F');
     if (pct > 0) {
       doc.setFillColor(...fillRGB);
-      doc.rect(x, y, Math.max(1, Math.round(pct * totalW / 100)), h, 'F');
+      doc.rect(x, y, Math.max(1, (pct * totalW / 100)), h, 'F');
     }
   }
 
-  function textBlock(doc, text, x, y, maxW, fontSize, fontStyle, colorRGB, lineH) {
-    doc.setFont('helvetica', fontStyle || 'normal').setFontSize(fontSize || 8).setTextColor(...(colorRGB || [50, 60, 75]));
-    const lines = doc.splitTextToSize(text, maxW);
-    doc.text(lines, x, y);
-    return y + (lines.length * (lineH || 4.8));
-  }
-
-  function pdfSectionHead(doc, W, M, navy, label, y) {
-    doc.setFillColor(...navy).rect(M, y, W - M * 2, 8, 'F');
-    doc.setFont('helvetica', 'bold').setFontSize(7.5).setTextColor(255, 255, 255).text(label, M + 4, y + 5.6);
-    return y + 13;
-  }
-
   // ==========================================
-  // 2. TRIGGER LOGIC
+  // 2. THE TRIGGER
   // ==========================================
   const frame = document.getElementById('pdf-frame');
+  
   frame.addEventListener('load', function() {
-    const portalResult = sessionStorage.getItem('portal_result');
-    if (!portalResult) { window.close(); return; }
-    
-    RESULTS = JSON.parse(portalResult);
-    const fw = frame.contentWindow;
-    fw.RESULTS = RESULTS; // Vital for the iframe diagnostic logic
+    const data = sessionStorage.getItem('portal_result');
+    if (!data) {
+        document.getElementById('status-text').innerText = "Error: No assessment data found.";
+        return;
+    }
 
-    // Wait for the iframe to fully "settle" its own calculations
+    const RESULTS = JSON.parse(data);
+    
+    // Give the iframe 2 seconds to load its own scripts before we grab the PDF
     setTimeout(() => {
-      makePDF();
-    }, 1500);
+      generateFinalPDF(RESULTS);
+    }, 2000);
   });
 
   // ==========================================
-  // 3. THE PDF ENGINE (RE-BUILT COMPLETE)
+  // 3. THE GENERATOR
   // ==========================================
-  function makePDF() {
+  function generateFinalPDF(RESULTS) {
     const { jsPDF } = window.jspdf;
-    if (!jsPDF || !RESULTS.band) return;
-
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    
     try {
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const W = 210, M = 18, TW = W - (M*2), TWI = TW - 8;
+      // SETTINGS
+      const W = 210, M = 18;
+      const navy = [0, 26, 58], blue = [26, 107, 255];
       const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-      
-      const navy = [0, 26, 58], blue = [26, 107, 255], white = [255, 255, 255], rcMap = { critical:[180,35,35], high:[165,55,55], moderate:[185,115,0], low:[22,145,65] };
-      const rc = rcMap[RESULTS.band.id] || blue;
+
+      // DATA EXTRACTION (Safety first)
+      const orgName = ps(RESULTS.organisation || "Organisation");
+      const score = RESULTS.adjustedScore || 0;
+      const bandLabel = RESULTS.band ? RESULTS.band.label : "Assessment Complete";
+      const bandId = RESULTS.band ? RESULTS.band.id : "moderate";
 
       // --- PAGE 1: COVER ---
       doc.setFillColor(...navy).rect(0, 0, W, 297, 'F');
-      doc.setFillColor(...rc).rect(0, 0, W, 6, 'F');
-      doc.setFont('helvetica', 'bold').setFontSize(24).setTextColor(...white).text(ps(RESULTS.organisation), M, 65);
-      doc.setFontSize(16).setTextColor(...rc).text(ps(RESULTS.band.label), M, 80);
-      doc.setFontSize(28).text(RESULTS.adjustedScore + '%', M, 100);
-      doc.setFontSize(10).setTextColor(140, 165, 205).text('AI GOVERNANCE RISK REPORT', M, 115);
-
-      // --- PAGE 2: EXECUTIVE SUMMARY ---
-      let pageNum = 1;
-      let y = newPage(doc, W, M, navy, rc, '1. EXECUTIVE SUMMARY', today, ++pageNum);
-      y = pdfSectionHead(doc, W, M, navy, 'Overview', y);
-      y = textBlock(doc, ps(RESULTS.band.summary), M+4, y, TWI, 9, 'normal', [40, 50, 60], 5.5);
-
-      // --- PAGE 3: MATURITY BREAKDOWN ---
-      y = newPage(doc, W, M, navy, rc, '2. MATURITY BREAKDOWN', today, ++pageNum);
-      y = pdfSectionHead(doc, W, M, navy, 'Section Scores', y);
-      ['s1','s2','s3','s4','s5','s6','s7'].forEach((sec) => {
-        const p = RESULTS.sectionPcts[sec] || 0;
-        const nm = RESULTS.sectionNames[sec] || sec;
-        doc.setFillColor(245, 247, 250).rect(M, y, TW, 10, 'F');
-        doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(30, 40, 50).text(nm, M+3, y+6.5);
-        drawBar(doc, M+120, y+3.5, 30, 3.5, p, p>70?[22,145,65]:p>40?[185,115,0]:[165,55,55]);
-        doc.text(p + '%', W-M-5, y+6.5, { align: 'right' });
-        y += 11;
-      });
-
-      // --- PAGE 4: DETAILED FINDINGS ---
-      y = newPage(doc, W, M, navy, rc, '3. DETAILED FINDINGS', today, ++pageNum);
-      (RESULTS.priorityFlags || []).slice(0, 5).forEach((f, idx) => {
-          if(y > 250) y = newPage(doc, W, M, navy, rc, '3. FINDINGS (CONT.)', today, ++pageNum);
-          doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(...navy).text('Finding ' + (idx+1) + ': ' + ps(f.label), M, y);
-          y += 5;
-          doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(60, 70, 80);
-          y = textBlock(doc, ps(f.basis), M, y, TW, 8, 'normal', [80, 90, 100], 4.5);
-          y += 8;
-      });
-
-      pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
-
-      // --- FINAL SAVE ---
-      const safeOrg = ps(RESULTS.organisation).replace(/\s+/g, '-');
-      doc.save(`MLA-Risk-Report-${safeOrg}.pdf`);
+      doc.setFillColor(...blue).rect(0, 0, W, 6, 'F');
       
-      // Give time for download then close
-      setTimeout(() => window.close(), 4000);
+      doc.setFont('helvetica', 'bold').setFontSize(26).setTextColor(255, 255, 255);
+      doc.text(orgName, M, 70);
+      
+      doc.setFontSize(14).setTextColor(150, 180, 220);
+      doc.text('AI GOVERNANCE RISK REPORT', M, 82);
+      
+      doc.setFontSize(40).setTextColor(...blue);
+      doc.text(score + '%', M, 110);
+      doc.setFontSize(12).text(bandLabel.toUpperCase(), M, 120);
+
+      // --- PAGE 2: SECTION BREAKDOWN ---
+      doc.addPage();
+      doc.setFillColor(...navy).rect(0, 0, W, 35, 'F');
+      doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(255, 255, 255).text('DOMAIN MATURITY BREAKDOWN', M, 20);
+
+      let y = 50;
+      const sections = RESULTS.sectionNames || {};
+      const pcts = RESULTS.sectionPcts || {};
+
+      Object.keys(sections).forEach((key) => {
+        const p = pcts[key] || 0;
+        const color = p > 70 ? [30, 150, 80] : p > 40 ? [200, 120, 0] : [180, 40, 40];
+
+        doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(40, 50, 60);
+        doc.text(ps(sections[key]), M, y);
+        
+        drawBar(doc, M + 90, y - 3, 40, 4, p, color);
+        doc.setFont('helvetica', 'bold').text(p + '%', W - M, y, { align: 'right' });
+        
+        y += 12;
+      });
+
+      // --- FOOTER (On current page) ---
+      doc.setFontSize(7).setTextColor(150, 150, 150);
+      doc.text('Generated on ' + today + ' | MLA Group Confidential', M, 285);
+
+      // --- SAVE AND CLOSE ---
+      doc.save('MLA-AI-Report-' + orgName.replace(/\s+/g, '-') + '.pdf');
+      
+      document.getElementById('status-text').innerText = "Report Downloaded. Closing...";
+      setTimeout(() => window.close(), 3000);
 
     } catch (err) {
-      console.error("PDF Fail:", err);
-      alert("Error: " + err.message);
+      console.error("PDF Engine Error:", err);
+      document.getElementById('status-text').innerText = "Error generating PDF. Please contact support.";
     }
   }
 </script>
