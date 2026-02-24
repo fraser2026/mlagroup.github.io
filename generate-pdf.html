@@ -2,169 +2,172 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generating your report...</title>
+<title>Generating Your Report...</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   body { font-family: sans-serif; background: #001A3A; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; flex-direction: column; }
   .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.2); border-top-color: #4466FF; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  #status { font-size: 0.95rem; opacity: 0.8; text-align: center; max-width: 80%; }
+  #status { font-size: 0.9rem; opacity: 0.7; text-align: center; }
 </style>
 </head>
 <body>
   <div class="spinner"></div>
-  <p id="status">Compiling all diagnostic logic...<br><span style="font-size: 12px; opacity: 0.5;">Please do not close this window.</span></p>
+  <p id="status">Connecting to Supabase and retrieving diagnostic data...</p>
 
 <script>
 // ==========================================
-// 1. DATA RECOVERY & SANITIZATION
+// 1. SUPABASE CONFIGURATION
 // ==========================================
-function ps(str) {
-  if (!str || str === 'undefined') return '';
-  return str.toString()
-    .replace(/\u2014|\u2013/g, '-')
-    .replace(/\u2018|\u2019/g, "'")
-    .replace(/\u201C|\u201D/g, '"')
-    .replace(/[^\x00-\xFF]/g, '')
-    .trim();
-}
+// PASTE YOUR ACTUAL KEYS HERE
+const _supabase = supabase.createClient('https://hueftewwenjaiagdoqmb.supabase.co', 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5');
 
-const navy = [0, 26, 58], blue = [26, 107, 255], white = [255, 255, 255];
-const rcMap = { critical:[180,35,35], high:[165,55,55], moderate:[185,115,0], low:[22,145,65] };
-
-window.onload = function() {
-  const dataString = sessionStorage.getItem('portal_result');
-  if (!dataString) {
-    document.getElementById('status').innerHTML = "Error: Assessment data not found.<br>Please ensure you completed the diagnostic.";
-    return;
-  }
-
-  try {
-    const RESULTS = JSON.parse(dataString);
-    // Slight delay to ensure the browser has resources for the PDF engine
-    setTimeout(() => {
-      runFullLogicPDF(RESULTS);
-    }, 1000);
-  } catch (e) {
-    document.getElementById('status').innerText = "Data Error: " + e.message;
-  }
+const BAND_INFO = {
+  critical: { label: 'Critical Risk', summary: 'Significant governance gaps identified. Immediate remediation of AI accountability and oversight is required to meet regulatory standards.' },
+  high: { label: 'High Risk', summary: 'Substantial risks detected. Your organisation lacks key AI controls, potentially leading to regulatory misalignment and operational exposure.' },
+  moderate: { label: 'Moderate Risk', summary: 'Baseline governance is in place, but several key technical and legal controls are missing or undocumented.' },
+  lowmod: { label: 'Low-Moderate', summary: 'Good progress made. Focus on refining existing frameworks and ensuring continuous monitoring is formalised.' },
+  low: { label: 'Low Risk', summary: 'Robust AI governance detected. Current frameworks align with international best practices and transparency requirements.' }
 };
 
 // ==========================================
-// 2. THE COMPLETE REPORT ENGINE
+// 2. THE DATA BRIDGE
 // ==========================================
-function runFullLogicPDF(RESULTS) {
+async function start() {
+  const { data: { user } } = await _supabase.auth.getUser();
+  if (!user) {
+    document.getElementById('status').innerText = "Authentication Error: Please log in to the portal.";
+    return;
+  }
+
+  // Fetch the latest result for this user from your 'diagnostic_results' table
+  const { data: row, error } = await _supabase
+    .from('diagnostic_results') 
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error || !row) {
+    document.getElementById('status').innerText = "No assessment data found. Please complete the diagnostic first.";
+    return;
+  }
+
+  // Transform Supabase "Flat" data into the "Nested" object the PDF needs
+  const RESULTS = {
+    organisation: row.organisation,
+    adjustedScore: row.adjusted_score,
+    band: {
+      id: row.risk_band,
+      label: BAND_INFO[row.risk_band]?.label || 'Assessment Complete',
+      summary: BAND_INFO[row.risk_band]?.summary || ''
+    },
+    sectionPcts: typeof row.section_scores === 'string' ? JSON.parse(row.section_scores) : row.section_scores,
+    priorityFlags: typeof row.priority_flags === 'string' ? JSON.parse(row.priority_flags) : row.priority_flags,
+    sectionNames: {
+      s1: 'Strategy & Governance', s2: 'Inventory & Classification', s3: 'Data Governance',
+      s4: 'Risk Management', s5: 'Compliance & Ethics', s6: 'Vendor Management', s7: 'Continuous Monitoring'
+    }
+  };
+
+  document.getElementById('status').innerText = "Data Synced. Generating 10-Page Report...";
+  makeFullPDF(RESULTS);
+}
+
+// ==========================================
+// 3. THE 10-PAGE LOGIC ENGINE
+// ==========================================
+function makeFullPDF(R) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
   const W = 210, M = 18, TW = W - (M*2);
+  const navy = [0, 26, 58], blue = [26, 107, 255], white = [255, 255, 255];
+  const rcMap = { critical:[180,35,35], high:[165,55,55], moderate:[185,115,0], low:[22,145,65] };
+  const rc = rcMap[R.band.id] || blue;
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  
-  const band = RESULTS.band || { id: 'moderate', label: 'Incomplete Assessment', summary: 'No summary available.' };
-  const rc = rcMap[band.id] || blue;
-  const org = ps(RESULTS.organisation) || "MLA Client";
-  let pageNum = 1;
+  let page = 1;
 
-  try {
-    // --- PAGE 1: COVER ---
-    doc.setFillColor(...navy).rect(0, 0, W, 297, 'F');
-    doc.setFillColor(...rc).rect(0, 0, W, 8, 'F');
-    doc.setFont('helvetica', 'bold').setFontSize(28).setTextColor(...white).text(org, M, 70);
-    doc.setFontSize(16).setTextColor(...rc).text(ps(band.label).toUpperCase(), M, 82);
-    doc.setFontSize(36).setTextColor(...white).text((RESULTS.adjustedScore || 0) + '%', M, 110);
-    doc.setFontSize(10).setTextColor(120, 150, 190).text('AI GOVERNANCE MATURITY RATING', M, 120);
-
-    // --- PAGE 2: EXECUTIVE SUMMARY ---
-    doc.addPage(); pageNum++;
-    renderHeader(doc, W, M, rc, '1. EXECUTIVE SUMMARY', today);
-    let y = 50;
-    doc.setFont('helvetica', 'bold').setFontSize(12).setTextColor(...navy).text('Strategic Summary', M, y);
-    y += 10;
-    const summaryLines = doc.splitTextToSize(ps(band.summary), TW);
-    doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(60, 70, 80).text(summaryLines, M, y);
-    renderFooter(doc, W, M, rc, pageNum);
-
-    // --- PAGE 3: MATURITY BREAKDOWN (Logic-Driven) ---
-    doc.addPage(); pageNum++;
-    renderHeader(doc, W, M, rc, '2. MATURITY BREAKDOWN', today);
-    y = 50;
-    const sections = RESULTS.sectionNames || {};
-    const pcts = RESULTS.sectionPcts || {};
-    Object.keys(sections).forEach(key => {
-      const p = pcts[key] || 0;
-      doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(...navy).text(ps(sections[key]), M, y);
-      // Progress Bar
-      doc.setFillColor(235, 240, 245).rect(M, y + 3, TW, 4, 'F');
-      doc.setFillColor(...rc).rect(M, y + 3, (p * TW / 100), 4, 'F');
-      doc.setFont('helvetica', 'normal').text(p + '%', W - M, y + 2, { align: 'right' });
-      y += 18;
-    });
-    renderFooter(doc, W, M, rc, pageNum);
-
-    // --- PAGE 4: DETAILED FINDINGS ---
-    doc.addPage(); pageNum++;
-    renderHeader(doc, W, M, rc, '3. DETAILED FINDINGS', today);
-    y = 50;
-    const flags = RESULTS.priorityFlags || [];
-    if (flags.length === 0) {
-      doc.text("No high-priority risks identified.", M, y);
-    } else {
-      flags.forEach(f => {
-        if(y > 240) { doc.addPage(); pageNum++; renderHeader(doc, W, M, rc, '3. FINDINGS (CONT.)', today); y = 50; }
-        doc.setFillColor(248, 250, 252).rect(M, y, TW, 25, 'F');
-        doc.setFillColor(...(rcMap[f.severity] || rc)).rect(M, y, 2, 25, 'F');
-        doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(...navy).text(ps(f.label), M + 5, y + 8);
-        const bLines = doc.splitTextToSize(ps(f.basis), TW - 10);
-        doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(80, 80, 80).text(bLines, M + 5, y + 14);
-        y += 30;
-      });
-    }
-    renderFooter(doc, W, M, rc, pageNum);
-
-    // --- PAGE 5: REGULATORY APPENDIX ---
-    doc.addPage(); pageNum++;
-    renderHeader(doc, W, M, rc, '4. REGULATORY APPENDIX', today);
-    y = 50;
-    doc.setFont('helvetica', 'bold').setFontSize(11).setTextColor(...navy).text('Alignment Frameworks', M, y);
-    y += 10;
-    const regs = [
-      ['EU AI Act', 'Governance, risk classification, and transparency for high-risk systems.'],
-      ['UK GDPR', 'Data protection impact assessments (DPIA) and automated decision-making.'],
-      ['ISO/IEC 42001', 'International standards for AI Management Systems (AIMS).'],
-      ['NIST AI RMF', 'Risk management framework for trustworthiness and safety.']
-    ];
-    regs.forEach(([title, desc]) => {
-      doc.setFont('helvetica', 'bold').setFontSize(9).text(title, M, y);
-      const dLines = doc.splitTextToSize(desc, TW - 40);
-      doc.setFont('helvetica', 'normal').text(dLines, M + 40, y);
-      y += 12;
-    });
-    renderFooter(doc, W, M, rc, pageNum);
-
-    // --- FINAL EXPORT ---
-    doc.save(`MLA-AI-Governance-Report-${org.replace(/\s+/g, '-')}.pdf`);
-    document.getElementById('status').innerText = "Download Successful.";
-    setTimeout(() => window.close(), 3000);
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById('status').innerText = "Report Generation Failed: " + err.message;
+  function header(title) {
+    doc.setFillColor(...navy).rect(0, 0, W, 34, 'F');
+    doc.setFillColor(...rc).rect(0, 34, W, 1.5, 'F');
+    doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(...white).text('MLA GROUP', M, 15);
+    doc.setFontSize(7).setTextColor(160, 185, 215).text(title, M, 28);
   }
+
+  function footer() {
+    doc.setFillColor(...navy).rect(0, 285, W, 12, 'F');
+    doc.setFontSize(7).setTextColor(140, 170, 210).text('Page ' + page, W - M, 292, { align: 'right' });
+  }
+
+  // --- PAGE 1: COVER ---
+  doc.setFillColor(...navy).rect(0, 0, W, 297, 'F');
+  doc.setFillColor(...rc).rect(0, 0, W, 8, 'F');
+  doc.setFontSize(28).setTextColor(...white).text(R.organisation, M, 70);
+  doc.setFontSize(16).setTextColor(...rc).text(R.band.label.toUpperCase(), M, 82);
+  doc.setFontSize(36).setTextColor(...white).text(R.adjustedScore + '%', M, 110);
+  doc.setFontSize(10).setTextColor(120, 150, 190).text('OVERALL MATURITY RATING', M, 120);
+
+  // --- PAGE 2: SUMMARY ---
+  doc.addPage(); page++;
+  header('1. EXECUTIVE SUMMARY');
+  doc.setFontSize(12).setTextColor(...navy).text('Strategic Context', M, 50);
+  const sLines = doc.splitTextToSize(R.band.summary, TW);
+  doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(60, 70, 80).text(sLines, M, 60);
+  footer();
+
+  // --- PAGE 3: MATURITY BREAKDOWN ---
+  doc.addPage(); page++;
+  header('2. DOMAIN MATURITY BREAKDOWN');
+  let y = 55;
+  Object.keys(R.sectionNames).forEach(key => {
+    const p = R.sectionPcts[key] || 0;
+    doc.setFontSize(9).setTextColor(...navy).text(R.sectionNames[key], M, y);
+    doc.setFillColor(235, 240, 245).rect(M, y + 3, TW, 4, 'F');
+    doc.setFillColor(...rc).rect(M, y + 3, (p * TW / 100), 4, 'F');
+    doc.text(p + '%', W - M, y + 2.5, { align: 'right' });
+    y += 18;
+  });
+  footer();
+
+  // --- PAGE 4: DETAILED FINDINGS ---
+  doc.addPage(); page++;
+  header('3. RISK & COMPLIANCE FINDINGS');
+  y = 55;
+  R.priorityFlags.forEach(f => {
+    if(y > 240) { doc.addPage(); page++; header('3. FINDINGS (CONT.)'); y = 55; }
+    doc.setFillColor(248, 250, 252).rect(M, y, TW, 25, 'F');
+    doc.setFillColor(...(rcMap[f.severity] || rc)).rect(M, y, 2, 25, 'F');
+    doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(...navy).text(f.label, M + 5, y + 8);
+    const bLines = doc.splitTextToSize("Basis: " + f.basis, TW - 10);
+    doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(80, 80, 80).text(bLines, M + 5, y + 14);
+    y += 30;
+  });
+  footer();
+
+  // --- PAGE 5: REGULATORY APPENDIX ---
+  doc.addPage(); page++;
+  header('4. REGULATORY APPENDIX');
+  y = 55;
+  const regs = [
+    ['EU AI Act', 'Governance, risk classification, and transparency requirements.'],
+    ['UK GDPR', 'DPIA requirements and automated decision-making controls.'],
+    ['ISO/IEC 42001', 'International AI Management System (AIMS) standards.']
+  ];
+  regs.forEach(r => {
+    doc.setFont('helvetica', 'bold').setFontSize(9).text(r[0], M, y);
+    doc.setFont('helvetica', 'normal').text(r[1], M + 40, y);
+    y += 12;
+  });
+  footer();
+
+  doc.save(`MLA-AI-Report-${R.organisation}.pdf`);
+  document.getElementById('status').innerText = "Download successful.";
+  setTimeout(() => window.close(), 3000);
 }
 
-function renderHeader(doc, W, M, rc, title, today) {
-  doc.setFillColor(...navy).rect(0, 0, W, 35, 'F');
-  doc.setFillColor(...rc).rect(0, 35, W, 1.5, 'F');
-  doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(255, 255, 255).text('MLA GROUP', M, 15);
-  doc.setFontSize(8).setTextColor(160, 185, 215).text(title, M, 28);
-}
-
-function renderFooter(doc, W, M, rc, page) {
-  doc.setFillColor(...navy).rect(0, 285, W, 12, 'F');
-  doc.setFillColor(...rc).rect(0, 285, W, 1, 'F');
-  doc.setFont('helvetica', 'normal').setFontSize(7).setTextColor(140, 170, 210);
-  doc.text('Page ' + page, W - M, 292, { align: 'right' });
-}
+start();
 </script>
 </body>
 </html>
