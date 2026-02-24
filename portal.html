@@ -301,6 +301,8 @@
               <div class="score-label">Score</div>
             </div>
             <div class="band-pill band-${band}">${bandLabel}</div>
+<button onclick="downloadReport('${r.id}')" style="background:#0000FF;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;">Download Report</button>
+
           </div>
         </div>`;
     }).join('');
@@ -310,6 +312,19 @@
     if (!iso) return '';
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
+  
+async function downloadReport(resultId) {
+  const { data, error } = await supabaseClient
+    .from('diagnostic_results')
+    .select('*')
+    .eq('id', resultId)
+    .single();
+  
+  if (data) {
+    sessionStorage.setItem('portal_result', JSON.stringify(data));
+    window.location.href = 'diagnostic.html?generate=true';
+  }
+}
 
   async function signOut() {
     await supabaseClient.auth.signOut();
