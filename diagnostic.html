@@ -1127,7 +1127,7 @@ setTimeout(() => sendEmails(), 800);
 
 async function saveToSupabase() {
   try {
-    const { error } = await supabaseClient
+    const { data, error } = await supabaseClient
       .from('diagnostic_results')
       .insert({
         organisation: document.getElementById('ps-org')?.value || '',
@@ -1139,12 +1139,18 @@ async function saveToSupabase() {
         section_scores: RESULTS.sectionPcts || {},
         priority_flags: RESULTS.priorityFlags || [],
         framework_version: RESULTS.frameworkVersion || '2.0.0'
-      });
-    if (error) console.log('Supabase error:', error);
+      })
+      .select();
+    if (error) {
+      console.log('Supabase error:', error);
+    } else if (data && data[0]) {
+      sessionStorage.setItem('pending_result_id', data[0].id);
+    }
   } catch(e) {
     console.log('Save error:', e);
   }
 }
+
 
 
 // ─── RENDER RESULTS ──────────────────────────────────────────────
