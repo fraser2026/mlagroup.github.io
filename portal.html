@@ -322,9 +322,10 @@ async function downloadReport(resultId) {
   
   if (data) {
     sessionStorage.setItem('portal_result', JSON.stringify(data));
-    window.location.href = 'diagnostic.html?generate=true';
+    window.open('diagnostic.html?generate=true', '_blank');
   }
 }
+
 
   async function signOut() {
     await supabaseClient.auth.signOut();
