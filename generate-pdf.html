@@ -62,14 +62,19 @@
     
     // Call makePDF in the iframe
     setTimeout(function() {
-      fw.makePDF();
+      sessionStorage.setItem('portal_generate', 'true');
+RESULTS = r;
+makePDF();
+sessionStorage.removeItem('portal_generate');
+
       setTimeout(function() { window.close(); }, 3000);
     }, 1000);
   });
   function makePDF() {
   const { jsPDF } = window.jspdf;
   if (!jsPDF) { alert('PDF library not loaded yet - please try again in a moment.'); return; }
-  if (!RESULTS || !RESULTS.band) { alert('Please complete the assessment first.'); return; }
+  if (!RESULTS || !RESULTS.band) { if (!sessionStorage.getItem('portal_generate')) { alert('Please complete the assessment first.'); return; } }
+
 
   try {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
