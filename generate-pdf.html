@@ -951,13 +951,23 @@ function generatePortalPDF(row) {
 
   _pageFooter(doc, W, M, navy, rc, today, pageNum);
 
-  // ── Save ────────────────────────────────────────────────────
+    // ── Save — iOS Safari compatible ─────────────────────────────
   const safeOrg  = _ps(org).replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-');
   const safeDate = today.replace(/\s/g, '-');
-  doc.save('MLA-AI-Risk-Report-' + safeOrg + '-' + safeDate + '.pdf');
+  const filename = 'MLA-AI-Risk-Report-' + safeOrg + '-' + safeDate + '.pdf';
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if (isIOS) {
+    // iOS Safari can't trigger downloads — open PDF in new tab instead
+    const pdfUrl = doc.output('bloburl');
+    window.open(pdfUrl, '_blank');
+  } else {
+    doc.save(filename);
+  }
 
   showSuccess();
-}
+
 
 // ─── ENTRY POINT — reads from sessionStorage (set by portal.html) ─
 window.addEventListener('load', () => {
