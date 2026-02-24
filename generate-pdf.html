@@ -8,94 +8,108 @@
         body { font-family: 'DM Sans', sans-serif; background: #001A3A; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; flex-direction: column; }
         .loader { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #4466FF; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #status { font-size: 0.8rem; opacity: 0.7; letter-spacing: 1px; }
     </style>
 </head>
 <body>
     <div class="loader"></div>
-    <p id="status">Executing v2.0 Risk Logic...</p>
+    <p id="status">INITIALISING v2.0 ENGINE...</p>
 
 <script>
-// --- Framework Multipliers & Weights ---
-const SECTOR_MULTIPLIERS = {
-    "Financial Services": 1.00, "Healthcare & Life Sciences": 1.00,
-    "Public Sector / Government": 0.95, "Legal & Professional Services": 0.92,
-    "Technology & SaaS": 0.88, "Retail & E-commerce": 0.85,
-    "Education": 0.82, "Manufacturing & Logistics": 0.80, "Other": 0.90
-[span_6](start_span)};[span_6](end_span)
-
-[span_7](start_span)const SECTION_WEIGHTS = { s1: 0.14, s2: 0.20, s3: 0.10, s4: 0.16, s5: 0.16, s6: 0.18, s7: 0.06 };[span_7](end_span)
-[span_8](start_span)[span_9](start_span)[span_10](start_span)[span_11](start_span)[span_12](start_span)[span_13](start_span)[span_14](start_span)const BASE_MAX = { s1: 12, s2: 18, s3: 12, s4: 12, s5: 15, s6: 15, s7: 15 };[span_8](end_span)[span_9](end_span)[span_10](end_span)[span_11](end_span)[span_12](end_span)[span_13](end_span)[span_14](end_span)
-
-const RISK_BANDS = [
-    { min: 80, label: "LOW", sub: "Governance Established — Maintenance Mode", color: [22, 101, 52] },
-    { min: 65, label: "LOW-MODERATE", sub: "Foundations Present — Targeted Gaps Remain", color: [6, 95, 70] },
-    { min: 45, label: "MODERATE", sub: "Governance Gaps — Regulatory Exposure Likely", color: [180, 140, 0] },
-    { min: 25, label: "HIGH", sub: "Significant Exposure — Intervention Required", color: [153, 27, 27] },
-    { min: 0,  label: "CRITICAL", sub: "Governance Absent — Urgent Escalation Needed", color: [130, 0, 0] }
-[span_15](start_span)];[span_15](end_span)
-
 window.onload = async function() {
-    const raw = sessionStorage.getItem('portal_result');
-    if (!raw) return;
-    const data = JSON.parse(raw);
+    const status = document.getElementById('status');
+    try {
+        status.innerText = "FETCHING SESSION DATA...";
+        const raw = sessionStorage.getItem('portal_result');
+        if (!raw) {
+            status.innerText = "ERROR: NO DATA FOUND. REDIRECTING...";
+            setTimeout(() => window.location.href = 'portal.html', 2000);
+            return;
+        }
+        const data = JSON.parse(raw);
+        console.log("Data loaded:", data);
 
-    // 1. Adjusted Max Score Logic (Q1.2 High-Risk Categories)
-    let adjMax = { ...BASE_MAX };
-    const cats = data.q1_2_selections || [];
-    [span_16](start_span)if (cats.includes('Automated decision support')) adjMax.s4 += 2;[span_16](end_span)
-    [span_17](start_span)if (cats.includes('Customer profiling')) adjMax.s6 += 2;[span_17](end_span)
-    if (cats.includes('Health or safety')) { adjMax.s4 += 2; adjMax.s5 += 2; adjMax.s6 += 2; [span_18](start_span)}
+        // --- 1. Constants from Framework v2.0 ---
+        const SECTOR_MULTIPLIERS = {
+            "Financial Services": 1.00, "Healthcare & Life Sciences": 1.00,
+            "Public Sector / Government": 0.95, "Legal & Professional Services": 0.92,
+            "Technology & SaaS": 0.88, "Retail & E-commerce": 0.85,
+            "Education": 0.82, "Manufacturing & Logistics": 0.80, "Other": 0.90
+        };
+        const SECTION_WEIGHTS = { s1: 0.14, s2: 0.20, s3: 0.10, s4: 0.16, s5: 0.16, s6: 0.18, s7: 0.06 };
+        const BASE_MAX = { s1: 12, s2: 18, s3: 12, s4: 12, s5: 15, s6: 15, s7: 15 };
+        const RISK_BANDS = [
+            { min: 80, label: "LOW", color: [22, 101, 52] },
+            { min: 65, label: "LOW-MODERATE", color: [6, 95, 70] },
+            { min: 45, label: "MODERATE", color: [180, 140, 0] },
+            { min: 25, label: "HIGH", color: [153, 27, 27] },
+            { min: 0,  label: "CRITICAL", color: [130, 0, 0] }
+        ];
 
-    // 2. Calculation Pipeline
-    const scores = typeof data.section_scores === 'string' ? JSON.parse(data.section_scores) : data.section_scores;
-    let weightedScore = 0;
-    Object.keys(SECTION_WEIGHTS).forEach(s => {
-        weightedScore += ((scores[s] || 0) / adjMax[s]) * 100 * SECTION_WEIGHTS[s];[span_18](end_span)
-    });
+        status.innerText = "CALCULATING WEIGHTED SCORES...";
+        
+        // --- 2. Scoring Engine ---
+        let scores = data.section_scores;
+        if (typeof scores === 'string') scores = JSON.parse(scores);
+        
+        let weightedScore = 0;
+        Object.keys(SECTION_WEIGHTS).forEach(s => {
+            let sVal = scores[s] || 0;
+            weightedScore += (sVal / BASE_MAX[s]) * 100 * SECTION_WEIGHTS[s];
+        });
 
-    [span_19](start_span)const adjustedScore = weightedScore * (SECTOR_MULTIPLIERS[data.sector] || 0.90);[span_19](end_span)
+        const multiplier = SECTOR_MULTIPLIERS[data.sector] || 0.90;
+        const adjustedScore = Math.round(weightedScore * multiplier);
 
-    // 3. Uncertainty Elevation (Q1.1, Q1.3, Q6.4)
-    let bandIdx = RISK_BANDS.findIndex(b => adjustedScore >= b.min);
-    [span_20](start_span)if ((data.uncertainty_count || 0) >= 5) bandIdx = Math.max(0, Math.min(bandIdx + 2, 4));[span_20](end_span)
-    [span_21](start_span)else if ((data.uncertainty_count || 0) >= 3) bandIdx = Math.max(0, Math.min(bandIdx + 1, 4));[span_21](end_span)
-    const band = RISK_BANDS[bandIdx];
+        // --- 3. Band Selection & Elevation ---
+        let bandIdx = RISK_BANDS.findIndex(b => adjustedScore >= b.min);
+        // Uncertainty Trigger (Framework Part 4)
+        if ((data.uncertainty_count || 0) >= 3) {
+            bandIdx = Math.max(0, Math.min(bandIdx + 1, 4));
+        }
+        const band = RISK_BANDS[bandIdx];
 
-    // 4. Mandatory Regime Logic
-    const REGIME_FLAGS = {
-        "FCA regulated": { label: "Mandatory: AI governance must be documented under SM&CR", basis: "FCA DP5/22, PS7/21" },
-        "ICO registered / GDPR": { label: "Mandatory: DPIA required for personal data AI", basis: "UK GDPR Art.35" },
-        "NHS / CQC oversight": { label: "Mandatory: Clinical AI requires DCB0129 and DTAC", basis: "NHS DTAC" }
-    [span_22](start_span)};[span_22](end_span)
+        status.innerText = "GENERATING PDF DOCUMENT...";
 
-    let priorityFlags = typeof data.priority_flags === 'string' ? JSON.parse(data.priority_flags) : data.priority_flags;
-    (data.regulatory_regimes || []).forEach(r => {
-        [span_23](start_span)if (REGIME_FLAGS[r]) priorityFlags.push(REGIME_FLAGS[r]);[span_23](end_span)
-    });
+        // --- 4. PDF Rendering ---
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        // Cover
+        doc.setFillColor(0, 26, 58).rect(0, 0, 210, 297, 'F');
+        doc.setTextColor(255, 255, 255).setFontSize(26).text(data.organisation || 'Diagnostic Report', 20, 60);
+        
+        // Score Box
+        doc.setFillColor(...band.color).rect(20, 80, 170, 45, 'F');
+        doc.setFontSize(36).text(adjustedScore + "%", 30, 105);
+        doc.setFontSize(14).text("RISK LEVEL: " + band.label, 30, 118);
 
-    // --- PDF RENDERING (Visual Upgrade) ---
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    
-    [span_24](start_span)// Page 1: Dark Cover[span_24](end_span)
-    doc.setFillColor(0, 26, 58).rect(0, 0, 210, 297, 'F');
-    doc.setTextColor(255, 255, 255).setFontSize(24).text(data.organisation || 'Report', 20, 60);
-    doc.setFillColor(...band.color).rect(20, 90, 170, 40, 'F');
-    doc.setFontSize(30).text(Math.round(adjustedScore) + "%", 30, 115);
-    doc.setFontSize(14).text(band.label, 30, 125);
+        // Priority Section
+        doc.addPage();
+        doc.setTextColor(0, 26, 58).setFontSize(16).text("PRIORITY REGULATORY GAPS", 20, 30);
+        
+        let flags = data.priority_flags;
+        if (typeof flags === 'string') flags = JSON.parse(flags);
+        if (!Array.isArray(flags)) flags = [];
 
-    [span_25](start_span)[span_26](start_span)[span_27](start_span)// Page 2: Priority Gaps[span_25](end_span)[span_26](end_span)[span_27](end_span)
-    doc.addPage();
-    doc.setTextColor(0, 26, 58).setFontSize(16).text("PRIORITY REGULATORY GAPS", 20, 30);
-    let y = 45;
-    priorityFlags.forEach(f => {
-        doc.setFillColor(255, 240, 240).rect(20, y, 170, 20, 'F');
-        doc.setTextColor(150, 0, 0).setFontSize(9).text(f.label, 25, y + 8);
-        doc.setTextColor(100, 100, 100).setFontSize(7).text("Basis: " + f.basis, 25, y + 15);
-        y += 25;
-    });
+        let y = 45;
+        flags.forEach(f => {
+            doc.setFillColor(252, 228, 232).rect(20, y, 170, 22, 'F');
+            doc.setTextColor(153, 27, 27).setFontSize(9).text(f.label || "Flag", 25, y + 8);
+            doc.setTextColor(100, 116, 139).setFontSize(7).text("Basis: " + (f.basis || "General Compliance"), 25, y + 16);
+            y += 28;
+        });
 
-    doc.save(`MLA_V2_Report_${data.organisation}.pdf`);
+        status.innerText = "DOWNLOAD STARTING...";
+        doc.save(`MLA_Report_${data.organisation || 'Diagnostic'}.pdf`);
+        
+        // Close window after download
+        setTimeout(() => { status.innerText = "COMPLETE."; }, 2000);
+
+    } catch (err) {
+        console.error("PDF Engine Error:", err);
+        status.innerHTML = "ERROR: " + err.message + "<br><br>Check the Console (F12) for details.";
+    }
 };
 </script>
 </body>
