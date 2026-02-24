@@ -5,31 +5,39 @@
     <title>MLA — Framework v2.0 Report Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: 'DM Sans', sans-serif; background: #001A3A; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; flex-direction: column; }
+        body { font-family: 'DM Sans', sans-serif; background: #001A3A; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; flex-direction: column; text-align: center; }
         .loader { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #4466FF; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #status { font-size: 0.8rem; opacity: 0.7; letter-spacing: 1px; }
+        #status { font-size: 0.8rem; opacity: 0.7; letter-spacing: 1px; max-width: 300px; line-height: 1.5; }
     </style>
 </head>
 <body>
     <div class="loader"></div>
-    <p id="status">INITIALISING v2.0 ENGINE...</p>
+    <p id="status">CONNECTING TO FRAMEWORK ENGINE...</p>
 
 <script>
-window.onload = async function() {
+// Use a slightly different approach to ensure libraries are loaded
+async function generateReport() {
     const status = document.getElementById('status');
+    
     try {
-        status.innerText = "FETCHING SESSION DATA...";
+        // 1. Verify Library
+        if (!window.jspdf) {
+            status.innerText = "WAITING FOR PDF LIBRARY...";
+            setTimeout(generateReport, 500);
+            return;
+        }
+
+        // 2. Fetch Data
         const raw = sessionStorage.getItem('portal_result');
         if (!raw) {
-            status.innerText = "ERROR: NO DATA FOUND. REDIRECTING...";
-            setTimeout(() => window.location.href = 'portal.html', 2000);
+            status.innerText = "SESSION EXPIRED. PLEASE GO BACK TO PORTAL.";
             return;
         }
         const data = JSON.parse(raw);
-        console.log("Data loaded:", data);
+        console.log("Generating for:", data.organisation);
 
-        // --- 1. Constants from Framework v2.0 ---
+        // 3. Framework v2.0 Logic Constants
         const SECTOR_MULTIPLIERS = {
             "Financial Services": 1.00, "Healthcare & Life Sciences": 1.00,
             "Public Sector / Government": 0.95, "Legal & Professional Services": 0.92,
@@ -46,71 +54,68 @@ window.onload = async function() {
             { min: 0,  label: "CRITICAL", color: [130, 0, 0] }
         ];
 
-        status.innerText = "CALCULATING WEIGHTED SCORES...";
-        
-        // --- 2. Scoring Engine ---
-        let scores = data.section_scores;
-        if (typeof scores === 'string') scores = JSON.parse(scores);
+        // 4. Scoring Engine
+        status.innerText = "APPLYING SECTOR WEIGHTS...";
+        let scores = typeof data.section_scores === 'string' ? JSON.parse(data.section_scores) : data.section_scores;
         
         let weightedScore = 0;
         Object.keys(SECTION_WEIGHTS).forEach(s => {
-            let sVal = scores[s] || 0;
+            let sVal = (scores && scores[s]) ? scores[s] : 0;
             weightedScore += (sVal / BASE_MAX[s]) * 100 * SECTION_WEIGHTS[s];
         });
 
         const multiplier = SECTOR_MULTIPLIERS[data.sector] || 0.90;
         const adjustedScore = Math.round(weightedScore * multiplier);
 
-        // --- 3. Band Selection & Elevation ---
+        // 5. Band Logic
         let bandIdx = RISK_BANDS.findIndex(b => adjustedScore >= b.min);
-        // Uncertainty Trigger (Framework Part 4)
-        if ((data.uncertainty_count || 0) >= 3) {
-            bandIdx = Math.max(0, Math.min(bandIdx + 1, 4));
-        }
+        if ((data.uncertainty_count || 0) >= 3) bandIdx = Math.max(0, Math.min(bandIdx + 1, 4));
         const band = RISK_BANDS[bandIdx];
 
-        status.innerText = "GENERATING PDF DOCUMENT...";
-
-        // --- 4. PDF Rendering ---
+        // 6. Start PDF
+        status.innerText = "BUILDING BESPOKE PDF...";
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
         
-        // Cover
-        doc.setFillColor(0, 26, 58).rect(0, 0, 210, 297, 'F');
-        doc.setTextColor(255, 255, 255).setFontSize(26).text(data.organisation || 'Diagnostic Report', 20, 60);
-        
-        // Score Box
-        doc.setFillColor(...band.color).rect(20, 80, 170, 45, 'F');
-        doc.setFontSize(36).text(adjustedScore + "%", 30, 105);
-        doc.setFontSize(14).text("RISK LEVEL: " + band.label, 30, 118);
+        // --- Page 1: Design ---
+        doc.setFillColor(0, 26, 58).rect(0, 0, 210, 297, 'F'); // Navy Background
+        doc.setTextColor(255, 255, 255).setFontSize(22).text(data.organisation || 'Diagnostic Report', 20, 50);
+        doc.setFontSize(10).setTextColor(100, 130, 170).text("FRAMEWORK VERSION 2.0", 20, 58);
 
-        // Priority Section
+        doc.setFillColor(...band.color).rect(20, 80, 170, 45, 'F');
+        doc.setTextColor(255, 255, 255).setFontSize(40).text(adjustedScore + "%", 30, 108);
+        doc.setFontSize(14).text("RISK BAND: " + band.label, 30, 118);
+
+        // --- Page 2: Flags ---
         doc.addPage();
         doc.setTextColor(0, 26, 58).setFontSize(16).text("PRIORITY REGULATORY GAPS", 20, 30);
         
-        let flags = data.priority_flags;
-        if (typeof flags === 'string') flags = JSON.parse(flags);
+        let flags = typeof data.priority_flags === 'string' ? JSON.parse(data.priority_flags) : data.priority_flags;
         if (!Array.isArray(flags)) flags = [];
 
         let y = 45;
         flags.forEach(f => {
             doc.setFillColor(252, 228, 232).rect(20, y, 170, 22, 'F');
-            doc.setTextColor(153, 27, 27).setFontSize(9).text(f.label || "Flag", 25, y + 8);
-            doc.setTextColor(100, 116, 139).setFontSize(7).text("Basis: " + (f.basis || "General Compliance"), 25, y + 16);
+            doc.setTextColor(153, 27, 27).setFontSize(10).text(f.label || "Flag", 25, y + 9);
+            doc.setTextColor(100, 116, 139).setFontSize(8).text("Basis: " + (f.basis || "Regulatory Standards"), 25, y + 16);
             y += 28;
+            if(y > 270) { doc.addPage(); y = 30; }
         });
 
-        status.innerText = "DOWNLOAD STARTING...";
-        doc.save(`MLA_Report_${data.organisation || 'Diagnostic'}.pdf`);
+        status.innerText = "FINISHING DOWNLOAD...";
+        doc.save(`MLA_Report_${(data.organisation || 'Diagnostic').replace(/\s+/g, '_')}.pdf`);
         
-        // Close window after download
-        setTimeout(() => { status.innerText = "COMPLETE."; }, 2000);
+        // Success state
+        status.innerHTML = "REPORT DOWNLOADED.<br><a href='portal.html' style='color:#4466FF; text-decoration:none; font-size:12px;'>Return to Portal</a>";
 
-    } catch (err) {
-        console.error("PDF Engine Error:", err);
-        status.innerHTML = "ERROR: " + err.message + "<br><br>Check the Console (F12) for details.";
+    } catch (e) {
+        console.error(e);
+        status.innerHTML = "CRITICAL ENGINE ERROR: " + e.message;
     }
-};
+}
+
+// Start the process
+window.onload = generateReport;
 </script>
 </body>
 </html>
