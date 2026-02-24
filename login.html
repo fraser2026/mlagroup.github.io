@@ -298,16 +298,15 @@
         role: 'client'
       });
 
-      // Claim the most recent anonymous result by matching organisation name
-      const pendingOrg = sessionStorage.getItem('pending_org');
-      if (pendingOrg) {
-        await supabaseClient
-          .from('diagnostic_results')
-          .update({ user_id: data.user.id })
-          .eq('organisation', pendingOrg)
-          .is('user_id', null);
-        sessionStorage.removeItem('pending_org');
-      }
+          // Claim pending diagnostic result
+    const pendingId = sessionStorage.getItem('pending_result_id');
+    if (pendingId && data.user) {
+      await supabaseClient
+        .from('diagnostic_results')
+        .update({ user_id: data.user.id })
+        .eq('id', pendingId);
+      sessionStorage.removeItem('pending_result_id');
+    }
     }
 
     showMsg('signup-msg', 'success', 'Account created! Redirecting to your portal...');
