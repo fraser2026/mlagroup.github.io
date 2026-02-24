@@ -869,30 +869,7 @@ const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Auto-generate PDF if coming from portal
-(function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('generate') === 'true') {
-    const portalResult = sessionStorage.getItem('portal_result');
-    if (portalResult) {
-      const r = JSON.parse(portalResult);
-      sessionStorage.removeItem('portal_result');
-      RESULTS = r;
-      window.addEventListener('load', function() {
-        // Pre-fill all fields makePDF reads
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
-        set('ps-name', r.organisation);
-        set('ps-org', r.organisation);
-        set('ps-sector', r.sector);
-        set('ps-size', r.org_size);
-        setTimeout(function() {
-          makePDF();
-          setTimeout(function() { window.close(); }, 1000);
-        }, 1500);
-      });
-    }
-  }
-})();
+
 
 
 
