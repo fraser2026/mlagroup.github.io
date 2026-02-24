@@ -80,12 +80,24 @@ const showError = (msg) => {
   document.getElementById('back-btn').style.display = 'inline-block';
 };
 
-const showSuccess = () => {
+const showSuccess = (iosDataUri) => {
   document.getElementById('spinner').style.display = 'none';
   document.getElementById('check').style.display = 'block';
-  document.getElementById('heading').textContent = 'Report Downloaded!';
-  setStatus('Your PDF has been saved to your downloads folder.');
   document.getElementById('back-btn').style.display = 'inline-block';
+  if (iosDataUri) {
+    document.getElementById('heading').textContent = 'Report Ready!';
+    setStatus('Tap the button below to open your PDF. Use the share icon in Safari to save it.');
+    const btn = document.createElement('a');
+    btn.href = iosDataUri;
+    btn.textContent = 'Open PDF Report';
+    btn.className = 'btn';
+    btn.style.marginTop = '12px';
+    btn.style.display = 'inline-block';
+    document.querySelector('.box').appendChild(btn);
+  } else {
+    document.getElementById('heading').textContent = 'Report Downloaded!';
+    setStatus('Your PDF has been saved to your downloads folder.');
+  }
 };
 
 // ─── EMBEDDED CONSTANTS ──────────────────────────────────────────
@@ -947,33 +959,24 @@ function generatePortalPDF(row) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(100, 115, 138);
-  
-    // ── Save — cross-platform including iOS ───────────────────────
+  doc.text(dLines, M + 5, y + 13.5);
+
+  _pageFooter(doc, W, M, navy, rc, today, pageNum);
+
+  // ── Save — PC/Android download, iOS open-in-viewer ───────────
   const safeOrg  = _ps(org).replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-');
   const safeDate = today.replace(/\s/g, '-');
   const filename = 'MLA-AI-Risk-Report-' + safeOrg + '-' + safeDate + '.pdf';
-
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isIOS    = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
   if (isIOS) {
-    // iOS Safari — create a clickable link to the blob
-    const blob = doc.output('blob');
-    const blobUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = filename;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 3000);
+    const dataUri = doc.output('datauristring');
+    showSuccess(dataUri);
   } else {
     doc.save(filename);
+    showSuccess();
   }
-
-  showSuccess();
-
-
+}
 
 // ─── ENTRY POINT — reads from sessionStorage (set by portal.html) ─
 window.addEventListener('load', () => {
