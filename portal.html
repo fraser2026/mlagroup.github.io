@@ -84,11 +84,6 @@
     flex-shrink: 0;
   }
   .btn-cta:hover { background: #0000CC; }
-  .btn-secondary {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-  }
-  .btn-secondary:hover { background: rgba(255,255,255,0.2); }
 
   /* ── RESULTS TABLE ── */
   .section-title {
@@ -111,8 +106,15 @@
   }
   .result-card:hover { box-shadow: 0 4px 20px rgba(0,0,80,0.08); }
 
+  .result-left {}
+  .result-org { font-size: 1rem; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+  .result-meta { font-size: 0.78rem; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+
   .result-right { display: flex; align-items: center; gap: 16px; }
-  .score-badge { text-align: center; min-width: 60px; }
+  .score-badge {
+    text-align: center;
+    min-width: 60px;
+  }
   .score-num { font-size: 1.5rem; font-weight: 700; line-height: 1; }
   .score-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
 
@@ -135,18 +137,24 @@
   .score-high { color: #991B1B; }
   .score-critical { color: #9D174D; }
 
+  /* ── EMPTY STATE ── */
   .empty-state {
     background: white; border-radius: 14px;
     border: 1.5px dashed var(--border);
     padding: 48px 24px;
     text-align: center;
   }
+  .empty-state h3 { font-size: 1rem; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+  .empty-state p { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; }
+
+  /* ── LOADING ── */
   .loading { text-align: center; padding: 48px; color: var(--muted); font-size: 0.9rem; }
 
   @media(max-width: 600px) {
-    .stats-row { grid-template-columns: 1fr; }
-    .cta-card { flex-direction: column; align-items: flex-start; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
     .result-card { grid-template-columns: 1fr; }
+    .result-right { justify-content: flex-start; }
+    .cta-card { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
@@ -167,7 +175,7 @@
     <p>Your AI governance diagnostic results and report history.</p>
   </div>
 
-  <div class="stats-row" id="stats-container" style="display:none;">
+  <div class="stats-row">
     <div class="stat-card">
       <div class="stat-label">Diagnostics Run</div>
       <div class="stat-value" id="stat-count">—</div>
@@ -187,16 +195,14 @@
 
   <div class="cta-card">
     <div>
-      <h3>AI Governance Report</h3>
-      <p id="cta-text">Complete a diagnostic to generate your bespoke risk report.</p>
+      <h3>Run a new diagnostic</h3>
+      <p>Track your governance improvement over time with a fresh assessment.</p>
     </div>
-    <div style="display:flex; gap:12px;">
-       <a href="generate-pdf.html" id="btn-download-latest" class="btn-cta btn-secondary" style="display:none;">Download Latest Report</a>
-       <a href="diagnostic.html" class="btn-cta">Start Diagnostic →</a>
-    </div>
+    <a href="diagnostic.html" class="btn-cta">Start Diagnostic →</a>
   </div>
 
   <div class="section-title">Your Assessment History</div>
+
   <div id="results-container" class="loading">Loading your results...</div>
 
 </div>
@@ -212,12 +218,16 @@
   };
 
   async function init() {
+    // Check auth
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) { window.location.href = 'login.html'; return; }
 
     const user = session.user;
+
+    // Set nav email
     document.getElementById('nav-email').textContent = user.email;
 
+    // Get profile for name
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select('full_name, organisation')
@@ -225,86 +235,97 @@
       .single();
 
     if (profile?.full_name) {
-      document.getElementById('greeting-name').textContent = ', ' + profile.full_name.split(' ')[0];
+      const firstName = profile.full_name.split(' ')[0];
+      document.getElementById('greeting-name').textContent = ', ' + firstName;
     }
 
-    const { data: results } = await supabaseClient
+    // Load results
+    const { data: results, error } = await supabaseClient
       .from('diagnostic_results')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (results && results.length > 0) {
-      document.getElementById('stats-container').style.display = 'grid';
-      document.getElementById('btn-download-latest').style.display = 'block';
-      document.getElementById('cta-text').textContent = "Access your latest diagnostic findings and recommendations.";
-      renderStats(results);
-      renderResults(results);
-    } else {
-      renderResults([]);
-    }
+    renderStats(results || []);
+    renderResults(results || []);
   }
 
   function renderStats(results) {
     document.getElementById('stat-count').textContent = results.length;
-    const latest = results[0];
-    document.getElementById('stat-score').textContent = (latest.adjusted_score || 0) + '%';
-    const band = latest.risk_band || 'moderate';
-    const bandEl = document.getElementById('stat-band');
-    bandEl.textContent = BAND_LABELS[band] || band;
-    bandEl.className = 'stat-value score-' + band;
-    document.getElementById('stat-date').textContent = 'Last: ' + formatDate(latest.created_at);
+    if (results.length > 0) {
+      const latest = results[0];
+      document.getElementById('stat-score').textContent = (latest.adjusted_score || 0) + '%';
+      const band = latest.risk_band || 'moderate';
+      const bandEl = document.getElementById('stat-band');
+      bandEl.textContent = BAND_LABELS[band] || band;
+      bandEl.className = 'stat-value score-' + band;
+      document.getElementById('stat-date').textContent = 'Last: ' + formatDate(latest.created_at);
+    }
   }
 
   function renderResults(results) {
     const container = document.getElementById('results-container');
+
     if (results.length === 0) {
-      container.innerHTML = `<div class="empty-state"><h3>No assessments yet</h3><p>Complete your first diagnostic to see your results.</p></div>`;
+      container.innerHTML = `
+        <div class="empty-state">
+          <h3>No assessments yet</h3>
+          <p>Complete your first AI governance diagnostic to see your results here.</p>
+          <a href="diagnostic.html" class="btn-cta">Start Your First Diagnostic →</a>
+        </div>`;
       return;
     }
 
     container.className = 'results-list';
     container.innerHTML = results.map(r => {
       const band = r.risk_band || 'moderate';
+      const bandLabel = BAND_LABELS[band] || band;
+      const score = r.adjusted_score || 0;
+      const org = r.organisation || 'Assessment';
+      const date = formatDate(r.created_at);
+      const sector = r.sector || '';
+
       return `
         <div class="result-card">
           <div class="result-left">
-            <div class="result-org">${r.organisation || 'Assessment'}</div>
+            <div class="result-org">${org}</div>
             <div class="result-meta">
-              <span>${formatDate(r.created_at)}</span>
+              <span>${date}</span>
+              ${sector ? `<span>${sector}</span>` : ''}
               <span>Framework v${r.framework_version || '2.0.0'}</span>
             </div>
           </div>
           <div class="result-right">
             <div class="score-badge">
-              <div class="score-num score-${band}">${r.adjusted_score || 0}%</div>
+              <div class="score-num score-${band}">${score}%</div>
               <div class="score-label">Score</div>
             </div>
-            <div class="band-pill band-${band}">${BAND_LABELS[band] || band}</div>
-            <button onclick="downloadSpecific('${r.id}')" class="btn-cta" style="padding:8px 16px; font-size:0.75rem;">Download PDF</button>
+            <div class="band-pill band-${band}">${bandLabel}</div>
+<button onclick="downloadReport('${r.id}')" style="background:#0000FF;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;">Download Report</button>
+
           </div>
         </div>`;
     }).join('');
   }
 
   function formatDate(iso) {
+    if (!iso) return '';
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
-
-  async function downloadSpecific(resultId) {
-    // We fetch the full row and store it in sessionStorage 
-    // so generate-pdf.html can see it immediately
-    const { data } = await supabaseClient
-      .from('diagnostic_results')
-      .select('*')
-      .eq('id', resultId)
-      .single();
-    
-    if (data) {
-      sessionStorage.setItem('portal_result', JSON.stringify(data));
-      window.location.href = 'generate-pdf.html';
-    }
+  
+async function downloadReport(resultId) {
+  const { data, error } = await supabaseClient
+    .from('diagnostic_results')
+    .select('*')
+    .eq('id', resultId)
+    .single();
+  
+  if (data) {
+    sessionStorage.setItem('portal_result', JSON.stringify(data));
+    window.open('generate-pdf.html', '_blank');
   }
+}
+
 
   async function signOut() {
     await supabaseClient.auth.signOut();
@@ -313,5 +334,6 @@
 
   init();
 </script>
+
 </body>
 </html>
