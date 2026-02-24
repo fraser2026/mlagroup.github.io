@@ -25,7 +25,6 @@
     justify-content: center;
     padding: 24px;
   }
-
   .card {
     background: white;
     border-radius: 20px;
@@ -34,7 +33,6 @@
     max-width: 420px;
     overflow: hidden;
   }
-
   .card-top {
     background: var(--navy);
     padding: 32px 36px 28px;
@@ -52,9 +50,7 @@
     color: rgba(255,255,255,0.45);
     letter-spacing: 0.05em;
   }
-
   .card-body { padding: 32px 36px; }
-
   .tabs {
     display: flex;
     gap: 0;
@@ -77,7 +73,6 @@
     color: var(--blue);
     border-bottom-color: var(--blue);
   }
-
   .form-group { margin-bottom: 18px; }
   .form-group label {
     display: block;
@@ -100,7 +95,6 @@
     outline: none;
   }
   .form-group input:focus { border-color: var(--blue); }
-
   .btn {
     width: 100%;
     padding: 13px;
@@ -118,7 +112,6 @@
   .btn:hover { background: #0000CC; }
   .btn:active { transform: scale(0.99); }
   .btn:disabled { background: #8899CC; cursor: not-allowed; }
-
   .message {
     margin-top: 16px;
     padding: 12px 14px;
@@ -129,7 +122,6 @@
   }
   .message.error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; display: block; }
   .message.success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; display: block; }
-
   .divider {
     text-align: center;
     font-size: 0.75rem;
@@ -147,7 +139,6 @@
   }
   .divider::before { left: 0; }
   .divider::after { right: 0; }
-
   .footer-note {
     text-align: center;
     font-size: 0.75rem;
@@ -156,7 +147,6 @@
     line-height: 1.5;
   }
   .footer-note a { color: var(--blue); text-decoration: none; }
-
   .back-link {
     display: block;
     text-align: center;
@@ -279,66 +269,49 @@
   }
 
   async function signUp() {
-  const name     = document.getElementById('signup-name').value.trim();
-  const org      = document.getElementById('signup-org').value.trim();
-  const email    = document.getElementById('signup-email').value.trim();
-  const password = document.getElementById('signup-password').value;
+    const name     = document.getElementById('signup-name').value.trim();
+    const org      = document.getElementById('signup-org').value.trim();
+    const email    = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
 
-  if (!name || !email || !password) { showMsg('signup-msg', 'error', 'Please fill in all required fields.'); return; }
-  if (password.length < 8) { showMsg('signup-msg', 'error', 'Password must be at least 8 characters.'); return; }
+    if (!name || !email || !password) { showMsg('signup-msg', 'error', 'Please fill in all required fields.'); return; }
+    if (password.length < 8) { showMsg('signup-msg', 'error', 'Password must be at least 8 characters.'); return; }
 
-  const btn = document.getElementById('signup-btn');
-  btn.disabled = true; btn.textContent = 'Creating account...';
+    const btn = document.getElementById('signup-btn');
+    btn.disabled = true; btn.textContent = 'Creating account...';
 
-  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
 
-  if (error) {
-    showMsg('signup-msg', 'error', error.message);
-    btn.disabled = false; btn.textContent = 'Create Account →';
-    return;
-  }
-
-  if (data.user) {
-    // Create profile
-    await supabaseClient.from('profiles').insert({
-      id: data.user.id,
-      email: email,
-      full_name: name,
-      organisation: org,
-      role: 'client'
-    });
-
-    // Claim the most recent anonymous result by matching organisation name
-    const pendingOrg = sessionStorage.getItem('pending_org');
-    if (pendingOrg) {
-      await supabaseClient
-        .from('diagnostic_results')
-        .update({ user_id: data.user.id })
-        .eq('organisation', pendingOrg)
-        .is('user_id', null);
-      sessionStorage.removeItem('pending_org');
-    }
-  }
-
-  showMsg('signup-msg', 'success', 'Account created! Redirecting to your portal...');
-  setTimeout(() => window.location.href = 'portal.html', 1500);
-}
-
-
-        showMsg('signup-msg', 'success', 'Account created! Setting up your portal...');
-
-    // Claim any pending diagnostic result
-    const pendingId = sessionStorage.getItem('pending_result_id');
-    if (pendingId && data.user) {
-      await supabaseClient
-        .from('diagnostic_results')
-        .update({ user_id: data.user.id })
-        .eq('id', pendingId);
-      sessionStorage.removeItem('pending_result_id');
+    if (error) {
+      showMsg('signup-msg', 'error', error.message);
+      btn.disabled = false; btn.textContent = 'Create Account →';
+      return;
     }
 
+    if (data.user) {
+      // Create profile row
+      await supabaseClient.from('profiles').insert({
+        id: data.user.id,
+        email: email,
+        full_name: name,
+        organisation: org,
+        role: 'client'
+      });
+
+      // Claim the most recent anonymous result by matching organisation name
+      const pendingOrg = sessionStorage.getItem('pending_org');
+      if (pendingOrg) {
+        await supabaseClient
+          .from('diagnostic_results')
+          .update({ user_id: data.user.id })
+          .eq('organisation', pendingOrg)
+          .is('user_id', null);
+        sessionStorage.removeItem('pending_org');
+      }
+    }
+
+    showMsg('signup-msg', 'success', 'Account created! Redirecting to your portal...');
     setTimeout(() => window.location.href = 'portal.html', 1500);
-
   }
 
   // Allow Enter key to submit
