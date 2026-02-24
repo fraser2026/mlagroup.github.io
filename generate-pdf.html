@@ -1,15 +1,15 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Generating Your Report...</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f9;
+      font-family: 'DM Sans', 'Segoe UI', sans-serif;
+      background: #F7F8FC;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -18,206 +18,295 @@
     }
     .box {
       background: white;
-      border-radius: 12px;
-      padding: 40px 50px;
+      border-radius: 14px;
+      padding: 48px 56px;
       text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 24px rgba(0,26,58,0.10);
       max-width: 420px;
       width: 100%;
     }
-    h2 { margin-bottom: 10px; color: #1a1a2e; }
-    p  { color: #666; margin-bottom: 24px; }
+    h2 { margin-bottom: 10px; color: #001A3A; font-size: 1.3rem; }
+    p  { color: #5A6B82; margin-bottom: 24px; font-size: 0.9rem; }
     .spinner {
       width: 44px; height: 44px;
-      border: 4px solid #e0e0e0;
-      border-top-color: #4f46e5;
+      border: 4px solid #E2E8F4;
+      border-top-color: #0000FF;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
-      margin: 0 auto 20px;
+      margin: 0 auto 24px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .btn {
       display: inline-block;
-      margin-top: 16px;
-      padding: 10px 24px;
-      background: #4f46e5;
+      margin-top: 8px;
+      padding: 11px 24px;
+      background: #0000FF;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 0.88rem;
+      font-weight: 600;
       text-decoration: none;
+      transition: background 0.15s;
     }
-    .btn:hover { background: #4338ca; }
-    #status { font-size: 14px; color: #555; }
-    #error-msg { color: #dc2626; margin-top: 12px; display: none; }
+    .btn:hover { background: #0000CC; }
+    #status { font-size: 0.85rem; color: #5A6B82; }
+    #error-msg { color: #dc2626; margin-top: 12px; font-size: 0.85rem; display: none; }
+    .check { font-size: 2.5rem; margin-bottom: 12px; display: none; }
   </style>
 </head>
 <body>
 <div class="box">
   <div class="spinner" id="spinner"></div>
-  <h2>Preparing Your Report</h2>
-  <p id="status">Loading your results...</p>
+  <div class="check" id="check">✅</div>
+  <h2 id="heading">Preparing Your Report</h2>
+  <p id="status">Building your PDF...</p>
   <div id="error-msg"></div>
   <a href="portal.html" class="btn" id="back-btn" style="display:none;">← Back to Dashboard</a>
 </div>
 
 <script>
-  // ── CONFIG ────────────────────────────────────────────────
-  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-  const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
-  // ─────────────────────────────────────────────────────────
-
-  const { createClient } = supabase;
-  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const BAND_LABELS = {
+    low: 'Low Risk', lowmod: 'Low-Moderate', moderate: 'Moderate',
+    high: 'High Risk', critical: 'Critical'
+  };
 
   const setStatus = (msg) => document.getElementById('status').textContent = msg;
+
   const showError = (msg) => {
-    const el = document.getElementById('error-msg');
-    el.textContent = msg;
-    el.style.display = 'block';
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-msg').style.display = 'block';
     document.getElementById('spinner').style.display = 'none';
     document.getElementById('back-btn').style.display = 'inline-block';
   };
 
-  async function generate() {
-    // 1. Auth check
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { window.location.href = 'login.html'; return; }
+  const showSuccess = () => {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('check').style.display = 'block';
+    document.getElementById('heading').textContent = 'Report Downloaded!';
+    setStatus('Your PDF has been saved to your downloads folder.');
+    document.getElementById('back-btn').style.display = 'inline-block';
+  };
 
-    setStatus('Fetching your diagnostic results...');
+  function addText(doc, text, y, size, colorArr, bold, contentW, margin) {
+    doc.setFontSize(size);
+    doc.setTextColor(...colorArr);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    const lines = doc.splitTextToSize(String(text || ''), contentW);
+    lines.forEach(line => {
+      if (y > 790) { doc.addPage(); y = 60; }
+      doc.text(line, margin, y);
+      y += size * 1.55;
+    });
+    return y;
+  }
 
-    // 2. Fetch latest result for this user
-    const { data: results, error } = await sb
-      .from('diagnostic_results')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (error || !results || results.length === 0) {
-      showError('Could not load your results. Please try again from the dashboard.');
+  function generate() {
+    const raw = sessionStorage.getItem('portal_result');
+    if (!raw) {
+      showError('No result data found. Please return to your dashboard and try again.');
       return;
     }
 
-    const result = results[0];
-    setStatus('Building your PDF...');
+    const result = JSON.parse(raw);
+    sessionStorage.removeItem('portal_result');
 
-    // 3. Build PDF
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
 
     const pageW = doc.internal.pageSize.getWidth();
     const margin = 50;
     const contentW = pageW - margin * 2;
-    let y = 60;
+    let y = 0;
 
-    const addText = (text, size, color, bold) => {
-      doc.setFontSize(size);
-      doc.setTextColor(...color);
-      doc.setFont('helvetica', bold ? 'bold' : 'normal');
-      const lines = doc.splitTextToSize(text, contentW);
-      lines.forEach(line => {
-        if (y > 780) { doc.addPage(); y = 60; }
-        doc.text(line, margin, y);
-        y += size * 1.5;
-      });
-    };
-
-    const addDivider = () => {
-      y += 6;
-      doc.setDrawColor(220, 220, 220);
-      doc.line(margin, y, pageW - margin, y);
-      y += 16;
-    };
-
-    // Header band
-    doc.setFillColor(79, 70, 229);
-    doc.rect(0, 0, pageW, 40, 'F');
-    doc.setFontSize(13);
+    // ── HEADER BAND ──────────────────────────────────────────
+    doc.setFillColor(0, 26, 58);
+    doc.rect(0, 0, pageW, 52, 'F');
+    doc.setFontSize(15);
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.text('DIAGNOSTIC REPORT', margin, 26);
+    doc.text('MLA · AI Governance Diagnostic Report', margin, 33);
+    const dateStr = new Date(result.created_at || Date.now())
+      .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(180, 200, 230);
+    doc.text(dateStr, pageW - margin - doc.getTextWidth(dateStr), 33);
+
+    y = 80;
+
+    // ── TITLE ────────────────────────────────────────────────
+    y = addText(doc, result.organisation || 'AI Governance Assessment', y, 22, [0, 26, 58], true, contentW, margin);
+    y += 2;
+    y = addText(doc, `Sector: ${result.sector || 'Not specified'}`, y, 10, [90, 107, 130], false, contentW, margin);
+    y += 16;
+
+    // ── SCORE BOX ────────────────────────────────────────────
+    const band = result.risk_band || 'moderate';
+    const bandLabel = BAND_LABELS[band] || band;
+    const score = result.adjusted_score || result.overall_score || 0;
+
+    const scoreColors = {
+      low:[22,101,52], lowmod:[6,95,70], moderate:[146,64,14], high:[153,27,27], critical:[157,23,77]
+    };
+    const pillBg = {
+      low:[220,252,231], lowmod:[209,250,229], moderate:[254,243,199], high:[254,226,226], critical:[252,231,243]
+    };
+    const sc = scoreColors[band] || [0,26,58];
+    const pc = pillBg[band] || [254,243,199];
+
+    doc.setFillColor(247, 248, 252);
+    doc.roundedRect(margin, y, contentW, 72, 8, 8, 'F');
+
+    doc.setFontSize(36);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...sc);
+    doc.text(`${score}%`, margin + 20, y + 46);
+
+    doc.setFontSize(11);
+    doc.setTextColor(90, 107, 130);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Governance Maturity Score', margin + 20, y + 62);
+
+    const pillX = margin + 145;
+    doc.setFillColor(...pc);
+    doc.roundedRect(pillX, y + 22, 120, 26, 6, 6, 'F');
     doc.setFontSize(10);
-    const dateStr = new Date(result.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
-    doc.text(dateStr, pageW - margin - doc.getTextWidth(dateStr), 26);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...sc);
+    const pillTw = doc.getTextWidth(bandLabel);
+    doc.text(bandLabel, pillX + (120 - pillTw) / 2, y + 39);
 
-    y = 70;
+    y += 96;
 
-    addText('Your Business Diagnostic Summary', 20, [26, 26, 46], true);
-    y += 4;
-    addText(`Prepared for: ${session.user.email}`, 11, [120, 120, 120], false);
-    y += 10;
-    addDivider();
+    // ── DIVIDER helper ────────────────────────────────────────
+    const divider = (yy) => {
+      doc.setDrawColor(226, 232, 244);
+      doc.line(margin, yy, pageW - margin, yy);
+      return yy + 18;
+    };
 
-    // Score overview
-    if (result.overall_score !== undefined) {
-      addText(`Overall Score: ${result.overall_score} / 100`, 16, [79, 70, 229], true);
-      y += 6;
-    }
+    y = divider(y);
 
-    // Sections — adapt keys to match your actual data shape
-    const sections = result.sections || result.scores || null;
+    // ── SECTION SCORES ────────────────────────────────────────
+    const sections = result.section_scores || result.sections || result.scores || null;
 
-    if (sections && typeof sections === 'object') {
-      addDivider();
-      addText('Section Breakdown', 14, [26, 26, 46], true);
-      y += 6;
+    if (sections && typeof sections === 'object' && !Array.isArray(sections)) {
+      y = addText(doc, 'Section Breakdown', y, 12, [0, 26, 58], true, contentW, margin);
+      y += 8;
+
       Object.entries(sections).forEach(([key, val]) => {
         const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        const score = typeof val === 'object' ? (val.score ?? JSON.stringify(val)) : val;
-        addText(`• ${label}: ${score}`, 11, [60, 60, 60], false);
+        const sval = typeof val === 'object' ? (val.score ?? val.weighted ?? JSON.stringify(val)) : val;
+        const fillPct = Math.min(Math.max(parseFloat(sval) || 0, 0), 100) / 100;
+
+        const barY = y - 7;
+        const barW = contentW - 150;
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 60, 80);
+        doc.text(label, margin, y);
+
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(sval), margin + 120, y);
+
+        doc.setFillColor(226, 232, 244);
+        doc.roundedRect(margin + 150, barY, barW, 8, 4, 4, 'F');
+        if (fillPct > 0) {
+          doc.setFillColor(0, 0, 255);
+          doc.roundedRect(margin + 150, barY, barW * fillPct, 8, 4, 4, 'F');
+        }
+
+        y += 22;
+        if (y > 790) { doc.addPage(); y = 60; }
       });
+
       y += 6;
+      y = divider(y);
     }
 
-    // Recommendations
+    // ── RECOMMENDATIONS ───────────────────────────────────────
     const recs = result.recommendations || result.advice || null;
+
     if (recs) {
-      addDivider();
-      addText('Recommendations', 14, [26, 26, 46], true);
-      y += 6;
-      if (Array.isArray(recs)) {
-        recs.forEach((r, i) => addText(`${i + 1}. ${r}`, 11, [60, 60, 60], false));
-      } else {
-        addText(String(recs), 11, [60, 60, 60], false);
+      y = addText(doc, 'Recommendations', y, 12, [0, 26, 58], true, contentW, margin);
+      y += 8;
+
+      const recList = Array.isArray(recs) ? recs : [recs];
+      recList.forEach((r, i) => {
+        doc.setFillColor(0, 0, 255);
+        doc.circle(margin + 7, y - 4, 7, 'F');
+        doc.setFontSize(8);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(i + 1), i < 9 ? margin + 4.5 : margin + 2, y - 1);
+
+        doc.setFontSize(10);
+        doc.setTextColor(60, 60, 80);
+        doc.setFont('helvetica', 'normal');
+        const recLines = doc.splitTextToSize(String(r), contentW - 24);
+        recLines.forEach(line => {
+          if (y > 790) { doc.addPage(); y = 60; }
+          doc.text(line, margin + 20, y);
+          y += 15;
+        });
+        y += 6;
+      });
+
+      y += 4;
+      y = divider(y);
+    }
+
+    // ── RAW ANSWERS FALLBACK ──────────────────────────────────
+    if (!sections && !recs) {
+      const answers = result.answers || result.responses || {};
+      if (Object.keys(answers).length > 0) {
+        y = addText(doc, 'Your Responses', y, 12, [0, 26, 58], true, contentW, margin);
+        y += 6;
+        Object.entries(answers).forEach(([q, a]) => {
+          y = addText(doc, `Q: ${q}`, y, 9, [80, 80, 90], true, contentW, margin);
+          y = addText(doc, `A: ${a}`, y, 9, [60, 60, 70], false, contentW, margin);
+          y += 6;
+        });
       }
     }
 
-    // Raw answers fallback
-    if (!sections && !recs) {
-      addDivider();
-      addText('Your Responses', 14, [26, 26, 46], true);
-      y += 6;
-      const answers = result.answers || result.responses || {};
-      Object.entries(answers).forEach(([q, a]) => {
-        addText(`Q: ${q}`, 10, [80, 80, 80], true);
-        addText(`A: ${a}`, 10, [60, 60, 60], false);
-        y += 4;
-      });
+    // ── FRAMEWORK NOTE ────────────────────────────────────────
+    if (result.framework_version) {
+      y += 8;
+      y = addText(doc, `Framework version: ${result.framework_version}`, y, 9, [160, 170, 185], false, contentW, margin);
     }
 
-    // Footer on every page
+    // ── FOOTER on every page ──────────────────────────────────
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
-      doc.setFontSize(9);
-      doc.setTextColor(180, 180, 180);
-      doc.text(`Page ${i} of ${totalPages} · Confidential`, margin, 830);
+      doc.setFillColor(0, 26, 58);
+      doc.rect(0, 820, pageW, 22, 'F');
+      doc.setFontSize(8);
+      doc.setTextColor(180, 200, 230);
+      doc.setFont('helvetica', 'normal');
+      doc.text('MLA · AI Governance Diagnostic · Confidential', margin, 833);
+      const pg = `Page ${i} of ${totalPages}`;
+      doc.text(pg, pageW - margin - doc.getTextWidth(pg), 833);
     }
 
-    // 4. Save
-    doc.save(`diagnostic-report-${new Date().toISOString().slice(0,10)}.pdf`);
-    setStatus('Your PDF has been downloaded!');
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('back-btn').style.display = 'inline-block';
+    // ── SAVE ──────────────────────────────────────────────────
+    const filename = `MLA-Diagnostic-${(result.organisation || 'Report').replace(/\s+/g,'-')}-${new Date().toISOString().slice(0,10)}.pdf`;
+    doc.save(filename);
+    showSuccess();
   }
 
-  generate().catch(err => {
-    console.error(err);
-    showError('An unexpected error occurred: ' + err.message);
+  window.addEventListener('load', () => {
+    try { generate(); }
+    catch (err) {
+      console.error(err);
+      showError('PDF generation failed: ' + err.message);
+    }
   });
 </script>
+
 </body>
 </html>
