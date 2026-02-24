@@ -85,6 +85,36 @@ window.onload = async function() {
     const doc = new jsPDF('p', 'mm', 'a4');
     const M = 20, TW = 170;
 
+// --- Mandatory Regime Flags (Framework Part 1, Table 2) ---
+const REGIME_FLAGS = {
+  "FCA regulated": { 
+    label: "Mandatory: AI governance must be documented under SM&CR", 
+    basis: "FCA DP5/22, PS7/21, Consumer Duty (PS22/9)" 
+  },
+  "ICO registered / GDPR": { 
+    label: "Mandatory: DPIA required for any AI processing personal data", 
+    basis: "UK GDPR Art.35, ICO AI Guidance 2023" 
+  },
+  "NHS / CQC oversight": { 
+    label: "Mandatory: AI in clinical pathways requires DCB0129 and DTAC compliance", 
+    basis: "NHS DTAC, DCB0129, MHRA Guidance" 
+  },
+  "SRA (Solicitors)": { 
+    label: "Mandatory: SRA AI guidance (2024) requires client disclosure", 
+    basis: "SRA Standards & Regulations, SRA AI Guidance 2024" 
+  }
+};
+
+// Logic to include in the PDF generation loop:
+const selectedRegimes = data.regulatory_regimes || [];
+selectedRegimes.forEach(regime => {
+  if (REGIME_FLAGS[regime]) {
+    // This pushes the mandatory regime flag into the report's Priority section
+    flags.push(REGIME_FLAGS[regime]); 
+  }
+});
+
+
     // Cover Page
     doc.setFillColor(0, 26, 58).rect(0, 0, 210, 297, 'F');
     doc.setFontSize(28).setTextColor(255, 255, 255).text(data.organisation || 'Diagnostic Report', M, 60);
