@@ -868,6 +868,17 @@
 const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Auto-generate PDF if coming from portal
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('generate') === 'true') {
+  const portalResult = sessionStorage.getItem('portal_result');
+  if (portalResult) {
+    const r = JSON.parse(portalResult);
+    RESULTS = r;
+    sessionStorage.removeItem('portal_result');
+    window.addEventListener('load', () => setTimeout(() => makePDF(), 1000));
+  }
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
