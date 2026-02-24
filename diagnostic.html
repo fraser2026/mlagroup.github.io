@@ -873,12 +873,17 @@ const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('generate') === 'true') {
   const portalResult = sessionStorage.getItem('portal_result');
   if (portalResult) {
-    const r = JSON.parse(portalResult);
-    RESULTS = r;
+    RESULTS = JSON.parse(portalResult);
     sessionStorage.removeItem('portal_result');
-    window.addEventListener('load', () => setTimeout(() => makePDF(), 1000));
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        makePDF();
+        window.history.back();
+      }, 1500);
+    });
   }
 }
+
 
 
 // ═══════════════════════════════════════════════════════════════════
