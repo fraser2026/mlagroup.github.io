@@ -1,781 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generating your report...</title>
-<title>Generating your report...</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  body {
-    font-family: sans-serif;
-    background: #001A3A;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    margin: 0;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .spinner {
-    width: 48px; height: 48px;
-    border: 4px solid rgba(255,255,255,0.2);
-    border-top-color: #4466FF;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  p { font-size: 0.95rem; opacity: 0.6; }
-  iframe { display: none; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Generating Your Report...</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .box {
+      background: white;
+      border-radius: 12px;
+      padding: 40px 50px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      max-width: 420px;
+      width: 100%;
+    }
+    h2 { margin-bottom: 10px; color: #1a1a2e; }
+    p  { color: #666; margin-bottom: 24px; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #4f46e5;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 24px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      text-decoration: none;
+    }
+    .btn:hover { background: #4338ca; }
+    #status { font-size: 14px; color: #555; }
+    #error-msg { color: #dc2626; margin-top: 12px; display: none; }
+  </style>
 </head>
 <body>
-  <div class="spinner"></div>
-  <p>Generating your report...</p>
-  <iframe id="pdf-frame" src="diagnostic.html"></iframe>
+<div class="box">
+  <div class="spinner" id="spinner"></div>
+  <h2>Preparing Your Report</h2>
+  <p id="status">Loading your results...</p>
+  <div id="error-msg"></div>
+  <a href="portal.html" class="btn" id="back-btn" style="display:none;">← Back to Dashboard</a>
+</div>
 
 <script>
-  const frame = document.getElementById('pdf-frame');
-  
-  frame.addEventListener('load', function() {
-    const portalResult = sessionStorage.getItem('portal_result');
-    if (!portalResult) { window.close(); return; }
-    
-    const r = JSON.parse(portalResult);
-    sessionStorage.removeItem('portal_result');
-    
-    const fw = frame.contentWindow;
-    
-    // Set RESULTS in the iframe
-    fw.RESULTS = r;
-    
-    // Pre-fill form fields
-    const set = (id, val) => {
-      const el = fw.document.getElementById(id);
-      if (el) el.value = val || '';
+  // ── CONFIG ────────────────────────────────────────────────
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  // ─────────────────────────────────────────────────────────
+
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const setStatus = (msg) => document.getElementById('status').textContent = msg;
+  const showError = (msg) => {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('back-btn').style.display = 'inline-block';
+  };
+
+  async function generate() {
+    // 1. Auth check
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+
+    setStatus('Fetching your diagnostic results...');
+
+    // 2. Fetch latest result for this user
+    const { data: results, error } = await sb
+      .from('diagnostic_results')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error || !results || results.length === 0) {
+      showError('Could not load your results. Please try again from the dashboard.');
+      return;
+    }
+
+    const result = results[0];
+    setStatus('Building your PDF...');
+
+    // 3. Build PDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 50;
+    const contentW = pageW - margin * 2;
+    let y = 60;
+
+    const addText = (text, size, color, bold) => {
+      doc.setFontSize(size);
+      doc.setTextColor(...color);
+      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      const lines = doc.splitTextToSize(text, contentW);
+      lines.forEach(line => {
+        if (y > 780) { doc.addPage(); y = 60; }
+        doc.text(line, margin, y);
+        y += size * 1.5;
+      });
     };
-    
-    set('ps-name', r.organisation);
-    set('ps-org', r.organisation);
-    set('ps-sector', r.sector);
-    set('ps-size', r.org_size);
-    
-    // Call makePDF in the iframe
-    setTimeout(function() {
-      sessionStorage.setItem('portal_generate', 'true');
-RESULTS = r;
-makePDF();
-sessionStorage.removeItem('portal_generate');
-function ps(str) {
-  if (!str) return '';
-  return str
-    .replace(/\u2014|\u2013/g, '-')
-    .replace(/\u2018|\u2019/g, "'")
-    .replace(/\u201C|\u201D/g, '"')
-    .replace(/\u2026/g, '...')
-    .replace(/\u00D7/g, 'x')
-    .replace(/\u2212/g, '-')
-    .replace(/\u00A0/g, ' ')
-    .replace(/[^\x00-\xFF]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
-function pdfPageHeader(doc, W, M, navy, rc, sectionTitle, today) {
-  doc.setFillColor(...navy);
-  doc.rect(0, 0, W, 34, 'F');
-  doc.setFillColor(...rc);
-  doc.rect(0, 34, W, 1.5, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(255, 255, 255);
-  doc.text('MLA GROUP', M, 12);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(120, 155, 200);
-  doc.text('AI GOVERNANCE RISK ASSESSMENT  |  CONFIDENTIAL', M, 19);
-  doc.setFontSize(7.5);
-  doc.setTextColor(160, 185, 215);
-  doc.text(sectionTitle, M, 28);
-  doc.setFontSize(6.5);
-  doc.setTextColor(80, 110, 155);
-  doc.text(today, W - M, 19, { align: 'right' });
-  doc.text('mlagroup.co.uk', W - M, 28, { align: 'right' });
-}
-
-function pdfSectionHead(doc, W, M, navy, label, y) {
-  doc.setFillColor(...navy);
-  doc.rect(M, y, W - M * 2, 8, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.setTextColor(255, 255, 255);
-  doc.text(label, M + 4, y + 5.6);
-  return y + 13;
-}
-
-function pdfPageFooter(doc, W, M, navy, rc, today, pageNum) {
-  doc.setFillColor(...navy);
-  doc.rect(0, 284, W, 13, 'F');
-  doc.setFillColor(...rc);
-  doc.rect(0, 284, W, 1, 'F');
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(140, 170, 210);
-  doc.text('MLA Group  |  AI Governance Risk Assessment  |  mlagroup.co.uk', M, 290);
-  doc.text('This report is produced for informational purposes. MLA Group is not a certified audit regulator.', M, 295);
-  doc.setTextColor(180, 200, 230);
-  doc.text('Page ' + pageNum, W - M, 290, { align: 'right' });
-  doc.text(today, W - M, 295, { align: 'right' });
-}
-
-function newPage(doc, W, M, navy, rc, heading, today, pageNum) {
-  doc.addPage();
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, W, 297, 'F');
-  pdfPageHeader(doc, W, M, navy, rc, heading, today);
-  return 44;
-}
-
-function drawBar(doc, x, y, totalW, h, pct, fillRGB) {
-  doc.setFillColor(215, 222, 232);
-  doc.rect(x, y, totalW, h, 'F');
-  if (pct > 0) {
-    doc.setFillColor(...fillRGB);
-    doc.rect(x, y, Math.max(1, Math.round(pct * totalW / 100)), h, 'F');
-  }
-}
-
-function textBlock(doc, text, x, y, maxW, fontSize, fontStyle, colorRGB, lineH) {
-  doc.setFont('helvetica', fontStyle || 'normal');
-  doc.setFontSize(fontSize || 8);
-  doc.setTextColor(...(colorRGB || [50, 60, 75]));
-  const lines = doc.splitTextToSize(text, maxW);
-  doc.text(lines, x, y);
-  return y + lines.length * (lineH || (fontSize ? fontSize * 0.55 : 4.8));
-}
-      setTimeout(function() { window.close(); }, 3000);
-    }, 1000);
-  });
-  function makePDF() {
-  const { jsPDF } = window.jspdf;
-  if (!jsPDF) { alert('PDF library not loaded yet - please try again in a moment.'); return; }
-  if (!RESULTS || !RESULTS.band) { if (!sessionStorage.getItem('portal_generate')) { alert('Please complete the assessment first.'); return; } }
-
-
-  try {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = 210, M = 18;
-
-    const name    = ps(document.getElementById('ps-name').value);
-    const org     = ps(document.getElementById('ps-org').value);
-    const role    = ps(document.getElementById('ps-role').value);
-    const sector  = ps(RESULTS.sector);
-    const size    = ps(RESULTS.orgSize);
-    const today   = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-    const bc      = RESULTS.band.id;
-    const band    = ps(RESULTS.band.label);
-    const pct     = RESULTS.adjustedScore + '%';
-    const title   = ps(RESULTS.band.heading);
-    const summary = ps(RESULTS.band.summary);
-
-    const navy    = [0, 26, 58];
-    const white   = [255, 255, 255];
-    const lightBg = [247, 249, 252];
-    const midGray = [120, 130, 148];
-    const darkTxt = [30, 40, 58];
-    const blue    = [26, 107, 255];
-    const rcMap   = { critical:[180,35,35], high:[165,55,55], moderate:[185,115,0], lowmod:[170,120,0], low:[22,145,65] };
-    const rc      = rcMap[bc] || blue;
-
-    // Content widths — TW = full column, TWI = indented (left+4)
-    const TW  = W - M * 2;       // 174mm
-    const TWI = W - M * 2 - 8;   // 166mm — indented text
-
-    // ── BUILD FINDINGS ────────────────────────────────────────────
-    const findings = [];
-    (RESULTS.priorityFlags || []).forEach(f => {
-      const data = FINDING_DATA[f.id] || { section:'General', severity:f.severity||'high', impact:'This governance area requires attention. Engage specialist support to address the underlying gap.', rec:'Review this finding with your compliance function and engage an MLA Group governance specialist to develop a targeted remediation plan.' };
-      findings.push({ label:ps(f.label), basis:ps(f.basis), section:data.section, severity:data.severity, impact:data.impact, rec:data.rec });
-    });
-    (RESULTS.regimeFlags || []).forEach(f => {
-      findings.push({ label:ps(f.label), basis:ps(f.basis), section:REGIME_FINDING.section, severity:REGIME_FINDING.severity, impact:REGIME_FINDING.impact, rec:REGIME_FINDING.rec });
-    });
-    if ((RESULTS.uncertaintyCount||0) >= 3) {
-      findings.push({ label:'Elevated uncertainty: '+RESULTS.uncertaintyCount+' questions answered without sufficient confidence', basis:'Risk band elevated per framework uncertainty threshold', section:'Assessment Integrity', severity:'moderate', impact:'Organisations that cannot confirm basic governance facts with confidence face heightened regulatory scrutiny. Uncertainty about whether controls exist is treated by regulators as equivalent to the absence of those controls - the burden of proof sits with the organisation.', rec:'Conduct an internal governance stocktake to establish the factual position on each uncertain area. Where controls exist informally or undocumented, formalise them. Where they do not exist, treat this as a gap requiring remediation.' });
-    }
-    if (RESULTS.selectedCategories && RESULTS.selectedCategories.length > 0 && !RESULTS.selectedCategories.includes('none')) {
-      findings.push({ label:'High-risk AI category detected - EU AI Act Annex III obligations apply from August 2026', basis:'EU AI Act Annex III; Categories: '+RESULTS.selectedCategories.join(', '), section:'AI Inventory & Classification', severity:'critical', impact:'You have indicated use of AI systems in one or more categories classified as high-risk under EU AI Act Annex III. These systems are subject to mandatory conformity assessments, technical documentation requirements, human oversight obligations under Article 14, and logging requirements under Article 12. High-risk obligations apply from August 2026.', rec:'Conduct a formal EU AI Act scoping assessment for each high-risk category identified. Map current systems against the full Annex III compliance checklist. Prioritise human oversight documentation, technical documentation, and conformity assessment preparation.' });
-    }
-
-    // ── BUILD RECOMMENDATIONS ─────────────────────────────────────
-    const recs = Array.from(document.querySelectorAll('#recs .rec-item'))
-      .map(el => ps(el.textContent.replace(/^\d+/, '').replace(/MLA Diagnostic.*$/s, '').trim()))
-      .filter(r => r.length > 8);
-
-    let y = 0, pageNum = 1;
-
-    // ═══════ PAGE 1 — COVER ═══════════════════════════════════════
-    doc.setFillColor(...navy);
-    doc.rect(0, 0, W, 297, 'F');
-    doc.setFillColor(...rc);
-    doc.rect(0, 0, W, 6, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.setTextColor(...white);
-    doc.text('MLA GROUP', M, 22);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 140, 190);
-    doc.text('AI Governance & Risk Advisory  |  mlagroup.co.uk', M, 30);
-
-    doc.setDrawColor(25, 55, 100);
-    doc.setLineWidth(0.4);
-    doc.line(M, 36, W - M, 36);
-
-    doc.setFontSize(8);
-    doc.setTextColor(80, 120, 175);
-    doc.text('AI GOVERNANCE RISK ASSESSMENT  -  CONFIDENTIAL REPORT', M, 50);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24);
-    doc.setTextColor(...white);
-    const orgLines = doc.splitTextToSize(org, 168);
-    orgLines.forEach((line, i) => doc.text(line, M, 64 + i * 13));
-
-    const heroY = orgLines.length > 1 ? 98 : 86;
-    doc.setFillColor(8, 32, 68);
-    doc.rect(M, heroY, TW, 44, 'F');
-    doc.setFillColor(...rc);
-    doc.rect(M, heroY, 5, 44, 'F');
-    doc.setDrawColor(...rc);
-    doc.setLineWidth(0.5);
-    doc.rect(M, heroY, TW, 44, 'S');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(...rc);
-    doc.text(band, M + 11, heroY + 14);
-
-    doc.setFontSize(28);
-    doc.text(pct, W - M - 5, heroY + 20, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...midGray);
-    doc.text('GOVERNANCE MATURITY SCORE', W - M - 5, heroY + 27, { align: 'right' });
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(200, 215, 235);
-    doc.text(title, M + 11, heroY + 25);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(140, 165, 200);
-    const sumCoverLines = doc.splitTextToSize(summary, TW - 30);
-    doc.text(sumCoverLines, M + 11, heroY + 33);
-
-    const prepY = heroY + 56;
-    doc.setDrawColor(20, 50, 90);
-    doc.setLineWidth(0.3);
-    doc.line(M, prepY, W - M, prepY);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(70, 100, 150);
-    doc.text('PREPARED FOR', M, prepY + 9);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.setTextColor(...white);
-    doc.text(name, M, prepY + 18);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(140, 165, 205);
-    doc.text(role + '  |  ' + org, M, prepY + 26);
-    doc.text(sector + '  |  ' + size + ' employees', M, prepY + 33);
-    doc.setFontSize(7);
-    doc.setTextColor(70, 100, 150);
-    doc.text('REPORT DATE', W - M, prepY + 9, { align: 'right' });
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(...white);
-    doc.text(today, W - M, prepY + 18, { align: 'right' });
-
-    const tocY = prepY + 48;
-    doc.setDrawColor(20, 50, 90);
-    doc.line(M, tocY, W - M, tocY);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.setTextColor(80, 120, 175);
-    doc.text('CONTENTS', M, tocY + 8);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(140, 165, 205);
-    ['1.  Executive Summary','2.  Assessment Results & Section Breakdown','3.  Detailed Findings','4.  Priority Recommendations','A.  Appendix: Scope, Methodology & Regulatory Framework']
-      .forEach((item, i) => doc.text(item, M, tocY + 16 + i * 7));
-
-    doc.setFillColor(...rc);
-    doc.rect(0, 292, W, 5, 'F');
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
-    doc.setTextColor(50, 80, 130);
-    doc.text('This document is confidential and prepared exclusively for the named recipient. MLA Group | mlagroup.co.uk', W / 2, 289.5, { align: 'center' });
-
-    // ═══════ PAGE 2 — EXECUTIVE SUMMARY ══════════════════════════
-    pageNum++;
-    y = newPage(doc, W, M, navy, rc, '1. EXECUTIVE SUMMARY', today, pageNum);
-
-    y = pdfSectionHead(doc, W, M, navy, '1.1  Confidentiality Statement', y);
-    const confText = 'This report is the exclusive property of ' + org + ' and MLA Group. It contains confidential information prepared solely for the named recipient (' + name + ', ' + role + '). Duplication, redistribution, or use - in whole or in part - requires the prior written consent of both parties.';
-    y = textBlock(doc, ps(confText), M + 4, y, TWI, 8.5, 'normal', [60, 72, 88], 5.2);
-    y += 8;
-
-    y = pdfSectionHead(doc, W, M, navy, '1.2  Report Overview', y);
-    const overviewText = 'On ' + today + ', MLA Group completed an AI Governance Risk Diagnostic for ' + org + '. This assessment was completed by ' + name + ' (' + role + ') and covers seven governance domains aligned to UK and EU regulatory expectations, including the EU AI Act, UK GDPR, FCA operational resilience requirements, and sector-specific guidance from the ICO. Framework version ' + RESULTS.frameworkVersion + ' (' + RESULTS.frameworkDate + '). Weighted score: ' + RESULTS.weightedScore + '%. Sector multiplier (' + sector + '): ' + Math.round(RESULTS.multiplier * 100) + '%. Adjusted exposure score: ' + RESULTS.adjustedScore + '%.';
-    y = textBlock(doc, ps(overviewText), M + 4, y, TWI, 8.5, 'normal', [60, 72, 88], 5.2);
-    y += 8;
-
-    y = pdfSectionHead(doc, W, M, navy, '1.3  Key Findings & Risk Position', y);
-
-    const panelSumLines = doc.splitTextToSize(summary, TWI - 36);
-    const panelH = Math.max(46, 34 + panelSumLines.length * 5.2);
-    doc.setFillColor(...lightBg);
-    doc.rect(M, y, TW, panelH, 'F');
-    doc.setFillColor(...rc);
-    doc.rect(M, y, 5, panelH, 'F');
-    doc.setDrawColor(210, 218, 230);
-    doc.setLineWidth(0.2);
-    doc.rect(M, y, TW, panelH, 'S');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15);
-    doc.setTextColor(...rc);
-    doc.text(band, M + 10, y + 13);
-    doc.setFontSize(22);
-    doc.text(pct, W - M - 5, y + 18, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...midGray);
-    doc.text('MATURITY SCORE', W - M - 5, y + 25, { align: 'right' });
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(...darkTxt);
-    doc.text(title, M + 10, y + 23);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(80, 95, 115);
-    doc.text(panelSumLines, M + 10, y + 31);
-    y += panelH + 8;
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...navy);
-    doc.text('Principal Issues Identified:', M, y);
-    y += 7;
-
-    findings.slice(0, Math.min(3, findings.length)).forEach(fd => {
-      const fLines = doc.splitTextToSize(fd.label, TWI - 6);
-      const fH = Math.max(10, fLines.length * 5 + 7);
-      if (y + fH > 272) return;
-      const fCol = fd.severity === 'critical' ? [180,35,35] : fd.severity === 'info' ? [...blue] : [...rc];
-      doc.setFillColor(250, 248, 248);
-      doc.rect(M, y, TW, fH, 'F');
-      doc.setFillColor(...fCol);
-      doc.rect(M, y, 3.5, fH, 'F');
-      doc.setDrawColor(225, 215, 215);
-      doc.setLineWidth(0.15);
-      doc.rect(M, y, TW, fH, 'S');
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.8);
-      doc.setTextColor(40, 48, 62);
-      doc.text(fLines, M + 8, y + 5.8);
-      y += fH + 3;
-    });
-
-    pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
-
-    // ═══════ PAGE 3 — ASSESSMENT RESULTS ═════════════════════════
-    pageNum++;
-    y = newPage(doc, W, M, navy, rc, '2. ASSESSMENT RESULTS', today, pageNum);
-
-    y = pdfSectionHead(doc, W, M, navy, '2.1  Assessment Overview', y);
-
-    const metaRows = [
-      ['Organisation', org],
-      ['Respondent', name + '  |  ' + role],
-      ['Sector', sector],
-      ['Organisation Size', size + ' employees'],
-      ['Assessment Date', today],
-      ['Framework Version', 'v' + RESULTS.frameworkVersion + ' - ' + RESULTS.frameworkDate],
-      ['Weighted Score', RESULTS.weightedScore + '%  (before sector adjustment)'],
-      ['Sector Multiplier', Math.round(RESULTS.multiplier * 100) + '%  (' + sector + ')'],
-      ['Overall Risk Band', band],
-      ['Adjusted Exposure Score', pct],
-    ];
-    metaRows.forEach((row, i) => {
-      const isHL = i >= 8;
-      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, 7.5, 'F');
-      doc.setDrawColor(215, 222, 235);
-      doc.setLineWidth(0.12);
-      doc.rect(M, y, TW, 7.5, 'S');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.setTextColor(75, 88, 110);
-      doc.text(row[0], M + 3, y + 5.3);
-      doc.setFont('helvetica', isHL?'bold':'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(isHL?rc[0]:30, isHL?rc[1]:44, isHL?rc[2]:65);
-      doc.text(String(row[1]), M + 72, y + 5.3);
-      y += 7.5;
-    });
-
-    y += 10;
-    y = pdfSectionHead(doc, W, M, navy, '2.2  Section Maturity Breakdown', y);
-
-    // Table header
-    doc.setFillColor(...navy);
-    doc.rect(M, y, TW, 8.5, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...white);
-    doc.text('Governance Domain',  M + 3,   y + 6);
-    doc.text('Wt.',                M + 103, y + 6);
-    doc.text('Score',              M + 118, y + 6);
-          doc.text('Maturity',           M + 136, y + 6);
-      doc.text('%',                  M + 167, y + 6);
-      doc.text('Risk Level',         W-M-2,   y + 6, { align: 'right' });
-
-    y += 8.5;
-
-    ['s1','s2','s3','s4','s5','s6','s7'].forEach((sec, i) => {
-      const p  = RESULTS.sectionPcts[sec] || 0;
-      const rs = RESULTS.rawScores[sec] || 0;
-      const mx = RESULTS.adjustedMax[sec] || 1;
-      const nm = RESULTS.sectionNames[sec];
-      const wt = Math.round(WEIGHTS[sec] * 100);
-      const barColor = p>=75?[22,145,65]:p>=50?[185,115,0]:[165,55,55];
-      const riskLbl  = p>=75?'Low Risk':p>=50?'Moderate':'High Risk';
-
-      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, 10, 'F');
-      doc.setDrawColor(215, 222, 235);
-      doc.setLineWidth(0.12);
-      doc.rect(M, y, TW, 10, 'S');
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.8);
-      doc.setTextColor(35, 45, 60);
-      doc.text(nm, M + 3, y + 6.8);
-
-      doc.setFontSize(7.5);
-      doc.setTextColor(90, 105, 125);
-      doc.text(wt + '%',       M + 103, y + 6.8);
-      doc.text(rs + '/' + mx,  M + 118, y + 6.8);
-
-            // Progress bar — bar + % inside bar zone, Risk Level in its own column
-            drawBar(doc, M + 136, y + 3, 20, 4, p, barColor);
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.setTextColor(...barColor);
-      doc.text(riskLbl, W - M - 2, y + 6.8, { align: 'right' });
-
-      y += 10;
-    });
-
-    y += 8;
-    const totalScore = Object.values(RESULTS.rawScores).reduce((a,b)=>a+b,0);
-    const maxTotal   = Object.values(RESULTS.adjustedMax).reduce((a,b)=>a+b,0);
-    doc.setFillColor(240, 244, 252);
-    doc.rect(M, y, TW, 16, 'F');
-    doc.setFillColor(...blue);
-    doc.rect(M, y, 4, 16, 'F');
-    doc.setDrawColor(195, 210, 238);
-    doc.setLineWidth(0.2);
-    doc.rect(M, y, TW, 16, 'S');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(...navy);
-    doc.text('Overall Score: ' + totalScore + ' / ' + maxTotal + ' points  (' + pct + ' governance maturity)', M + 9, y + 7);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(70, 88, 115);
-    doc.text('Risk Band: ' + band + '  |  ' + title, M + 9, y + 13);
-
-    pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
-
-    // ═══════ PAGES 4+ — DETAILED FINDINGS ════════════════════════
-    pageNum++;
-    y = newPage(doc, W, M, navy, rc, '3. DETAILED FINDINGS', today, pageNum);
-
-    y = textBlock(doc, 'The following findings are drawn directly from your assessment responses. Each finding identifies a specific governance gap, explains the business and regulatory impact, and provides a targeted recommended action. Findings are ordered by severity.', M + 4, y, TWI, 8.5, 'normal', [60, 72, 88], 5.2);
-    y += 10;
-
-    findings.forEach((fd, idx) => {
-      const sevColor = fd.severity==='critical'?[180,35,35]:fd.severity==='high'?[165,55,55]:fd.severity==='moderate'?[185,115,0]:fd.severity==='info'?[...blue]:[...rc];
-      const sevLabel = fd.severity==='info'?'Regulatory':fd.severity.charAt(0).toUpperCase()+fd.severity.slice(1);
-
-      const labelLines = doc.splitTextToSize(ps(fd.label),   TWI - 4);
-      const basisLines = doc.splitTextToSize(ps('Regulatory basis: ' + fd.basis), TWI - 4);
-      const impLines   = doc.splitTextToSize(ps(fd.impact),  TWI - 4);
-      const recLines   = doc.splitTextToSize(ps(fd.rec),     TWI - 8);
-
-      const labelH = labelLines.length * 5.5;
-      const basisH = basisLines.length * 4.8;
-      const impH   = impLines.length * 5.1;
-      const recH   = recLines.length * 5.2 + 18;
-      const needed = 18 + 5 + labelH + 3 + basisH + 8 + 6 + impH + 8 + recH + 10;
-
-      if (y + needed > 276) {
-        pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
-        pageNum++;
-        y = newPage(doc, W, M, navy, rc, '3. DETAILED FINDINGS (continued)', today, pageNum);
-      }
-
-      // Header bar — clean light background, left navy accent
-      doc.setFillColor(240, 243, 250);
-      doc.rect(M, y, TW, 12, 'F');
-      doc.setFillColor(...navy);
-      doc.rect(M, y, 4, 12, 'F');
-      doc.setDrawColor(218, 224, 238);
-      doc.setLineWidth(0.2);
-      doc.rect(M, y, TW, 12, 'S');
-
-      // Finding ID — e.g. "F1"
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.5);
-      doc.setTextColor(...navy);
-      doc.text('F' + (idx + 1), M + 8, y + 8.2);
-
-      // Separator pipe
-      doc.setDrawColor(200, 208, 225);
-      doc.setLineWidth(0.4);
-      doc.line(M + 18, y + 2.5, M + 18, y + 9.5);
-
-      // Severity label — coloured bold text, no shape (Option A)
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7);
-      doc.setTextColor(...sevColor);
-      doc.text(sevLabel.toUpperCase(), M + 22, y + 8.2);
-
-      // Thin coloured underline beneath severity label (width matches text)
-      const sevW = doc.getTextWidth(sevLabel.toUpperCase());
-      doc.setDrawColor(...sevColor);
-      doc.setLineWidth(0.5);
-      doc.line(M + 22, y + 9.5, M + 22 + sevW, y + 9.5);
-
-      // Section label — muted, right of severity text
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(6.8);
-      doc.setTextColor(110, 125, 150);
-      doc.text(ps(fd.section), M + 26 + sevW, y + 8.2);
-      y += 17;
-
-      // Finding label
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.8);
-      doc.setTextColor(...darkTxt);
-      doc.text(labelLines, M + 4, y);
-      y += labelH + 3;
-
-      // Regulatory basis (small, muted)
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(6.8);
-      doc.setTextColor(130, 145, 165);
-      doc.text(basisLines, M + 4, y);
-      y += basisH + 8;
-
-      // Business Impact heading
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.8);
-      doc.setTextColor(75, 90, 115);
-      doc.text('Business Impact', M + 4, y);
+    const addDivider = () => {
       y += 6;
+      doc.setDrawColor(220, 220, 220);
+      doc.line(margin, y, pageW - margin, y);
+      y += 16;
+    };
 
-      // Impact text (full width, no clipping)
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.8);
-      doc.setTextColor(55, 68, 85);
-      doc.text(impLines, M + 4, y);
-      y += impH + 8;
+    // Header band
+    doc.setFillColor(79, 70, 229);
+    doc.rect(0, 0, pageW, 40, 'F');
+    doc.setFontSize(13);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DIAGNOSTIC REPORT', margin, 26);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    const dateStr = new Date(result.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+    doc.text(dateStr, pageW - margin - doc.getTextWidth(dateStr), 26);
 
-      // Recommended Action box
-      doc.setFillColor(243, 247, 255);
-      doc.rect(M, y, TW, recH, 'F');
-      doc.setFillColor(...blue);
-      doc.rect(M, y, 3.5, recH, 'F');
-      doc.setDrawColor(205, 218, 242);
-      doc.setLineWidth(0.15);
-      doc.rect(M, y, TW, recH, 'S');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.setTextColor(...blue);
-      doc.text('Recommended Action', M + 8, y + 8);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.8);
-      doc.setTextColor(30, 48, 80);
-      doc.text(recLines, M + 8, y + 15);
-      y += recH + 10;
-    });
+    y = 70;
 
-    pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
-
-    // ═══════ PAGE — PRIORITY RECOMMENDATIONS ══════════════════════
-    pageNum++;
-    y = newPage(doc, W, M, navy, rc, '4. PRIORITY RECOMMENDATIONS', today, pageNum);
-
-    y = textBlock(doc, ps('The following recommendations are prioritised based on your assessment results and risk band (' + band + '). They are sequenced to address the most critical governance gaps first and should be used to inform your AI governance roadmap and board reporting.'), M + 4, y, TWI, 8.5, 'normal', [60, 72, 88], 5.2);
+    addText('Your Business Diagnostic Summary', 20, [26, 26, 46], true);
+    y += 4;
+    addText(`Prepared for: ${session.user.email}`, 11, [120, 120, 120], false);
     y += 10;
+    addDivider();
 
-    recs.forEach((rec, i) => {
-      const rLines = doc.splitTextToSize(ps(rec), TWI - 16);
-      const rH = Math.max(14, rLines.length * 5.2 + 10);
-      if (y + rH > 274) {
-        pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
-        pageNum++;
-        y = newPage(doc, W, M, navy, rc, '4. PRIORITY RECOMMENDATIONS (continued)', today, pageNum);
-      }
-      doc.setFillColor(i%2===0?247:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, rH, 'F');
-      doc.setFillColor(...blue);
-      doc.rect(M, y, 4, rH, 'F');
-      doc.setDrawColor(205, 218, 242);
-      doc.setLineWidth(0.15);
-      doc.rect(M, y, TW, rH, 'S');
-
-      // Bold number — vertically aligned to first text line baseline
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.setTextColor(195, 210, 232);
-      doc.text(String(i + 1), M + 12, y + 7.5, { align: 'center' });
-
-      // Recommendation text
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.2);
-      doc.setTextColor(30, 44, 65);
-      doc.text(rLines, M + 20, y + 7.5);
-      y += rH + 3;
-    });
-
-    pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
-
-    // ═══════ PAGE — APPENDIX ══════════════════════════════════════
-    pageNum++;
-    y = newPage(doc, W, M, navy, rc, 'A. APPENDIX: SCOPE & METHODOLOGY', today, pageNum);
-
-    y = pdfSectionHead(doc, W, M, navy, 'A.1  Assessment Scope', y);
-    y = textBlock(doc, ps('This diagnostic assessed ' + org + "'s AI governance posture across seven domains. The assessment was self-reported by " + name + ' (' + role + ') on ' + today + " and reflects the organisation's current governance state. The scope encompasses all AI systems in operational use or active development, including third-party AI tools integrated into business processes."), M + 4, y, TWI, 8.5, 'normal', [60, 72, 88], 5.2);
-    y += 10;
-
-    y = pdfSectionHead(doc, W, M, navy, 'A.2  Domains Assessed', y);
-    Object.keys(RESULTS.sectionNames).forEach((sec, i) => {
-      const nm = RESULTS.sectionNames[sec];
-      const wt = Math.round(WEIGHTS[sec] * 100);
-      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, 8, 'F');
-      doc.setDrawColor(215, 222, 235);
-      doc.setLineWidth(0.1);
-      doc.rect(M, y, TW, 8, 'S');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.setTextColor(...navy);
-      doc.text(String(i+1) + '.', M + 3, y + 5.5);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(40, 52, 68);
-      doc.text(nm + '  (' + wt + '% weight)', M + 12, y + 5.5);
-      y += 8;
-    });
-    y += 10;
-
-    y = pdfSectionHead(doc, W, M, navy, 'A.3  Scoring Methodology', y);
-    y = textBlock(doc, ps('Framework v' + RESULTS.frameworkVersion + ' (' + RESULTS.frameworkDate + '). Each of the 35 questions is scored 0-3 based on governance maturity. Section scores are expressed as a percentage of the adjusted section maximum. Section percentages are multiplied by their assigned weights (Governance 20%, Compliance 18%, Oversight 16%, Explainability 16%, Inventory 14%, Data 10%, Operations 6%) and summed to produce a weighted score. A sector exposure multiplier is applied. Uncertainty flags elevate the risk band if three or more are recorded. Five risk bands: 80-100% = Low; 65-79% = Low-Moderate; 45-64% = Moderate; 25-44% = High; 0-24% = Critical.'), M + 4, y, TWI, 8.5, 'normal', [60, 72, 88], 5.2);
-    y += 10;
-
-    y = pdfSectionHead(doc, W, M, navy, 'A.4  Regulatory Framework Alignment', y);
-
-    const regs = [
-      ['EU AI Act', 'Risk classification, Annex III high-risk obligations, conformity assessments, human oversight (Art.14), logging (Art.12), transparency (Art.13). In force August 2024; high-risk obligations August 2026.'],
-      ['UK GDPR / Data Protection Act 2018', 'Automated decision-making (Art.22), Data Protection Impact Assessments (Art.35), data subject rights (Ch.III), lawful basis, accountability principle (Art.5(2)).'],
-      ['FCA Operational Resilience', 'AI governance expectations (DP5/22), Senior Manager accountability under SM&CR, Consumer Duty outcomes (PS22/9), third-party AI risk management (SS2/21).'],
-      ['ICO Guidance on AI & Data Protection', 'Transparency and explainability of AI decisions, profiling obligations, accountability framework, DPIA requirements for high-risk AI processing.'],
-      ['ISO/IEC 42001', 'AI management system standard. Governance best practice benchmark covering risk classification, roles, data management, monitoring, and incident response.'],
-    ];
-
-    regs.forEach((reg, i) => {
-      // FIX: split description correctly and render ALL lines
-      const descLines = doc.splitTextToSize(ps(reg[1]), TW - 76);
-      const rowH = Math.max(10, descLines.length * 4.8 + 6);
-
-      if (y + rowH > 272) {
-        pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
-        pageNum++;
-        y = newPage(doc, W, M, navy, rc, 'A. APPENDIX (continued)', today, pageNum);
-      }
-
-      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, rowH, 'F');
-      doc.setDrawColor(215, 222, 235);
-      doc.setLineWidth(0.1);
-      doc.rect(M, y, TW, rowH, 'S');
-
-      // Regulation name (bold, left column, 68mm wide)
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.setTextColor(...navy);
-      const nameLines = doc.splitTextToSize(ps(reg[0]), 66);
-      doc.text(nameLines, M + 3, y + 5.5);
-
-      // Description — ALL lines rendered (was the bug: only descLines[0] was used before)
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(70, 85, 108);
-      doc.text(descLines, M + 72, y + 5.5);
-      y += rowH;
-    });
-
-    y += 10;
-
-    // Disclaimer
-    const discTxt = 'This report is produced for informational purposes based on self-reported responses. It does not constitute legal or regulatory advice and MLA Group is not a certified audit regulator. Organisations should engage qualified legal and compliance counsel when implementing changes in response to this assessment. Framework version ' + RESULTS.frameworkVersion + '. Next scheduled review: ' + FRAMEWORK.nextReview + '.';
-    const dLines = doc.splitTextToSize(ps(discTxt), TWI - 4);
-    const discH  = dLines.length * 5 + 16;
-
-    if (y + discH > 274) {
-      pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
-      pageNum++;
-      y = newPage(doc, W, M, navy, rc, 'A. APPENDIX (continued)', today, pageNum);
+    // Score overview
+    if (result.overall_score !== undefined) {
+      addText(`Overall Score: ${result.overall_score} / 100`, 16, [79, 70, 229], true);
+      y += 6;
     }
 
-    doc.setFillColor(248, 249, 252);
-    doc.rect(M, y, TW, discH, 'F');
-    doc.setDrawColor(210, 218, 230);
-    doc.setLineWidth(0.2);
-    doc.rect(M, y, TW, discH, 'S');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.setTextColor(90, 105, 130);
-    doc.text('Important Notice', M + 5, y + 7.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 115, 138);
-    doc.text(dLines, M + 5, y + 13.5);
+    // Sections — adapt keys to match your actual data shape
+    const sections = result.sections || result.scores || null;
 
-    pdfPageFooter(doc, W, M, navy, rc, today, pageNum);
+    if (sections && typeof sections === 'object') {
+      addDivider();
+      addText('Section Breakdown', 14, [26, 26, 46], true);
+      y += 6;
+      Object.entries(sections).forEach(([key, val]) => {
+        const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const score = typeof val === 'object' ? (val.score ?? JSON.stringify(val)) : val;
+        addText(`• ${label}: ${score}`, 11, [60, 60, 60], false);
+      });
+      y += 6;
+    }
 
-    // Save
-    const safeOrg  = ps(org).replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-');
-    const safeDate = today.replace(/\s/g, '-');
-    doc.save('MLA-AI-Risk-Report-' + safeOrg + '-' + safeDate + '.pdf');
+    // Recommendations
+    const recs = result.recommendations || result.advice || null;
+    if (recs) {
+      addDivider();
+      addText('Recommendations', 14, [26, 26, 46], true);
+      y += 6;
+      if (Array.isArray(recs)) {
+        recs.forEach((r, i) => addText(`${i + 1}. ${r}`, 11, [60, 60, 60], false));
+      } else {
+        addText(String(recs), 11, [60, 60, 60], false);
+      }
+    }
 
-  } catch (err) {
-    alert('PDF generation error: ' + err.message);
-    console.error('PDF error:', err);
+    // Raw answers fallback
+    if (!sections && !recs) {
+      addDivider();
+      addText('Your Responses', 14, [26, 26, 46], true);
+      y += 6;
+      const answers = result.answers || result.responses || {};
+      Object.entries(answers).forEach(([q, a]) => {
+        addText(`Q: ${q}`, 10, [80, 80, 80], true);
+        addText(`A: ${a}`, 10, [60, 60, 60], false);
+        y += 4;
+      });
+    }
+
+    // Footer on every page
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(9);
+      doc.setTextColor(180, 180, 180);
+      doc.text(`Page ${i} of ${totalPages} · Confidential`, margin, 830);
+    }
+
+    // 4. Save
+    doc.save(`diagnostic-report-${new Date().toISOString().slice(0,10)}.pdf`);
+    setStatus('Your PDF has been downloaded!');
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('back-btn').style.display = 'inline-block';
   }
-}
+
+  generate().catch(err => {
+    console.error(err);
+    showError('An unexpected error occurred: ' + err.message);
+  });
 </script>
 </body>
 </html>
