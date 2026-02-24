@@ -1,173 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Generating Your Report...</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  body { font-family: sans-serif; background: #001A3A; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; flex-direction: column; }
-  .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.2); border-top-color: #4466FF; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  #status { font-size: 0.9rem; opacity: 0.7; text-align: center; }
-</style>
+    <meta charset="UTF-8">
+    <title>MLA — Framework v2.0 Engine</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: 'DM Sans', sans-serif; background: #001A3A; color: white; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; flex-direction: column; }
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #4466FF; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #status { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
 </head>
 <body>
-  <div class="spinner"></div>
-  <p id="status">Connecting to Supabase and retrieving diagnostic data...</p>
+    <div class="loader"></div>
+    <p id="status">Applying v2.0 Scoring Logic...</p>
 
 <script>
 // ==========================================
-// 1. SUPABASE CONFIGURATION
+[span_4](start_span)[span_5](start_span)[span_6](start_span)[span_7](start_span)// FRAMEWORK V2.0 CONSTANTS[span_4](end_span)[span_5](end_span)[span_6](end_span)[span_7](end_span)
 // ==========================================
-// PASTE YOUR ACTUAL KEYS HERE
-const _supabase = supabase.createClient('https://hueftewwenjaiagdoqmb.supabase.co', 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5');
 
-const BAND_INFO = {
-  critical: { label: 'Critical Risk', summary: 'Significant governance gaps identified. Immediate remediation of AI accountability and oversight is required to meet regulatory standards.' },
-  high: { label: 'High Risk', summary: 'Substantial risks detected. Your organisation lacks key AI controls, potentially leading to regulatory misalignment and operational exposure.' },
-  moderate: { label: 'Moderate Risk', summary: 'Baseline governance is in place, but several key technical and legal controls are missing or undocumented.' },
-  lowmod: { label: 'Low-Moderate', summary: 'Good progress made. Focus on refining existing frameworks and ensuring continuous monitoring is formalised.' },
-  low: { label: 'Low Risk', summary: 'Robust AI governance detected. Current frameworks align with international best practices and transparency requirements.' }
+const SECTOR_MULTIPLIERS = {
+    "Financial Services": 1.00, "Healthcare & Life Sciences": 1.00,
+    "Public Sector / Government": 0.95, "Legal & Professional Services": 0.92,
+    "Technology & SaaS": 0.88, "Retail & E-commerce": 0.85,
+    "Education": 0.82, "Manufacturing & Logistics": 0.80, "Other": 0.90
 };
 
-// ==========================================
-// 2. THE DATA BRIDGE
-// ==========================================
-async function start() {
-  const { data: { user } } = await _supabase.auth.getUser();
-  if (!user) {
-    document.getElementById('status').innerText = "Authentication Error: Please log in to the portal.";
-    return;
-  }
+const SECTION_WEIGHTS = { s1: 0.14, s2: 0.20, s3: 0.10, s4: 0.16, s5: 0.16, s6: 0.18, s7: 0.06 };
 
-  // Fetch the latest result for this user from your 'diagnostic_results' table
-  const { data: row, error } = await _supabase
-    .from('diagnostic_results') 
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
+const BASE_MAX_SCORES = { s1: 12, s2: 18, s3: 12, s4: 12, s5: 15, s6: 15, s7: 15 };
 
-  if (error || !row) {
-    document.getElementById('status').innerText = "No assessment data found. Please complete the diagnostic first.";
-    return;
-  }
-
-  // Transform Supabase "Flat" data into the "Nested" object the PDF needs
-  const RESULTS = {
-    organisation: row.organisation,
-    adjustedScore: row.adjusted_score,
-    band: {
-      id: row.risk_band,
-      label: BAND_INFO[row.risk_band]?.label || 'Assessment Complete',
-      summary: BAND_INFO[row.risk_band]?.summary || ''
-    },
-    sectionPcts: typeof row.section_scores === 'string' ? JSON.parse(row.section_scores) : row.section_scores,
-    priorityFlags: typeof row.priority_flags === 'string' ? JSON.parse(row.priority_flags) : row.priority_flags,
-    sectionNames: {
-      s1: 'Strategy & Governance', s2: 'Inventory & Classification', s3: 'Data Governance',
-      s4: 'Risk Management', s5: 'Compliance & Ethics', s6: 'Vendor Management', s7: 'Continuous Monitoring'
-    }
-  };
-
-  document.getElementById('status').innerText = "Data Synced. Generating 10-Page Report...";
-  makeFullPDF(RESULTS);
-}
+const RISK_BANDS = [
+    { min: 80, label: "LOW", sub: "Governance Established — Maintenance Mode", color: [22, 101, 52] },
+    { min: 65, label: "LOW-MODERATE", sub: "Foundations Present — Targeted Gaps Remain", color: [6, 95, 70] },
+    { min: 45, label: "MODERATE", sub: "Governance Gaps — Regulatory Exposure Likely", color: [146, 64, 14] },
+    { min: 25, label: "HIGH", sub: "Significant Exposure — Intervention Required", color: [153, 27, 27] },
+    { min: 0,  label: "CRITICAL", sub: "Governance Absent — Urgent Escalation Needed", color: [157, 23, 77] }
+];
 
 // ==========================================
-// 3. THE 10-PAGE LOGIC ENGINE
+[span_8](start_span)// THE CALCULATION ENGINE[span_8](end_span)
 // ==========================================
-function makeFullPDF(R) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'mm', 'a4');
-  const W = 210, M = 18, TW = W - (M*2);
-  const navy = [0, 26, 58], blue = [26, 107, 255], white = [255, 255, 255];
-  const rcMap = { critical:[180,35,35], high:[165,55,55], moderate:[185,115,0], low:[22,145,65] };
-  const rc = rcMap[R.band.id] || blue;
-  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  let page = 1;
 
-  function header(title) {
-    doc.setFillColor(...navy).rect(0, 0, W, 34, 'F');
-    doc.setFillColor(...rc).rect(0, 34, W, 1.5, 'F');
-    doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(...white).text('MLA GROUP', M, 15);
-    doc.setFontSize(7).setTextColor(160, 185, 215).text(title, M, 28);
-  }
+window.onload = async function() {
+    const rawData = sessionStorage.getItem('portal_result');
+    if (!rawData) { window.location.href = 'portal.html'; return; }
+    const data = JSON.parse(rawData);
 
-  function footer() {
-    doc.setFillColor(...navy).rect(0, 285, W, 12, 'F');
-    doc.setFontSize(7).setTextColor(140, 170, 210).text('Page ' + page, W - M, 292, { align: 'right' });
-  }
+    [span_9](start_span)// 1. Calculate Adjusted Max Scores (High-Risk Category Logic)[span_9](end_span)
+    let adjMax = { ...BASE_MAX_SCORES };
+    const categories = data.q1_2_selections || []; 
+    if (categories.includes('Automated decision support')) adjMax.s4 += 2;
+    if (categories.includes('Customer profiling')) adjMax.s6 += 2;
+    if (categories.includes('Customer eligibility')) { adjMax.s4 += 2; adjMax.s6 += 2; }
+    if (categories.includes('HR or recruitment')) adjMax.s4 += 2;
+    if (categories.includes('Biometric or identity')) { adjMax.s4 += 2; adjMax.s5 += 2; }
+    if (categories.includes('Health or safety')) { adjMax.s4 += 2; adjMax.s5 += 2; adjMax.s6 += 2; }
 
-  // --- PAGE 1: COVER ---
-  doc.setFillColor(...navy).rect(0, 0, W, 297, 'F');
-  doc.setFillColor(...rc).rect(0, 0, W, 8, 'F');
-  doc.setFontSize(28).setTextColor(...white).text(R.organisation, M, 70);
-  doc.setFontSize(16).setTextColor(...rc).text(R.band.label.toUpperCase(), M, 82);
-  doc.setFontSize(36).setTextColor(...white).text(R.adjustedScore + '%', M, 110);
-  doc.setFontSize(10).setTextColor(120, 150, 190).text('OVERALL MATURITY RATING', M, 120);
+    [span_10](start_span)// 2. Calculate Weighted Score[span_10](end_span)
+    const sectionScores = typeof data.section_scores === 'string' ? JSON.parse(data.section_scores) : data.section_scores;
+    let weightedScore = 0;
+    Object.keys(SECTION_WEIGHTS).forEach(s => {
+        let sPerc = (sectionScores[s] / adjMax[s]) * 100;
+        weightedScore += (sPerc * SECTION_WEIGHTS[s]);
+    });
 
-  // --- PAGE 2: SUMMARY ---
-  doc.addPage(); page++;
-  header('1. EXECUTIVE SUMMARY');
-  doc.setFontSize(12).setTextColor(...navy).text('Strategic Context', M, 50);
-  const sLines = doc.splitTextToSize(R.band.summary, TW);
-  doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(60, 70, 80).text(sLines, M, 60);
-  footer();
+    [span_11](start_span)// 3. Apply Sector Multiplier[span_11](end_span)
+    const multiplier = SECTOR_MULTIPLIERS[data.sector] || 0.90;
+    let adjustedScore = weightedScore * multiplier;
 
-  // --- PAGE 3: MATURITY BREAKDOWN ---
-  doc.addPage(); page++;
-  header('2. DOMAIN MATURITY BREAKDOWN');
-  let y = 55;
-  Object.keys(R.sectionNames).forEach(key => {
-    const p = R.sectionPcts[key] || 0;
-    doc.setFontSize(9).setTextColor(...navy).text(R.sectionNames[key], M, y);
-    doc.setFillColor(235, 240, 245).rect(M, y + 3, TW, 4, 'F');
-    doc.setFillColor(...rc).rect(M, y + 3, (p * TW / 100), 4, 'F');
-    doc.text(p + '%', W - M, y + 2.5, { align: 'right' });
-    y += 18;
-  });
-  footer();
+    [span_12](start_span)// 4. Uncertainty Elevation[span_12](end_span)
+    const uCount = data.uncertainty_count || 0;
+    let bandIndex = RISK_BANDS.findIndex(b => adjustedScore >= b.min);
+    if (uCount >= 5) bandIndex = Math.min(bandIndex + 2, 4);
+    else if (uCount >= 3) bandIndex = Math.min(bandIndex + 1, 4);
+    
+    const finalBand = RISK_BANDS[bandIndex];
 
-  // --- PAGE 4: DETAILED FINDINGS ---
-  doc.addPage(); page++;
-  header('3. RISK & COMPLIANCE FINDINGS');
-  y = 55;
-  R.priorityFlags.forEach(f => {
-    if(y > 240) { doc.addPage(); page++; header('3. FINDINGS (CONT.)'); y = 55; }
-    doc.setFillColor(248, 250, 252).rect(M, y, TW, 25, 'F');
-    doc.setFillColor(...(rcMap[f.severity] || rc)).rect(M, y, 2, 25, 'F');
-    doc.setFont('helvetica', 'bold').setFontSize(9).setTextColor(...navy).text(f.label, M + 5, y + 8);
-    const bLines = doc.splitTextToSize("Basis: " + f.basis, TW - 10);
-    doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(80, 80, 80).text(bLines, M + 5, y + 14);
-    y += 30;
-  });
-  footer();
+    // ==========================================
+    // PDF GENERATION
+    // ==========================================
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const M = 20, TW = 170;
 
-  // --- PAGE 5: REGULATORY APPENDIX ---
-  doc.addPage(); page++;
-  header('4. REGULATORY APPENDIX');
-  y = 55;
-  const regs = [
-    ['EU AI Act', 'Governance, risk classification, and transparency requirements.'],
-    ['UK GDPR', 'DPIA requirements and automated decision-making controls.'],
-    ['ISO/IEC 42001', 'International AI Management System (AIMS) standards.']
-  ];
-  regs.forEach(r => {
-    doc.setFont('helvetica', 'bold').setFontSize(9).text(r[0], M, y);
-    doc.setFont('helvetica', 'normal').text(r[1], M + 40, y);
-    y += 12;
-  });
-  footer();
+    // Cover Page
+    doc.setFillColor(0, 26, 58).rect(0, 0, 210, 297, 'F');
+    doc.setFontSize(28).setTextColor(255, 255, 255).text(data.organisation || 'Diagnostic Report', M, 60);
+    doc.setFontSize(12).setTextColor(68, 102, 255).text("AI GOVERNANCE RISK DIAGNOSTIC V2.0", M, 70);
+    
+    [span_13](start_span)// Risk Band Box[span_13](end_span)
+    doc.setFillColor(...finalBand.color).rect(M, 90, TW, 45, 'F');
+    doc.setFontSize(10).setTextColor(255, 255, 255).text("ADJUSTED EXPOSURE SCORE", M + 10, 102);
+    doc.setFontSize(32).text(Math.round(adjustedScore) + "%", M + 10, 115);
+    doc.setFontSize(16).text(finalBand.label, M + 10, 127);
+    doc.setFontSize(9).text(finalBand.sub, M + 10, 132);
 
-  doc.save(`MLA-AI-Report-${R.organisation}.pdf`);
-  document.getElementById('status').innerText = "Download successful.";
-  setTimeout(() => window.close(), 3000);
-}
+    [span_14](start_span)// Priority Flags[span_14](end_span)
+    doc.addPage();
+    doc.setFontSize(14).setTextColor(0, 26, 58).text("1. PRIORITY REGULATORY FLAGS", M, 30);
+    let y = 45;
+    const flags = typeof data.priority_flags === 'string' ? JSON.parse(data.priority_flags) : data.priority_flags;
+    
+    flags.forEach(f => {
+        doc.setFillColor(255, 241, 242).rect(M, y, TW, 20, 'F');
+        doc.setTextColor(153, 27, 27).setFontSize(9).text(f.label, M + 5, y + 8);
+        doc.setTextColor(100, 116, 139).setFontSize(8).text("Basis: " + f.basis, M + 5, y + 14);
+        y += 25;
+    });
 
-start();
+    // Save
+    doc.save(`MLA-Report-${data.organisation}.pdf`);
+    document.getElementById('status').innerText = "Report Complete.";
+};
 </script>
 </body>
 </html>
