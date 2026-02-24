@@ -853,7 +853,7 @@
         <a href="https://calendly.com/fraser-mlagroup/30min" target="_blank" class="btn-primary" style="text-decoration:none">&#128222;&nbsp; Book a Call Now</a>
         <p class="cta-privacy">Your data is handled confidentially and never shared without your consent.</p>
       </div>
-      <button class="btn-pdf" onclick="makePDF()">&#8595;&nbsp; Download Full PDF Report</button>
+      <button class="btn-pdf" onclick="handleReportDownload()">&#8595;&nbsp; Download Full PDF Report</button>
       <div class="result-footer">
         MLA Group &nbsp;|&nbsp; AI Governance Risk Assessment &nbsp;|&nbsp; mlagroup.co.uk<br>
         This report is produced for informational purposes. MLA Group is not a certified audit regulator.<br>
@@ -2036,6 +2036,18 @@ function makePDF() {
     console.error('PDF error:', err);
   }
 }
+function handleReportDownload() {
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      // Already logged in — just generate the PDF
+      makePDF();
+    } else {
+      // Not logged in — redirect to signup
+      window.location.href = 'login.html?after=diagnostic';
+    }
+  });
+}
+
 </script>
 </body>
 </html>
