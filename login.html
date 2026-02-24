@@ -309,8 +309,20 @@
       });
     }
 
-    showMsg('signup-msg', 'success', 'Account created! Redirecting to your portal...');
+        showMsg('signup-msg', 'success', 'Account created! Setting up your portal...');
+
+    // Claim any pending diagnostic result
+    const pendingId = sessionStorage.getItem('pending_result_id');
+    if (pendingId && data.user) {
+      await supabaseClient
+        .from('diagnostic_results')
+        .update({ user_id: data.user.id })
+        .eq('id', pendingId);
+      sessionStorage.removeItem('pending_result_id');
+    }
+
     setTimeout(() => window.location.href = 'portal.html', 1500);
+
   }
 
   // Allow Enter key to submit
