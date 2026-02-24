@@ -248,38 +248,138 @@ function _recon(row) {
 }
 
 function generatePortalPDF(row) {
-  if (!window.jspdf || !window.jspdf.jsPDF) { showError('PDF library not loaded.'); return; }
+  if (!window.jspdf || !window.jspdf.jsPDF) { showError('PDF library not loaded - please refresh and try again.'); return; }
+  if (!row) { showError('No result data found.'); return; }
+
   setStatus('Rendering report pages...');
 
   try {
     var doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     var W = 210, M = 18, TW = W - M * 2, TWI = TW - 8;
     var R = _recon(row);
-    var org = _ps(row.organisation || 'Organisation');
+    var org = _ps(row.organisation || '');
+    var name = _ps(R.respondentName || org);
+    var role = _ps(R.respondentRole || '');
+    var sector = _ps(R.sector);
+    var size = _ps(R.orgSize);
+    var band = _ps(R.band.label);
+    var bc = R.band.id;
+    var pct = R.adjustedScore + '%';
+    var title = _ps(R.band.heading);
+    var summary = _ps(R.band.summary);
     var today = new Date(row.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-    
-    // Core PDF Generation (Simplified for example stability)
-    doc.setFontSize(20);
-    doc.text("AI Governance Risk Report", M, 40);
-    doc.setFontSize(12);
-    doc.text("Organisation: " + org, M, 50);
-    doc.text("Risk Band: " + R.band.label, M, 60);
-    doc.text("Maturity Score: " + R.adjustedScore + "%", M, 70);
-    
-    // Add page content logic... (Your existing rendering code goes here)
+    var nv = [0, 26, 58], wh = [255, 255, 255], lb = [247, 249, 252], mg = [120, 130, 148], dk = [30, 40, 58], bl = [26, 107, 255];
+    var rcm = { critical: [180,35,35], high: [165,55,55], moderate: [185,115,0], lowmod: [170,120,0], low: [22,145,65] };
+    var rc = rcm[bc] || bl;
 
-    /* --- FINAL SAVE BLOCK: The fix for iOS vs Desktop --- */
+    var findings = [];
+    R.priorityFlags.forEach(function(f) {
+      var d = _FINDING_DATA[f.id] || { section: 'General', severity: f.severity || 'high', impact: 'This governance area requires attention.', rec: 'Review this finding with your compliance function.' };
+      findings.push({ label: _ps(f.label), basis: _ps(f.basis), section: d.section, severity: d.severity, impact: d.impact, rec: d.rec });
+    });
+    (R.regimeFlags || []).forEach(function(f) {
+      findings.push({ label: _ps(f.label), basis: _ps(f.basis), section: _REGIME_FINDING.section, severity: _REGIME_FINDING.severity, impact: _REGIME_FINDING.impact, rec: _REGIME_FINDING.rec });
+    });
+    if (R.uncertaintyCount >= 3) {
+      findings.push({ label: 'Elevated uncertainty: ' + R.uncertaintyCount + ' questions answered without sufficient confidence', basis: 'Risk band elevated per framework uncertainty threshold', section: 'Assessment Integrity', severity: 'moderate', impact: 'Uncertainty about whether controls exist is treated by regulators as equivalent to the absence of those controls.', rec: 'Conduct an internal governance stocktake to establish the factual position on each uncertain area.' });
+    }
+    if (R.selectedCategories && R.selectedCategories.length > 0 && R.selectedCategories.indexOf('none') === -1) {
+      findings.push({ label: 'High-risk AI category detected - EU AI Act Annex III obligations apply from August 2026', basis: 'EU AI Act Annex III; Categories: ' + R.selectedCategories.join(', '), section: 'AI Inventory & Classification', severity: 'critical', impact: 'AI systems in Annex III categories are subject to mandatory conformity assessments...', rec: 'Conduct a formal EU AI Act scoping assessment for each high-risk category identified.' });
+    }
+
+    var br = _BAND_RECS[bc] || _BAND_RECS.moderate;
+    var sr = _SECTOR_RECS[sector] || '';
+    var allRecs = sr ? [sr].concat(br) : br;
+    var y = 0, pn = 1;
+
+    // PAGE 1 COVER
+    doc.setFillColor(nv[0], nv[1], nv[2]); doc.rect(0, 0, W, 297, 'F');
+    doc.setFillColor(rc[0], rc[1], rc[2]); doc.rect(0, 0, W, 6, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
+    doc.text('MLA GROUP', M, 22);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(100,140,190);
+    doc.text('AI Governance & Risk Advisory | mlagroup.co.uk', M, 30);
+    doc.setDrawColor(25,55,100); doc.setLineWidth(0.4); doc.line(M, 36, W-M, 36);
+    doc.setFontSize(8); doc.setTextColor(80,120,175);
+    doc.text('AI GOVERNANCE RISK ASSESSMENT - CONFIDENTIAL REPORT', M, 50);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(24); doc.setTextColor(255,255,255);
+    var orgL = doc.splitTextToSize(org, 168);
+    orgL.forEach(function(l, i) { doc.text(l, M, 64 + i * 13); });
+    var hy = orgL.length > 1 ? 98 : 86;
+    doc.setFillColor(8,32,68); doc.rect(M, hy, TW, 44, 'F');
+    doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(M, hy, 5, 44, 'F');
+    doc.setDrawColor(rc[0],rc[1],rc[2]); doc.setLineWidth(0.5); doc.rect(M, hy, TW, 44, 'S');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(rc[0],rc[1],rc[2]);
+    doc.text(band, M+11, hy+14);
+    doc.setFontSize(28); doc.text(pct, W-M-5, hy+20, { align: 'right' });
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(200,215,235);
+    doc.text(title, M+11, hy+25);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(140,165,200);
+    var scl = doc.splitTextToSize(summary, TW-30); doc.text(scl, M+11, hy+33);
+    var py = hy+56;
+    doc.setDrawColor(20,50,90); doc.setLineWidth(0.3); doc.line(M, py, W-M, py);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
+    doc.text(name, M, py+18);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(140,165,205);
+    doc.text(role ? role + ' | ' + org : org, M, py+26);
+    doc.text(sector + ' | ' + (size ? size + ' employees' : ''), M, py+33);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(255,255,255);
+    doc.text(today, W-M, py+18, { align: 'right' });
+
+    // PAGE 2 EXECUTIVE SUMMARY
+    pn++; y = _np(doc, W, M, nv, rc, '1. EXECUTIVE SUMMARY', today, pn);
+    y = _sh(doc, W, M, nv, '1.1 Confidentiality Statement', y);
+    y = _tb(doc, _ps('This report is the exclusive property of ' + org + ' and MLA Group...'), M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2);
+    y += 8;
+    y = _sh(doc, W, M, nv, '1.3 Key Findings & Risk Position', y);
+    var ph = 46;
+    doc.setFillColor(lb[0],lb[1],lb[2]); doc.rect(M, y, TW, ph, 'F');
+    doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(M, y, 5, ph, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(rc[0],rc[1],rc[2]);
+    doc.text(band, M+10, y+13);
+    doc.setFontSize(22); doc.text(pct, W-M-5, y+18, { align: 'right' });
+    y += ph + 8;
+    findings.slice(0, 3).forEach(function(fd) {
+      var fl = doc.splitTextToSize(fd.label, TWI-6);
+      doc.setFillColor(250,248,248); doc.rect(M, y, TW, 12, 'F');
+      doc.setFontSize(7.8); doc.setTextColor(40,48,62);
+      doc.text(fl, M+8, y+7); y += 15;
+    });
+    _ftr(doc, W, M, nv, rc, today, pn);
+
+    // PAGE 3 ASSESSMENT RESULTS
+    pn++; y = _np(doc, W, M, nv, rc, '2. ASSESSMENT RESULTS', today, pn);
+    y = _sh(doc, W, M, nv, '2.2 Section Maturity Breakdown', y);
+    ['s1','s2','s3','s4','s5','s6','s7'].forEach(function(s, i) {
+      var p = R.sectionPcts[s]||0;
+      var nm = R.sectionNames[s];
+      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?252:255);
+      doc.rect(M, y, TW, 10, 'F');
+      doc.setFontSize(7.8); doc.setTextColor(35,45,60);
+      doc.text(nm, M+3, y+6.8);
+      _drawBar(doc, M+136, y+3, 20, 4, p, p>=75?[22,145,65]:[165,55,55]);
+      y += 10;
+    });
+    _ftr(doc, W, M, nv, rc, today, pn);
+
+    // APPENDIX
+    pn++; y = _np(doc, W, M, nv, rc, 'A. APPENDIX: SCOPE & METHODOLOGY', today, pn);
+    y = _sh(doc, W, M, nv, 'A.3 Scoring Methodology', y);
+    y = _tb(doc, _ps('Framework v' + R.frameworkVersion + '...'), M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2);
+    _ftr(doc, W, M, nv, rc, today, pn);
+
+    /* --- THE IOS FIX: Branching Logic --- */
     var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     var so = _ps(org).replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-');
     var fn = 'MLA-AI-Risk-Report-' + so + '.pdf';
 
     if (isIOS) {
-      // Use Blob and Manual Button for iPhone
+      // Create a Blob for Safari
       var blob = doc.output('blob');
       var blobUrl = URL.createObjectURL(blob);
       showSuccess(blobUrl); 
     } else {
-      // Automatic download for Desktop
+      // Standard download for PC
       doc.save(fn);
       showSuccess(); 
     }
@@ -289,6 +389,7 @@ function generatePortalPDF(row) {
     showError('PDF generation failed: ' + err.message);
   }
 }
+
 
 window.addEventListener('load', function() {
   try {
