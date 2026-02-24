@@ -2045,10 +2045,10 @@ function makePDF() {
 function handleReportDownload() {
   supabaseClient.auth.getSession().then(({ data: { session } }) => {
     if (session) {
-      // Already logged in — just generate the PDF
       makePDF();
     } else {
-      // Not logged in — redirect to signup
+      const org = document.getElementById('ps-org')?.value || '';
+      sessionStorage.setItem('pending_org', org);
       window.location.href = 'login.html?after=diagnostic';
     }
   });
