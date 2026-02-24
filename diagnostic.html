@@ -1140,18 +1140,11 @@ async function saveToSupabase() {
         priority_flags: RESULTS.priorityFlags || [],
         framework_version: RESULTS.frameworkVersion || '2.0.0'
       })
-      .select();
-    if (error) {
-      console.log('Supabase error:', error);
-    } else if (data && data[0]) {
-      sessionStorage.setItem('pending_result_id', data[0].id);
-    }
-  } catch(e) {
-    console.log('Save error:', e);
-  }
+      .select('id')
+      .single();
+    if (data) sessionStorage.setItem('pending_result_id', data.id);
+  } catch(e) { console.log('Save error:', e); }
 }
-
-
 
 // ─── RENDER RESULTS ──────────────────────────────────────────────
 function renderResults() {
