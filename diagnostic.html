@@ -877,19 +877,18 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     if (portalResult) {
       const r = JSON.parse(portalResult);
       sessionStorage.removeItem('portal_result');
-      // Populate the org field that makePDF reads
       window.addEventListener('load', function() {
-        const orgField = document.getElementById('ps-org');
-        if (orgField) orgField.value = r.organisation || '';
+        document.getElementById('ps-org').value = r.organisation || '';
         RESULTS = r;
         setTimeout(function() {
           makePDF();
-          setTimeout(function() { window.history.back(); }, 500);
-        }, 800);
+          setTimeout(function() { window.close(); }, 1000);
+        }, 1200);
       });
     }
   }
 })();
+
 
 }
 
