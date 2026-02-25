@@ -1,241 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MLA — Sign In</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --navy: #001A3A;
-    --blue: #0000FF;
-    --ink:  #0D1B2A;
-    --muted: #5A6B82;
-    --border: #E2E8F4;
-    --bg: #F7F8FC;
-  }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .card {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 4px 40px rgba(0,0,80,0.10);
-    width: 100%;
-    max-width: 420px;
-    overflow: hidden;
-  }
-  .card-top {
-    background: var(--navy);
-    padding: 32px 36px 28px;
-  }
-  .logo {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: white;
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
-  }
-  .logo span { color: #4466FF; }
-  .card-top p {
-    font-size: 0.82rem;
-    color: rgba(255,255,255,0.45);
-    letter-spacing: 0.05em;
-  }
-  .card-body { padding: 32px 36px; }
-  .tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 28px;
-    border-bottom: 1.5px solid var(--border);
-  }
-  .tab {
-    flex: 1;
-    text-align: center;
-    padding: 10px 0;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1.5px;
-    transition: all 0.15s;
-  }
-  .tab.active {
-    color: var(--blue);
-    border-bottom-color: var(--blue);
-  }
-  .form-group { margin-bottom: 18px; }
-  .form-group label {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 7px;
-    letter-spacing: 0.03em;
-  }
-  .form-group input {
-    width: 100%;
-    padding: 11px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.92rem;
-    color: var(--ink);
-    background: white;
-    transition: border-color 0.15s;
-    outline: none;
-  }
-  .form-group input:focus { border-color: var(--blue); }
-  .btn {
-    width: 100%;
-    padding: 13px;
-    background: var(--blue);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-    margin-top: 4px;
-  }
-  .btn:hover { background: #0000CC; }
-  .btn:active { transform: scale(0.99); }
-  .btn:disabled { background: #8899CC; cursor: not-allowed; }
-  .message {
-    margin-top: 16px;
-    padding: 12px 14px;
-    border-radius: 8px;
-    font-size: 0.83rem;
-    font-weight: 500;
-    display: none;
-  }
-  .message.error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; display: block; }
-  .message.success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; display: block; }
-  .divider {
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin: 20px 0;
-    position: relative;
-  }
-  .divider::before, .divider::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 38%;
-    height: 1px;
-    background: var(--border);
-  }
-  .divider::before { left: 0; }
-  .divider::after { right: 0; }
-  .footer-note {
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin-top: 20px;
-    line-height: 1.5;
-  }
-  .footer-note a { color: var(--blue); text-decoration: none; }
-  .back-link {
-    display: block;
-    text-align: center;
-    margin-top: 20px;
-    font-size: 0.78rem;
-    color: var(--muted);
-    text-decoration: none;
-  }
-  .back-link:hover { color: var(--navy); }
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In | MLA Group</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:      #020617;
+      --surface: #0a1628;
+      --card:    rgba(12,22,46,0.8);
+      --border:  rgba(255,255,255,0.07);
+      --border-h:rgba(255,255,255,0.12);
+      --accent:  #2563eb;
+      --accent-d:#1d4ed8;
+      --sky:     #60a5fa;
+      --main:    #f1f5f9;
+      --sub:     #cbd5e1;
+      --muted:   #64748b;
+      --muted2:  #94a3b8;
+      --err:     #ef4444;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { font-size:16px; }
+    body {
+      background:var(--bg); color:var(--main);
+      font-family:'DM Sans', sans-serif; line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      min-height:100vh; display:flex; flex-direction:column;
+      overflow-x:hidden;
+    }
+
+    .bg-grid {
+      position:fixed; inset:0; z-index:0; pointer-events:none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size:64px 64px;
+      mask-image:radial-gradient(ellipse 120% 60% at 20% 0%, black 10%, transparent 70%);
+    }
+    .bg-glow {
+      position:fixed; z-index:0; pointer-events:none;
+      width:900px; height:900px; border-radius:50%;
+      background:#2563eb; filter:blur(160px); opacity:0.11;
+      top:-250px; left:50%; transform:translateX(-50%);
+    }
+
+    /* NAV */
+    nav {
+      position:relative; z-index:10;
+      height:64px; display:flex; align-items:center; justify-content:space-between;
+      padding:0 48px; border-bottom:1px solid var(--border);
+      background:rgba(2,6,23,0.7); backdrop-filter:blur(20px);
+    }
+    .logo { font-size:1.1rem; font-weight:600; letter-spacing:-0.02em; text-decoration:none; color:var(--main); }
+    .logo em { font-family:'Instrument Serif', serif; font-style:italic; font-weight:400; color:var(--sky); }
+    .nav-back {
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:0.82rem; color:var(--muted2); text-decoration:none; transition:color 0.18s;
+    }
+    .nav-back:hover { color:var(--main); }
+    .nav-back svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* LAYOUT */
+    .layout {
+      position:relative; z-index:1; flex:1;
+      display:grid; grid-template-columns:1fr 1fr;
+      min-height:calc(100vh - 64px);
+    }
+
+    /* LEFT */
+    .left {
+      padding:80px 64px;
+      display:flex; flex-direction:column; justify-content:center;
+    }
+    .left-eyebrow {
+      font-size:0.7rem; font-weight:600; text-transform:uppercase;
+      letter-spacing:0.1em; color:var(--sky);
+      display:flex; align-items:center; gap:10px; margin-bottom:24px;
+    }
+    .left-eyebrow::before { content:''; width:20px; height:1px; background:var(--sky); }
+    h1 {
+      font-family:'Instrument Serif', serif;
+      font-size:clamp(3rem,4.5vw,4.5rem); font-weight:400;
+      line-height:0.93; letter-spacing:-0.03em; margin-bottom:20px;
+    }
+    h1 em { font-style:italic; color:var(--sky); }
+    .left-p { font-size:0.95rem; font-weight:300; color:var(--muted2); line-height:1.75; max-width:360px; margin-bottom:52px; }
+
+    /* Portal feature list */
+    .portal-list { display:flex; flex-direction:column; gap:3px; }
+    .pl-item {
+      display:flex; align-items:flex-start; gap:14px;
+      padding:18px 18px;
+      background:var(--card); border:1px solid var(--border);
+      border-bottom:none; transition:border-color 0.2s, background 0.2s;
+    }
+    .pl-item:first-child { border-radius:10px 10px 0 0; }
+    .pl-item:last-child  { border-bottom:1px solid var(--border); border-radius:0 0 10px 10px; }
+    .pl-item:hover { border-color:rgba(37,99,235,0.25); background:rgba(37,99,235,0.04); }
+    .pl-icon {
+      width:34px; height:34px; min-width:34px;
+      border-radius:7px; background:rgba(37,99,235,0.1);
+      border:1px solid rgba(37,99,235,0.18);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .pl-icon svg { width:15px; height:15px; stroke:var(--sky); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+    .pl-text h4 { font-size:0.85rem; font-weight:600; color:var(--main); margin-bottom:2px; }
+    .pl-text p  { font-size:0.77rem; color:var(--muted2); line-height:1.5; }
+
+    /* RIGHT */
+    .right {
+      padding:80px 64px;
+      display:flex; flex-direction:column; justify-content:center;
+    }
+    .form-wrap { max-width:380px; width:100%; }
+
+    .form-title { font-size:1.55rem; font-weight:600; letter-spacing:-0.025em; margin-bottom:6px; }
+    .form-hint { font-size:0.85rem; color:var(--muted2); margin-bottom:36px; }
+    .form-hint a { color:var(--sky); text-decoration:none; }
+    .form-hint a:hover { text-decoration:underline; }
+
+    .err-box {
+      background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.2);
+      border-left:3px solid var(--err); border-radius:0 7px 7px 0;
+      padding:10px 14px; font-size:0.82rem; color:#fca5a5;
+      margin-bottom:20px; display:none;
+    }
+
+    .field { margin-bottom:18px; }
+    .field-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
+    label { display:block; font-size:0.78rem; font-weight:500; color:var(--muted2); letter-spacing:0.01em; }
+    .forgot { font-size:0.76rem; color:var(--sky); text-decoration:none; }
+    .forgot:hover { text-decoration:underline; }
+
+    input[type="email"], input[type="password"] {
+      width:100%; padding:11px 13px;
+      background:rgba(12,22,46,0.7); border:1px solid var(--border);
+      border-radius:7px; color:var(--main);
+      font-family:'DM Sans', sans-serif; font-size:0.9rem;
+      outline:none; transition:border-color 0.18s, box-shadow 0.18s;
+    }
+    input::placeholder { color:var(--muted); }
+    input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,0.14); }
+    input.err { border-color:var(--err); }
+
+    .submit {
+      width:100%; padding:12px; margin-top:6px;
+      background:var(--accent); color:white; border:none; border-radius:7px;
+      font-family:'DM Sans', sans-serif; font-size:0.9rem; font-weight:600;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+      transition:background 0.18s, transform 0.18s, box-shadow 0.18s;
+    }
+    .submit:hover { background:var(--accent-d); transform:translateY(-1px); box-shadow:0 5px 20px rgba(37,99,235,0.35); }
+    .submit:active { transform:translateY(0); }
+    .submit:disabled { opacity:0.55; cursor:not-allowed; transform:none; box-shadow:none; }
+    .submit .spin {
+      width:15px; height:15px; border-radius:50%;
+      border:2px solid rgba(255,255,255,0.25); border-top-color:white;
+      animation:spin 0.65s linear infinite; display:none;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .divider { display:flex; align-items:center; gap:12px; margin:22px 0; }
+    .div-line { flex:1; height:1px; background:var(--border); }
+    .div-txt { font-size:0.73rem; color:var(--muted); }
+
+    .alt-btn {
+      display:block; width:100%; padding:12px; text-align:center;
+      background:transparent; border:1px solid var(--border-h);
+      border-radius:7px; color:var(--sub); font-family:'DM Sans', sans-serif;
+      font-size:0.88rem; font-weight:500; text-decoration:none;
+      transition:background 0.18s, border-color 0.18s, color 0.18s;
+    }
+    .alt-btn:hover { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.16); color:var(--main); }
+
+    .form-foot { margin-top:36px; padding-top:22px; border-top:1px solid var(--border); }
+    .form-foot p { font-size:0.73rem; color:var(--muted); line-height:1.65; }
+    .form-foot a { color:var(--muted2); text-decoration:none; }
+    .form-foot a:hover { color:var(--main); }
+
+    .form-tabs {
+      display:flex; gap:0; margin-bottom:28px;
+      border-bottom:1px solid var(--border);
+    }
+    .form-tab {
+      flex:1; padding:10px 0; text-align:center;
+      font-family:'DM Sans', sans-serif; font-size:0.85rem; font-weight:500;
+      color:var(--muted2); background:none; border:none; border-bottom:2px solid transparent;
+      margin-bottom:-1px; cursor:pointer; transition:color 0.18s, border-color 0.18s;
+    }
+    .form-tab.active { color:var(--sky); border-bottom-color:var(--sky); }
+    .form-tab:hover:not(.active) { color:var(--sub); }
+
+    .ok-box {
+      background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.2);
+      border-left:3px solid #22c55e; border-radius:0 7px 7px 0;
+      padding:10px 14px; font-size:0.82rem; color:#86efac;
+      margin-bottom:20px; display:none;
+    }
+
+    @media (max-width:960px) {
+      nav { padding:0 24px; }
+      .layout { grid-template-columns:1fr; }
+      .left { display:none; }
+      .right { padding:52px 24px; justify-content:flex-start; }
+      .form-wrap { max-width:100%; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="card-top">
-    <div class="logo">mla<span>.</span></div>
-    <p>AI RISK INTELLIGENCE PORTAL</p>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<nav>
+  <a href="index.html" class="logo">mla<em>group.</em></a>
+  <a href="index.html" class="nav-back">
+    <svg viewBox="0 0 14 14"><path d="M9 2L4 7l5 5"/></svg>
+    Back to site
+  </a>
+</nav>
+
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="left-eyebrow">Client Portal</div>
+    <h1>Welcome<br><em>back.</em></h1>
+    <p class="left-p">Access your AI governance assessments, download board-ready reports, and track your organisation's risk position over time.</p>
+
+    <div class="portal-list">
+      <div class="pl-item">
+        <div class="pl-icon">
+          <!-- History icon -->
+          <svg viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1012 3a9 9 0 00-9 9"/><path d="M12 7v5l4 2"/></svg>
+        </div>
+        <div class="pl-text">
+          <h4>Assessment History</h4>
+          <p>All completed diagnostics saved and accessible from your dashboard.</p>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-icon">
+          <!-- Download icon -->
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div class="pl-text">
+          <h4>Download PDF Reports</h4>
+          <p>Regenerate and download your governance reports at any time.</p>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-icon">
+          <!-- Lock icon -->
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <div class="pl-text">
+          <h4>Secure &amp; Confidential</h4>
+          <p>Your assessment data is private to your account and never shared.</p>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="card-body">
 
-    <div class="tabs">
-      <div class="tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</div>
-      <div class="tab" id="tab-signup" onclick="switchTab('signup')">Create Account</div>
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="form-wrap">
+
+      <!-- TABS -->
+      <div class="form-tabs">
+        <button class="form-tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+        <button class="form-tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <div class="err-box" id="errBox"></div>
+      <div class="ok-box"  id="okBox"></div>
+
+      <!-- SIGN IN -->
+      <div id="form-signin">
+        <div class="field">
+          <label for="signin-email">Work email</label>
+          <input type="email" id="signin-email" placeholder="you@organisation.com" autocomplete="email"/>
+        </div>
+        <div class="field">
+          <div class="field-row">
+            <label for="signin-password">Password</label>
+            <a href="#" class="forgot">Forgot password?</a>
+          </div>
+          <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+        <button class="submit" id="signin-btn" onclick="signIn()">
+          <span id="signin-txt">Sign in to Portal</span>
+          <div class="spin" id="signin-spin"></div>
+        </button>
+      </div>
+
+      <!-- SIGN UP -->
+      <div id="form-signup" style="display:none">
+        <div class="field">
+          <label for="signup-name">Full name</label>
+          <input type="text" id="signup-name" placeholder="Jane Smith" autocomplete="name"/>
+        </div>
+        <div class="field">
+          <label for="signup-org">Organisation</label>
+          <input type="text" id="signup-org" placeholder="Acme Ltd"/>
+        </div>
+        <div class="field">
+          <label for="signup-email">Work email</label>
+          <input type="email" id="signup-email" placeholder="you@organisation.com" autocomplete="email"/>
+        </div>
+        <div class="field">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" placeholder="Minimum 8 characters" autocomplete="new-password"/>
+        </div>
+        <button class="submit" id="signup-btn" onclick="signUp()">
+          <span id="signup-txt">Create Account</span>
+          <div class="spin" id="signup-spin"></div>
+        </button>
+      </div>
+
+      <div class="divider">
+        <div class="div-line"></div>
+        <span class="div-txt">or</span>
+        <div class="div-line"></div>
+      </div>
+
+      <a href="diagnostic.html" class="alt-btn">Start a New Diagnostic</a>
+
+      <div class="form-foot">
+        <p>By continuing you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>. This portal is for authorised professional use only.</p>
+      </div>
     </div>
-
-    <!-- SIGN IN FORM -->
-    <div id="form-signin">
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" id="signin-email" placeholder="you@company.com" autocomplete="email">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="signin-password" placeholder="Your password" autocomplete="current-password">
-      </div>
-      <button class="btn" id="signin-btn" onclick="signIn()">Sign In →</button>
-      <div class="message" id="signin-msg"></div>
-      <div class="divider">or</div>
-      <div class="footer-note">
-        Don't have an account? <a href="#" onclick="switchTab('signup')">Create one free</a>
-      </div>
-    </div>
-
-    <!-- SIGN UP FORM -->
-    <div id="form-signup" style="display:none">
-      <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" id="signup-name" placeholder="Jane Smith" autocomplete="name">
-      </div>
-      <div class="form-group">
-        <label>Organisation</label>
-        <input type="text" id="signup-org" placeholder="Acme Ltd">
-      </div>
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" id="signup-email" placeholder="you@company.com" autocomplete="email">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="signup-password" placeholder="Minimum 8 characters" autocomplete="new-password">
-      </div>
-      <button class="btn" id="signup-btn" onclick="signUp()">Create Account →</button>
-      <div class="message" id="signup-msg"></div>
-      <div class="divider">or</div>
-      <div class="footer-note">
-        Already have an account? <a href="#" onclick="switchTab('signin')">Sign in</a>
-      </div>
-    </div>
-
-    <a href="index.html" class="back-link">← Back to mlagroup.co.uk</a>
-
   </div>
+
 </div>
 
 <script>
   const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // Check if already logged in
-  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  // Redirect if already logged in
+  sb.auth.getSession().then(({ data: { session } }) => {
     if (session) window.location.href = 'portal.html';
   });
 
-  // Check if redirected after completing diagnostic
+  // Handle ?after=diagnostic or ?mode=register
   const params = new URLSearchParams(window.location.search);
-  if (params.get('after') === 'diagnostic') {
+  if (params.get('mode') === 'register' || params.get('after') === 'diagnostic') {
     switchTab('signup');
-    showMsg('signup-msg', 'success', 'Your diagnostic is complete — create a free account to access your full report.');
+    if (params.get('after') === 'diagnostic') {
+      showOk('Your diagnostic is complete — create a free account to access your full report.');
+    }
   }
 
   function switchTab(tab) {
@@ -243,84 +361,80 @@
     document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
     document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
     document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+    hideErr(); hideOk();
   }
 
-  function showMsg(id, type, text) {
-    const el = document.getElementById(id);
-    el.className = 'message ' + type;
-    el.textContent = text;
+  function showErr(msg) {
+    var el = document.getElementById('errBox');
+    el.textContent = msg; el.style.display = 'block';
+    document.getElementById('okBox').style.display = 'none';
+  }
+  function hideErr() { document.getElementById('errBox').style.display = 'none'; }
+  function showOk(msg) {
+    var el = document.getElementById('okBox');
+    el.textContent = msg; el.style.display = 'block';
+    document.getElementById('errBox').style.display = 'none';
+  }
+  function hideOk() { document.getElementById('okBox').style.display = 'none'; }
+
+  function setLoading(form, on) {
+    var btn  = document.getElementById(form + '-btn');
+    var txt  = document.getElementById(form + '-txt');
+    var spin = document.getElementById(form + '-spin');
+    btn.disabled = on;
+    txt.textContent = on ? (form === 'signin' ? 'Signing in...' : 'Creating account...') : (form === 'signin' ? 'Sign in to Portal' : 'Create Account');
+    spin.style.display = on ? 'block' : 'none';
   }
 
   async function signIn() {
-    const email    = document.getElementById('signin-email').value.trim();
-    const password = document.getElementById('signin-password').value;
-    if (!email || !password) { showMsg('signin-msg', 'error', 'Please enter your email and password.'); return; }
-
-    const btn = document.getElementById('signin-btn');
-    btn.disabled = true; btn.textContent = 'Signing in...';
-
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    hideErr();
+    var email = document.getElementById('signin-email').value.trim();
+    var pass  = document.getElementById('signin-password').value;
+    if (!email || !pass) { showErr('Please enter your email and password.'); return; }
+    setLoading('signin', true);
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) {
-      showMsg('signin-msg', 'error', error.message);
-      btn.disabled = false; btn.textContent = 'Sign In →';
+      showErr(error.message);
+      setLoading('signin', false);
     } else {
       window.location.href = 'portal.html';
     }
   }
 
   async function signUp() {
-    const name     = document.getElementById('signup-name').value.trim();
-    const org      = document.getElementById('signup-org').value.trim();
-    const email    = document.getElementById('signup-email').value.trim();
-    const password = document.getElementById('signup-password').value;
-
-    if (!name || !email || !password) { showMsg('signup-msg', 'error', 'Please fill in all required fields.'); return; }
-    if (password.length < 8) { showMsg('signup-msg', 'error', 'Password must be at least 8 characters.'); return; }
-
-    const btn = document.getElementById('signup-btn');
-    btn.disabled = true; btn.textContent = 'Creating account...';
-
-    const { data, error } = await supabaseClient.auth.signUp({ email, password });
-
+    hideErr();
+    var name  = document.getElementById('signup-name').value.trim();
+    var org   = document.getElementById('signup-org').value.trim();
+    var email = document.getElementById('signup-email').value.trim();
+    var pass  = document.getElementById('signup-password').value;
+    if (!name || !email || !pass) { showErr('Please fill in all required fields.'); return; }
+    if (pass.length < 8) { showErr('Password must be at least 8 characters.'); return; }
+    setLoading('signup', true);
+    const { data, error } = await sb.auth.signUp({ email, password: pass });
     if (error) {
-      showMsg('signup-msg', 'error', error.message);
-      btn.disabled = false; btn.textContent = 'Create Account →';
+      showErr(error.message);
+      setLoading('signup', false);
       return;
     }
-
     if (data.user) {
-      // Create profile row
-      await supabaseClient.from('profiles').insert({
-        id: data.user.id,
-        email: email,
-        full_name: name,
-        organisation: org,
-        role: 'client'
+      await sb.from('profiles').insert({
+        id: data.user.id, email, full_name: name, organisation: org, role: 'client'
       });
-
-          // Claim pending diagnostic result
-    const pendingId = sessionStorage.getItem('pending_result_id');
-    if (pendingId && data.user) {
-      await supabaseClient
-        .from('diagnostic_results')
-        .update({ user_id: data.user.id })
-        .eq('id', pendingId);
-      sessionStorage.removeItem('pending_result_id');
+      const pendingId = sessionStorage.getItem('pending_result_id');
+      if (pendingId) {
+        await sb.from('diagnostic_results').update({ user_id: data.user.id }).eq('id', pendingId);
+        sessionStorage.removeItem('pending_result_id');
+      }
     }
-    }
-
-    showMsg('signup-msg', 'success', 'Account created! Redirecting to your portal...');
+    showOk('Account created! Redirecting to your portal...');
     setTimeout(() => window.location.href = 'portal.html', 1500);
   }
 
-  // Allow Enter key to submit
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      const signinVisible = document.getElementById('form-signin').style.display !== 'none';
-      if (signinVisible) signIn(); else signUp();
-    }
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    const signinVisible = document.getElementById('form-signin').style.display !== 'none';
+    if (signinVisible) signIn(); else signUp();
   });
 </script>
-
 </body>
 </html>
