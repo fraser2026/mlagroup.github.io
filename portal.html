@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE  html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -26,11 +26,12 @@
     padding: 0 32px;
     position: sticky; top: 0; z-index: 100;
   }
-  .nav-logo { font-size: 1.3rem; font-weight: 700; color: white; letter-spacing: -0.5px; }
+  .nav-logo { font-size: 1.3rem; font-weight: 700; color: white; letter-spacing: -0.5px; flex-shrink: 0; }
   .nav-logo span { color: #4466FF; }
-  .nav-right { display: flex; align-items: center; gap: 20px; }
-  .nav-user { font-size: 0.82rem; color: rgba(255,255,255,0.5); }
-  .nav-user strong { color: white; font-weight: 600; }
+  .nav-right { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .nav-user { font-size: 0.82rem; color: rgba(255,255,255,0.5); min-width: 0; overflow: hidden; }
+  .nav-user strong { color: white; font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+  .nav-label { display: inline; }
   .btn-signout {
     font-size: 0.78rem; font-weight: 600;
     color: rgba(255,255,255,0.5);
@@ -38,8 +39,16 @@
     padding: 7px 14px; border-radius: 8px;
     cursor: pointer; transition: all 0.15s;
     font-family: 'DM Sans', sans-serif;
+    white-space: nowrap; flex-shrink: 0;
   }
   .btn-signout:hover { color: white; border-color: rgba(255,255,255,0.4); }
+
+  @media (max-width: 600px) {
+    nav { padding: 0 20px; }
+    .nav-label { display: none; }
+    .nav-user strong { max-width: 140px; font-size: 0.78rem; }
+    .btn-signout { padding: 6px 11px; font-size: 0.75rem; }
+  }
 
   /* ── MAIN ── */
   .main { max-width: 1000px; margin: 0 auto; padding: 40px 24px; }
@@ -111,10 +120,7 @@
   .result-meta { font-size: 0.78rem; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
 
   .result-right { display: flex; align-items: center; gap: 16px; }
-  .score-badge {
-    text-align: center;
-    min-width: 60px;
-  }
+  .score-badge { text-align: center; min-width: 60px; }
   .score-num { font-size: 1.5rem; font-weight: 700; line-height: 1; }
   .score-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
 
@@ -124,7 +130,6 @@
     white-space: nowrap;
   }
 
-  /* Band colours */
   .band-low { background: #DCFCE7; color: #166534; }
   .band-lowmod { background: #D1FAE5; color: #065F46; }
   .band-moderate { background: #FEF3C7; color: #92400E; }
@@ -163,7 +168,10 @@
 <nav>
   <div class="nav-logo">mla<span>.</span></div>
   <div class="nav-right">
-    <span class="nav-user">Signed in as <strong id="nav-email">...</strong></span>
+    <span class="nav-user">
+      <span class="nav-label">Signed in as </span>
+      <strong id="nav-email">...</strong>
+    </span>
     <button class="btn-signout" onclick="signOut()">Sign Out</button>
   </div>
 </nav>
@@ -218,16 +226,12 @@
   };
 
   async function init() {
-    // Check auth
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) { window.location.href = 'login.html'; return; }
 
     const user = session.user;
-
-    // Set nav email
     document.getElementById('nav-email').textContent = user.email;
 
-    // Get profile for name
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select('full_name, organisation')
@@ -239,8 +243,7 @@
       document.getElementById('greeting-name').textContent = ', ' + firstName;
     }
 
-    // Load results
-    const { data: results, error } = await supabaseClient
+    const { data: results } = await supabaseClient
       .from('diagnostic_results')
       .select('*')
       .eq('user_id', user.id)
@@ -301,8 +304,7 @@
               <div class="score-label">Score</div>
             </div>
             <div class="band-pill band-${band}">${bandLabel}</div>
-<button onclick="downloadReport('${r.id}')" style="background:#0000FF;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;">Download Report</button>
-
+            <button onclick="downloadReport('${r.id}')" style="background:#0000FF;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;">Download Report</button>
           </div>
         </div>`;
     }).join('');
@@ -312,20 +314,18 @@
     if (!iso) return '';
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
-  
-async function downloadReport(resultId) {
-  const { data, error } = await supabaseClient
-    .from('diagnostic_results')
-    .select('*')
-    .eq('id', resultId)
-    .single();
-  
-  if (data) {
-    sessionStorage.setItem('portal_result', JSON.stringify(data));
-    window.open('generate-pdf.html', '_blank');
-  }
-}
 
+  async function downloadReport(resultId) {
+    const { data } = await supabaseClient
+      .from('diagnostic_results')
+      .select('*')
+      .eq('id', resultId)
+      .single();
+    if (data) {
+      sessionStorage.setItem('portal_result', JSON.stringify(data));
+      window.open('generate-pdf.html', '_blank');
+    }
+  }
 
   async function signOut() {
     await supabaseClient.auth.signOut();
