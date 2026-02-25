@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MLA Group | Defensible AI Governance</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #020617;
+      --bg2:      #0a1628;
+      --card:     rgba(15, 25, 50, 0.7);
+      --border:   rgba(255,255,255,0.08);
+      --border2:  rgba(37,99,235,0.25);
+      --accent:   #2563eb;
+      --accent2:  #60a5fa;
+      --danger:   #ef4444;
+      --warn:     #f59e0b;
+      --success:  #22c55e;
+      --main:     #f8fafc;
+      --muted:    #64748b;
+      --muted2:   #94a3b8;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--main);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* GRID BACKGROUND */
+    .grid-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 100% 60% at 50% 0%, black 30%, transparent 80%);
+    }
+    .glow-orb {
+      position: fixed; z-index: 0; pointer-events: none;
+      border-radius: 50%; filter: blur(120px); opacity: 0.12;
+    }
+    .glow-orb-1 { width:800px; height:800px; background:#2563eb; top:-200px; left:-200px; }
+    .glow-orb-2 { width:600px; height:600px; background:#1e40af; bottom:-100px; right:-100px; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 48px; height: 68px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(2,6,23,0.85);
+      backdrop-filter: blur(20px);
+    }
+    .logo {
+      font-size: 1.2rem; font-weight: 600; letter-spacing: -0.02em;
+      text-decoration: none; color: var(--main);
+    }
+    .logo em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic; font-weight: 400; color: var(--accent2);
+    }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .nav-link {
+      padding: 8px 16px; border-radius: 7px;
+      font-size: 0.875rem; font-weight: 500;
+      text-decoration: none; color: var(--muted2);
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-link:hover { color: var(--main); background: var(--border); }
+    .nav-btn {
+      padding: 9px 20px; border-radius: 7px;
+      font-size: 0.875rem; font-weight: 600;
+      text-decoration: none; transition: 0.2s;
+    }
+    .nav-btn-ghost { color: var(--main); border: 1px solid var(--border); }
+    .nav-btn-ghost:hover { background: var(--border); }
+    .nav-btn-primary { background: var(--accent); color: white; margin-left: 4px; }
+    .nav-btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .hamburger span { width: 22px; height: 2px; background: var(--main); border-radius: 2px; transition: 0.3s; }
+
+    /* HERO */
+    .hero {
+      position: relative; z-index: 1;
+      max-width: 1200px; margin: 0 auto;
+      padding: 130px 48px 100px;
+      display: grid; grid-template-columns: 1.15fr 0.85fr;
+      gap: 80px; align-items: center;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 14px; border-radius: 99px;
+      background: rgba(37,99,235,0.12); border: 1px solid rgba(37,99,235,0.3);
+      color: var(--accent2); font-size: 0.72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 28px;
+    }
+    .eyebrow-dot { width: 6px; height: 6px; background: var(--accent2); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(3.8rem, 6.5vw, 6rem);
+      line-height: 0.92; font-weight: 400; letter-spacing: -0.03em;
+      margin-bottom: 28px;
+    }
+    h1 em { font-style: italic; color: var(--accent2); }
+    .hero-p {
+      color: var(--muted2); font-size: 1.15rem; font-weight: 300;
+      line-height: 1.7; margin-bottom: 44px; max-width: 520px;
+    }
+    .btn-row { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 26px; border-radius: 8px;
+      font-size: 0.92rem; font-weight: 600;
+      text-decoration: none; transition: 0.2s; border: none; cursor: pointer;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(37,99,235,0.4); }
+    .btn-ghost { color: var(--main); border: 1px solid var(--border2); background: transparent; }
+    .btn-ghost:hover { background: rgba(37,99,235,0.08); border-color: rgba(96,165,250,0.4); }
+    .btn-arrow { font-size: 1rem; transition: transform 0.2s; }
+    .btn-primary:hover .btn-arrow { transform: translateX(3px); }
+
+    /* HERO CARD */
+    .hero-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 36px;
+      box-shadow: 0 30px 60px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      animation: floatCard 6s ease-in-out infinite;
+    }
+    @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+    .card-badge {
+      padding: 4px 10px; border-radius: 5px;
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 0.06em;
+      background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+      color: #ef4444;
+    }
+    .card-score { text-align: right; }
+    .card-score-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.8rem; line-height: 1; color: #ef4444;
+    }
+    .card-score-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .card-org { font-family: 'Instrument Serif', serif; font-size: 1.4rem; margin-bottom: 4px; }
+    .card-sub { font-size: 0.75rem; color: var(--muted2); margin-bottom: 28px; }
+    .risk-item { margin-bottom: 18px; }
+    .risk-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+    .risk-label { font-size: 0.78rem; color: var(--muted2); }
+    .risk-val { font-size: 0.78rem; font-weight: 600; }
+    .risk-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+    .risk-fill { height: 100%; border-radius: 3px; transition: width 1.5s ease; }
+    .card-finding {
+      background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15);
+      border-left: 3px solid #ef4444; border-radius: 0 8px 8px 0;
+      padding: 10px 12px; margin-top: 20px;
+    }
+    .card-finding-lbl { font-size: 0.65rem; color: #ef4444; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+    .card-finding-txt { font-size: 0.77rem; color: var(--muted2); line-height: 1.5; }
+
+    /* STATS BAR */
+    .stats-bar {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      background: rgba(10,20,44,0.6); backdrop-filter: blur(12px);
+    }
+    .stats-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 48px;
+      display: grid; grid-template-columns: repeat(4,1fr);
+    }
+    .stat {
+      padding: 32px 24px; border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.6rem; line-height: 1; color: var(--main);
+      margin-bottom: 6px;
+    }
+    .stat-num em { font-style: italic; color: var(--accent2); }
+    .stat-lbl { font-size: 0.8rem; color: var(--muted2); font-weight: 400; }
+
+    /* SECTIONS */
+    section { position: relative; z-index: 1; }
+    .section-inner { max-width: 1200px; margin: 0 auto; padding: 100px 48px; }
+    .section-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--accent2); margin-bottom: 20px;
+    }
+    .section-label::before { content:''; width:20px; height:1px; background:var(--accent2); }
+    h2 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2.4rem, 4vw, 3.8rem);
+      font-weight: 400; line-height: 1.05; letter-spacing: -0.025em;
+      margin-bottom: 20px;
+    }
+    h2 em { font-style: italic; color: var(--accent2); }
+    .section-p { color: var(--muted2); font-size: 1.05rem; font-weight: 300; line-height: 1.75; max-width: 600px; }
+
+    /* HOW IT WORKS */
+    .how-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 2px; margin-top: 64px;
+      border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+    }
+    .how-item {
+      padding: 40px 36px; background: var(--card);
+      border-right: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+    .how-item:last-child { border-right: none; }
+    .how-item:hover { background: rgba(37,99,235,0.06); }
+    .how-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 3rem; color: rgba(37,99,235,0.2);
+      line-height: 1; margin-bottom: 20px; font-weight: 400;
+    }
+    .how-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 12px; }
+    .how-p { font-size: 0.875rem; color: var(--muted2); line-height: 1.7; }
+
+    /* FEATURES */
+    .features-head { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; margin-bottom: 64px; }
+    .features-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .feature-card {
+      padding: 40px; background: var(--card);
+      border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+    .feature-card:hover { background: rgba(37,99,235,0.05); }
+    .feature-card:nth-child(2n) { border-right: none; }
+    .feature-card:nth-last-child(-n+2) { border-bottom: none; }
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: rgba(37,99,235,0.12); border: 1px solid rgba(37,99,235,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; margin-bottom: 20px;
+    }
+    .feature-title { font-size: 1rem; font-weight: 600; margin-bottom: 10px; }
+    .feature-p { font-size: 0.85rem; color: var(--muted2); line-height: 1.7; }
+
+    /* REGULATIONS STRIP */
+    .reg-strip {
+      background: rgba(10,20,44,0.8); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .reg-inner {
+      max-width: 1200px; margin: 0 auto; padding: 28px 48px;
+      display: flex; align-items: center; gap: 40px;
+    }
+    .reg-lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; white-space: nowrap; }
+    .reg-list { display: flex; gap: 12px; flex-wrap: wrap; }
+    .reg-pill {
+      padding: 5px 14px; border-radius: 6px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      font-size: 0.75rem; color: var(--muted2); font-weight: 500;
+      transition: 0.2s;
+    }
+    .reg-pill:hover { background: rgba(37,99,235,0.1); border-color: var(--border2); color: var(--accent2); }
+
+    /* CTA */
+    .cta-section { background: linear-gradient(135deg, rgba(37,99,235,0.08) 0%, transparent 60%); }
+    .cta-box {
+      border: 1px solid var(--border2); border-radius: 24px;
+      padding: 80px; text-align: center;
+      background: rgba(15,25,50,0.5); backdrop-filter: blur(20px);
+      position: relative; overflow: hidden;
+    }
+    .cta-box::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37,99,235,0.12), transparent);
+      pointer-events: none;
+    }
+    .cta-box h2 { margin-bottom: 20px; }
+    .cta-box p { color: var(--muted2); max-width: 500px; margin: 0 auto 44px; font-weight: 300; font-size: 1.05rem; }
+    .cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      background: rgba(2,6,23,0.95);
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto; padding: 60px 48px 40px;
+    }
+    .footer-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 60px; margin-bottom: 56px; }
+    .footer-brand { }
+    .footer-logo { font-size: 1.1rem; font-weight: 600; margin-bottom: 14px; }
+    .footer-logo em { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--accent2); }
+    .footer-tagline { font-size: 0.82rem; color: var(--muted); line-height: 1.7; max-width: 240px; }
+    .footer-col h4 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 20px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a { font-size: 0.85rem; color: var(--muted2); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--main); }
+    .footer-bottom {
+      border-top: 1px solid var(--border); padding-top: 28px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-copy { font-size: 0.78rem; color: var(--muted); }
+    .footer-legal { display: flex; gap: 24px; }
+    .footer-legal a { font-size: 0.78rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-legal a:hover { color: var(--muted2); }
+
+    /* MOBILE */
+    @media (max-width: 1024px) {
+      .hero { grid-template-columns: 1fr; gap: 60px; padding: 100px 32px 80px; }
+      .hero-card { max-width: 480px; }
+      .stats-inner { grid-template-columns: repeat(2,1fr); }
+      .stat:nth-child(2) { border-right: none; }
+      .features-head { grid-template-columns: 1fr; gap: 24px; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 40px; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column; gap: 4px;
+        position: absolute; top: 68px; left: 0; right: 0;
+        background: rgba(2,6,23,0.98); backdrop-filter: blur(20px);
+        padding: 16px 24px; border-bottom: 1px solid var(--border);
+      }
+      .hamburger { display: flex; }
+      .hero { padding: 80px 24px 60px; text-align: center; }
+      .hero-p { margin: 0 auto 36px; }
+      .btn-row { justify-content: center; }
+      .hero-card { display: none; }
+      .stats-inner { grid-template-columns: 1fr 1fr; padding: 0 24px; }
+      .section-inner { padding: 72px 24px; }
+      .how-grid { grid-template-columns: 1fr; }
+      .how-item { border-right: none; border-bottom: 1px solid var(--border); }
+      .how-item:last-child { border-bottom: none; }
+      .features-grid { grid-template-columns: 1fr; }
+      .feature-card { border-right: none; }
+      .reg-inner { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px; }
+      .cta-box { padding: 48px 24px; }
+      .footer-top { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+      .footer-inner { padding: 48px 24px 32px; }
+    }
+
+    /* FADE IN ANIMATION */
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="glow-orb glow-orb-1"></div>
+<div class="glow-orb glow-orb-2"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="index.html" class="logo">mla<em>group.</em></a>
+  <div class="nav-links" id="navLinks">
+    <a href="#how" class="nav-link">How it works</a>
+    <a href="#features" class="nav-link">Features</a>
+    <a href="pricing.html" class="nav-link">Pricing</a>
+    <a href="login.html" class="nav-btn nav-btn-ghost">Sign in</a>
+    <a href="diagnostic.html" class="nav-btn nav-btn-primary">Start Diagnostic</a>
+  </div>
+  <div class="hamburger" id="hamburger" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content fade-up">
+    <div class="eyebrow">
+      <span class="eyebrow-dot"></span>
+      EU AI Act — August 2026 Compliance
+    </div>
+    <h1>Defensible<br><em>AI.</em><br>Audit-Ready.</h1>
+    <p class="hero-p">Move beyond uncertainty. We provide the quantitative risk frameworks and board-level reporting required for high-stakes AI deployment in regulated industries.</p>
+    <div class="btn-row">
+      <a href="diagnostic.html" class="btn btn-primary">Start Risk Diagnostic <span class="btn-arrow">→</span></a>
+      <a href="#how" class="btn btn-ghost">See how it works</a>
+    </div>
+  </div>
+
+  <div class="hero-card fade-up" style="animation-delay:0.2s">
+    <div class="card-header">
+      <div>
+        <div class="card-badge">CRITICAL RISK</div>
+        <div class="card-org">Governance Audit</div>
+        <div class="card-sub">Acme Corp — Financial Services</div>
+      </div>
+      <div class="card-score">
+        <div class="card-score-num">38%</div>
+        <div class="card-score-lbl">Maturity</div>
+      </div>
+    </div>
+
+    <div class="risk-item">
+      <div class="risk-row">
+        <span class="risk-label">Regulatory Compliance</span>
+        <span class="risk-val" style="color:#ef4444">22%</span>
+      </div>
+      <div class="risk-track"><div class="risk-fill" style="width:22%;background:#ef4444"></div></div>
+    </div>
+    <div class="risk-item">
+      <div class="risk-row">
+        <span class="risk-label">Human Oversight</span>
+        <span class="risk-val" style="color:#f59e0b">48%</span>
+      </div>
+      <div class="risk-track"><div class="risk-fill" style="width:48%;background:#f59e0b"></div></div>
+    </div>
+    <div class="risk-item">
+      <div class="risk-row">
+        <span class="risk-label">Governance & Accountability</span>
+        <span class="risk-val" style="color:#22c55e">71%</span>
+      </div>
+      <div class="risk-track"><div class="risk-fill" style="width:71%;background:#22c55e"></div></div>
+    </div>
+
+    <div class="card-finding">
+      <div class="card-finding-lbl">Priority Finding — F1</div>
+      <div class="card-finding-txt">No named AI governance lead identified. EU AI Act Article 17 accountability obligation not met.</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat fade-up">
+      <div class="stat-num">35<em>+</em></div>
+      <div class="stat-lbl">Diagnostic questions across 7 domains</div>
+    </div>
+    <div class="stat fade-up">
+      <div class="stat-num"><em>8</em></div>
+      <div class="stat-lbl">Page board-ready PDF report</div>
+    </div>
+    <div class="stat fade-up">
+      <div class="stat-num">5<em>×</em></div>
+      <div class="stat-lbl">Regulatory frameworks mapped</div>
+    </div>
+    <div class="stat fade-up">
+      <div class="stat-num">v<em>2.0</em></div>
+      <div class="stat-lbl">Framework updated February 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- REGULATIONS STRIP -->
+<div class="reg-strip">
+  <div class="reg-inner">
+    <span class="reg-lbl">Aligned to</span>
+    <div class="reg-list">
+      <span class="reg-pill">EU AI Act</span>
+      <span class="reg-pill">UK GDPR</span>
+      <span class="reg-pill">FCA DP5/22</span>
+      <span class="reg-pill">ICO AI Guidance</span>
+      <span class="reg-pill">ISO/IEC 42001</span>
+      <span class="reg-pill">SM&CR</span>
+      <span class="reg-pill">Consumer Duty</span>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-inner">
+    <div class="section-label">Process</div>
+    <h2>From diagnostic<br>to <em>board report.</em></h2>
+    <p class="section-p" style="margin-bottom:0">Three steps from completion to a defensible, audit-ready governance assessment.</p>
+    <div class="how-grid">
+      <div class="how-item fade-up">
+        <div class="how-num">01</div>
+        <div class="how-title">Complete the Diagnostic</div>
+        <p class="how-p">Answer 35 questions across seven governance domains — inventory, accountability, data quality, oversight, explainability, compliance, and resilience. Takes approximately 20 minutes.</p>
+      </div>
+      <div class="how-item fade-up">
+        <div class="how-num">02</div>
+        <div class="how-title">Receive Your Risk Score</div>
+        <p class="how-p">Your responses are scored against our weighted framework, adjusted for sector exposure. You receive an overall maturity score, section breakdown, and risk band — immediately on completion.</p>
+      </div>
+      <div class="how-item fade-up">
+        <div class="how-num">03</div>
+        <div class="how-title">Download Your Report</div>
+        <p class="how-p">A full 8-page PDF is generated — including named findings with regulatory basis, impact analysis, and prioritised recommendations. Board-ready. Auditor-ready. Yours to keep.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" style="border-top:1px solid var(--border)">
+  <div class="section-inner">
+    <div class="features-head">
+      <div>
+        <div class="section-label">Capabilities</div>
+        <h2>Built for<br><em>regulated</em><br>industries.</h2>
+      </div>
+      <p class="section-p">Every element of the diagnostic and report is calibrated for organisations operating under UK and EU regulatory scrutiny — not generic AI checklists.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-up">
+        <div class="feature-icon">⚖️</div>
+        <div class="feature-title">Regulatory Mapping</div>
+        <p class="feature-p">Every finding links directly to the specific article, ICO guidance, or FCA expectation it addresses. Not generic advice — precise legal basis for every gap.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Sector Exposure Scoring</div>
+        <p class="feature-p">Financial services, healthcare, legal, and public sector deployments carry different exposure profiles. Your score is adjusted accordingly — not a one-size-fits-all number.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-title">EU AI Act Alignment</div>
+        <p class="feature-p">Annex III high-risk category detection, conformity assessment flags, and Article 14 human oversight requirements — mapped automatically from your responses.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon">📄</div>
+        <div class="feature-title">Board-Ready PDF Report</div>
+        <p class="feature-p">An 8-page professional report — cover, executive summary, assessment results, detailed findings, recommendations, and regulatory appendix — generated instantly.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">Secure Client Portal</div>
+        <p class="feature-p">Every assessment is saved to your private portal. Revisit, compare across assessments, and download reports at any time. Your data stays yours.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon">🔄</div>
+        <div class="feature-title">Framework Currency</div>
+        <p class="feature_p">The MLA framework is reviewed and updated as regulatory guidance evolves. When the EU AI Act high-risk obligations land in August 2026, your diagnostic reflects it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" style="border-top:1px solid var(--border)">
+  <div class="section-inner">
+    <div class="cta-box fade-up">
+      <div class="eyebrow" style="margin:0 auto 28px">
+        <span class="eyebrow-dot"></span>
+        Free to complete
+      </div>
+      <h2>Know your exposure.<br><em>Before your regulator does.</em></h2>
+      <p>Complete the diagnostic in 20 minutes. Receive your risk score, section breakdown, and full 8-page PDF report immediately — no commitment required.</p>
+      <div class="cta-buttons">
+        <a href="diagnostic.html" class="btn btn-primary">Start Risk Diagnostic <span class="btn-arrow">→</span></a>
+        <a href="login.html" class="btn btn-ghost">Access Portal</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">mla<em>group.</em></div>
+        <p class="footer-tagline">AI governance risk advisory for regulated industries. Defensible frameworks. Audit-ready reporting.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul class="footer-links">
+          <li><a href="diagnostic.html">Risk Diagnostic</a></li>
+          <li><a href="login.html">Client Portal</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Frameworks</h4>
+        <ul class="footer-links">
+          <li><a href="#">EU AI Act</a></li>
+          <li><a href="#">UK GDPR</a></li>
+          <li><a href="#">FCA Guidance</a></li>
+          <li><a href="#">ISO/IEC 42001</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul class="footer-links">
+          <li><a href="#">About MLA</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Use</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">&copy; 2026 MLA Group Ltd. All rights reserved. Registered in England & Wales.</span>
+      <div class="footer-legal">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggleNav() {
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+
+  // Fade-in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
