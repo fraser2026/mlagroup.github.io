@@ -569,20 +569,22 @@
 <div class="proof-strip">
   <div class="proof-inner">
     <div class="proof-item fade">
-      <div class="proof-num">20<em style="font-family:'DM Sans',sans-serif;font-style:normal;font-size:1.1rem;color:var(--sky)">min</em></div>
-      <div class="proof-label">Average time to complete the full diagnostic</div>
+      <div class="proof-num">
+        £<span class="countup" data-target="7.5" data-decimals="1">0</span>m
+      </div>
+      <div class="proof-label">ICO fines issued under UK GDPR in 2023 alone</div>
     </div>
     <div class="proof-item fade">
-      <div class="proof-num">7</div>
-      <div class="proof-label">Governance domains assessed across every inquiry</div>
+      <div class="proof-num">
+        €<span class="countup" data-target="35" data-decimals="0">0</span>m
+      </div>
+      <div class="proof-label">Maximum EU AI Act penalty for high-risk violations</div>
     </div>
     <div class="proof-item fade">
-      <div class="proof-num">5</div>
-      <div class="proof-label">Regulatory frameworks cross-referenced per report</div>
-    </div>
-    <div class="proof-item fade">
-      <div class="proof-num">£79</div>
-      <div class="proof-label">For a full board-ready audit pack — no subscription</div>
+      <div class="proof-num">
+        £<span class="countup" data-target="52.8" data-decimals="1">0</span>m
+      </div>
+      <div class="proof-label">FCA fines for governance failures in 2023</div>
     </div>
   </div>
 </div>
@@ -763,7 +765,7 @@
       <div class="pricing-card featured fade">
         <div class="pricing-tag">Most Popular</div>
         <div class="pricing-tier">Board Prep Pack</div>
-        <div class="pricing-name">Premium Report</div>
+        <div class="pricing-name">Premium</div>
         <div class="pricing-desc">The industry standard for evidencing defensible AI governance to boards and regulators.</div>
         <div class="pricing-price"><sup>£</sup>79</div>
         <div class="pricing-cadence">Per report — download immediately</div>
@@ -793,7 +795,7 @@
           <li>Quarterly Benchmarking</li>
           <li>Dedicated Advisory Lead</li>
         </ul>
-        <a href="mailto:hello@mlagroup.co.uk" class="pricing-btn pricing-btn-outline">Talk to Advisory</a>
+        <a href="/cdn-cgi/l/email-protection#09616c656566496465686e7b667c79276a66277c62" class="pricing-btn pricing-btn-outline">Talk to Advisory</a>
       </div>
 
     </div>
@@ -862,7 +864,7 @@
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   function toggleMob() {
     document.getElementById('mobMenu').classList.toggle('open');
   }
@@ -880,6 +882,33 @@
   }, { threshold: 0.1 });
 
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
+
+  // ── COUNT-UP ANIMATION ──────────────────────────────
+  const countups = document.querySelectorAll('.countup');
+  const countObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      const target = parseFloat(el.dataset.target);
+      const decimals = parseInt(el.dataset.decimals) || 0;
+      const duration = 1800;
+      const steps = 60;
+      let step = 0;
+      const timer = setInterval(() => {
+        step++;
+        const progress = step / steps;
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = target * eased;
+        el.textContent = current.toFixed(decimals);
+        if (step >= steps) {
+          el.textContent = target.toFixed(decimals);
+          clearInterval(timer);
+        }
+      }, duration / steps);
+      countObserver.unobserve(el);
+    });
+  }, { threshold: 0.6 });
+  countups.forEach(el => countObserver.observe(el));
 </script>
 </body>
 </html>
