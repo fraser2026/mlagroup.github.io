@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MLA Group | AI Governance & Regulatory Diagnostics</title>
+  <title>MLA Group | AI Governance & Regulatory Defensibility</title>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -58,67 +58,68 @@
       background: rgba(2,6,23,0.88);
       backdrop-filter: blur(24px);
     }
-
-    .logo {
-      font-size: 1.1rem; font-weight: 600; letter-spacing: -0.02em;
-      text-decoration: none; color: var(--main); flex-shrink:0;
-    }
+    .logo { font-size: 1.1rem; font-weight: 600; text-decoration: none; color: var(--main); }
     .logo em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight:400; color: var(--sky); }
-
+    
     .nav-centre { display: flex; align-items:center; gap:4px; position: absolute; left:50%; transform:translateX(-50%); }
     .nav-link { padding: 7px 14px; border-radius:6px; font-size: 0.85rem; font-weight:500; color: var(--muted2); text-decoration:none; transition: 0.18s; }
     .nav-link:hover { color:var(--main); background:rgba(255,255,255,0.05); }
 
-    .nav-right { display:flex; align-items:center; gap:8px; }
-    .nav-cta { padding: 8px 18px; border-radius:7px; font-size: 0.85rem; font-weight:600; color:white; background: var(--accent); text-decoration:none; transition: 0.18s; }
-    .nav-cta:hover { background:var(--accent-d); box-shadow:0 4px 18px rgba(37,99,235,0.4); }
+    .nav-right { display:flex; align-items:center; gap:12px; }
+    .btn-nav { padding: 8px 18px; border-radius:7px; font-size: 0.85rem; font-weight:600; text-decoration:none; transition: 0.18s; }
+    .btn-nav-login { color: var(--sub); }
+    .btn-nav-cta { background: var(--accent); color:white; }
 
     /* ── HERO ───────────────────────────────────────── */
-    .hero { position:relative; z-index:1; max-width:1000px; margin:0 auto; padding: 140px 48px 100px; text-align:center; }
-    .badge { display:inline-flex; align-items:center; gap:8px; padding: 5px 14px; border-radius:99px; background: rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.25); font-size: 0.72rem; font-weight:600; color:var(--sky); text-transform:uppercase; letter-spacing:0.08em; margin-bottom: 36px; }
+    .hero { position:relative; z-index:1; max-width:1000px; margin:0 auto; padding: 120px 48px 80px; text-align:center; }
+    .badge { display:inline-flex; align-items:center; gap:8px; padding: 5px 14px; border-radius:99px; background: rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.25); font-size: 0.72rem; font-weight:600; color:var(--sky); text-transform:uppercase; letter-spacing:0.08em; margin-bottom: 32px; }
     
-    h1 { font-family:'Instrument Serif', serif; font-size: clamp(3.5rem, 8vw, 6.5rem); line-height: 0.95; font-weight:400; letter-spacing:-0.03em; margin-bottom: 32px; color:var(--main); }
+    h1 { font-family:'Instrument Serif', serif; font-size: clamp(3rem, 7vw, 6rem); line-height: 1; font-weight:400; letter-spacing:-0.03em; margin-bottom: 24px; color:var(--main); }
     h1 em { font-style:italic; color:var(--sky); }
+    .hero-sub { font-size: 1.2rem; font-weight:300; color:var(--muted2); line-height: 1.6; max-width:700px; margin:0 auto 40px; }
 
-    .hero-sub { font-size: 1.2rem; font-weight:300; color:var(--muted2); line-height: 1.6; max-width:650px; margin:0 auto 48px; }
+    .hero-ctas { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; }
+    .btn-main { padding: 16px 32px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: 0.2s; }
+    .btn-primary { background: var(--accent); color: white; box-shadow: 0 10px 30px -10px rgba(37,99,235,0.5); }
+    .btn-secondary { border: 1px solid var(--border-h); color: var(--main); }
+    .micro-copy { font-size: 0.75rem; color: var(--muted); display: block; margin-top: 12px; }
 
-    /* ── PRICING TABLE ──────────────────────────────── */
-    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 64px; }
-    .price-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px 32px; text-align: left; transition: 0.3s; position: relative; }
-    .price-card.featured { border-color: var(--accent); background: rgba(37,99,235,0.05); transform: translateY(-10px); }
-    .price-card.featured::after { content: 'RECOMMENDED'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; font-size: 0.65rem; font-weight: 700; padding: 4px 12px; border-radius: 99px; }
+    /* ── THREE PILLARS ──────────────────────────────── */
+    .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 60px 0; }
+    .pillar { background: var(--bg); padding: 40px; text-align: left; }
+    .pillar h3 { font-size: 1.1rem; margin-bottom: 12px; color: var(--main); }
+    .pillar p { font-size: 0.85rem; color: var(--muted2); }
+    .pillar-label { font-size: 0.65rem; color: var(--sky); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block; }
+
+    /* ── PRICING ────────────────────────────────────── */
+    .pricing { padding: 100px 48px; max-width: 1100px; margin: 0 auto; text-align: center; }
+    .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+    .price-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px 32px; text-align: left; position: relative; transition: 0.3s; }
+    .price-card.pop { border-color: var(--accent); background: rgba(37,99,235,0.03); transform: scale(1.03); }
+    .pop-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; font-size: 0.6rem; font-weight: 800; padding: 4px 12px; border-radius: 99px; }
     
-    .price-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; }
-    .price-amt { font-family: 'Instrument Serif', serif; font-size: 3rem; margin-bottom: 24px; }
-    .price-amt span { font-size: 1rem; font-family: 'DM Sans'; color: var(--muted); }
+    .p-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 4px; }
+    .p-desc { font-size: 0.8rem; color: var(--muted2); margin-bottom: 24px; min-height: 40px; }
+    .p-price { font-family: 'Instrument Serif', serif; font-size: 3rem; margin-bottom: 32px; }
+    .p-price span { font-size: 1rem; font-family: 'DM Sans'; color: var(--muted); }
     
-    .price-features { list-style: none; margin-bottom: 32px; }
-    .price-features li { font-size: 0.85rem; color: var(--sub); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .price-features li::before { content: '✓'; color: var(--sky); font-weight: bold; }
-
-    .btn-block { display: block; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s; }
-    .btn-outline { border: 1px solid var(--border-h); color: var(--main); }
-    .btn-outline:hover { background: rgba(255,255,255,0.05); }
-    .btn-fill { background: var(--accent); color: white; }
-    .btn-fill:hover { background: var(--accent-d); }
+    .p-features { list-style: none; margin-bottom: 40px; }
+    .p-features li { font-size: 0.85rem; color: var(--sub); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+    .p-features li::before { content: '→'; color: var(--sky); font-size: 1rem; }
 
     /* ── TRUST STRIP ─────────────────────────────────── */
-    .trust { border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:rgba(10,20,44,0.5); position: relative; z-index: 10; }
-    .trust-inner { max-width:1100px; margin:0 auto; padding:24px 48px; display:flex; align-items:center; gap:36px; }
-    .trust-label { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); }
-    .trust-items { display:flex; gap:12px; flex-wrap:wrap; }
-    .trust-item { padding:5px 13px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--border); font-size:0.75rem; color:var(--muted2); }
+    .trust { border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:rgba(10,20,44,0.3); }
+    .trust-inner { max-width:1100px; margin:0 auto; padding:32px 48px; text-align: center; }
+    .trust-label { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom: 20px; display: block;}
+    .trust-logos { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; opacity: 0.6; filter: grayscale(1); }
+    .t-logo { font-weight: 700; color: var(--main); font-size: 0.9rem; }
 
-    /* ── SECTION COMMONS ─────────────────────────────── */
-    .wrap { max-width:1100px; margin:0 auto; padding:0 48px; }
-    .section-pad { padding: 100px 0; }
     .fade { opacity:0; transform:translateY(20px); transition: 0.8s ease-out; }
     .fade.in { opacity:1; transform:translateY(0); }
 
-    @media (max-width: 768px) {
-      .pricing-grid { grid-template-columns: 1fr; }
-      .nav-centre, .nav-right { display: none; }
-      .trust-inner { flex-direction: column; text-align: center; }
+    @media (max-width: 900px) {
+      .price-grid, .pillars { grid-template-columns: 1fr; }
+      .nav-centre { display: none; }
     }
   </style>
 </head>
@@ -130,90 +131,116 @@
 <nav>
   <a href="#" class="logo">mla<em>group.</em></a>
   <div class="nav-centre">
-    <a href="#process" class="nav-link">Methodology</a>
+    <a href="#how" class="nav-link">Methodology</a>
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="#" class="nav-link">Portal Login</a>
+    <a href="#" class="nav-link">About</a>
   </div>
   <div class="nav-right">
-    <a href="#" class="nav-cta">Get Started Free</a>
+    <a href="#" class="btn-nav btn-nav-login">Sign In</a>
+    <a href="#" class="btn-nav btn-nav-cta">Get Started Free</a>
   </div>
 </nav>
 
-<section class="hero">
-  <div class="badge">UK Regulatory Alignment — 2026 Update</div>
-  <div class="fade">
-    <h1>AI Governance.<br><em>Evidenced.</em></h1>
-    <p class="hero-sub">Map your AI risk to UK and EU regulatory expectations in 20 minutes. Move from experimental deployment to a <strong>defensible decision framework</strong> before the audit begins.</p>
+<section class="hero fade">
+  <div class="badge"><span style="width:6px; height:6px; background:var(--sky); border-radius:50%; display:inline-block; margin-right:8px;"></span>August 2026 EU AI Act Deadline</div>
+  <h1>Evidence your AI Governance.<br><em>Before they ask for it.</em></h1>
+  <p class="hero-sub">Transition from experimental AI to a <strong>defensible decision framework</strong>. MLA Group provides structured, audit-ready diagnostics for UK professional services firms facing regulatory scrutiny.</p>
+  
+  <div class="hero-ctas">
+    <a href="#pricing" class="btn-main btn-primary">Generate My AI Exposure Report</a>
+    <a href="#" class="btn-main btn-secondary">View Sample Report</a>
   </div>
+  <span class="micro-copy">Aligned with FCA DP5/22, ICO Guidance, and EU AI Act Standards.</span>
 
-  <div class="pricing-grid id="pricing">
-    <div class="price-card fade">
-      <div class="price-title">Free Diagnostic</div>
-      <div class="price-amt">£0</div>
-      <ul class="price-features">
-        <li>High-level Maturity Score</li>
-        <li>Risk Banding (1-5)</li>
-        <li>Basic Sector Benchmark</li>
-      </ul>
-      <a href="#" class="btn-block btn-outline">Start Free Scan</a>
+  <div class="pillars">
+    <div class="pillar">
+      <span class="pillar-label">The Diagnostic</span>
+      <h3>20-Minute Inquiry</h3>
+      <p>A weighted assessment across 7 governance domains adjusted for your specific sector exposure.</p>
     </div>
-
-    <div class="price-card featured fade">
-      <div class="price-title">Premium Report</div>
-      <div class="price-amt">£79 <span>/report</span></div>
-      <ul class="price-features">
-        <li><strong>Full Audit-Ready PDF</strong></li>
-        <li>Regulatory Mapping (FCA/ICO)</li>
-        <li>Remediation Roadmap</li>
-        <li>Annex III High-Risk Flags</li>
-      </ul>
-      <a href="#" class="btn-block btn-fill">Get Audit-Ready</a>
+    <div class="pillar">
+      <span class="pillar-label">The Portal</span>
+      <h3>Your Golden Record</h3>
+      <p>A secure management tool to evidence board decision-making and track remediation over time.</p>
     </div>
-
-    <div class="price-card fade">
-      <div class="price-title">Enterprise</div>
-      <div class="price-amt">Bespoke</div>
-      <ul class="price-features">
-        <li>Multi-departmental Portal</li>
-        <li>Custom Risk Weighting</li>
-        <li>Ongoing Posture Monitoring</li>
-      </ul>
-      <a href="#" class="btn-block btn-outline">Contact Advisory</a>
+    <div class="pillar">
+      <span class="pillar-label">The Output</span>
+      <h3>Board Prep Pack</h3>
+      <p>Professional, audit-ready PDF reports including specific regulatory article mapping and roadmaps.</p>
     </div>
   </div>
 </section>
 
 <div class="trust">
   <div class="trust-inner">
-    <span class="trust-label">Aligned to Standards</span>
-    <div class="trust-items">
-      <span class="trust-item">FCA DP5/22</span>
-      <span class="trust-item">EU AI Act</span>
-      <span class="trust-item">ICO Guidance</span>
-      <span class="trust-item">ISO/IEC 42001</span>
-      <span class="trust-item">UK GDPR</span>
+    <span class="trust-label">Regulatory Alignment</span>
+    <div class="trust-logos">
+      <span class="t-logo">FCA DP5/22</span>
+      <span class="t-logo">ICO AI GUIDANCE</span>
+      <span class="t-logo">EU AI ACT</span>
+      <span class="t-logo">UK GDPR</span>
+      <span class="t-logo">ISO/IEC 42001</span>
     </div>
   </div>
 </div>
 
-<section id="process" class="wrap section-pad">
+<section id="pricing" class="pricing">
   <div class="fade">
-    <h2 style="font-family:'Instrument Serif'; font-size: 3rem; margin-bottom: 40px;">Why Regulated Firms Choose MLA.</h2>
-    <p style="color: var(--muted2); max-width: 700px; margin-bottom: 60px;">Generic checklists don't satisfy regulators. We provide a weighted framework that adjusts for sector-specific exposure, ensuring your documentation actually holds up under a Section 166 review.</p>
+    <h2 style="font-family:'Instrument Serif'; font-size: 3.5rem; margin-bottom: 16px;">Audit-Ready in minutes.</h2>
+    <p style="color:var(--muted2); max-width: 600px; margin: 0 auto;">Select the level of scrutiny your organization requires.</p>
   </div>
-  
-  </section>
+
+  <div class="price-grid">
+    <div class="price-card fade">
+      <div class="p-title">Internal Scan</div>
+      <p class="p-desc">High-level exposure check for internal review.</p>
+      <div class="p-price">£0</div>
+      <ul class="p-features">
+        <li>Maturity Score Card</li>
+        <li>5-Band Risk Rating</li>
+        <li>Domain Breakdown</li>
+      </ul>
+      <a href="#" class="btn-main btn-secondary" style="display:block; text-align:center;">Start Free Diagnostic</a>
+    </div>
+
+    <div class="price-card pop fade">
+      <div class="pop-tag">MOST POPULAR FOR COMPLIANCE</div>
+      <div class="p-title">Board Prep Pack</div>
+      <p class="p-desc">The industry standard for evidencing defensible AI governance.</p>
+      <div class="p-price">£79 <span>/report</span></div>
+      <ul class="p-features">
+        <li><strong>Full Audit-Ready PDF</strong></li>
+        <li>FCA/ICO Article Mapping</li>
+        <li>Remediation Roadmap</li>
+        <li>Annex III Categories</li>
+      </ul>
+      <a href="#" class="btn-main btn-primary" style="display:block; text-align:center;">Generate Premium Report</a>
+    </div>
+
+    <div class="price-card fade">
+      <div class="p-title">Enterprise</div>
+      <p class="p-desc">Full governance lifecycle management for large firms.</p>
+      <div class="p-price">Bespoke</div>
+      <ul class="p-features">
+        <li>Multi-Department Portal</li>
+        <li>On-site Validation</li>
+        <li>Quarterly Benchmarking</li>
+      </ul>
+      <a href="#" class="btn-main btn-secondary" style="display:block; text-align:center;">Talk to Advisory</a>
+    </div>
+  </div>
+</section>
+
+<footer style="padding: 60px 48px; border-top: 1px solid var(--border); text-align: center; color: var(--muted);">
+  <p>&copy; 2026 MLA Group Ltd. Registered in England & Wales.</p>
+</footer>
 
 <script>
-  const observerOptions = { threshold: 0.1 };
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('in');
-      }
+      if (entry.isIntersecting) entry.target.classList.add('in');
     });
-  }, observerOptions);
-
+  }, { threshold: 0.1 });
   document.querySelectorAll('.fade').forEach(el => observer.observe(el));
 </script>
 
