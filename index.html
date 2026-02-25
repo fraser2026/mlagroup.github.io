@@ -331,6 +331,110 @@
     .feat-title { font-size:0.92rem; font-weight:600; color:var(--main); margin-bottom:6px; }
     .feat-p { font-size:0.82rem; color:var(--muted2); line-height:1.7; }
 
+    /* ── SOCIAL PROOF STRIP ──────────────────────────── */
+    .proof-strip {
+      position:relative; z-index:1;
+      border-top:1px solid var(--border);
+      background:rgba(10,22,40,0.5);
+    }
+    .proof-inner {
+      max-width:900px; margin:0 auto; padding:36px 48px;
+      display:flex; gap:0; justify-content:center; align-items:stretch;
+      flex-wrap:wrap;
+    }
+    .proof-item {
+      flex:1; min-width:160px; padding:0 40px;
+      display:flex; flex-direction:column; align-items:center;
+      text-align:center; border-right:1px solid var(--border);
+    }
+    .proof-item:last-child { border-right:none; }
+    .proof-num {
+      font-family:'Instrument Serif', serif;
+      font-size:2.2rem; font-weight:400; color:var(--main);
+      line-height:1; margin-bottom:6px;
+    }
+    .proof-label {
+      font-size:0.75rem; color:var(--muted2); line-height:1.45; max-width:120px;
+    }
+
+    /* ── PRICING ─────────────────────────────────────── */
+    .pricing-section { border-top:1px solid var(--border); }
+    .pricing-header { text-align:center; margin-bottom:56px; }
+    .pricing-header h2 { margin-bottom:14px; }
+    .pricing-header p { font-size:1rem; color:var(--muted2); font-weight:300; }
+    .pricing-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:20px;
+    }
+    .pricing-card {
+      border:1px solid var(--border); border-radius:14px;
+      padding:36px 32px; background:var(--card);
+      display:flex; flex-direction:column;
+      transition:border-color 0.25s, background 0.25s;
+      position:relative;
+    }
+    .pricing-card:hover { border-color:var(--border-h); background:rgba(15,31,56,0.9); }
+    .pricing-card.featured {
+      border-color:rgba(37,99,235,0.5);
+      background:rgba(37,99,235,0.06);
+    }
+    .pricing-card.featured:hover { border-color:rgba(37,99,235,0.7); }
+    .pricing-tag {
+      position:absolute; top:-1px; left:50%; transform:translateX(-50%);
+      background:var(--accent); color:white;
+      font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;
+      padding:4px 14px; border-radius:0 0 8px 8px;
+    }
+    .pricing-tier {
+      font-size:0.72rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.12em; color:var(--sky); margin-bottom:12px;
+    }
+    .pricing-name {
+      font-family:'Instrument Serif', serif;
+      font-size:1.5rem; font-weight:400; color:var(--main);
+      margin-bottom:8px; line-height:1.1;
+    }
+    .pricing-desc { font-size:0.82rem; color:var(--muted2); line-height:1.6; margin-bottom:28px; }
+    .pricing-price {
+      font-size:2.4rem; font-weight:700; color:var(--main);
+      line-height:1; margin-bottom:4px;
+    }
+    .pricing-price sup { font-size:1rem; font-weight:500; vertical-align:top; margin-top:6px; }
+    .pricing-cadence { font-size:0.75rem; color:var(--muted); margin-bottom:28px; }
+    .pricing-divider { height:1px; background:var(--border); margin-bottom:24px; }
+    .pricing-features { list-style:none; display:flex; flex-direction:column; gap:10px; flex:1; margin-bottom:28px; }
+    .pricing-features li {
+      display:flex; gap:10px; align-items:flex-start;
+      font-size:0.82rem; color:var(--muted2); line-height:1.45;
+    }
+    .pricing-features li::before {
+      content:''; width:14px; height:14px; min-width:14px; margin-top:1px;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 14 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 7l3.5 3.5L12 3.5' stroke='%2360a5fa' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-size:contain;
+    }
+    .pricing-features li.muted { color:var(--muted); }
+    .pricing-features li.muted::before {
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 14 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 7h8' stroke='%2364748b' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    }
+    .pricing-btn {
+      display:block; width:100%; padding:12px; border-radius:8px; text-align:center;
+      font-family:'DM Sans', sans-serif; font-size:0.88rem; font-weight:600;
+      text-decoration:none; transition:all 0.18s;
+    }
+    .pricing-btn-outline {
+      border:1px solid var(--border-h); color:var(--sub); background:transparent;
+    }
+    .pricing-btn-outline:hover { border-color:rgba(96,165,250,0.4); color:var(--main); background:rgba(255,255,255,0.03); }
+    .pricing-btn-solid {
+      background:var(--accent); color:white; border:1px solid transparent;
+    }
+    .pricing-btn-solid:hover { background:var(--accent-d); transform:translateY(-1px); box-shadow:0 6px 20px rgba(37,99,235,0.35); }
+
+    @media (max-width:768px) {
+      .proof-inner { padding:28px 24px; gap:24px; }
+      .proof-item { border-right:none; padding:0; min-width:140px; }
+      .pricing-grid { grid-template-columns:1fr; }
+    }
+
     /* ── CTA ──────────────────────────────────────────── */
     .cta-section { border-top:1px solid var(--border); }
     .cta-box {
@@ -423,7 +527,7 @@
   <div class="nav-centre">
     <a href="#how" class="nav-link">How it works</a>
     <a href="#features" class="nav-link">Features</a>
-    <a href="pricing.html" class="nav-link">Pricing</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
     <a href="#" class="nav-link">About</a>
   </div>
 
@@ -460,6 +564,28 @@
     <p class="hero-compliance">Aligned with FCA DP5/22, ICO Guidance, and EU AI Act Standards.</p>
   </div>
 </section>
+
+<!-- ── SOCIAL PROOF ────────────────────────────────────── -->
+<div class="proof-strip">
+  <div class="proof-inner">
+    <div class="proof-item fade">
+      <div class="proof-num">20<em style="font-family:'DM Sans',sans-serif;font-style:normal;font-size:1.1rem;color:var(--sky)">min</em></div>
+      <div class="proof-label">Average time to complete the full diagnostic</div>
+    </div>
+    <div class="proof-item fade">
+      <div class="proof-num">7</div>
+      <div class="proof-label">Governance domains assessed across every inquiry</div>
+    </div>
+    <div class="proof-item fade">
+      <div class="proof-num">5</div>
+      <div class="proof-label">Regulatory frameworks cross-referenced per report</div>
+    </div>
+    <div class="proof-item fade">
+      <div class="proof-num">£79</div>
+      <div class="proof-label">For a full board-ready audit pack — no subscription</div>
+    </div>
+  </div>
+</div>
 
 <!-- ── PRODUCTS + REGULATORY ─────────────────────────── -->
 <section id="how" style="position:relative; overflow:hidden;">
@@ -604,6 +730,75 @@
     </div>
   </div>
 </div>
+
+<!-- ── PRICING ─────────────────────────────────────────── -->
+<section id="pricing" class="pricing-section">
+  <div class="wrap section-pad">
+    <div class="pricing-header fade">
+      <div class="eyebrow" style="justify-content:center;">Audit-Ready in minutes</div>
+      <h2>Select your level of<br><em>scrutiny.</em></h2>
+      <p>No subscription. No lock-in. Pay only when you need a report.</p>
+    </div>
+
+    <div class="pricing-grid">
+
+      <div class="pricing-card fade">
+        <div class="pricing-tier">Internal Scan</div>
+        <div class="pricing-name">Free Assessment</div>
+        <div class="pricing-desc">High-level exposure check for internal review and initial board discussions.</div>
+        <div class="pricing-price">£0</div>
+        <div class="pricing-cadence">Always free — no account required</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>Governance Maturity Score</li>
+          <li>5-Band Risk Rating</li>
+          <li>Domain Breakdown Summary</li>
+          <li class="muted">FCA/ICO Article Mapping</li>
+          <li class="muted">Remediation Roadmap</li>
+          <li class="muted">Board-Ready PDF Report</li>
+        </ul>
+        <a href="diagnostic.html" class="pricing-btn pricing-btn-outline">Start Free Diagnostic</a>
+      </div>
+
+      <div class="pricing-card featured fade">
+        <div class="pricing-tag">Most Popular</div>
+        <div class="pricing-tier">Board Prep Pack</div>
+        <div class="pricing-name">Full Audit Report</div>
+        <div class="pricing-desc">The industry standard for evidencing defensible AI governance to boards and regulators.</div>
+        <div class="pricing-price"><sup>£</sup>79</div>
+        <div class="pricing-cadence">Per report — download immediately</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>Everything in Free</li>
+          <li>Full Board-Ready PDF Report</li>
+          <li>FCA &amp; ICO Article Mapping</li>
+          <li>Remediation Roadmap</li>
+          <li>EU AI Act Annex III Detection</li>
+          <li>Secure Portal Access</li>
+        </ul>
+        <a href="diagnostic.html" class="pricing-btn pricing-btn-solid">Generate Premium Report</a>
+      </div>
+
+      <div class="pricing-card fade">
+        <div class="pricing-tier">Enterprise</div>
+        <div class="pricing-name">Full Lifecycle</div>
+        <div class="pricing-desc">Governance lifecycle management for large firms with multi-department or multi-jurisdiction exposure.</div>
+        <div class="pricing-price" style="font-size:1.6rem;padding-top:6px;">Bespoke</div>
+        <div class="pricing-cadence">Tailored to your organisation</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>Everything in Board Prep Pack</li>
+          <li>Multi-Department Portal</li>
+          <li>On-Site Validation Sessions</li>
+          <li>Quarterly Benchmarking</li>
+          <li>Dedicated Advisory Lead</li>
+        </ul>
+        <a href="mailto:hello@mlagroup.co.uk" class="pricing-btn pricing-btn-outline">Talk to Advisory</a>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 <!-- ── CTA ────────────────────────────────────────────── -->
 <section class="cta-section">
