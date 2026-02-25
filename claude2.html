@@ -104,19 +104,21 @@
       background:rgba(2,6,23,0.97); backdrop-filter:blur(20px);
       border-bottom:1px solid var(--border);
       padding:16px 24px 20px;
+      align-items:center; text-align:center;
     }
     .mob-menu.open { display:flex; }
     .mob-link {
-      padding:10px 12px; border-radius:6px;
+      width:100%; padding:10px 12px; border-radius:6px;
       font-size:0.9rem; font-weight:500; color:var(--sub);
       text-decoration:none; transition:color 0.15s, background 0.15s;
+      text-align:center;
     }
     .mob-link:hover { color:var(--main); background:rgba(255,255,255,0.05); }
     .mob-cta {
       margin-top:8px; padding:12px; border-radius:8px;
       background:var(--accent); color:white; font-weight:600;
       text-decoration:none; text-align:center; font-size:0.9rem;
-      transition:background 0.15s;
+      width:100%; transition:background 0.15s;
     }
     .mob-cta:hover { background:var(--accent-d); }
 
@@ -156,6 +158,10 @@
     }
 
     .hero-actions { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; }
+    .hero-compliance {
+      margin-top:16px; font-size:0.72rem; color:var(--muted);
+      letter-spacing:0.01em; font-weight:400;
+    }
     .btn-primary {
       display:inline-flex; align-items:center; gap:8px;
       padding:13px 28px; border-radius:8px;
@@ -177,30 +183,29 @@
     }
     .btn-ghost:hover { border-color:rgba(96,165,250,0.35); color:var(--main); background:rgba(255,255,255,0.03); }
 
-    /* ── TRUST STRIP ─────────────────────────────────── */
+    /* ── REGULATORY ALIGNMENT STRIP ─────────────────── */
     .trust {
       position:relative; z-index:1;
       border-top:1px solid var(--border); border-bottom:1px solid var(--border);
       background:rgba(10,20,44,0.5);
     }
     .trust-inner {
-      max-width:1100px; margin:0 auto; padding:24px 48px;
-      display:flex; align-items:center; gap:36px; flex-wrap:wrap;
+      max-width:1100px; margin:0 auto; padding:40px 48px;
+      display:flex; flex-direction:column; align-items:center; gap:28px;
     }
     .trust-label {
-      font-size:0.7rem; font-weight:600; text-transform:uppercase;
-      letter-spacing:0.1em; color:var(--muted); white-space:nowrap;
+      font-size:0.68rem; font-weight:600; text-transform:uppercase;
+      letter-spacing:0.18em; color:var(--muted);
     }
-    .trust-divider { width:1px; height:18px; background:var(--border); flex-shrink:0; }
-    .trust-items { display:flex; gap:10px; flex-wrap:wrap; }
+    .trust-items {
+      display:flex; gap:48px; flex-wrap:wrap; justify-content:center; align-items:center;
+    }
     .trust-item {
-      padding:5px 13px; border-radius:6px;
-      background:rgba(255,255,255,0.03); border:1px solid var(--border);
-      font-size:0.75rem; font-weight:500; color:var(--muted2);
-      transition: border-color 0.18s, color 0.18s;
-      cursor:default;
+      font-size:0.82rem; font-weight:600; text-transform:uppercase;
+      letter-spacing:0.1em; color:var(--muted2);
+      transition:color 0.18s; cursor:default;
     }
-    .trust-item:hover { border-color:rgba(96,165,250,0.3); color:var(--sky); }
+    .trust-item:hover { color:var(--sky); }
 
     /* ── SECTION COMMONS ─────────────────────────────── */
     section { position:relative; z-index:1; }
@@ -213,7 +218,6 @@
       display:flex; align-items:center; gap:10px;
       margin-bottom:20px;
     }
-    .eyebrow::before { content:''; width:24px; height:1px; background:var(--sky); flex-shrink:0; }
 
     h2 {
       font-family:'Instrument Serif', serif;
@@ -228,27 +232,36 @@
       line-height:1.8; max-width:520px;
     }
 
-    /* ── HOW IT WORKS ─────────────────────────────────── */
-    .how-head { margin-bottom:64px; }
-    .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; }
-    .step {
-      padding:44px 40px;
-      background:var(--card); border:1px solid var(--border);
-      border-right:none; transition:background 0.25s;
+    /* ── PRODUCT CARDS ───────────────────────────────── */
+    .cards-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+      border:1px solid var(--border); border-radius:14px; overflow:hidden;
     }
-    .step:first-child { border-radius:12px 0 0 12px; }
-    .step:last-child  { border-right:1px solid var(--border); border-radius:0 12px 12px 0; }
-    .step:hover { background:rgba(37,99,235,0.05); }
-
-    .step-num {
+    .product-card {
+      padding:48px 40px; background:rgba(8,16,38,0.8);
+      border-right:1px solid var(--border);
+      display:flex; flex-direction:column; gap:0;
+      transition:background 0.25s;
+    }
+    .product-card:last-child { border-right:none; }
+    .product-card:hover { background:rgba(37,99,235,0.05); }
+    .card-label {
+      font-size:0.68rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.14em; color:var(--sky); margin-bottom:14px;
+    }
+    .card-title {
       font-family:'Instrument Serif', serif;
-      font-size:3.5rem; font-weight:400; line-height:1;
-      color:rgba(96,165,250,0.15); margin-bottom:24px;
-      transition:color 0.25s;
+      font-size:1.65rem; font-weight:400; line-height:1.1;
+      letter-spacing:-0.02em; color:var(--main); margin-bottom:16px;
     }
-    .step:hover .step-num { color:rgba(96,165,250,0.3); }
-    .step-title { font-size:1rem; font-weight:600; margin-bottom:10px; color:var(--main); }
-    .step-p { font-size:0.85rem; color:var(--muted2); line-height:1.75; }
+    .card-p {
+      font-size:0.85rem; color:var(--muted2); line-height:1.75;
+      flex:1;
+    }
+    .card-tier {
+      margin-top:20px; font-size:0.7rem; color:var(--muted);
+      font-style:italic; letter-spacing:0.01em;
+    }
 
     /* ── FEATURES ─────────────────────────────────────── */
     .feat-section { border-top:1px solid var(--border); }
@@ -360,10 +373,9 @@
       .trust-divider { display:none; }
       .wrap { padding:0 24px; }
       .section-pad { padding-top:72px; padding-bottom:72px; }
-      .steps { grid-template-columns:1fr; gap:0; }
-      .step { border-right:1px solid var(--border); border-bottom:none; border-radius:0; }
-      .step:first-child { border-radius:12px 12px 0 0; }
-      .step:last-child  { border-bottom:1px solid var(--border); border-radius:0 0 12px 12px; }
+      .cards-grid { grid-template-columns:1fr; }
+      .product-card { border-right:none; border-bottom:1px solid var(--border); }
+      .product-card:last-child { border-bottom:none; }
       .cta-box { padding:52px 24px; }
       .footer-top { grid-template-columns:1fr; gap:32px; padding:48px 24px 36px; }
       .footer-bottom { flex-direction:column; text-align:center; padding:20px 24px 28px; }
@@ -416,49 +428,49 @@
       </a>
       <a href="login.html" class="btn-ghost">Access Portal</a>
     </div>
+    <p class="hero-compliance">Aligned with FCA DP5/22, ICO Guidance, and EU AI Act Standards.</p>
   </div>
 </section>
 
-<!-- ── TRUST STRIP ────────────────────────────────────── -->
+<!-- ── REGULATORY ALIGNMENT ───────────────────────────── -->
 <div class="trust">
   <div class="trust-inner">
-    <span class="trust-label">Aligned to</span>
-    <div class="trust-divider"></div>
+    <span class="trust-label">Regulatory Alignment</span>
     <div class="trust-items">
-      <span class="trust-item">EU AI Act</span>
-      <span class="trust-item">UK GDPR</span>
       <span class="trust-item">FCA DP5/22</span>
       <span class="trust-item">ICO AI Guidance</span>
+      <span class="trust-item">EU AI Act</span>
+      <span class="trust-item">UK GDPR</span>
       <span class="trust-item">ISO/IEC 42001</span>
-      <span class="trust-item">SM&CR</span>
-      <span class="trust-item">Consumer Duty</span>
     </div>
   </div>
 </div>
 
-<!-- ── HOW IT WORKS ───────────────────────────────────── -->
+<!-- ── PRODUCT CARDS ───────────────────────────────────── -->
 <section id="how">
   <div class="wrap section-pad">
-    <div class="how-head fade">
-      <div class="eyebrow">Process</div>
-      <h2>From assessment<br>to <em>audit-ready</em> report.</h2>
-    </div>
-    <div class="steps">
-      <div class="step fade">
-        <div class="step-num">01</div>
-        <div class="step-title">Complete the Diagnostic</div>
-        <p class="step-p">Answer structured questions across seven governance domains — inventory, accountability, data quality, human oversight, explainability, compliance, and operational resilience. Approximately 20 minutes.</p>
+    <div class="cards-grid">
+
+      <div class="product-card fade">
+        <div class="card-label">The Diagnostic</div>
+        <div class="card-title">20-Minute Inquiry</div>
+        <p class="card-p">A weighted assessment across 7 governance domains adjusted for your specific sector exposure. Receive your risk score and domain breakdown immediately on completion.</p>
       </div>
-      <div class="step fade">
-        <div class="step-num">02</div>
-        <div class="step-title">Receive Your Risk Score</div>
-        <p class="step-p">Your responses are scored against a weighted framework and adjusted for sector exposure. You receive an overall maturity score, domain breakdown, and five-band risk rating — immediately on completion.</p>
+
+      <div class="product-card fade">
+        <div class="card-label">The Portal</div>
+        <div class="card-title">Audit-Ready Workspace</div>
+        <p class="card-p">A secure management tool to evidence board decision-making and track remediation over time.</p>
+        <div class="card-tier">Requires premium tier</div>
       </div>
-      <div class="step fade">
-        <div class="step-num">03</div>
-        <div class="step-title">Act on Your Report</div>
-        <p class="step-p">A professionally formatted PDF is generated — covering named findings with their precise regulatory basis, business impact analysis, and a sequenced remediation roadmap. Designed for board and regulator audiences.</p>
+
+      <div class="product-card fade">
+        <div class="card-label">The Output</div>
+        <div class="card-title">Board Prep Pack</div>
+        <p class="card-p">Professional, audit-ready PDF reports including specific regulatory article mapping, domain findings, and sequenced remediation roadmaps.</p>
+        <div class="card-tier">Requires premium tier</div>
       </div>
+
     </div>
   </div>
 </section>
