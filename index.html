@@ -7,20 +7,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:       #0c0c10;
-      --bg2:      #111118;
-      --bg3:      #16161f;
-      --card:     rgba(22,22,32,0.9);
-      --border:   rgba(255,255,255,0.08);
-      --border-h: rgba(255,255,255,0.13);
+      --bg:       #020617;
+      --bg2:      #0a1628;
+      --bg3:      #0f1f38;
+      --card:     rgba(15,31,56,0.85);
+      --border:   rgba(255,255,255,0.09);
+      --border-h: rgba(255,255,255,0.16);
       --accent:   #2563eb;
       --accent-l: #3b82f6;
       --accent-d: #1d4ed8;
-      --sky:      #6ba3f5;
-      --main:     #f0eff4;
-      --sub:      #c4c3d0;
-      --muted:    #6b6a7a;
-      --muted2:   #9c9bac;
+      --sky:      #60a5fa;
+      --main:     #ffffff;
+      --sub:      #e2e8f0;
+      --muted:    #94a3b8;
+      --muted2:   #cbd5e1;
     }
 
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -38,19 +38,15 @@
     /* ── BACKGROUND ─────────────────────────────────── */
     .bg-base {
       position: fixed; inset:0; z-index:0; pointer-events:none;
-      background:
-        radial-gradient(ellipse 70% 45% at 50% -5%, rgba(37,85,210,0.11) 0%, transparent 65%),
-        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(30,40,90,0.18) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 10% 60%, rgba(20,20,50,0.2) 0%, transparent 60%);
+      background: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(37,99,235,0.15) 0%, transparent 65%);
     }
-    /* subtle grid — barely visible, just enough to add texture */
     .bg-grid {
       position: fixed; inset:0; z-index:0; pointer-events:none;
       background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-      background-size: 80px 80px;
-      mask-image: radial-gradient(ellipse 100% 40% at 50% 0%, black 0%, transparent 100%);
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 110% 50% at 50% 0%, black 20%, transparent 75%);
     }
 
     /* ── NAV ────────────────────────────────────────── */
@@ -224,7 +220,7 @@
     .trust {
       position:relative; z-index:1;
       border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-      background:var(--bg2);
+      background:rgba(10,22,40,0.8);
     }
     .trust-inner {
       max-width:1100px; margin:0 auto; padding:36px 48px;
@@ -248,7 +244,7 @@
     .urgency-section {
       position:relative; z-index:1; overflow:hidden;
       border-top:1px solid var(--border);
-      background:var(--bg3);
+      background:var(--bg2);
     }
     .urgency-inner {
       max-width:1100px; margin:0 auto; padding:96px 48px;
