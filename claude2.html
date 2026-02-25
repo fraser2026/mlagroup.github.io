@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MLA Group | AI Governance for Regulated Industries</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #020617;
+      --surface:  #0a1628;
+      --card:     rgba(12,22,46,0.7);
+      --border:   rgba(255,255,255,0.07);
+      --border-h: rgba(255,255,255,0.12);
+      --accent:   #2563eb;
+      --accent-l: #3b82f6;
+      --accent-d: #1d4ed8;
+      --sky:      #60a5fa;
+      --main:     #f1f5f9;
+      --sub:      #cbd5e1;
+      --muted:    #64748b;
+      --muted2:   #94a3b8;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; font-size:16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--main);
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND ─────────────────────────────────── */
+    .bg-grid {
+      position: fixed; inset:0; z-index:0; pointer-events:none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 110% 50% at 50% 0%, black 20%, transparent 75%);
+    }
+    .bg-radial {
+      position: fixed; inset:0; z-index:0; pointer-events:none;
+      background: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(37,99,235,0.13) 0%, transparent 65%);
+    }
+
+    /* ── NAV ────────────────────────────────────────── */
+    nav {
+      position: sticky; top:0; z-index:100;
+      height: 64px;
+      display: flex; align-items:center; justify-content:space-between;
+      padding: 0 48px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(2,6,23,0.88);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .logo {
+      font-size: 1.1rem; font-weight: 600; letter-spacing: -0.02em;
+      text-decoration: none; color: var(--main); flex-shrink:0;
+    }
+    .logo em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic; font-weight:400; color: var(--sky);
+    }
+
+    .nav-centre {
+      display: flex; align-items:center; gap:4px;
+      position: absolute; left:50%; transform:translateX(-50%);
+    }
+    .nav-link {
+      padding: 7px 14px; border-radius:6px;
+      font-size: 0.85rem; font-weight:500; color: var(--muted2);
+      text-decoration:none; transition: color 0.18s, background 0.18s;
+      white-space: nowrap;
+    }
+    .nav-link:hover { color:var(--main); background:rgba(255,255,255,0.05); }
+
+    .nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .nav-signin {
+      padding: 7px 16px; border-radius:6px;
+      font-size: 0.85rem; font-weight:500; color: var(--sub);
+      text-decoration:none; transition: color 0.18s, background 0.18s;
+    }
+    .nav-signin:hover { color:var(--main); background:rgba(255,255,255,0.05); }
+    .nav-cta {
+      padding: 8px 18px; border-radius:7px;
+      font-size: 0.85rem; font-weight:600; color:white;
+      background: var(--accent); text-decoration:none;
+      transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+    }
+    .nav-cta:hover { background:var(--accent-d); transform:translateY(-1px); box-shadow:0 4px 18px rgba(37,99,235,0.4); }
+
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:4px; }
+    .hamburger span { display:block; width:20px; height:1.5px; background:var(--main); border-radius:2px; transition:0.25s; }
+    .mob-menu {
+      display:none; flex-direction:column; gap:2px;
+      position:absolute; top:64px; left:0; right:0; z-index:99;
+      background:rgba(2,6,23,0.97); backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);
+      padding:16px 24px 20px;
+    }
+    .mob-menu.open { display:flex; }
+    .mob-link {
+      padding:10px 12px; border-radius:6px;
+      font-size:0.9rem; font-weight:500; color:var(--sub);
+      text-decoration:none; transition:color 0.15s, background 0.15s;
+    }
+    .mob-link:hover { color:var(--main); background:rgba(255,255,255,0.05); }
+    .mob-cta {
+      margin-top:8px; padding:12px; border-radius:8px;
+      background:var(--accent); color:white; font-weight:600;
+      text-decoration:none; text-align:center; font-size:0.9rem;
+      transition:background 0.15s;
+    }
+    .mob-cta:hover { background:var(--accent-d); }
+
+    /* ── HERO ───────────────────────────────────────── */
+    .hero {
+      position:relative; z-index:1;
+      max-width:900px; margin:0 auto;
+      padding: 140px 48px 120px;
+      text-align:center;
+    }
+
+    .badge {
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 5px 14px; border-radius:99px;
+      background: rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.25);
+      font-size: 0.72rem; font-weight:600; color:var(--sky);
+      text-transform:uppercase; letter-spacing:0.08em;
+      margin-bottom: 36px;
+    }
+    .badge-dot {
+      width:6px; height:6px; border-radius:50%; background:var(--sky);
+      animation: blink 2.2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    h1 {
+      font-family:'Instrument Serif', serif;
+      font-size: clamp(4rem, 7.5vw, 7rem);
+      line-height: 0.9; font-weight:400; letter-spacing:-0.03em;
+      margin-bottom: 32px; color:var(--main);
+    }
+    h1 em { font-style:italic; color:var(--sky); }
+
+    .hero-sub {
+      font-size: 1.15rem; font-weight:300; color:var(--muted2);
+      line-height: 1.75; max-width:580px; margin:0 auto 48px;
+    }
+
+    .hero-actions { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; }
+    .btn-primary {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:13px 28px; border-radius:8px;
+      background:var(--accent); color:white;
+      font-size:0.9rem; font-weight:600; text-decoration:none;
+      transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+    }
+    .btn-primary:hover { background:var(--accent-d); transform:translateY(-2px); box-shadow:0 8px 28px rgba(37,99,235,0.38); }
+    .btn-primary svg { transition:transform 0.18s; }
+    .btn-primary:hover svg { transform:translateX(3px); }
+
+    .btn-ghost {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:12px 24px; border-radius:8px;
+      border:1px solid var(--border-h); color:var(--sub);
+      font-size:0.9rem; font-weight:500; text-decoration:none;
+      background:transparent;
+      transition: border-color 0.18s, color 0.18s, background 0.18s;
+    }
+    .btn-ghost:hover { border-color:rgba(96,165,250,0.35); color:var(--main); background:rgba(255,255,255,0.03); }
+
+    /* ── TRUST STRIP ─────────────────────────────────── */
+    .trust {
+      position:relative; z-index:1;
+      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+      background:rgba(10,20,44,0.5);
+    }
+    .trust-inner {
+      max-width:1100px; margin:0 auto; padding:24px 48px;
+      display:flex; align-items:center; gap:36px; flex-wrap:wrap;
+    }
+    .trust-label {
+      font-size:0.7rem; font-weight:600; text-transform:uppercase;
+      letter-spacing:0.1em; color:var(--muted); white-space:nowrap;
+    }
+    .trust-divider { width:1px; height:18px; background:var(--border); flex-shrink:0; }
+    .trust-items { display:flex; gap:10px; flex-wrap:wrap; }
+    .trust-item {
+      padding:5px 13px; border-radius:6px;
+      background:rgba(255,255,255,0.03); border:1px solid var(--border);
+      font-size:0.75rem; font-weight:500; color:var(--muted2);
+      transition: border-color 0.18s, color 0.18s;
+      cursor:default;
+    }
+    .trust-item:hover { border-color:rgba(96,165,250,0.3); color:var(--sky); }
+
+    /* ── SECTION COMMONS ─────────────────────────────── */
+    section { position:relative; z-index:1; }
+    .wrap { max-width:1100px; margin:0 auto; padding:0 48px; }
+    .section-pad { padding-top:104px; padding-bottom:104px; }
+
+    .eyebrow {
+      font-size:0.7rem; font-weight:600; text-transform:uppercase;
+      letter-spacing:0.1em; color:var(--sky);
+      display:flex; align-items:center; gap:10px;
+      margin-bottom:20px;
+    }
+    .eyebrow::before { content:''; width:24px; height:1px; background:var(--sky); flex-shrink:0; }
+
+    h2 {
+      font-family:'Instrument Serif', serif;
+      font-size:clamp(2.4rem, 4vw, 3.6rem);
+      font-weight:400; line-height:1.05; letter-spacing:-0.025em;
+      color:var(--main);
+    }
+    h2 em { font-style:italic; color:var(--sky); }
+
+    .section-sub {
+      font-size:1rem; font-weight:300; color:var(--muted2);
+      line-height:1.8; max-width:520px;
+    }
+
+    /* ── HOW IT WORKS ─────────────────────────────────── */
+    .how-head { margin-bottom:64px; }
+    .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; }
+    .step {
+      padding:44px 40px;
+      background:var(--card); border:1px solid var(--border);
+      border-right:none; transition:background 0.25s;
+    }
+    .step:first-child { border-radius:12px 0 0 12px; }
+    .step:last-child  { border-right:1px solid var(--border); border-radius:0 12px 12px 0; }
+    .step:hover { background:rgba(37,99,235,0.05); }
+
+    .step-num {
+      font-family:'Instrument Serif', serif;
+      font-size:3.5rem; font-weight:400; line-height:1;
+      color:rgba(96,165,250,0.15); margin-bottom:24px;
+      transition:color 0.25s;
+    }
+    .step:hover .step-num { color:rgba(96,165,250,0.3); }
+    .step-title { font-size:1rem; font-weight:600; margin-bottom:10px; color:var(--main); }
+    .step-p { font-size:0.85rem; color:var(--muted2); line-height:1.75; }
+
+    /* ── FEATURES ─────────────────────────────────────── */
+    .feat-section { border-top:1px solid var(--border); }
+    .feat-layout {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:80px; align-items:start;
+    }
+    .feat-sticky { position:sticky; top:96px; }
+    .feat-sticky h2 { margin-bottom:20px; }
+    .feat-sticky p { margin-bottom:36px; }
+    .feat-cta {
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:0.85rem; font-weight:600; color:var(--sky);
+      text-decoration:none; transition:gap 0.18s;
+    }
+    .feat-cta:hover { gap:10px; }
+
+    .feat-list { display:flex; flex-direction:column; gap:2px; }
+    .feat-item {
+      display:flex; gap:18px; padding:28px 24px;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:0; border-bottom:none;
+      transition:background 0.25s, border-color 0.25s;
+    }
+    .feat-item:first-child { border-radius:12px 12px 0 0; }
+    .feat-item:last-child  { border-bottom:1px solid var(--border); border-radius:0 0 12px 12px; }
+    .feat-item:hover { background:rgba(37,99,235,0.05); border-color:rgba(37,99,235,0.2); }
+
+    /* SVG icon container */
+    .feat-icon {
+      width:38px; height:38px; min-width:38px;
+      border-radius:8px; background:rgba(37,99,235,0.1);
+      border:1px solid rgba(37,99,235,0.18);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .feat-icon svg { width:17px; height:17px; stroke:var(--sky); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+
+    .feat-body {}
+    .feat-title { font-size:0.92rem; font-weight:600; color:var(--main); margin-bottom:6px; }
+    .feat-p { font-size:0.82rem; color:var(--muted2); line-height:1.7; }
+
+    /* ── CTA ──────────────────────────────────────────── */
+    .cta-section { border-top:1px solid var(--border); }
+    .cta-box {
+      background: linear-gradient(135deg, rgba(37,99,235,0.07) 0%, transparent 50%);
+      border:1px solid rgba(37,99,235,0.2);
+      border-radius:20px; padding:88px 72px;
+      text-align:center; position:relative; overflow:hidden;
+    }
+    .cta-box::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(ellipse 70% 50% at 50% -10%, rgba(37,99,235,0.14), transparent);
+    }
+    .cta-box h2 { margin-bottom:18px; }
+    .cta-box p { font-size:1rem; color:var(--muted2); font-weight:300; max-width:480px; margin:0 auto 44px; line-height:1.8; }
+    .cta-actions { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; }
+
+    /* ── FOOTER ───────────────────────────────────────── */
+    footer {
+      border-top:1px solid var(--border);
+      background:rgba(2,6,23,0.96);
+    }
+    .footer-top {
+      max-width:1100px; margin:0 auto; padding:64px 48px 52px;
+      display:grid; grid-template-columns:1.8fr 1fr 1fr 1fr; gap:60px;
+    }
+    .f-brand .footer-logo {
+      font-size:1.05rem; font-weight:600; margin-bottom:14px;
+    }
+    .f-brand .footer-logo em { font-family:'Instrument Serif', serif; font-style:italic; color:var(--sky); }
+    .f-brand p { font-size:0.8rem; color:var(--muted); line-height:1.75; max-width:230px; }
+
+    .f-col h4 {
+      font-size:0.68rem; font-weight:600; text-transform:uppercase;
+      letter-spacing:0.1em; color:var(--muted); margin-bottom:18px;
+    }
+    .f-col ul { list-style:none; display:flex; flex-direction:column; gap:9px; }
+    .f-col a { font-size:0.83rem; color:var(--muted2); text-decoration:none; transition:color 0.15s; }
+    .f-col a:hover { color:var(--main); }
+
+    .footer-bottom {
+      max-width:1100px; margin:0 auto; padding:20px 48px 32px;
+      border-top:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center; gap:20px;
+    }
+    .footer-bottom span { font-size:0.75rem; color:var(--muted); }
+    .footer-legal { display:flex; gap:20px; }
+    .footer-legal a { font-size:0.75rem; color:var(--muted); text-decoration:none; transition:color 0.15s; }
+    .footer-legal a:hover { color:var(--muted2); }
+
+    /* ── FADE ANIMATION ───────────────────────────────── */
+    .fade { opacity:0; transform:translateY(20px); transition:opacity 0.65s ease, transform 0.65s ease; }
+    .fade.in { opacity:1; transform:translateY(0); }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media (max-width:1024px) {
+      .nav-centre { display:none; }
+      .feat-layout { grid-template-columns:1fr; gap:48px; }
+      .feat-sticky { position:static; }
+      .footer-top { grid-template-columns:1fr 1fr; gap:40px; }
+    }
+    @media (max-width:768px) {
+      nav { padding:0 20px; }
+      .nav-right { display:none; }
+      .hamburger { display:flex; }
+      .hero { padding:100px 24px 80px; }
+      h1 { font-size:clamp(3rem,10vw,4.5rem); }
+      .trust-inner { padding:20px 24px; gap:16px; }
+      .trust-divider { display:none; }
+      .wrap { padding:0 24px; }
+      .section-pad { padding-top:72px; padding-bottom:72px; }
+      .steps { grid-template-columns:1fr; gap:0; }
+      .step { border-right:1px solid var(--border); border-bottom:none; border-radius:0; }
+      .step:first-child { border-radius:12px 12px 0 0; }
+      .step:last-child  { border-bottom:1px solid var(--border); border-radius:0 0 12px 12px; }
+      .cta-box { padding:52px 24px; }
+      .footer-top { grid-template-columns:1fr; gap:32px; padding:48px 24px 36px; }
+      .footer-bottom { flex-direction:column; text-align:center; padding:20px 24px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-radial"></div>
+
+<!-- ── NAV ────────────────────────────────────────────── -->
+<nav>
+  <a href="index.html" class="logo">mla<em>group.</em></a>
+
+  <div class="nav-centre">
+    <a href="#how" class="nav-link">How it works</a>
+    <a href="#features" class="nav-link">Features</a>
+    <a href="pricing.html" class="nav-link">Pricing</a>
+    <a href="#" class="nav-link">About</a>
+  </div>
+
+  <div class="nav-right">
+    <a href="login.html" class="nav-signin">Sign in</a>
+    <a href="diagnostic.html" class="nav-cta">Start Diagnostic</a>
+  </div>
+
+  <div class="hamburger" id="ham" onclick="toggleMob()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mob-menu" id="mobMenu">
+  <a href="#how" class="mob-link" onclick="closeMob()">How it works</a>
+  <a href="#features" class="mob-link" onclick="closeMob()">Features</a>
+  <a href="pricing.html" class="mob-link">Pricing</a>
+  <a href="login.html" class="mob-link">Sign in</a>
+  <a href="diagnostic.html" class="mob-cta">Start Diagnostic</a>
+</div>
+
+<!-- ── HERO ───────────────────────────────────────────── -->
+<section>
+  <div class="hero fade">
+    <div class="badge"><span class="badge-dot"></span>EU AI Act — August 2026</div>
+    <h1>AI Governance<br>for <em>Regulated</em><br>Industries.</h1>
+    <p class="hero-sub">A structured diagnostic that quantifies your organisation's AI governance exposure, aligned to UK and EU regulatory frameworks — and produces the documentation your board and auditors need.</p>
+    <div class="hero-actions">
+      <a href="diagnostic.html" class="btn-primary">
+        Start Risk Diagnostic
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="login.html" class="btn-ghost">Access Portal</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── TRUST STRIP ────────────────────────────────────── -->
+<div class="trust">
+  <div class="trust-inner">
+    <span class="trust-label">Aligned to</span>
+    <div class="trust-divider"></div>
+    <div class="trust-items">
+      <span class="trust-item">EU AI Act</span>
+      <span class="trust-item">UK GDPR</span>
+      <span class="trust-item">FCA DP5/22</span>
+      <span class="trust-item">ICO AI Guidance</span>
+      <span class="trust-item">ISO/IEC 42001</span>
+      <span class="trust-item">SM&CR</span>
+      <span class="trust-item">Consumer Duty</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ───────────────────────────────────── -->
+<section id="how">
+  <div class="wrap section-pad">
+    <div class="how-head fade">
+      <div class="eyebrow">Process</div>
+      <h2>From assessment<br>to <em>audit-ready</em> report.</h2>
+    </div>
+    <div class="steps">
+      <div class="step fade">
+        <div class="step-num">01</div>
+        <div class="step-title">Complete the Diagnostic</div>
+        <p class="step-p">Answer structured questions across seven governance domains — inventory, accountability, data quality, human oversight, explainability, compliance, and operational resilience. Approximately 20 minutes.</p>
+      </div>
+      <div class="step fade">
+        <div class="step-num">02</div>
+        <div class="step-title">Receive Your Risk Score</div>
+        <p class="step-p">Your responses are scored against a weighted framework and adjusted for sector exposure. You receive an overall maturity score, domain breakdown, and five-band risk rating — immediately on completion.</p>
+      </div>
+      <div class="step fade">
+        <div class="step-num">03</div>
+        <div class="step-title">Act on Your Report</div>
+        <p class="step-p">A professionally formatted PDF is generated — covering named findings with their precise regulatory basis, business impact analysis, and a sequenced remediation roadmap. Designed for board and regulator audiences.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ───────────────────────────────────────── -->
+<section id="features" class="feat-section">
+  <div class="wrap section-pad">
+    <div class="feat-layout">
+
+      <div class="feat-sticky">
+        <div class="eyebrow fade">Capabilities</div>
+        <h2 class="fade">Built for<br><em>scrutiny.</em></h2>
+        <p class="section-sub fade">Every element of the diagnostic and reporting framework is calibrated for organisations operating under active UK and EU regulatory oversight. Not generic checklists.</p>
+        <a href="diagnostic.html" class="feat-cta fade">
+          Start the diagnostic
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <div class="feat-list">
+
+        <div class="feat-item fade">
+          <div class="feat-icon">
+            <!-- Scale / legal icon -->
+            <svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M3 21h18"/><circle cx="8" cy="14" r="3"/><circle cx="16" cy="14" r="3"/></svg>
+          </div>
+          <div class="feat-body">
+            <div class="feat-title">Precise Regulatory Mapping</div>
+            <p class="feat-p">Every finding references the specific article, ICO guidance paragraph, or FCA expectation it addresses. Not paraphrased advice — the exact legal basis, cited.</p>
+          </div>
+        </div>
+
+        <div class="feat-item fade">
+          <div class="feat-icon">
+            <!-- Sectors / layers icon -->
+            <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v5c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 10v5c0 1.657 4.03 3 9 3s9-1.343 9-3v-5"/></svg>
+          </div>
+          <div class="feat-body">
+            <div class="feat-title">Sector Exposure Adjustment</div>
+            <p class="feat-p">Financial services, healthcare, legal, and public sector deployments carry different risk profiles. Your maturity score is adjusted by a sector-specific multiplier — not a flat number that means nothing to your regulator.</p>
+          </div>
+        </div>
+
+        <div class="feat-item fade">
+          <div class="feat-icon">
+            <!-- Shield icon -->
+            <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6l-8-4z"/></svg>
+          </div>
+          <div class="feat-body">
+            <div class="feat-title">EU AI Act Annex III Detection</div>
+            <p class="feat-p">Automatic identification of high-risk AI categories under Annex III, with conformity assessment flags and Article 14 human oversight obligations — mapped directly from your responses.</p>
+          </div>
+        </div>
+
+        <div class="feat-item fade">
+          <div class="feat-icon">
+            <!-- Document icon -->
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          </div>
+          <div class="feat-body">
+            <div class="feat-title">Board and Auditor-Ready Output</div>
+            <p class="feat-p">The generated report is structured for professional audiences — executive summary, risk band narrative, domain-by-domain findings, prioritised recommendations, and a regulatory framework appendix.</p>
+          </div>
+        </div>
+
+        <div class="feat-item fade">
+          <div class="feat-icon">
+            <!-- Lock icon -->
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div class="feat-body">
+            <div class="feat-title">Secure Client Portal</div>
+            <p class="feat-p">Every assessment is stored in your private account. Revisit results, download reports, and track governance posture over time. Your assessment data is not shared or used beyond your account.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────── -->
+<section class="cta-section">
+  <div class="wrap section-pad">
+    <div class="cta-box fade">
+      <div class="badge" style="margin:0 auto 28px"><span class="badge-dot"></span>No commitment required</div>
+      <h2>Know your exposure<br><em>before your regulator does.</em></h2>
+      <p>Complete the diagnostic in under 20 minutes. Receive your risk score, domain breakdown, and a professionally formatted governance report — immediately.</p>
+      <div class="cta-actions">
+        <a href="diagnostic.html" class="btn-primary">
+          Start Risk Diagnostic
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="login.html" class="btn-ghost">Sign in to Portal</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ──────────────────────────────────────────── -->
+<footer>
+  <div class="footer-top">
+    <div class="f-brand">
+      <div class="footer-logo">mla<em>group.</em></div>
+      <p>AI governance risk advisory for regulated industries. Defensible frameworks, audit-ready reporting, and sector-specific regulatory alignment.</p>
+    </div>
+    <div class="f-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="diagnostic.html">Risk Diagnostic</a></li>
+        <li><a href="login.html">Client Portal</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4>Frameworks</h4>
+      <ul>
+        <li><a href="#">EU AI Act</a></li>
+        <li><a href="#">UK GDPR</a></li>
+        <li><a href="#">FCA Guidance</a></li>
+        <li><a href="#">ISO/IEC 42001</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About MLA</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Use</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 MLA Group Ltd. Registered in England &amp; Wales. All rights reserved.</span>
+    <div class="footer-legal">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggleMob() {
+    document.getElementById('mobMenu').classList.toggle('open');
+  }
+  function closeMob() {
+    document.getElementById('mobMenu').classList.remove('open');
+  }
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('in'), i * 90);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
