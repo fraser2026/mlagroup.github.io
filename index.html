@@ -183,15 +183,60 @@
     }
     .btn-ghost:hover { border-color:rgba(96,165,250,0.35); color:var(--main); background:rgba(255,255,255,0.03); }
 
-    /* ── REGULATORY ALIGNMENT STRIP ─────────────────── */
+    /* ── SCROLL GLOW ORBS ───────────────────────────── */
+    .orb {
+      position: absolute; border-radius: 50%;
+      pointer-events: none; z-index: 0;
+      filter: blur(130px); opacity: 0;
+      animation: orbFade 1.2s ease forwards;
+    }
+    @keyframes orbFade { to { opacity: 1; } }
+    .orb-blue  { background: #2563eb; }
+    .orb-indigo { background: #4f46e5; }
+    .orb-sky   { background: #0ea5e9; }
+
+    /* ── PRODUCT CARDS ───────────────────────────────── */
+    .cards-grid {
+      display:grid; grid-template-columns:repeat(3,1fr);
+      border:1px solid var(--border); border-radius:16px; overflow:hidden;
+      position:relative; z-index:1;
+    }
+    .product-card {
+      padding:52px 44px; background:rgba(10,20,44,0.6);
+      border-right:1px solid var(--border);
+      display:flex; flex-direction:column;
+      transition:background 0.25s;
+      backdrop-filter: blur(12px);
+    }
+    .product-card:last-child { border-right:none; }
+    .product-card:hover { background:rgba(37,99,235,0.08); }
+    .card-label {
+      font-size:0.68rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.16em; color:var(--sky); margin-bottom:16px;
+    }
+    .card-title {
+      font-family:'DM Sans', sans-serif;
+      font-size:1.45rem; font-weight:600; line-height:1.15;
+      letter-spacing:-0.02em; color:var(--main); margin-bottom:16px;
+    }
+    .card-p {
+      font-size:0.875rem; color:var(--muted2); line-height:1.8; flex:1;
+    }
+    .card-tier {
+      margin-top:24px; font-size:0.7rem; color:var(--muted);
+      font-style:italic; display:flex; align-items:center; gap:8px;
+    }
+    .card-tier::before { content:''; width:14px; height:1px; background:var(--border-h); flex-shrink:0; }
+
+    /* ── REGULATORY STRIP ────────────────────────────── */
     .trust {
       position:relative; z-index:1;
       border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-      background:rgba(10,20,44,0.5);
+      background:rgba(5,12,30,0.7);
     }
     .trust-inner {
-      max-width:1100px; margin:0 auto; padding:40px 48px;
-      display:flex; flex-direction:column; align-items:center; gap:28px;
+      max-width:1100px; margin:0 auto; padding:36px 48px;
+      display:flex; flex-direction:column; align-items:center; gap:24px;
     }
     .trust-label {
       font-size:0.68rem; font-weight:600; text-transform:uppercase;
@@ -201,67 +246,61 @@
       display:flex; gap:48px; flex-wrap:wrap; justify-content:center; align-items:center;
     }
     .trust-item {
-      font-size:0.82rem; font-weight:600; text-transform:uppercase;
+      font-size:0.8rem; font-weight:600; text-transform:uppercase;
       letter-spacing:0.1em; color:var(--muted2);
       transition:color 0.18s; cursor:default;
     }
     .trust-item:hover { color:var(--sky); }
 
+    /* ── URGENCY INTERSTITIAL ────────────────────────── */
+    .urgency-section {
+      position:relative; z-index:1; overflow:hidden;
+      border-top:1px solid var(--border);
+    }
+    .urgency-inner {
+      max-width:1100px; margin:0 auto; padding:96px 48px;
+      display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+      position:relative; z-index:1;
+    }
+    .urgency-quote {
+      font-family:'Instrument Serif', serif;
+      font-size:clamp(2rem, 3vw, 2.8rem);
+      font-weight:400; line-height:1.1; letter-spacing:-0.025em; color:var(--main);
+    }
+    .urgency-quote em { font-style:italic; color:var(--sky); }
+    .urgency-sub {
+      margin-top:20px; font-size:0.9rem; color:var(--muted2);
+      line-height:1.7; max-width:380px;
+    }
+    .urgency-facts { display:flex; flex-direction:column; }
+    .urgency-fact {
+      padding:22px 0; border-bottom:1px solid var(--border);
+      display:flex; gap:20px; align-items:flex-start;
+    }
+    .urgency-fact:first-child { border-top:1px solid var(--border); }
+    .urgency-date {
+      font-size:0.68rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.1em; color:var(--sky); white-space:nowrap;
+      min-width:88px; padding-top:2px;
+    }
+    .urgency-text { font-size:0.85rem; color:var(--muted2); line-height:1.7; }
+
     /* ── SECTION COMMONS ─────────────────────────────── */
     section { position:relative; z-index:1; }
     .wrap { max-width:1100px; margin:0 auto; padding:0 48px; }
     .section-pad { padding-top:104px; padding-bottom:104px; }
-
     .eyebrow {
       font-size:0.7rem; font-weight:600; text-transform:uppercase;
       letter-spacing:0.1em; color:var(--sky);
-      display:flex; align-items:center; gap:10px;
-      margin-bottom:20px;
+      display:flex; align-items:center; gap:10px; margin-bottom:20px;
     }
-
     h2 {
       font-family:'Instrument Serif', serif;
       font-size:clamp(2.4rem, 4vw, 3.6rem);
-      font-weight:400; line-height:1.05; letter-spacing:-0.025em;
-      color:var(--main);
+      font-weight:400; line-height:1.05; letter-spacing:-0.025em; color:var(--main);
     }
     h2 em { font-style:italic; color:var(--sky); }
-
-    .section-sub {
-      font-size:1rem; font-weight:300; color:var(--muted2);
-      line-height:1.8; max-width:520px;
-    }
-
-    /* ── PRODUCT CARDS ───────────────────────────────── */
-    .cards-grid {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
-      border:1px solid var(--border); border-radius:14px; overflow:hidden;
-    }
-    .product-card {
-      padding:48px 40px; background:rgba(8,16,38,0.8);
-      border-right:1px solid var(--border);
-      display:flex; flex-direction:column; gap:0;
-      transition:background 0.25s;
-    }
-    .product-card:last-child { border-right:none; }
-    .product-card:hover { background:rgba(37,99,235,0.05); }
-    .card-label {
-      font-size:0.68rem; font-weight:700; text-transform:uppercase;
-      letter-spacing:0.14em; color:var(--sky); margin-bottom:14px;
-    }
-    .card-title {
-      font-family:'Instrument Serif', serif;
-      font-size:1.65rem; font-weight:400; line-height:1.1;
-      letter-spacing:-0.02em; color:var(--main); margin-bottom:16px;
-    }
-    .card-p {
-      font-size:0.85rem; color:var(--muted2); line-height:1.75;
-      flex:1;
-    }
-    .card-tier {
-      margin-top:20px; font-size:0.7rem; color:var(--muted);
-      font-style:italic; letter-spacing:0.01em;
-    }
+    .section-sub { font-size:1rem; font-weight:300; color:var(--muted2); line-height:1.8; max-width:520px; }
 
     /* ── FEATURES ─────────────────────────────────────── */
     .feat-section { border-top:1px solid var(--border); }
@@ -376,6 +415,7 @@
       .cards-grid { grid-template-columns:1fr; }
       .product-card { border-right:none; border-bottom:1px solid var(--border); }
       .product-card:last-child { border-bottom:none; }
+      .urgency-inner { grid-template-columns:1fr; gap:48px; padding:64px 24px; }
       .cta-box { padding:52px 24px; }
       .footer-top { grid-template-columns:1fr; gap:32px; padding:48px 24px 36px; }
       .footer-bottom { flex-direction:column; text-align:center; padding:20px 24px 28px; }
@@ -418,37 +458,27 @@
 <!-- ── HERO ───────────────────────────────────────────── -->
 <section>
   <div class="hero fade">
-    <div class="badge"><span class="badge-dot"></span>EU AI Act — August 2026</div>
-    <h1>AI Governance<br>for <em>Regulated</em><br>Industries.</h1>
-    <p class="hero-sub">A structured diagnostic that quantifies your organisation's AI governance exposure, aligned to UK and EU regulatory frameworks — and produces the documentation your board and auditors need.</p>
+    <div class="badge"><span class="badge-dot"></span>August 2026 EU AI Act Deadline</div>
+    <h1>Evidence your<br>AI Governance.<br><em>Before they ask for it.</em></h1>
+    <p class="hero-sub">Transition from experimental AI to a defensible decision framework. MLA Group provides structured, audit-ready diagnostics for UK professional services firms facing regulatory scrutiny.</p>
     <div class="hero-actions">
       <a href="diagnostic.html" class="btn-primary">
-        Start Risk Diagnostic
+        Generate My AI Exposure Report
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
-      <a href="login.html" class="btn-ghost">Access Portal</a>
+      <a href="#" class="btn-ghost">View Sample Report</a>
     </div>
     <p class="hero-compliance">Aligned with FCA DP5/22, ICO Guidance, and EU AI Act Standards.</p>
   </div>
 </section>
 
-<!-- ── REGULATORY ALIGNMENT ───────────────────────────── -->
-<div class="trust">
-  <div class="trust-inner">
-    <span class="trust-label">Regulatory Alignment</span>
-    <div class="trust-items">
-      <span class="trust-item">FCA DP5/22</span>
-      <span class="trust-item">ICO AI Guidance</span>
-      <span class="trust-item">EU AI Act</span>
-      <span class="trust-item">UK GDPR</span>
-      <span class="trust-item">ISO/IEC 42001</span>
-    </div>
-  </div>
-</div>
+<!-- ── PRODUCTS + REGULATORY ─────────────────────────── -->
+<section id="how" style="position:relative; overflow:hidden;">
+  <!-- Glow orb for this section -->
+  <div class="orb orb-indigo" style="width:600px;height:600px;top:50%;left:-10%;transform:translateY(-50%);opacity:0.07;animation-delay:0.3s;"></div>
+  <div class="orb orb-sky" style="width:400px;height:400px;top:20%;right:-5%;opacity:0.05;animation-delay:0.6s;"></div>
 
-<!-- ── PRODUCT CARDS ───────────────────────────────────── -->
-<section id="how">
-  <div class="wrap section-pad">
+  <div class="wrap section-pad" style="position:relative;z-index:1;">
     <div class="cards-grid">
 
       <div class="product-card fade">
@@ -473,10 +503,25 @@
 
     </div>
   </div>
+
+  <!-- Regulatory alignment under the cards -->
+  <div class="trust">
+    <div class="trust-inner">
+      <span class="trust-label">Regulatory Alignment</span>
+      <div class="trust-items">
+        <span class="trust-item">FCA DP5/22</span>
+        <span class="trust-item">ICO AI Guidance</span>
+        <span class="trust-item">EU AI Act</span>
+        <span class="trust-item">UK GDPR</span>
+        <span class="trust-item">ISO/IEC 42001</span>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- ── FEATURES ───────────────────────────────────────── -->
-<section id="features" class="feat-section">
+<section id="features" class="feat-section" style="overflow:hidden;">
+  <div class="orb orb-indigo" style="width:500px;height:500px;top:30%;left:-8%;opacity:0.07;"></div>
   <div class="wrap section-pad">
     <div class="feat-layout">
 
@@ -552,6 +597,31 @@
   </div>
 </section>
 
+<!-- ── URGENCY INTERSTITIAL ──────────────────────────── -->
+<div class="urgency-section">
+  <div class="orb orb-blue" style="width:700px;height:700px;top:50%;right:-15%;transform:translateY(-50%);opacity:0.08;"></div>
+  <div class="urgency-inner">
+    <div class="fade">
+      <div class="urgency-quote">The regulatory<br>window is<br><em>closing.</em></div>
+      <p class="urgency-sub">UK professional services firms deploying AI face compounding obligations from multiple regulators — simultaneously. Most are underprepared.</p>
+    </div>
+    <div class="urgency-facts fade">
+      <div class="urgency-fact">
+        <div class="urgency-date">Aug 2026</div>
+        <div class="urgency-text">EU AI Act high-risk obligations take effect. Firms without documented governance frameworks face direct enforcement exposure.</div>
+      </div>
+      <div class="urgency-fact">
+        <div class="urgency-date">Now</div>
+        <div class="urgency-text">FCA DP5/22 expects boards to evidence how AI decisions are overseen and challenged. Supervisory visits are already testing this.</div>
+      </div>
+      <div class="urgency-fact">
+        <div class="urgency-date">Ongoing</div>
+        <div class="urgency-text">ICO enforcement on automated decision-making is active. Explainability and human oversight gaps are the primary trigger.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── CTA ────────────────────────────────────────────── -->
 <section class="cta-section">
   <div class="wrap section-pad">
@@ -561,7 +631,7 @@
       <p>Complete the diagnostic in under 20 minutes. Receive your risk score, domain breakdown, and a professionally formatted governance report — immediately.</p>
       <div class="cta-actions">
         <a href="diagnostic.html" class="btn-primary">
-          Start Risk Diagnostic
+          Generate My AI Exposure Report
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
         <a href="login.html" class="btn-ghost">Sign in to Portal</a>
