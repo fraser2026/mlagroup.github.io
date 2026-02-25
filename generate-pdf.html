@@ -25,7 +25,7 @@
       width: 100%;
     }
     h2 { margin-bottom: 10px; color: #001A3A; font-size: 1.3rem; }
-    p  { color: #5A6B82; margin-bottom: 24px; font-size: 0.9rem; }
+    p { color: #5A6B82; margin-bottom: 24px; font-size: 0.9rem; }
     .spinner {
       width: 44px; height: 44px;
       border: 4px solid #E2E8F4;
@@ -78,90 +78,97 @@ function showError(msg) {
   document.getElementById('back-btn').style.display = 'inline-block';
 }
 
-function showSuccess(iosDataUri) {
+function showSuccess() {
   document.getElementById('spinner').style.display = 'none';
   document.getElementById('check').style.display = 'block';
+  document.getElementById('heading').textContent = 'Report Downloaded!';
+  setStatus('Your PDF has been saved to your downloads folder.');
   document.getElementById('back-btn').style.display = 'inline-block';
-  if (iosDataUri) {
-    document.getElementById('heading').textContent = 'Report Ready!';
-    setStatus('Tap below to open your PDF. Use the Safari share icon to save it.');
-    var btn = document.createElement('a');
-    btn.href = iosDataUri;
-    btn.textContent = 'Open PDF Report';
-    btn.className = 'btn';
-    btn.style.marginTop = '12px';
-    btn.style.display = 'inline-block';
-    document.querySelector('.box').appendChild(btn);
-  } else {
-    document.getElementById('heading').textContent = 'Report Downloaded!';
-    setStatus('Your PDF has been saved to your downloads folder.');
-  }
 }
 
-var _FRAMEWORK = { version: '2.0.0', date: 'February 2026', nextReview: 'August 2026' };
+function showSuccessIOS(blobUrl, filename) {
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('check').style.display = 'block';
+  document.getElementById('heading').textContent = 'Report Ready!';
+  setStatus('Tap the button below to open your PDF, then use the share icon to save it.');
+  var openBtn = document.createElement('a');
+  openBtn.href = blobUrl;
+  openBtn.target = '_blank';
+  openBtn.rel = 'noopener';
+  openBtn.textContent = 'Open PDF Report';
+  openBtn.className = 'btn';
+  openBtn.style.display = 'block';
+  openBtn.style.marginBottom = '8px';
+  document.querySelector('.box').insertBefore(openBtn, document.getElementById('back-btn'));
+  document.getElementById('back-btn').style.display = 'inline-block';
+}
 
-var _WEIGHTS = { s1: 0.14, s2: 0.20, s3: 0.10, s4: 0.16, s5: 0.16, s6: 0.18, s7: 0.06 };
+var _FW = { version: '2.0.0', date: 'February 2026', nextReview: 'August 2026' };
 
-var _SECTION_NAMES = {
-  s1: 'AI Inventory & Classification',
-  s2: 'Governance & Accountability',
-  s3: 'Data Quality & Lineage',
-  s4: 'Human Oversight & Controls',
-  s5: 'Explainability & Transparency',
-  s6: 'Compliance & Legal Alignment',
-  s7: 'Operational Controls & Resilience'
+var _W = { s1:0.14, s2:0.20, s3:0.10, s4:0.16, s5:0.16, s6:0.18, s7:0.06 };
+
+var _SN = {
+  s1:'AI Inventory & Classification', s2:'Governance & Accountability',
+  s3:'Data Quality & Lineage', s4:'Human Oversight & Controls',
+  s5:'Explainability & Transparency', s6:'Compliance & Legal Alignment',
+  s7:'Operational Controls & Resilience'
 };
 
-var _SECTOR_MULTIPLIER = {
-  'Financial Services': 1.00,
-  'Healthcare & Life Sciences': 1.00,
-  'Public Sector / Government': 0.95,
-  'Legal & Professional Services': 0.92,
-  'Technology & SaaS': 0.88,
-  'Retail & E-commerce': 0.85,
-  'Education': 0.82,
-  'Manufacturing & Logistics': 0.80,
-  'Other': 0.90
+var _SM = {
+  'Financial Services':1.00, 'Healthcare & Life Sciences':1.00,
+  'Public Sector / Government':0.95, 'Legal & Professional Services':0.92,
+  'Technology & SaaS':0.88, 'Retail & E-commerce':0.85,
+  'Education':0.82, 'Manufacturing & Logistics':0.80, 'Other':0.90
 };
 
-var _RISK_BANDS = [
-  { min: 80, max: 100, id: 'low', label: 'Low Risk', heading: 'Governance Established - Maintenance Mode', summary: 'Your organisation demonstrates strong AI governance maturity across the assessed areas. The priority now is to sustain, evolve, and stress-test these frameworks as AI deployments develop and regulatory obligations mature.' },
-  { min: 65, max: 79, id: 'lowmod', label: 'Low - Moderate Risk', heading: 'Foundations Present - Targeted Gaps Remain', summary: 'Your organisation has established meaningful governance foundations, but specific gaps create regulatory exposure. These are addressable with targeted action rather than a full rebuild - the foundations are sound.' },
-  { min: 45, max: 64, id: 'moderate', label: 'Moderate Risk', heading: 'Governance Gaps - Regulatory Exposure Likely', summary: 'Material governance gaps exist across multiple areas. Regulatory scrutiny of AI is intensifying - organisations at this maturity level face meaningful risk of enforcement attention, reputational exposure, or operational failure.' },
-  { min: 25, max: 44, id: 'high', label: 'High Risk', heading: 'Significant Exposure - Intervention Required', summary: 'Your responses indicate significant and widespread governance deficiencies. This level of exposure is not a matter of future risk - it represents current, active vulnerability to regulatory action, legal challenge, and operational harm.' },
-  { min: 0, max: 24, id: 'critical', label: 'Critical Risk', heading: 'Governance Absent - Urgent Escalation Needed', summary: 'Your assessment indicates that AI governance is largely absent. This requires board-level escalation and specialist engagement now. Continued operation without governance controls creates severe regulatory and legal exposure.' }
+var _RB = [
+  { min:80, max:100, id:'low', label:'Low Risk',
+    heading:'Governance Established - Maintenance Mode',
+    summary:'Your organisation demonstrates strong AI governance maturity across the assessed areas. The priority now is to sustain, evolve, and stress-test these frameworks as AI deployments develop and regulatory obligations mature.' },
+  { min:65, max:79, id:'lowmod', label:'Low - Moderate Risk',
+    heading:'Foundations Present - Targeted Gaps Remain',
+    summary:'Your organisation has established meaningful governance foundations, but specific gaps create regulatory exposure. These are addressable with targeted action rather than a full rebuild - the foundations are sound.' },
+  { min:45, max:64, id:'moderate', label:'Moderate Risk',
+    heading:'Governance Gaps - Regulatory Exposure Likely',
+    summary:'Material governance gaps exist across multiple areas. Regulatory scrutiny of AI is intensifying - organisations at this maturity level face meaningful risk of enforcement attention, reputational exposure, or operational failure.' },
+  { min:25, max:44, id:'high', label:'High Risk',
+    heading:'Significant Exposure - Intervention Required',
+    summary:'Your responses indicate significant and widespread governance deficiencies. This level of exposure is not a matter of future risk - it represents current, active vulnerability to regulatory action, legal challenge, and operational harm.' },
+  { min:0, max:24, id:'critical', label:'Critical Risk',
+    heading:'Governance Absent - Urgent Escalation Needed',
+    summary:'Your assessment indicates that AI governance is largely absent. This requires board-level escalation and specialist engagement now. Continued operation without governance controls creates severe regulatory and legal exposure.' }
 ];
 
-var _BAND_RECS = {
-  critical: [
+var _BR = {
+  critical:[
     'Urgently appoint a named AI governance lead with documented accountability and a board-level reporting line',
     'Commission an immediate AI inventory audit to establish scope and identify regulatory exposure',
     'Restrict high-impact automated decisions until human oversight controls are operational',
     'Engage legal counsel to assess UK GDPR, EU AI Act, and sector-specific obligations immediately',
     'Develop and implement a minimum viable AI policy framework within 30 days'
   ],
-  high: [
+  high:[
     'Formalise AI governance ownership with documented responsibilities across risk, compliance, and technical functions',
     'Conduct Data Protection Impact Assessments (DPIAs) for all AI systems processing personal data',
     'Implement decision logging and audit trail capability for all high-impact AI outputs',
     'Establish human-in-the-loop review protocols with documented override procedures',
     'Review third-party AI provider contracts for data handling, liability, and transparency obligations'
   ],
-  moderate: [
+  moderate:[
     'Elevate informal governance arrangements into formally documented policies with named owners',
     'Complete a full DPIA review and ensure individuals are proactively informed of automated decision-making',
     'Strengthen data lineage documentation to support explainability, auditability, and model traceability',
     'Develop escalation pathways and override protocols for AI-assisted decisions affecting individuals',
     'Introduce scheduled model performance monitoring with defined drift detection thresholds'
   ],
-  lowmod: [
+  lowmod:[
     'Document any remaining informal governance arrangements - verbal accountability cannot be demonstrated to a regulator',
     'Conduct an EU AI Act scope assessment to determine which obligations apply from August 2026',
     'Close identified gaps in explainability and audit trail capability before regulatory obligations mature',
     'Formalise training records for staff who review or rely on AI-generated outputs',
     'Schedule an annual external review of your governance framework against updated regulatory guidance'
   ],
-  low: [
+  low:[
     'Maintain currency with EU AI Act implementation - high-risk obligations apply from August 2026',
     'Ensure new AI deployments are automatically subject to your existing inventory and DPIA process',
     'Continue scheduled bias and fairness testing as models evolve and data distributions shift',
@@ -170,511 +177,460 @@ var _BAND_RECS = {
   ]
 };
 
-var _SECTOR_RECS = {
-  'Financial Services': 'Review your AI governance framework against FCA DP5/22 and ensure named Senior Manager accountability is documented for all AI-driven customer outcomes under SM&CR.',
-  'Healthcare & Life Sciences': 'Assess whether any AI systems in clinical pathways require DCB0129 clinical safety assessment and NHS DTAC compliance - these obligations apply regardless of procurement route.',
-  'Legal & Professional Services': 'Review SRA AI Guidance (2024) obligations - including client disclosure requirements where AI is used in client-facing work - and ensure your indemnity position covers AI-related errors.',
-  'Retail & E-commerce': 'Audit customer profiling and personalisation AI for GDPR compliance and ICO profiling guidance. Where automated decisions affect eligibility, review UK GDPR Art.22 obligations.',
-  'Technology & SaaS': 'Clarify whether your AI deployments create provider obligations under the EU AI Act. If you supply AI-enabled services to EU customers, conformity assessment requirements may apply.',
-  'Public Sector / Government': 'Review AI systems against ICO public authority guidance and ensure compliance with the AI Act obligations for public sector deployment.',
-  'Education': 'Ensure any AI used in assessment, student profiling, or admissions is reviewed against ICO guidance and the Equality Act 2010.',
-  'Manufacturing & Logistics': 'Identify any AI systems that interact with physical safety systems - these may qualify as high-risk under EU AI Act safety provisions and require conformity assessment before August 2026.',
-  'Other': 'Conduct a sector mapping exercise to identify which regulatory regimes apply to your specific AI use cases.'
+var _SR = {
+  'Financial Services':'Review your AI governance framework against FCA DP5/22 and ensure named Senior Manager accountability is documented for all AI-driven customer outcomes under SM&CR.',
+  'Healthcare & Life Sciences':'Assess whether any AI systems in clinical pathways require DCB0129 clinical safety assessment and NHS DTAC compliance - these obligations apply regardless of procurement route.',
+  'Legal & Professional Services':'Review SRA AI Guidance (2024) obligations - including client disclosure requirements where AI is used in client-facing work - and ensure your indemnity position covers AI-related errors.',
+  'Retail & E-commerce':'Audit customer profiling and personalisation AI for GDPR compliance and ICO profiling guidance. Where automated decisions affect eligibility, review UK GDPR Art.22 obligations.',
+  'Technology & SaaS':'Clarify whether your AI deployments create provider obligations under the EU AI Act. If you supply AI-enabled services to EU customers, conformity assessment requirements may apply.',
+  'Public Sector / Government':'Review AI systems against ICO public authority guidance and ensure compliance with the AI Act obligations for public sector deployment.',
+  'Education':'Ensure any AI used in assessment, student profiling, or admissions is reviewed against ICO guidance and the Equality Act 2010.',
+  'Manufacturing & Logistics':'Identify any AI systems that interact with physical safety systems - these may qualify as high-risk under EU AI Act safety provisions and require conformity assessment before August 2026.',
+  'Other':'Conduct a sector mapping exercise to identify which regulatory regimes apply to your specific AI use cases.'
 };
 
-var _FINDING_DATA = {
-  pf_governance: {
-    section: 'Governance & Accountability', severity: 'critical',
-    impact: 'The absence of a named AI governance owner creates a structural accountability gap that regulators consistently identify as a primary indicator of governance failure. Under the EU AI Act and FCA operational resilience expectations, clear documented ownership is a baseline requirement - not a best practice. In any enforcement investigation, this is the first question asked.',
-    rec: 'Appoint a named individual as AI Governance Lead with a documented mandate, defined scope covering all AI systems in use, and a formal reporting line to board or senior executive level. This appointment should be recorded in role documentation and circulated internally.'
+var _FD = {
+  pf_governance:{
+    section:'Governance & Accountability', severity:'critical',
+    impact:'The absence of a named AI governance owner creates a structural accountability gap that regulators consistently identify as a primary indicator of governance failure. Under the EU AI Act and FCA operational resilience expectations, clear documented ownership is a baseline requirement - not a best practice. In any enforcement investigation, this is the first question asked.',
+    rec:'Appoint a named individual as AI Governance Lead with a documented mandate, defined scope covering all AI systems in use, and a formal reporting line to board or senior executive level. This appointment should be recorded in role documentation and circulated internally.'
   },
-  pf_oversight: {
-    section: 'Human Oversight & Controls', severity: 'critical',
-    impact: 'Automated or AI-assisted decisions affecting individuals without adequate human review create direct regulatory exposure. UK GDPR Article 22 imposes specific requirements where decisions are solely automated and produce legal or similarly significant effects. The EU AI Act Article 14 makes human oversight a mandatory technical and organisational requirement for high-risk AI systems.',
-    rec: 'Implement mandatory human review protocols for all AI-assisted decisions that materially affect individuals. Document the protocol, define what constitutes a high-impact outcome, name the review function, and maintain records of reviews conducted. Where AI outputs are acted upon without human review, restrict that workflow until controls are in place.'
+  pf_oversight:{
+    section:'Human Oversight & Controls', severity:'critical',
+    impact:'Automated or AI-assisted decisions affecting individuals without adequate human review create direct regulatory exposure. UK GDPR Article 22 imposes specific requirements where decisions are solely automated and produce legal or similarly significant effects. The EU AI Act Article 14 makes human oversight a mandatory technical and organisational requirement for high-risk AI systems.',
+    rec:'Implement mandatory human review protocols for all AI-assisted decisions that materially affect individuals. Document the protocol, define what constitutes a high-impact outcome, name the review function, and maintain records of reviews conducted. Where AI outputs are acted upon without human review, restrict that workflow until controls are in place.'
   },
-  pf_dpia: {
-    section: 'Compliance & Legal Alignment', severity: 'critical',
-    impact: 'A Data Protection Impact Assessment is a legal requirement under UK GDPR Article 35 for AI systems that involve systematic, large-scale, or high-risk processing of personal data. Failure to conduct a required DPIA is an ICO enforcement priority. The absence of a DPIA removes a critical layer of documented due diligence.',
-    rec: 'Commission Data Protection Impact Assessments for all AI systems that process personal data, with priority given to those making or informing decisions about individuals. Engage your Data Protection Officer or external privacy counsel. DPIAs must be completed before deployment and reviewed when systems change materially.'
+  pf_dpia:{
+    section:'Compliance & Legal Alignment', severity:'critical',
+    impact:'A Data Protection Impact Assessment is a legal requirement under UK GDPR Article 35 for AI systems that involve systematic, large-scale, or high-risk processing of personal data. Failure to conduct a required DPIA is an ICO enforcement priority. The absence of a DPIA removes a critical layer of documented due diligence.',
+    rec:'Commission Data Protection Impact Assessments for all AI systems that process personal data, with priority given to those making or informing decisions about individuals. Engage your Data Protection Officer or external privacy counsel. DPIAs must be completed before deployment and reviewed when systems change materially.'
   },
-  pf_transparency: {
-    section: 'Compliance & Legal Alignment', severity: 'high',
-    impact: 'UK GDPR Articles 13 and 14 require that individuals are proactively informed when automated or AI-assisted processes are used in ways that materially affect them. The ICO has been explicit that generic privacy policy references are insufficient - transparency must be layered, timely, and meaningful.',
-    rec: 'Audit all customer and individual-facing processes that involve AI-assisted decisions. For each, implement a transparency notice at the point of interaction. Document these notices and review them against the ICO layered transparency guidance. Where automated decisions are solely automated, specific Art.22 disclosure is required.'
+  pf_transparency:{
+    section:'Compliance & Legal Alignment', severity:'high',
+    impact:'UK GDPR Articles 13 and 14 require that individuals are proactively informed when automated or AI-assisted processes are used in ways that materially affect them. The ICO has been explicit that generic privacy policy references are insufficient - transparency must be layered, timely, and meaningful.',
+    rec:'Audit all customer and individual-facing processes that involve AI-assisted decisions. For each, implement a transparency notice at the point of interaction. Document these notices and review them against the ICO layered transparency guidance. Where automated decisions are solely automated, specific Art.22 disclosure is required.'
   },
-  pf_no_inventory: {
-    section: 'AI Inventory & Classification', severity: 'high',
-    impact: 'Without a documented AI inventory, your organisation cannot determine its regulatory scope, cannot demonstrate governance readiness, and cannot identify which systems require enhanced controls. Every downstream governance obligation depends on knowing what AI systems are in use. Regulators treat the absence of an inventory as evidence that governance has not been implemented.',
-    rec: 'Conduct an immediate AI inventory audit covering all AI systems in operational use, under active development, or embedded in third-party tools your organisation uses. Document each system purpose, data inputs, decision outputs, and vendor. Review and update the inventory at least annually.'
+  pf_no_inventory:{
+    section:'AI Inventory & Classification', severity:'high',
+    impact:'Without a documented AI inventory, your organisation cannot determine its regulatory scope, cannot demonstrate governance readiness, and cannot identify which systems require enhanced controls. Every downstream governance obligation depends on knowing what AI systems are in use. Regulators treat the absence of an inventory as evidence that governance has not been implemented.',
+    rec:'Conduct an immediate AI inventory audit covering all AI systems in operational use, under active development, or embedded in third-party tools your organisation uses. Document each system purpose, data inputs, decision outputs, and vendor. Review and update the inventory at least annually.'
   },
-  pf_no_policy: {
-    section: 'Governance & Accountability', severity: 'high',
-    impact: 'Without documented AI use policies, staff have no authoritative guidance on acceptable use boundaries, prohibited applications, risk escalation procedures, or governance obligations. This creates unmanaged operational risk across every function that uses AI tools.',
-    rec: 'Develop and implement a comprehensive AI Use Policy covering: permitted and prohibited AI applications, requirements for risk assessment before deployment, data handling obligations, human oversight requirements, incident reporting procedures, and staff responsibilities. Review the policy at least annually.'
+  pf_no_policy:{
+    section:'Governance & Accountability', severity:'high',
+    impact:'Without documented AI use policies, staff have no authoritative guidance on acceptable use boundaries, prohibited applications, risk escalation procedures, or governance obligations. This creates unmanaged operational risk across every function that uses AI tools.',
+    rec:'Develop and implement a comprehensive AI Use Policy covering: permitted and prohibited AI applications, requirements for risk assessment before deployment, data handling obligations, human oversight requirements, incident reporting procedures, and staff responsibilities. Review the policy at least annually.'
   }
 };
 
-var _REGIME_FINDING = {
-  section: 'Regulatory Compliance', severity: 'info',
-  impact: 'Your selected regulatory regime creates specific obligations in relation to AI governance that exist independently of your overall maturity score. These are mandatory disclosure and accountability requirements - not recommendations - and must be addressed regardless of where other governance gaps are prioritised.',
-  rec: 'Review the specific regulatory guidance cited for your regime and assess current compliance. Engage your compliance function or external regulatory counsel to map obligations against your current AI use profile and governance arrangements.'
+var _RF = {
+  section:'Regulatory Compliance', severity:'info',
+  impact:'Your selected regulatory regime creates specific obligations in relation to AI governance that exist independently of your overall maturity score. These are mandatory disclosure and accountability requirements - not recommendations - and must be addressed regardless of where other governance gaps are prioritised.',
+  rec:'Review the specific regulatory guidance cited for your regime and assess current compliance. Engage your compliance function or external regulatory counsel to map obligations against your current AI use profile and governance arrangements.'
 };
 
-function _ps(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/\u2014|\u2013/g, '-')
-    .replace(/\u2018|\u2019/g, "'")
-    .replace(/\u201C|\u201D/g, '"')
-    .replace(/\u2026/g, '...')
-    .replace(/\u00D7/g, 'x')
-    .replace(/\u2212/g, '-')
-    .replace(/\u00A0/g, ' ')
-    .replace(/[^\x00-\xFF]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+function ps(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/\u2014|\u2013/g,'-').replace(/\u2018|\u2019/g,"'")
+    .replace(/\u201C|\u201D/g,'"').replace(/\u2026/g,'...')
+    .replace(/\u00D7/g,'x').replace(/\u2212/g,'-')
+    .replace(/\u00A0/g,' ').replace(/[^\x00-\xFF]/g,'')
+    .replace(/\s+/g,' ').trim();
 }
 
-function _drawBar(doc, x, y, totalW, h, pct, c) {
-  doc.setFillColor(215, 222, 232);
-  doc.rect(x, y, totalW, h, 'F');
-  if (pct > 0) {
-    doc.setFillColor(c[0], c[1], c[2]);
-    doc.rect(x, y, Math.max(1, Math.round(pct * totalW / 100)), h, 'F');
-  }
+function bar(doc,x,y,tw,h,pct,c) {
+  doc.setFillColor(215,222,232); doc.rect(x,y,tw,h,'F');
+  if (pct>0) { doc.setFillColor(c[0],c[1],c[2]); doc.rect(x,y,Math.max(1,Math.round(pct*tw/100)),h,'F'); }
 }
 
-function _tb(doc, text, x, y, maxW, fs, style, col, lh) {
-  doc.setFont('helvetica', style || 'normal');
-  doc.setFontSize(fs || 8);
-  doc.setTextColor(col[0], col[1], col[2]);
-  var lines = doc.splitTextToSize(text, maxW);
-  doc.text(lines, x, y);
-  return y + lines.length * (lh || (fs ? fs * 0.55 : 4.8));
+function tb(doc,text,x,y,mw,fs,st,col,lh) {
+  doc.setFont('helvetica',st||'normal'); doc.setFontSize(fs||8);
+  doc.setTextColor(col[0],col[1],col[2]);
+  var ln=doc.splitTextToSize(text,mw); doc.text(ln,x,y);
+  return y+ln.length*(lh||(fs?fs*0.55:4.8));
 }
 
-function _hdr(doc, W, M, nv, rc, sec, dt) {
-  doc.setFillColor(nv[0], nv[1], nv[2]);
-  doc.rect(0, 0, W, 34, 'F');
-  doc.setFillColor(rc[0], rc[1], rc[2]);
-  doc.rect(0, 34, W, 1.5, 'F');
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(255, 255, 255);
-  doc.text('MLA GROUP', M, 12);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(120, 155, 200);
-  doc.text('AI GOVERNANCE RISK ASSESSMENT  |  CONFIDENTIAL', M, 19);
-  doc.setFontSize(7.5); doc.setTextColor(160, 185, 215);
-  doc.text(sec, M, 28);
-  doc.setFontSize(6.5); doc.setTextColor(80, 110, 155);
-  doc.text(dt, W - M, 19, { align: 'right' });
-  doc.text('mlagroup.co.uk', W - M, 28, { align: 'right' });
+function hdr(doc,W,M,nv,rc,sec,dt) {
+  doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(0,0,W,34,'F');
+  doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(0,34,W,1.5,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(255,255,255);
+  doc.text('MLA GROUP',M,12);
+  doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(120,155,200);
+  doc.text('AI GOVERNANCE RISK ASSESSMENT  |  CONFIDENTIAL',M,19);
+  doc.setFontSize(7.5); doc.setTextColor(160,185,215); doc.text(sec,M,28);
+  doc.setFontSize(6.5); doc.setTextColor(80,110,155);
+  doc.text(dt,W-M,19,{align:'right'}); doc.text('mlagroup.co.uk',W-M,28,{align:'right'});
 }
 
-function _sh(doc, W, M, nv, label, y) {
-  doc.setFillColor(nv[0], nv[1], nv[2]);
-  doc.rect(M, y, W - M * 2, 8, 'F');
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
-  doc.text(label, M + 4, y + 5.6);
-  return y + 13;
+function sh(doc,W,M,nv,lbl,y) {
+  doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(M,y,W-M*2,8,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
+  doc.text(lbl,M+4,y+5.6); return y+13;
 }
 
-function _ftr(doc, W, M, nv, rc, dt, pg) {
-  doc.setFillColor(nv[0], nv[1], nv[2]);
-  doc.rect(0, 284, W, 13, 'F');
-  doc.setFillColor(rc[0], rc[1], rc[2]);
-  doc.rect(0, 284, W, 1, 'F');
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(140, 170, 210);
-  doc.text('MLA Group  |  AI Governance Risk Assessment  |  mlagroup.co.uk', M, 290);
-  doc.text('This report is produced for informational purposes. MLA Group is not a certified audit regulator.', M, 295);
-  doc.setTextColor(180, 200, 230);
-  doc.text('Page ' + pg, W - M, 290, { align: 'right' });
-  doc.text(dt, W - M, 295, { align: 'right' });
+function ftr(doc,W,M,nv,rc,dt,pg) {
+  doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(0,284,W,13,'F');
+  doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(0,284,W,1,'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(140,170,210);
+  doc.text('MLA Group  |  AI Governance Risk Assessment  |  mlagroup.co.uk',M,290);
+  doc.text('This report is produced for informational purposes. MLA Group is not a certified audit regulator.',M,295);
+  doc.setTextColor(180,200,230);
+  doc.text('Page '+pg,W-M,290,{align:'right'}); doc.text(dt,W-M,295,{align:'right'});
 }
 
-function _np(doc, W, M, nv, rc, heading, dt, pg) {
-  doc.addPage();
-  doc.setFillColor(255, 255, 255); doc.rect(0, 0, W, 297, 'F');
-  _hdr(doc, W, M, nv, rc, heading, dt);
-  return 44;
+function np(doc,W,M,nv,rc,ttl,dt,pg) {
+  doc.addPage(); doc.setFillColor(255,255,255); doc.rect(0,0,W,297,'F');
+  hdr(doc,W,M,nv,rc,ttl,dt); return 44;
 }
 
-function _recon(row) {
-  var sp = row.section_scores || {};
-  var band = null;
-  for (var i = 0; i < _RISK_BANDS.length; i++) {
-    if (_RISK_BANDS[i].id === row.risk_band) { band = _RISK_BANDS[i]; break; }
-  }
-  if (!band) {
-    for (var j = 0; j < _RISK_BANDS.length; j++) {
-      if (row.adjusted_score >= _RISK_BANDS[j].min && row.adjusted_score <= _RISK_BANDS[j].max) { band = _RISK_BANDS[j]; break; }
-    }
-  }
-  if (!band) band = _RISK_BANDS[2];
-  var sector = row.sector || 'Other';
-  var mult = _SECTOR_MULTIPLIER[sector] || 0.90;
-  var pf = (row.priority_flags || []).map(function(f) { return { id: f.id || '', label: f.label || '', basis: f.basis || '', severity: f.severity || 'high' }; });
-  var bsm = { s1: 9, s2: 18, s3: 12, s4: 12, s5: 15, s6: 15, s7: 15 };
-  var rs = row.raw_scores || {};
-  if (!rs || Object.keys(rs).length === 0) {
-    Object.keys(sp).forEach(function(s) { rs[s] = Math.round((sp[s] / 100) * (bsm[s] || 15)); });
-  }
+function recon(row) {
+  var sp=row.section_scores||{};
+  var band=null;
+  for (var i=0;i<_RB.length;i++) { if (_RB[i].id===row.risk_band){band=_RB[i];break;} }
+  if (!band) { for (var j=0;j<_RB.length;j++) { if (row.adjusted_score>=_RB[j].min&&row.adjusted_score<=_RB[j].max){band=_RB[j];break;} } }
+  if (!band) band=_RB[2];
+  var sec=row.sector||'Other', mult=_SM[sec]||0.90;
+  var pf=(row.priority_flags||[]).map(function(f){return{id:f.id||'',label:f.label||'',basis:f.basis||'',severity:f.severity||'high'};});
+  var bsm={s1:9,s2:18,s3:12,s4:12,s5:15,s6:15,s7:15};
+  var rs=row.raw_scores||{};
+  if (!rs||Object.keys(rs).length===0) { Object.keys(sp).forEach(function(s){rs[s]=Math.round((sp[s]/100)*(bsm[s]||15));}); }
   return {
-    adjustedScore: row.adjusted_score || 0,
-    weightedScore: row.weighted_score || 0,
-    multiplier: mult, sector: sector, orgSize: row.org_size || '',
-    respondentName: (row.respondent_name || '').trim(),
-    respondentRole: (row.respondent_role || '').trim(),
-    band: band, sectionPcts: sp, sectionNames: _SECTION_NAMES,
-    rawScores: rs, adjustedMax: bsm,
-    priorityFlags: pf, regimeFlags: row.regime_flags || [],
-    uncertaintyCount: row.uncertainty_count || 0,
-    selectedCategories: row.selected_categories || [],
-    frameworkVersion: row.framework_version || _FRAMEWORK.version,
-    frameworkDate: _FRAMEWORK.date
+    adjustedScore:row.adjusted_score||0, weightedScore:row.weighted_score||0,
+    multiplier:mult, sector:sec, orgSize:row.org_size||'',
+    respondentName:(row.respondent_name||'').trim(), respondentRole:(row.respondent_role||'').trim(),
+    band:band, sectionPcts:sp, sectionNames:_SN, rawScores:rs, adjustedMax:bsm,
+    priorityFlags:pf, regimeFlags:row.regime_flags||[],
+    uncertaintyCount:row.uncertainty_count||0, selectedCategories:row.selected_categories||[],
+    frameworkVersion:row.framework_version||_FW.version, frameworkDate:_FW.date
   };
 }
 
 function generatePortalPDF(row) {
-  if (!window.jspdf || !window.jspdf.jsPDF) { showError('PDF library not loaded - please refresh and try again.'); return; }
+  if (!window.jspdf||!window.jspdf.jsPDF) { showError('PDF library not loaded - please refresh and try again.'); return; }
   if (!row) { showError('No result data found.'); return; }
-
   setStatus('Rendering report pages...');
-
   try {
-    var doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    var W = 210, M = 18, TW = W - M * 2, TWI = TW - 8;
-    var R = _recon(row);
-    var org = _ps(row.organisation || '');
-    var name = _ps(R.respondentName || org);
-    var role = _ps(R.respondentRole || '');
-    var sector = _ps(R.sector);
-    var size = _ps(R.orgSize);
-    var band = _ps(R.band.label);
-    var bc = R.band.id;
-    var pct = R.adjustedScore + '%';
-    var title = _ps(R.band.heading);
-    var summary = _ps(R.band.summary);
-    var today = new Date(row.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-    var nv = [0, 26, 58], wh = [255, 255, 255], lb = [247, 249, 252], mg = [120, 130, 148], dk = [30, 40, 58], bl = [26, 107, 255];
-    var rcm = { critical: [180,35,35], high: [165,55,55], moderate: [185,115,0], lowmod: [170,120,0], low: [22,145,65] };
-    var rc = rcm[bc] || bl;
+    var doc=new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    var W=210,M=18,TW=W-M*2,TWI=TW-8;
+    var R=recon(row);
+    var org=ps(row.organisation||'');
+    var name=ps(R.respondentName||org), role=ps(R.respondentRole||'');
+    var sector=ps(R.sector), size=ps(R.orgSize);
+    var band=ps(R.band.label), bc=R.band.id, pct=R.adjustedScore+'%';
+    var title=ps(R.band.heading), summary=ps(R.band.summary);
+    var today=new Date(row.created_at||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    var nv=[0,26,58],wh=[255,255,255],lb=[247,249,252],mg=[120,130,148],dk=[30,40,58],bl=[26,107,255];
+    var rcm={critical:[180,35,35],high:[165,55,55],moderate:[185,115,0],lowmod:[170,120,0],low:[22,145,65]};
+    var rc=rcm[bc]||bl;
 
-    var findings = [];
-    R.priorityFlags.forEach(function(f) {
-      var d = _FINDING_DATA[f.id] || { section: 'General', severity: f.severity || 'high', impact: 'This governance area requires attention.', rec: 'Review this finding with your compliance function.' };
-      findings.push({ label: _ps(f.label), basis: _ps(f.basis), section: d.section, severity: d.severity, impact: d.impact, rec: d.rec });
+    var findings=[];
+    R.priorityFlags.forEach(function(f){
+      var d=_FD[f.id]||{section:'General',severity:f.severity||'high',impact:'This governance area requires attention.',rec:'Review this finding with your compliance function.'};
+      findings.push({label:ps(f.label),basis:ps(f.basis),section:d.section,severity:d.severity,impact:d.impact,rec:d.rec});
     });
-    (R.regimeFlags || []).forEach(function(f) {
-      findings.push({ label: _ps(f.label), basis: _ps(f.basis), section: _REGIME_FINDING.section, severity: _REGIME_FINDING.severity, impact: _REGIME_FINDING.impact, rec: _REGIME_FINDING.rec });
+    (R.regimeFlags||[]).forEach(function(f){
+      findings.push({label:ps(f.label),basis:ps(f.basis),section:_RF.section,severity:_RF.severity,impact:_RF.impact,rec:_RF.rec});
     });
-    if (R.uncertaintyCount >= 3) {
-      findings.push({ label: 'Elevated uncertainty: ' + R.uncertaintyCount + ' questions answered without sufficient confidence', basis: 'Risk band elevated per framework uncertainty threshold', section: 'Assessment Integrity', severity: 'moderate', impact: 'Uncertainty about whether controls exist is treated by regulators as equivalent to the absence of those controls.', rec: 'Conduct an internal governance stocktake to establish the factual position on each uncertain area.' });
+    if (R.uncertaintyCount>=3) {
+      findings.push({label:'Elevated uncertainty: '+R.uncertaintyCount+' questions answered without sufficient confidence',basis:'Risk band elevated per framework uncertainty threshold',section:'Assessment Integrity',severity:'moderate',impact:'Uncertainty about whether controls exist is treated by regulators as equivalent to the absence of those controls.',rec:'Conduct an internal governance stocktake to establish the factual position on each uncertain area.'});
     }
-    if (R.selectedCategories && R.selectedCategories.length > 0 && R.selectedCategories.indexOf('none') === -1) {
-      findings.push({ label: 'High-risk AI category detected - EU AI Act Annex III obligations apply from August 2026', basis: 'EU AI Act Annex III; Categories: ' + R.selectedCategories.join(', '), section: 'AI Inventory & Classification', severity: 'critical', impact: 'AI systems in Annex III categories are subject to mandatory conformity assessments, technical documentation, human oversight under Article 14, and logging under Article 12. High-risk obligations apply from August 2026.', rec: 'Conduct a formal EU AI Act scoping assessment for each high-risk category identified and prioritise conformity assessment preparation.' });
+    if (R.selectedCategories&&R.selectedCategories.length>0&&R.selectedCategories.indexOf('none')===-1) {
+      findings.push({label:'High-risk AI category detected - EU AI Act Annex III obligations apply from August 2026',basis:'EU AI Act Annex III; Categories: '+R.selectedCategories.join(', '),section:'AI Inventory & Classification',severity:'critical',impact:'AI systems in Annex III categories are subject to mandatory conformity assessments, technical documentation, human oversight under Article 14, and logging under Article 12.',rec:'Conduct a formal EU AI Act scoping assessment for each high-risk category identified and prioritise conformity assessment preparation.'});
     }
 
-    var br = _BAND_RECS[bc] || _BAND_RECS.moderate;
-    var sr = _SECTOR_RECS[sector] || '';
-    var allRecs = sr ? [sr].concat(br) : br;
-    var y = 0, pn = 1;
+    var br=_BR[bc]||_BR.moderate, sr=_SR[sector]||'';
+    var allRecs=sr?[sr].concat(br):br;
+    var y=0,pn=1;
 
     // PAGE 1 COVER
-    doc.setFillColor(nv[0], nv[1], nv[2]); doc.rect(0, 0, W, 297, 'F');
-    doc.setFillColor(rc[0], rc[1], rc[2]); doc.rect(0, 0, W, 6, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
-    doc.text('MLA GROUP', M, 22);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(100,140,190);
-    doc.text('AI Governance & Risk Advisory  |  mlagroup.co.uk', M, 30);
-    doc.setDrawColor(25,55,100); doc.setLineWidth(0.4); doc.line(M, 36, W-M, 36);
+    doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(0,0,W,297,'F');
+    doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(0,0,W,6,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
+    doc.text('MLA GROUP',M,22);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(100,140,190);
+    doc.text('AI Governance & Risk Advisory  |  mlagroup.co.uk',M,30);
+    doc.setDrawColor(25,55,100); doc.setLineWidth(0.4); doc.line(M,36,W-M,36);
     doc.setFontSize(8); doc.setTextColor(80,120,175);
-    doc.text('AI GOVERNANCE RISK ASSESSMENT - CONFIDENTIAL REPORT', M, 50);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(24); doc.setTextColor(255,255,255);
-    var orgL = doc.splitTextToSize(org, 168);
-    orgL.forEach(function(l, i) { doc.text(l, M, 64 + i * 13); });
-    var hy = orgL.length > 1 ? 98 : 86;
-    doc.setFillColor(8,32,68); doc.rect(M, hy, TW, 44, 'F');
-    doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(M, hy, 5, 44, 'F');
-    doc.setDrawColor(rc[0],rc[1],rc[2]); doc.setLineWidth(0.5); doc.rect(M, hy, TW, 44, 'S');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(rc[0],rc[1],rc[2]);
-    doc.text(band, M+11, hy+14);
-    doc.setFontSize(28); doc.text(pct, W-M-5, hy+20, { align: 'right' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(mg[0],mg[1],mg[2]);
-    doc.text('GOVERNANCE MATURITY SCORE', W-M-5, hy+27, { align: 'right' });
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(200,215,235);
-    doc.text(title, M+11, hy+25);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(140,165,200);
-    var scl = doc.splitTextToSize(summary, TW-30); doc.text(scl, M+11, hy+33);
-    var py = hy+56;
-    doc.setDrawColor(20,50,90); doc.setLineWidth(0.3); doc.line(M, py, W-M, py);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(70,100,150);
-    doc.text('PREPARED FOR', M, py+9);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
-    doc.text(name, M, py+18);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(140,165,205);
-    doc.text(role ? role + '  |  ' + org : org, M, py+26);
-    doc.text(sector + '  |  ' + (size ? size + ' employees' : ''), M, py+33);
+    doc.text('AI GOVERNANCE RISK ASSESSMENT - CONFIDENTIAL REPORT',M,50);
+    doc.setFont('helvetica','bold'); doc.setFontSize(24); doc.setTextColor(255,255,255);
+    var orgL=doc.splitTextToSize(org,168);
+    orgL.forEach(function(l,i){doc.text(l,M,64+i*13);});
+    var hy=orgL.length>1?98:86;
+    doc.setFillColor(8,32,68); doc.rect(M,hy,TW,44,'F');
+    doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(M,hy,5,44,'F');
+    doc.setDrawColor(rc[0],rc[1],rc[2]); doc.setLineWidth(0.5); doc.rect(M,hy,TW,44,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(rc[0],rc[1],rc[2]);
+    doc.text(band,M+11,hy+14);
+    doc.setFontSize(28); doc.text(pct,W-M-5,hy+20,{align:'right'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(mg[0],mg[1],mg[2]);
+    doc.text('GOVERNANCE MATURITY SCORE',W-M-5,hy+27,{align:'right'});
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(200,215,235);
+    doc.text(title,M+11,hy+25);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(140,165,200);
+    var scl=doc.splitTextToSize(summary,TW-30); doc.text(scl,M+11,hy+33);
+    var py=hy+56;
+    doc.setDrawColor(20,50,90); doc.setLineWidth(0.3); doc.line(M,py,W-M,py);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(70,100,150);
+    doc.text('PREPARED FOR',M,py+9);
+    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
+    doc.text(name,M,py+18);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(140,165,205);
+    doc.text(role?role+'  |  '+org:org,M,py+26);
+    doc.text(sector+'  |  '+(size?size+' employees':''),M,py+33);
     doc.setFontSize(7); doc.setTextColor(70,100,150);
-    doc.text('REPORT DATE', W-M, py+9, { align: 'right' });
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(255,255,255);
-    doc.text(today, W-M, py+18, { align: 'right' });
-    var ty = py+48;
-    doc.setDrawColor(20,50,90); doc.line(M, ty, W-M, ty);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(80,120,175);
-    doc.text('CONTENTS', M, ty+8);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(140,165,205);
-    ['1.  Executive Summary','2.  Assessment Results & Section Breakdown','3.  Detailed Findings','4.  Priority Recommendations','A.  Appendix: Scope, Methodology & Regulatory Framework'].forEach(function(it, i) { doc.text(it, M, ty+16+i*7); });
-    doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(0, 292, W, 5, 'F');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(6); doc.setTextColor(50,80,130);
-    doc.text('This document is confidential and prepared exclusively for the named recipient. MLA Group | mlagroup.co.uk', W/2, 289.5, { align: 'center' });
+    doc.text('REPORT DATE',W-M,py+9,{align:'right'});
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(255,255,255);
+    doc.text(today,W-M,py+18,{align:'right'});
+    var ty=py+48;
+    doc.setDrawColor(20,50,90); doc.line(M,ty,W-M,ty);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(80,120,175);
+    doc.text('CONTENTS',M,ty+8);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(140,165,205);
+    ['1.  Executive Summary','2.  Assessment Results & Section Breakdown','3.  Detailed Findings','4.  Priority Recommendations','A.  Appendix: Scope, Methodology & Regulatory Framework'].forEach(function(it,i){doc.text(it,M,ty+16+i*7);});
+    doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(0,292,W,5,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(50,80,130);
+    doc.text('This document is confidential and prepared exclusively for the named recipient. MLA Group | mlagroup.co.uk',W/2,289.5,{align:'center'});
 
-    // PAGE 2 EXECUTIVE SUMMARY
-    pn++; y = _np(doc, W, M, nv, rc, '1. EXECUTIVE SUMMARY', today, pn);
-    y = _sh(doc, W, M, nv, '1.1  Confidentiality Statement', y);
-    y = _tb(doc, _ps('This report is the exclusive property of ' + org + ' and MLA Group. It contains confidential information prepared solely for the named recipient (' + name + (role ? ', ' + role : '') + '). Duplication, redistribution, or use - in whole or in part - requires the prior written consent of both parties.'), M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2);
-    y += 8;
-    y = _sh(doc, W, M, nv, '1.2  Report Overview', y);
-    y = _tb(doc, _ps('On ' + today + ', MLA Group completed an AI Governance Risk Diagnostic for ' + org + '. This assessment was completed by ' + name + (role ? ' (' + role + ')' : '') + ' and covers seven governance domains aligned to UK and EU regulatory expectations, including the EU AI Act, UK GDPR, FCA operational resilience requirements, and sector-specific guidance from the ICO. Framework version ' + R.frameworkVersion + ' (' + R.frameworkDate + '). Weighted score: ' + R.weightedScore + '%. Sector multiplier (' + sector + '): ' + Math.round(R.multiplier*100) + '%. Adjusted exposure score: ' + R.adjustedScore + '%.'), M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2);
-    y += 8;
-    y = _sh(doc, W, M, nv, '1.3  Key Findings & Risk Position', y);
-    var psl = doc.splitTextToSize(summary, TWI-36);
-    var ph = Math.max(46, 34 + psl.length * 5.2);
-    doc.setFillColor(lb[0],lb[1],lb[2]); doc.rect(M, y, TW, ph, 'F');
-    doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(M, y, 5, ph, 'F');
-    doc.setDrawColor(210,218,230); doc.setLineWidth(0.2); doc.rect(M, y, TW, ph, 'S');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(rc[0],rc[1],rc[2]);
-    doc.text(band, M+10, y+13);
-    doc.setFontSize(22); doc.text(pct, W-M-5, y+18, { align: 'right' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(mg[0],mg[1],mg[2]);
-    doc.text('MATURITY SCORE', W-M-5, y+25, { align: 'right' });
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(dk[0],dk[1],dk[2]);
-    doc.text(title, M+10, y+23);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(80,95,115);
-    doc.text(psl, M+10, y+31);
-    y += ph + 8;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(nv[0],nv[1],nv[2]);
-    doc.text('Principal Issues Identified:', M, y); y += 7;
-    findings.slice(0, Math.min(3, findings.length)).forEach(function(fd) {
-      var fl = doc.splitTextToSize(fd.label, TWI-6);
-      var fh = Math.max(10, fl.length*5+7);
-      if (y+fh > 272) return;
-      var fc = fd.severity==='critical' ? [180,35,35] : fd.severity==='info' ? bl : rc;
-      doc.setFillColor(250,248,248); doc.rect(M, y, TW, fh, 'F');
-      doc.setFillColor(fc[0],fc[1],fc[2]); doc.rect(M, y, 3.5, fh, 'F');
-      doc.setDrawColor(225,215,215); doc.setLineWidth(0.15); doc.rect(M, y, TW, fh, 'S');
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8); doc.setTextColor(40,48,62);
-      doc.text(fl, M+8, y+5.8); y += fh+3;
+    // PAGE 2 EXEC SUMMARY
+    pn++; y=np(doc,W,M,nv,rc,'1. EXECUTIVE SUMMARY',today,pn);
+    y=sh(doc,W,M,nv,'1.1  Confidentiality Statement',y);
+    y=tb(doc,ps('This report is the exclusive property of '+org+' and MLA Group. It contains confidential information prepared solely for the named recipient ('+name+(role?', '+role:'')+'). Duplication, redistribution, or use - in whole or in part - requires the prior written consent of both parties.'),M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
+    y+=8;
+    y=sh(doc,W,M,nv,'1.2  Report Overview',y);
+    y=tb(doc,ps('On '+today+', MLA Group completed an AI Governance Risk Diagnostic for '+org+'. This assessment was completed by '+name+(role?' ('+role+')':'')+' and covers seven governance domains aligned to UK and EU regulatory expectations, including the EU AI Act, UK GDPR, FCA operational resilience requirements, and sector-specific guidance from the ICO. Framework version '+R.frameworkVersion+' ('+R.frameworkDate+'). Weighted score: '+R.weightedScore+'%. Sector multiplier ('+sector+'): '+Math.round(R.multiplier*100)+'%. Adjusted exposure score: '+R.adjustedScore+'%.'),M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
+    y+=8;
+    y=sh(doc,W,M,nv,'1.3  Key Findings & Risk Position',y);
+    var psl=doc.splitTextToSize(summary,TWI-36), ph=Math.max(46,34+psl.length*5.2);
+    doc.setFillColor(lb[0],lb[1],lb[2]); doc.rect(M,y,TW,ph,'F');
+    doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(M,y,5,ph,'F');
+    doc.setDrawColor(210,218,230); doc.setLineWidth(0.2); doc.rect(M,y,TW,ph,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(rc[0],rc[1],rc[2]);
+    doc.text(band,M+10,y+13);
+    doc.setFontSize(22); doc.text(pct,W-M-5,y+18,{align:'right'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(mg[0],mg[1],mg[2]);
+    doc.text('MATURITY SCORE',W-M-5,y+25,{align:'right'});
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(dk[0],dk[1],dk[2]);
+    doc.text(title,M+10,y+23);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(80,95,115);
+    doc.text(psl,M+10,y+31);
+    y+=ph+8;
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(nv[0],nv[1],nv[2]);
+    doc.text('Principal Issues Identified:',M,y); y+=7;
+    findings.slice(0,Math.min(3,findings.length)).forEach(function(fd){
+      var fl=doc.splitTextToSize(fd.label,TWI-6), fh=Math.max(10,fl.length*5+7);
+      if (y+fh>272) return;
+      var fc=fd.severity==='critical'?[180,35,35]:fd.severity==='info'?bl:rc;
+      doc.setFillColor(250,248,248); doc.rect(M,y,TW,fh,'F');
+      doc.setFillColor(fc[0],fc[1],fc[2]); doc.rect(M,y,3.5,fh,'F');
+      doc.setDrawColor(225,215,215); doc.setLineWidth(0.15); doc.rect(M,y,TW,fh,'S');
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(40,48,62);
+      doc.text(fl,M+8,y+5.8); y+=fh+3;
     });
-    if (findings.length === 0) { y = _tb(doc, 'No critical flags identified - continue to maintain and evolve governance frameworks.', M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2); }
-    _ftr(doc, W, M, nv, rc, today, pn);
+    if (findings.length===0) { y=tb(doc,'No critical flags identified - continue to maintain and evolve governance frameworks.',M+4,y,TWI,8.5,'normal',[60,72,88],5.2); }
+    ftr(doc,W,M,nv,rc,today,pn);
 
     // PAGE 3 ASSESSMENT RESULTS
-    pn++; y = _np(doc, W, M, nv, rc, '2. ASSESSMENT RESULTS', today, pn);
-    y = _sh(doc, W, M, nv, '2.1  Assessment Overview', y);
-    var mr = [
-      ['Organisation', org],
-      ['Respondent', name + (role ? '  |  ' + role : '')],
-      ['Sector', sector],
-      ['Organisation Size', size ? size + ' employees' : 'Not specified'],
-      ['Assessment Date', today],
-      ['Framework Version', 'v' + R.frameworkVersion + ' - ' + R.frameworkDate],
-      ['Weighted Score', R.weightedScore + '%  (before sector adjustment)'],
-      ['Sector Multiplier', Math.round(R.multiplier*100) + '%  (' + sector + ')'],
-      ['Overall Risk Band', band],
-      ['Adjusted Exposure Score', pct]
+    pn++; y=np(doc,W,M,nv,rc,'2. ASSESSMENT RESULTS',today,pn);
+    y=sh(doc,W,M,nv,'2.1  Assessment Overview',y);
+    var mr=[
+      ['Organisation',org],
+      ['Respondent',name+(role?'  |  '+role:'')],
+      ['Sector',sector],
+      ['Organisation Size',size?size+' employees':'Not specified'],
+      ['Assessment Date',today],
+      ['Framework Version','v'+R.frameworkVersion+' - '+R.frameworkDate],
+      ['Weighted Score',R.weightedScore+'%  (before sector adjustment)'],
+      ['Sector Multiplier',Math.round(R.multiplier*100)+'%  ('+sector+')'],
+      ['Overall Risk Band',band],
+      ['Adjusted Exposure Score',pct]
     ];
-    mr.forEach(function(rd, i) {
-      var hl = i >= 8;
-      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, 7.5, 'F');
-      doc.setDrawColor(215,222,235); doc.setLineWidth(0.12); doc.rect(M, y, TW, 7.5, 'S');
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(75,88,110);
-      doc.text(rd[0], M+3, y+5.3);
-      doc.setFont('helvetica', hl?'bold':'normal'); doc.setFontSize(7.5);
-      doc.setTextColor(hl?rc[0]:30, hl?rc[1]:44, hl?rc[2]:65);
-      doc.text(String(rd[1]), M+72, y+5.3); y += 7.5;
+    mr.forEach(function(rd,i){
+      var hl=i>=8;
+      doc.setFillColor(i%2===0?248:255,i%2===0?249:255,i%2===0?252:255);
+      doc.rect(M,y,TW,7.5,'F'); doc.setDrawColor(215,222,235); doc.setLineWidth(0.12); doc.rect(M,y,TW,7.5,'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(75,88,110);
+      doc.text(rd[0],M+3,y+5.3);
+      doc.setFont('helvetica',hl?'bold':'normal'); doc.setFontSize(7.5);
+      doc.setTextColor(hl?rc[0]:30,hl?rc[1]:44,hl?rc[2]:65);
+      doc.text(String(rd[1]),M+72,y+5.3); y+=7.5;
     });
-    y += 10;
-    y = _sh(doc, W, M, nv, '2.2  Section Maturity Breakdown', y);
-    doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(M, y, TW, 8.5, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
-    doc.text('Governance Domain', M+3, y+6); doc.text('Wt.', M+103, y+6);
-    doc.text('Score', M+118, y+6); doc.text('Maturity', M+136, y+6);
-    doc.text('Risk Level', W-M-2, y+6, { align: 'right' }); y += 8.5;
-    ['s1','s2','s3','s4','s5','s6','s7'].forEach(function(s, i) {
-      var p = R.sectionPcts[s]||0, rs2 = R.rawScores[s]||0, mx = R.adjustedMax[s]||1;
-      var nm = R.sectionNames[s], wt = Math.round(_WEIGHTS[s]*100);
-      var bc2 = p>=75?[22,145,65]:p>=50?[185,115,0]:[165,55,55];
-      var rl = p>=75?'Low Risk':p>=50?'Moderate':'High Risk';
-      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, 10, 'F');
-      doc.setDrawColor(215,222,235); doc.setLineWidth(0.12); doc.rect(M, y, TW, 10, 'S');
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8); doc.setTextColor(35,45,60);
-      doc.text(nm, M+3, y+6.8);
+    y+=10;
+    y=sh(doc,W,M,nv,'2.2  Section Maturity Breakdown',y);
+    doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(M,y,TW,8.5,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
+    doc.text('Governance Domain',M+3,y+6); doc.text('Wt.',M+103,y+6);
+    doc.text('Score',M+118,y+6); doc.text('Maturity',M+136,y+6);
+    doc.text('Risk Level',W-M-2,y+6,{align:'right'}); y+=8.5;
+    ['s1','s2','s3','s4','s5','s6','s7'].forEach(function(s,i){
+      var p=R.sectionPcts[s]||0, rs2=R.rawScores[s]||0, mx=R.adjustedMax[s]||1;
+      var nm=R.sectionNames[s], wt=Math.round(_W[s]*100);
+      var bc2=p>=75?[22,145,65]:p>=50?[185,115,0]:[165,55,55];
+      var rl=p>=75?'Low Risk':p>=50?'Moderate':'High Risk';
+      doc.setFillColor(i%2===0?248:255,i%2===0?249:255,i%2===0?252:255);
+      doc.rect(M,y,TW,10,'F'); doc.setDrawColor(215,222,235); doc.setLineWidth(0.12); doc.rect(M,y,TW,10,'S');
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(35,45,60);
+      doc.text(nm,M+3,y+6.8);
       doc.setFontSize(7.5); doc.setTextColor(90,105,125);
-      doc.text(wt+'%', M+103, y+6.8); doc.text(rs2+'/'+mx, M+118, y+6.8);
-      _drawBar(doc, M+136, y+3, 20, 4, p, bc2);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(bc2[0],bc2[1],bc2[2]);
-      doc.text(rl, W-M-2, y+6.8, { align: 'right' }); y += 10;
+      doc.text(wt+'%',M+103,y+6.8); doc.text(rs2+'/'+mx,M+118,y+6.8);
+      bar(doc,M+136,y+3,20,4,p,bc2);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(bc2[0],bc2[1],bc2[2]);
+      doc.text(rl,W-M-2,y+6.8,{align:'right'}); y+=10;
     });
-    y += 8;
-    var ts = Object.values(R.rawScores).reduce(function(a,b){return a+b;},0);
-    var mt = Object.values(R.adjustedMax).reduce(function(a,b){return a+b;},0);
-    doc.setFillColor(240,244,252); doc.rect(M, y, TW, 16, 'F');
-    doc.setFillColor(bl[0],bl[1],bl[2]); doc.rect(M, y, 4, 16, 'F');
-    doc.setDrawColor(195,210,238); doc.setLineWidth(0.2); doc.rect(M, y, TW, 16, 'S');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(nv[0],nv[1],nv[2]);
-    doc.text('Overall Score: ' + ts + ' / ' + mt + ' points  (' + pct + ' governance maturity)', M+9, y+7);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(70,88,115);
-    doc.text('Risk Band: ' + band + '  |  ' + title, M+9, y+13);
-    _ftr(doc, W, M, nv, rc, today, pn);
+    y+=8;
+    var ts=Object.values(R.rawScores).reduce(function(a,b){return a+b;},0);
+    var mt=Object.values(R.adjustedMax).reduce(function(a,b){return a+b;},0);
+    doc.setFillColor(240,244,252); doc.rect(M,y,TW,16,'F');
+    doc.setFillColor(bl[0],bl[1],bl[2]); doc.rect(M,y,4,16,'F');
+    doc.setDrawColor(195,210,238); doc.setLineWidth(0.2); doc.rect(M,y,TW,16,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(nv[0],nv[1],nv[2]);
+    doc.text('Overall Score: '+ts+' / '+mt+' points  ('+pct+' governance maturity)',M+9,y+7);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(70,88,115);
+    doc.text('Risk Band: '+band+'  |  '+title,M+9,y+13);
+    ftr(doc,W,M,nv,rc,today,pn);
 
     // PAGES 4+ DETAILED FINDINGS
-    pn++; y = _np(doc, W, M, nv, rc, '3. DETAILED FINDINGS', today, pn);
-    y = _tb(doc, 'The following findings are drawn directly from your assessment responses. Each finding identifies a specific governance gap, explains the business and regulatory impact, and provides a targeted recommended action. Findings are ordered by severity.', M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2);
-    y += 10;
-    if (findings.length === 0) { y = _tb(doc, 'No critical flags were identified in this assessment. Continue to maintain and evolve your governance frameworks.', M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2); }
-    findings.forEach(function(fd, idx) {
-      var sc2 = fd.severity==='critical'?[180,35,35]:fd.severity==='high'?[165,55,55]:fd.severity==='moderate'?[185,115,0]:fd.severity==='info'?bl:rc;
-      var sl = fd.severity==='info'?'Regulatory':(fd.severity.charAt(0).toUpperCase()+fd.severity.slice(1));
-      var ll = doc.splitTextToSize(_ps(fd.label), TWI-4);
-      var bl2 = doc.splitTextToSize(_ps('Regulatory basis: '+fd.basis), TWI-4);
-      var il = doc.splitTextToSize(_ps(fd.impact), TWI-4);
-      var rl2 = doc.splitTextToSize(_ps(fd.rec), TWI-8);
-      var lh = ll.length*5.5, bh = bl2.length*4.8, ih = il.length*5.1, rh = rl2.length*5.2+18;
-      var nd = 18+5+lh+3+bh+8+6+ih+8+rh+10;
-      if (y+nd > 276) { _ftr(doc, W, M, nv, rc, today, pn); pn++; y = _np(doc, W, M, nv, rc, '3. DETAILED FINDINGS (continued)', today, pn); }
-      doc.setFillColor(240,243,250); doc.rect(M, y, TW, 12, 'F');
-      doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(M, y, 4, 12, 'F');
-      doc.setDrawColor(218,224,238); doc.setLineWidth(0.2); doc.rect(M, y, TW, 12, 'S');
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(nv[0],nv[1],nv[2]);
-      doc.text('F'+(idx+1), M+8, y+8.2);
-      doc.setDrawColor(200,208,225); doc.setLineWidth(0.4); doc.line(M+18, y+2.5, M+18, y+9.5);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(sc2[0],sc2[1],sc2[2]);
-      doc.text(sl.toUpperCase(), M+22, y+8.2);
-      var sw = doc.getTextWidth(sl.toUpperCase());
-      doc.setDrawColor(sc2[0],sc2[1],sc2[2]); doc.setLineWidth(0.5); doc.line(M+22, y+9.5, M+22+sw, y+9.5);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(6.8); doc.setTextColor(110,125,150);
-      doc.text(_ps(fd.section), M+26+sw, y+8.2); y += 17;
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.8); doc.setTextColor(dk[0],dk[1],dk[2]);
-      doc.text(ll, M+4, y); y += lh+3;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(6.8); doc.setTextColor(130,145,165);
-      doc.text(bl2, M+4, y); y += bh+8;
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.8); doc.setTextColor(75,90,115);
-      doc.text('Business Impact', M+4, y); y += 6;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8); doc.setTextColor(55,68,85);
-      doc.text(il, M+4, y); y += ih+8;
-      doc.setFillColor(243,247,255); doc.rect(M, y, TW, rh, 'F');
-      doc.setFillColor(bl[0],bl[1],bl[2]); doc.rect(M, y, 3.5, rh, 'F');
-      doc.setDrawColor(205,218,242); doc.setLineWidth(0.15); doc.rect(M, y, TW, rh, 'S');
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(bl[0],bl[1],bl[2]);
-      doc.text('Recommended Action', M+8, y+8);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8); doc.setTextColor(30,48,80);
-      doc.text(rl2, M+8, y+15); y += rh+10;
+    pn++; y=np(doc,W,M,nv,rc,'3. DETAILED FINDINGS',today,pn);
+    y=tb(doc,'The following findings are drawn directly from your assessment responses. Each finding identifies a specific governance gap, explains the business and regulatory impact, and provides a targeted recommended action. Findings are ordered by severity.',M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
+    y+=10;
+    if (findings.length===0) { y=tb(doc,'No critical flags were identified. Continue to maintain and evolve your governance frameworks.',M+4,y,TWI,8.5,'normal',[60,72,88],5.2); }
+    findings.forEach(function(fd,idx){
+      var sc2=fd.severity==='critical'?[180,35,35]:fd.severity==='high'?[165,55,55]:fd.severity==='moderate'?[185,115,0]:fd.severity==='info'?bl:rc;
+      var sl=fd.severity==='info'?'Regulatory':(fd.severity.charAt(0).toUpperCase()+fd.severity.slice(1));
+      var ll=doc.splitTextToSize(ps(fd.label),TWI-4);
+      var bl2=doc.splitTextToSize(ps('Regulatory basis: '+fd.basis),TWI-4);
+      var il=doc.splitTextToSize(ps(fd.impact),TWI-4);
+      var rl2=doc.splitTextToSize(ps(fd.rec),TWI-8);
+      var lh=ll.length*5.5,bh=bl2.length*4.8,ih=il.length*5.1,rh=rl2.length*5.2+18;
+      var nd=18+5+lh+3+bh+8+6+ih+8+rh+10;
+      if (y+nd>276) { ftr(doc,W,M,nv,rc,today,pn); pn++; y=np(doc,W,M,nv,rc,'3. DETAILED FINDINGS (continued)',today,pn); }
+      doc.setFillColor(240,243,250); doc.rect(M,y,TW,12,'F');
+      doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(M,y,4,12,'F');
+      doc.setDrawColor(218,224,238); doc.setLineWidth(0.2); doc.rect(M,y,TW,12,'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(nv[0],nv[1],nv[2]);
+      doc.text('F'+(idx+1),M+8,y+8.2);
+      doc.setDrawColor(200,208,225); doc.setLineWidth(0.4); doc.line(M+18,y+2.5,M+18,y+9.5);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(sc2[0],sc2[1],sc2[2]);
+      doc.text(sl.toUpperCase(),M+22,y+8.2);
+      var sw=doc.getTextWidth(sl.toUpperCase());
+      doc.setDrawColor(sc2[0],sc2[1],sc2[2]); doc.setLineWidth(0.5); doc.line(M+22,y+9.5,M+22+sw,y+9.5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(110,125,150);
+      doc.text(ps(fd.section),M+26+sw,y+8.2); y+=17;
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.8); doc.setTextColor(dk[0],dk[1],dk[2]);
+      doc.text(ll,M+4,y); y+=lh+3;
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(130,145,165);
+      doc.text(bl2,M+4,y); y+=bh+8;
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.8); doc.setTextColor(75,90,115);
+      doc.text('Business Impact',M+4,y); y+=6;
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(55,68,85);
+      doc.text(il,M+4,y); y+=ih+8;
+      doc.setFillColor(243,247,255); doc.rect(M,y,TW,rh,'F');
+      doc.setFillColor(bl[0],bl[1],bl[2]); doc.rect(M,y,3.5,rh,'F');
+      doc.setDrawColor(205,218,242); doc.setLineWidth(0.15); doc.rect(M,y,TW,rh,'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(bl[0],bl[1],bl[2]);
+      doc.text('Recommended Action',M+8,y+8);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(30,48,80);
+      doc.text(rl2,M+8,y+15); y+=rh+10;
     });
-    _ftr(doc, W, M, nv, rc, today, pn);
+    ftr(doc,W,M,nv,rc,today,pn);
 
-    // RECOMMENDATIONS PAGE
-    pn++; y = _np(doc, W, M, nv, rc, '4. PRIORITY RECOMMENDATIONS', today, pn);
-    y = _tb(doc, _ps('The following recommendations are prioritised based on your assessment results and risk band (' + band + '). They are sequenced to address the most critical governance gaps first and should be used to inform your AI governance roadmap and board reporting.'), M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2);
-    y += 10;
-    allRecs.forEach(function(rec, i) {
-      var rl3 = doc.splitTextToSize(_ps(rec), TWI-16);
-      var rh2 = Math.max(14, rl3.length*5.2+10);
-      if (y+rh2 > 274) { _ftr(doc, W, M, nv, rc, today, pn); pn++; y = _np(doc, W, M, nv, rc, '4. PRIORITY RECOMMENDATIONS (continued)', today, pn); }
-      doc.setFillColor(i%2===0?247:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, rh2, 'F');
-      doc.setFillColor(bl[0],bl[1],bl[2]); doc.rect(M, y, 4, rh2, 'F');
-      doc.setDrawColor(205,218,242); doc.setLineWidth(0.15); doc.rect(M, y, TW, rh2, 'S');
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(195,210,232);
-      doc.text(String(i+1), M+12, y+7.5, { align: 'center' });
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.2); doc.setTextColor(30,44,65);
-      doc.text(rl3, M+20, y+7.5); y += rh2+3;
+    // RECOMMENDATIONS
+    pn++; y=np(doc,W,M,nv,rc,'4. PRIORITY RECOMMENDATIONS',today,pn);
+    y=tb(doc,ps('The following recommendations are prioritised based on your assessment results and risk band ('+band+'). They are sequenced to address the most critical governance gaps first and should be used to inform your AI governance roadmap and board reporting.'),M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
+    y+=10;
+    allRecs.forEach(function(rec,i){
+      var rl3=doc.splitTextToSize(ps(rec),TWI-16), rh2=Math.max(14,rl3.length*5.2+10);
+      if (y+rh2>274) { ftr(doc,W,M,nv,rc,today,pn); pn++; y=np(doc,W,M,nv,rc,'4. PRIORITY RECOMMENDATIONS (continued)',today,pn); }
+      doc.setFillColor(i%2===0?247:255,i%2===0?249:255,i%2===0?252:255);
+      doc.rect(M,y,TW,rh2,'F');
+      doc.setFillColor(bl[0],bl[1],bl[2]); doc.rect(M,y,4,rh2,'F');
+      doc.setDrawColor(205,218,242); doc.setLineWidth(0.15); doc.rect(M,y,TW,rh2,'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(195,210,232);
+      doc.text(String(i+1),M+12,y+7.5,{align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.2); doc.setTextColor(30,44,65);
+      doc.text(rl3,M+20,y+7.5); y+=rh2+3;
     });
-    _ftr(doc, W, M, nv, rc, today, pn);
+    ftr(doc,W,M,nv,rc,today,pn);
 
-    // APPENDIX PAGE
-    pn++; y = _np(doc, W, M, nv, rc, 'A. APPENDIX: SCOPE & METHODOLOGY', today, pn);
-    y = _sh(doc, W, M, nv, 'A.1  Assessment Scope', y);
-    y = _tb(doc, _ps('This diagnostic assessed ' + org + " AI governance posture across seven domains on " + today + '. The assessment was self-reported by ' + name + (role ? ' (' + role + ')' : '') + " and reflects the organisation current governance state. The scope encompasses all AI systems in operational use or active development, including third-party AI tools integrated into business processes."), M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2);
-    y += 10;
-    y = _sh(doc, W, M, nv, 'A.2  Domains Assessed', y);
-    Object.keys(_SECTION_NAMES).forEach(function(s, i) {
-      var nm = _SECTION_NAMES[s], wt = Math.round(_WEIGHTS[s]*100);
-      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, 8, 'F');
-      doc.setDrawColor(215,222,235); doc.setLineWidth(0.1); doc.rect(M, y, TW, 8, 'S');
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(nv[0],nv[1],nv[2]);
-      doc.text(String(i+1)+'.', M+3, y+5.5);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(40,52,68);
-      doc.text(nm + '  (' + wt + '% weight)', M+12, y+5.5); y += 8;
+    // APPENDIX
+    pn++; y=np(doc,W,M,nv,rc,'A. APPENDIX: SCOPE & METHODOLOGY',today,pn);
+    y=sh(doc,W,M,nv,'A.1  Assessment Scope',y);
+    y=tb(doc,ps('This diagnostic assessed '+org+' AI governance posture across seven domains on '+today+'. The assessment was self-reported by '+name+(role?' ('+role+')':'')+' and reflects the organisation current governance state. The scope encompasses all AI systems in operational use or active development, including third-party AI tools integrated into business processes.'),M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
+    y+=10;
+    y=sh(doc,W,M,nv,'A.2  Domains Assessed',y);
+    Object.keys(_SN).forEach(function(s,i){
+      var nm=_SN[s], wt=Math.round(_W[s]*100);
+      doc.setFillColor(i%2===0?248:255,i%2===0?249:255,i%2===0?252:255);
+      doc.rect(M,y,TW,8,'F'); doc.setDrawColor(215,222,235); doc.setLineWidth(0.1); doc.rect(M,y,TW,8,'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(nv[0],nv[1],nv[2]);
+      doc.text(String(i+1)+'.',M+3,y+5.5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(40,52,68);
+      doc.text(nm+'  ('+wt+'% weight)',M+12,y+5.5); y+=8;
     });
-    y += 10;
-    y = _sh(doc, W, M, nv, 'A.3  Scoring Methodology', y);
-    y = _tb(doc, _ps('Framework v' + R.frameworkVersion + ' (' + R.frameworkDate + '). Each of the 35 questions is scored 0-3 based on governance maturity. Section scores are expressed as a percentage of the section maximum. Section percentages are multiplied by their assigned weights and summed to produce a weighted score. A sector exposure multiplier is applied. Uncertainty flags elevate the risk band if three or more are recorded. Five risk bands: 80-100% = Low; 65-79% = Low-Moderate; 45-64% = Moderate; 25-44% = High; 0-24% = Critical.'), M+4, y, TWI, 8.5, 'normal', [60,72,88], 5.2);
-    y += 10;
-    y = _sh(doc, W, M, nv, 'A.4  Regulatory Framework Alignment', y);
-    var regs = [
-      ['EU AI Act', 'Risk classification, Annex III high-risk obligations, conformity assessments, human oversight (Art.14), logging (Art.12), transparency (Art.13). In force August 2024; high-risk obligations August 2026.'],
-      ['UK GDPR / Data Protection Act 2018', 'Automated decision-making (Art.22), Data Protection Impact Assessments (Art.35), data subject rights (Ch.III), lawful basis, accountability principle (Art.5(2)).'],
-      ['FCA Operational Resilience', 'AI governance expectations (DP5/22), Senior Manager accountability under SM&CR, Consumer Duty outcomes (PS22/9), third-party AI risk management (SS2/21).'],
-      ['ICO Guidance on AI & Data Protection', 'Transparency and explainability of AI decisions, profiling obligations, accountability framework, DPIA requirements for high-risk AI processing.'],
-      ['ISO/IEC 42001', 'AI management system standard. Governance best practice benchmark covering risk classification, roles, data management, monitoring, and incident response.']
+    y+=10;
+    y=sh(doc,W,M,nv,'A.3  Scoring Methodology',y);
+    y=tb(doc,ps('Framework v'+R.frameworkVersion+' ('+R.frameworkDate+'). Each of the 35 questions is scored 0-3 based on governance maturity. Section scores are expressed as a percentage of the section maximum. Section percentages are multiplied by their assigned weights and summed to produce a weighted score. A sector exposure multiplier is applied. Uncertainty flags elevate the risk band if three or more are recorded. Five risk bands: 80-100% = Low; 65-79% = Low-Moderate; 45-64% = Moderate; 25-44% = High; 0-24% = Critical.'),M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
+    y+=10;
+    y=sh(doc,W,M,nv,'A.4  Regulatory Framework Alignment',y);
+    var regs=[
+      ['EU AI Act','Risk classification, Annex III high-risk obligations, conformity assessments, human oversight (Art.14), logging (Art.12), transparency (Art.13). In force August 2024; high-risk obligations August 2026.'],
+      ['UK GDPR / Data Protection Act 2018','Automated decision-making (Art.22), Data Protection Impact Assessments (Art.35), data subject rights (Ch.III), lawful basis, accountability principle (Art.5(2)).'],
+      ['FCA Operational Resilience','AI governance expectations (DP5/22), Senior Manager accountability under SM&CR, Consumer Duty outcomes (PS22/9), third-party AI risk management (SS2/21).'],
+      ['ICO Guidance on AI & Data Protection','Transparency and explainability of AI decisions, profiling obligations, accountability framework, DPIA requirements for high-risk AI processing.'],
+      ['ISO/IEC 42001','AI management system standard. Governance best practice benchmark covering risk classification, roles, data management, monitoring, and incident response.']
     ];
-    regs.forEach(function(rg, i) {
-      var dl = doc.splitTextToSize(_ps(rg[1]), TW-76);
-      var rh3 = Math.max(10, dl.length*4.8+6);
-      if (y+rh3 > 272) { _ftr(doc, W, M, nv, rc, today, pn); pn++; y = _np(doc, W, M, nv, rc, 'A. APPENDIX (continued)', today, pn); }
-      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?252:255);
-      doc.rect(M, y, TW, rh3, 'F');
-      doc.setDrawColor(215,222,235); doc.setLineWidth(0.1); doc.rect(M, y, TW, rh3, 'S');
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(nv[0],nv[1],nv[2]);
-      var nl = doc.splitTextToSize(_ps(rg[0]), 66); doc.text(nl, M+3, y+5.5);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(70,85,108);
-      doc.text(dl, M+72, y+5.5); y += rh3;
+    regs.forEach(function(rg,i){
+      var dl=doc.splitTextToSize(ps(rg[1]),TW-76), rh3=Math.max(10,dl.length*4.8+6);
+      if (y+rh3>272) { ftr(doc,W,M,nv,rc,today,pn); pn++; y=np(doc,W,M,nv,rc,'A. APPENDIX (continued)',today,pn); }
+      doc.setFillColor(i%2===0?248:255,i%2===0?249:255,i%2===0?252:255);
+      doc.rect(M,y,TW,rh3,'F'); doc.setDrawColor(215,222,235); doc.setLineWidth(0.1); doc.rect(M,y,TW,rh3,'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(nv[0],nv[1],nv[2]);
+      var nl=doc.splitTextToSize(ps(rg[0]),66); doc.text(nl,M+3,y+5.5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(70,85,108);
+      doc.text(dl,M+72,y+5.5); y+=rh3;
     });
-    y += 10;
-    var dt2 = 'This report is produced for informational purposes based on self-reported responses. It does not constitute legal or regulatory advice and MLA Group is not a certified audit regulator. Organisations should engage qualified legal and compliance counsel when implementing changes in response to this assessment. Framework version ' + R.frameworkVersion + '. Next scheduled review: ' + _FRAMEWORK.nextReview + '.';
-    var dl2 = doc.splitTextToSize(_ps(dt2), TWI-4);
-    var dh = dl2.length*5+16;
-    if (y+dh > 274) { _ftr(doc, W, M, nv, rc, today, pn); pn++; y = _np(doc, W, M, nv, rc, 'A. APPENDIX (continued)', today, pn); }
-    doc.setFillColor(248,249,252); doc.rect(M, y, TW, dh, 'F');
-    doc.setDrawColor(210,218,230); doc.setLineWidth(0.2); doc.rect(M, y, TW, dh, 'S');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(90,105,130);
-    doc.text('Important Notice', M+5, y+7.5);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(100,115,138);
-    doc.text(dl2, M+5, y+13.5);
-    _ftr(doc, W, M, nv, rc, today, pn);
+    y+=10;
+    var dt2=ps('This report is produced for informational purposes based on self-reported responses. It does not constitute legal or regulatory advice and MLA Group is not a certified audit regulator. Organisations should engage qualified legal and compliance counsel when implementing changes. Framework version '+R.frameworkVersion+'. Next scheduled review: '+_FW.nextReview+'.');
+    var dl2=doc.splitTextToSize(dt2,TWI-4), dh=dl2.length*5+16;
+    if (y+dh>274) { ftr(doc,W,M,nv,rc,today,pn); pn++; y=np(doc,W,M,nv,rc,'A. APPENDIX (continued)',today,pn); }
+    doc.setFillColor(248,249,252); doc.rect(M,y,TW,dh,'F');
+    doc.setDrawColor(210,218,230); doc.setLineWidth(0.2); doc.rect(M,y,TW,dh,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(90,105,130);
+    doc.text('Important Notice',M+5,y+7.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(100,115,138);
+    doc.text(dl2,M+5,y+13.5);
+    ftr(doc,W,M,nv,rc,today,pn);
 
-    // SAVE
-    var so = _ps(org).replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-');
-    var sd = today.replace(/\s/g, '-');
-    var fn = 'MLA-AI-Risk-Report-' + so + '-' + sd + '.pdf';
-    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    // SAVE - desktop normal, iOS blob URL
+    var so=ps(org).replace(/[^a-zA-Z0-9\s-]/g,'').replace(/\s+/g,'-');
+    var sd=today.replace(/\s/g,'-');
+    var fn='MLA-AI-Risk-Report-'+so+'-'+sd+'.pdf';
+    var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+
     if (isIOS) {
-      var du = doc.output('datauristring');
-      showSuccess(du);
+      var blob=doc.output('blob');
+      var blobUrl=URL.createObjectURL(blob);
+      showSuccessIOS(blobUrl, fn);
     } else {
       doc.save(fn);
       showSuccess();
     }
 
-  } catch (err) {
+  } catch(err) {
     console.error(err);
-    showError('PDF generation failed: ' + err.message);
+    showError('PDF generation failed: '+err.message);
   }
 }
 
-window.addEventListener('load', function() {
+window.addEventListener('load',function(){
   try {
-    var raw = sessionStorage.getItem('portal_result');
+    var raw=sessionStorage.getItem('portal_result');
     if (!raw) { showError('No result data found. Please return to your dashboard and try again.'); return; }
-    var result = JSON.parse(raw);
+    var result=JSON.parse(raw);
     sessionStorage.removeItem('portal_result');
     generatePortalPDF(result);
-  } catch (err) {
+  } catch(err) {
     console.error(err);
-    showError('PDF generation failed: ' + err.message);
+    showError('PDF generation failed: '+err.message);
   }
 });
 
