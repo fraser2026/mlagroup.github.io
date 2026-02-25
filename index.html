@@ -7,19 +7,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:       #020617;
-      --surface:  #0a1628;
-      --card:     rgba(12,22,46,0.7);
-      --border:   rgba(255,255,255,0.07);
-      --border-h: rgba(255,255,255,0.12);
+      --bg:       #0c0c10;
+      --bg2:      #111118;
+      --bg3:      #16161f;
+      --card:     rgba(22,22,32,0.9);
+      --border:   rgba(255,255,255,0.08);
+      --border-h: rgba(255,255,255,0.13);
       --accent:   #2563eb;
       --accent-l: #3b82f6;
       --accent-d: #1d4ed8;
-      --sky:      #60a5fa;
-      --main:     #f1f5f9;
-      --sub:      #cbd5e1;
-      --muted:    #64748b;
-      --muted2:   #94a3b8;
+      --sky:      #6ba3f5;
+      --main:     #f0eff4;
+      --sub:      #c4c3d0;
+      --muted:    #6b6a7a;
+      --muted2:   #9c9bac;
     }
 
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -35,17 +36,21 @@
     }
 
     /* ── BACKGROUND ─────────────────────────────────── */
+    .bg-base {
+      position: fixed; inset:0; z-index:0; pointer-events:none;
+      background:
+        radial-gradient(ellipse 70% 45% at 50% -5%, rgba(37,85,210,0.11) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(30,40,90,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 10% 60%, rgba(20,20,50,0.2) 0%, transparent 60%);
+    }
+    /* subtle grid — barely visible, just enough to add texture */
     .bg-grid {
       position: fixed; inset:0; z-index:0; pointer-events:none;
       background-image:
-        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-      background-size: 64px 64px;
-      mask-image: radial-gradient(ellipse 110% 50% at 50% 0%, black 20%, transparent 75%);
-    }
-    .bg-radial {
-      position: fixed; inset:0; z-index:0; pointer-events:none;
-      background: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(37,99,235,0.13) 0%, transparent 65%);
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(ellipse 100% 40% at 50% 0%, black 0%, transparent 100%);
     }
 
     /* ── NAV ────────────────────────────────────────── */
@@ -183,18 +188,6 @@
     }
     .btn-ghost:hover { border-color:rgba(96,165,250,0.35); color:var(--main); background:rgba(255,255,255,0.03); }
 
-    /* ── SCROLL GLOW ORBS ───────────────────────────── */
-    .orb {
-      position: absolute; border-radius: 50%;
-      pointer-events: none; z-index: 0;
-      filter: blur(130px); opacity: 0;
-      animation: orbFade 1.2s ease forwards;
-    }
-    @keyframes orbFade { to { opacity: 1; } }
-    .orb-blue  { background: #2563eb; }
-    .orb-indigo { background: #4f46e5; }
-    .orb-sky   { background: #0ea5e9; }
-
     /* ── PRODUCT CARDS ───────────────────────────────── */
     .cards-grid {
       display:grid; grid-template-columns:repeat(3,1fr);
@@ -202,14 +195,13 @@
       position:relative; z-index:1;
     }
     .product-card {
-      padding:52px 44px; background:rgba(10,20,44,0.6);
+      padding:52px 44px; background:var(--bg2);
       border-right:1px solid var(--border);
       display:flex; flex-direction:column;
-      transition:background 0.25s;
-      backdrop-filter: blur(12px);
+      transition:background 0.3s;
     }
     .product-card:last-child { border-right:none; }
-    .product-card:hover { background:rgba(37,99,235,0.08); }
+    .product-card:hover { background:var(--bg3); }
     .card-label {
       font-size:0.68rem; font-weight:700; text-transform:uppercase;
       letter-spacing:0.16em; color:var(--sky); margin-bottom:16px;
@@ -232,7 +224,7 @@
     .trust {
       position:relative; z-index:1;
       border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-      background:rgba(5,12,30,0.7);
+      background:var(--bg2);
     }
     .trust-inner {
       max-width:1100px; margin:0 auto; padding:36px 48px;
@@ -256,6 +248,7 @@
     .urgency-section {
       position:relative; z-index:1; overflow:hidden;
       border-top:1px solid var(--border);
+      background:var(--bg3);
     }
     .urgency-inner {
       max-width:1100px; margin:0 auto; padding:96px 48px;
@@ -424,8 +417,8 @@
 </head>
 <body>
 
+<div class="bg-base"></div>
 <div class="bg-grid"></div>
-<div class="bg-radial"></div>
 
 <!-- ── NAV ────────────────────────────────────────────── -->
 <nav>
@@ -474,10 +467,6 @@
 
 <!-- ── PRODUCTS + REGULATORY ─────────────────────────── -->
 <section id="how" style="position:relative; overflow:hidden;">
-  <!-- Glow orb for this section -->
-  <div class="orb orb-indigo" style="width:600px;height:600px;top:50%;left:-10%;transform:translateY(-50%);opacity:0.07;animation-delay:0.3s;"></div>
-  <div class="orb orb-sky" style="width:400px;height:400px;top:20%;right:-5%;opacity:0.05;animation-delay:0.6s;"></div>
-
   <div class="wrap section-pad" style="position:relative;z-index:1;">
     <div class="cards-grid">
 
@@ -520,8 +509,7 @@
 </section>
 
 <!-- ── FEATURES ───────────────────────────────────────── -->
-<section id="features" class="feat-section" style="overflow:hidden;">
-  <div class="orb orb-indigo" style="width:500px;height:500px;top:30%;left:-8%;opacity:0.07;"></div>
+<section id="features" class="feat-section">
   <div class="wrap section-pad">
     <div class="feat-layout">
 
@@ -599,7 +587,6 @@
 
 <!-- ── URGENCY INTERSTITIAL ──────────────────────────── -->
 <div class="urgency-section">
-  <div class="orb orb-blue" style="width:700px;height:700px;top:50%;right:-15%;transform:translateY(-50%);opacity:0.08;"></div>
   <div class="urgency-inner">
     <div class="fade">
       <div class="urgency-quote">The regulatory<br>window is<br><em>closing.</em></div>
