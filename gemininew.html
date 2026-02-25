@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MLA Group | AI Governance & Regulatory Diagnostics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #020617;
+      --surface:  #0a1628;
+      --card:     rgba(12,22,46,0.7);
+      --border:   rgba(255,255,255,0.07);
+      --border-h: rgba(255,255,255,0.12);
+      --accent:   #2563eb;
+      --accent-l: #3b82f6;
+      --accent-d: #1d4ed8;
+      --sky:      #60a5fa;
+      --main:     #f1f5f9;
+      --sub:      #cbd5e1;
+      --muted:    #64748b;
+      --muted2:   #94a3b8;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; font-size:16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--main);
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND ─────────────────────────────────── */
+    .bg-grid {
+      position: fixed; inset:0; z-index:0; pointer-events:none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 110% 50% at 50% 0%, black 20%, transparent 75%);
+    }
+    .bg-radial {
+      position: fixed; inset:0; z-index:0; pointer-events:none;
+      background: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(37,99,235,0.13) 0%, transparent 65%);
+    }
+
+    /* ── NAV ────────────────────────────────────────── */
+    nav {
+      position: sticky; top:0; z-index:100;
+      height: 64px;
+      display: flex; align-items:center; justify-content:space-between;
+      padding: 0 48px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(2,6,23,0.88);
+      backdrop-filter: blur(24px);
+    }
+
+    .logo {
+      font-size: 1.1rem; font-weight: 600; letter-spacing: -0.02em;
+      text-decoration: none; color: var(--main); flex-shrink:0;
+    }
+    .logo em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight:400; color: var(--sky); }
+
+    .nav-centre { display: flex; align-items:center; gap:4px; position: absolute; left:50%; transform:translateX(-50%); }
+    .nav-link { padding: 7px 14px; border-radius:6px; font-size: 0.85rem; font-weight:500; color: var(--muted2); text-decoration:none; transition: 0.18s; }
+    .nav-link:hover { color:var(--main); background:rgba(255,255,255,0.05); }
+
+    .nav-right { display:flex; align-items:center; gap:8px; }
+    .nav-cta { padding: 8px 18px; border-radius:7px; font-size: 0.85rem; font-weight:600; color:white; background: var(--accent); text-decoration:none; transition: 0.18s; }
+    .nav-cta:hover { background:var(--accent-d); box-shadow:0 4px 18px rgba(37,99,235,0.4); }
+
+    /* ── HERO ───────────────────────────────────────── */
+    .hero { position:relative; z-index:1; max-width:1000px; margin:0 auto; padding: 140px 48px 100px; text-align:center; }
+    .badge { display:inline-flex; align-items:center; gap:8px; padding: 5px 14px; border-radius:99px; background: rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.25); font-size: 0.72rem; font-weight:600; color:var(--sky); text-transform:uppercase; letter-spacing:0.08em; margin-bottom: 36px; }
+    
+    h1 { font-family:'Instrument Serif', serif; font-size: clamp(3.5rem, 8vw, 6.5rem); line-height: 0.95; font-weight:400; letter-spacing:-0.03em; margin-bottom: 32px; color:var(--main); }
+    h1 em { font-style:italic; color:var(--sky); }
+
+    .hero-sub { font-size: 1.2rem; font-weight:300; color:var(--muted2); line-height: 1.6; max-width:650px; margin:0 auto 48px; }
+
+    /* ── PRICING TABLE ──────────────────────────────── */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 64px; }
+    .price-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px 32px; text-align: left; transition: 0.3s; position: relative; }
+    .price-card.featured { border-color: var(--accent); background: rgba(37,99,235,0.05); transform: translateY(-10px); }
+    .price-card.featured::after { content: 'RECOMMENDED'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; font-size: 0.65rem; font-weight: 700; padding: 4px 12px; border-radius: 99px; }
+    
+    .price-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; }
+    .price-amt { font-family: 'Instrument Serif', serif; font-size: 3rem; margin-bottom: 24px; }
+    .price-amt span { font-size: 1rem; font-family: 'DM Sans'; color: var(--muted); }
+    
+    .price-features { list-style: none; margin-bottom: 32px; }
+    .price-features li { font-size: 0.85rem; color: var(--sub); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .price-features li::before { content: '✓'; color: var(--sky); font-weight: bold; }
+
+    .btn-block { display: block; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s; }
+    .btn-outline { border: 1px solid var(--border-h); color: var(--main); }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }
+    .btn-fill { background: var(--accent); color: white; }
+    .btn-fill:hover { background: var(--accent-d); }
+
+    /* ── TRUST STRIP ─────────────────────────────────── */
+    .trust { border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:rgba(10,20,44,0.5); position: relative; z-index: 10; }
+    .trust-inner { max-width:1100px; margin:0 auto; padding:24px 48px; display:flex; align-items:center; gap:36px; }
+    .trust-label { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); }
+    .trust-items { display:flex; gap:12px; flex-wrap:wrap; }
+    .trust-item { padding:5px 13px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--border); font-size:0.75rem; color:var(--muted2); }
+
+    /* ── SECTION COMMONS ─────────────────────────────── */
+    .wrap { max-width:1100px; margin:0 auto; padding:0 48px; }
+    .section-pad { padding: 100px 0; }
+    .fade { opacity:0; transform:translateY(20px); transition: 0.8s ease-out; }
+    .fade.in { opacity:1; transform:translateY(0); }
+
+    @media (max-width: 768px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+      .nav-centre, .nav-right { display: none; }
+      .trust-inner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-radial"></div>
+
+<nav>
+  <a href="#" class="logo">mla<em>group.</em></a>
+  <div class="nav-centre">
+    <a href="#process" class="nav-link">Methodology</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#" class="nav-link">Portal Login</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="nav-cta">Get Started Free</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="badge">UK Regulatory Alignment — 2026 Update</div>
+  <div class="fade">
+    <h1>AI Governance.<br><em>Evidenced.</em></h1>
+    <p class="hero-sub">Map your AI risk to UK and EU regulatory expectations in 20 minutes. Move from experimental deployment to a <strong>defensible decision framework</strong> before the audit begins.</p>
+  </div>
+
+  <div class="pricing-grid id="pricing">
+    <div class="price-card fade">
+      <div class="price-title">Free Diagnostic</div>
+      <div class="price-amt">£0</div>
+      <ul class="price-features">
+        <li>High-level Maturity Score</li>
+        <li>Risk Banding (1-5)</li>
+        <li>Basic Sector Benchmark</li>
+      </ul>
+      <a href="#" class="btn-block btn-outline">Start Free Scan</a>
+    </div>
+
+    <div class="price-card featured fade">
+      <div class="price-title">Premium Report</div>
+      <div class="price-amt">£79 <span>/report</span></div>
+      <ul class="price-features">
+        <li><strong>Full Audit-Ready PDF</strong></li>
+        <li>Regulatory Mapping (FCA/ICO)</li>
+        <li>Remediation Roadmap</li>
+        <li>Annex III High-Risk Flags</li>
+      </ul>
+      <a href="#" class="btn-block btn-fill">Get Audit-Ready</a>
+    </div>
+
+    <div class="price-card fade">
+      <div class="price-title">Enterprise</div>
+      <div class="price-amt">Bespoke</div>
+      <ul class="price-features">
+        <li>Multi-departmental Portal</li>
+        <li>Custom Risk Weighting</li>
+        <li>Ongoing Posture Monitoring</li>
+      </ul>
+      <a href="#" class="btn-block btn-outline">Contact Advisory</a>
+    </div>
+  </div>
+</section>
+
+<div class="trust">
+  <div class="trust-inner">
+    <span class="trust-label">Aligned to Standards</span>
+    <div class="trust-items">
+      <span class="trust-item">FCA DP5/22</span>
+      <span class="trust-item">EU AI Act</span>
+      <span class="trust-item">ICO Guidance</span>
+      <span class="trust-item">ISO/IEC 42001</span>
+      <span class="trust-item">UK GDPR</span>
+    </div>
+  </div>
+</div>
+
+<section id="process" class="wrap section-pad">
+  <div class="fade">
+    <h2 style="font-family:'Instrument Serif'; font-size: 3rem; margin-bottom: 40px;">Why Regulated Firms Choose MLA.</h2>
+    <p style="color: var(--muted2); max-width: 700px; margin-bottom: 60px;">Generic checklists don't satisfy regulators. We provide a weighted framework that adjusts for sector-specific exposure, ensuring your documentation actually holds up under a Section 166 review.</p>
+  </div>
+  
+  </section>
+
+<script>
+  const observerOptions = { threshold: 0.1 };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.fade').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
