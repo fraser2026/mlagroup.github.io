@@ -3,391 +3,1213 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Portal | MLA Group</title>
+<title>Portal | MLA Group</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --bg:     #020617;
-    --card:   rgba(8,15,35,0.85);
-    --border: rgba(255,255,255,0.07);
-    --borm:   rgba(255,255,255,0.13);
-    --accent: #2563eb;
-    --sky:    #60a5fa;
-    --main:   #f1f5f9;
-    --sub:    #cbd5e1;
-    --muted:  #64748b;
-    --muted2: #94a3b8;
-  }
+/* ══════════════════════════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════════════════════════ */
+:root {
+  --bg:        #020617;
+  --sidebar:   #050d1f;
+  --surface:   rgba(8,15,35,0.7);
+  --surface2:  rgba(10,18,42,0.9);
+  --border:    rgba(255,255,255,0.055);
+  --border2:   rgba(255,255,255,0.10);
+  --accent:    #2563eb;
+  --accent-h:  #1d4ed8;
+  --sky:       #60a5fa;
+  --main:      #f1f5f9;
+  --sub:       #94a3b8;
+  --muted:     #475569;
+  --muted2:    #334155;
+  --green:     #22c55e;
+  --amber:     #f59e0b;
+  --red:       #ef4444;
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg); color: var(--sub);
-    min-height: 100vh; -webkit-font-smoothing: antialiased;
-  }
+  --sidebar-w: 228px;
+  --topbar-h:  56px;
+}
 
-  .bg-glow {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background: radial-gradient(ellipse 65% 30% at 50% -5%, rgba(37,99,235,0.09) 0%, transparent 65%);
-  }
-  .bg-grid {
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-    background-size: 64px 64px;
-  }
+/* ══════════════════════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--sub);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
 
-  nav {
-    position: sticky; top: 0; z-index: 100; height: 64px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 40px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(2,6,23,0.94); backdrop-filter: blur(20px);
+/* ══════════════════════════════════════════════════════════════
+   AMBIENT BACKGROUND
+══════════════════════════════════════════════════════════════ */
+.bg-ambient {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 40% at 75% 50%, rgba(37,99,235,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 20% 20%, rgba(37,99,235,0.03) 0%, transparent 55%);
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, transparent, rgba(0,0,0,0.4) 20%, rgba(0,0,0,0.4) 80%, transparent);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LAYOUT SHELL
+══════════════════════════════════════════════════════════════ */
+.app {
+  display: flex;
+  height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  z-index: 10;
+}
+
+/* Logo */
+.sidebar-logo {
+  height: var(--topbar-h);
+  display: flex; align-items: center;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.logo-mark {
+  font-size: 0.92rem; font-weight: 600;
+  letter-spacing: -0.02em; color: var(--main);
+  text-decoration: none;
+}
+.logo-mark em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic; color: var(--sky);
+}
+.logo-badge {
+  margin-left: auto;
+  font-size: 0.58rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--sky);
+  background: rgba(37,99,235,0.1);
+  border: 1px solid rgba(37,99,235,0.2);
+  padding: 2px 7px; border-radius: 100px;
+}
+
+/* Nav sections */
+.sidebar-nav {
+  flex: 1; overflow-y: auto;
+  padding: 14px 10px;
+  scrollbar-width: none;
+}
+.sidebar-nav::-webkit-scrollbar { display: none; }
+
+.nav-section-label {
+  font-size: 0.6rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.13em;
+  color: var(--muted2); padding: 0 8px;
+  margin: 16px 0 6px;
+}
+.nav-section-label:first-child { margin-top: 0; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px; border-radius: 8px;
+  cursor: pointer; text-decoration: none;
+  font-size: 0.82rem; font-weight: 500;
+  color: var(--muted);
+  transition: background 0.12s, color 0.12s;
+  position: relative; user-select: none;
+  margin-bottom: 1px;
+}
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--sub); }
+.nav-item.active {
+  background: rgba(37,99,235,0.1);
+  color: var(--sky);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 2px; height: 16px; background: var(--sky);
+  border-radius: 0 2px 2px 0;
+}
+.nav-item svg {
+  width: 15px; height: 15px; flex-shrink: 0;
+  stroke: currentColor; fill: none;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.nav-item .nav-lock {
+  margin-left: auto;
+  width: 13px; height: 13px; stroke: var(--muted2); stroke-width: 1.8;
+}
+.nav-item.locked { opacity: 0.6; cursor: default; }
+.nav-item.locked:hover { background: none; color: var(--muted); }
+
+.nav-badge {
+  margin-left: auto;
+  font-size: 0.58rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 2px 6px; border-radius: 100px;
+}
+.badge-new { background: rgba(37,99,235,0.15); color: var(--sky); border: 1px solid rgba(37,99,235,0.2); }
+.badge-pro { background: rgba(245,158,11,0.1); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+
+/* User footer */
+.sidebar-footer {
+  border-top: 1px solid var(--border);
+  padding: 12px 10px;
+  flex-shrink: 0;
+}
+.user-tile {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.user-tile:hover { background: rgba(255,255,255,0.04); }
+.user-avatar {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: linear-gradient(135deg, #2563eb, #60a5fa);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; color: white;
+  flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name {
+  font-size: 0.78rem; font-weight: 600; color: var(--main);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.user-role { font-size: 0.68rem; color: var(--muted); }
+.user-tile svg {
+  width: 14px; height: 14px; flex-shrink: 0;
+  stroke: var(--muted); fill: none;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MAIN CONTENT AREA
+══════════════════════════════════════════════════════════════ */
+.main {
+  flex: 1; display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden;
+  min-width: 0;
+}
+
+/* Topbar */
+.topbar {
+  height: var(--topbar-h); flex-shrink: 0;
+  display: flex; align-items: center;
+  padding: 0 28px; gap: 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(2,6,23,0.5); backdrop-filter: blur(20px);
+}
+.topbar-title {
+  font-size: 0.85rem; font-weight: 600; color: var(--main);
+  display: flex; align-items: center; gap: 8px;
+}
+.topbar-title svg {
+  width: 15px; height: 15px;
+  stroke: var(--sky); fill: none;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.btn-topbar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; border: none; text-decoration: none;
+  transition: background 0.15s;
+}
+.btn-topbar-primary { background: var(--accent); color: white; }
+.btn-topbar-primary:hover { background: var(--accent-h); }
+.btn-topbar-ghost {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border);
+}
+.btn-topbar-ghost:hover { color: var(--main); border-color: var(--border2); }
+.btn-topbar svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Scroll area */
+.content-scroll {
+  flex: 1; overflow-y: auto;
+  padding: 28px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.06) transparent;
+}
+.content-scroll::-webkit-scrollbar { width: 4px; }
+.content-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+
+/* Views */
+.view { display: none; animation: viewIn 0.2s ease; }
+.view.active { display: block; }
+@keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ══════════════════════════════════════════════════════════════
+   SHARED COMPONENTS
+══════════════════════════════════════════════════════════════ */
+
+/* Page header */
+.page-header { margin-bottom: 24px; }
+.page-header h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.6rem; font-weight: 400;
+  letter-spacing: -0.02em; color: var(--main);
+  margin-bottom: 4px;
+}
+.page-header p { font-size: 0.82rem; color: var(--muted); }
+
+/* Stat cards */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 20px;
+  transition: border-color 0.15s;
+  
   }
-  .nav-logo { font-size: 1rem; font-weight: 600; letter-spacing: -0.02em; color: var(--main); text-decoration: none; }
-  .nav-logo em { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--sky); }
-  .nav-right { display: flex; align-items: center; gap: 12px; }
-  .nav-user { font-size: 0.8rem; color: var(--muted); }
-  .nav-user strong { color: var(--muted2); font-weight: 500; }
-  .btn-signout {
-    font-size: 0.78rem; font-weight: 500; color: var(--muted2);
+.stat-card:hover { border-color: var(--border2); }
+.stat-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 10px; }
+.stat-value { font-size: 1.7rem; font-weight: 700; color: var(--main); line-height: 1; }
+.stat-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+.stat-trend {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.68rem; font-weight: 600;
+  margin-top: 6px;
+}
+.trend-up { color: #4ade80; }
+
+/* Panels */
+.panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 16px;
+}
+.panel-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.panel-title { font-size: 0.82rem; font-weight: 600; color: var(--main); }
+.panel-sub { font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+.panel-body { padding: 20px; }
+
+/* Section label */
+.section-label {
+  font-size: 0.62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.13em;
+  color: var(--muted); margin-bottom: 10px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESULT CARDS
+══════════════════════════════════════════════════════════════ */
+.result-list { display: flex; flex-direction: column; gap: 8px; }
+.result-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 18px;
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: center; gap: 16px;
+  transition: border-color 0.15s, transform 0.12s;
+}
+.result-card:hover { border-color: var(--border2); transform: translateX(2px); }
+.result-org { font-size: 0.88rem; font-weight: 600; color: var(--main); margin-bottom: 3px; }
+.result-meta { font-size: 0.72rem; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.result-meta span::before { content: '·'; margin-right: 10px; color: var(--muted2); }
+.result-meta span:first-child::before { display: none; }
+.result-right { display: flex; align-items: center; gap: 10px; }
+
+.score-badge { text-align: right; }
+.score-num { font-size: 1.3rem; font-weight: 700; line-height: 1; }
+.score-lbl { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+
+.band-pill { font-size: 0.67rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; white-space: nowrap; }
+.band-low      { background: rgba(34,197,94,0.1);  color: #4ade80;  border: 1px solid rgba(34,197,94,0.15); }
+.band-lowmod   { background: rgba(34,197,94,0.07); color: #86efac;  border: 1px solid rgba(34,197,94,0.1); }
+.band-moderate { background: rgba(234,179,8,0.1);  color: #fde047;  border: 1px solid rgba(234,179,8,0.15); }
+.band-high     { background: rgba(239,68,68,0.1);  color: #fca5a5;  border: 1px solid rgba(239,68,68,0.15); }
+.band-critical { background: rgba(239,68,68,0.15); color: #f87171;  border: 1px solid rgba(239,68,68,0.2); }
+.score-low      { color: #4ade80; }
+.score-lowmod   { color: #86efac; }
+.score-moderate { color: #fde047; }
+.score-high     { color: #fca5a5; }
+.score-critical { color: #f87171; }
+
+.btn-dl {
+  background: var(--accent); color: white; border: none;
+  padding: 7px 14px; border-radius: 7px;
+  font-size: 0.75rem; font-weight: 600;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  white-space: nowrap; transition: background 0.15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.btn-dl:hover { background: var(--accent-h); }
+.btn-dl svg { width: 11px; height: 11px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-unlock {
+  background: transparent; color: var(--sky);
+  border: 1px solid rgba(96,165,250,0.25);
+  padding: 7px 14px; border-radius: 7px;
+  font-size: 0.75rem; font-weight: 600;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  white-space: nowrap; text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-unlock:hover { background: rgba(96,165,250,0.07); border-color: rgba(96,165,250,0.4); }
+
+/* ══════════════════════════════════════════════════════════════
+   SKELETON / LOCKED STATES
+══════════════════════════════════════════════════════════════ */
+.locked-view {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 380px; text-align: center;
+}
+.locked-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  border: 1px solid var(--border);
+}
+.locked-icon svg { width: 22px; height: 22px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.locked-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.3rem; font-weight: 400;
+  color: var(--main); margin-bottom: 8px;
+}
+.locked-desc { font-size: 0.82rem; color: var(--muted); max-width: 320px; line-height: 1.7; margin-bottom: 24px; }
+.locked-features {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-bottom: 28px; text-align: left; width: 280px;
+}
+.locked-feat {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.78rem; color: var(--sub);
+}
+.locked-feat svg { width: 13px; height: 13px; stroke: var(--sky); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.btn-upgrade {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--accent); color: white;
+  padding: 10px 20px; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 600;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-upgrade:hover { background: var(--accent-h); }
+.btn-upgrade svg { width: 12px; height: 12px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, rgba(255,255,255,0.04) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ══════════════════════════════════════════════════════════════
+   DASHBOARD SPECIFIC
+══════════════════════════════════════════════════════════════ */
+.welcome-bar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 24px;
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.welcome-bar::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent 50%);
+}
+.welcome-avatar {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 700; color: white;
+}
+.welcome-text h3 { font-family: 'Instrument Serif', serif; font-size: 1.1rem; font-weight: 400; color: var(--main); }
+.welcome-text p { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.welcome-actions { margin-left: auto; display: flex; gap: 8px; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+/* Activity feed */
+.activity-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+.activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+.activity-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  margin-top: 5px; flex-shrink: 0;
+}
+.activity-body { flex: 1; color: var(--sub); line-height: 1.5; }
+.activity-body strong { color: var(--main); font-weight: 500; }
+.activity-time { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+
+/* Score ring */
+.score-ring-wrap { display: flex; align-items: center; gap: 20px; }
+.score-ring-info h4 { font-family: 'Instrument Serif', serif; font-size: 1.1rem; color: var(--main); margin-bottom: 4px; }
+.score-ring-info p { font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
+
+/* ══════════════════════════════════════════════════════════════
+   ACCOUNT SETTINGS SPECIFIC
+══════════════════════════════════════════════════════════════ */
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.field-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
+.field-input {
+  width: 100%; padding: 9px 12px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--main);
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+  outline: none; transition: border-color 0.15s, background 0.15s;
+  -webkit-appearance: none; margin-bottom: 12px;
+}
+.field-input:focus { border-color: rgba(37,99,235,0.4); background: rgba(37,99,235,0.02); }
+.field-input[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+/* ══════════════════════════════════════════════════════════════
+   PAYWALL BANNER
+══════════════════════════════════════════════════════════════ */
+.paywall-banner {
+  background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(8,15,35,0.8));
+  border: 1px solid rgba(37,99,235,0.2);
+  border-radius: 12px; padding: 18px 22px;
+  display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
+}
+.paywall-banner h4 { font-size: 0.88rem; font-weight: 600; color: var(--main); margin-bottom: 3px; }
+.paywall-banner p { font-size: 0.76rem; color: var(--muted); }
+.paywall-banner a {
+  margin-left: auto; flex-shrink: 0;
+  background: var(--accent); color: white;
+  padding: 8px 16px; border-radius: 7px;
+  font-size: 0.78rem; font-weight: 600;
+  text-decoration: none; white-space: nowrap;
+  transition: background 0.15s;
+}
+.paywall-banner a:hover { background: var(--accent-h); }
+
+/* Empty / loading */
+.empty-state { text-align: center; padding: 56px 24px; }
+.empty-state h4 { font-size: 0.9rem; font-weight: 600; color: var(--main); margin-bottom: 6px; }
+.empty-state p { font-size: 0.78rem; color: var(--muted); margin-bottom: 20px; }
+.loading-state { text-align: center; padding: 56px; color: var(--muted); font-size: 0.82rem; }
+
+/* Referral card */
+.ref-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 18px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 14px;
+}
+.ref-avatar {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: linear-gradient(135deg, rgba(37,99,235,0.3), rgba(96,165,250,0.2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; color: var(--sky);
+}
+.ref-info { flex: 1; }
+.ref-name { font-size: 0.82rem; font-weight: 600; color: var(--main); }
+.ref-meta { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+.ref-status {
+  font-size: 0.67rem; font-weight: 700; padding: 3px 9px; border-radius: 100px;
+}
+.ref-pending { background: rgba(245,158,11,0.1); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+.ref-earned  { background: rgba(34,197,94,0.1);  color: #4ade80;  border: 1px solid rgba(34,197,94,0.2); }
+
+/* Invite link box */
+.invite-box {
+  background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+  border-radius: 8px; display: flex; align-items: center; gap: 0;
+  overflow: hidden;
+}
+.invite-url {
+  flex: 1; padding: 10px 12px; font-size: 0.78rem; color: var(--sub);
+  font-family: 'DM Sans', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.invite-copy {
+  padding: 10px 14px; background: rgba(37,99,235,0.12);
+  border-left: 1px solid var(--border); cursor: pointer;
+  font-size: 0.72rem; font-weight: 600; color: var(--sky);
+  transition: background 0.15s; white-space: nowrap; border: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.invite-copy:hover { background: rgba(37,99,235,0.2); }
+
+/* Mobile sidebar toggle */
+.mobile-toggle { display: none; }
+.sidebar-overlay { display: none; }
+
+@media(max-width: 768px) {
+  .sidebar {
+    position: fixed; left: -100%; top: 0; bottom: 0; z-index: 200;
+    transition: left 0.25s cubic-bezier(0.16,1,0.3,1);
+  }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0; z-index: 199;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  }
+  .sidebar-overlay.show { display: block; }
+  .mobile-toggle {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 8px;
     background: none; border: 1px solid var(--border);
-    padding: 7px 14px; border-radius: 8px;
-    cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; color: var(--sub);
   }
-  .btn-signout:hover { color: var(--main); border-color: var(--borm); }
-
-  .main { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 48px 32px 80px; }
-
-  .page-header { margin-bottom: 36px; }
-  .page-header h1 {
-    font-family: 'Instrument Serif', serif;
-    font-size: 2rem; font-weight: 400;
-    letter-spacing: -0.02em; color: var(--main); margin-bottom: 6px;
-  }
-  .page-header p { font-size: 0.85rem; color: var(--muted2); }
-
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
-  .stat-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px 22px;
-  }
-  .stat-label { font-size: 0.67rem; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-  .stat-value { font-size: 1.7rem; font-weight: 700; color: var(--main); line-height: 1; }
-  .stat-sub { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
-
-  .paywall-banner {
-    background: linear-gradient(135deg, rgba(37,99,235,0.1) 0%, rgba(8,15,35,0.9) 60%);
-    border: 1px solid rgba(37,99,235,0.25);
-    border-radius: 12px; padding: 24px 28px;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 20px; margin-bottom: 28px;
-  }
-  .paywall-banner h3 { font-size: 0.95rem; font-weight: 600; color: var(--main); margin-bottom: 4px; }
-  .paywall-banner p { font-size: 0.8rem; color: var(--muted2); max-width: 420px; line-height: 1.6; }
-  .btn-upgrade {
-    background: var(--accent); color: white;
-    padding: 10px 20px; border-radius: 8px;
-    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
-    text-decoration: none; white-space: nowrap; transition: background 0.15s; flex-shrink: 0;
-  }
-  .btn-upgrade:hover { background: #1d4ed8; }
-
-  .cta-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 22px 26px;
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 28px; gap: 16px; position: relative; overflow: hidden;
-  }
-  .cta-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, var(--accent), transparent 60%);
-  }
-  .cta-card h3 { font-size: 0.95rem; font-weight: 600; color: var(--main); margin-bottom: 4px; }
-  .cta-card p { font-size: 0.8rem; color: var(--muted2); }
-  .btn-new-diag {
-    background: var(--accent); color: white; padding: 10px 20px; border-radius: 8px;
-    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
-    text-decoration: none; white-space: nowrap; transition: background 0.15s; flex-shrink: 0;
-  }
-  .btn-new-diag:hover { background: #1d4ed8; }
-
-  .section-label {
-    font-size: 0.67rem; font-weight: 700; letter-spacing: 0.13em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
-  }
-
-  .results-list { display: flex; flex-direction: column; gap: 10px; }
-  .result-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 18px 22px;
-    display: grid; grid-template-columns: 1fr auto;
-    align-items: center; gap: 16px; transition: border-color 0.15s;
-  }
-  .result-card:hover { border-color: var(--borm); }
-  .result-org { font-size: 0.95rem; font-weight: 600; color: var(--main); margin-bottom: 4px; }
-  .result-meta { font-size: 0.75rem; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
-  .result-right { display: flex; align-items: center; gap: 14px; }
-  .score-badge { text-align: center; min-width: 52px; }
-  .score-num { font-size: 1.4rem; font-weight: 700; line-height: 1; }
-  .score-label { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
-
-  .band-pill { font-size: 0.7rem; font-weight: 700; padding: 4px 11px; border-radius: 20px; white-space: nowrap; }
-  .band-low      { background: rgba(34,197,94,0.12);  color: #4ade80; }
-  .band-lowmod   { background: rgba(34,197,94,0.08);  color: #86efac; }
-  .band-moderate { background: rgba(234,179,8,0.12);  color: #fde047; }
-  .band-high     { background: rgba(239,68,68,0.12);  color: #fca5a5; }
-  .band-critical { background: rgba(239,68,68,0.18);  color: #f87171; }
-  .score-low      { color: #4ade80; }
-  .score-lowmod   { color: #86efac; }
-  .score-moderate { color: #fde047; }
-  .score-high     { color: #fca5a5; }
-  .score-critical { color: #f87171; }
-
-  .btn-download {
-    background: var(--accent); color: white; border: none;
-    padding: 8px 16px; border-radius: 8px;
-    font-size: 0.78rem; font-weight: 600; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: background 0.15s;
-  }
-  .btn-download:hover { background: #1d4ed8; }
-  .btn-unlock {
-    background: transparent; color: var(--sky);
-    border: 1px solid rgba(96,165,250,0.3); padding: 8px 16px; border-radius: 8px;
-    font-size: 0.78rem; font-weight: 600; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; white-space: nowrap;
-    text-decoration: none; transition: background 0.15s, border-color 0.15s;
-  }
-  .btn-unlock:hover { background: rgba(96,165,250,0.08); border-color: rgba(96,165,250,0.5); }
-
-  .empty-state {
-    background: var(--card); border: 1px dashed var(--border);
-    border-radius: 12px; padding: 56px 24px; text-align: center;
-  }
-  .empty-state h3 { font-size: 1rem; font-weight: 600; color: var(--main); margin-bottom: 8px; }
-  .empty-state p { font-size: 0.83rem; color: var(--muted2); margin-bottom: 20px; }
-  .loading { text-align: center; padding: 56px; color: var(--muted); font-size: 0.88rem; }
-
-  .enterprise-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 28px;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 24px; margin-top: 28px;
-  }
-  .enterprise-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.1rem; font-weight: 400; color: var(--main); margin-bottom: 6px; }
-  .enterprise-card p { font-size: 0.8rem; color: var(--muted2); line-height: 1.6; max-width: 480px; }
-  .btn-ent {
-    padding: 10px 20px; border-radius: 8px; border: 1px solid var(--borm);
-    color: var(--sub); font-size: 0.83rem; font-weight: 500; text-decoration: none;
-    transition: border-color .15s, color .15s; white-space: nowrap;
-  }
-  .btn-ent:hover { border-color: rgba(96,165,250,.35); color: var(--main); }
-
-  @media(max-width: 640px) {
-    nav { padding: 0 20px; }
-    .main { padding: 32px 20px 60px; }
-    .stats-row { grid-template-columns: 1fr 1fr; }
-    .result-card { grid-template-columns: 1fr; }
-    .result-right { justify-content: flex-start; flex-wrap: wrap; }
-    .cta-card, .paywall-banner, .enterprise-card { flex-direction: column; align-items: flex-start; }
-  }
+  .mobile-toggle svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+  .settings-grid { grid-template-columns: 1fr; }
+  .result-card { grid-template-columns: 1fr; }
+  .result-right { flex-wrap: wrap; }
+  .welcome-actions { display: none; }
+  .content-scroll { padding: 20px 16px; }
+}
+@media(max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
-<div class="bg-glow"></div>
+
+<div class="bg-ambient"></div>
 <div class="bg-grid"></div>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
-<nav>
-  <a href="index.html" class="nav-logo">mla<em>group.</em></a>
-  <div class="nav-right">
-    <span class="nav-user">Signed in as <strong id="nav-email">…</strong></span>
-    <button class="btn-signout" onclick="signOut()">Sign out</button>
-  </div>
-</nav>
+<div class="app">
 
-<div class="main">
-
-  <div class="page-header">
-    <h1>Welcome back<span id="greeting-name"></span></h1>
-    <p>Your AI governance diagnostic results and report history.</p>
-  </div>
-
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Diagnostics Run</div>
-      <div class="stat-value" id="stat-count">—</div>
-      <div class="stat-sub">Total assessments</div>
+  <!-- ══════════════════════ SIDEBAR ══════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <a href="index.html" class="logo-mark">mla<em>group.</em></a>
+      <span class="logo-badge">Portal</span>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Latest Score</div>
-      <div class="stat-value" id="stat-score">—</div>
-      <div class="stat-sub">Governance maturity</div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Workspace</div>
+
+      <div class="nav-item active" onclick="navigate('dashboard', this)">
+        <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        Dashboard
+      </div>
+
+      <div class="nav-item" onclick="navigate('reports', this)">
+        <svg viewBox="0 0 16 16"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/></svg>
+        Reports
+        <span class="nav-badge badge-new" id="report-count-badge" style="display:none;"></span>
+      </div>
+
+      <div class="nav-section-label">Account</div>
+
+      <div class="nav-item" onclick="navigate('settings', this)">
+        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/></svg>
+        Settings
+      </div>
+
+      <div class="nav-section-label">Growth</div>
+
+      <div class="nav-item" onclick="navigate('referral', this)">
+        <svg viewBox="0 0 16 16"><circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/></svg>
+        Referral
+        <span class="nav-badge badge-new">New</span>
+      </div>
+
+      <div class="nav-section-label">Intelligence</div>
+
+      <div class="nav-item locked" onclick="navigate('analytics', this)">
+        <svg viewBox="0 0 16 16"><path d="M1 12l4-4 3 3 4-5 3 3"/></svg>
+        Analytics
+        <svg class="nav-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+      </div>
+
+      <div class="nav-item locked">
+        <svg viewBox="0 0 16 16"><path d="M8 1l2 4 5 .7-3.5 3.4.8 5L8 12l-4.3 2.1.8-5L1 5.7 6 5z"/></svg>
+        Advanced Reports
+        <svg class="nav-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+      </div>
+
+      <div class="nav-item locked">
+        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/><path d="M8 5v3l2 2"/></svg>
+        Team Access
+        <svg class="nav-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-tile" onclick="navigate('settings', document.querySelector('[onclick*=settings]'))">
+        <div class="user-avatar" id="sidebar-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-name">Loading…</div>
+          <div class="user-role">Governance User</div>
+        </div>
+        <svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Risk Band</div>
-      <div class="stat-value" id="stat-band" style="font-size:1rem;padding-top:8px;">—</div>
-      <div class="stat-sub" id="stat-date">No assessments yet</div>
+  </aside>
+
+  <!-- ══════════════════════ MAIN ══════════════════════ -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <button class="mobile-toggle" onclick="openSidebar()">
+        <svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+      </button>
+      <div class="topbar-title" id="topbar-title">
+        <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="topbar-right">
+        <a href="diagnostic.html" class="btn-topbar btn-topbar-primary">
+          <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>
+          New Diagnostic
+        </a>
+        <button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>
+      </div>
     </div>
-  </div>
 
-  <div class="paywall-banner" id="paywall-banner" style="display:none;">
-    <div>
-      <h3>Unlock your full AI Governance Risk Report</h3>
-      <p>Get the complete 8-page board-ready PDF with detailed findings, regulatory article mapping, and a prioritised remediation roadmap.</p>
-    </div>
-    <a href="pricing.html" class="btn-upgrade">Get Full Report — £79</a>
-  </div>
+    <!-- Scroll area -->
+    <div class="content-scroll">
 
-  <div class="cta-card">
-    <div>
-      <h3>Run a new diagnostic</h3>
-      <p>Track your governance improvement over time with a fresh assessment.</p>
-    </div>
-    <a href="diagnostic.html" class="btn-new-diag">Start Diagnostic →</a>
-  </div>
+      <!-- ══════ DASHBOARD VIEW ══════ -->
+      <div id="view-dashboard" class="view active">
 
-  <div class="section-label">Your Assessment History</div>
-  <div id="results-container" class="loading">Loading your results…</div>
+        <div class="welcome-bar">
+          <div class="welcome-avatar" id="dash-avatar">?</div>
+          <div class="welcome-text">
+            <h3>Good to see you<span id="dash-name"></span></h3>
+            <p id="dash-subtext">Your AI governance portal — reports, settings and more.</p>
+          </div>
+          <div class="welcome-actions">
+            <a href="diagnostic.html" class="btn-topbar btn-topbar-primary">
+              <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>
+              New Diagnostic
+            </a>
+          </div>
+        </div>
 
-  <div class="enterprise-card">
-    <div>
-      <h3>Need something deeper?</h3>
-      <p>Bespoke consultancy includes a 1-hour specialist session, strategic AI roadmap, heat maps, sector benchmarking, and a board presentation deck.</p>
-    </div>
-    <a href="mailto:governance@mlagroup.co.uk?subject=Bespoke%20Consultancy%20Enquiry" class="btn-ent">Speak to a Specialist →</a>
-  </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Diagnostics Run</div>
+            <div class="stat-value" id="dash-count">—</div>
+            <div class="stat-sub">Total assessments</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Latest Score</div>
+            <div class="stat-value" id="dash-score">—</div>
+            <div class="stat-sub" id="dash-score-sub">Governance maturity</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Risk Band</div>
+            <div class="stat-value" id="dash-band" style="font-size:1rem;padding-top:6px;">—</div>
+            <div class="stat-sub" id="dash-date">No assessments yet</div>
+          </div>
+        </div>
 
-</div>
+        <div class="two-col">
+          <!-- Recent activity -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Recent Activity</div>
+            </div>
+            <div class="panel-body" id="dash-activity">
+              <div class="loading-state" style="padding:20px 0;">Loading…</div>
+            </div>
+          </div>
 
-<script>
-  const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          <!-- Score overview -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Your Latest Assessment</div>
+            </div>
+            <div class="panel-body" id="dash-latest">
+              <div class="loading-state" style="padding:20px 0;">Loading…</div>
+            </div>
+          </div>
+        </div>
 
-  const BAND_LABELS = {
-    low: 'Low Risk', lowmod: 'Low-Moderate', moderate: 'Moderate',
-    high: 'High Risk', critical: 'Critical'
-  };
+        <!-- Quick actions -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Quick Actions</div>
+          </div>
+          <div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            <div onclick="navigate('reports', document.querySelectorAll('.nav-item')[1])" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg>
+              <div style="font-size:0.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">View Reports</div>
+              <div style="font-size:0.7rem;color:var(--muted);">Download your PDFs</div>
+            </div>
+            <a href="diagnostic.html" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;text-decoration:none;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M8 1v14M1 8h14"/></svg>
+              <div style="font-size:0.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">New Diagnostic</div>
+              <div style="font-size:0.7rem;color:var(--muted);">Run fresh assessment</div>
+            </a>
+            <div onclick="navigate('referral', document.querySelectorAll('.nav-item')[3])" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/></svg>
+              <div style="font-size:0.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">Refer a Colleague</div>
+              <div style="font-size:0.7rem;color:var(--muted);">Earn referral credit</div>
+            </div>
+          </div>
+        </div>
 
-  async function init() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { window.location.href = 'login.html'; return; }
-
-    const user = session.user;
-    document.getElementById('nav-email').textContent = user.email;
-
-    // Load profile + entitlements in parallel
-    const [{ data: profile }, { data: entitlements }] = await Promise.all([
-      sb.from('profiles').select('full_name, paid').eq('id', user.id).single(),
-      sb.from('entitlements').select('id, diagnostic_id, status').eq('user_id', user.id).eq('status', 'active')
-    ]);
-
-    if (profile?.full_name) {
-      document.getElementById('greeting-name').textContent = ', ' + profile.full_name.split(' ')[0];
-    }
-
-    // isPaid: true if entitlements exist (webhook confirmed) OR profiles.paid flag set
-    const isPaid = (entitlements && entitlements.length > 0) || profile?.paid === true;
-    const paidDiagnosticIds = new Set((entitlements || []).map(e => e.diagnostic_id).filter(Boolean));
-
-    document.getElementById('paywall-banner').style.display = isPaid ? 'none' : 'flex';
-
-    // Load results
-    const { data: results } = await sb
-      .from('diagnostic_results')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    renderStats(results || []);
-    renderResults(results || [], isPaid, paidDiagnosticIds);
-  }
-
-  function renderStats(results) {
-    document.getElementById('stat-count').textContent = results.length || '0';
-    if (results.length > 0) {
-      const l = results[0];
-      document.getElementById('stat-score').textContent = (l.adjusted_score || 0) + '%';
-      const band = l.risk_band || 'moderate';
-      const el = document.getElementById('stat-band');
-      el.textContent = BAND_LABELS[band] || band;
-      el.className = 'stat-value score-' + band;
-      document.getElementById('stat-date').textContent = 'Last: ' + fmtDate(l.created_at);
-    }
-  }
-
-  function renderResults(results, isPaid, paidDiagnosticIds) {
-    const container = document.getElementById('results-container');
-    if (results.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <h3>No assessments yet</h3>
-          <p>Complete your first AI governance diagnostic to see your results here.</p>
-          <a href="diagnostic.html" class="btn-new-diag">Start Your First Diagnostic →</a>
-        </div>`;
-      return;
-    }
-
-    container.className = 'results-list';
-    container.innerHTML = results.map(r => {
-      const band      = r.risk_band || 'moderate';
-      const score     = r.adjusted_score || 0;
-      const org       = esc(r.organisation || 'Assessment');
-      const sector    = r.sector ? esc(r.sector) : '';
-      const resultPaid = isPaid || paidDiagnosticIds.has(r.id);
-
-      const actionBtn = resultPaid
-        ? `<button class="btn-download" onclick="downloadReport('${r.id}')">Download PDF</button>`
-        : `<a href="pricing.html" class="btn-unlock">Unlock — £79</a>`;
-
-      return `
-        <div class="result-card">
+      </div>
+      
+      <!-- ══════ REPORTS VIEW ══════ -->
+      <div id="view-reports" class="view">
+        <div class="page-header">
+          <h2>Reports</h2>
+          <p>Your AI governance diagnostic history and PDF downloads.</p>
+        </div>
+        <div id="paywall-banner" style="display:none;" class="paywall-banner">
           <div>
-            <div class="result-org">${org}</div>
-            <div class="result-meta">
-              <span>${fmtDate(r.created_at)}</span>
-              ${sector ? `<span>${sector}</span>` : ''}
-              <span>Framework v${r.framework_version || '2.0.0'}</span>
+            <h4>Unlock your full AI Governance Risk Report</h4>
+            <p>Get the complete 8-page board-ready PDF with findings, regulatory mapping, and remediation roadmap.</p>
+          </div>
+          <a href="pricing.html">Get Full Report — £79</a>
+        </div>
+        <div id="reports-container" class="loading-state">Loading your reports…</div>
+      </div>
+
+      <!-- ══════ SETTINGS VIEW ══════ -->
+      <div id="view-settings" class="view">
+        <div class="page-header">
+          <h2>Account Settings</h2>
+          <p>Manage your profile, credentials and preferences.</p>
+        </div>
+
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-header">
+            <div class="panel-title">Profile Information</div>
+            <div class="panel-sub">Changes saved automatically</div>
+          </div>
+          <div class="panel-body">
+            <div class="settings-grid">
+              <div>
+                <label class="field-label">First name</label>
+                <input type="text" class="field-input" id="set-first" placeholder="—">
+              </div>
+              <div>
+                <label class="field-label">Last name</label>
+                <input type="text" class="field-input" id="set-last" placeholder="—">
+              </div>
+            </div>
+            <label class="field-label">Organisation</label>
+            <input type="text" class="field-input" id="set-org" placeholder="—">
+            <label class="field-label">Email address</label>
+            <input type="email" class="field-input" id="set-email" disabled>
+            <div style="font-size:0.7rem;color:var(--muted);margin-top:-6px;margin-bottom:12px;">Contact support to change your email address.</div>
+            <button onclick="saveProfile()" class="btn-topbar btn-topbar-primary" style="margin-top:4px;">Save changes</button>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-header">
+            <div class="panel-title">Password</div>
+          </div>
+          <div class="panel-body">
+            <label class="field-label">New password</label>
+            <input type="password" class="field-input" id="set-pw" placeholder="Min. 8 characters">
+            <label class="field-label">Confirm password</label>
+            <input type="password" class="field-input" id="set-pw2" placeholder="Repeat password">
+            <div id="set-pw-msg" style="font-size:0.75rem;margin-bottom:12px;display:none;"></div>
+            <button onclick="changePassword()" class="btn-topbar btn-topbar-ghost">Update password</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Danger Zone</div>
+          </div>
+          <div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+            <div>
+              <div style="font-size:0.82rem;font-weight:600;color:var(--main);margin-bottom:3px;">Sign out of all devices</div>
+              <div style="font-size:0.75rem;color:var(--muted);">Ends all active sessions including this one.</div>
+            </div>
+            <button onclick="signOut()" class="btn-topbar btn-topbar-ghost" style="color:var(--red);border-color:rgba(239,68,68,0.2);">Sign out</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════ REFERRAL VIEW ══════ -->
+      <div id="view-referral" class="view">
+        <div class="page-header">
+          <h2>Referral Programme</h2>
+          <p>Refer colleagues and earn credit toward future reports.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-label">Referrals Sent</div>
+            <div class="stat-value">0</div>
+            <div class="stat-sub">Invites shared</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Converted</div>
+            <div class="stat-value">0</div>
+            <div class="stat-sub">Paid referrals</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Credit Earned</div>
+            <div class="stat-value">£0</div>
+            <div class="stat-sub">Applied to account</div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-header">
+            <div class="panel-title">Your Referral Link</div>
+          </div>
+          <div class="panel-body">
+            <p style="font-size:0.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Share this link with colleagues. When they purchase a report you'll both receive £15 credit toward your next diagnostic.</p>
+            <div class="invite-box">
+              <div class="invite-url" id="referral-link">mlagroup.co.uk/ref/loading…</div>
+              <button class="invite-copy" onclick="copyReferral()">Copy link</button>
             </div>
           </div>
-          <div class="result-right">
-            <div class="score-badge">
-              <div class="score-num score-${band}">${score}%</div>
-              <div class="score-label">Score</div>
-            </div>
-            <div class="band-pill band-${band}">${BAND_LABELS[band] || band}</div>
-            ${actionBtn}
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Referral History</div>
           </div>
-        </div>`;
+          <div class="panel-body">
+            <div class="empty-state" style="padding:32px 0;">
+              <div style="font-size:1.8rem;margin-bottom:12px;">👥</div>
+              <h4>No referrals yet</h4>
+              <p>Share your link above to start earning credit.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════ ANALYTICS VIEW ══════ -->
+      <div id="view-analytics" class="view">
+        <div class="locked-view">
+          <div class="locked-icon" style="background:rgba(37,99,235,0.06);">
+            <svg viewBox="0 0 22 22" stroke="var(--sky)"><path d="M1 16l5-6 4 4 5-7 6 6"/></svg>
+          </div>
+          <div class="locked-title">Analytics & Usage</div>
+          <div class="locked-desc">Track report views, downloads, risk trend over time, and team activity — all in one place.</div>
+          <div class="locked-features">
+            <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Risk score trend over time</div>
+            <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Report download history</div>
+            <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Sector benchmarking</div>
+            <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Team member activity</div>
+          </div>
+          <a href="mailto:governance@mlagroup.co.uk?subject=Analytics%20Access" class="btn-upgrade">
+            Request early access
+            <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /content-scroll -->
+  </div><!-- /main -->
+</div><!-- /app -->
+<script>
+const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const BAND_LABELS = { low:'Low Risk', lowmod:'Low-Moderate', moderate:'Moderate', high:'High Risk', critical:'Critical' };
+let currentUser = null;
+let currentProfile = null;
+let currentResults = [];
+let isPaid = false;
+
+// ── NAVIGATION ────────────────────────────────────────────────
+const topbarTitles = {
+  dashboard: { label: 'Dashboard', icon: '<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>' },
+  reports:   { label: 'Reports',   icon: '<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>' },
+  settings:  { label: 'Settings',  icon: '<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>' },
+  referral:  { label: 'Referral',  icon: '<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>' },
+  analytics: { label: 'Analytics', icon: '<path d="M1 12l4-4 3 3 4-5 3 3"/>' },
+};
+
+function navigate(viewId, navEl) {
+  if (navEl && navEl.classList.contains('locked')) return;
+
+  // Update nav items
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+
+  // Update views
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + viewId).classList.add('active');
+
+  // Update topbar
+  const t = topbarTitles[viewId];
+  if (t) {
+    document.getElementById('topbar-title').innerHTML =
+      `<svg viewBox="0 0 16 16" style="width:15px;height:15px;stroke:var(--sky);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;">${t.icon}</svg>${t.label}`;
+  }
+
+  closeSidebar();
+}
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  currentUser = session.user;
+
+  const [{ data: profile }, { data: entitlements }] = await Promise.all([
+    sb.from('profiles').select('full_name, organisation, paid').eq('id', currentUser.id).single(),
+    sb.from('entitlements').select('id, diagnostic_id, status').eq('user_id', currentUser.id).eq('status', 'active')
+  ]);
+
+  currentProfile = profile;
+  isPaid = (entitlements && entitlements.length > 0) || profile?.paid === true;
+  const paidDiagnosticIds = new Set((entitlements || []).map(e => e.diagnostic_id).filter(Boolean));
+
+  // Set user display
+  const fullName = profile?.full_name || currentUser.email.split('@')[0];
+  const firstName = fullName.split(' ')[0];
+  const initials = fullName.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+
+  document.getElementById('sidebar-name').textContent = fullName;
+  document.getElementById('sidebar-avatar').textContent = initials;
+  document.getElementById('dash-avatar').textContent = initials;
+  document.getElementById('dash-name').textContent = ', ' + firstName;
+
+  if (profile?.organisation) {
+    document.getElementById('dash-subtext').textContent = profile.organisation + ' · AI Governance Portal';
+  }
+
+  // Populate settings form
+  if (profile?.full_name) {
+    const parts = profile.full_name.split(' ');
+    document.getElementById('set-first').value = parts[0] || '';
+    document.getElementById('set-last').value  = parts.slice(1).join(' ') || '';
+  }
+  document.getElementById('set-org').value   = profile?.organisation || '';
+  document.getElementById('set-email').value = currentUser.email;
+
+  // Referral link
+  const userId = currentUser.id.substring(0, 8);
+  document.getElementById('referral-link').textContent = `mlagroup.co.uk/ref/${userId}`;
+
+  // Load results
+  const { data: results } = await sb
+    .from('diagnostic_results')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  currentResults = results || [];
+
+  renderDashboard(paidDiagnosticIds);
+  renderReports(paidDiagnosticIds);
+
+  // Show report count badge
+  if (currentResults.length > 0) {
+    const badge = document.getElementById('report-count-badge');
+    badge.textContent = currentResults.length;
+    badge.style.display = 'inline-flex';
+  }
+
+  // Show paywall banner if not paid
+  document.getElementById('paywall-banner').style.display = isPaid ? 'none' : 'flex';
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+function renderDashboard(paidDiagnosticIds) {
+  // Stats
+  document.getElementById('dash-count').textContent = currentResults.length || '0';
+
+  if (currentResults.length > 0) {
+    const l = currentResults[0];
+    const band = l.risk_band || 'moderate';
+    document.getElementById('dash-score').textContent = (l.adjusted_score || 0) + '%';
+    const bandEl = document.getElementById('dash-band');
+    bandEl.textContent = BAND_LABELS[band] || band;
+    bandEl.className = 'stat-value score-' + band;
+    document.getElementById('dash-date').textContent = 'Updated ' + fmtDate(l.created_at);
+  }
+
+  // Activity feed
+  const actEl = document.getElementById('dash-activity');
+  if (currentResults.length === 0) {
+    actEl.innerHTML = '<div style="font-size:0.78rem;color:var(--muted);padding:8px 0;">No activity yet. Run your first diagnostic to get started.</div>';
+  } else {
+    actEl.innerHTML = currentResults.slice(0,4).map(r => {
+      const band = r.risk_band || 'moderate';
+      const colors = { low:'#4ade80', lowmod:'#86efac', moderate:'#fde047', high:'#fca5a5', critical:'#f87171' };
+      return `<div class="activity-item">
+        <div class="activity-dot" style="background:${colors[band]||'#60a5fa'};"></div>
+        <div class="activity-body">Diagnostic completed — <strong>${esc(r.organisation||'Assessment')}</strong><br>${BAND_LABELS[band]||band} · ${r.adjusted_score||0}%</div>
+        <div class="activity-time">${fmtDate(r.created_at)}</div>
+      </div>`;
     }).join('');
   }
 
-  async function downloadReport(resultId) {
-    const { data, error } = await sb
-      .from('diagnostic_results').select('*').eq('id', resultId).single();
-    if (error || !data) { alert('Could not load report. Please try again.'); return; }
-    sessionStorage.setItem('portal_result', JSON.stringify(data));
-    window.open('generate-pdf.html', '_blank');
+  // Latest assessment panel
+  const latestEl = document.getElementById('dash-latest');
+  if (currentResults.length === 0) {
+    latestEl.innerHTML = `
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">No assessments yet.</div>
+        <a href="diagnostic.html" class="btn-dl" style="display:inline-flex;text-decoration:none;">Start first diagnostic</a>
+      </div>`;
+  } else {
+    const l = currentResults[0];
+    const band = l.risk_band || 'moderate';
+    const resultPaid = isPaid || paidDiagnosticIds.has(l.id);
+    latestEl.innerHTML = `
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.88rem;font-weight:600;color:var(--main);margin-bottom:4px;">${esc(l.organisation||'Assessment')}</div>
+        <div style="font-size:0.72rem;color:var(--muted);">${fmtDate(l.created_at)} · ${esc(l.sector||'')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <div class="score-num score-${band}" style="font-size:2rem;font-weight:700;">${l.adjusted_score||0}%</div>
+        <div>
+          <div class="band-pill band-${band}" style="margin-bottom:4px;">${BAND_LABELS[band]||band}</div>
+          <div style="font-size:0.68rem;color:var(--muted);">Framework v${l.framework_version||'2.0.0'}</div>
+        </div>
+      </div>
+      ${resultPaid
+        ? `<button class="btn-dl" onclick="downloadReport('${l.id}')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download PDF</button>`
+        : `<a href="pricing.html" class="btn-unlock">Unlock Full Report — £79</a>`
+      }`;
+  }
+}
+
+// ── REPORTS ───────────────────────────────────────────────────
+function renderReports(paidDiagnosticIds) {
+  const container = document.getElementById('reports-container');
+  if (currentResults.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <h4>No assessments yet</h4>
+        <p>Complete your first AI governance diagnostic to see your results here.</p>
+        <a href="diagnostic.html" class="btn-dl" style="display:inline-flex;text-decoration:none;margin-top:4px;">Start First Diagnostic</a>
+      </div>`;
+    return;
   }
 
-  function fmtDate(iso) {
-    if (!iso) return '';
-    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  }
+  container.className = 'result-list';
+  container.innerHTML = currentResults.map(r => {
+    const band = r.risk_band || 'moderate';
+    const resultPaid = isPaid || paidDiagnosticIds.has(r.id);
+    const actionBtn = resultPaid
+      ? `<button class="btn-dl" onclick="downloadReport('${r.id}')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download PDF</button>`
+      : `<a href="pricing.html" class="btn-unlock">Unlock — £79</a>`;
 
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+    return `
+      <div class="result-card">
+        <div>
+          <div class="result-org">${esc(r.organisation||'Assessment')}</div>
+          <div class="result-meta">
+            <span>${fmtDate(r.created_at)}</span>
+            ${r.sector ? `<span>${esc(r.sector)}</span>` : ''}
+            <span>v${r.framework_version||'2.0.0'}</span>
+          </div>
+        </div>
+        <div class="result-right">
+          <div class="score-badge">
+            <div class="score-num score-${band}">${r.adjusted_score||0}%</div>
+            <div class="score-lbl">Score</div>
+          </div>
+          <div class="band-pill band-${band}">${BAND_LABELS[band]||band}</div>
+          ${actionBtn}
+        </div>
+      </div>`;
+  }).join('');
+}
 
-  async function signOut() {
-    await sb.auth.signOut();
-    window.location.href = 'login.html';
-  }
+// ── SETTINGS ──────────────────────────────────────────────────
+async function saveProfile() {
+  const first = document.getElementById('set-first').value.trim();
+  const last  = document.getElementById('set-last').value.trim();
+  const org   = document.getElementById('set-org').value.trim();
+  const full  = (first + ' ' + last).trim();
 
-  init();
+  const { error } = await sb.from('profiles').upsert({ id: currentUser.id, full_name: full, organisation: org }, { onConflict: 'id' });
+  if (!error) {
+    document.getElementById('sidebar-name').textContent = full || currentUser.email.split('@')[0];
+    const initials = full.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    document.getElementById('sidebar-avatar').textContent = initials;
+    document.getElementById('dash-avatar').textContent = initials;
+    alert('Profile saved.');
+  } else {
+    alert('Error saving profile. Please try again.');
+  }
+}
+
+async function changePassword() {
+  const pw  = document.getElementById('set-pw').value;
+  const pw2 = document.getElementById('set-pw2').value;
+  const msg = document.getElementById('set-pw-msg');
+  msg.style.display = 'block';
+
+  if (pw.length < 8) { msg.style.color = 'var(--red)'; msg.textContent = 'Password must be at least 8 characters.'; return; }
+  if (pw !== pw2)    { msg.style.color = 'var(--red)'; msg.textContent = 'Passwords do not match.'; return; }
+
+  const { error } = await sb.auth.updateUser({ password: pw });
+  if (error) { msg.style.color = 'var(--red)'; msg.textContent = error.message; }
+  else { msg.style.color = '#4ade80'; msg.textContent = 'Password updated successfully.'; document.getElementById('set-pw').value = ''; document.getElementById('set-pw2').value = ''; }
+}
+
+// ── REFERRAL ──────────────────────────────────────────────────
+function copyReferral() {
+  const link = document.getElementById('referral-link').textContent;
+  navigator.clipboard.writeText('https://' + link).then(() => {
+    const btn = document.querySelector('.invite-copy');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy link', 2000);
+  });
+}
+
+// ── DOWNLOAD ──────────────────────────────────────────────────
+async function downloadReport(resultId) {
+  const { data, error } = await sb.from('diagnostic_results').select('*').eq('id', resultId).single();
+  if (error || !data) { alert('Could not load report. Please try again.'); return; }
+  sessionStorage.setItem('portal_result', JSON.stringify(data));
+  window.open('generate-pdf.html', '_blank');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function fmtDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+async function signOut() {
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
+}
+
+init();
 </script>
 </body>
 </html>
