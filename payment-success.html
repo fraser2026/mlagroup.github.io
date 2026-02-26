@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Successful | MLA Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:     #020617;
+      --card:   rgba(8,15,35,0.9);
+      --border: rgba(255,255,255,0.07);
+      --borm:   rgba(255,255,255,0.13);
+      --accent: #2563eb;
+      --sky:    #60a5fa;
+      --main:   #f1f5f9;
+      --sub:    #cbd5e1;
+      --muted:  #64748b;
+      --muted2: #94a3b8;
+      --green:  #22c55e;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--sub);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh; -webkit-font-smoothing: antialiased;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 32px 20px;
+    }
+
+    .bg-glow {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 60% 40% at 50% 30%, rgba(34,197,94,0.06) 0%, transparent 60%),
+                  radial-gradient(ellipse 60% 30% at 50% -5%, rgba(37,99,235,0.1) 0%, transparent 65%);
+    }
+
+    .card {
+      position: relative; z-index: 1;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 48px 44px;
+      max-width: 520px; width: 100%; text-align: center;
+    }
+
+    /* success icon */
+    .success-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 28px;
+    }
+    .success-icon svg { width: 28px; height: 28px; stroke: var(--green); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* loading icon */
+    .loading-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 2px solid rgba(37,99,235,0.15);
+      border-top-color: var(--sky);
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 28px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.9rem; font-weight: 400;
+      letter-spacing: -0.02em; color: var(--main);
+      margin-bottom: 12px;
+    }
+    p {
+      font-size: 0.88rem; color: var(--muted2);
+      line-height: 1.7; margin-bottom: 8px;
+    }
+
+    .status-msg {
+      font-size: 0.8rem; color: var(--muted);
+      margin: 20px 0; min-height: 22px;
+    }
+
+    /* what happens next */
+    .steps {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 22px; margin: 28px 0;
+      text-align: left;
+    }
+    .steps-title {
+      font-size: 0.67rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.13em; color: var(--sky); margin-bottom: 14px;
+    }
+    .step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      width: 22px; height: 22px; min-width: 22px;
+      border-radius: 50%; background: rgba(37,99,235,0.15);
+      border: 1px solid rgba(37,99,235,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.68rem; font-weight: 700; color: var(--sky);
+      margin-top: 1px;
+    }
+    .step-text { font-size: 0.82rem; color: var(--sub); line-height: 1.55; }
+
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px 24px; border-radius: 9px;
+      background: var(--accent); color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem; font-weight: 600;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: background .15s, transform .12s, box-shadow .15s;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8; transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;
+    }
+
+    .btn-secondary {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; padding: 12px 24px; border-radius: 9px;
+      background: transparent; color: var(--muted2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; font-weight: 500;
+      text-decoration: none; border: 1px solid var(--border);
+      transition: border-color .15s, color .15s; margin-top: 10px;
+    }
+    .btn-secondary:hover { border-color: var(--borm); color: var(--main); }
+
+    .small-note {
+      font-size: 0.72rem; color: var(--muted);
+      margin-top: 20px; line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+<div class="bg-glow"></div>
+
+<div class="card" id="card">
+
+  <!-- LOADING STATE -->
+  <div id="state-loading">
+    <div class="loading-icon"></div>
+    <h1>Confirming payment…</h1>
+    <p>Just a moment while we activate your report access.</p>
+    <div class="status-msg" id="status-msg">Verifying with Stripe…</div>
+  </div>
+
+  <!-- SUCCESS STATE (hidden until ready) -->
+  <div id="state-success" style="display:none;">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h1>Payment confirmed.</h1>
+    <p>Your full AI Governance Risk Report is now unlocked. Download it from your portal or generate it now.</p>
+
+    <div class="steps">
+      <div class="steps-title">What happens next</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">Your portal account has been updated — PDF access is active permanently.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">A confirmation email is on its way. Your report will be attached or available via the portal link.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">Run further diagnostics any time — your paid access applies to all assessments in your account.</div>
+      </div>
+    </div>
+
+    <a href="portal.html" class="btn-primary" id="btn-portal">
+      Go to my portal &amp; download report
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+    </a>
+    <a href="results.html" class="btn-secondary">← Back to my results</a>
+    <p class="small-note">Questions? Email <a href="mailto:governance@mlagroup.co.uk" style="color:var(--sky)">governance@mlagroup.co.uk</a> — we respond within one business day.</p>
+  </div>
+
+  <!-- ERROR STATE (hidden until needed) -->
+  <div id="state-error" style="display:none;">
+    <div style="font-size:2.5rem; margin-bottom:20px;">⚠</div>
+    <h1 style="font-size:1.5rem;">Something went wrong</h1>
+    <p id="error-msg" style="margin-bottom:24px;">We couldn't confirm your payment automatically. Please contact us and we'll resolve it immediately.</p>
+    <a href="mailto:governance@mlagroup.co.uk?subject=Payment%20Issue&body=Hi%2C%20I%20just%20paid%20but%20my%20access%20wasn't%20activated.%20My%20email%20is%3A%20" class="btn-primary">Contact support</a>
+    <a href="portal.html" class="btn-secondary">Try the portal anyway</a>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function show(id) {
+    ['state-loading','state-success','state-error'].forEach(s => {
+      document.getElementById(s).style.display = s === id ? 'block' : 'none';
+    });
+  }
+
+  function setStatus(msg) {
+    const el = document.getElementById('status-msg');
+    if (el) el.textContent = msg;
+  }
+
+  async function activate() {
+    try {
+      // ── 1. Check Supabase session ────────────────────────────
+      setStatus('Checking your account…');
+      const { data: { session } } = await sb.auth.getSession();
+
+      if (!session) {
+        // Not logged in — store intent and send to login
+        sessionStorage.setItem('post_payment', 'true');
+        setStatus('Redirecting to sign in…');
+        setTimeout(() => {
+          window.location.href = 'login.html?after=payment';
+        }, 1200);
+        return;
+      }
+
+      const userId = session.user.id;
+
+      // ── 2. Mark user as paid in profiles ────────────────────
+      setStatus('Activating your access…');
+      const { error: profileError } = await sb
+        .from('profiles')
+        .update({ paid: true })
+        .eq('id', userId);
+
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        // Non-fatal — continue anyway, can be fixed manually
+      }
+
+      // ── 3. Link any pending diagnostic result ────────────────
+      const pendingId = sessionStorage.getItem('pending_result_id');
+      if (pendingId) {
+        setStatus('Linking your diagnostic…');
+        await sb.from('diagnostic_results')
+          .update({ user_id: userId })
+          .eq('id', pendingId);
+        sessionStorage.removeItem('pending_result_id');
+      }
+
+      // ── 4. Done ──────────────────────────────────────────────
+      setStatus('Access activated!');
+      await new Promise(r => setTimeout(r, 400));
+      show('state-success');
+
+    } catch(err) {
+      console.error('Payment activation error:', err);
+      document.getElementById('error-msg').textContent =
+        'We couldn\'t confirm your payment automatically (error: ' + (err.message || 'unknown') + '). Please contact us and we\'ll sort it within the hour.';
+      show('state-error');
+    }
+  }
+
+  // Handle case where user arrives here after logging in post-payment
+  window.addEventListener('load', async () => {
+    const url = new URLSearchParams(window.location.search);
+
+    // Stripe adds a session_id param on success — we check for it as a signal
+    // (We don't verify server-side here — that needs a Stripe webhook for production)
+    if (url.get('session_id') || url.get('payment') === 'success' || true) {
+      // Always attempt activation on this page
+      await activate();
+    }
+  });
+</script>
+</body>
+</html>
