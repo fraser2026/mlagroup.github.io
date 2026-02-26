@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MLA Group | Methodology — AI Governance Diagnostic Framework</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <style>
+
+    :root {
+      --bg:      #020617;
+      --bg2:     #070f22;
+      --card:    rgba(10,18,40,0.8);
+      --border:  rgba(255,255,255,0.08);
+      --border-m:rgba(255,255,255,0.13);
+      --accent:  #2563eb;
+      --sky:     #60a5fa;
+      --main:    #ffffff;
+      --sub:     #e2e8f0;
+      --muted:   #94a3b8;
+      --muted2:  #cbd5e1;
+      --prose:   680px;
+      --page:    1060px;
+      --ph:      48px;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      background:var(--bg); color:var(--sub);
+      font-family:'DM Sans', sans-serif; font-weight:400;
+      line-height:1.75; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+    }
+
+    .bg-field {
+      position:fixed; inset:0; z-index:0; pointer-events:none;
+      background:radial-gradient(ellipse 70% 35% at 50% -5%, rgba(37,99,235,0.12) 0%, transparent 65%);
+    }
+
+    /* NAV */
+    nav {
+      position:sticky; top:0; z-index:100; height:64px;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 var(--ph); border-bottom:1px solid var(--border);
+      background:rgba(2,6,23,0.92); backdrop-filter:blur(24px);
+    }
+    .logo { font-size:1.05rem; font-weight:600; letter-spacing:-0.02em; text-decoration:none; color:var(--main); flex-shrink:0; }
+    .logo em { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--sky); }
+    .nav-centre { display:flex; align-items:center; gap:4px; position:absolute; left:50%; transform:translateX(-50%); }
+    .nav-link { padding:7px 14px; border-radius:6px; font-size:0.84rem; font-weight:500; color:var(--muted2); text-decoration:none; transition:color .15s,background .15s; white-space:nowrap; }
+    .nav-link:hover { color:var(--main); background:rgba(255,255,255,.05); }
+    .nav-link.active { color:var(--main); }
+    .nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .nav-signin { padding:7px 16px; border-radius:6px; font-size:0.84rem; font-weight:500; color:var(--sub); text-decoration:none; transition:color .15s; }
+    .nav-signin:hover { color:var(--main); }
+    .nav-cta { padding:8px 18px; border-radius:7px; font-size:0.84rem; font-weight:600; color:#fff; background:var(--accent); text-decoration:none; transition:background .15s; }
+    .nav-cta:hover { background:#1d4ed8; }
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:4px; }
+    .hamburger span { display:block; width:20px; height:1.5px; background:var(--main); border-radius:2px; }
+    .mob-menu { display:none; flex-direction:column; gap:2px; position:absolute; top:64px; left:0; right:0; z-index:99; background:rgba(2,6,23,.97); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:16px 24px 20px; align-items:center; }
+    .mob-menu.open { display:flex; }
+    .mob-link { width:100%; padding:10px 12px; border-radius:6px; font-size:.9rem; font-weight:500; color:var(--sub); text-decoration:none; text-align:center; }
+    .mob-cta { margin-top:8px; padding:12px; border-radius:8px; background:var(--accent); color:#fff; font-weight:600; text-decoration:none; text-align:center; font-size:.9rem; width:100%; }
+
+    /* LAYOUT */
+    .pw  { max-width:var(--page);  margin:0 auto; padding:0 var(--ph); }
+    .sec { position:relative; z-index:1; padding:84px 0; border-top:1px solid var(--border); }
+
+    /* TYPOGRAPHY */
+    .label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--sky); margin-bottom:16px; display:block; }
+    h1 { font-family:'Instrument Serif',serif; font-size:clamp(2.6rem,5vw,4rem); font-weight:400; line-height:1.0; letter-spacing:-.025em; color:var(--main); margin-bottom:22px; }
+    h1 em { font-style:italic; color:var(--sky); }
+    h2 { font-family:'Instrument Serif',serif; font-size:clamp(1.7rem,3vw,2.5rem); font-weight:400; line-height:1.1; letter-spacing:-.02em; color:var(--main); margin-bottom:18px; }
+    h2 em { font-style:italic; color:var(--sky); }
+    h3 { font-size:.94rem; font-weight:600; color:var(--main); margin-bottom:8px; letter-spacing:-.01em; }
+    p  { font-size:.92rem; color:var(--muted2); line-height:1.85; margin-bottom:16px; }
+    p:last-child { margin-bottom:0; }
+    p strong { color:var(--sub); font-weight:600; }
+
+    /* GRID */
+    .two-col { display:grid; grid-template-columns:5fr 4fr; gap:80px; align-items:start; }
+
+    /* PAGE HEADER */
+    .page-header { position:relative; z-index:1; padding:96px 0 80px; border-bottom:1px solid var(--border); }
+    .header-grid { display:grid; grid-template-columns:1fr 220px; gap:60px; align-items:end; }
+    .return-link { font-size:.79rem; font-weight:500; color:var(--muted); text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-bottom:26px; transition:color .15s; }
+    .return-link:hover { color:var(--muted2); }
+    .return-link svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+    .framing {
+      margin-top:32px; padding:22px 26px;
+      border-left:2px solid rgba(37,99,235,.35);
+      background:rgba(37,99,235,.03);
+    }
+    .framing p { font-size:.86rem; font-style:italic; color:var(--muted2); line-height:1.75; margin:0; }
+    .meta-panel { text-align:right; }
+    .meta-item { margin-bottom:18px; }
+    .meta-item:last-child { margin-bottom:0; }
+    .meta-key { font-size:.67rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:4px; }
+    .meta-val { font-size:.82rem; font-weight:600; color:var(--sub); }
+    .meta-rule { width:28px; height:1px; background:var(--border-m); margin:16px 0 16px auto; }
+
+    /* STAT PANEL */
+    .stat-panel { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .stat-row { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; gap:16px; align-items:center; background:var(--card); }
+    .stat-row:last-child { border-bottom:none; }
+    .stat-n { font-family:'Instrument Serif',serif; font-size:1.9rem; font-weight:400; color:var(--sky); min-width:42px; line-height:1; flex-shrink:0; }
+    .stat-txt { font-size:.81rem; color:var(--muted2); line-height:1.5; }
+    .stat-txt strong { color:var(--main); font-weight:600; display:block; margin-bottom:2px; }
+
+    /* CALLOUT */
+    .callout { padding:22px 26px; border-left:2px solid rgba(37,99,235,.35); background:rgba(37,99,235,.03); margin-top:28px; }
+    .callout p { font-size:.86rem; margin:0; }
+    .callout-muted { padding:22px 26px; border-left:2px solid rgba(148,163,184,.2); background:rgba(15,25,50,.4); margin-top:28px; }
+    .callout-muted p { font-size:.86rem; margin:0; }
+
+    /* DOMAIN TABLE */
+    .dtable { width:100%; border-collapse:collapse; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .dtable thead tr { background:var(--bg2); }
+    .dtable th { padding:12px 18px; text-align:left; font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); border-bottom:1px solid var(--border); }
+    .dtable th:last-child { text-align:center; }
+    .dtable td { padding:15px 18px; font-size:.84rem; color:var(--muted2); border-bottom:1px solid var(--border); vertical-align:middle; }
+    .dtable tr:last-child td { border-bottom:none; }
+    .dtable td:first-child { color:var(--main); font-weight:600; font-size:.86rem; }
+    .dtable td:last-child { text-align:center; }
+    .dtable tbody tr { background:var(--card); transition:background .15s; }
+    .dtable tbody tr:hover { background:rgba(37,99,235,.04); }
+    .ptag { display:inline-block; padding:3px 10px; border-radius:4px; font-size:.64rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
+    .t-p { background:rgba(37,99,235,.12);  color:var(--sky);  border:1px solid rgba(37,99,235,.2); }
+    .t-h { background:rgba(96,165,250,.08); color:#93c5fd;     border:1px solid rgba(96,165,250,.15); }
+    .t-s { background:rgba(148,163,184,.08);color:var(--muted); border:1px solid rgba(148,163,184,.12); }
+    .t-b { background:rgba(51,65,85,.4);    color:#64748b;     border:1px solid rgba(51,65,85,.6); }
+
+    /* SCORING STEPS */
+    .steps { display:flex; flex-direction:column; max-width:800px; }
+    .step { display:grid; grid-template-columns:36px 1fr; gap:24px; padding:26px 0; border-bottom:1px solid var(--border); }
+    .step:first-child { border-top:1px solid var(--border); }
+    .step-i { font-family:'Instrument Serif',serif; font-size:1.3rem; color:rgba(96,165,250,.22); font-weight:400; line-height:1.2; padding-top:2px; }
+    .step-b h3 { margin-bottom:7px; }
+    .step-b p  { font-size:.87rem; margin:0; }
+
+    /* BAND TABLE */
+    .btable { width:100%; max-width:800px; border-collapse:collapse; }
+    .btable thead tr { background:var(--bg2); }
+    .btable th { padding:12px 18px; text-align:left; font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); border-bottom:1px solid var(--border); }
+    .btable td { padding:17px 18px; border-bottom:1px solid var(--border); font-size:.84rem; vertical-align:middle; }
+    .btable tr:last-child td { border-bottom:none; }
+    .btable tbody tr { background:var(--card); }
+    .bn { font-weight:600; }
+    .bs { font-size:.77rem; color:var(--muted); margin-top:3px; }
+    .bpill { display:inline-block; padding:4px 11px; border-radius:4px; font-size:.64rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; white-space:nowrap; }
+    .p-lo { background:rgba(34,197,94,.08);  color:#86efac; border:1px solid rgba(34,197,94,.15); }
+    .p-lm { background:rgba(163,230,53,.08); color:#bef264; border:1px solid rgba(163,230,53,.15); }
+    .p-mo { background:rgba(251,191,36,.08); color:#fde68a; border:1px solid rgba(251,191,36,.15); }
+    .p-hi { background:rgba(249,115,22,.08); color:#fed7aa; border:1px solid rgba(249,115,22,.15); }
+    .p-cr { background:rgba(239,68,68,.08);  color:#fca5a5; border:1px solid rgba(239,68,68,.15); }
+
+    /* FRAMEWORK LIST */
+    .fwlist { display:flex; flex-direction:column; max-width:860px; }
+    .fwitem { padding:22px 0; border-bottom:1px solid var(--border); display:grid; grid-template-columns:190px 1fr; gap:32px; align-items:start; }
+    .fwitem:first-child { border-top:1px solid var(--border); }
+    .fw-ref { font-size:.77rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--sky); line-height:1.4; }
+    .fw-sub { font-size:.69rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted); margin-top:4px; display:block; }
+    .fw-d h3 { font-size:.91rem; margin-bottom:6px; }
+    .fw-d p  { font-size:.84rem; margin:0; }
+
+    /* PROPRIETARY BOX */
+    .prop-list { list-style:none; display:flex; flex-direction:column; }
+    .prop-list li { padding:12px 0; border-bottom:1px solid var(--border); display:flex; gap:12px; align-items:flex-start; font-size:.85rem; color:var(--muted2); line-height:1.5; }
+    .prop-list li:first-child { border-top:1px solid var(--border); }
+    .prop-list li::before { content:''; width:4px; height:4px; border-radius:50%; background:rgba(96,165,250,.4); flex-shrink:0; margin-top:7px; }
+    .prop-list li strong { color:var(--sub); font-weight:600; display:block; }
+
+    /* TRANSPARENCY */
+    .trans-sec { position:relative; z-index:1; padding:72px 0; border-top:1px solid var(--border); }
+
+    /* DISCLAIMER */
+    .disc-sec { position:relative; z-index:1; padding:52px 0; border-top:1px solid rgba(37,99,235,.12); background:rgba(37,99,235,.02); }
+    .disc-inner { display:grid; grid-template-columns:180px 1fr; gap:48px; align-items:start; }
+    .disc-head { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); padding-top:4px; }
+    .disc-body p { font-size:.84rem; color:var(--muted); line-height:1.8; margin-bottom:10px; }
+    .disc-body p:last-child { margin-bottom:0; }
+    .disc-body strong { color:var(--muted2); font-weight:600; }
+
+    /* BOTTOM CTA */
+    .bcta { position:relative; z-index:1; padding:80px 0; border-top:1px solid var(--border); }
+    .bcta-inner { display:flex; justify-content:space-between; align-items:center; gap:40px; }
+    .bcta h2 { margin-bottom:10px; font-size:clamp(1.5rem,2.5vw,2rem); }
+    .bcta p  { font-size:.88rem; color:var(--muted); margin:0; max-width:460px; }
+    .btn-apply { display:inline-flex; align-items:center; gap:8px; flex-shrink:0; padding:14px 32px; border-radius:8px; background:var(--accent); color:#fff; font-size:.87rem; font-weight:600; text-decoration:none; transition:background .15s; }
+    .btn-apply:hover { background:#1d4ed8; }
+    .btn-apply svg { width:13px; height:13px; stroke:#fff; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* FOOTER */
+    footer { border-top:1px solid var(--border); background:rgba(2,6,23,.96); }
+    .ft { max-width:var(--page); margin:0 auto; padding:64px var(--ph) 52px; display:grid; grid-template-columns:1.8fr 1fr 1fr 1fr; gap:60px; }
+    .fb .fl { font-size:1rem; font-weight:600; margin-bottom:14px; }
+    .fb .fl em { font-family:'Instrument Serif',serif; font-style:italic; color:var(--sky); }
+    .fb p { font-size:.79rem; color:var(--muted); line-height:1.75; max-width:220px; }
+    .fc h4 { font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:18px; }
+    .fc ul { list-style:none; display:flex; flex-direction:column; gap:9px; }
+    .fc a  { font-size:.81rem; color:var(--muted2); text-decoration:none; transition:color .15s; }
+    .fc a:hover { color:var(--main); }
+    .fb-row { max-width:var(--page); margin:0 auto; padding:20px var(--ph) 32px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:20px; }
+    .fb-row span { font-size:.73rem; color:var(--muted); }
+    .fl-links { display:flex; gap:20px; }
+    .fl-links a { font-size:.73rem; color:var(--muted); text-decoration:none; transition:color .15s; }
+    .fl-links a:hover { color:var(--muted2); }
+
+    /* RESPONSIVE */
+    @media(max-width:1024px){
+      .nav-centre { display:none; }
+      .two-col { grid-template-columns:1fr; gap:48px; }
+      .header-grid { grid-template-columns:1fr; gap:28px; }
+      .meta-panel { text-align:left; }
+      .meta-rule  { margin-right:auto; margin-left:0; }
+      .ft { grid-template-columns:1fr 1fr; gap:40px; }
+      .bcta-inner { flex-direction:column; align-items:flex-start; gap:32px; }
+    }
+    @media(max-width:768px){
+      :root { --ph:24px; }
+      nav { padding:0 24px; }
+      .nav-right { display:none; }
+      .hamburger { display:flex; }
+      .sec { padding:60px 0; }
+      .page-header { padding:72px 0 56px; }
+      .dtable td, .dtable th, .btable td, .btable th { padding:11px 13px; font-size:.8rem; }
+      .fwitem { grid-template-columns:1fr; gap:6px; }
+      .disc-inner { grid-template-columns:1fr; gap:14px; }
+      .ft  { grid-template-columns:1fr; gap:32px; padding:48px 24px 36px; }
+      .fb-row { flex-direction:column; text-align:center; padding:20px 24px 28px; }
+      .step { grid-template-columns:28px 1fr; gap:14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-field"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">mla<em>group.</em></a>
+  <div class="nav-centre">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="methodology.html" class="nav-link active">Methodology</a>
+    <a href="index.html#pricing" class="nav-link">Pricing</a>
+    <a href="#" class="nav-link">About</a>
+  </div>
+  <div class="nav-right">
+    <a href="login.html" class="nav-signin">Sign in</a>
+    <a href="diagnostic.html" class="nav-cta">Start Diagnostic</a>
+  </div>
+  <div class="hamburger" id="ham" onclick="toggleMob()"><span></span><span></span><span></span></div>
+</nav>
+<div class="mob-menu" id="mobMenu">
+  <a href="index.html" class="mob-link" onclick="closeMob()">Home</a>
+  <a href="index.html#pricing" class="mob-link" onclick="closeMob()">Pricing</a>
+  <a href="login.html" class="mob-link">Sign in</a>
+  <a href="diagnostic.html" class="mob-cta">Apply the Methodology</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE HEADER
+════════════════════════════════════════════════ -->
+<div class="page-header">
+  <div class="pw">
+    <div class="header-grid">
+      <div>
+        <a href="diagnostic.html" class="return-link">
+          <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4"/></svg>
+          Return to Diagnostic
+        </a>
+        <span class="label">Methodology — Version 2.0 · February 2026</span>
+        <h1>AI Governance Diagnostic<br><em>Framework.</em></h1>
+        <div class="framing">
+          <p>This page outlines the structured methodology underpinning the MLA Group AI Governance Diagnostic for due diligence and professional review. It is addressed to compliance professionals, legal reviewers, procurement teams, and institutional decision-makers evaluating the instrument for organisational use.</p>
+        </div>
+      </div>
+      <div class="meta-panel">
+        <div class="meta-item">
+          <div class="meta-key">Document Classification</div>
+          <div class="meta-val">Public — Methodology Disclosure</div>
+        </div>
+        <div class="meta-rule"></div>
+        <div class="meta-item">
+          <div class="meta-key">Instrument Version</div>
+          <div class="meta-val">v2.0 · February 2026</div>
+        </div>
+        <div class="meta-rule"></div>
+        <div class="meta-item">
+          <div class="meta-key">Regulatory Scope</div>
+          <div class="meta-val">UK &amp; EU</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     01 — ASSESSMENT PHILOSOPHY
+════════════════════════════════════════════════ -->
+<section class="sec">
+  <div class="pw">
+    <div class="two-col">
+      <div>
+        <span class="label">01 — Assessment Philosophy</span>
+        <h2>Constructed from<br><em>enforcement logic.</em></h2>
+        <p>Regulatory scrutiny of AI deployment has moved from principle to enforcement. The FCA, ICO, and European Commission have each demonstrated that organisations without documented governance frameworks face material exposure. The burden of proof rests with the organisation.</p>
+        <p>Generic AI checklists and self-certification exercises do not meet this standard. They produce a summary, not a defensible position. They generate internal awareness, not board-level accountability. They fail the moment a supervisory reviewer asks: what is the legal basis for this control?</p>
+        <p>The MLA diagnostic was constructed from the inverse direction — beginning with the specific obligations imposed by applicable regulatory frameworks, then designing the instrument to surface those gaps precisely. Every question in the diagnostic references a specific article, guidance paragraph, or supervisory expectation. Every finding in the output carries the legal citation that makes it usable in a board pack, supervisory submission, or procurement response.</p>
+        <div class="callout">
+          <p><strong>On what regulators examine.</strong> Regulatory review of AI governance does not begin with a score. It begins with documentation of accountability structures, decision-making records, evidence of human oversight controls, and the specific legal basis cited for each governance measure. The MLA output is structured to address each of these requirements directly.</p>
+        </div>
+      </div>
+      <div>
+        <div class="stat-panel">
+          <div class="stat-row">
+            <div class="stat-n">35</div>
+            <div class="stat-txt"><strong>Weighted diagnostic questions</strong> Across seven governance domains, each assessed against a documented regulatory rationale.</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-n">7</div>
+            <div class="stat-txt"><strong>Differentially weighted domains</strong> Domain weights reflect regulatory enforcement priority — not an equal distribution.</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-n">5</div>
+            <div class="stat-txt"><strong>Risk band classifications</strong> A five-band structure that produces precise, unambiguous risk classification.</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-n">6+</div>
+            <div class="stat-txt"><strong>Regulatory frameworks cross-referenced</strong> EU AI Act, UK GDPR, FCA SM&amp;CR, ICO, ISO/IEC 42001, SRA, CQC.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     02 — ARCHITECTURE OVERVIEW
+════════════════════════════════════════════════ -->
+<section class="sec">
+  <div class="pw">
+    <span class="label">02 — Architecture Overview</span>
+    <div class="two-col" style="margin-bottom:44px;">
+      <div>
+        <h2>Seven domains.<br><em>Differentially weighted.</em></h2>
+        <p>The diagnostic is structured across seven governance domains, identified by mapping the principal areas of AI-related examination across applicable regulatory frameworks. Each domain corresponds to a distinct area of regulatory expectation and enforcement activity.</p>
+        <p>Domains are not weighted equally. Weighting reflects the relative enforcement priority assigned to each domain by applicable regulators. Governance and Accountability carries the highest weight — it is the first area examined in any supervisory review and the source of the most consequential enforcement actions to date. Precise weighting ratios are proprietary and are not published.</p>
+        <p>Prior to any domain assessment, the instrument collects organisational context through a structured pre-screen. Sector, organisation size, and active regulatory regimes are not background data — they are structural inputs that determine mandatory flag activation, scoring treatment of certain responses, and additional domain requirements for high-risk AI deployments.</p>
+      </div>
+      <div></div>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="dtable">
+        <thead>
+          <tr>
+            <th>Domain</th>
+            <th>Primary Regulatory Basis</th>
+            <th style="text-align:center;">Questions</th>
+            <th style="text-align:center;">Relative Weight</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Governance &amp; Accountability</td>
+            <td>FCA SM&amp;CR, EU AI Act Art.27, ICO Accountability Framework</td>
+            <td style="text-align:center; color:var(--muted2);">6</td>
+            <td><span class="ptag t-p">Primary</span></td>
+          </tr>
+          <tr>
+            <td>Compliance &amp; Legal Alignment</td>
+            <td>UK GDPR Art.35, EU AI Act Art.9, FCA DP5/22</td>
+            <td style="text-align:center; color:var(--muted2);">5</td>
+            <td><span class="ptag t-h">High</span></td>
+          </tr>
+          <tr>
+            <td>Human Oversight &amp; Controls</td>
+            <td>UK GDPR Art.22, EU AI Act Art.14, FCA SM&amp;CR</td>
+            <td style="text-align:center; color:var(--muted2);">4</td>
+            <td><span class="ptag t-h">High</span></td>
+          </tr>
+          <tr>
+            <td>Explainability &amp; Transparency</td>
+            <td>UK GDPR Art.13/14/22, EU AI Act Art.12, ICO Guidance</td>
+            <td style="text-align:center; color:var(--muted2);">5</td>
+            <td><span class="ptag t-h">High</span></td>
+          </tr>
+          <tr>
+            <td>AI Inventory &amp; Classification</td>
+            <td>EU AI Act Art.9/16, ICO Accountability Framework</td>
+            <td style="text-align:center; color:var(--muted2);">4</td>
+            <td><span class="ptag t-s">Standard</span></td>
+          </tr>
+          <tr>
+            <td>Data Quality &amp; Lineage</td>
+            <td>UK GDPR Art.30, EU AI Act Art.10, ICO Guidance</td>
+            <td style="text-align:center; color:var(--muted2);">4</td>
+            <td><span class="ptag t-s">Standard</span></td>
+          </tr>
+          <tr>
+            <td>Operational Controls &amp; Resilience</td>
+            <td>EU AI Act Art.72/73, FCA PS7/21, Operational resilience frameworks</td>
+            <td style="text-align:center; color:var(--muted2);">5</td>
+            <td><span class="ptag t-b">Baseline</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     03 — SCORING ENGINE
+════════════════════════════════════════════════ -->
+<section class="sec">
+  <div class="pw">
+    <div class="two-col" style="margin-bottom:44px;">
+      <div>
+        <span class="label">03 — Scoring Engine Logic</span>
+        <h2>From response to<br><em>risk position.</em></h2>
+        <p>The scoring model converts individual question responses into a composite risk classification through a structured sequence. Each step applies a distinct analytical layer; the final output reflects all of them simultaneously. What follows is a summary at a level appropriate for professional review. Specific calibration parameters — weighting ratios, band boundaries, and threshold values — are proprietary.</p>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-i">01</div>
+        <div class="step-b">
+          <h3>Pre-Screen Contextualisation</h3>
+          <p>Before any question is answered, the instrument collects sector, organisation size, and active regulatory regimes. These inputs activate mandatory disclosure flags, determine how specific response types are handled, and trigger additional domain requirements for organisations operating high-risk AI categories under EU AI Act Annex III.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-i">02</div>
+        <div class="step-b">
+          <h3>Weighted Question Scoring</h3>
+          <p>Each of the 35 questions is scored on a defined range. Partial compliance receives a distinct score — explicitly differentiated from full compliance and from absence of the relevant control. This distinction is substantive: partial controls that cannot be evidenced carry different regulatory weight from controls that are fully documented and consistently applied.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-i">03</div>
+        <div class="step-b">
+          <h3>Uncertainty Signal Tracking</h3>
+          <p>Responses indicating uncertainty — where the respondent cannot confirm whether a control exists or is required — are scored at zero and tracked as a discrete signal. Where the aggregate uncertainty signal reaches a defined threshold, it produces an independent adjustment to the risk band assignment regardless of the numeric score. Governance uncertainty is itself a regulatory risk, and the model treats it accordingly.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-i">04</div>
+        <div class="step-b">
+          <h3>High-Risk Category Adjustment</h3>
+          <p>Organisations that identify high-risk AI deployments during the pre-screen — as defined by EU AI Act Annex III — face adjusted scoring requirements across the domains most directly implicated. Identical governance responses produce different results depending on the nature of the AI deployment: a firm using AI for automated credit decisions faces materially different obligations from one using AI for internal operational tasks.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-i">05</div>
+        <div class="step-b">
+          <h3>Sector Exposure Calibration</h3>
+          <p>The weighted composite score is adjusted by a sector-specific calibration factor. Identical governance gaps carry different regulatory consequences across industries — financial services and healthcare carry the greatest density of AI-specific regulatory obligations. The calibration produces the Adjusted Exposure Score, which determines the risk band assignment.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-i">06</div>
+        <div class="step-b">
+          <h3>Priority Flag Assignment</h3>
+          <p>Certain responses trigger Priority Flags that appear in the output independent of the overall score. A high Adjusted Exposure Score does not suppress a Priority Flag. These flags correspond to binary legal obligations — controls that are either in place and documented, or not. Each is presented with the specific regulatory basis cited.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-i">07</div>
+        <div class="step-b">
+          <h3>Risk Band Assignment</h3>
+          <p>The Adjusted Exposure Score is mapped to one of five risk bands. Where the uncertainty signal threshold has been triggered, the band is elevated accordingly. The output — risk band classification, domain breakdown, priority flags, and remediation roadmap — is generated immediately and is structured for board submission and regulatory review.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     04 — RISK BAND FRAMEWORK
+════════════════════════════════════════════════ -->
+<section class="sec">
+  <div class="pw">
+    <div class="two-col" style="margin-bottom:44px;">
+      <div>
+        <span class="label">04 — Risk Band Framework</span>
+        <h2>Five bands.<br><em>Precisely defined.</em></h2>
+        <p>The diagnostic produces one of five risk band classifications. Each band carries a specific heading written to communicate regulatory consequence with precision — designed to produce accurate interpretation by board members, compliance officers, and legal reviewers without translation.</p>
+        <p>The five-band structure removes the ambiguity of conventional four-band models, where the midpoint is consistently misread as an acceptable position. Every band in this model represents a distinct governance position requiring a distinct response. Numeric band boundaries are proprietary.</p>
+      </div>
+      <div></div>
+    </div>
+
+    <table class="btable">
+      <thead>
+        <tr>
+          <th style="width:110px;">Band</th>
+          <th>Classification</th>
+          <th>Report Framing</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="bpill p-lo">Low</span></td>
+          <td><div class="bn" style="color:#86efac;">Governance Established</div><div class="bs">Controls documented, current, and evidenceable. Maintenance posture appropriate.</div></td>
+          <td style="color:var(--muted); font-size:.81rem;">Maintenance Mode</td>
+        </tr>
+        <tr>
+          <td><span class="bpill p-lm">Low–Mod</span></td>
+          <td><div class="bn" style="color:#bef264;">Foundations Present</div><div class="bs">Core controls in place. Targeted gaps require structured, prioritised remediation.</div></td>
+          <td style="color:var(--muted); font-size:.81rem;">Targeted Gaps Remain</td>
+        </tr>
+        <tr>
+          <td><span class="bpill p-mo">Moderate</span></td>
+          <td><div class="bn" style="color:#fde68a;">Governance Gaps</div><div class="bs">Material control gaps across one or more domains. Regulatory exposure is likely.</div></td>
+          <td style="color:var(--muted); font-size:.81rem;">Regulatory Exposure Likely</td>
+        </tr>
+        <tr>
+          <td><span class="bpill p-hi">High</span></td>
+          <td><div class="bn" style="color:#fed7aa;">Significant Exposure</div><div class="bs">Multiple control failures identified. Regulatory intervention cannot be excluded without prompt remediation.</div></td>
+          <td style="color:var(--muted); font-size:.81rem;">Intervention Required</td>
+        </tr>
+        <tr>
+          <td><span class="bpill p-cr">Critical</span></td>
+          <td><div class="bn" style="color:#fca5a5;">Governance Absent</div><div class="bs">Fundamental governance infrastructure is not in place. Board-level escalation is required immediately.</div></td>
+          <td style="color:var(--muted); font-size:.81rem;">Urgent Escalation Needed</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     05 — REGULATORY ALIGNMENT
+════════════════════════════════════════════════ -->
+<section class="sec">
+  <div class="pw">
+    <div class="two-col" style="margin-bottom:44px;">
+      <div>
+        <span class="label">05 — Regulatory Alignment</span>
+        <h2>Grounded in<br><em>applicable law.</em></h2>
+        <p>Regulatory alignment in the MLA diagnostic is not asserted at a product level — it is visible in the output. Every question references a specific article, guidance paragraph, or supervisory expectation. The instrument does not map generic governance principles retrospectively to regulation. It begins with regulatory text.</p>
+        <p>The frameworks listed below are those from which the diagnostic's questions and scoring rationale are directly derived. Each finding in the report output carries the specific regulatory citation that makes it usable in a board submission, supervisory response, or procurement disclosure.</p>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="fwlist">
+      <div class="fwitem">
+        <div class="fw-ref">EU AI Act <span class="fw-sub">In force August 2024. High-risk obligations from August 2026.</span></div>
+        <div class="fw-d">
+          <h3>Annex III High-Risk Classification &amp; Governance Obligations</h3>
+          <p>Articles 9, 10, 11, 12, 14, 15, 16, and 27 are referenced directly across the assessment. High-risk AI category selection in the pre-screen activates adjusted domain requirements across the Human Oversight and Compliance sections. Annex III classification is used to determine whether additional scoring weight applies to affected areas.</p>
+        </div>
+      </div>
+      <div class="fwitem">
+        <div class="fw-ref">UK GDPR <span class="fw-sub">ICO enforcement ongoing.</span></div>
+        <div class="fw-d">
+          <h3>Automated Decision-Making, Transparency &amp; Individual Rights</h3>
+          <p>Article 22 obligations around automated decision-making and human oversight are assessed directly. Article 35 DPIA requirements, Articles 13 and 14 transparency obligations, the Article 5(2) accountability principle, and Chapter III individual rights provisions are referenced across multiple domains. Absence of a DPIA where personal data is processed at scale constitutes a Priority Flag.</p>
+        </div>
+      </div>
+      <div class="fwitem">
+        <div class="fw-ref">Financial Conduct Authority <span class="fw-sub">DP5/22 · PS7/21 · Consumer Duty PS22/9</span></div>
+        <div class="fw-d">
+          <h3>SM&amp;CR Accountability &amp; Board Governance Requirements</h3>
+          <p>FCA expectations under DP5/22 and PS7/21 require AI risk to be embedded in operational risk frameworks with named Senior Manager accountability. Consumer Duty requires boards to receive management information on AI-driven outcomes. Absence of a named governance owner is a Priority Flag reflecting the binary nature of SM&amp;CR accountability obligations.</p>
+        </div>
+      </div>
+      <div class="fwitem">
+        <div class="fw-ref">Information Commissioner's Office <span class="fw-sub">ICO AI &amp; Data Protection Guidance 2023</span></div>
+        <div class="fw-d">
+          <h3>Accountability Framework &amp; Automated Decision Transparency</h3>
+          <p>The ICO Accountability Framework's requirements for documented policies, privacy by design, and records of processing are assessed across the Compliance and Governance domains. ICO guidance on automated decision-making transparency and explainability informs the Explainability domain. ICO enforcement priorities around automated processing are reflected in the flag logic.</p>
+        </div>
+      </div>
+      <div class="fwitem">
+        <div class="fw-ref">ISO/IEC 42001 <span class="fw-sub">International AI Management System Standard</span></div>
+        <div class="fw-d">
+          <h3>AI Management System Architecture</h3>
+          <p>ISO/IEC 42001 provides the structural reference for AI governance documentation, risk assessment cycles, and continuous improvement requirements that complement the regulatory obligations above. The diagnostic assesses alignment with the standard's core requirements as a component of the Governance and Operational Controls domains.</p>
+        </div>
+      </div>
+      <div class="fwitem">
+        <div class="fw-ref">Sector-Specific <span class="fw-sub">SRA · CQC · NHS DTAC · DCB0129</span></div>
+        <div class="fw-d">
+          <h3>Profession-Specific Obligations</h3>
+          <p>SRA AI Guidance (2024) requirements for client disclosure of AI use are activated for legal sector respondents. NHS DTAC, DCB0129 clinical safety requirements, and CQC oversight obligations are activated for healthcare respondents. Sector selection in the pre-screen determines which profession-specific flags are mandatory in the output regardless of scored question responses.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     06 — CONTROLLED TRANSPARENCY
+════════════════════════════════════════════════ -->
+<div class="trans-sec">
+  <div class="pw">
+    <div class="two-col">
+      <div>
+        <span class="label">06 — Controlled Transparency</span>
+        <h2>What this disclosure<br><em>does not include.</em></h2>
+        <p>The methodology disclosure above is complete at the level required for professional due diligence and procurement review. It describes the structural architecture of the instrument, the seven domains assessed, the nature of the scoring model, the regulatory frameworks applied, and the logic governing risk band assignment and Priority Flag generation.</p>
+        <p>Exact domain weighting ratios, numeric band boundaries, sector calibration parameters, uncertainty flag thresholds, and question-level scoring scales are not included. These elements constitute the proprietary calibration of the instrument.</p>
+        <p>An AI governance diagnostic whose scoring parameters are fully public cannot produce accurate results. Organisations would construct responses to produce a preferred outcome rather than an accurate one. The integrity of the output depends on the integrity of the calibration.</p>
+        <p>Institutional reviewers requiring additional technical disclosure for procurement purposes may request a structured briefing through MLA Group directly.</p>
+      </div>
+      <div>
+        <div style="border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--card); padding:28px 26px;">
+          <span class="label" style="margin-bottom:14px;">Proprietary Elements — Not Disclosed</span>
+          <ul class="prop-list">
+            <li><strong>Domain weighting ratios</strong> Exact percentage weights assigned to each of the seven domains.</li>
+            <li><strong>Band boundary thresholds</strong> Numeric score ranges governing risk band assignment.</li>
+            <li><strong>Sector calibration parameters</strong> The specific calibration factor applied per industry sector.</li>
+            <li><strong>Uncertainty flag thresholds</strong> The point at which accumulated uncertainty signals produce band elevation.</li>
+            <li><strong>Question-level scoring scales</strong> The exact score assigned to each individual response option.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     07 — LEGAL DISCLAIMER
+════════════════════════════════════════════════ -->
+<div class="disc-sec">
+  <div class="pw">
+    <div class="disc-inner">
+      <div class="disc-head">Legal Notice</div>
+      <div class="disc-body">
+        <p><strong>This diagnostic provides governance maturity assessment and does not constitute legal advice.</strong> The MLA AI Governance Diagnostic is an analytical instrument designed to assess organisational posture against published regulatory frameworks. References to the EU AI Act, UK GDPR, Financial Conduct Authority guidance, the Information Commissioner's Office, and related frameworks are provided for contextual alignment purposes only.</p>
+        <p>MLA Group Ltd is not a law firm and does not provide legal advice or legal opinions. The outputs of this diagnostic — including risk band classifications, domain scores, priority flags, and remediation guidance — should not be relied upon as legal opinion or as confirmation of regulatory compliance. They do not constitute a legal assessment of obligations, a guarantee of regulatory standing, or a substitute for qualified legal counsel.</p>
+        <p>Organisations are advised to engage qualified legal and regulatory compliance professionals when implementing governance changes, responding to regulatory obligations, or making submissions to regulatory bodies. MLA Group Ltd accepts no liability for regulatory outcomes arising from reliance on diagnostic outputs in the absence of such professional advice.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     BOTTOM CTA
+════════════════════════════════════════════════ -->
+<div class="bcta">
+  <div class="pw">
+    <div class="bcta-inner">
+      <div>
+        <h2>Apply the methodology<br>to your <em>organisation.</em></h2>
+        <p>The diagnostic completes in under 20 minutes. The output — Adjusted Exposure Score, domain breakdown, priority flags, and sequenced remediation roadmap — is generated immediately and structured for board submission and regulatory review.</p>
+      </div>
+      <a href="diagnostic.html" class="btn-apply">
+        Apply the Methodology
+        <svg viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════ -->
+<footer>
+  <div class="ft">
+    <div class="fb">
+      <div class="fl">mla<em>group.</em></div>
+      <p>AI governance risk advisory for regulated industries. Defensible frameworks, audit-ready reporting, and sector-specific regulatory alignment.</p>
+    </div>
+    <div class="fc">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="diagnostic.html">Risk Diagnostic</a></li>
+        <li><a href="login.html">Client Portal</a></li>
+        <li><a href="index.html#pricing">Pricing</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+      </ul>
+    </div>
+    <div class="fc">
+      <h4>Frameworks</h4>
+      <ul>
+        <li><a href="#">EU AI Act</a></li>
+        <li><a href="#">UK GDPR</a></li>
+        <li><a href="#">FCA Guidance</a></li>
+        <li><a href="#">ISO/IEC 42001</a></li>
+      </ul>
+    </div>
+    <div class="fc">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About MLA</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Use</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="fb-row">
+    <span>&copy; 2026 MLA Group Ltd. Registered in England &amp; Wales. All rights reserved.</span>
+    <div class="fl-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggleMob() { document.getElementById('mobMenu').classList.toggle('open'); }
+  function closeMob()  { document.getElementById('mobMenu').classList.remove('open'); }
+</script>
+</body>
+</html>
