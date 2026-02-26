@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Portal | MLA Group</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+
+    /* ── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --bg:      #020617;
+      --bg2:     #070f22;
+      --card:    rgba(10,18,40,0.9);
+      --border:  rgba(255,255,255,0.08);
+      --borm:    rgba(255,255,255,0.13);
+      --accent:  #2563eb;
+      --sky:     #60a5fa;
+      --main:    #f1f5f9;
+      --sub:     #cbd5e1;
+      --muted:   #64748b;
+      --muted2:  #94a3b8;
+      --page:    1000px;
+      --ph:      40px;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      background:var(--bg); color:var(--sub);
+      font-family:'DM Sans',sans-serif; font-weight:400;
+      line-height:1.7; -webkit-font-smoothing:antialiased;
+      min-height:100vh;
+    }
+
+    .bg-field {
+      position:fixed; inset:0; z-index:0; pointer-events:none;
+      background:radial-gradient(ellipse 60% 30% at 50% -5%, rgba(37,99,235,0.1) 0%, transparent 65%);
+    }
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    nav {
+      position:sticky; top:0; z-index:100; height:64px;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 var(--ph); border-bottom:1px solid var(--border);
+      background:rgba(2,6,23,0.94); backdrop-filter:blur(24px);
+    }
+    .nav-logo { font-size:1.05rem; font-weight:600; letter-spacing:-0.02em; text-decoration:none; color:var(--main); }
+    .nav-logo em { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--sky); }
+    .nav-right { display:flex; align-items:center; gap:10px; }
+    .nav-email { font-size:0.78rem; color:var(--muted2); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .nav-signout {
+      padding:7px 14px; border-radius:6px; border:1px solid var(--border);
+      font-size:0.78rem; font-weight:500; color:var(--muted2);
+      background:none; cursor:pointer; font-family:'DM Sans',sans-serif;
+      transition:color .15s, border-color .15s;
+    }
+    .nav-signout:hover { color:var(--main); border-color:var(--borm); }
+
+    @media(max-width:600px) {
+      nav { padding:0 20px; }
+      .nav-email { display:none; }
+    }
+
+    /* ── LAYOUT ──────────────────────────────────────────── */
+    .main { position:relative; z-index:1; max-width:var(--page); margin:0 auto; padding:48px var(--ph) 80px; }
+
+    /* ── PAGE HEADER ─────────────────────────────────────── */
+    .page-header { margin-bottom:44px; }
+    .page-eyebrow {
+      font-size:0.68rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.14em; color:var(--sky);
+      display:flex; align-items:center; gap:10px; margin-bottom:14px;
+    }
+    .page-eyebrow::before { content:''; width:20px; height:1px; background:var(--sky); }
+    .page-header h1 {
+      font-family:'Instrument Serif',serif;
+      font-size:clamp(1.9rem,3.5vw,2.6rem); font-weight:400;
+      line-height:1.05; letter-spacing:-0.025em; color:var(--main);
+      margin-bottom:10px;
+    }
+    .page-header h1 em { font-style:italic; color:var(--sky); }
+    .page-header p { font-size:0.88rem; color:var(--muted2); }
+
+    /* ── STATS ROW ───────────────────────────────────────── */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:36px; }
+    .stat-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:10px; padding:22px 22px;
+    }
+    .stat-lbl {
+      font-size:0.67rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.14em; color:var(--muted); margin-bottom:10px;
+    }
+    .stat-val {
+      font-family:'Instrument Serif',serif;
+      font-size:1.9rem; font-weight:400; color:var(--main);
+      line-height:1; margin-bottom:4px;
+    }
+    .stat-sub { font-size:0.76rem; color:var(--muted); }
+
+    /* ── NEW DIAGNOSTIC CTA ──────────────────────────────── */
+    .new-diag-bar {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:10px; padding:20px 24px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:16px; margin-bottom:44px;
+    }
+    .ndb-left h3 { font-size:0.92rem; font-weight:600; color:var(--main); margin-bottom:3px; }
+    .ndb-left p  { font-size:0.8rem; color:var(--muted2); }
+    .btn-new-diag {
+      display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+      padding:10px 22px; border-radius:7px;
+      background:var(--accent); color:#fff;
+      font-size:0.84rem; font-weight:600; text-decoration:none;
+      transition:background .15s;
+    }
+    .btn-new-diag:hover { background:#1d4ed8; }
+
+    /* ── SECTION TITLE ───────────────────────────────────── */
+    .sec-title {
+      font-size:0.67rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.14em; color:var(--muted); margin-bottom:16px;
+    }
+
+    /* ── RESULT CARDS ────────────────────────────────────── */
+    .results-stack { display:flex; flex-direction:column; gap:12px; }
+
+    .result-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:10px; padding:22px 24px;
+      display:grid; grid-template-columns:1fr auto;
+      align-items:center; gap:16px;
+      transition:border-color .15s;
+    }
+    .result-card:hover { border-color:var(--borm); }
+
+    .rc-org { font-size:0.96rem; font-weight:600; color:var(--main); margin-bottom:5px; }
+    .rc-meta { font-size:0.76rem; color:var(--muted); display:flex; gap:12px; flex-wrap:wrap; }
+
+    .rc-right { display:flex; align-items:center; gap:14px; flex-shrink:0; }
+
+    .score-block { text-align:center; }
+    .score-num {
+      font-family:'Instrument Serif',serif;
+      font-size:1.7rem; font-weight:400; line-height:1;
+    }
+    .score-lbl { font-size:0.6rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-top:2px; }
+
+    .band-pill {
+      padding:4px 12px; border-radius:4px;
+      font-size:0.67rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.09em; white-space:nowrap;
+    }
+    .bp-low    { background:rgba(34,197,94,.1);  color:#86efac; border:1px solid rgba(34,197,94,.15); }
+    .bp-lowmod { background:rgba(132,204,22,.1); color:#bef264; border:1px solid rgba(132,204,22,.15); }
+    .bp-mod    { background:rgba(245,158,11,.1); color:#fde68a; border:1px solid rgba(245,158,11,.15); }
+    .bp-high   { background:rgba(249,115,22,.1); color:#fdba74; border:1px solid rgba(249,115,22,.15); }
+    .bp-crit   { background:rgba(239,68,68,.1);  color:#fca5a5; border:1px solid rgba(239,68,68,.15); }
+
+    /* ── DOWNLOAD BUTTON (paid) ──────────────────────────── */
+    .btn-dl {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:9px 18px; border-radius:7px;
+      background:rgba(37,99,235,0.12); color:var(--sky);
+      border:1px solid rgba(37,99,235,0.25);
+      font-size:0.78rem; font-weight:600; cursor:pointer;
+      font-family:'DM Sans',sans-serif;
+      transition:background .15s, border-color .15s;
+      white-space:nowrap;
+    }
+    .btn-dl:hover { background:rgba(37,99,235,0.2); border-color:rgba(37,99,235,0.4); }
+    .btn-dl svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* ── UPGRADE PROMPT (unpaid) ─────────────────────────── */
+    .btn-upgrade {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:9px 18px; border-radius:7px;
+      background:var(--accent); color:#fff;
+      font-size:0.78rem; font-weight:600;
+      text-decoration:none; white-space:nowrap;
+      transition:background .15s;
+    }
+    .btn-upgrade:hover { background:#1d4ed8; }
+    .btn-upgrade svg { width:12px; height:12px; stroke:#fff; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* ── PAYWALL BANNER ──────────────────────────────────── */
+    .paywall-banner {
+      background:linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(37,99,235,0.03) 100%);
+      border:1px solid rgba(37,99,235,0.2);
+      border-radius:10px; padding:28px 32px;
+      display:grid; grid-template-columns:1fr auto;
+      align-items:center; gap:32px; margin-bottom:32px;
+    }
+    .pb-label { font-size:0.67rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--sky); margin-bottom:8px; }
+    .pb-title { font-size:1rem; font-weight:600; color:var(--main); margin-bottom:6px; }
+    .pb-desc  { font-size:0.82rem; color:var(--muted2); max-width:480px; }
+    .pb-price {
+      text-align:center; flex-shrink:0;
+    }
+    .pb-amount {
+      font-family:'Instrument Serif',serif;
+      font-size:2.4rem; font-weight:400; color:var(--main); line-height:1;
+      display:flex; align-items:flex-start; gap:4px;
+    }
+    .pb-currency { font-size:1rem; color:var(--muted2); margin-top:6px; }
+    .pb-period { font-size:0.72rem; color:var(--muted); margin-top:4px; }
+    .btn-get-report {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:12px 28px; border-radius:8px;
+      background:var(--accent); color:#fff;
+      font-size:0.88rem; font-weight:600; text-decoration:none;
+      transition:background .15s, transform .12s;
+      margin-top:12px;
+    }
+    .btn-get-report:hover { background:#1d4ed8; transform:translateY(-1px); }
+
+    /* ── EMPTY STATE ─────────────────────────────────────── */
+    .empty-state {
+      background:var(--card); border:1px dashed var(--border);
+      border-radius:10px; padding:52px 32px; text-align:center;
+    }
+    .empty-state h3 { font-size:1rem; font-weight:600; color:var(--main); margin-bottom:8px; }
+    .empty-state p { font-size:0.84rem; color:var(--muted2); margin-bottom:24px; }
+
+    /* ── ENTERPRISE FOOTER CARD ──────────────────────────── */
+    .ent-card {
+      margin-top:40px;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:10px; padding:24px 28px;
+      display:flex; align-items:center; justify-content:space-between; gap:24px;
+    }
+    .ent-card h4 { font-size:0.9rem; font-weight:600; color:var(--main); margin-bottom:4px; }
+    .ent-card p  { font-size:0.8rem; color:var(--muted2); max-width:480px; }
+    .btn-consult {
+      flex-shrink:0; padding:10px 22px; border-radius:7px;
+      border:1px solid var(--borm); color:var(--sub);
+      font-size:0.82rem; font-weight:500; text-decoration:none;
+      transition:border-color .15s, color .15s;
+    }
+    .btn-consult:hover { border-color:rgba(96,165,250,.3); color:var(--main); }
+
+    /* ── LOADING ─────────────────────────────────────────── */
+    .portal-loading {
+      display:flex; align-items:center; justify-content:center;
+      min-height:50vh; flex-direction:column; gap:14px;
+    }
+    .spin {
+      width:28px; height:28px; border-radius:50%;
+      border:2px solid rgba(255,255,255,0.08);
+      border-top-color:var(--sky);
+      animation:spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-txt { font-size:0.84rem; color:var(--muted); }
+
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    @media(max-width:768px){
+      :root { --ph:20px; }
+      .stats-row { grid-template-columns:1fr 1fr; }
+      .stats-row .stat-card:last-child { grid-column:span 2; }
+      .result-card { grid-template-columns:1fr; }
+      .rc-right { justify-content:flex-start; }
+      .new-diag-bar { flex-direction:column; align-items:flex-start; }
+      .paywall-banner { grid-template-columns:1fr; }
+      .pb-price { text-align:left; }
+      .ent-card { flex-direction:column; align-items:flex-start; }
+      .main { padding:32px var(--ph) 60px; }
+    }
+
+  </style>
+</head>
+<body>
+<div class="bg-field"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">mla<em>group.</em></a>
+  <div class="nav-right">
+    <span class="nav-email" id="navEmail"></span>
+    <button class="nav-signout" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main" id="portal" style="display:none;">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-eyebrow">Client Portal</div>
+    <h1>Welcome back<em id="greetName"></em></h1>
+    <p>Your AI governance diagnostic history and reports.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-lbl">Diagnostics Run</div>
+      <div class="stat-val" id="statCount">—</div>
+      <div class="stat-sub">Total assessments</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">Latest Score</div>
+      <div class="stat-val" id="statScore">—</div>
+      <div class="stat-sub">Governance maturity</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">Risk Band</div>
+      <div class="stat-val" id="statBand" style="font-size:1.1rem;padding-top:5px;">—</div>
+      <div class="stat-sub" id="statDate">No assessments yet</div>
+    </div>
+  </div>
+
+  <!-- NEW DIAGNOSTIC -->
+  <div class="new-diag-bar">
+    <div class="ndb-left">
+      <h3>Run a new diagnostic</h3>
+      <p>Track governance improvement over time with a fresh assessment.</p>
+    </div>
+    <a href="diagnostic.html" class="btn-new-diag">
+      Start Assessment
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5h7M5 2l3.5 3.5L5 9"/></svg>
+    </a>
+  </div>
+
+  <!-- PAYWALL BANNER — shown when unpaid -->
+  <div class="paywall-banner" id="paywallBanner" style="display:none;">
+    <div>
+      <div class="pb-label">Full Report Available</div>
+      <div class="pb-title">Unlock your complete 8-page Regulatory Risk Report</div>
+      <p class="pb-desc">Domain-level findings with regulatory article mapping, a sequenced remediation roadmap, and a board-ready PDF. One payment, permanent access for all your assessments.</p>
+    </div>
+    <div class="pb-price">
+      <div class="pb-amount"><span class="pb-currency">£</span>79</div>
+      <div class="pb-period">One-time · Instant access</div>
+      <a href="pricing.html" class="btn-get-report">
+        Get Full Report
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5h7M5 2l3.5 3.5L5 9"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- ASSESSMENT HISTORY -->
+  <div class="sec-title">Assessment History</div>
+  <div id="resultsContainer"></div>
+
+  <!-- ENTERPRISE -->
+  <div class="ent-card">
+    <div>
+      <h4>Bespoke Consultancy — Strategic Roadmap</h4>
+      <p>For organisations requiring board-level advisory, deeper data analysis, or an ongoing governance engagement. Includes all report features plus heat maps, benchmarking, and a dedicated MLA specialist.</p>
+    </div>
+    <a href="mailto:governance@mlagroup.co.uk?subject=Bespoke%20Consultancy%20Enquiry" class="btn-consult">Book a Specialist →</a>
+  </div>
+
+</div>
+
+<!-- LOADING STATE -->
+<div class="portal-loading" id="portalLoading">
+  <div class="spin"></div>
+  <div class="loading-txt">Loading your portal…</div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const BAND_LABEL = { low:'Low Risk', lowmod:'Low–Moderate', moderate:'Moderate', high:'High Risk', critical:'Critical' };
+  const BAND_PILL  = { low:'bp-low', lowmod:'bp-lowmod', moderate:'bp-mod', high:'bp-high', critical:'bp-crit' };
+  const BAND_COLOR = { low:'#22c55e', lowmod:'#84cc16', moderate:'#f59e0b', high:'#f97316', critical:'#ef4444' };
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+
+    const user = session.user;
+    document.getElementById('navEmail').textContent = user.email;
+
+    // Load profile
+    const { data: profile } = await sb.from('profiles')
+      .select('full_name, organisation, paid')
+      .eq('id', user.id).single();
+
+    const isPaid = profile?.paid === true;
+
+    if (profile?.full_name) {
+      const first = profile.full_name.split(' ')[0];
+      document.getElementById('greetName').textContent = ', ' + first;
+    }
+
+    // Link any pending result from diagnostic
+    const pendingId = sessionStorage.getItem('pending_result_id');
+    if (pendingId) {
+      await sb.from('diagnostic_results')
+        .update({ user_id: user.id })
+        .eq('id', pendingId);
+      sessionStorage.removeItem('pending_result_id');
+    }
+
+    // Load results
+    const { data: results } = await sb.from('diagnostic_results')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    renderStats(results || []);
+    renderPaywall(isPaid, results || []);
+    renderResults(results || [], isPaid);
+
+    document.getElementById('portalLoading').style.display = 'none';
+    document.getElementById('portal').style.display = 'block';
+  }
+
+  function renderStats(results) {
+    document.getElementById('statCount').textContent = results.length || '0';
+    if (results.length > 0) {
+      const latest = results[0];
+      const score = latest.adjusted_score || 0;
+      const band  = latest.risk_band || 'moderate';
+      document.getElementById('statScore').textContent = score + '%';
+      const bandEl = document.getElementById('statBand');
+      bandEl.textContent = BAND_LABEL[band] || band;
+      bandEl.style.color = BAND_COLOR[band] || 'inherit';
+      document.getElementById('statDate').textContent = 'Last run: ' + fmtDate(latest.created_at);
+    }
+  }
+
+  function renderPaywall(isPaid, results) {
+    // Show paywall banner only if user has results but hasn't paid
+    if (!isPaid && results.length > 0) {
+      document.getElementById('paywallBanner').style.display = 'grid';
+    }
+  }
+
+  function renderResults(results, isPaid) {
+    const container = document.getElementById('resultsContainer');
+    if (results.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <h3>No assessments yet</h3>
+          <p>Complete your first AI governance diagnostic to see your results here.</p>
+          <a href="diagnostic.html" class="btn-new-diag">Start First Diagnostic →</a>
+        </div>`;
+      return;
+    }
+
+    const stack = document.createElement('div');
+    stack.className = 'results-stack';
+
+    results.forEach(r => {
+      const band  = r.risk_band || 'moderate';
+      const score = r.adjusted_score || 0;
+      const org   = r.organisation || 'Assessment';
+      const sector = r.sector || '';
+      const date  = fmtDate(r.created_at);
+      const ver   = r.framework_version || '2.0.0';
+
+      const card = document.createElement('div');
+      card.className = 'result-card';
+
+      const actionHTML = isPaid
+        ? `<button class="btn-dl" onclick="downloadReport('${r.id}')">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Report
+           </button>`
+        : `<a href="pricing.html" class="btn-upgrade">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Unlock Report — £79
+           </a>`;
+
+      card.innerHTML = `
+        <div class="rc-left">
+          <div class="rc-org">${org}</div>
+          <div class="rc-meta">
+            <span>${date}</span>
+            ${sector ? `<span>${sector}</span>` : ''}
+            <span>Framework v${ver}</span>
+          </div>
+        </div>
+        <div class="rc-right">
+          <div class="score-block">
+            <div class="score-num" style="color:${BAND_COLOR[band]}">${score}%</div>
+            <div class="score-lbl">Maturity</div>
+          </div>
+          <span class="band-pill ${BAND_PILL[band]}">${BAND_LABEL[band] || band}</span>
+          ${actionHTML}
+        </div>`;
+
+      stack.appendChild(card);
+    });
+
+    container.appendChild(stack);
+  }
+
+  async function downloadReport(resultId) {
+    const btn = event.currentTarget;
+    const original = btn.innerHTML;
+    btn.innerHTML = '<div class="spin" style="width:14px;height:14px;border-width:1.5px;margin:0 auto"></div>';
+    btn.disabled = true;
+
+    try {
+      const { data } = await sb.from('diagnostic_results')
+        .select('*').eq('id', resultId).single();
+
+      if (data) {
+        sessionStorage.setItem('portal_result', JSON.stringify(data));
+        window.open('generate-pdf.html', '_blank');
+      }
+    } catch(e) {
+      console.error(e);
+    }
+
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  }
+
+  async function signOut() {
+    await sb.auth.signOut();
+    window.location.href = 'login.html';
+  }
+
+  init();
+</script>
+</body>
+</html>
