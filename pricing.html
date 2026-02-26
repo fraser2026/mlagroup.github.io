@@ -283,6 +283,15 @@
       .report-pages { grid-template-columns: 1fr; }
     }
   </style>
+  <script async src="https://js.stripe.com/v3/buy-button.js"></script>
+  <style>
+    /* centre and constrain the Stripe embed */
+    .stripe-wrap {
+      display: flex; justify-content: center;
+      margin-top: 14px;
+    }
+    .stripe-wrap stripe-buy-button { width: 100%; }
+  </style>
 </head>
 <body>
 <div class="bg-glow"></div>
@@ -348,13 +357,15 @@
         <li><span class="check check-yes"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span> Board-ready 8-page PDF, instant download</li>
         <li><span class="check check-yes"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></span> Permanent access via your client portal</li>
       </ul>
-      <a href="https://buy.stripe.com/eVq8wR1La4fE2qngVvgYU01" class="btn-cta primary">
-        Get Full Report — £79
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
-      </a>
+      <div class="stripe-wrap">
+        <stripe-buy-button
+          buy-button-id="buy_btn_1T5271RfSQTwpCt9qpA7bxqs"
+          publishable-key="pk_live_51SVuGRRfSQTwpCt9hCFdOOyVJBOLgV1Gss5CxMOry1T3kKW3cE7IF8OhQzvXjBd9IjOCp941p4uc9R8RPolEvRVV00fiMjUyXQ"
+        ></stripe-buy-button>
+      </div>
       <div class="secure-note">
         <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-        Stripe · Secure checkout · 30-day refund guarantee
+        Secure checkout · 30-day refund guarantee
       </div>
     </div>
 
