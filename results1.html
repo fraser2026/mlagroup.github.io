@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Results | MLA Group AI Governance Diagnostic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+
+    /* ── TOKENS ────────────────────────────────────────────── */
+    :root {
+      --bg:       #020617;
+      --bg2:      #070f22;
+      --card:     rgba(10,18,40,0.85);
+      --border:   rgba(255,255,255,0.08);
+      --border-m: rgba(255,255,255,0.13);
+      --accent:   #2563eb;
+      --sky:      #60a5fa;
+      --main:     #ffffff;
+      --sub:      #e2e8f0;
+      --muted:    #94a3b8;
+      --muted2:   #cbd5e1;
+      --page:     1060px;
+      --ph:       48px;
+
+      --c-low:    #22c55e;
+      --c-lm:     #84cc16;
+      --c-mod:    #f59e0b;
+      --c-hi:     #f97316;
+      --c-crit:   #ef4444;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      background:var(--bg); color:var(--sub);
+      font-family:'DM Sans',sans-serif; font-weight:400;
+      line-height:1.75; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+    }
+
+    .bg-field {
+      position:fixed; inset:0; z-index:0; pointer-events:none;
+      background:radial-gradient(ellipse 70% 40% at 50% -5%, rgba(37,99,235,0.12) 0%, transparent 65%);
+    }
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    nav {
+      position:sticky; top:0; z-index:100; height:64px;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 var(--ph); border-bottom:1px solid var(--border);
+      background:rgba(2,6,23,0.94); backdrop-filter:blur(24px);
+    }
+    .logo { font-size:1.05rem; font-weight:600; letter-spacing:-0.02em; text-decoration:none; color:var(--main); }
+    .logo em { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--sky); }
+    .nav-right { display:flex; align-items:center; gap:8px; }
+    .nav-signin { padding:7px 16px; border-radius:6px; font-size:0.84rem; font-weight:500; color:var(--sub); text-decoration:none; transition:color .15s; }
+    .nav-signin:hover { color:var(--main); }
+    .nav-cta { padding:8px 18px; border-radius:7px; font-size:0.84rem; font-weight:600; color:#fff; background:var(--accent); text-decoration:none; transition:background .15s; }
+    .nav-cta:hover { background:#1d4ed8; }
+
+    /* ── PROGRESS STRIP ──────────────────────────────────── */
+    .progress-strip {
+      position:relative; z-index:1;
+      background:rgba(7,15,34,0.8); border-bottom:1px solid var(--border);
+      padding:0 var(--ph);
+      display:flex; align-items:center; gap:0;
+      height:44px; overflow-x:auto;
+    }
+    .ps-step {
+      font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em;
+      color:var(--muted); white-space:nowrap; padding:0 16px;
+    }
+    .ps-step.done { color:var(--sky); }
+    .ps-step.active { color:var(--main); }
+    .ps-arrow { font-size:0.7rem; color:rgba(255,255,255,0.2); flex-shrink:0; }
+
+    /* ── LAYOUT ──────────────────────────────────────────── */
+    .pw  { max-width:var(--page); margin:0 auto; padding:0 var(--ph); }
+    .sec { position:relative; z-index:1; padding:72px 0; border-top:1px solid var(--border); }
+    .sec:first-of-type { border-top:none; }
+
+    .label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--sky); margin-bottom:14px; display:block; }
+    h2 { font-family:'Instrument Serif',serif; font-size:clamp(1.8rem,3vw,2.6rem); font-weight:400; line-height:1.1; letter-spacing:-0.02em; color:var(--main); margin-bottom:16px; }
+    h2 em { font-style:italic; color:var(--sky); }
+    h3 { font-size:0.94rem; font-weight:600; color:var(--main); margin-bottom:8px; }
+    p  { font-size:0.9rem; color:var(--muted2); line-height:1.85; margin-bottom:14px; }
+    p:last-child { margin-bottom:0; }
+
+    /* ── RESULTS HERO ────────────────────────────────────── */
+    .hero-sec {
+      position:relative; z-index:1;
+      padding:60px 0 72px;
+    }
+    .hero-grid {
+      display:grid; grid-template-columns:1fr 360px; gap:64px; align-items:start;
+    }
+
+    /* Gauge */
+    .gauge-wrap {
+      display:flex; flex-direction:column; align-items:flex-start; gap:24px;
+      margin-bottom:28px;
+    }
+    .gauge-svg {
+      width:240px; height:134px; overflow:visible;
+    }
+    .gauge-track {
+      fill:none; stroke:rgba(255,255,255,0.07); stroke-width:10; stroke-linecap:round;
+    }
+    .gauge-fill {
+      fill:none; stroke-width:10; stroke-linecap:round;
+      stroke-dasharray:0 235.6;
+      transition:stroke-dasharray 1.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .gauge-score {
+      font-family:'Instrument Serif',serif;
+      font-size:32px; fill:var(--main); font-weight:400;
+    }
+    .gauge-sub {
+      font-size:6.5px; fill:#64748b;
+      font-family:'DM Sans',sans-serif; font-weight:700; letter-spacing:0.12em;
+    }
+
+    .band-row {
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:12px;
+    }
+    .band-pill-lg {
+      display:inline-block; padding:5px 16px; border-radius:4px;
+      font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;
+    }
+    .band-heading { font-size:1.15rem; font-weight:600; color:var(--main); }
+    .band-desc { font-size:0.88rem; color:var(--muted2); line-height:1.8; max-width:560px; margin-top:8px; }
+
+    /* Context card */
+    .ctx-card {
+      background:var(--card); border:1px solid var(--border); border-radius:10px;
+      padding:28px 26px;
+    }
+    .ctx-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0; border-bottom:1px solid var(--border);
+      font-size:0.82rem;
+    }
+    .ctx-row:last-of-type { border-bottom:none; padding-bottom:0; }
+    .ctx-k { color:var(--muted); }
+    .ctx-v { color:var(--sub); font-weight:600; text-align:right; }
+    .ctx-note {
+      margin-top:16px; padding-top:16px; border-top:1px solid var(--border);
+      font-size:0.77rem; color:var(--muted); line-height:1.6;
+    }
+    .method-link { margin-top:14px; }
+    .method-link a { font-size:0.78rem; color:var(--sky); text-decoration:none; }
+    .method-link a:hover { text-decoration:underline; }
+
+    /* ── DOMAIN LIST ─────────────────────────────────────── */
+    .sec-sub { font-size:0.88rem; color:var(--muted2); max-width:600px; margin-bottom:36px; }
+
+    .domain-list { display:flex; flex-direction:column; max-width:760px; }
+    .domain-item {
+      display:grid; grid-template-columns:1fr auto;
+      align-items:center; gap:20px;
+      padding:16px 0; border-bottom:1px solid var(--border);
+    }
+    .domain-item:first-child { border-top:1px solid var(--border); }
+    .domain-name { font-size:0.88rem; font-weight:600; color:var(--main); margin-bottom:2px; }
+    .domain-sub  { font-size:0.76rem; color:var(--muted); }
+    .risk-pill {
+      display:inline-block; padding:4px 12px; border-radius:4px;
+      font-size:0.64rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;
+      white-space:nowrap; flex-shrink:0;
+    }
+    .rp-low   { background:rgba(34,197,94,.1);  color:#86efac; border:1px solid rgba(34,197,94,.18); }
+    .rp-mod   { background:rgba(245,158,11,.1); color:#fde68a; border:1px solid rgba(245,158,11,.18); }
+    .rp-high  { background:rgba(239,68,68,.1);  color:#fca5a5; border:1px solid rgba(239,68,68,.18); }
+
+    .domain-note {
+      margin-top:20px; padding:16px 20px;
+      border-left:2px solid rgba(37,99,235,.3);
+      background:rgba(37,99,235,.03);
+      font-size:0.82rem; color:var(--muted2); max-width:760px;
+    }
+
+    /* ── FLAGS ───────────────────────────────────────────── */
+    .flag-card {
+      background:var(--card); border:1px solid var(--border); border-radius:8px;
+      padding:22px 24px; max-width:760px; margin-bottom:12px;
+      border-left:3px solid var(--c-crit);
+    }
+    .flag-card.severity-high { border-left-color:var(--c-hi); }
+    .flag-card.severity-moderate { border-left-color:var(--c-mod); }
+    .flag-card.severity-info { border-left-color:var(--sky); }
+    .flag-label { font-size:0.88rem; font-weight:600; color:var(--main); margin-bottom:6px; }
+    .flag-basis { font-size:0.76rem; color:var(--muted); }
+
+    .flags-locked {
+      display:flex; align-items:center; gap:12px;
+      padding:14px 20px; border-radius:8px; max-width:760px;
+      background:rgba(255,255,255,0.02); border:1px dashed var(--border-m);
+      font-size:0.82rem; color:var(--muted);
+    }
+    .lock-icon-sm svg { width:14px; height:14px; stroke:var(--muted); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* ── BLURRED RECS ────────────────────────────────────── */
+    .recs-outer {
+      position:relative; max-width:760px;
+      border-radius:12px; overflow:hidden;
+    }
+    .recs-inner { display:flex; flex-direction:column; gap:10px; padding-bottom:4px; }
+    .rec-card {
+      background:var(--card); border:1px solid var(--border); border-radius:8px;
+      padding:18px 22px; border-left:3px solid var(--accent);
+      display:grid; grid-template-columns:28px 1fr; gap:14px; align-items:flex-start;
+    }
+    .rec-num {
+      font-family:'Instrument Serif',serif; font-size:1.2rem; color:rgba(96,165,250,0.3);
+      line-height:1.3;
+    }
+    .rec-txt { font-size:0.86rem; color:var(--muted2); line-height:1.75; }
+
+    .recs-blur { filter:blur(5px); user-select:none; pointer-events:none; }
+    .recs-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(to bottom, transparent 0%, rgba(2,6,23,0.65) 25%, rgba(2,6,23,0.97) 60%);
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+      padding:32px 24px;
+    }
+    .overlay-lock {
+      width:40px; height:40px; border-radius:50%;
+      background:rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.25);
+      display:flex; align-items:center; justify-content:center; margin-bottom:14px;
+    }
+    .overlay-lock svg { width:18px; height:18px; stroke:var(--sky); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+    .overlay-title { font-size:0.94rem; font-weight:600; color:var(--main); margin-bottom:6px; text-align:center; }
+    .overlay-sub { font-size:0.8rem; color:var(--muted2); margin-bottom:20px; text-align:center; max-width:380px; }
+    .btn-unlock {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:12px 28px; border-radius:8px;
+      background:var(--accent); color:#fff;
+      font-size:0.88rem; font-weight:600; text-decoration:none;
+      transition:background .15s;
+    }
+    .btn-unlock:hover { background:#1d4ed8; }
+
+    /* ── PAYWALL / REPORT PREVIEW ────────────────────────── */
+    .paywall-sec {
+      position:relative; z-index:1;
+      padding:80px 0;
+      border-top:1px solid var(--border);
+      background:linear-gradient(to bottom, rgba(37,99,235,0.03) 0%, transparent 50%);
+    }
+    .pw-grid { display:grid; grid-template-columns:1fr 420px; gap:72px; align-items:center; }
+
+    .pw-header { margin-bottom:24px; }
+    .pw-price {
+      display:inline-flex; align-items:baseline; gap:6px;
+      margin-bottom:20px;
+    }
+    .pw-amount {
+      font-family:'Instrument Serif',serif;
+      font-size:3rem; font-weight:400; color:var(--main); line-height:1;
+    }
+    .pw-currency { font-size:1.2rem; color:var(--muted2); font-weight:500; }
+    .pw-period { font-size:0.82rem; color:var(--muted); }
+
+    .includes-list { display:flex; flex-direction:column; gap:0; margin:24px 0; }
+    .inc-item {
+      display:flex; align-items:flex-start; gap:12px;
+      padding:11px 0; border-bottom:1px solid var(--border);
+      font-size:0.87rem; color:var(--muted2);
+    }
+    .inc-item:first-child { border-top:1px solid var(--border); }
+    .inc-tick { color:var(--sky); font-weight:600; flex-shrink:0; margin-top:1px; }
+
+    .reg-strip {
+      display:flex; flex-wrap:wrap; gap:8px; margin:24px 0;
+    }
+    .reg-badge {
+      padding:4px 12px; border-radius:4px;
+      font-size:0.67rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;
+      color:var(--muted); border:1px solid var(--border-m);
+      background:rgba(255,255,255,0.03);
+    }
+
+    .btn-get-report {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:15px 36px; border-radius:8px;
+      background:var(--accent); color:#fff;
+      font-size:0.92rem; font-weight:600; text-decoration:none;
+      transition:background .15s, transform .15s, box-shadow .15s;
+      margin-bottom:14px;
+    }
+    .btn-get-report:hover { background:#1d4ed8; transform:translateY(-2px); box-shadow:0 8px 28px rgba(37,99,235,.35); }
+    .btn-get-report svg { width:13px; height:13px; stroke:#fff; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+    .secure-note { font-size:0.76rem; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .secure-note svg { width:12px; height:12px; stroke:var(--muted); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* REPORT PREVIEW ANIMATION */
+    .report-preview {
+      position:relative; height:380px; perspective:1000px;
+    }
+    .report-page {
+      position:absolute; width:100%; left:0;
+      background:rgba(10,18,40,0.9); border:1px solid rgba(37,99,235,0.2);
+      border-radius:8px; padding:28px 26px; overflow:hidden;
+      transition:opacity 0.6s, transform 0.6s;
+    }
+    /* Stacked pages */
+    .rp-shadow {
+      position:absolute; bottom:-8px; left:6px; right:6px; top:8px;
+      background:rgba(37,99,235,0.05); border:1px solid rgba(37,99,235,0.08);
+      border-radius:8px; z-index:-1;
+    }
+    .rp-shadow-2 {
+      position:absolute; bottom:-16px; left:12px; right:12px; top:16px;
+      background:rgba(37,99,235,0.03); border:1px solid rgba(37,99,235,0.05);
+      border-radius:8px; z-index:-2;
+    }
+
+    .rp-header {
+      display:flex; justify-content:space-between; align-items:flex-start;
+      padding-bottom:18px; margin-bottom:18px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .rp-logo { font-size:0.78rem; font-weight:700; color:var(--sky); letter-spacing:-0.01em; }
+    .rp-logo em { font-family:'Instrument Serif',serif; font-style:italic; }
+    .rp-meta { font-size:0.62rem; color:var(--muted); text-align:right; line-height:1.5; }
+
+    .rp-band-bar {
+      display:flex; align-items:center; gap:10px; margin-bottom:16px;
+    }
+    .rp-band-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .rp-band-text { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; }
+    .rp-score-lg {
+      font-family:'Instrument Serif',serif; font-size:2rem; font-weight:400;
+      margin-bottom:4px;
+    }
+    .rp-score-label { font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
+
+    .rp-domain-rows { display:flex; flex-direction:column; gap:8px; margin-top:18px; }
+    .rp-domain-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04);
+    }
+    .rp-dn { font-size:0.72rem; color:var(--muted2); }
+    .rp-dp { width:70px; height:3px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden; }
+    .rp-dp-fill { height:100%; border-radius:2px; }
+    .rp-dr { font-size:0.68rem; font-weight:600; color:var(--muted); }
+
+    .rp-pages-label {
+      position:absolute; bottom:18px; right:20px;
+      font-size:0.65rem; color:var(--muted); letter-spacing:0.08em;
+    }
+
+    /* Page cycle animation */
+    @keyframes pageIn  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes pageOut { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-6px); } }
+    .rp-face { animation:pageIn 0.6s ease forwards; }
+    .rp-face.out { animation:pageOut 0.5s ease forwards; }
+
+    /* ── ENTERPRISE ──────────────────────────────────────── */
+    .ent-sec { position:relative; z-index:1; padding:56px 0; border-top:1px solid var(--border); }
+    .ent-box {
+      background:var(--card); border:1px solid var(--border); border-radius:10px;
+      padding:36px 40px; display:grid;
+      grid-template-columns:1fr auto; gap:40px; align-items:center;
+    }
+    .ent-box h3 { font-size:1rem; font-weight:600; color:var(--main); margin-bottom:8px; }
+    .ent-box p { font-size:0.85rem; color:var(--muted2); max-width:500px; }
+    .btn-consult {
+      display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+      padding:11px 24px; border-radius:8px;
+      border:1px solid var(--border-m); color:var(--sub);
+      font-size:0.85rem; font-weight:500; text-decoration:none;
+      transition:border-color .15s, color .15s;
+    }
+    .btn-consult:hover { border-color:rgba(96,165,250,.3); color:var(--main); }
+    .ent-sub { font-size:0.76rem; color:var(--muted); margin-top:8px; }
+
+    /* ── FOOTER ──────────────────────────────────────────── */
+    footer { border-top:1px solid var(--border); background:rgba(2,6,23,.96); position:relative; z-index:1; }
+    .ft-row {
+      max-width:var(--page); margin:0 auto; padding:24px var(--ph);
+      display:flex; justify-content:space-between; align-items:center; gap:20px;
+    }
+    .ft-row span { font-size:0.74rem; color:var(--muted); }
+    .ft-links { display:flex; gap:20px; }
+    .ft-links a { font-size:0.74rem; color:var(--muted); text-decoration:none; }
+    .ft-links a:hover { color:var(--muted2); }
+
+    /* ── NO DATA STATE ───────────────────────────────────── */
+    .no-data {
+      position:relative; z-index:1;
+      min-height:60vh; display:flex; align-items:center; justify-content:center;
+    }
+    .no-data-inner {
+      text-align:center; padding:60px 24px; max-width:420px;
+    }
+    .no-data-inner h2 { margin-bottom:12px; }
+    .no-data-inner p { margin-bottom:28px; }
+    .btn-start {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:13px 28px; border-radius:8px; background:var(--accent); color:#fff;
+      font-size:0.9rem; font-weight:600; text-decoration:none;
+      transition:background .15s;
+    }
+    .btn-start:hover { background:#1d4ed8; }
+
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    @media(max-width:1024px){
+      .hero-grid { grid-template-columns:1fr; gap:40px; }
+      .pw-grid   { grid-template-columns:1fr; gap:48px; }
+      .ent-box   { grid-template-columns:1fr; gap:24px; }
+    }
+    @media(max-width:768px){
+      :root { --ph:24px; }
+      nav { padding:0 24px; }
+      .sec { padding:52px 0; }
+      .hero-sec { padding:40px 0 52px; }
+      .paywall-sec { padding:60px 0; }
+      .report-preview { height:320px; }
+      .ft-row { flex-direction:column; text-align:center; padding:20px 24px; }
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="bg-field"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">mla<em>group.</em></a>
+  <div class="nav-right">
+    <a href="login.html" class="nav-signin">Sign in</a>
+    <a href="pricing.html" class="nav-cta">Get Full Report</a>
+  </div>
+</nav>
+
+<!-- PROGRESS STRIP -->
+<div class="progress-strip">
+  <div class="ps-step done">Diagnostic complete</div>
+  <div class="ps-arrow">›</div>
+  <div class="ps-step active">Your results</div>
+  <div class="ps-arrow">›</div>
+  <div class="ps-step">Full report</div>
+  <div class="ps-arrow">›</div>
+  <div class="ps-step">Secure portal</div>
+</div>
+
+<!-- NO DATA STATE (shown if sessionStorage is empty) -->
+<div class="no-data" id="noData" style="display:none;">
+  <div class="no-data-inner">
+    <span class="label">No Results Found</span>
+    <h2>Complete the <em>diagnostic</em> first.</h2>
+    <p>Your results appear here immediately after completing the 35-question assessment. The diagnostic takes under 20 minutes.</p>
+    <a href="diagnostic.html" class="btn-start">
+      Start the Diagnostic
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2l4 4.5-4 4.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</div>
+
+<!-- RESULTS CONTENT (hidden until JS populates) -->
+<div id="resultsContent" style="display:none;">
+
+<!-- ═══ HERO: SCORE + BAND ════════════════════════════════ -->
+<section class="hero-sec">
+  <div class="pw">
+    <div class="hero-grid">
+      <div>
+        <span class="label" id="resultLabel">Your AI Governance Results</span>
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="-92 -82 184 98">
+            <path class="gauge-track" d="M-75,0 A75,75 0 0,1 75,0"/>
+            <path class="gauge-fill" id="gaugeFill" d="M-75,0 A75,75 0 0,1 75,0"/>
+            <text class="gauge-score" id="gaugeScore" x="0" y="-12" text-anchor="middle">—</text>
+            <text class="gauge-sub" x="0" y="10" text-anchor="middle">ADJUSTED EXPOSURE SCORE</text>
+          </svg>
+        </div>
+        <div class="band-row">
+          <span class="band-pill-lg" id="bandPill">—</span>
+          <span class="band-heading" id="bandHeading">—</span>
+        </div>
+        <p class="band-desc" id="bandDesc">—</p>
+      </div>
+      <div>
+        <div class="ctx-card">
+          <span class="label">Assessment Context</span>
+          <div class="ctx-row"><span class="ctx-k">Organisation</span><span class="ctx-v" id="ctxOrg">—</span></div>
+          <div class="ctx-row"><span class="ctx-k">Sector</span><span class="ctx-v" id="ctxSector">—</span></div>
+          <div class="ctx-row"><span class="ctx-k">Framework</span><span class="ctx-v">v2.0 · Feb 2026</span></div>
+          <div class="ctx-row"><span class="ctx-k">Sector calibration</span><span class="ctx-v">Applied</span></div>
+          <p class="ctx-note">A sector-specific calibration has been applied to your Adjusted Exposure Score to reflect the regulatory density of your industry.</p>
+        </div>
+        <div class="method-link">
+          <a href="methodology.html">How this score is calculated →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DOMAIN BREAKDOWN ══════════════════════════════════ -->
+<section class="sec">
+  <div class="pw">
+    <span class="label">Domain Assessment</span>
+    <h2>Governance domain <em>overview.</em></h2>
+    <p class="sec-sub">Your score is assessed across seven governance domains. Domain weights are calibrated to regulatory enforcement priority and are not disclosed in full.</p>
+    <div class="domain-list" id="domainList"></div>
+    <div class="domain-note">Domain risk levels reflect your organisation's scored responses in each area. Full domain-by-domain findings, including specific article references and remediation actions, are included in the full report.</div>
+  </div>
+</section>
+
+<!-- ═══ PRIORITY FLAGS ════════════════════════════════════ -->
+<section class="sec">
+  <div class="pw">
+    <span class="label">Areas Requiring Attention</span>
+    <h2>Priority <em>findings.</em></h2>
+    <p class="sec-sub" style="max-width:600px; margin-bottom:28px;">The following flag was identified in your assessment. This represents a specific regulatory obligation or governance gap requiring attention.</p>
+    <div id="flagContainer"></div>
+    <div class="flags-locked" id="flagsLocked" style="display:none;">
+      <span class="lock-icon-sm">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </span>
+      <span id="moreFlagsText">Additional findings are included in the full report.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BLURRED RECOMMENDATIONS ══════════════════════════ -->
+<section class="sec">
+  <div class="pw">
+    <span class="label">Priority Recommendations</span>
+    <h2>Your <em>remediation roadmap.</em></h2>
+    <p class="sec-sub" style="max-width:600px; margin-bottom:28px;">Your full report includes a sequenced remediation roadmap referenced to specific regulatory articles. A preview is shown below.</p>
+    <div class="recs-outer">
+      <div class="recs-inner recs-blur" id="recsBlurred"></div>
+      <div class="recs-overlay">
+        <div class="overlay-lock">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <p class="overlay-title">Full remediation roadmap in the complete report</p>
+        <p class="overlay-sub">Prioritised recommendations with regulatory article mapping, sequenced by urgency and impact.</p>
+        <a href="pricing.html" class="btn-unlock">Get Full Report — £79</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PAYWALL / REPORT PREVIEW ══════════════════════════ -->
+<section class="paywall-sec">
+  <div class="pw">
+    <div class="pw-grid">
+      <div>
+        <span class="label">Full Report</span>
+        <h2>Your complete AI governance <em>report.</em></h2>
+        <div class="pw-price">
+          <span class="pw-currency">£</span>
+          <span class="pw-amount">79</span>
+          <span class="pw-period">· one-time · instant access</span>
+        </div>
+        <p>The full 8-page report provides domain-level findings with specific article references, a sequenced remediation roadmap, and a board-ready PDF structured for regulatory review or procurement submission.</p>
+
+        <div class="includes-list">
+          <div class="inc-item"><span class="inc-tick">✓</span> Executive summary with adjusted exposure score</div>
+          <div class="inc-item"><span class="inc-tick">✓</span> Full domain-by-domain findings (F1 – F8)</div>
+          <div class="inc-item"><span class="inc-tick">✓</span> Regulatory article mapping (EU AI Act, UK GDPR, FCA)</div>
+          <div class="inc-item"><span class="inc-tick">✓</span> Sequenced priority remediation roadmap</div>
+          <div class="inc-item"><span class="inc-tick">✓</span> Sector-specific regulatory guidance</div>
+          <div class="inc-item"><span class="inc-tick">✓</span> Board-ready PDF — download any time via secure portal</div>
+        </div>
+
+        <div class="reg-strip">
+          <div class="reg-badge">EU AI Act</div>
+          <div class="reg-badge">UK GDPR</div>
+          <div class="reg-badge">FCA SM&CR</div>
+          <div class="reg-badge">ICO</div>
+          <div class="reg-badge">ISO/IEC 42001</div>
+        </div>
+
+        <br>
+        <a href="pricing.html" class="btn-get-report">
+          Get Full Report — £79
+          <svg viewBox="0 0 14 14"><path d="M3 7h8M7 3l4 4-4 4"/></svg>
+        </a>
+        <br>
+        <div class="secure-note">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Secure payment via Stripe &nbsp;·&nbsp; Instant access after payment &nbsp;·&nbsp; 30-day refund policy
+        </div>
+      </div>
+
+      <!-- ANIMATED REPORT PREVIEW -->
+      <div>
+        <div class="report-preview" id="reportPreview">
+          <div class="rp-shadow-2"></div>
+          <div class="rp-shadow"></div>
+          <div class="report-page" id="reportPage">
+            <!-- Page content populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ENTERPRISE ════════════════════════════════════════ -->
+<section class="ent-sec">
+  <div class="pw">
+    <div class="ent-box">
+      <div>
+        <span class="label">Enterprise &amp; Bespoke</span>
+        <h3>Strategic Roadmap — Full Consultancy</h3>
+        <p>For organisations requiring board-level reporting, deeper analysis, or ongoing advisory engagement. Includes all Premium features plus heat maps, comparative benchmarking, and a dedicated governance specialist.</p>
+      </div>
+      <div style="text-align:center;">
+        <a href="mailto:governance@mlagroup.co.uk?subject=Bespoke%20Consultancy%20Enquiry" class="btn-consult">Book a Specialist Consultation →</a>
+        <p class="ent-sub">1-hour session with an MLA governance specialist</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /resultsContent -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-row">
+    <span>&copy; 2026 MLA Group Ltd. Registered in England &amp; Wales. This assessment does not constitute legal advice.</span>
+    <div class="ft-links">
+      <a href="methodology.html">Methodology</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="#">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* ── BAND CONFIG ─────────────────────────────────────── */
+  const BANDS = {
+    low:      { label:'Low Risk',          color:'#22c55e', pill:'rp-lo', heading:'Governance Established',      desc:'Your AI governance framework demonstrates strong maturity across the assessed areas. The priority is to sustain and evolve these controls as regulatory obligations and AI deployments develop.' },
+    lowmod:   { label:'Low–Moderate Risk', color:'#84cc16', pill:'rp-lm', heading:'Foundations Present',         desc:'Core governance foundations are in place, but targeted gaps create regulatory exposure. These are addressable with focused remediation — the foundations do not require a full rebuild.' },
+    moderate: { label:'Moderate Risk',     color:'#f59e0b', pill:'rp-mo', heading:'Governance Gaps Identified',  desc:'Material governance gaps exist across multiple areas. Regulatory scrutiny of AI is intensifying — organisations at this level face meaningful risk of enforcement attention, reputational exposure, or operational failure.' },
+    high:     { label:'High Risk',         color:'#f97316', pill:'rp-hi', heading:'Significant Exposure',        desc:'Multiple and widespread governance deficiencies have been identified. This represents current, active vulnerability to regulatory action, legal challenge, and operational harm — not future risk.' },
+    critical: { label:'Critical Risk',     color:'#ef4444', pill:'rp-cr', heading:'Governance Absent',           desc:'AI governance is largely absent. This requires board-level escalation and specialist engagement immediately. Continued operation without governance controls creates severe regulatory and legal exposure.' }
+  };
+
+  const PILL_CLASSES = {
+    low:'rp-lo', lowmod:'rp-lm', moderate:'rp-mo', high:'rp-hi', critical:'rp-cr'
+  };
+
+  const DOMAIN_NAMES = {
+    s1:'AI Inventory & Classification',
+    s2:'Governance & Accountability',
+    s3:'Data Quality & Lineage',
+    s4:'Human Oversight & Controls',
+    s5:'Explainability & Transparency',
+    s6:'Compliance & Legal Alignment',
+    s7:'Operational Controls & Resilience'
+  };
+
+  const RECS = {
+    critical:['Urgently appoint a named AI governance lead with documented accountability and a board-level reporting line','Commission an immediate AI inventory audit to establish regulatory scope','Restrict high-impact automated decisions until human oversight controls are operational','Engage legal counsel to assess UK GDPR, EU AI Act, and sector-specific obligations immediately'],
+    high:    ['Formalise AI governance ownership with documented responsibilities across risk, compliance, and technical functions','Conduct Data Protection Impact Assessments for all AI systems processing personal data','Implement decision logging and audit trail capability for all high-impact AI outputs','Establish human-in-the-loop review protocols with documented override procedures'],
+    moderate:['Elevate informal governance arrangements into formally documented policies with named owners','Complete a full DPIA review and ensure individuals are proactively informed of automated decision-making','Strengthen data lineage documentation to support explainability, auditability, and model traceability','Develop escalation pathways and override protocols for AI-assisted decisions affecting individuals'],
+    lowmod:  ['Document any remaining informal governance arrangements — verbal accountability cannot be demonstrated to a regulator','Conduct an EU AI Act scope assessment to determine which obligations apply from August 2026','Close identified gaps in explainability and audit trail capability before regulatory obligations mature','Formalise training records for staff who review or rely on AI-generated outputs'],
+    low:     ['Maintain currency with EU AI Act implementation — high-risk obligations apply from August 2026','Ensure new AI deployments are automatically subject to your existing inventory and DPIA process','Continue scheduled bias and fairness testing as models evolve and data distributions shift','Consider ISO/IEC 42001 certification to formally evidence governance maturity']
+  };
+
+  const RISK_LEVEL = (pct) => pct >= 65 ? 'low' : pct >= 40 ? 'moderate' : 'high';
+
+  /* ── GAUGE ───────────────────────────────────────────── */
+  const PATH_LENGTH = Math.PI * 75; // 235.6
+
+  function animateGauge(score, color) {
+    const fill = document.getElementById('gaugeFill');
+    const scoreEl = document.getElementById('gaugeScore');
+    fill.style.stroke = color;
+    fill.style.strokeDasharray = `0 ${PATH_LENGTH}`;
+    scoreEl.textContent = '0%';
+    // Animate score number
+    const target = score;
+    const duration = 1600;
+    const start = performance.now();
+    function tick(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 4);
+      const current = Math.round(eased * target);
+      scoreEl.textContent = current + '%';
+      const fillLen = (current / 100) * PATH_LENGTH;
+      fill.style.strokeDasharray = `${fillLen} ${PATH_LENGTH}`;
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ── BAND PILL STYLE ─────────────────────────────────── */
+  function applyBandPillStyle(el, bandId, color) {
+    el.style.background = color + '18';
+    el.style.color = color;
+    el.style.border = `1px solid ${color}30`;
+  }
+
+  /* ── DOMAIN LIST ─────────────────────────────────────── */
+  function renderDomains(sectionScores) {
+    const container = document.getElementById('domainList');
+    const order = ['s2','s6','s4','s5','s1','s3','s7'];
+    container.innerHTML = order.map(key => {
+      const pct = sectionScores[key] || 0;
+      const lvl = RISK_LEVEL(pct);
+      const riskLabel = lvl === 'low' ? 'Low' : lvl === 'moderate' ? 'Moderate' : 'High';
+      const pillClass = lvl === 'low' ? 'rp-low' : lvl === 'moderate' ? 'rp-mod' : 'rp-high';
+      const desc = lvl === 'high' ? 'Governance gaps identified' : lvl === 'moderate' ? 'Partial controls in place' : 'Controls documented';
+      return `
+        <div class="domain-item">
+          <div>
+            <div class="domain-name">${DOMAIN_NAMES[key]}</div>
+            <div class="domain-sub">${desc}</div>
+          </div>
+          <span class="risk-pill ${pillClass}">${riskLabel}</span>
+        </div>`;
+    }).join('');
+  }
+
+  /* ── FLAGS ───────────────────────────────────────────── */
+  function renderFlags(flags, regimeFlags) {
+    const all = [...(flags || []), ...(regimeFlags || [])];
+    const container = document.getElementById('flagContainer');
+    const lockedEl = document.getElementById('flagsLocked');
+    const moreEl = document.getElementById('moreFlagsText');
+
+    if (all.length === 0) {
+      container.innerHTML = `<p style="color:var(--muted2); font-size:0.88rem;">No critical priority flags were identified in this assessment.</p>`;
+      return;
+    }
+
+    const first = all[0];
+    const sevClass = first.severity === 'critical' ? '' : first.severity === 'info' ? 'severity-info' : `severity-${first.severity}`;
+    container.innerHTML = `
+      <div class="flag-card ${sevClass}">
+        <div class="flag-label">${first.label || ''}</div>
+        <div class="flag-basis">Regulatory basis: ${first.basis || ''}</div>
+      </div>`;
+
+    if (all.length > 1) {
+      lockedEl.style.display = 'flex';
+      moreEl.textContent = `${all.length - 1} additional finding${all.length - 1 > 1 ? 's' : ''} included in the full report.`;
+    }
+  }
+
+  /* ── BLURRED RECS ────────────────────────────────────── */
+  function renderRecs(bandId) {
+    const recs = RECS[bandId] || RECS.moderate;
+    const container = document.getElementById('recsBlurred');
+    container.innerHTML = recs.slice(0, 3).map((r, i) => `
+      <div class="rec-card">
+        <div class="rec-num">${i + 1}</div>
+        <div class="rec-txt">${r}</div>
+      </div>`).join('');
+  }
+
+  /* ── REPORT PREVIEW PAGES ────────────────────────────── */
+  const PAGES = [
+    (d) => `
+      <div class="rp-header">
+        <div>
+          <div class="rp-logo">mla<em>group.</em></div>
+          <div style="font-size:.62rem;color:var(--muted);margin-top:4px;letter-spacing:.06em;">AI GOVERNANCE RISK ASSESSMENT</div>
+        </div>
+        <div class="rp-meta">Confidential<br>${d.org}<br>Page 1 of 8</div>
+      </div>
+      <div class="rp-band-bar">
+        <div class="rp-band-dot" style="background:${d.color}"></div>
+        <div class="rp-band-text" style="color:${d.color}">${d.band}</div>
+      </div>
+      <div class="rp-score-lg" style="color:${d.color}">${d.score}%</div>
+      <div class="rp-score-label">Adjusted Exposure Score</div>
+      <div style="font-size:.7rem;color:var(--muted2);margin-top:12px;line-height:1.5;">Executive Summary · AI Governance Risk Assessment<br>${d.org} · ${d.sector}</div>`,
+
+    (d) => `
+      <div class="rp-header">
+        <div><div class="rp-logo">mla<em>group.</em></div></div>
+        <div class="rp-meta">2. Domain Findings<br>Page 3 of 8</div>
+      </div>
+      <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px;">Domain-by-Domain Breakdown</div>
+      <div class="rp-domain-rows">
+        ${['Governance & Accountability','Compliance & Legal','Human Oversight','Explainability','AI Inventory','Data Quality','Operational Controls'].map((n,i) => {
+          const w = [76,42,58,81,33,67,89][i];
+          const c = w >= 65 ? '#22c55e' : w >= 40 ? '#f59e0b' : '#ef4444';
+          return `<div class="rp-domain-row"><div class="rp-dn">${n}</div><div class="rp-dp"><div class="rp-dp-fill" style="width:${w}%;background:${c}"></div></div><div class="rp-dr" style="color:${c}">${w >= 65 ? 'Low' : w >= 40 ? 'Mod' : 'High'}</div></div>`;
+        }).join('')}
+      </div>`,
+
+    (d) => `
+      <div class="rp-header">
+        <div><div class="rp-logo">mla<em>group.</em></div></div>
+        <div class="rp-meta">3. Findings<br>Page 4 of 8</div>
+      </div>
+      <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;">Detailed Findings</div>
+      ${['F1','F2','F3'].map((f,i) => `
+        <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-left:3px solid ${['#ef4444','#f97316','#f59e0b'][i]};border-radius:4px;padding:10px 12px;margin-bottom:8px;">
+          <div style="font-size:.7rem;font-weight:700;color:var(--muted2)">${f} · ${ ['Critical','High','Moderate'][i]}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:3px;">${['Governance accountability gap identified','Human oversight controls require formalisation','DPIA requirements — UK GDPR Art.35'][i]}</div>
+        </div>`).join('')}`,
+
+    (d) => `
+      <div class="rp-header">
+        <div><div class="rp-logo">mla<em>group.</em></div></div>
+        <div class="rp-meta">4. Recommendations<br>Page 6 of 8</div>
+      </div>
+      <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;">Priority Recommendations</div>
+      ${[1,2,3,4].map(n => `
+        <div style="display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:flex-start;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.04);padding-bottom:10px;">
+          <div style="font-family:'Instrument Serif',serif;font-size:1.1rem;color:rgba(96,165,250,.25);line-height:1.2;">${n}</div>
+          <div style="font-size:.67rem;color:var(--muted2);line-height:1.5;">${['Appoint named AI governance lead with board reporting line','Conduct DPIAs for all AI systems processing personal data','Implement decision logging for all high-impact AI outputs','Review third-party AI provider contracts for transparency obligations'][n-1]}</div>
+        </div>`).join('')}
+      <div class="rp-pages-label">8 pages total</div>`
+  ];
+
+  let currentPage = 0;
+  function startPageCycle(data) {
+    const container = document.getElementById('reportPage');
+    function showPage(idx) {
+      container.innerHTML = `<div class="rp-face">${PAGES[idx](data)}</div>`;
+    }
+    showPage(0);
+    setInterval(() => {
+      currentPage = (currentPage + 1) % PAGES.length;
+      const face = container.querySelector('.rp-face');
+      if (face) {
+        face.classList.add('out');
+        setTimeout(() => showPage(currentPage), 500);
+      }
+    }, 3500);
+  }
+
+  /* ── MAIN INIT ───────────────────────────────────────── */
+  function init() {
+    // Try to read result from sessionStorage
+    let result = null;
+    try {
+      const raw = sessionStorage.getItem('mla_diagnostic_result');
+      if (raw) result = JSON.parse(raw);
+    } catch(e) {}
+
+    // If no result, show no-data state
+    if (!result) {
+      document.getElementById('noData').style.display = 'flex';
+      return;
+    }
+
+    // Show results content
+    document.getElementById('resultsContent').style.display = 'block';
+
+    const bandId  = result.risk_band || 'moderate';
+    const band    = BANDS[bandId] || BANDS.moderate;
+    const score   = result.adjusted_score || 0;
+    const org     = result.organisation || 'Your Organisation';
+    const sector  = result.sector || 'Not specified';
+    const sections = result.section_scores || {};
+    const flags   = result.priority_flags || [];
+    const regime  = result.regime_flags || [];
+
+    // Gauge
+    setTimeout(() => animateGauge(score, band.color), 300);
+
+    // Band display
+    const pillEl = document.getElementById('bandPill');
+    pillEl.textContent = band.label;
+    applyBandPillStyle(pillEl, bandId, band.color);
+
+    document.getElementById('bandHeading').textContent = band.heading;
+    document.getElementById('bandDesc').textContent = band.desc;
+
+    // Context
+    document.getElementById('ctxOrg').textContent = org;
+    document.getElementById('ctxSector').textContent = sector;
+
+    // Domains
+    renderDomains(sections);
+
+    // Flags
+    renderFlags(flags, regime);
+
+    // Blurred recs
+    renderRecs(bandId);
+
+    // Report preview animation
+    startPageCycle({ org, sector, score, band: band.label, color: band.color });
+
+    // Store result ID for post-payment account linking
+    if (result.id) {
+      sessionStorage.setItem('pending_result_id', result.id);
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
