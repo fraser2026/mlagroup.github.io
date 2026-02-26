@@ -1048,7 +1048,8 @@ function calcResults() {
     sector:              RESULTS.sector,
     org_size:            RESULTS.orgSize,
     respondent_name:     document.getElementById('ps-name')?.value || '',
-    respondent_role:     document.getElementById('ps-role')?.value || ''
+    respondent_role:     document.getElementById('ps-role')?.value || '',
+    respondent_email:    document.getElementById('ps-email')?.value || ''
   }));
 
   // ── FIRE EMAILS (non-blocking) ──────────────────────────────────
@@ -1080,6 +1081,7 @@ async function saveToSupabase() {
         framework_version:   RESULTS.frameworkVersion || '2.0.0',
         respondent_name:     document.getElementById('ps-name')?.value || '',
         respondent_role:     document.getElementById('ps-role')?.value || '',
+        respondent_email:    document.getElementById('ps-email')?.value || '',
         raw_scores:          RESULTS.rawScores || {},
         regime_flags:        RESULTS.regimeFlags || [],
         uncertainty_count:   RESULTS.uncertaintyCount || 0,
