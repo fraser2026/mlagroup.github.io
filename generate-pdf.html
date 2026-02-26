@@ -3,66 +3,197 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Generating Your Report...</title>
+  <title>Generating Your Report | MLA Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: 'DM Sans', 'Segoe UI', sans-serif;
-      background: #F7F8FC;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+      font-family: 'DM Sans', sans-serif;
+      background: #020617;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
     }
+
+    /* subtle top glow */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 60% 30% at 50% -5%, rgba(37,99,235,0.1) 0%, transparent 65%);
+    }
+
+    /* nav bar */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 64px; display: flex; align-items: center; padding: 0 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(2,6,23,0.95); backdrop-filter: blur(20px);
+      z-index: 10;
+    }
+    .nav-logo {
+      font-size: 1rem; font-weight: 600; letter-spacing: -0.02em;
+      color: #f1f5f9; text-decoration: none;
+    }
+    .nav-logo em { font-family: 'Instrument Serif', serif; font-style: italic; color: #60a5fa; }
+
+    /* card */
     .box {
-      background: white;
-      border-radius: 14px;
-      padding: 48px 56px;
+      position: relative; z-index: 1;
+      background: rgba(8,15,35,0.9);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 48px 44px;
       text-align: center;
-      box-shadow: 0 4px 24px rgba(0,26,58,0.10);
-      max-width: 420px;
-      width: 100%;
+      max-width: 440px; width: 100%;
+      margin-top: 64px; /* clear fixed nav */
     }
-    h2 { margin-bottom: 10px; color: #001A3A; font-size: 1.3rem; }
-    p { color: #5A6B82; margin-bottom: 24px; font-size: 0.9rem; }
+    .box::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      border-radius: 16px 16px 0 0;
+      background: linear-gradient(90deg, #2563eb, transparent 60%);
+    }
+
+    /* spinner */
     .spinner {
-      width: 44px; height: 44px;
-      border: 4px solid #E2E8F4;
-      border-top-color: #0000FF;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 24px;
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 2.5px solid rgba(37,99,235,0.15);
+      border-top-color: #60a5fa;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 28px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .btn {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 11px 24px;
-      background: #0000FF;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 0.88rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: background 0.15s;
+
+    /* success icon */
+    .check {
+      display: none;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      margin: 0 auto 24px;
+      align-items: center; justify-content: center;
+      font-size: 0; /* hide old checkmark char */
     }
-    .btn:hover { background: #0000CC; }
-    #status { font-size: 0.85rem; color: #5A6B82; }
-    #error-msg { color: #dc2626; margin-top: 12px; font-size: 0.85rem; display: none; }
-    .check { font-size: 2.5rem; margin-bottom: 12px; display: none; }
+    /* SVG check drawn via CSS */
+    .check::after {
+      content: '';
+      display: block;
+      width: 22px; height: 22px;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/contain no-repeat;
+    }
+
+    h2 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.55rem; font-weight: 400;
+      letter-spacing: -0.02em;
+      color: #f1f5f9; margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 0.85rem; color: #94a3b8;
+      line-height: 1.65; margin-bottom: 0;
+    }
+
+    #status { font-size: 0.83rem; color: #64748b; margin-top: 6px; min-height: 20px; }
+
+    #error-msg {
+      color: #f87171; margin-top: 14px;
+      font-size: 0.82rem; line-height: 1.55; display: none;
+      background: rgba(248,113,113,0.06);
+      border: 1px solid rgba(248,113,113,0.15);
+      border-radius: 8px; padding: 12px 14px;
+    }
+
+    /* progress bar — appears during generation */
+    .progress-track {
+      height: 2px; background: rgba(255,255,255,0.06);
+      border-radius: 2px; margin: 24px 0 0; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
+      border-radius: 2px;
+      transition: width 0.6s ease;
+    }
+
+    /* steps — shown during generation */
+    .steps {
+      margin-top: 20px; text-align: left;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .step-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.78rem; color: #475569;
+      transition: color 0.3s;
+    }
+    .step-item.active { color: #cbd5e1; }
+    .step-item.done   { color: #4ade80; }
+    .step-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #1e293b; border: 1px solid #334155;
+      flex-shrink: 0; transition: background 0.3s, border-color 0.3s;
+    }
+    .step-item.active .step-dot { background: #2563eb; border-color: #2563eb; animation: pulse 1.5s infinite; }
+    .step-item.done   .step-dot { background: #4ade80; border-color: #4ade80; animation: none; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      margin-top: 24px; padding: 13px 24px;
+      background: #2563eb; color: white;
+      border: none; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; font-weight: 600;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.15s, transform 0.12s;
+      width: 100%;
+    }
+    .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: transparent; color: #94a3b8;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-ghost:hover { background: transparent; border-color: rgba(255,255,255,0.15); color: #f1f5f9; transform: none; }
+
+    @media(max-width: 480px) {
+      .box { padding: 36px 24px; }
+      .nav { padding: 0 20px; }
+    }
   </style>
 </head>
 <body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-logo">mla<em>group.</em></a>
+</nav>
+
 <div class="box">
   <div class="spinner" id="spinner"></div>
-  <div class="check" id="check">&#10003;</div>
+  <div class="check" id="check"></div>
   <h2 id="heading">Preparing Your Report</h2>
-  <p id="status">Building your PDF...</p>
+  <p>Your full AI Governance Risk Report is being generated.</p>
+  <div id="status">Initialising…</div>
+
+  <div class="progress-track" id="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+
+  <div class="steps" id="steps">
+    <div class="step-item" id="step-1"><span class="step-dot"></span>Loading your assessment data</div>
+    <div class="step-item" id="step-2"><span class="step-dot"></span>Applying scoring &amp; sector calibration</div>
+    <div class="step-item" id="step-3"><span class="step-dot"></span>Building findings &amp; recommendations</div>
+    <div class="step-item" id="step-4"><span class="step-dot"></span>Generating PDF pages</div>
+    <div class="step-item" id="step-5"><span class="step-dot"></span>Preparing download</div>
+  </div>
+
   <div id="error-msg"></div>
-  <a href="portal.html" class="btn" id="back-btn" style="display:none;">Back to Dashboard</a>
+  <a href="portal.html" class="btn btn-ghost" id="back-btn" style="display:none;">← Back to Portal</a>
 </div>
 
 <script>
@@ -71,36 +202,56 @@ function setStatus(msg) {
   document.getElementById('status').textContent = msg;
 }
 
+function setStep(n) {
+  for (var i = 1; i <= 5; i++) {
+    var el = document.getElementById('step-' + i);
+    if (!el) continue;
+    el.className = 'step-item' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+  var pct = Math.round(((n - 1) / 4) * 100);
+  var fill = document.getElementById('progress-fill');
+  if (fill) fill.style.width = pct + '%';
+}
+
 function showError(msg) {
   document.getElementById('error-msg').textContent = msg;
   document.getElementById('error-msg').style.display = 'block';
   document.getElementById('spinner').style.display = 'none';
-  document.getElementById('back-btn').style.display = 'inline-block';
+  document.getElementById('progress-track').style.display = 'none';
+  document.getElementById('steps').style.display = 'none';
+  document.getElementById('back-btn').style.display = 'flex';
 }
 
 function showSuccess() {
   document.getElementById('spinner').style.display = 'none';
-  document.getElementById('check').style.display = 'block';
-  document.getElementById('heading').textContent = 'Report Downloaded!';
+  document.getElementById('progress-track').style.display = 'none';
+  document.getElementById('steps').style.display = 'none';
+  var check = document.getElementById('check');
+  check.style.display = 'flex';
+  document.getElementById('heading').textContent = 'Report Downloaded';
   setStatus('Your PDF has been saved to your downloads folder.');
-  document.getElementById('back-btn').style.display = 'inline-block';
+  document.getElementById('back-btn').style.display = 'flex';
+  document.getElementById('back-btn').className = 'btn';
+  document.getElementById('back-btn').textContent = '← Back to Portal';
 }
 
 function showSuccessIOS(blobUrl, filename) {
   document.getElementById('spinner').style.display = 'none';
-  document.getElementById('check').style.display = 'block';
-  document.getElementById('heading').textContent = 'Report Ready!';
-  setStatus('Tap the button below to open your PDF, then use the share icon to save it.');
+  document.getElementById('progress-track').style.display = 'none';
+  document.getElementById('steps').style.display = 'none';
+  var check = document.getElementById('check');
+  check.style.display = 'flex';
+  document.getElementById('heading').textContent = 'Report Ready';
+  setStatus('Tap "Open PDF" below, then use the share icon ↑ to save it to Files.');
   var openBtn = document.createElement('a');
   openBtn.href = blobUrl;
   openBtn.target = '_blank';
   openBtn.rel = 'noopener';
   openBtn.textContent = 'Open PDF Report';
   openBtn.className = 'btn';
-  openBtn.style.display = 'block';
-  openBtn.style.marginBottom = '8px';
   document.querySelector('.box').insertBefore(openBtn, document.getElementById('back-btn'));
-  document.getElementById('back-btn').style.display = 'inline-block';
+  document.getElementById('back-btn').style.display = 'flex';
+  document.getElementById('back-btn').className = 'btn btn-ghost';
 }
 
 var _FW = { version: '2.0.0', date: 'February 2026', nextReview: 'August 2026' };
@@ -598,8 +749,8 @@ function generatePortalPDF(row) {
     doc.text('Important Notice',M+5,y+7.5);
     doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(100,115,138);
     doc.text(dl2,M+5,y+13.5);
-    ftr(doc,W,M,nv,rc,today,pn);
-
+    ftr(doc,W,M,nv,rc,today,pn)
+    
     // SAVE - desktop normal, iOS blob URL
     var so=ps(org).replace(/[^a-zA-Z0-9\s-]/g,'').replace(/\s+/g,'-');
     var sd=today.replace(/\s/g,'-');
@@ -623,11 +774,21 @@ function generatePortalPDF(row) {
 
 window.addEventListener('load',function(){
   try {
+    setStep(1);
     var raw=sessionStorage.getItem('portal_result');
     if (!raw) { showError('No result data found. Please return to your dashboard and try again.'); return; }
+    setStep(2);
     var result=JSON.parse(raw);
     sessionStorage.removeItem('portal_result');
-    generatePortalPDF(result);
+    setStep(3);
+    // Small delay so the UI renders before heavy PDF work begins
+    setTimeout(function(){
+      setStep(4);
+      setTimeout(function(){
+        setStep(5);
+        generatePortalPDF(result);
+      }, 200);
+    }, 150);
   } catch(err) {
     console.error(err);
     showError('PDF generation failed: '+err.message);
