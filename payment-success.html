@@ -3,252 +3,503 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Payment Successful | MLA Group</title>
+  <title>Access Granted | MLA Group</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg:     #020617;
-      --card:   rgba(8,15,35,0.92);
-      --border: rgba(255,255,255,0.07);
-      --borm:   rgba(255,255,255,0.13);
-      --accent: #2563eb;
-      --sky:    #60a5fa;
-      --main:   #f1f5f9;
-      --sub:    #cbd5e1;
-      --muted:  #64748b;
-      --muted2: #94a3b8;
-      --green:  #22c55e;
-      --err:    #f87171;
+      --bg:      #020617;
+      --surface: rgba(6,12,30,0.96);
+      --border:  rgba(255,255,255,0.06);
+      --borm:    rgba(255,255,255,0.11);
+      --accent:  #2563eb;
+      --sky:     #60a5fa;
+      --main:    #f1f5f9;
+      --sub:     #94a3b8;
+      --muted:   #475569;
+      --green:   #22c55e;
+      --err:     #f87171;
     }
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      background: var(--bg); color: var(--sub);
+      background: var(--bg);
       font-family: 'DM Sans', sans-serif;
-      min-height: 100vh; -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      padding: 80px 20px 40px;
+      padding: 40px 20px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
-    .bg-glow {
+    /* ── AMBIENT BACKGROUND ─────────────────────── */
+    .bg-layer {
       position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 60% 35% at 50% 20%, rgba(34,197,94,0.05) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 30% at 50% -5%, rgba(37,99,235,0.09) 0%, transparent 65%);
     }
+    .bg-layer canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.4; }
+    .bg-glow-1 {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+      top: -200px; left: 50%; transform: translateX(-50%);
+      animation: drift1 12s ease-in-out infinite alternate;
+    }
+    .bg-glow-2 {
+      position: absolute;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(34,197,94,0.05) 0%, transparent 70%);
+      bottom: 10%; right: 10%;
+      animation: drift2 16s ease-in-out infinite alternate;
+    }
+    @keyframes drift1 { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(30px); } }
+    @keyframes drift2 { from { transform: translateY(0) scale(1); } to { transform: translateY(-20px) scale(1.05); } }
 
+    /* ── NAV ─────────────────────────────────────── */
     nav {
-      position: fixed; top: 0; left: 0; right: 0; height: 64px;
-      display: flex; align-items: center; padding: 0 40px;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 60px; display: flex; align-items: center;
+      padding: 0 40px;
       border-bottom: 1px solid var(--border);
-      background: rgba(2,6,23,0.95); backdrop-filter: blur(20px);
-      z-index: 10;
+      background: rgba(2,6,23,0.8); backdrop-filter: blur(24px);
     }
-    .nav-logo { font-size: 1rem; font-weight: 600; letter-spacing: -0.02em; color: var(--main); text-decoration: none; }
-    .nav-logo em { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--sky); }
+    .nav-logo {
+      font-size: 0.95rem; font-weight: 600;
+      letter-spacing: -0.02em; color: var(--main);
+      text-decoration: none;
+    }
+    .nav-logo em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic; color: var(--sky);
+    }
+    .nav-pill {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.18);
+      border-radius: 100px; padding: 4px 12px 4px 8px;
+      font-size: 0.68rem; font-weight: 600;
+      color: #4ade80; letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .nav-pill-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #4ade80;
+      animation: blink 2s ease infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    .card {
+    /* ── WRAPPER ─────────────────────────────────── */
+    .wrapper {
       position: relative; z-index: 1;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 16px; padding: 44px 40px;
-      max-width: 460px; width: 100%; text-align: center;
-    }
-    .card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      border-radius: 16px 16px 0 0;
-      background: linear-gradient(90deg, #2563eb, transparent 60%);
+      width: 100%; max-width: 480px;
+      margin-top: 60px;
     }
 
-    .icon-wrap {
-      width: 60px; height: 60px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 24px;
+    /* ── CARD ─────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.03),
+        0 32px 64px rgba(0,0,0,0.5),
+        0 0 80px rgba(37,99,235,0.04);
+      animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+      opacity: 0; transform: translateY(20px);
     }
-    .icon-green { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); }
-    .icon-wrap svg { width: 26px; height: 26px; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke: #4ade80; }
-
-    .spin {
-      width: 48px; height: 48px; border-radius: 50%;
-      border: 2.5px solid rgba(37,99,235,0.12);
-      border-top-color: var(--sky);
-      animation: rotate 0.75s linear infinite;
-      margin: 0 auto 24px;
+    @keyframes cardIn {
+      to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes rotate { to { transform: rotate(360deg); } }
 
+    /* top shimmer line */
+    .card-shimmer {
+      height: 1px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(37,99,235,0.6) 30%,
+        rgba(96,165,250,0.8) 50%,
+        rgba(37,99,235,0.6) 70%,
+        transparent 100%
+      );
+      animation: shimmer 3s ease infinite;
+      background-size: 200% 100%;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .card-body { padding: 44px 40px 40px; }
+
+    /* ── SUCCESS ICON ─────────────────────────────── */
+    .success-ring {
+      position: relative;
+      width: 68px; height: 68px;
+      margin: 0 auto 32px;
+    }
+    .success-ring svg.ring {
+      position: absolute; inset: 0;
+      width: 68px; height: 68px;
+      animation: ringIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s both;
+    }
+    @keyframes ringIn {
+      from { opacity: 0; transform: scale(0.7); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .success-ring svg.check {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 26px; height: 26px;
+    }
+    .check-path {
+      stroke-dasharray: 30;
+      stroke-dashoffset: 30;
+      animation: drawCheck 0.4s ease 0.8s forwards;
+    }
+    @keyframes drawCheck {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* ── TYPOGRAPHY ───────────────────────────────── */
+    .eyebrow {
+      font-size: 0.65rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--sky); margin-bottom: 10px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.5s forwards;
+    }
     h1 {
       font-family: 'Instrument Serif', serif;
-      font-size: 1.75rem; font-weight: 400;
-      letter-spacing: -0.02em; color: var(--main);
-      margin-bottom: 10px; line-height: 1.1;
+      font-size: 2rem; font-weight: 400;
+      line-height: 1.08; letter-spacing: -0.025em;
+      color: var(--main); margin-bottom: 12px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.6s forwards;
     }
-    .subtext { font-size: 0.85rem; color: var(--muted2); line-height: 1.7; }
+    h1 em { font-style: italic; color: var(--sky); }
+    .subtext {
+      font-size: 0.85rem; color: var(--sub);
+      line-height: 1.75;
+      opacity: 0; animation: fadeUp 0.5s ease 0.7s forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-    .steps {
-      background: rgba(255,255,255,0.025); border: 1px solid var(--border);
-      border-radius: 10px; padding: 18px 20px;
-      margin: 24px 0; text-align: left;
+    /* ── WHAT'S INCLUDED ──────────────────────────── */
+    .includes {
+      margin: 28px 0;
+      opacity: 0; animation: fadeUp 0.5s ease 0.8s forwards;
     }
-    .steps-label {
-      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.13em; color: var(--sky); margin-bottom: 12px;
+    .includes-label {
+      font-size: 0.62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--muted); margin-bottom: 12px;
     }
-    .step {
-      display: flex; gap: 10px; align-items: flex-start;
-      margin-bottom: 10px; font-size: 0.81rem; color: var(--sub); line-height: 1.5;
+    .include-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem; color: var(--sub);
     }
-    .step:last-child { margin-bottom: 0; }
-    .step-n {
-      width: 20px; height: 20px; min-width: 20px; border-radius: 50%;
-      background: rgba(37,99,235,0.12); border: 1px solid rgba(37,99,235,0.22);
+    .include-item:last-child { border-bottom: none; }
+    .inc-icon {
+      width: 28px; height: 28px; border-radius: 7px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem; font-weight: 700; color: var(--sky); margin-top: 1px;
+      flex-shrink: 0;
     }
+    .inc-icon svg { width: 13px; height: 13px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .inc-blue   { background: rgba(37,99,235,0.1);  border: 1px solid rgba(37,99,235,0.15); }
+    .inc-blue   svg { stroke: var(--sky); }
+    .inc-green  { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.12); }
+    .inc-green  svg { stroke: #4ade80; }
+    .inc-purple { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.12); }
+    .inc-purple svg { stroke: #c4b5fd; }
+    .inc-amber  { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.12); }
+    .inc-amber  svg { stroke: #fcd34d; }
+    .inc-text { flex: 1; }
+    .inc-title { font-weight: 500; color: var(--main); font-size: 0.82rem; }
+    .inc-sub   { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
 
+    /* ── DIVIDER ──────────────────────────────────── */
     .divider {
       display: flex; align-items: center; gap: 12px;
-      margin: 24px 0; font-size: 0.72rem; color: var(--muted);
+      margin: 24px 0; font-size: 0.7rem; color: var(--muted);
     }
     .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    .form-label {
-      display: block; text-align: left;
-      font-size: 0.75rem; font-weight: 600; color: var(--muted2);
-      margin-bottom: 6px; margin-top: 12px;
+    /* ── FORM ─────────────────────────────────────── */
+    .form-section {
+      opacity: 0; animation: fadeUp 0.5s ease 0.85s forwards;
     }
-    .form-label:first-of-type { margin-top: 0; }
-    .form-input {
+    .field { margin-bottom: 12px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .field-label {
+      display: block; font-size: 0.72rem; font-weight: 600;
+      color: var(--muted); margin-bottom: 6px; letter-spacing: 0.02em;
+    }
+    .field-input {
       width: 100%; padding: 11px 14px;
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
-      border-radius: 8px; color: var(--main);
-      font-family: 'DM Sans', sans-serif; font-size: 0.87rem;
-      outline: none; transition: border-color .15s, background .15s;
+      border-radius: 9px; color: var(--main);
+      font-family: 'DM Sans', sans-serif; font-size: 0.86rem; font-weight: 400;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
       -webkit-appearance: none;
     }
-    .form-input::placeholder { color: var(--muted); }
-    .form-input:focus { border-color: var(--accent); background: rgba(37,99,235,0.04); }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .field-input::placeholder { color: var(--muted); }
+    .field-input:focus {
+      border-color: rgba(37,99,235,0.5);
+      background: rgba(37,99,235,0.03);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+    }
 
     .error-box {
-      background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.18);
-      border-radius: 8px; padding: 11px 14px;
-      font-size: 0.8rem; color: var(--err);
-      text-align: left; margin-top: 12px; display: none; line-height: 1.5;
+      background: rgba(248,113,113,0.05);
+      border: 1px solid rgba(248,113,113,0.15);
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 0.78rem; color: var(--err);
+      margin-top: 10px; display: none; line-height: 1.5;
     }
 
-    .btn {
+    /* ── BUTTONS ──────────────────────────────────── */
+    .btn-primary {
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      width: 100%; padding: 13px 24px; border-radius: 9px;
+      width: 100%; padding: 14px 24px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 10px;
       font-family: 'DM Sans', sans-serif;
-      font-size: 0.9rem; font-weight: 600;
-      border: none; cursor: pointer; text-decoration: none;
-      transition: background .15s, transform .12s, box-shadow .15s;
-      margin-top: 14px;
+      font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.2s;
+      letter-spacing: 0.01em;
+      opacity: 0; animation: fadeUp 0.5s ease 0.9s forwards;
     }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(37,99,235,0.28); }
-    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
-    .btn-ghost { background: transparent; color: var(--muted2); border: 1px solid var(--border); }
-    .btn-ghost:hover { border-color: var(--borm); color: var(--main); transform: none; box-shadow: none; }
+    .btn-primary:hover {
+      background: #1d4ed8; transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(37,99,235,0.3);
+    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-primary svg { transition: transform 0.2s; }
+    .btn-primary:hover svg { transform: translateX(2px); }
 
-    .small-note { font-size: 0.71rem; color: var(--muted); margin-top: 16px; line-height: 1.6; }
-    .small-note a { color: var(--sky); text-decoration: none; }
+    .btn-ghost {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 12px 24px;
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem; font-weight: 500;
+      cursor: pointer; text-decoration: none;
+      transition: border-color 0.15s, color 0.15s; margin-top: 10px;
+    }
+    .btn-ghost:hover { border-color: var(--borm); color: var(--main); }
 
-    @media(max-width: 480px) {
-      .card { padding: 36px 24px; }
-      .form-row { grid-template-columns: 1fr; }
+    /* ── FOOTER NOTE ──────────────────────────────── */
+    .footer-note {
+      margin-top: 20px; text-align: center;
+      font-size: 0.69rem; color: var(--muted);
+      line-height: 1.7;
+      opacity: 0; animation: fadeUp 0.5s ease 1s forwards;
+    }
+    .footer-note a { color: var(--sky); text-decoration: none; }
+    .footer-note a:hover { text-decoration: underline; }
+
+    /* ── SPIN ─────────────────────────────────────── */
+    .spin {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 2px solid rgba(37,99,235,0.1);
+      border-top-color: var(--sky);
+      animation: rotate 0.8s linear infinite;
+      margin: 0 auto 28px;
+    }
+    @keyframes rotate { to { transform: rotate(360deg); } }
+
+    /* ── ERROR STATE ──────────────────────────────── */
+    .state-error-wrap { text-align: center; }
+    .error-icon { font-size: 2rem; margin-bottom: 16px; }
+
+    @media(max-width: 520px) {
+      .card-body { padding: 36px 28px 32px; }
+      .field-row { grid-template-columns: 1fr; }
       nav { padding: 0 20px; }
+      h1 { font-size: 1.7rem; }
     }
   </style>
 </head>
 <body>
-<div class="bg-glow"></div>
+
+<!-- Ambient background -->
+<div class="bg-layer">
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+</div>
 
 <nav>
   <a href="index.html" class="nav-logo">mla<em>group.</em></a>
+  <div class="nav-pill" id="nav-status" style="display:none;">
+    <span class="nav-pill-dot"></span>Access Granted
+  </div>
 </nav>
 
-<div class="card">
+<div class="wrapper">
+  <div class="card">
+    <div class="card-shimmer"></div>
+    <div class="card-body">
 
-  <!-- LOADING -->
-  <div id="state-loading">
-    <div class="spin"></div>
-    <h1>Confirming payment…</h1>
-    <p class="subtext">Just a moment while we check your access.</p>
-  </div>
-
-  <!-- SUCCESS — existing user -->
-  <div id="state-success" style="display:none;">
-    <div class="icon-wrap icon-green">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-    </div>
-    <h1>Payment confirmed.</h1>
-    <p class="subtext">Your full AI Governance Risk Report is unlocked and ready to download from your portal.</p>
-    <div class="steps">
-      <div class="steps-label">What's included</div>
-      <div class="step"><div class="step-n">1</div>8-page board-ready PDF — instant download from your portal</div>
-      <div class="step"><div class="step-n">2</div>Permanent access — download again any time from your account</div>
-      <div class="step"><div class="step-n">3</div>Applies to all future diagnostics in your account</div>
-    </div>
-    <a href="portal.html" class="btn btn-primary">
-      Go to portal &amp; download report
-      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5h7M5 2l3.5 3.5L5 9"/></svg>
-    </a>
-    <p class="small-note">Questions? <a href="mailto:governance@mlagroup.co.uk">governance@mlagroup.co.uk</a></p>
-  </div>
-
-  <!-- SIGNUP — new user, no account yet -->
-  <div id="state-signup" style="display:none;">
-    <div class="icon-wrap icon-green">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-    </div>
-    <h1>Payment confirmed.</h1>
-    <p class="subtext">Create your free account to access your report. Your paid access activates instantly.</p>
-
-    <div class="divider">Create your account</div>
-
-    <div class="form-row">
-      <div>
-        <label class="form-label">First name</label>
-        <input type="text" class="form-input" id="su-first" placeholder="Alex" autocomplete="given-name">
+      <!-- LOADING -->
+      <div id="state-loading" style="text-align:center;padding:20px 0;">
+        <div class="spin"></div>
+        <div style="font-family:'Instrument Serif',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Confirming payment…</div>
+        <div style="font-size:0.82rem;color:var(--sub);">Activating your report access.</div>
       </div>
-      <div>
-        <label class="form-label">Last name</label>
-        <input type="text" class="form-input" id="su-last" placeholder="Johnson" autocomplete="family-name">
+
+      <!-- SUCCESS -->
+      <div id="state-success" style="display:none;">
+        <div class="success-ring">
+          <!-- Outer ring -->
+          <svg class="ring" viewBox="0 0 68 68" fill="none">
+            <circle cx="34" cy="34" r="32" stroke="rgba(34,197,94,0.15)" stroke-width="1.5"/>
+            <circle cx="34" cy="34" r="27" stroke="rgba(34,197,94,0.08)" stroke-width="1"/>
+            <circle cx="34" cy="34" r="32" stroke="rgba(34,197,94,0.5)" stroke-width="1.5"
+              stroke-dasharray="201" stroke-dashoffset="201"
+              style="animation: ringDraw 1s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;"
+              transform="rotate(-90 34 34)"/>
+          </svg>
+          <!-- Check mark -->
+          <svg class="check" viewBox="0 0 26 26" fill="none">
+            <path class="check-path" d="M7 13.5l4.5 4.5 7.5-9" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="eyebrow">Report Unlocked</div>
+        <h1>Your report is<br><em>ready to download.</em></h1>
+        <p class="subtext">Full AI Governance Risk Report — 8 pages, board-ready PDF. Permanent access from your portal.</p>
+
+        <div class="includes">
+          <div class="includes-label">What's included</div>
+          <div class="include-item">
+            <div class="inc-icon inc-blue"><svg viewBox="0 0 14 14"><path d="M7 1v6M4 4l3-3 3 3M2 10h10M3 10v2h8v-2"/></svg></div>
+            <div class="inc-text">
+              <div class="inc-title">8-page PDF report</div>
+              <div class="inc-sub">Instant download · Yours to keep permanently</div>
+            </div>
+          </div>
+          <div class="include-item">
+            <div class="inc-icon inc-purple"><svg viewBox="0 0 14 14"><path d="M1 7h12M7 1l6 6-6 6"/></svg></div>
+            <div class="inc-text">
+              <div class="inc-title">Regulatory article mapping</div>
+              <div class="inc-sub">EU AI Act · UK GDPR · FCA · ICO</div>
+            </div>
+          </div>
+          <div class="include-item">
+            <div class="inc-icon inc-amber"><svg viewBox="0 0 14 14"><path d="M7 1l1.5 4.5H13l-3.75 2.75L10.5 13 7 10.25 3.5 13l1.25-4.75L1 5.5h4.5z"/></svg></div>
+            <div class="inc-text">
+              <div class="inc-title">Priority remediation roadmap</div>
+              <div class="inc-sub">Sequenced actions ranked by regulatory impact</div>
+            </div>
+          </div>
+          <div class="include-item">
+            <div class="inc-icon inc-green"><svg viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><path d="M4 7h6M4 4.5h6M4 9.5h4"/></svg></div>
+            <div class="inc-text">
+              <div class="inc-title">Full portal access</div>
+              <div class="inc-sub">Download again any time · All future diagnostics included</div>
+            </div>
+          </div>
+        </div>
+
+        <a href="portal.html" class="btn-primary">
+          Open my portal
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
+        </a>
+        <div class="footer-note">
+          Questions or issues? <a href="mailto:governance@mlagroup.co.uk">governance@mlagroup.co.uk</a>
+        </div>
       </div>
+
+      <!-- SIGNUP -->
+      <div id="state-signup" style="display:none;">
+        <div class="success-ring">
+          <svg class="ring" viewBox="0 0 68 68" fill="none">
+            <circle cx="34" cy="34" r="32" stroke="rgba(34,197,94,0.15)" stroke-width="1.5"/>
+            <circle cx="34" cy="34" r="32" stroke="rgba(34,197,94,0.5)" stroke-width="1.5"
+              stroke-dasharray="201" stroke-dashoffset="201"
+              style="animation: ringDraw 1s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;"
+              transform="rotate(-90 34 34)"/>
+          </svg>
+          <svg class="check" viewBox="0 0 26 26" fill="none">
+            <path class="check-path" d="M7 13.5l4.5 4.5 7.5-9" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="eyebrow">Payment Confirmed</div>
+        <h1>Create your<br><em>account.</em></h1>
+        <p class="subtext">One step to access your report. Your details are carried over from your diagnostic.</p>
+
+        <div class="form-section">
+          <div class="divider">Your account</div>
+
+          <div class="field-row">
+            <div>
+              <label class="field-label">First name</label>
+              <input type="text" class="field-input" id="su-first" autocomplete="given-name">
+            </div>
+            <div>
+              <label class="field-label">Last name</label>
+              <input type="text" class="field-input" id="su-last" autocomplete="family-name">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Email address</label>
+            <input type="email" class="field-input" id="su-email" autocomplete="email">
+          </div>
+          <div class="field">
+            <label class="field-label">Create a password</label>
+            <input type="password" class="field-input" id="su-password" placeholder="Min. 8 characters" autocomplete="new-password">
+          </div>
+
+          <div class="error-box" id="su-error"></div>
+        </div>
+
+        <button class="btn-primary" id="su-btn" onclick="doSignup()" style="margin-top:20px;">
+          Create account &amp; access report
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
+        </button>
+
+        <div class="divider" style="margin-top:20px;">Already have an account?</div>
+        <a href="login.html?after=payment" class="btn-ghost">Sign in instead</a>
+
+        <div class="footer-note">
+          By creating an account you agree to our terms.<br>
+          Questions? <a href="mailto:governance@mlagroup.co.uk">governance@mlagroup.co.uk</a>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div id="state-error" style="display:none;text-align:center;">
+        <div class="error-icon">⚠</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:1.5rem;color:var(--main);margin-bottom:10px;">Something went wrong</div>
+        <p style="font-size:0.83rem;color:var(--sub);margin-bottom:0;">We couldn't activate your access automatically. Contact us and we'll resolve it within the hour.</p>
+        <a href="mailto:governance@mlagroup.co.uk?subject=Payment%20Issue" class="btn-primary" style="margin-top:24px;">Contact support</a>
+        <a href="portal.html" class="btn-ghost">Try the portal anyway</a>
+      </div>
+
     </div>
-    <label class="form-label">Email address</label>
-    <input type="email" class="form-input" id="su-email" placeholder="you@company.com" autocomplete="email">
-    <label class="form-label">Create a password</label>
-    <input type="password" class="form-input" id="su-password" placeholder="Min. 8 characters" autocomplete="new-password">
-
-    <div class="error-box" id="su-error"></div>
-
-    <button class="btn btn-primary" id="su-btn" onclick="doSignup()">
-      Create account &amp; access report
-      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5h7M5 2l3.5 3.5L5 9"/></svg>
-    </button>
-
-    <div class="divider">Already have an account?</div>
-    <a href="login.html?after=payment" class="btn btn-ghost">Sign in instead</a>
-
-    <p class="small-note">By creating an account you agree to our terms. Questions? <a href="mailto:governance@mlagroup.co.uk">governance@mlagroup.co.uk</a></p>
   </div>
-
-  <!-- ERROR -->
-  <div id="state-error" style="display:none;">
-    <div style="font-size:2rem; margin-bottom:16px;">⚠</div>
-    <h1 style="font-size:1.4rem;">Something went wrong</h1>
-    <p class="subtext" id="error-detail" style="margin-bottom:0;">We couldn't activate your access automatically. Please contact us and we'll resolve it within the hour.</p>
-    <a href="mailto:governance@mlagroup.co.uk?subject=Payment%20Issue" class="btn btn-primary">Contact support</a>
-    <a href="portal.html" class="btn btn-ghost">Try the portal anyway</a>
-  </div>
-
 </div>
+
+<style>
+  @keyframes ringDraw {
+    to { stroke-dashoffset: 0; }
+  }
+</style>
 
 <script>
   const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
@@ -259,14 +510,54 @@
     ['state-loading','state-success','state-signup','state-error'].forEach(s => {
       document.getElementById(s).style.display = s === id ? 'block' : 'none';
     });
+    if (id === 'state-success' || id === 'state-signup') {
+      document.getElementById('nav-status').style.display = 'flex';
+    }
   }
 
-  async function activatePaid(userId) {
-    await sb.from('profiles').upsert({ id: userId, paid: true }, { onConflict: 'id' });
+  function getDiagnosticData() {
+    try { return JSON.parse(sessionStorage.getItem('mla_diagnostic_result') || '{}'); }
+    catch(e) { return {}; }
+  }
+
+  async function linkDiagnostic(userId, userEmail) {
+    // Priority 1: sessionStorage ID
     const pendingId = sessionStorage.getItem('pending_result_id');
     if (pendingId) {
-      await sb.from('diagnostic_results').update({ user_id: userId }).eq('id', pendingId);
-      sessionStorage.removeItem('pending_result_id');
+      const { error } = await sb.from('diagnostic_results').update({ user_id: userId }).eq('id', pendingId);
+      if (!error) { sessionStorage.removeItem('pending_result_id'); return pendingId; }
+    }
+    // Priority 2: email match
+    if (userEmail) {
+      const { data: rows } = await sb
+        .from('diagnostic_results').select('id')
+        .eq('respondent_email', userEmail.toLowerCase().trim())
+        .is('user_id', null)
+        .order('created_at', { ascending: false }).limit(1);
+      if (rows?.length > 0) {
+        await sb.from('diagnostic_results').update({ user_id: userId }).eq('id', rows[0].id);
+        return rows[0].id;
+      }
+    }
+    // Priority 3: no link — access still works
+    return null;
+  }
+
+  async function populateProfile(userId, diagData, fullName) {
+    await sb.from('profiles').upsert({
+      id: userId, paid: true,
+      full_name:    fullName || diagData.respondent_name || '',
+      organisation: diagData.organisation || ''
+    }, { onConflict: 'id' });
+  }
+
+  async function linkEntitlement(userId, diagnosticId, email) {
+    const { data: ents } = await sb.from('entitlements').select('id')
+      .eq('customer_email', email.toLowerCase().trim())
+      .eq('status', 'active').is('user_id', null)
+      .order('created_at', { ascending: false }).limit(1);
+    if (ents?.length > 0) {
+      await sb.from('entitlements').update({ user_id: userId, diagnostic_id: diagnosticId }).eq('id', ents[0].id);
     }
   }
 
@@ -274,23 +565,27 @@
     try {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
-        await activatePaid(session.user.id);
+        const userId = session.user.id;
+        const userEmail = session.user.email;
+        const diagData = getDiagnosticData();
+        const diagnosticId = await linkDiagnostic(userId, userEmail);
+        await populateProfile(userId, diagData, null);
+        await linkEntitlement(userId, diagnosticId, userEmail);
         show('state-success');
       } else {
-        // Pre-fill name from diagnostic sessionStorage if available
-        try {
-          const r = JSON.parse(sessionStorage.getItem('mla_diagnostic_result') || '{}');
-          if (r.respondent_name) {
-            const parts = r.respondent_name.trim().split(' ');
-            document.getElementById('su-first').value = parts[0] || '';
-            document.getElementById('su-last').value  = parts.slice(1).join(' ') || '';
-          }
-        } catch(e) {}
+        const diagData = getDiagnosticData();
+        if (diagData.respondent_name) {
+          const parts = diagData.respondent_name.trim().split(' ');
+          document.getElementById('su-first').value = parts[0] || '';
+          document.getElementById('su-last').value  = parts.slice(1).join(' ') || '';
+        }
+        if (diagData.respondent_email) {
+          document.getElementById('su-email').value = diagData.respondent_email;
+        }
         show('state-signup');
       }
     } catch(e) {
-      console.error(e);
-      show('state-error');
+      console.error(e); show('state-error');
     }
   });
 
@@ -303,57 +598,34 @@
     const btn      = document.getElementById('su-btn');
 
     errEl.style.display = 'none';
+    if (!first || !email || !password) { errEl.textContent = 'Please fill in your first name, email, and password.'; errEl.style.display = 'block'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
+    if (password.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display = 'block'; return; }
 
-    if (!first || !email || !password) {
-      errEl.textContent = 'Please fill in your first name, email, and password.';
-      errEl.style.display = 'block'; return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errEl.textContent = 'Please enter a valid email address.';
-      errEl.style.display = 'block'; return;
-    }
-    if (password.length < 8) {
-      errEl.textContent = 'Password must be at least 8 characters.';
-      errEl.style.display = 'block'; return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Creating account…';
+    btn.disabled = true; btn.textContent = 'Creating account…';
 
     try {
-      const { data, error } = await sb.auth.signUp({
-        email, password,
-        options: {
-          data: {
-            full_name: (first + ' ' + last).trim(),
-            organisation: (() => {
-              try { return JSON.parse(sessionStorage.getItem('mla_diagnostic_result') || '{}').organisation || ''; }
-              catch(e) { return ''; }
-            })()
-          }
-        }
-      });
-
+      const fullName = (first + ' ' + last).trim();
+      const diagData = getDiagnosticData();
+      const { data, error } = await sb.auth.signUp({ email, password });
       if (error) throw error;
-
       const userId = data.user?.id;
-      if (!userId) throw new Error('Account created but user ID missing. Please sign in.');
-
-      await activatePaid(userId);
+      if (!userId) throw new Error('Account created but user ID missing.');
+      const diagnosticId = await linkDiagnostic(userId, email);
+      await populateProfile(userId, diagData, fullName);
+      await linkEntitlement(userId, diagnosticId, email);
+      if (diagData.respondent_email && diagData.respondent_email !== email) {
+        await linkEntitlement(userId, diagnosticId, diagData.respondent_email);
+      }
       show('state-success');
-      setTimeout(() => { window.location.href = 'portal.html'; }, 2000);
-
+      setTimeout(() => { window.location.href = 'portal.html'; }, 2500);
     } catch(e) {
       console.error(e);
       btn.disabled = false;
-      btn.innerHTML = 'Create account &amp; access report <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5h7M5 2l3.5 3.5L5 9"/></svg>';
-
-      let msg = e.message || 'Something went wrong. Please try again.';
+      btn.innerHTML = 'Create account &amp; access report <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>';
+      let msg = e.message || 'Something went wrong.';
       if (msg.toLowerCase().includes('already')) msg = 'An account with this email already exists — use "Sign in instead" below.';
-      else if (msg.toLowerCase().includes('password')) msg = 'Password must be at least 8 characters.';
-
-      errEl.textContent = msg;
-      errEl.style.display = 'block';
+      errEl.textContent = msg; errEl.style.display = 'block';
     }
   }
 
