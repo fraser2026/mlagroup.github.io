@@ -346,8 +346,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
       </button>
     </div>
   </nav>
-
-  <!-- HERO -->
+<!-- HERO -->
   <section class="hero" id="hero">
     <div class="hero-bg"></div>
     <div class="hero-grid"></div>
@@ -478,7 +477,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
     <div class="rm-phases" id="rm-phases"></div>
   </section>
 
-<!-- 6. FORWARD RISK LANDSCAPE -->
+  <!-- 6. FORWARD RISK LANDSCAPE -->
   <section class="rsec fiu" id="forward-risk">
     <div class="sec-hdr">
       <div class="sec-num">Section 06</div>
@@ -509,8 +508,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
 /* ══════════════════════════════════════════════════════════════════
    CONFIGURATION — update these to match your other site files
 ══════════════════════════════════════════════════════════════════ */
-const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const SUPABASE_URL  = 'https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 
 /* ══════════════════════════════════════════════════════════════════
    FRAMEWORK DATA
@@ -1021,7 +1020,7 @@ function renderReport(row){
 async function init(){
   try{
     const {createClient}=supabase;
-    const sb=createClient(SUPABASE_URL,SUPABASE_ANON);
+    const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
     
     msg('Verifying session...');
     const {data:{user},error:authErr}=await sb.auth.getUser();
