@@ -1189,11 +1189,8 @@ function copyReferral() {
 }
 
 // ── DOWNLOAD ──────────────────────────────────────────────────
-async function downloadReport(resultId) {
-  const { data, error } = await sb.from('diagnostic_results').select('*').eq('id', resultId).single();
-  if (error || !data) { alert('Could not load report. Please try again.'); return; }
-  sessionStorage.setItem('portal_result', JSON.stringify(data));
-  window.open('generate-pdf.html', '_blank');
+function downloadReport(resultId) {
+  window.open('report.html?rid=' + resultId, '_blank');
 }
 
 // ── UTILS ─────────────────────────────────────────────────────
