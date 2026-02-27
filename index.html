@@ -35,7 +35,6 @@
       overflow-x: hidden;
     }
 
-    /* ── BACKGROUND ─────────────────────────────────── */
     .bg-base {
       position: fixed; inset:0; z-index:0; pointer-events:none;
       background: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(37,99,235,0.15) 0%, transparent 65%);
@@ -49,7 +48,7 @@
       mask-image: radial-gradient(ellipse 110% 50% at 50% 0%, black 20%, transparent 75%);
     }
 
-    /* ── NAV ────────────────────────────────────────── */
+    /* ── NAV ── */
     nav {
       position: sticky; top:0; z-index:100;
       height: 64px;
@@ -123,7 +122,7 @@
     }
     .mob-cta:hover { background:var(--accent-d); }
 
-    /* ── HERO ───────────────────────────────────────── */
+    /* ── HERO ── */
     .hero {
       position:relative; z-index:1;
       max-width:900px; margin:0 auto;
@@ -184,7 +183,7 @@
     }
     .btn-ghost:hover { border-color:rgba(96,165,250,0.35); color:var(--main); background:rgba(255,255,255,0.03); }
 
-    /* ── PRODUCT CARDS ───────────────────────────────── */
+    /* ── PRODUCT CARDS ── */
     .cards-grid {
       display:grid; grid-template-columns:repeat(3,1fr);
       border:1px solid var(--border); border-radius:16px; overflow:hidden;
@@ -216,7 +215,7 @@
     }
     .card-tier::before { content:''; width:14px; height:1px; background:var(--border-h); flex-shrink:0; }
 
-    /* ── REGULATORY STRIP ────────────────────────────── */
+    /* ── REGULATORY STRIP ── */
     .trust {
       position:relative; z-index:1;
       border-top:1px solid var(--border); border-bottom:1px solid var(--border);
@@ -240,7 +239,7 @@
     }
     .trust-item:hover { color:var(--sky); }
 
-    /* ── URGENCY INTERSTITIAL ────────────────────────── */
+    /* ── URGENCY ── */
     .urgency-section {
       position:relative; z-index:1; overflow:hidden;
       border-top:1px solid var(--border);
@@ -274,7 +273,7 @@
     }
     .urgency-text { font-size:0.85rem; color:var(--muted2); line-height:1.7; }
 
-    /* ── SECTION COMMONS ─────────────────────────────── */
+    /* ── SECTION COMMONS ── */
     section { position:relative; z-index:1; }
     .wrap { max-width:1100px; margin:0 auto; padding:0 48px; }
     .section-pad { padding-top:104px; padding-bottom:104px; }
@@ -291,7 +290,7 @@
     h2 em { font-style:italic; color:var(--sky); }
     .section-sub { font-size:1rem; font-weight:300; color:var(--muted2); line-height:1.8; max-width:520px; }
 
-    /* ── FEATURES ─────────────────────────────────────── */
+    /* ── FEATURES ── */
     .feat-section { border-top:1px solid var(--border); }
     .feat-layout {
       display:grid; grid-template-columns:1fr 1fr;
@@ -318,7 +317,6 @@
     .feat-item:last-child  { border-bottom:1px solid var(--border); border-radius:0 0 12px 12px; }
     .feat-item:hover { background:rgba(37,99,235,0.05); border-color:rgba(37,99,235,0.2); }
 
-    /* SVG icon container */
     .feat-icon {
       width:38px; height:38px; min-width:38px;
       border-radius:8px; background:rgba(37,99,235,0.1);
@@ -327,11 +325,10 @@
     }
     .feat-icon svg { width:17px; height:17px; stroke:var(--sky); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
 
-    .feat-body {}
     .feat-title { font-size:0.92rem; font-weight:600; color:var(--main); margin-bottom:6px; }
     .feat-p { font-size:0.82rem; color:var(--muted2); line-height:1.7; }
 
-    /* ── SOCIAL PROOF STRIP ──────────────────────────── */
+    /* ── SOCIAL PROOF ── */
     .proof-strip {
       position:relative; z-index:1;
       border-top:1px solid var(--border);
@@ -357,7 +354,7 @@
       font-size:0.75rem; color:var(--muted2); line-height:1.45; max-width:120px;
     }
 
-    /* ── PRICING ─────────────────────────────────────── */
+    /* ── PRICING ── */
     .pricing-section { border-top:1px solid var(--border); }
     .pricing-header { text-align:center; margin-bottom:56px; }
     .pricing-header h2 { margin-bottom:14px; }
@@ -429,13 +426,7 @@
     }
     .pricing-btn-solid:hover { background:var(--accent-d); transform:translateY(-1px); box-shadow:0 6px 20px rgba(37,99,235,0.35); }
 
-    @media (max-width:768px) {
-      .proof-inner { padding:28px 24px; gap:24px; }
-      .proof-item { border-right:none; padding:0; min-width:140px; }
-      .pricing-grid { grid-template-columns:1fr; }
-    }
-
-    /* ── CTA ──────────────────────────────────────────── */
+    /* ── CTA ── */
     .cta-section { border-top:1px solid var(--border); }
     .cta-box {
       background: linear-gradient(135deg, rgba(37,99,235,0.07) 0%, transparent 50%);
@@ -451,7 +442,7 @@
     .cta-box p { font-size:1rem; color:var(--muted2); font-weight:300; max-width:480px; margin:0 auto 44px; line-height:1.8; }
     .cta-actions { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; }
 
-    /* ── FOOTER ───────────────────────────────────────── */
+    /* ── FOOTER ── */
     footer {
       border-top:1px solid var(--border);
       background:rgba(2,6,23,0.96);
@@ -484,11 +475,11 @@
     .footer-legal a { font-size:0.75rem; color:var(--muted); text-decoration:none; transition:color 0.15s; }
     .footer-legal a:hover { color:var(--muted2); }
 
-    /* ── FADE ANIMATION ───────────────────────────────── */
+    /* ── ANIMATIONS ── */
     .fade { opacity:0; transform:translateY(20px); transition:opacity 0.65s ease, transform 0.65s ease; }
     .fade.in { opacity:1; transform:translateY(0); }
 
-    /* ── RESPONSIVE ───────────────────────────────────── */
+    /* ── RESPONSIVE ── */
     @media (max-width:1024px) {
       .nav-centre { display:none; }
       .feat-layout { grid-template-columns:1fr; gap:48px; }
@@ -502,7 +493,6 @@
       .hero { padding:100px 24px 80px; }
       h1 { font-size:clamp(3rem,10vw,4.5rem); }
       .trust-inner { padding:20px 24px; gap:16px; }
-      .trust-divider { display:none; }
       .wrap { padding:0 24px; }
       .section-pad { padding-top:72px; padding-bottom:72px; }
       .cards-grid { grid-template-columns:1fr; }
@@ -512,6 +502,9 @@
       .cta-box { padding:52px 24px; }
       .footer-top { grid-template-columns:1fr; gap:32px; padding:48px 24px 36px; }
       .footer-bottom { flex-direction:column; text-align:center; padding:20px 24px 28px; }
+      .pricing-grid { grid-template-columns:1fr; }
+      .proof-inner { padding:28px 24px; gap:24px; }
+      .proof-item { border-right:none; padding:0; min-width:140px; }
     }
   </style>
 </head>
@@ -520,15 +513,13 @@
 <div class="bg-base"></div>
 <div class="bg-grid"></div>
 
-<!-- ── NAV ────────────────────────────────────────────── -->
+<!-- NAV -->
 <nav>
   <a href="index.html" class="logo">mla<em>group.</em></a>
 
   <div class="nav-centre">
-    <a href="#how" class="nav-link">How it works</a>
-    <a href="#features" class="nav-link">Features</a>
+    <a href="methodology.html" class="nav-link">Methodology</a>
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="#" class="nav-link">About</a>
   </div>
 
   <div class="nav-right">
@@ -541,14 +532,13 @@
   </div>
 </nav>
 <div class="mob-menu" id="mobMenu">
-  <a href="#how" class="mob-link" onclick="closeMob()">How it works</a>
-  <a href="#features" class="mob-link" onclick="closeMob()">Features</a>
-  <a href="pricing.html" class="mob-link">Pricing</a>
+  <a href="methodology.html" class="mob-link" onclick="closeMob()">Methodology</a>
+  <a href="#pricing" class="mob-link" onclick="closeMob()">Pricing</a>
   <a href="login.html" class="mob-link">Sign in</a>
   <a href="diagnostic.html" class="mob-cta">Start Diagnostic</a>
 </div>
 
-<!-- ── HERO ───────────────────────────────────────────── -->
+<!-- HERO -->
 <section>
   <div class="hero fade">
     <div class="badge"><span class="badge-dot"></span>August 2026 EU AI Act Deadline</div>
@@ -559,65 +549,53 @@
         Generate My AI Exposure Report
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
-      <a href="#" class="btn-ghost">View Sample Report</a>
+      <a href="methodology.html" class="btn-ghost">View Methodology</a>
     </div>
     <p class="hero-compliance">Aligned with FCA DP5/22, ICO Guidance, and EU AI Act Standards.</p>
   </div>
 </section>
 
-<!-- ── SOCIAL PROOF ────────────────────────────────────── -->
+<!-- SOCIAL PROOF -->
 <div class="proof-strip">
   <div class="proof-inner">
     <div class="proof-item fade">
-      <div class="proof-num">
-        £<span class="countup" data-target="14" data-decimals="0">0</span>m
-      </div>
+      <div class="proof-num">£<span class="countup" data-target="14" data-decimals="0">0</span>m</div>
       <div class="proof-label">ICO fine issued for a single UK GDPR governance failure — 2025</div>
     </div>
     <div class="proof-item fade">
-      <div class="proof-num">
-        £<span class="countup" data-target="124" data-decimals="0">0</span>m
-      </div>
+      <div class="proof-num">£<span class="countup" data-target="124" data-decimals="0">0</span>m</div>
       <div class="proof-label">Total FCA fines issued for governance and control failures — 2025</div>
     </div>
     <div class="proof-item fade">
-      <div class="proof-num">
-        €<span class="countup" data-target="35" data-decimals="0">0</span>m
-      </div>
+      <div class="proof-num">€<span class="countup" data-target="35" data-decimals="0">0</span>m</div>
       <div class="proof-label">Maximum EU AI Act penalty for high-risk AI violations — now in force</div>
     </div>
   </div>
 </div>
 
-<!-- ── PRODUCTS + REGULATORY ─────────────────────────── -->
+<!-- PRODUCTS -->
 <section id="how" style="position:relative; overflow:hidden;">
   <div class="wrap section-pad" style="position:relative;z-index:1;">
     <div class="cards-grid">
-
       <div class="product-card fade">
         <div class="card-label">The Diagnostic</div>
         <div class="card-title">20-Minute Inquiry</div>
         <p class="card-p">A weighted assessment across 7 governance domains adjusted for your specific sector exposure. Receive your risk score and domain breakdown immediately on completion.</p>
       </div>
-
       <div class="product-card fade">
         <div class="card-label">The Portal</div>
         <div class="card-title">Audit-Ready Workspace</div>
         <p class="card-p">A secure management tool to evidence board decision-making and track remediation over time.</p>
         <div class="card-tier">Requires premium tier</div>
       </div>
-
       <div class="product-card fade">
         <div class="card-label">The Output</div>
         <div class="card-title">Board Prep Pack</div>
         <p class="card-p">Professional, audit-ready PDF reports including specific regulatory article mapping, domain findings, and sequenced remediation roadmaps.</p>
         <div class="card-tier">Requires premium tier</div>
       </div>
-
     </div>
   </div>
-
-  <!-- Regulatory alignment under the cards -->
   <div class="trust">
     <div class="trust-inner">
       <span class="trust-label">Regulatory Alignment</span>
@@ -632,11 +610,10 @@
   </div>
 </section>
 
-<!-- ── FEATURES ───────────────────────────────────────── -->
+<!-- FEATURES -->
 <section id="features" class="feat-section">
   <div class="wrap section-pad">
     <div class="feat-layout">
-
       <div class="feat-sticky">
         <div class="eyebrow fade">Capabilities</div>
         <h2 class="fade">Built for<br><em>scrutiny.</em></h2>
@@ -646,70 +623,48 @@
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
-
       <div class="feat-list">
-
         <div class="feat-item fade">
-          <div class="feat-icon">
-            <!-- Scale / legal icon -->
-            <svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M3 21h18"/><circle cx="8" cy="14" r="3"/><circle cx="16" cy="14" r="3"/></svg>
-          </div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M3 21h18"/><circle cx="8" cy="14" r="3"/><circle cx="16" cy="14" r="3"/></svg></div>
           <div class="feat-body">
             <div class="feat-title">Precise Regulatory Mapping</div>
             <p class="feat-p">Every finding references the specific article, ICO guidance paragraph, or FCA expectation it addresses. Not paraphrased advice — the exact legal basis, cited.</p>
           </div>
         </div>
-
         <div class="feat-item fade">
-          <div class="feat-icon">
-            <!-- Sectors / layers icon -->
-            <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v5c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 10v5c0 1.657 4.03 3 9 3s9-1.343 9-3v-5"/></svg>
-          </div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v5c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 10v5c0 1.657 4.03 3 9 3s9-1.343 9-3v-5"/></svg></div>
           <div class="feat-body">
             <div class="feat-title">Sector Exposure Adjustment</div>
             <p class="feat-p">Financial services, healthcare, legal, and public sector deployments carry different risk profiles. Your maturity score is adjusted by a sector-specific multiplier — not a flat number that means nothing to your regulator.</p>
           </div>
         </div>
-
         <div class="feat-item fade">
-          <div class="feat-icon">
-            <!-- Shield icon -->
-            <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6l-8-4z"/></svg>
-          </div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6l-8-4z"/></svg></div>
           <div class="feat-body">
             <div class="feat-title">EU AI Act Annex III Detection</div>
             <p class="feat-p">Automatic identification of high-risk AI categories under Annex III, with conformity assessment flags and Article 14 human oversight obligations — mapped directly from your responses.</p>
           </div>
         </div>
-
         <div class="feat-item fade">
-          <div class="feat-icon">
-            <!-- Document icon -->
-            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-          </div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
           <div class="feat-body">
             <div class="feat-title">Board and Auditor-Ready Output</div>
             <p class="feat-p">The generated report is structured for professional audiences — executive summary, risk band narrative, domain-by-domain findings, prioritised recommendations, and a regulatory framework appendix.</p>
           </div>
         </div>
-
         <div class="feat-item fade">
-          <div class="feat-icon">
-            <!-- Lock icon -->
-            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-          </div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
           <div class="feat-body">
             <div class="feat-title">Secure Client Portal</div>
             <p class="feat-p">Every assessment is stored in your private account. Revisit results, download reports, and track governance posture over time. Your assessment data is not shared or used beyond your account.</p>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── URGENCY INTERSTITIAL ──────────────────────────── -->
+<!-- URGENCY -->
 <div class="urgency-section">
   <div class="urgency-inner">
     <div class="fade">
@@ -733,7 +688,7 @@
   </div>
 </div>
 
-<!-- ── PRICING ─────────────────────────────────────────── -->
+<!-- PRICING -->
 <section id="pricing" class="pricing-section">
   <div class="wrap section-pad">
     <div class="pricing-header fade">
@@ -741,9 +696,7 @@
       <h2>Select your level of<br><em>scrutiny.</em></h2>
       <p>No subscription. No lock-in. Pay only when you need a report.</p>
     </div>
-
     <div class="pricing-grid">
-
       <div class="pricing-card fade">
         <div class="pricing-tier">Internal Scan</div>
         <div class="pricing-name">Free Assessment</div>
@@ -761,7 +714,6 @@
         </ul>
         <a href="diagnostic.html" class="pricing-btn pricing-btn-outline">Start Free Diagnostic</a>
       </div>
-
       <div class="pricing-card featured fade">
         <div class="pricing-tag">Most Popular</div>
         <div class="pricing-tier">Board Prep Pack</div>
@@ -780,7 +732,6 @@
         </ul>
         <a href="diagnostic.html" class="pricing-btn pricing-btn-solid">Generate Premium Report</a>
       </div>
-
       <div class="pricing-card fade">
         <div class="pricing-tier">Enterprise</div>
         <div class="pricing-name">Full Lifecycle</div>
@@ -795,14 +746,13 @@
           <li>Quarterly Benchmarking</li>
           <li>Dedicated Advisory Lead</li>
         </ul>
-        <a href="/cdn-cgi/l/email-protection#09616c656566496465686e7b667c79276a66277c62" class="pricing-btn pricing-btn-outline">Talk to Advisory</a>
+        <a href="mailto:hello@mlagroup.co.uk" class="pricing-btn pricing-btn-outline">Talk to Advisory</a>
       </div>
-
     </div>
   </div>
 </section>
 
-<!-- ── CTA ────────────────────────────────────────────── -->
+<!-- CTA -->
 <section class="cta-section">
   <div class="wrap section-pad">
     <div class="cta-box fade">
@@ -820,7 +770,7 @@
   </div>
 </section>
 
-<!-- ── FOOTER ──────────────────────────────────────────── -->
+<!-- FOOTER -->
 <footer>
   <div class="footer-top">
     <div class="f-brand">
@@ -832,7 +782,8 @@
       <ul>
         <li><a href="diagnostic.html">Risk Diagnostic</a></li>
         <li><a href="login.html">Client Portal</a></li>
-        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
       </ul>
     </div>
     <div class="f-col">
@@ -864,13 +815,9 @@
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  function toggleMob() {
-    document.getElementById('mobMenu').classList.toggle('open');
-  }
-  function closeMob() {
-    document.getElementById('mobMenu').classList.remove('open');
-  }
+<script>
+  function toggleMob() { document.getElementById('mobMenu').classList.toggle('open'); }
+  function closeMob() { document.getElementById('mobMenu').classList.remove('open'); }
 
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e, i) => {
@@ -880,10 +827,8 @@
       }
     });
   }, { threshold: 0.1 });
-
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // ── COUNT-UP ANIMATION ──────────────────────────────
   const countups = document.querySelectorAll('.countup');
   const countObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -891,19 +836,12 @@
       const el = entry.target;
       const target = parseFloat(el.dataset.target);
       const decimals = parseInt(el.dataset.decimals) || 0;
-      const duration = 1800;
-      const steps = 60;
-      let step = 0;
+      const duration = 1800; const steps = 60; let step = 0;
       const timer = setInterval(() => {
         step++;
-        const progress = step / steps;
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const current = target * eased;
-        el.textContent = current.toFixed(decimals);
-        if (step >= steps) {
-          el.textContent = target.toFixed(decimals);
-          clearInterval(timer);
-        }
+        const eased = 1 - Math.pow(1 - step/steps, 3);
+        el.textContent = (target * eased).toFixed(decimals);
+        if (step >= steps) { el.textContent = target.toFixed(decimals); clearInterval(timer); }
       }, duration / steps);
       countObserver.unobserve(el);
     });
