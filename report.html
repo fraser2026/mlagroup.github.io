@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -84,8 +84,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
 .hero-org{font-family:'Instrument Serif',serif;font-size:3.4rem;font-weight:400;line-height:1.08;letter-spacing:-.02em;color:var(--text-1);margin-bottom:20px;opacity:0;animation:fadeup .7s .35s ease forwards}
 .hero-sub{font-size:.9rem;color:var(--text-2);line-height:1.7;margin-bottom:36px;max-width:500px;opacity:0;animation:fadeup .7s .5s ease forwards}
 .hero-meta{display:flex;flex-wrap:wrap;gap:0;opacity:0;animation:fadeup .7s .65s ease forwards}
-.hero-meta-item{padding:0 20px;border-right:1px solid var(--border)}
-.hero-meta-item:first-child{padding-left:0}
+.hero-meta-item{padding:0 20px;border-right:1px solid var(--border);flex:1;min-width:0}
+.hero-meta-item:first-child{padding-left:20px}
 .hero-meta-item:last-child{border-right:none}
 .hm-label{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:3px}
 .hm-val{font-size:.82rem;font-weight:500;color:var(--text-2)}
@@ -186,13 +186,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
 .reg-tbl td{padding:12px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;vertical-align:top;line-height:1.4;color:var(--text-2)}
 .reg-tbl tr:hover td{background:rgba(255,255,255,.02)}
 .rn{font-weight:600;color:var(--text-1);display:block}
-.ra{font-size:.68rem;color:var(--text-3);font-family:'Courier New',monospace;display:block;margin-top:1px}
+.ra{font-size:.68rem;color:var(--text-3);font-family:'Courier New',monospace;display:block;margin-top:5px}
 .rc-penalty{color:var(--critical);font-size:.78rem;font-weight:500}
 .t-mand{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(220,38,38,.1);color:var(--critical);border:1px solid rgba(220,38,38,.18)}
 .t-adv{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.62rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(37,99,235,.1);color:var(--blue-lt);border:1px solid rgba(37,99,235,.18)}
 .sect-notice{background:rgba(37,99,235,.05);border:1px solid rgba(37,99,235,.14);border-radius:var(--r);padding:18px 22px;margin-top:20px}
 .sn-lbl{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue-lt);font-weight:600;margin-bottom:6px}
 .sn-txt{font-size:.85rem;color:var(--text-2);line-height:1.65}
+
+/* ── SCROLLABLE TABLE WRAPPER (mobile) ── */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r);margin-bottom:28px}
+.tbl-scroll::-webkit-scrollbar{height:4px}
+.tbl-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,.03)}
+.tbl-scroll::-webkit-scrollbar-thumb{background:var(--border-md);border-radius:2px}
+.tbl-scroll .obl-tbl,.tbl-scroll .reg-tbl{min-width:560px;margin-bottom:0}
 
 /* ── DETAILED FINDINGS ── */
 .find-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:28px;overflow-x:auto;scrollbar-width:none;gap:0}
@@ -264,7 +271,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
 }
 .pf-impact{font-size:.9rem;color:var(--text-2);line-height:1.8}
 .pf-rec{
-  margin:0 -28px;padding:22px 28px;
+  margin:0 -28px;padding:22px 28px 22px 36px;
   background:#010a1a;
   border-top:1px solid rgba(255,255,255,.05);
 }
@@ -472,8 +479,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
   .rsec{padding:48px 24px}
   .rnav{padding:0 20px}
   .rfooter{flex-direction:column;text-align:center}
-  .hero-meta{gap:8px}
-  .hero-meta-item{padding:0 12px;border-right-width:1px}
+  .hero-meta{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .hero-meta-item{padding:0;border-right:none;border-bottom:1px solid var(--border);padding-bottom:12px}
+  .hero-meta-item:last-child{border-bottom:none}
+  .hero-meta-item:nth-last-child(-n+2){border-bottom:none}
 }
 </style>
 </head>
@@ -499,7 +508,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
 
   <!-- STICKY NAV -->
   <nav class="rnav">
-    <a href="index.html" class="rnav-logo">mla<em>group.</em></a>
+    <a href="portal.html" class="rnav-logo">mla<em>group.</em></a>
     <ul class="rnav-links">
       <li><a href="#executive-brief">Executive Brief</a></li>
       <li><a href="#dashboard">Dashboard</a></li>
@@ -567,12 +576,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
     </div>
     <div style="margin-bottom:28px">
       <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:14px">Principal Regulatory Obligations</div>
-      <table class="obl-tbl" id="obl-tbl">
-        <thead><tr>
-          <th>Regulation</th><th>Obligation Area</th><th>Status</th><th>Deadline</th>
-        </tr></thead>
-        <tbody id="obl-tbody"></tbody>
-      </table>
+      <div class="tbl-scroll">
+        <table class="obl-tbl" id="obl-tbl">
+          <thead><tr>
+            <th>Regulation</th><th>Obligation Area</th><th>Status</th><th>Deadline</th>
+          </tr></thead>
+          <tbody id="obl-tbody"></tbody>
+        </table>
+      </div>
     </div>
     <div>
       <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:14px">Board Attention Required</div>
@@ -618,12 +629,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
       <div class="acc-lbl">Accountability Gap &mdash; Regulatory Blindspot</div>
       <div class="acc-txt">Under FCA PS7/21 and EU AI Act Art. 27, accountability for AI systems cannot be distributed across functions. The absence of a named individual responsible for AI governance creates a Regulatory Blindspot that prevents effective human oversight. In any supervisory inquiry, enforcement investigation, or litigation, regulators will identify a specific person to question. &ldquo;Shared responsibility&rdquo; is not a legally defensible position under either framework. MLA Group recommends the immediate appointment of a named AI Oversight Lead with documented mandate and veto authority over model deployment.</div>
     </div>
-    <table class="reg-tbl" id="reg-tbl">
-      <thead><tr>
-        <th>Regulation</th><th>Obligation</th><th>Type</th><th>Consequence</th><th>Deadline</th>
-      </tr></thead>
-      <tbody id="reg-tbody"></tbody>
-    </table>
+    <div class="tbl-scroll" style="margin-bottom:0">
+      <table class="reg-tbl" id="reg-tbl">
+        <thead><tr>
+          <th>Regulation</th><th>Obligation</th><th>Type</th><th>Consequence</th><th>Deadline</th>
+        </tr></thead>
+        <tbody id="reg-tbody"></tbody>
+      </table>
+    </div>
     <div id="sect-notice"></div>
   </section>
 
@@ -668,7 +681,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
 
   <!-- FOOTER -->
   <footer class="rfooter">
-    <a href="index.html" class="rf-logo">mla<em>group.</em></a>
+    <a href="portal.html" class="rf-logo">mla<em>group.</em></a>
     <div class="rf-notice">This report is produced for informational purposes based on self-reported responses. It does not constitute legal or regulatory advice. MLA Group is not a certified audit regulator. Organisations should engage qualified legal and compliance counsel when implementing governance changes.</div>
     <div class="rf-ver" id="rf-ver"></div>
   </footer>
@@ -877,19 +890,20 @@ function buildRoadmap(R){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   RADAR CHART
+   RADAR CHART — animated, domain-highlight capable
 ══════════════════════════════════════════════════════════════════ */
+let _radarState={pcts:{},bandColor:'#2563eb',dpts:[],keys:['s1','s2','s3','s4','s5','s6','s7'],cx:150,cy:140,R:95,a0:-Math.PI/2,step:(2*Math.PI)/7,activeKey:null};
+
 function drawRadar(svg, pcts, bandColor){
-  const cx=150,cy=140,R=95,n=7;
-  const a0=-Math.PI/2;
-  const step=(2*Math.PI)/n;
-  const keys=['s1','s2','s3','s4','s5','s6','s7'];
+  const {cx,cy,R,a0,step,keys}=_radarState;
+  _radarState.pcts=pcts;
+  _radarState.bandColor=bandColor;
   const shortLbls=['AI Inventory','Governance','Data Quality','Oversight','Explainability','Compliance','Operations'];
   let html='';
 
   // Rings
   [.25,.5,.75,1].forEach((r,ri)=>{
-    const pts=keys.map((_,i)=>{const a=a0+i*step;return `${cx+R*r*Math.cos(a)},${cy+R*r*Math.sin(a)}`;}).join(' ');
+    const pts=keys.map((_,i)=>{const a=a0+i*step;return`${cx+R*r*Math.cos(a)},${cy+R*r*Math.sin(a)}`;}).join(' ');
     html+=`<polygon points="${pts}" fill="none" stroke="${ri===3?'rgba(255,255,255,.12)':'rgba(255,255,255,.05)'}" stroke-width="${ri===3?.6:.3}"/>`;
     if(ri===1||ri===3){html+=`<text x="${cx+3}" y="${cy-R*r+4}" font-size="7" fill="rgba(255,255,255,.2)" font-family="DM Sans,sans-serif">${Math.round(r*100)}%</text>`;}
   });
@@ -900,22 +914,27 @@ function drawRadar(svg, pcts, bandColor){
     html+=`<line x1="${cx}" y1="${cy}" x2="${cx+R*Math.cos(a)}" y2="${cy+R*Math.sin(a)}" stroke="rgba(255,255,255,.07)" stroke-width=".5"/>`;
   });
 
-  // Data polygon
+  // Data polygon — animated draw-in via clip path trick using stroke-dasharray
   const dpts=keys.map((_,i)=>{const a=a0+i*step;const v=Math.min(Math.max((pcts[keys[i]]||0)/100,0),1);return{x:cx+R*v*Math.cos(a),y:cy+R*v*Math.sin(a)};});
+  _radarState.dpts=dpts;
   const polyPts=dpts.map(p=>`${p.x},${p.y}`).join(' ');
-  html+=`<polygon points="${polyPts}" fill="${bandColor}" fill-opacity=".18" stroke="${bandColor}" stroke-width="1.8" stroke-linejoin="round" class="radar-poly" style="transform-origin:${cx}px ${cy}px;animation:radarIn 1.2s .3s ease both"/>`;
+  html+=`<polygon id="radar-poly" points="${polyPts}" fill="${bandColor}" fill-opacity=".18" stroke="${bandColor}" stroke-width="1.8" stroke-linejoin="round" style="transform-origin:${cx}px ${cy}px;opacity:0;transform:scale(.4);transition:opacity .8s ease,transform .8s ease"/>`;
 
-  // Dots
-  dpts.forEach(p=>{
-    html+=`<circle cx="${p.x}" cy="${p.y}" r="4" fill="${bandColor}" opacity=".9"/>`;
+  // Dots — each with id for highlight
+  dpts.forEach((p,i)=>{
+    const k=keys[i];
+    const pc=pcts[k]||0;
+    const dc=pc>=75?'#4ade80':pc>=50?'#fbbf24':'#f87171';
+    html+=`<circle id="rdot-ring-${k}" cx="${p.x}" cy="${p.y}" r="10" fill="none" stroke="${bandColor}" stroke-width="1.5" opacity="0" style="transition:opacity .3s,r .3s"/>`;
+    html+=`<circle id="rdot-${k}" cx="${p.x}" cy="${p.y}" r="4.5" fill="${dc}" opacity=".9" style="transition:r .2s,opacity .2s"/>`;
     html+=`<circle cx="${p.x}" cy="${p.y}" r="2" fill="#fff" opacity=".8"/>`;
   });
 
   // Labels
   keys.forEach((k,i)=>{
     const a=a0+i*step;
-    const lx=cx+(R+16)*Math.cos(a);
-    const ly=cy+(R+16)*Math.sin(a);
+    const lx=cx+(R+18)*Math.cos(a);
+    const ly=cy+(R+18)*Math.sin(a);
     const ca=Math.cos(a);
     const anc=ca>0.25?'start':ca<-0.25?'end':'middle';
     const p=pcts[k]||0;
@@ -925,8 +944,47 @@ function drawRadar(svg, pcts, bandColor){
   });
 
   // Center
-  html+=`<circle cx="${cx}" cy="${cy}" r="3" fill="rgba(255,255,255,.1)"/>`;
+  html+=`<circle cx="${cx}" cy="${cy}" r="3" fill="rgba(255,255,255,.15)"/>`;
   svg.innerHTML=html;
+
+  // Animate in when dashboard section enters viewport
+  const dashEl=document.getElementById('dashboard');
+  if(dashEl){
+    const radarObs=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          setTimeout(()=>{
+            const poly=document.getElementById('radar-poly');
+            if(poly){poly.style.opacity='1';poly.style.transform='scale(1)';}
+          },200);
+          radarObs.disconnect();
+        }
+      });
+    },{threshold:.2});
+    radarObs.observe(dashEl);
+  }
+}
+
+function radarHighlight(key){
+  const {keys,bandColor}=_radarState;
+  // Reset all dots
+  keys.forEach(k=>{
+    const dot=document.getElementById(`rdot-${k}`);
+    const ring=document.getElementById(`rdot-ring-${k}`);
+    if(dot){dot.setAttribute('r','4.5');dot.style.opacity='.9';}
+    if(ring){ring.style.opacity='0';}
+  });
+  // Highlight selected
+  if(key&&key!=='priority'){
+    const dot=document.getElementById(`rdot-${key}`);
+    const ring=document.getElementById(`rdot-ring-${key}`);
+    if(dot){dot.setAttribute('r','6.5');dot.style.opacity='1';}
+    if(ring){ring.style.opacity='1';}
+    // Pulse the ring
+    if(ring){
+      ring.animate([{opacity:0,r:10},{opacity:.8,r:14},{opacity:0,r:18}],{duration:900,iterations:2});
+    }
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1099,6 +1157,7 @@ function renderFindings(R,findings){
     const concept=prem?prem.concept:'';
     const wt=Math.round(W[s]*100);
     const a=RM_ACTIONS[s];
+
     domainHtml+=`<div class="fpanel" id="fpanel-${s}">
       <div class="dom-card">
 
@@ -1154,8 +1213,19 @@ function renderFindings(R,findings){
       tabsEl.querySelectorAll('.ft').forEach(b=>b.classList.remove('act'));
       panelsEl.querySelectorAll('.fpanel').forEach(p=>p.classList.remove('act'));
       btn.classList.add('act');
-      const panel=document.getElementById('fpanel-'+btn.dataset.tab);
+      const tab=btn.dataset.tab;
+      const panel=document.getElementById('fpanel-'+tab);
       if(panel)panel.classList.add('act');
+      // Highlight corresponding radar dot
+      radarHighlight(tab);
+      // Scroll dashboard into view briefly to show highlight if user is in findings
+      const dash=document.getElementById('dashboard');
+      if(tab!=='priority'&&dash){
+        const dashRect=dash.getBoundingClientRect();
+        if(dashRect.bottom<0||dashRect.top>window.innerHeight){
+          // Don't scroll — just highlight silently; radar visible when user scrolls back
+        }
+      }
     });
   });
 }
@@ -1262,9 +1332,9 @@ async function init(){
   }
 }
 
-/* ── Radar animation CSS ── */
+/* ── Radar polygon transition ── */
 const style=document.createElement('style');
-style.textContent='@keyframes radarIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}';
+style.textContent='@keyframes radarPulse{0%,100%{opacity:.6}50%{opacity:1}}';
 document.head.appendChild(style);
 
 window.addEventListener('load',init);
