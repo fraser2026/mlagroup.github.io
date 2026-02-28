@@ -395,12 +395,14 @@ window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',window.scr
 function toggleMob(){document.getElementById('mobMenu').classList.toggle('open')}
 function closeMob(){document.getElementById('mobMenu').classList.remove('open')}
 
+const sfEls = document.querySelectorAll('.sf');
 const io = new IntersectionObserver(entries=>{
   entries.forEach((e,i)=>{
     if(e.isIntersecting){setTimeout(()=>e.target.classList.add('in'),i*60);io.unobserve(e.target)}
   });
-},{threshold:0.1});
-document.querySelectorAll('.sf').forEach(el=>io.observe(el));
+},{threshold:0,rootMargin:'0px 0px -40px 0px'});
+sfEls.forEach(el=>io.observe(el));
+setTimeout(()=>sfEls.forEach(el=>el.classList.add('in')),3000);
 
 const domainsEl=document.getElementById('rptDomains');
 const blurEl=document.getElementById('rptBlur');
