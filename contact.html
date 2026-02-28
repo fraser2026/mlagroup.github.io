@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact | MLA Group</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020617;--bg2:#0a1628;--bg3:#0f1f38;
+  --border:rgba(255,255,255,0.09);--border-h:rgba(255,255,255,0.16);
+  --accent:#2563eb;--accent-d:#1d4ed8;--sky:#60a5fa;
+  --main:#ffffff;--sub:#e2e8f0;--muted:#94a3b8;--muted2:#cbd5e1;
+  --r:10px;--nav-h:64px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--main);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:hidden;min-height:100vh}
+
+.bg-base{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 40% at 50% -5%,rgba(37,99,235,0.15) 0%,transparent 65%)}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 110% 50% at 50% 0%,black 20%,transparent 75%)}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid var(--border);background:rgba(2,6,23,0.88);backdrop-filter:blur(24px)}
+.logo{font-size:1.1rem;font-weight:600;letter-spacing:-0.02em;text-decoration:none;color:var(--main)}
+.logo em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;color:var(--sky)}
+.nav-back{font-size:0.82rem;font-weight:500;color:var(--muted2);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color 0.18s}
+.nav-back:hover{color:var(--main)}
+.nav-back svg{transition:transform 0.18s}
+.nav-back:hover svg{transform:translateX(-3px)}
+
+/* LAYOUT */
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:80px 48px 120px;display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:start}
+
+/* LEFT — INFO */
+.info-side{position:sticky;top:calc(var(--nav-h) + 48px)}
+.eyebrow{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.16em;color:var(--sky);display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--accent)}
+h1{font-family:'Instrument Serif',serif;font-size:clamp(2.8rem,4vw,3.8rem);font-weight:400;line-height:1.0;letter-spacing:-0.03em;color:var(--main);margin-bottom:24px}
+h1 em{font-style:italic;color:var(--sky)}
+.info-sub{font-size:0.95rem;font-weight:300;color:var(--muted2);line-height:1.8;margin-bottom:48px;max-width:380px}
+
+.contact-details{display:flex;flex-direction:column;gap:0}
+.detail-row{display:flex;gap:16px;align-items:flex-start;padding:20px 0;border-bottom:1px solid var(--border)}
+.detail-row:first-child{border-top:1px solid var(--border)}
+.detail-icon{width:36px;height:36px;min-width:36px;border-radius:8px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.18);display:flex;align-items:center;justify-content:center;margin-top:2px}
+.detail-icon svg{width:15px;height:15px;stroke:var(--sky);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.detail-label{font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px}
+.detail-val{font-size:0.88rem;color:var(--muted2);line-height:1.5}
+
+/* FORM SIDE */
+.form-side{}
+.form-card{background:rgba(10,22,40,0.7);border:1px solid var(--border);border-radius:16px;padding:40px;backdrop-filter:blur(12px)}
+
+.form-group{margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+label{display:block;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px}
+input,select,textarea{
+  width:100%;padding:12px 16px;border-radius:8px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  color:var(--main);font-family:'DM Sans',sans-serif;font-size:0.88rem;
+  outline:none;transition:border-color 0.2s,background 0.2s;
+  -webkit-appearance:none;appearance:none;
+}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+input:focus,select:focus,textarea:focus{border-color:rgba(37,99,235,0.5);background:rgba(37,99,235,0.04)}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+select option{background:var(--bg2);color:var(--main)}
+textarea{resize:vertical;min-height:130px;line-height:1.6}
+
+/* Interest checkboxes */
+.checkbox-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color 0.18s,background 0.18s}
+.check-item:hover{border-color:var(--border-h);background:rgba(255,255,255,0.02)}
+.check-item input[type="checkbox"]{width:16px;height:16px;min-width:16px;padding:0;accent-color:var(--accent);cursor:pointer}
+.check-label{font-size:0.8rem;color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
+
+.form-divider{height:1px;background:var(--border);margin:28px 0}
+
+.submit-btn{
+  width:100%;padding:14px;border-radius:8px;border:none;cursor:pointer;
+  background:var(--accent);color:white;
+  font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background 0.18s,transform 0.18s,box-shadow 0.18s;
+}
+.submit-btn:hover{background:var(--accent-d);transform:translateY(-1px);box-shadow:0 8px 24px rgba(37,99,235,0.35)}
+.submit-btn svg{transition:transform 0.18s}
+.submit-btn:hover svg{transform:translateX(3px)}
+.submit-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none}
+
+.form-note{margin-top:14px;font-size:0.75rem;color:var(--muted);text-align:center;line-height:1.5}
+.form-note a{color:var(--muted2);text-decoration:none}
+.form-note a:hover{color:var(--main)}
+
+/* SUCCESS STATE */
+.success-state{display:none;text-align:center;padding:48px 20px}
+.success-icon{width:56px;height:56px;border-radius:50%;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+.success-icon svg{width:24px;height:24px;stroke:var(--sky);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.success-title{font-family:'Instrument Serif',serif;font-size:1.8rem;font-weight:400;color:var(--main);margin-bottom:12px}
+.success-sub{font-size:0.88rem;color:var(--muted2);line-height:1.7}
+
+/* FOOTER */
+footer{position:relative;z-index:1;border-top:1px solid var(--border);background:rgba(2,6,23,0.96)}
+.footer-bottom{max-width:1100px;margin:0 auto;padding:24px 48px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.footer-bottom span{font-size:0.75rem;color:var(--muted)}
+.footer-legal{display:flex;gap:20px}
+.footer-legal a{font-size:0.75rem;color:var(--muted);text-decoration:none;transition:color 0.15s}
+.footer-legal a:hover{color:var(--muted2)}
+
+/* FADE IN */
+.fade{opacity:0;transform:translateY(16px);transition:opacity 0.6s ease,transform 0.6s ease}
+.fade.in{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){
+  nav{padding:0 20px}
+  .page{grid-template-columns:1fr;gap:56px;padding:48px 24px 80px}
+  .info-side{position:static}
+  .form-card{padding:28px 24px}
+  .form-row{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column;text-align:center;padding:20px 24px}
+  .footer-legal{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-base"></div>
+<div class="bg-grid"></div>
+
+<nav>
+  <a href="index.html" class="logo">mla<em>group.</em></a>
+  <a href="index.html" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 7H3M7 11L3 7l4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Back to site
+  </a>
+</nav>
+
+<div class="page">
+
+  <!-- LEFT -->
+  <div class="info-side">
+    <div class="eyebrow fade">Get in touch</div>
+    <h1 class="fade">Let's talk<br><em>governance.</em></h1>
+    <p class="info-sub fade">Whether you're exploring the diagnostic, have a question about your sector's obligations, or want to discuss an enterprise engagement — we're here.</p>
+
+    <div class="contact-details">
+      <div class="detail-row fade">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div>
+          <div class="detail-label">Office</div>
+          <div class="detail-val">Unit 1 (Suite 121), Imperial Court<br>Exchange Street East, Liverpool, L2 3AB</div>
+        </div>
+      </div>
+      <div class="detail-row fade">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.12 2.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.46-.46a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
+        </div>
+        <div>
+          <div class="detail-label">Telephone</div>
+          <div class="detail-val">0151 558 0162</div>
+        </div>
+      </div>
+      <div class="detail-row fade">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="detail-label">Response time</div>
+          <div class="detail-val">We aim to respond within one business day</div>
+        </div>
+      </div>
+      <div class="detail-row fade">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div class="detail-label">Registered</div>
+          <div class="detail-val">MLA Group Ltd · Co. No. 16117562<br>ICO Reg. ZB826186</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT — FORM -->
+  <div class="form-side fade">
+    <div class="form-card">
+
+      <!-- Netlify Forms: data-netlify="true" handles everything automatically -->
+      <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="contactForm">
+        <input type="hidden" name="form-name" value="contact">
+        <p style="display:none"><label>Don't fill this out: <input name="bot-field"></label></p>
+
+        <div class="form-row">
+          <div>
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName" placeholder="James" required>
+          </div>
+          <div>
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName" placeholder="Mitchell" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Work Email</label>
+          <input type="email" id="email" name="email" placeholder="james@yourfirm.co.uk" required>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label for="organisation">Organisation</label>
+            <input type="text" id="organisation" name="organisation" placeholder="Your firm name">
+          </div>
+          <div>
+            <label for="sector">Sector</label>
+            <select id="sector" name="sector">
+              <option value="" disabled selected>Select sector</option>
+              <option>Financial Services</option>
+              <option>Healthcare &amp; Life Sciences</option>
+              <option>Legal Services</option>
+              <option>Professional Services</option>
+              <option>Public Sector</option>
+              <option>Insurance</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>I'm interested in</label>
+          <div class="checkbox-grid">
+            <label class="check-item">
+              <input type="checkbox" name="interest" value="Free Diagnostic">
+              <span class="check-label">Free Diagnostic</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" name="interest" value="Premium Report">
+              <span class="check-label">Premium Report</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" name="interest" value="Enterprise Advisory">
+              <span class="check-label">Enterprise Advisory</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" name="interest" value="General Enquiry">
+              <span class="check-label">General Enquiry</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Tell us about your organisation's AI governance situation or what you'd like to discuss…" required></textarea>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          Send Message
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <p class="form-note">By submitting, you agree to our <a href="privacy.html">Privacy Policy</a>. We'll never share your details.</p>
+      </form>
+
+      <!-- Success state shown after submission -->
+      <div class="success-state" id="successState">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="success-title">Message received</div>
+        <p class="success-sub">Thank you for getting in touch. A member of the MLA Group team will respond within one business day.</p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-bottom">
+    <span>&copy; 2026 MLA Group Ltd. Registered in England &amp; Wales. All rights reserved.</span>
+    <div class="footer-legal">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="cookies.html">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Fade in on scroll
+  const io = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('in'), i * 80);
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold: 0.1});
+  document.querySelectorAll('.fade').forEach(el => io.observe(el));
+
+  // Handle form submission with Netlify
+  const form = document.getElementById('contactForm');
+  const btn = document.getElementById('submitBtn');
+  const success = document.getElementById('successState');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const data = new FormData(form);
+
+    try {
+      await fetch('/', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: new URLSearchParams(data).toString()});
+      form.style.display = 'none';
+      success.style.display = 'block';
+    } catch(err) {
+      btn.disabled = false;
+      btn.innerHTML = 'Send Message <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      alert('Something went wrong. Please try again.');
+    }
+  });
+</script>
+
+</body>
+</html>
