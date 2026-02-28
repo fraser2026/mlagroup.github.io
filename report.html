@@ -468,7 +468,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
-  .hero-inner{grid-template-columns:1fr;gap:48px;padding:60px 28px}
+  .hero-inner{grid-template-columns:1fr;gap:48px;padding:60px 28px 100px}
   .hero-right{order:-1}
   .dash-grid{grid-template-columns:1fr}
   .rm-phase{grid-template-columns:1fr}
@@ -483,6 +483,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
   .hero-meta-item{padding:0;border-right:none;border-bottom:1px solid var(--border);padding-bottom:12px}
   .hero-meta-item:last-child{border-bottom:none}
   .hero-meta-item:nth-last-child(-n+2){border-bottom:none}
+  .hero-scroll{display:none}
 }
 </style>
 </head>
@@ -947,17 +948,36 @@ function drawRadar(svg, pcts, bandColor){
   html+=`<circle cx="${cx}" cy="${cy}" r="3" fill="rgba(255,255,255,.15)"/>`;
   svg.innerHTML=html;
 
-  // Animate in when dashboard section enters viewport
+  // Animate in EVERY TIME dashboard section enters viewport
   const dashEl=document.getElementById('dashboard');
   if(dashEl){
     const radarObs=new IntersectionObserver(entries=>{
       entries.forEach(e=>{
         if(e.isIntersecting){
-          setTimeout(()=>{
-            const poly=document.getElementById('radar-poly');
-            if(poly){poly.style.opacity='1';poly.style.transform='scale(1)';}
-          },200);
-          radarObs.disconnect();
+          const poly=document.getElementById('radar-poly');
+          if(poly){
+            // Reset then animate
+            poly.style.transition='none';
+            poly.style.opacity='0';
+            poly.style.transform='scale(.4)';
+            requestAnimationFrame(()=>{
+              requestAnimationFrame(()=>{
+                poly.style.transition='opacity .8s ease,transform .8s ease';
+                poly.style.opacity='1';
+                poly.style.transform='scale(1)';
+              });
+            });
+          }
+          // Animate score bars
+          document.querySelectorAll('.mbar-f').forEach(bar=>{
+            const target=bar.dataset.target||'0';
+            bar.style.transition='none';
+            bar.style.width='0%';
+            setTimeout(()=>{
+              bar.style.transition='width 1.2s cubic-bezier(.4,0,.2,1)';
+              bar.style.width=target+'%';
+            },300);
+          });
         }
       });
     },{threshold:.2});
@@ -1041,13 +1061,13 @@ function renderExecutiveBrief(R,findings,org,today){
   const hasInv=R.priorityFlags.some(f=>f.id==='pf_no_inventory');
   const hasCat=R.selectedCategories&&R.selectedCategories.length>0&&R.selectedCategories.indexOf('none')===-1;
   const rows=[
-    {reg:'EU AI Act — Annex III',art:'Art. 6',status:hasCat?'HIGH-RISK SYSTEM DETECTED':'Classification review required',statusCls:hasCat?'s-alert':'s-warn',dl:'August 2026',dlCls:'dl-aug'},
-    {reg:'UK GDPR — DPIA',art:'Art. 35',status:hasDPIA?'DPIA NOT COMPLETED':'Assess scope and complete',statusCls:hasDPIA?'s-alert':'s-warn',dl:'Immediate',dlCls:'dl-now'},
-    {reg:'UK GDPR — Automated Decisions',art:'Art. 22',status:hasOversight?'OVERSIGHT CONTROLS ABSENT':'Confirm documentation',statusCls:hasOversight?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
-    {reg:'FCA SM&CR — AI Accountability',art:'PS7/21',status:hasGov?'NO NAMED OWNER IDENTIFIED':'Confirm current documentation',statusCls:hasGov?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
-    {reg:'EU AI Act — AI Inventory',art:'Art. 27',status:hasInv?'INVENTORY INCOMPLETE':'Maintain and review annually',statusCls:hasInv?'s-alert':'s-ok',dl:'August 2026',dlCls:'dl-aug'}
+    {reg:'EU AI Act — Annex III',art:'Art. 6',obl:'High-risk AI system classification',status:hasCat?'HIGH-RISK SYSTEM DETECTED':'Classification review required',statusCls:hasCat?'s-alert':'s-warn',dl:'August 2026',dlCls:'dl-aug'},
+    {reg:'UK GDPR — DPIA',art:'Art. 35',obl:'Data Protection Impact Assessment',status:hasDPIA?'DPIA NOT COMPLETED':'Assess scope and complete',statusCls:hasDPIA?'s-alert':'s-warn',dl:'Immediate',dlCls:'dl-now'},
+    {reg:'UK GDPR — Automated Decisions',art:'Art. 22',obl:'Human oversight of automated decisions',status:hasOversight?'OVERSIGHT CONTROLS ABSENT':'Controls confirmed',statusCls:hasOversight?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
+    {reg:'FCA SM&CR — AI Accountability',art:'PS7/21',obl:'Named Senior Manager accountability',status:hasGov?'NO NAMED OWNER IDENTIFIED':'Owner confirmed',statusCls:hasGov?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
+    {reg:'EU AI Act — AI Inventory',art:'Art. 27',obl:'AI system inventory and documentation',status:hasInv?'INVENTORY INCOMPLETE':'Maintained and current',statusCls:hasInv?'s-alert':'s-ok',dl:'August 2026',dlCls:'dl-aug'}
   ];
-  document.getElementById('obl-tbody').innerHTML=rows.map(r=>`<tr><td><span class="obl-reg">${esc(r.reg)}</span><span class="obl-art">${esc(r.art)}</span></td><td>${esc(r.status.replace(' — Annex III',''))}</td><td class="${r.statusCls}">${esc(r.status)}</td><td class="${r.dlCls}">${esc(r.dl)}</td></tr>`).join('');
+  document.getElementById('obl-tbody').innerHTML=rows.map(r=>`<tr><td><span class="obl-reg">${esc(r.reg)}</span><span class="obl-art">${esc(r.art)}</span></td><td style="color:var(--text-2);font-size:.82rem">${esc(r.obl)}</td><td class="${r.statusCls}">${esc(r.status)}</td><td class="${r.dlCls}">${esc(r.dl)}</td></tr>`).join('');
   
   // Board attention items
   const critical=findings.filter(f=>f.severity==='critical').slice(0,3);
@@ -1068,7 +1088,7 @@ function renderDashboard(R){
       <td><div class="dn">${esc(SN[s])}</div><div class="dw">${wt}% weight</div></td>
       <td class="dw">${wt}%</td>
       <td style="font-weight:700;color:${sc.c}">${p}%</td>
-      <td><div class="mbar-t"><div class="mbar-f" style="width:${p}%;background:${sc.c}"></div></div></td>
+      <td><div class="mbar-t"><div class="mbar-f" data-target="${p}" style="width:0%;background:${sc.c}"></div></div></td>
       <td><span class="rbadge" style="background:${sc.bg};color:${sc.c}">${sc.lbl}</span></td>
     </tr>`;
   }).join('');
