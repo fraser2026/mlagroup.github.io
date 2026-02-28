@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy | MLA Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b18;--surface-0:#090e1c;--surface-1:#0d1426;--surface-2:#111827;
+  --border:rgba(255,255,255,0.07);--border-md:rgba(255,255,255,0.12);
+  --text-1:#e2e8f4;--text-2:#8899b4;--text-3:#4a5773;
+  --blue:#2563eb;--blue-lt:#60a5fa;--nav-h:60px;--r:8px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-webkit-font-smoothing:antialiased;line-height:1.6}
+
+/* NAV */
+.rnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(7,11,24,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:100}
+.rnav-logo{font-size:.92rem;font-weight:600;letter-spacing:-.02em;color:var(--text-1);text-decoration:none}
+.rnav-logo em{font-family:'Instrument Serif',serif;font-style:italic;color:var(--blue-lt)}
+.nav-back{font-size:.75rem;font-weight:500;color:var(--text-3);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color .2s}
+.nav-back:hover{color:var(--text-2)}
+.nav-back::before{content:'←'}
+
+/* HERO */
+.hero{padding:calc(var(--nav-h) + 80px) 60px 80px;max-width:900px;margin:0 auto}
+.hero-eyebrow{font-size:.65rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.hero-eyebrow::before{content:'';display:block;width:28px;height:1px;background:var(--blue)}
+.hero-title{font-family:'Instrument Serif',serif;font-size:3rem;font-weight:400;line-height:1.1;letter-spacing:-.02em;color:var(--text-1);margin-bottom:20px}
+.hero-meta{font-size:.8rem;color:var(--text-3);display:flex;gap:24px;flex-wrap:wrap}
+.hero-meta span{display:flex;align-items:center;gap:6px}
+
+/* CONTENT */
+.content{max-width:900px;margin:0 auto;padding:0 60px 100px}
+.section{margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--border)}
+.section:last-child{border-bottom:none}
+.section-num{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:14px}
+.section-num::after{content:'';display:block;width:60px;height:1px;background:var(--border)}
+.section-title{font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:400;color:var(--text-1);margin-bottom:20px;letter-spacing:-.02em}
+.body-text{font-size:.9rem;color:var(--text-2);line-height:1.85;margin-bottom:16px}
+.body-text:last-child{margin-bottom:0}
+.body-text strong{color:var(--text-1);font-weight:600}
+.body-text a{color:var(--blue-lt);text-decoration:none}
+.body-text a:hover{text-decoration:underline}
+
+/* INFO BLOCK */
+.info-block{background:var(--surface-1);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--r);padding:24px 28px;margin-bottom:24px}
+.info-block-lbl{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-lt);font-weight:700;margin-bottom:10px}
+.info-block p{font-size:.88rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
+.info-block p:last-child{margin-bottom:0}
+.info-block strong{color:var(--text-1)}
+
+/* DATA TABLE */
+.data-tbl{width:100%;border-collapse:collapse;margin:20px 0}
+.data-tbl th{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+.data-tbl td{font-size:.83rem;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top;color:var(--text-2);line-height:1.55}
+.data-tbl tr:last-child td{border-bottom:none}
+.data-tbl td:first-child{color:var(--text-1);font-weight:500;white-space:nowrap}
+
+/* RIGHTS LIST */
+.rights-list{display:flex;flex-direction:column;gap:12px;margin:20px 0}
+.right-item{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px}
+.right-title{font-size:.82rem;font-weight:600;color:var(--text-1);margin-bottom:4px}
+.right-desc{font-size:.82rem;color:var(--text-2);line-height:1.6}
+
+/* FOOTER */
+.rfooter{max-width:900px;margin:0 auto;padding:40px 60px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.rf-logo{font-size:.88rem;font-weight:600;color:var(--text-3);text-decoration:none;letter-spacing:-.02em}
+.rf-logo em{font-family:'Instrument Serif',serif;font-style:italic}
+.rf-links{display:flex;gap:20px}
+.rf-links a{font-size:.75rem;color:var(--text-3);text-decoration:none;transition:color .2s}
+.rf-links a:hover{color:var(--text-2)}
+
+@media(max-width:768px){
+  .rnav{padding:0 20px}
+  .hero{padding:calc(var(--nav-h) + 48px) 24px 48px}
+  .content{padding:0 24px 80px}
+  .rfooter{padding:32px 24px;flex-direction:column;text-align:center}
+  .rf-links{justify-content:center}
+  .data-tbl{display:block;overflow-x:auto}
+}
+</style>
+</head>
+<body>
+
+<nav class="rnav">
+  <a href="index.html" class="rnav-logo">mla<em>group.</em></a>
+  <a href="index.html" class="nav-back">Back to site</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">Legal Documentation</div>
+  <h1 class="hero-title">Privacy Policy</h1>
+  <div class="hero-meta">
+    <span>Effective date: 1 March 2026</span>
+    <span>Last reviewed: 1 March 2026</span>
+    <span>ICO Reg: ZB826186</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="info-block">
+    <div class="info-block-lbl">Data Controller</div>
+    <p><strong>MLA Group Ltd</strong> (trading as MLA Group)</p>
+    <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
+    <p>Tel: 0151 558 0162 &nbsp;·&nbsp; <a href="mailto:info@mlagroup.co.uk">info@mlagroup.co.uk</a></p>
+    <p>Company Registration No: 16117562 &nbsp;·&nbsp; ICO Registration No: ZB826186</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 01</div>
+    <h2 class="section-title">Who We Are</h2>
+    <p class="body-text">MLA Group Ltd (trading as MLA Group) is an AI governance advisory firm registered in England and Wales. We provide AI governance risk assessments, compliance advisory services, and board-level reporting tools to organisations operating across regulated and professional sectors.</p>
+    <p class="body-text">This Privacy Policy explains how we collect, use, store, and protect your personal data when you use our website at <strong>www.mlagroup.co.uk</strong>, complete an AI Governance Risk Diagnostic, access your client portal, or otherwise interact with our services.</p>
+    <p class="body-text">We are registered with the Information Commissioner's Office (ICO) as a data controller under registration number <strong>ZB826186</strong>.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 02</div>
+    <h2 class="section-title">Data We Collect</h2>
+    <p class="body-text">We collect personal data in the following categories:</p>
+    <table class="data-tbl">
+      <thead><tr><th>Category</th><th>Data Collected</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td>Account Data</td><td>Email address, password (hashed), account creation date</td><td>Provided by you on registration</td></tr>
+        <tr><td>Professional Data</td><td>Full name, job title/role, organisation name, industry sector, organisation size</td><td>Provided by you during diagnostic</td></tr>
+        <tr><td>Assessment Data</td><td>Responses to AI governance diagnostic questions, risk scores, governance maturity ratings</td><td>Generated during diagnostic completion</td></tr>
+        <tr><td>Report Data</td><td>AI governance risk reports generated from your assessment responses, including domain scores and remediation recommendations</td><td>Generated by our platform</td></tr>
+        <tr><td>Usage Data</td><td>Pages visited, time on site, browser type, device type, IP address</td><td>Collected automatically via cookies</td></tr>
+      </tbody>
+    </table>
+    <p class="body-text">We do not collect special category data (such as health, biometric, or financial data) through our platform. We do not collect payment card data — any future payment processing will be handled by a PCI-compliant third-party provider.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 03</div>
+    <h2 class="section-title">Legal Basis for Processing</h2>
+    <p class="body-text">Under UK GDPR, we rely on the following legal bases for processing your personal data:</p>
+    <table class="data-tbl">
+      <thead><tr><th>Processing Activity</th><th>Legal Basis</th></tr></thead>
+      <tbody>
+        <tr><td>Creating and managing your account</td><td>Contract (Art. 6(1)(b)) — necessary to provide the service you have requested</td></tr>
+        <tr><td>Delivering the AI Governance Risk Diagnostic and report</td><td>Contract (Art. 6(1)(b)) — core delivery of our service</td></tr>
+        <tr><td>Storing assessment results and reports in your portal</td><td>Contract (Art. 6(1)(b)) — necessary to provide ongoing access to your results</td></tr>
+        <tr><td>Sending service communications (account, report notifications)</td><td>Contract (Art. 6(1)(b))</td></tr>
+        <tr><td>Analytics and site improvement</td><td>Legitimate Interests (Art. 6(1)(f)) — improving our platform and user experience</td></tr>
+        <tr><td>Compliance with legal obligations</td><td>Legal Obligation (Art. 6(1)(c))</td></tr>
+        <tr><td>Marketing communications (where opted in)</td><td>Consent (Art. 6(1)(a))</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 04</div>
+    <h2 class="section-title">How We Use Your Data</h2>
+    <p class="body-text">We use your personal data for the following purposes:</p>
+    <p class="body-text"><strong>Service Delivery</strong> — To create and manage your account, deliver the AI Governance Risk Diagnostic, generate your personalised governance risk report, and provide access to your client portal.</p>
+    <p class="body-text"><strong>Communication</strong> — To send you account confirmations, report notifications, and material updates to our regulatory framework where these affect your risk band or sector obligations.</p>
+    <p class="body-text"><strong>Platform Improvement</strong> — To analyse how users interact with our platform in order to improve the diagnostic tool, reporting quality, and user experience. This analysis is conducted on aggregated, anonymised data where possible.</p>
+    <p class="body-text"><strong>Legal Compliance</strong> — To meet our obligations under applicable law, including responding to lawful requests from regulators or enforcement authorities.</p>
+    <p class="body-text">We do not use your personal data to make solely automated decisions that produce legal or similarly significant effects about you. Our diagnostic generates a risk score based on your responses; interpretation and advisory context is provided by our framework and reviewed by our team.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 05</div>
+    <h2 class="section-title">Third Parties and Data Sharing</h2>
+    <p class="body-text">We share personal data with the following third parties only where necessary to deliver our services:</p>
+    <table class="data-tbl">
+      <thead><tr><th>Processor</th><th>Purpose</th><th>Location</th></tr></thead>
+      <tbody>
+        <tr><td>Supabase Inc.</td><td>Authentication, secure data storage, and database hosting for your account and assessment results</td><td>EU / USA (SCCs in place)</td></tr>
+        <tr><td>Netlify Inc.</td><td>Website hosting and content delivery</td><td>USA (SCCs in place)</td></tr>
+        <tr><td>Google (Analytics)</td><td>Anonymous site usage analytics</td><td>USA (SCCs in place)</td></tr>
+      </tbody>
+    </table>
+    <p class="body-text">We do not sell, rent, or otherwise disclose your personal data to third parties for their own marketing purposes. All third-party processors are bound by data processing agreements and are required to process your data only on our instructions.</p>
+    <p class="body-text">Where data is transferred outside the UK, we ensure appropriate safeguards are in place including Standard Contractual Clauses (SCCs) approved by the ICO, in compliance with UK GDPR Chapter V.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 06</div>
+    <h2 class="section-title">Data Retention</h2>
+    <p class="body-text">We retain your personal data for the following periods:</p>
+    <table class="data-tbl">
+      <thead><tr><th>Data Type</th><th>Retention Period</th></tr></thead>
+      <tbody>
+        <tr><td>Account and registration data</td><td>Duration of account plus 2 years after account closure</td></tr>
+        <tr><td>Assessment responses and risk reports</td><td>Duration of account plus 3 years after account closure</td></tr>
+        <tr><td>Usage and analytics data</td><td>26 months from collection</td></tr>
+        <tr><td>Communications and correspondence</td><td>3 years from date of communication</td></tr>
+      </tbody>
+    </table>
+    <p class="body-text">At the end of the applicable retention period, data is securely deleted or anonymised. You may request earlier deletion of your data subject to the conditions set out in Section 07 below.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 07</div>
+    <h2 class="section-title">Your Rights</h2>
+    <p class="body-text">Under UK GDPR, you have the following rights in relation to your personal data:</p>
+    <div class="rights-list">
+      <div class="right-item">
+        <div class="right-title">Right of Access (Art. 15)</div>
+        <div class="right-desc">You have the right to request a copy of the personal data we hold about you and information about how we use it.</div>
+      </div>
+      <div class="right-item">
+        <div class="right-title">Right to Rectification (Art. 16)</div>
+        <div class="right-desc">You have the right to request correction of inaccurate or incomplete personal data we hold about you.</div>
+      </div>
+      <div class="right-item">
+        <div class="right-title">Right to Erasure (Art. 17)</div>
+        <div class="right-desc">You have the right to request deletion of your personal data in certain circumstances, including where we no longer need it for the purpose it was collected.</div>
+      </div>
+      <div class="right-item">
+        <div class="right-title">Right to Restriction (Art. 18)</div>
+        <div class="right-desc">You have the right to request that we restrict processing of your data in certain circumstances, for example while a complaint is being resolved.</div>
+      </div>
+      <div class="right-item">
+        <div class="right-title">Right to Data Portability (Art. 20)</div>
+        <div class="right-desc">You have the right to receive your personal data in a structured, machine-readable format and to transfer it to another controller.</div>
+      </div>
+      <div class="right-item">
+        <div class="right-title">Right to Object (Art. 21)</div>
+        <div class="right-desc">You have the right to object to processing based on legitimate interests. We will cease processing unless we can demonstrate compelling legitimate grounds.</div>
+      </div>
+      <div class="right-item">
+        <div class="right-title">Right to Withdraw Consent (Art. 7)</div>
+        <div class="right-desc">Where processing is based on consent, you may withdraw that consent at any time without affecting the lawfulness of prior processing.</div>
+      </div>
+    </div>
+    <p class="body-text">To exercise any of these rights, contact us at <a href="mailto:info@mlagroup.co.uk">info@mlagroup.co.uk</a>. We will respond within one calendar month. We may need to verify your identity before processing your request.</p>
+    <p class="body-text">If you are dissatisfied with our response, you have the right to lodge a complaint with the Information Commissioner's Office at <a href="https://ico.org.uk" target="_blank">ico.org.uk</a> or by calling 0303 123 1113.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 08</div>
+    <h2 class="section-title">Security</h2>
+    <p class="body-text">We implement appropriate technical and organisational measures to protect your personal data against unauthorised access, disclosure, alteration, or destruction. These include:</p>
+    <p class="body-text"><strong>Encryption</strong> — All data is transmitted over encrypted HTTPS connections. Passwords are hashed and never stored in plain text.</p>
+    <p class="body-text"><strong>Access Controls</strong> — Access to personal data is restricted to authorised personnel only, on a need-to-know basis. Database access is protected by Row Level Security policies.</p>
+    <p class="body-text"><strong>Authentication</strong> — Account access requires secure authentication through our portal.</p>
+    <p class="body-text">In the event of a personal data breach that is likely to result in a risk to your rights and freedoms, we will notify the ICO within 72 hours and affected individuals without undue delay, in accordance with our obligations under UK GDPR Art. 33–34.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 09</div>
+    <h2 class="section-title">Cookies</h2>
+    <p class="body-text">We use cookies and similar tracking technologies on our website. For full details of the cookies we use, the purposes for which we use them, and how to manage your preferences, please read our <a href="cookies.html">Cookie Policy</a>.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 10</div>
+    <h2 class="section-title">Changes to This Policy</h2>
+    <p class="body-text">We may update this Privacy Policy from time to time to reflect changes in our practices, services, or applicable law. Material changes will be communicated to registered users by email. The effective date at the top of this page will always reflect the date of the most recent revision.</p>
+    <p class="body-text">Continued use of our services following notification of changes constitutes acceptance of the updated policy.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 11</div>
+    <h2 class="section-title">Contact Us</h2>
+    <div class="info-block">
+      <div class="info-block-lbl">Privacy Enquiries</div>
+      <p><strong>MLA Group Ltd</strong></p>
+      <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
+      <p>Tel: 0151 558 0162</p>
+      <p>Email: <a href="mailto:info@mlagroup.co.uk">info@mlagroup.co.uk</a></p>
+    </div>
+  </div>
+
+</div>
+
+<footer class="rfooter">
+  <a href="index.html" class="rf-logo">mla<em>group.</em></a>
+  <div class="rf-links">
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="cookies.html">Cookie Policy</a>
+    <a href="terms.html">Terms &amp; Conditions</a>
+    <a href="index.html">Home</a>
+  </div>
+</footer>
+
+</body>
+</html>
