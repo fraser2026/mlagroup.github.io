@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   MLA GROUP — REPORT TEMPLATE
+   Designed for Puppeteer PDF rendering.
+   No screen UI. No @media print. Pure document.
+   Puppeteer controls: margins, header bar, footer, pagination.
+   ============================================================ */
+
+:root {
+  --navy: #0f1f38;
+  --blue: #2563eb;
+  --gold: #c9a465;
+  --white: #ffffff;
+  --bg: #f8fafc;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --text: #0f172a;
+  --text-2: #475569;
+  --text-3: #94a3b8;
+  --red: #dc2626;
+  --orange: #ea580c;
+  --amber: #d97706;
+  --green: #15803d;
+  --p1: #1d4ed8;
+  --p2: #b45309;
+  --p3: #15803d;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 10pt;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  line-height: 1.55;
+  background: white;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.font-accent { font-family: 'Instrument Serif', serif; font-style: italic; }
+
+.section-label {
+  font-size: 6.5pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--blue);
+  margin-bottom: 6px;
+  display: inline-block;
+}
+.section-label::after {
+  content: '';
+  display: block;
+  width: 26px;
+  height: 1.5px;
+  background: var(--blue);
+  margin-top: 3px;
+}
+
+.section-title {
+  font-size: 17pt;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.18;
+  margin-bottom: 6px;
+}
+
+.section-intro {
+  font-size: 8.5pt;
+  color: var(--text-2);
+  line-height: 1.6;
+  max-width: 56ch;
+  margin-bottom: 20px;
+}
+
+.sub-heading {
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 16px 0 8px;
+}
+
+/* ============================================================
+   COVER PAGE
+   ============================================================ */
+.cover {
+  page-break-after: always;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.cover-accent { width: 40px; height: 2px; background: var(--gold); margin-bottom: 24px; }
+
+.cover-brand {
+  font-size: 10pt;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.cover-brand .gold { color: var(--gold); }
+.cover-brand-sub {
+  font-size: 6.5pt;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  margin-bottom: 32px;
+}
+
+.cover-doc-type {
+  font-size: 7pt;
+  font-weight: 600;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin-bottom: 8px;
+}
+
+.cover-title {
+  font-size: 24pt;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.cover-subtitle {
+  font-size: 9.5pt;
+  color: var(--text-2);
+  line-height: 1.5;
+  max-width: 70%;
+  margin-bottom: 28px;
+}
+
+/* Score area */
+.cover-score {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  margin-bottom: 24px;
+  page-break-inside: avoid;
+}
+.ring { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+.ring svg { width: 80px; height: 80px; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+.ring-fill { fill: none; stroke-width: 5; stroke-linecap: round; }
+.ring-val {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18pt; font-weight: 700; color: var(--navy);
+}
+.ring-val span { font-size: 9pt; font-weight: 400; color: var(--text-3); }
+.score-band { font-size: 12pt; font-weight: 700; color: var(--navy); }
+.score-heading { font-size: 8.5pt; color: var(--text-2); line-height: 1.4; }
+
+/* Meta grid */
+.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; margin-bottom: 28px; }
+.meta-item { padding: 7px 0; border-bottom: 1px solid var(--border); }
+.meta-label { font-size: 5.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-3); }
+.meta-value { font-size: 8.5pt; font-weight: 500; color: var(--text); }
+
+/* Contents */
+.toc { margin-top: auto; border-top: 1px solid var(--border); padding-top: 14px; }
+.toc-title { font-size: 6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-3); margin-bottom: 8px; }
+.toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 20px; }
+.toc-item { display: flex; gap: 6px; font-size: 7.5pt; line-height: 1.6; }
+.toc-num { color: var(--gold); font-weight: 700; font-size: 7pt; min-width: 16px; }
+.toc-name { font-weight: 500; color: var(--text); }
+
+/* Report ID */
+.report-id {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+  font-size: 5.5pt;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   SECTION BREAKS
+   ============================================================ */
+.section { page-break-before: always; }
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.tbl { width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-bottom: 14px; }
+.tbl thead th {
+  background: var(--navy); color: white;
+  font-weight: 600; text-align: left;
+  padding: 6px 8px; font-size: 6pt;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.tbl thead th:first-child { border-radius: 2px 0 0 0; }
+.tbl thead th:last-child { border-radius: 0 2px 0 0; }
+.tbl tbody td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.4;
+}
+.tbl tbody tr:nth-child(even) td { background: var(--bg); }
+.tbl tbody tr:last-child td { border-bottom: 2px solid var(--border); }
+.tbl tbody tr { page-break-inside: avoid; break-inside: avoid; }
+
+/* Badges */
+.badge {
+  display: inline-block; padding: 1px 6px; border-radius: 2px;
+  font-size: 6pt; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; white-space: nowrap;
+}
+.b-mandatory { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.b-advisory { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+/* ============================================================
+   VERDICT BOX
+   ============================================================ */
+.verdict {
+  background: var(--bg); border: 1px solid var(--border);
+  border-left: 3px solid var(--navy);
+  padding: 12px 16px; margin-bottom: 16px;
+  border-radius: 2px;
+  page-break-inside: avoid; break-inside: avoid;
+}
+.verdict-label {
+  font-size: 6pt; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--text-3); margin-bottom: 3px;
+}
+.verdict-text { font-size: 8.5pt; color: var(--text); line-height: 1.6; max-width: 58ch; }
+
+/* ============================================================
+   BOARD ATTENTION LIST
+   ============================================================ */
+.attn-list { list-style: none; margin-bottom: 16px; }
+.attn-list li {
+  position: relative;
+  padding: 7px 10px 7px 30px;
+  font-size: 8pt; line-height: 1.45;
+  border-bottom: 1px solid var(--border-light);
+  page-break-inside: avoid; break-inside: avoid;
+}
+.attn-list li::before {
+  content: attr(data-n);
+  position: absolute; left: 0; top: 8px;
+  width: 18px; height: 18px;
+  background: var(--navy); color: var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 6.5pt; font-weight: 700;
+}
+.attn-sub { display: block; font-size: 6.5pt; color: var(--text-3); margin-top: 1px; }
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.dash {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 3px; padding: 12px 16px; margin-bottom: 16px;
+  page-break-inside: avoid; break-inside: avoid;
+}
+.dash-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
+.dash-score { font-size: 20pt; font-weight: 700; color: var(--navy); line-height: 1; }
+.dash-score span { font-size: 10pt; color: var(--text-3); font-weight: 400; }
+.dash-lbl { font-size: 6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 1px; }
+.dash-band { font-size: 11pt; font-weight: 700; text-align: right; }
+
+.dom-row {
+  display: flex; align-items: center; padding: 6px 0;
+  border-bottom: 1px solid var(--border-light);
+  page-break-inside: avoid; break-inside: avoid;
+}
+.dom-row:last-child { border-bottom: none; }
+.dom-n { font-size: 6pt; font-weight: 700; color: var(--gold); width: 22px; flex-shrink: 0; }
+.dom-name { font-size: 7.5pt; font-weight: 600; width: 160px; flex-shrink: 0; }
+.dom-bar-w { flex: 1; height: 6px; background: var(--border-light); border-radius: 3px; margin: 0 10px; overflow: hidden; }
+.dom-bar { height: 100%; border-radius: 3px; }
+.dom-s { font-size: 8pt; font-weight: 700; width: 32px; text-align: right; flex-shrink: 0; }
+.dom-w { font-size: 6pt; color: var(--text-3); width: 46px; text-align: right; flex-shrink: 0; }
+
+.sc-c { color: var(--red); }
+.sc-h { color: var(--orange); }
+.sc-m { color: var(--amber); }
+.sc-o { color: var(--green); }
+.bar-c { background: var(--red); }
+.bar-h { background: var(--orange); }
+.bar-m { background: var(--amber); }
+.bar-o { background: var(--green); }
+
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 12px; }
+.leg-item { display: flex; align-items: center; gap: 5px; font-size: 7pt; }
+.leg-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+
+/* ============================================================
+   FINDING CARDS
+   ============================================================ */
+.finding {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 3px; border-left: 3px solid var(--red);
+  padding: 12px 14px; margin-bottom: 12px;
+  page-break-inside: avoid; break-inside: avoid;
+}
+.finding.sev-high { border-left-color: var(--orange); }
+.finding.sev-medium { border-left-color: var(--amber); }
+
+.finding-top { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+.finding-sev { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.finding-sec { font-size: 6pt; color: var(--text-3); }
+.finding-ref { font-size: 6pt; color: var(--blue); font-weight: 600; margin-left: auto; }
+
+.finding-title { font-size: 9pt; font-weight: 700; color: var(--navy); line-height: 1.35; margin-bottom: 8px; }
+
+.finding-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fc-label { font-size: 5.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 2px; }
+.fc-text { font-size: 7.5pt; color: var(--text-2); line-height: 1.5; }
+
+/* ============================================================
+   PHASE CARDS
+   ============================================================ */
+.phase {
+  background: white; border: 1px solid var(--border);
+  border-radius: 3px; border-top: 3px solid var(--p1);
+  padding: 12px 14px; margin-bottom: 12px;
+  page-break-inside: avoid; break-inside: avoid;
+}
+.phase.ph2 { border-top-color: var(--p2); }
+.phase.ph3 { border-top-color: var(--p3); }
+
+.phase-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.phase-win { font-size: 6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
+.phase-badge { font-size: 5.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 2px; }
+.pb1 { background: #eff6ff; color: var(--p1); }
+.pb2 { background: #fffbeb; color: var(--p2); }
+.pb3 { background: #f0fdf4; color: var(--p3); }
+
+.phase-name { font-size: 10pt; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+.phase-rat { font-size: 7.5pt; color: var(--text-2); line-height: 1.5; margin-bottom: 8px; max-width: 56ch; }
+
+.phase-actions { list-style: none; margin-bottom: 6px; }
+.phase-actions li {
+  display: flex; align-items: flex-start; gap: 7px;
+  padding: 4px 0; border-bottom: 1px solid var(--border-light);
+  font-size: 7.5pt; line-height: 1.4;
+}
+.phase-actions li:last-child { border-bottom: none; }
+.act-n {
+  width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 6pt; font-weight: 700; color: white; flex-shrink: 0; margin-top: 1px;
+}
+.an1 { background: var(--p1); }
+.an2 { background: var(--p2); }
+.an3 { background: var(--p3); }
+.act-t { flex: 1; }
+.act-o {
+  font-size: 6pt; color: var(--text-3); font-weight: 500;
+  padding: 1px 5px; background: var(--bg);
+  border: 1px solid var(--border-light); border-radius: 2px;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+.phase-del { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--border); }
+.phase-del-lbl { font-size: 5.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 2px; }
+.phase-del-txt { font-size: 7pt; color: var(--text-2); line-height: 1.5; }
+
+/* ============================================================
+   DOMAIN CARDS
+   ============================================================ */
+.domcard {
+  background: white; border: 1px solid var(--border);
+  border-radius: 3px; padding: 12px 14px; margin-bottom: 10px;
+  page-break-inside: avoid; break-inside: avoid;
+}
+.domcard-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.domcard-n { font-size: 6pt; font-weight: 700; color: var(--gold); }
+.domcard-sec { font-size: 6pt; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; }
+.domcard-s { margin-left: auto; font-size: 8pt; font-weight: 700; }
+.domcard-concept { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 11pt; color: var(--navy); margin-bottom: 4px; }
+.domcard-txt { font-size: 7.5pt; color: var(--text-2); line-height: 1.55; max-width: 58ch; }
+
+/* ============================================================
+   OUTLOOK & NOTICE
+   ============================================================ */
+.outlook-block { margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid; }
+.outlook-block strong { color: var(--text); font-weight: 600; font-size: 8.5pt; }
+.outlook-block p { font-size: 8pt; color: var(--text-2); line-height: 1.6; max-width: 58ch; margin-top: 2px; }
+
+.notice {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 3px; padding: 12px 14px;
+  page-break-inside: avoid; break-inside: avoid;
+}
+.notice-h { font-size: 6.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--navy); margin-bottom: 4px; }
+.notice-t { font-size: 7pt; color: var(--text-2); line-height: 1.55; max-width: 58ch; }
+
+.signoff {
+  margin-top: 24px; padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: flex-end;
+  page-break-inside: avoid; break-inside: avoid;
+}
+.signoff-brand { font-size: 9.5pt; font-weight: 700; color: var(--navy); letter-spacing: 0.1em; text-transform: uppercase; }
+.signoff-brand .gold { color: var(--gold); }
+.signoff-sub { font-size: 6.5pt; color: var(--text-3); margin-top: 1px; }
+.signoff-r { text-align: right; font-size: 6.5pt; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div id="report"></div>
+<script>
+// Data injected by generate-report.js at build time
+/*__REPORT_DATA__*/
+
+const DM = {
+  s1:{name:'AI Inventory & Classification',weight:'Standard',basis:'EU AI Act Art.9/16, ICO Accountability Framework'},
+  s2:{name:'Governance & Accountability',weight:'Primary',basis:'FCA SM&CR, EU AI Act Art.27, ICO Accountability Framework'},
+  s3:{name:'Data Quality & Lineage',weight:'Standard',basis:'UK GDPR Art.30, EU AI Act Art.10, ICO Guidance'},
+  s4:{name:'Human Oversight & Controls',weight:'High',basis:'UK GDPR Art.22, EU AI Act Art.14, FCA SM&CR'},
+  s5:{name:'Explainability & Transparency',weight:'High',basis:'UK GDPR Art.13/14/22, EU AI Act Art.12, ICO Guidance'},
+  s6:{name:'Compliance & Legal Alignment',weight:'High',basis:'UK GDPR Art.35, EU AI Act Art.9, FCA DP5/22'},
+  s7:{name:'Operational Controls & Resilience',weight:'Baseline',basis:'EU AI Act Art.72/73, FCA PS7/21'}
+};
+
+const REGS = [
+  {fw:'EU AI Act',ref:'Art. 9',ob:'Risk management system for high-risk AI systems',t:'mandatory',dom:'Governance & Accountability'},
+  {fw:'EU AI Act',ref:'Art. 14',ob:'Human oversight measures for high-risk AI systems',t:'mandatory',dom:'Human Oversight & Controls'},
+  {fw:'EU AI Act',ref:'Art. 16',ob:'Obligations of providers of high-risk AI systems',t:'mandatory',dom:'AI Inventory & Classification'},
+  {fw:'EU AI Act',ref:'Art. 27',ob:'Registration of high-risk AI systems in EU database',t:'mandatory',dom:'Compliance & Legal Alignment'},
+  {fw:'UK GDPR',ref:'Art. 22',ob:'Rights related to automated decision-making and profiling',t:'mandatory',dom:'Human Oversight & Controls'},
+  {fw:'UK GDPR',ref:'Art. 35',ob:'Data Protection Impact Assessment for high-risk processing',t:'mandatory',dom:'Compliance & Legal Alignment'},
+  {fw:'UK GDPR',ref:'Art. 13/14',ob:'Transparency obligations for data subjects',t:'mandatory',dom:'Explainability & Transparency'},
+  {fw:'UK GDPR',ref:'Art. 30',ob:'Records of processing activities',t:'mandatory',dom:'Data Quality & Lineage'},
+  {fw:'FCA',ref:'SM&CR',ob:'Named senior manager accountability for AI governance',t:'mandatory',dom:'Governance & Accountability'},
+  {fw:'FCA',ref:'DP5/22',ob:'AI embedded in operational risk frameworks',t:'advisory',dom:'Operational Controls & Resilience'},
+  {fw:'FCA',ref:'PS7/21',ob:'Operational resilience for important business services',t:'mandatory',dom:'Operational Controls & Resilience'},
+  {fw:'ICO',ref:'AI Guidance',ob:'Accountability framework compliance for AI processing',t:'advisory',dom:'Governance & Accountability'},
+  {fw:'ISO/IEC 42001',ref:'Clause 6',ob:'AI risk assessment and management planning',t:'advisory',dom:'Governance & Accountability'},
+  {fw:'ISO/IEC 42001',ref:'Clause 8',ob:'Operational planning and control for AI management',t:'advisory',dom:'Operational Controls & Resilience'}
+];
+
+const OUTLOOK = [
+  {t:'EU AI Act Enforcement Timeline',p:'High-risk AI obligations under the EU AI Act take full effect in August 2026. Organisations without documented governance frameworks, conformity assessment preparations, and registered AI systems face potential enforcement action from the AI Office and national supervisory authorities. Foundational governance structures must be established within the Phase 1 window to allow sufficient preparation time.'},
+  {t:'ICO Regulatory Posture',p:'The Information Commissioner\'s Office has signalled increasing scrutiny of automated decision-making systems and AI-driven data processing. Organisations that cannot demonstrate documented DPIAs, lawful basis assessments, and transparency mechanisms face elevated enforcement risk. Recent enforcement notices have specifically targeted governance failures around automated profiling.'},
+  {t:'Sector-Specific Regulatory Trajectory',p:'Regulated industries face compounding obligations as sector-specific regulators overlay AI governance expectations onto existing compliance frameworks. Financial services firms face FCA expectations under SM&CR for named accountability, while legal and professional services firms face SRA guidance on client disclosure obligations for AI use.'},
+  {t:'Board-Level Governance Imperative',p:'The trajectory of regulatory enforcement across all jurisdictions points to an expectation of board-level visibility and documented accountability for AI governance decisions. Organisations where AI governance is delegated without documented board oversight face the most consequential enforcement exposure. Establishing board-level governance infrastructure is the single highest-priority recommendation of this assessment.'}
+];
+
+// Helpers
+function sc(s){return s<30?'c':s<45?'h':s<60?'m':'o'}
+function sevC(s){return{critical:'#dc2626',high:'#ea580c',medium:'#d97706'}[s]||'#475569'}
+function rc(b){return{critical:'#dc2626',high:'#ea580c',moderate:'#d97706','low-mod':'#2563eb',low:'#15803d'}[b]||'#2563eb'}
+function fd(iso){return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}
+function x(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+function render(d) {
+  const date = fd(d.created_at);
+  const color = rc(d.risk_band);
+  const circ = 2 * Math.PI * 35;
+  const off = circ - (d.adjusted_score / 100) * circ;
+  const dk = ['s1','s2','s3','s4','s5','s6','s7'];
+  const doms = dk.map(k => ({ key:k, ...DM[k], score:d.section_scores[k] }));
+  const rpt = d._report || {};
+  let o = '';
+
+  // ═══ COVER ═══
+  o += `<div class="cover">
+    <div class="cover-brand">MLA<span class="gold">·</span>GROUP</div>
+    <div class="cover-brand-sub">AI Governance Risk Advisory</div>
+    <div class="cover-accent"></div>
+    <div class="cover-doc-type">AI Governance Diagnostic Report</div>
+    <div class="cover-title">Governance Maturity <span class="font-accent">Assessment.</span></div>
+    <div class="cover-subtitle">A structured governance assessment against applicable UK and EU regulatory frameworks, producing board-grade risk classification, domain analysis, and sequenced remediation guidance.</div>
+    <div class="cover-score">
+      <div class="ring">
+        <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="35"/><circle class="ring-fill" cx="40" cy="40" r="35" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
+        <div class="ring-val">${d.adjusted_score}<span>%</span></div>
+      </div>
+      <div><div class="score-band">${x(d.band_label)}</div><div class="score-heading">${x(d.band_heading)}</div></div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Prepared For</div><div class="meta-value">${x(d.organisation)}</div></div>
+      <div class="meta-item"><div class="meta-label">Sector</div><div class="meta-value">${x(d.sector)}</div></div>
+      <div class="meta-item"><div class="meta-label">Respondent</div><div class="meta-value">${x(d.respondent_name)}, ${x(d.respondent_role)}</div></div>
+      <div class="meta-item"><div class="meta-label">Assessment Date</div><div class="meta-value">${date}</div></div>
+      <div class="meta-item"><div class="meta-label">Organisation Size</div><div class="meta-value">${x(d.org_size)} employees</div></div>
+      <div class="meta-item"><div class="meta-label">Framework Version</div><div class="meta-value">v${x(d.framework_version)}</div></div>
+    </div>
+    <div class="toc">
+      <div class="toc-title">Report Contents</div>
+      <div class="toc-grid">
+        <div class="toc-item"><span class="toc-num">01</span><span class="toc-name">Executive Brief</span></div>
+        <div class="toc-item"><span class="toc-num">05</span><span class="toc-name">Priority Findings</span></div>
+        <div class="toc-item"><span class="toc-num">02</span><span class="toc-name">Governance Maturity Dashboard</span></div>
+        <div class="toc-item"><span class="toc-num">06</span><span class="toc-name">Remediation Roadmap</span></div>
+        <div class="toc-item"><span class="toc-num">03</span><span class="toc-name">Regulatory Obligations Register</span></div>
+        <div class="toc-item"><span class="toc-num">07</span><span class="toc-name">Domain Assessment Detail</span></div>
+        <div class="toc-item"><span class="toc-num">04</span><span class="toc-name">Risk Band Classification</span></div>
+        <div class="toc-item"><span class="toc-num">08</span><span class="toc-name">Forward Risk Outlook</span></div>
+      </div>
+    </div>
+    ${rpt.id ? `<div class="report-id">Report ID: ${x(rpt.id)} · Snapshot: ${x(rpt.snapshot_hash)} · Generated: ${rpt.generated_at ? fd(rpt.generated_at) : date}</div>` : ''}
+  </div>`;
+
+  // ═══ 01 — EXECUTIVE BRIEF ═══
+  o += `<div class="section">
+    <div class="section-label">01 — Executive Brief</div>
+    <div class="section-title">Board-Level <span class="font-accent">Summary.</span></div>
+    <div class="section-intro">An executive summary of governance maturity classification, critical findings requiring board attention, and applicable regulatory obligations.</div>
+    <div class="verdict"><div class="verdict-label">Assessment Verdict</div><div class="verdict-text">${x(d.band_summary)}</div></div>
+    <div class="sub-heading">Board Attention Items</div>
+    <ul class="attn-list">${d.priority_flags.map((f,i)=>`<li data-n="${i+1}"><strong>${x(f.label)}</strong><span class="attn-sub">${x(f.section)} · ${x(f.basis)}</span></li>`).join('')}</ul>
+    <div class="sub-heading">Key Regulatory Frameworks</div>
+    <table class="tbl"><thead><tr><th style="width:16%">Framework</th><th style="width:12%">Ref</th><th>Obligation</th><th style="width:12%">Type</th></tr></thead><tbody>${REGS.slice(0,9).map(r=>`<tr><td style="font-weight:600">${x(r.fw)}</td><td>${x(r.ref)}</td><td>${x(r.ob)}</td><td><span class="badge b-${r.t}">${r.t}</span></td></tr>`).join('')}</tbody></table>
+  </div>`;
+
+  // ═══ 02 — DASHBOARD ═══
+  o += `<div class="section">
+    <div class="section-label">02 — Governance Maturity Dashboard</div>
+    <div class="section-title">Domain Performance <span class="font-accent">Overview.</span></div>
+    <div class="section-intro">Scores across seven governance domains, weighted by regulatory enforcement priority.</div>
+    <div class="dash">
+      <div class="dash-top"><div><div class="dash-lbl">Adjusted Exposure Score</div><div class="dash-score">${d.adjusted_score}<span>%</span></div></div><div style="text-align:right"><div class="dash-lbl">Risk Band</div><div class="dash-band" style="color:${color}">${x(d.band_label)}</div></div></div>
+      ${doms.map((dm,i)=>{const s=sc(dm.score);return`<div class="dom-row"><span class="dom-n">S${i+1}</span><span class="dom-name">${x(dm.name)}</span><div class="dom-bar-w"><div class="dom-bar bar-${s}" style="width:${dm.score}%"></div></div><span class="dom-s sc-${s}">${dm.score}%</span><span class="dom-w">${x(dm.weight)}</span></div>`}).join('')}
+    </div>
+    <div class="legend">
+      <div class="leg-item"><span class="leg-dot" style="background:var(--red)"></span><strong class="sc-c">0–29%</strong> Critical</div>
+      <div class="leg-item"><span class="leg-dot" style="background:var(--amber)"></span><strong class="sc-m">45–59%</strong> Gaps present</div>
+      <div class="leg-item"><span class="leg-dot" style="background:var(--orange)"></span><strong class="sc-h">30–44%</strong> Significant weakness</div>
+      <div class="leg-item"><span class="leg-dot" style="background:var(--green)"></span><strong class="sc-o">60%+</strong> Foundations present</div>
+    </div>
+    <div class="sub-heading" style="margin-top:16px">Domain Weight Classification</div>
+    <table class="tbl"><thead><tr><th>Domain</th><th>Primary Regulatory Basis</th><th style="width:10%">Weight</th><th style="width:8%">Score</th></tr></thead><tbody>${doms.map(dm=>`<tr><td style="font-weight:600">${x(dm.name)}</td><td style="font-size:6.5pt;color:var(--text-2)">${x(dm.basis)}</td><td>${x(dm.weight)}</td><td class="sc-${sc(dm.score)}" style="font-weight:700">${dm.score}%</td></tr>`).join('')}</tbody></table>
+  </div>`;
+
+  // ═══ 03 — REGULATORY REGISTER ═══
+  o += `<div class="section">
+    <div class="section-label">03 — Regulatory Obligations Register</div>
+    <div class="section-title">Applicable <span class="font-accent">Obligations.</span></div>
+    <div class="section-intro">Complete register of regulatory obligations assessed in this diagnostic.</div>
+    <table class="tbl"><thead><tr><th style="width:14%">Framework</th><th style="width:10%">Ref</th><th>Obligation</th><th style="width:17%">Domain</th><th style="width:10%">Type</th></tr></thead><tbody>${REGS.map(r=>`<tr><td style="font-weight:600">${x(r.fw)}</td><td>${x(r.ref)}</td><td>${x(r.ob)}</td><td style="font-size:6.5pt;color:var(--text-2)">${x(r.dom)}</td><td><span class="badge b-${r.t}">${r.t}</span></td></tr>`).join('')}</tbody></table>
+    <div class="notice" style="margin-top:12px"><div class="notice-h">Classification Note</div><div class="notice-t"><strong>Mandatory</strong> obligations represent requirements where non-compliance may result in enforcement action. <strong>Advisory</strong> obligations represent standards of best practice referenced by regulators. Their absence is frequently cited in regulatory findings as evidence of governance inadequacy.</div></div>
+  </div>`;
+
+  // ═══ 04 — PRIORITY FINDINGS ═══
+  o += `<div class="section">
+    <div class="section-label">04 — Priority Findings</div>
+    <div class="section-title">Critical Governance <span class="font-accent">Findings.</span></div>
+    <div class="section-intro">Findings requiring immediate attention, each carrying a specific regulatory basis and documented impact assessment.</div>
+    ${d.priority_flags.map(f=>`<div class="finding sev-${f.severity}"><div class="finding-top"><span class="finding-sev" style="color:${sevC(f.severity)}">${f.severity.toUpperCase()}</span><span class="finding-sec">${x(f.section)}</span><span class="finding-ref">${x(f.basis)}</span></div><div class="finding-title">${x(f.label)}</div><div class="finding-cols"><div><div class="fc-label">Impact Assessment</div><div class="fc-text">${x(f.impact)}</div></div><div><div class="fc-label">Recommended Action</div><div class="fc-text">${x(f.rec)}</div></div></div></div>`).join('')}
+  </div>`;
+
+  // ═══ 05 — ROADMAP ═══
+  const phases = [{k:'p1',c:'',an:'an1',pb:'pb1'},{k:'p2',c:'ph2',an:'an2',pb:'pb2'},{k:'p3',c:'ph3',an:'an3',pb:'pb3'}];
+  o += `<div class="section">
+    <div class="section-label">05 — Remediation Roadmap</div>
+    <div class="section-title">30 / 60 / 90-Day <span class="font-accent">Action Plan.</span></div>
+    <div class="section-intro">Sequenced remediation programme prioritised by risk contribution score and regulatory enforcement probability.</div>
+    ${phases.map(p=>{const ph=d.roadmap[p.k];if(!ph)return'';return`<div class="phase ${p.c}"><div class="phase-top"><span class="phase-win">${x(ph.window)}</span><span class="phase-badge ${p.pb}">${x(ph.badge)}</span></div><div class="phase-name">${x(ph.name)}</div><div class="phase-rat">${x(ph.rationale)}</div>${ph.actions?.length?`<ul class="phase-actions">${ph.actions.map((a,i)=>`<li><span class="act-n ${p.an}">${i+1}</span><span class="act-t">${x(a.text)}</span><span class="act-o">${x(a.owner)}</span></li>`).join('')}</ul>`:''}${ph.deliverables?.length?`<div class="phase-del"><div class="phase-del-lbl">Key Deliverables</div><div class="phase-del-txt">${ph.deliverables.map(x).join(' · ')}</div></div>`:''}</div>`}).join('')}
+  </div>`;
+
+  // ═══ 06 — DOMAIN DETAIL ═══
+  o += `<div class="section">
+    <div class="section-label">06 — Domain Assessment Detail</div>
+    <div class="section-title">Governance Domain <span class="font-accent">Analysis.</span></div>
+    <div class="section-intro">Detailed assessment narrative for each governance domain.</div>
+    ${dk.map((k,i)=>{const dm=DM[k],c=d.domain_concepts[k],s=d.section_scores[k];if(!c)return'';return`<div class="domcard"><div class="domcard-top"><span class="domcard-n">S${i+1}</span><span class="domcard-sec">${x(dm.name)}</span><span class="domcard-s sc-${sc(s)}">${s}%</span></div><div class="domcard-concept">"${x(c.concept)}"</div><div class="domcard-txt">${x(c.assessment)}</div></div>`}).join('')}
+  </div>`;
+
+  // ═══ 07 — OUTLOOK ═══
+  o += `<div class="section">
+    <div class="section-label">07 — Forward Risk Outlook</div>
+    <div class="section-title">Regulatory Trajectory & <span class="font-accent">Implications.</span></div>
+    <div class="section-intro">An assessment of the forward regulatory landscape and its implications for remediation priorities.</div>
+    ${OUTLOOK.map(ol=>`<div class="outlook-block"><strong>${x(ol.t)}.</strong><p>${x(ol.p)}</p></div>`).join('')}
+    <div class="notice" style="margin-top:16px"><div class="notice-h">Important Notice</div><div class="notice-t">This diagnostic provides governance maturity assessment and does not constitute legal advice. MLA Group Ltd is not a law firm and does not provide legal advice or legal opinions. Outputs should not be relied upon as legal opinion or as confirmation of regulatory compliance. Organisations are advised to engage qualified legal and regulatory compliance professionals when implementing governance changes or making submissions to regulatory bodies.</div></div>
+    <div class="signoff">
+      <div><div class="signoff-brand">MLA<span class="gold">·</span>GROUP</div><div class="signoff-sub">AI Governance Risk Advisory · mlagroup.co.uk</div></div>
+      <div class="signoff-r"><div>Report generated ${date}</div><div>Framework v${x(d.framework_version)}</div>${rpt.id ? `<div>Report ID: ${x(rpt.id)}</div>` : ''}</div>
+    </div>
+  </div>`;
+
+  document.getElementById('report').innerHTML = o;
+}
+
+if (typeof REPORT_DATA !== 'undefined') {
+  render(REPORT_DATA);
+}
+</script>
+</body>
+</html>
