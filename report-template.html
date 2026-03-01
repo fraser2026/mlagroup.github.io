@@ -15,7 +15,6 @@
 :root {
   --navy: #0f1f38;
   --blue: #2563eb;
-  --gold: #c9a465;
   --white: #ffffff;
   --bg: #f8fafc;
   --border: #e2e8f0;
@@ -112,12 +111,15 @@ body {
 .cover-logo {
   font-size: 11pt;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: white;
   margin-bottom: 3px;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
 }
-.cover-logo .gold { color: var(--gold); }
+.cover-logo .logo-group { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--blue); font-size: 11.5pt; }
+.cover-logo .logo-dot { color: white; }
 .cover-logo-sub {
   font-size: 6pt;
   color: rgba(255,255,255,0.45);
@@ -130,13 +132,13 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: var(--gold);
+  color: rgba(255,255,255,0.55);
   margin-bottom: 6px;
 }
 .cover-rule {
   width: 40px;
   height: 1.5px;
-  background: var(--gold);
+  background: var(--blue);
   margin-bottom: 14px;
 }
 
@@ -237,7 +239,7 @@ body {
 .toc-heading { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-3); margin-bottom: 8px; }
 .toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 20px; }
 .toc-item { display: flex; gap: 6px; font-size: 7.5pt; line-height: 1.7; }
-.toc-num { color: var(--gold); font-weight: 700; font-size: 7pt; min-width: 18px; }
+.toc-num { color: var(--blue); font-weight: 700; font-size: 7pt; min-width: 18px; }
 
 /* Report ID footer */
 .report-id-line {
@@ -303,7 +305,7 @@ body {
   content: attr(data-n);
   position: absolute; left: 0; top: 8px;
   width: 18px; height: 18px;
-  background: var(--navy); color: var(--gold);
+  background: var(--navy); color: white;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 6.5pt; font-weight: 700;
@@ -333,7 +335,7 @@ body {
   page-break-inside: avoid;
 }
 .dom-row:last-child { border-bottom: none; }
-.dom-n { font-size: 6pt; font-weight: 700; color: var(--gold); width: 22px; flex-shrink: 0; }
+.dom-n { font-size: 6pt; font-weight: 700; color: var(--blue); width: 22px; flex-shrink: 0; }
 .dom-name { font-size: 7.5pt; font-weight: 600; width: 158px; flex-shrink: 0; }
 .dom-bar-w { flex: 1; height: 5px; background: var(--border-light); border-radius: 3px; margin: 0 10px; overflow: hidden; }
 .dom-bar { height: 100%; border-radius: 3px; }
@@ -459,7 +461,7 @@ body {
   align-items: center;
   gap: 7px;
 }
-.domcard-num { font-size: 6pt; font-weight: 700; color: var(--gold); }
+.domcard-num { font-size: 6pt; font-weight: 700; color: var(--blue); }
 .domcard-name { font-size: 6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.6); }
 .domcard-score { margin-left: auto; font-size: 9pt; font-weight: 700; color: white; }
 .domcard-body { padding: 10px 12px; }
@@ -502,8 +504,9 @@ body {
   align-items: flex-end;
   page-break-inside: avoid;
 }
-.signoff-brand { font-size: 9pt; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.1em; }
-.signoff-brand .gold { color: var(--gold); }
+.signoff-brand { font-size: 9pt; font-weight: 700; color: var(--navy); display: flex; align-items: baseline; gap: 0; }
+.signoff-brand .logo-group { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--blue); }
+.signoff-brand .logo-dot { color: var(--navy); }
 .signoff-sub { font-size: 6pt; color: var(--text-3); margin-top: 2px; }
 .signoff-right { text-align: right; font-size: 6.5pt; color: var(--text-3); }
 </style>
@@ -758,7 +761,7 @@ function render(rawData){
   // ═══ COVER ═══
   o += `<div class="cover">
     <div class="cover-top">
-      <div class="cover-logo">MLA<span class="gold">·</span>GROUP</div>
+      <div class="cover-logo">mla<span class="logo-group">group</span><span class="logo-dot">.</span></div>
       <div class="cover-logo-sub">AI Governance Risk Advisory · mlagroup.co.uk</div>
       <div class="cover-type">AI Governance Risk Assessment</div>
       <div class="cover-rule"></div>
@@ -779,7 +782,7 @@ function render(rawData){
         </div>
       </div>
       <div class="cover-meta">
-        <div class="cover-meta-item"><div class="cover-meta-label">Prepared For</div><div class="cover-meta-value">${x(rawData.respondent_name||'')}${rawData.respondent_role?` — ${x(rawData.respondent_role)}`:''}${org?`<br>${x(org)}`:''}</div></div>
+        <div class="cover-meta-item"><div class="cover-meta-label">Prepared For</div><div class="cover-meta-value">${x(rawData.respondent_name||'')}${rawData.respondent_role?` — ${x(rawData.respondent_role)}`:''}<br>${x(org)}</div></div>
         <div class="cover-meta-item"><div class="cover-meta-label">Sector</div><div class="cover-meta-value">${x(R.sector)}</div></div>
         <div class="cover-meta-item"><div class="cover-meta-label">Organisation Size</div><div class="cover-meta-value">${x(R.orgSize)}</div></div>
         <div class="cover-meta-item"><div class="cover-meta-label">Assessment Date</div><div class="cover-meta-value">${date}</div></div>
@@ -803,7 +806,7 @@ function render(rawData){
           <div class="toc-item"><span class="toc-num">08</span>Forward Risk Outlook</div>
         </div>
       </div>
-      ${rpt.id ? `<div class="report-id-line">Report ID: ${x(rpt.id)} &nbsp;·&nbsp; Snapshot: ${x(rpt.snapshot_hash)} &nbsp;·&nbsp; Generated: ${rpt.generated_at?new Date(rpt.generated_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):date} &nbsp;·&nbsp; Framework v${x(rpt.framework_version||R.frameworkVersion)}</div>` : ''}
+      ${rpt.id ? `<div class="report-id-line">Report ID: ${x(rpt.id)}${rpt.snapshot_hash ? ` &nbsp;·&nbsp; Snapshot: ${x(rpt.snapshot_hash)}` : ''} &nbsp;·&nbsp; Generated: ${rpt.generated_at?new Date(rpt.generated_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):date} &nbsp;·&nbsp; Framework v${x(rpt.framework_version||R.frameworkVersion)}</div>` : ''}
     </div>
   </div>`;
 
@@ -977,7 +980,7 @@ function render(rawData){
         </div>
         <div class="domcard-body">
           <div class="domcard-band" style="color:${domColor}">${x(domBandLabel)}</div>
-          <div class="domcard-concept">"${x(concept)}"</div>
+          <div class="domcard-concept">" ${x(concept)}"</div>
           <div class="domcard-text">${x(assessment)}</div>
         </div>
       </div>`;
@@ -996,7 +999,7 @@ function render(rawData){
     </div>
     <div class="signoff">
       <div>
-        <div class="signoff-brand">MLA<span class="gold">·</span>GROUP</div>
+        <div class="signoff-brand">mla<span class="logo-group">group</span><span class="logo-dot">.</span></div>
         <div class="signoff-sub">AI Governance Risk Advisory &nbsp;·&nbsp; mlagroup.co.uk</div>
       </div>
       <div class="signoff-right">
