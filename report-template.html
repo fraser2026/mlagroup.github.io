@@ -1,16 +1,15 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    MLA GROUP — REPORT TEMPLATE
-   Designed for Puppeteer PDF rendering.
-   No screen UI. No @media print. Pure document.
-   Puppeteer controls: margins, header bar, footer, pagination.
+   Puppeteer PDF rendering. Pure document — no screen UI.
+   Puppeteer controls margins, header/footer, pagination.
    ============================================================ */
 
 :root {
@@ -49,164 +48,211 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ============================================================
-   TYPOGRAPHY
-   ============================================================ */
-.font-accent { font-family: 'Instrument Serif', serif; font-style: italic; }
+/* ── Typography ── */
+.font-serif { font-family: 'Instrument Serif', serif; font-style: italic; }
 
 .section-label {
   font-size: 6.5pt;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: var(--blue);
-  margin-bottom: 6px;
-  display: inline-block;
+  margin-bottom: 4px;
+  display: block;
 }
 .section-label::after {
   content: '';
   display: block;
-  width: 26px;
+  width: 24px;
   height: 1.5px;
   background: var(--blue);
   margin-top: 3px;
 }
 
 .section-title {
-  font-size: 17pt;
+  font-size: 19pt;
   font-weight: 700;
   color: var(--navy);
-  line-height: 1.18;
-  margin-bottom: 6px;
+  line-height: 1.15;
+  margin-bottom: 5px;
 }
 
 .section-intro {
   font-size: 8.5pt;
   color: var(--text-2);
   line-height: 1.6;
-  max-width: 56ch;
+  max-width: 60ch;
+  margin-bottom: 18px;
+}
+
+.sub-label {
+  font-size: 6pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-3);
+  margin: 14px 0 6px;
+}
+
+/* ── Cover ── */
+.cover {
+  page-break-after: always;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 237mm; /* A4 minus header/footer */
+}
+
+.cover-top {
+  background: var(--navy);
+  padding: 20mm 18mm 14mm;
+  flex-shrink: 0;
+}
+
+.cover-logo {
+  font-size: 11pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: white;
+  margin-bottom: 3px;
+}
+.cover-logo .gold { color: var(--gold); }
+.cover-logo-sub {
+  font-size: 6pt;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.08em;
+  margin-bottom: 22px;
+}
+
+.cover-type {
+  font-size: 6.5pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.cover-rule {
+  width: 40px;
+  height: 1.5px;
+  background: var(--gold);
+  margin-bottom: 14px;
+}
+
+.cover-org {
+  font-size: 22pt;
+  font-weight: 700;
+  color: white;
+  line-height: 1.1;
+  margin-bottom: 5px;
+}
+
+.cover-desc {
+  font-size: 8.5pt;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.5;
+  max-width: 65%;
   margin-bottom: 20px;
 }
 
-.sub-heading {
-  font-size: 7.5pt;
-  font-weight: 700;
-  color: var(--navy);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 16px 0 8px;
-}
-
-/* ============================================================
-   COVER PAGE
-   ============================================================ */
-.cover {
-  page-break-after: always;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.cover-accent { width: 40px; height: 2px; background: var(--gold); margin-bottom: 24px; }
-
-.cover-brand {
-  font-size: 10pt;
-  font-weight: 700;
-  color: var(--navy);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.cover-brand .gold { color: var(--gold); }
-.cover-brand-sub {
-  font-size: 6.5pt;
-  color: var(--text-3);
-  letter-spacing: 0.06em;
-  margin-bottom: 32px;
-}
-
-.cover-doc-type {
-  font-size: 7pt;
-  font-weight: 600;
-  color: var(--blue);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  margin-bottom: 8px;
-}
-
-.cover-title {
-  font-size: 24pt;
-  font-weight: 700;
-  color: var(--navy);
-  line-height: 1.1;
-  margin-bottom: 4px;
-}
-
-.cover-subtitle {
-  font-size: 9.5pt;
-  color: var(--text-2);
-  line-height: 1.5;
-  max-width: 70%;
-  margin-bottom: 28px;
-}
-
-/* Score area */
-.cover-score {
+/* Score block on cover */
+.cover-score-row {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 14px 20px;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  gap: 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 3px;
-  margin-bottom: 24px;
-  page-break-inside: avoid;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  max-width: 380px;
 }
-.ring { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
-.ring svg { width: 80px; height: 80px; transform: rotate(-90deg); }
-.ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+.ring { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+.ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.12); stroke-width: 5; }
 .ring-fill { fill: none; stroke-width: 5; stroke-linecap: round; }
 .ring-val {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18pt; font-weight: 700; color: var(--navy);
+  font-size: 16pt; font-weight: 700; color: white;
 }
-.ring-val span { font-size: 9pt; font-weight: 400; color: var(--text-3); }
-.score-band { font-size: 12pt; font-weight: 700; color: var(--navy); }
-.score-heading { font-size: 8.5pt; color: var(--text-2); line-height: 1.4; }
+.cover-score-text {}
+.cover-score-pct { font-size: 14pt; font-weight: 700; color: white; }
+.cover-score-label { font-size: 5.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.45); margin-bottom: 3px; }
+.cover-band-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 6.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: white;
+  margin-bottom: 3px;
+}
+.cover-band-heading { font-size: 7.5pt; color: rgba(255,255,255,0.6); line-height: 1.4; }
 
-/* Meta grid */
-.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; margin-bottom: 28px; }
-.meta-item { padding: 7px 0; border-bottom: 1px solid var(--border); }
-.meta-label { font-size: 5.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-3); }
-.meta-value { font-size: 8.5pt; font-weight: 500; color: var(--text); }
+/* Meta grid on cover */
+.cover-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 14px;
+}
+.cover-meta-item {}
+.cover-meta-label { font-size: 5.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.35); margin-bottom: 3px; }
+.cover-meta-value { font-size: 7.5pt; font-weight: 600; color: white; line-height: 1.35; }
+
+/* Cover bottom — white section */
+.cover-bottom {
+  background: white;
+  padding: 14mm 18mm 10mm;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cover-summary {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid currentColor;
+  border-radius: 2px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  page-break-inside: avoid;
+}
+.cover-summary-label {
+  font-size: 6pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 3px;
+}
+.cover-summary-text { font-size: 8pt; color: var(--text-2); line-height: 1.6; }
 
 /* Contents */
-.toc { margin-top: auto; border-top: 1px solid var(--border); padding-top: 14px; }
-.toc-title { font-size: 6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-3); margin-bottom: 8px; }
-.toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 20px; }
-.toc-item { display: flex; gap: 6px; font-size: 7.5pt; line-height: 1.6; }
-.toc-num { color: var(--gold); font-weight: 700; font-size: 7pt; min-width: 16px; }
-.toc-name { font-weight: 500; color: var(--text); }
+.toc { margin-top: auto; border-top: 1px solid var(--border); padding-top: 12px; }
+.toc-heading { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-3); margin-bottom: 8px; }
+.toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 20px; }
+.toc-item { display: flex; gap: 6px; font-size: 7.5pt; line-height: 1.7; }
+.toc-num { color: var(--gold); font-weight: 700; font-size: 7pt; min-width: 18px; }
 
-/* Report ID */
-.report-id {
-  margin-top: 12px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border-light);
+/* Report ID footer */
+.report-id-line {
+  margin-top: 10px;
   font-size: 5.5pt;
   color: var(--text-3);
   letter-spacing: 0.04em;
+  border-top: 1px solid var(--border-light);
+  padding-top: 7px;
 }
 
-/* ============================================================
-   SECTION BREAKS
-   ============================================================ */
+/* ── Sections ── */
 .section { page-break-before: always; }
 
-/* ============================================================
-   TABLES
-   ============================================================ */
+/* ── Tables ── */
 .tbl { width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-bottom: 14px; }
 .tbl thead th {
   background: var(--navy); color: white;
@@ -214,53 +260,44 @@ body {
   padding: 6px 8px; font-size: 6pt;
   text-transform: uppercase; letter-spacing: 0.06em;
 }
-.tbl thead th:first-child { border-radius: 2px 0 0 0; }
-.tbl thead th:last-child { border-radius: 0 2px 0 0; }
 .tbl tbody td {
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 .tbl tbody tr:nth-child(even) td { background: var(--bg); }
-.tbl tbody tr:last-child td { border-bottom: 2px solid var(--border); }
-.tbl tbody tr { page-break-inside: avoid; break-inside: avoid; }
+.tbl tbody tr { page-break-inside: avoid; }
 
-/* Badges */
 .badge {
   display: inline-block; padding: 1px 6px; border-radius: 2px;
-  font-size: 6pt; font-weight: 600; text-transform: uppercase;
+  font-size: 6pt; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.06em; white-space: nowrap;
 }
 .b-mandatory { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-.b-advisory { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.b-advisory  { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
 
-/* ============================================================
-   VERDICT BOX
-   ============================================================ */
+/* ── Verdict / Summary box ── */
 .verdict {
-  background: var(--bg); border: 1px solid var(--border);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-left: 3px solid var(--navy);
-  padding: 12px 16px; margin-bottom: 16px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
   border-radius: 2px;
-  page-break-inside: avoid; break-inside: avoid;
+  page-break-inside: avoid;
 }
-.verdict-label {
-  font-size: 6pt; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.14em; color: var(--text-3); margin-bottom: 3px;
-}
-.verdict-text { font-size: 8.5pt; color: var(--text); line-height: 1.6; max-width: 58ch; }
+.verdict-label { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-3); margin-bottom: 3px; }
+.verdict-text { font-size: 8.5pt; color: var(--text); line-height: 1.6; }
 
-/* ============================================================
-   BOARD ATTENTION LIST
-   ============================================================ */
-.attn-list { list-style: none; margin-bottom: 16px; }
+/* ── Board attention list ── */
+.attn-list { list-style: none; margin-bottom: 14px; }
 .attn-list li {
   position: relative;
-  padding: 7px 10px 7px 30px;
+  padding: 7px 8px 7px 28px;
   font-size: 8pt; line-height: 1.45;
   border-bottom: 1px solid var(--border-light);
-  page-break-inside: avoid; break-inside: avoid;
+  page-break-inside: avoid;
 }
 .attn-list li::before {
   content: attr(data-n);
@@ -271,98 +308,116 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 6.5pt; font-weight: 700;
 }
-.attn-sub { display: block; font-size: 6.5pt; color: var(--text-3); margin-top: 1px; }
+.attn-sub { display: block; font-size: 6.5pt; color: var(--text-3); margin-top: 2px; }
 
-/* ============================================================
-   DASHBOARD
-   ============================================================ */
-.dash {
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 3px; padding: 12px 16px; margin-bottom: 16px;
-  page-break-inside: avoid; break-inside: avoid;
+/* ── Dashboard ── */
+.dash-banner {
+  background: var(--navy);
+  border-radius: 3px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
 }
-.dash-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
-.dash-score { font-size: 20pt; font-weight: 700; color: var(--navy); line-height: 1; }
-.dash-score span { font-size: 10pt; color: var(--text-3); font-weight: 400; }
-.dash-lbl { font-size: 6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 1px; }
-.dash-band { font-size: 11pt; font-weight: 700; text-align: right; }
+.dash-score-num { font-size: 20pt; font-weight: 700; color: white; line-height: 1; }
+.dash-score-sub { font-size: 6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.dash-band { font-size: 10pt; font-weight: 700; color: white; text-align: right; }
+.dash-band-sub { font-size: 7pt; color: rgba(255,255,255,0.5); margin-top: 2px; text-align: right; }
 
 .dom-row {
-  display: flex; align-items: center; padding: 6px 0;
+  display: flex;
+  align-items: center;
+  padding: 7px 0;
   border-bottom: 1px solid var(--border-light);
-  page-break-inside: avoid; break-inside: avoid;
+  page-break-inside: avoid;
 }
 .dom-row:last-child { border-bottom: none; }
 .dom-n { font-size: 6pt; font-weight: 700; color: var(--gold); width: 22px; flex-shrink: 0; }
-.dom-name { font-size: 7.5pt; font-weight: 600; width: 160px; flex-shrink: 0; }
-.dom-bar-w { flex: 1; height: 6px; background: var(--border-light); border-radius: 3px; margin: 0 10px; overflow: hidden; }
+.dom-name { font-size: 7.5pt; font-weight: 600; width: 158px; flex-shrink: 0; }
+.dom-bar-w { flex: 1; height: 5px; background: var(--border-light); border-radius: 3px; margin: 0 10px; overflow: hidden; }
 .dom-bar { height: 100%; border-radius: 3px; }
-.dom-s { font-size: 8pt; font-weight: 700; width: 32px; text-align: right; flex-shrink: 0; }
-.dom-w { font-size: 6pt; color: var(--text-3); width: 46px; text-align: right; flex-shrink: 0; }
+.dom-pct { font-size: 8pt; font-weight: 700; width: 34px; text-align: right; flex-shrink: 0; }
+.dom-wt { font-size: 6pt; color: var(--text-3); width: 50px; text-align: right; flex-shrink: 0; }
 
-.sc-c { color: var(--red); }
-.sc-h { color: var(--orange); }
-.sc-m { color: var(--amber); }
-.sc-o { color: var(--green); }
-.bar-c { background: var(--red); }
-.bar-h { background: var(--orange); }
-.bar-m { background: var(--amber); }
-.bar-o { background: var(--green); }
+.c-c { color: var(--red); }    .b-c { background: var(--red); }
+.c-h { color: var(--orange); } .b-h { background: var(--orange); }
+.c-m { color: var(--amber); }  .b-m { background: var(--amber); }
+.c-l { color: var(--green); }  .b-l { background: var(--green); }
 
-.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 12px; }
-.leg-item { display: flex; align-items: center; gap: 5px; font-size: 7pt; }
-.leg-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
-
-/* ============================================================
-   FINDING CARDS
-   ============================================================ */
+/* ── Finding cards ── */
 .finding {
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 3px; border-left: 3px solid var(--red);
-  padding: 12px 14px; margin-bottom: 12px;
-  page-break-inside: avoid; break-inside: avoid;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  border-left: 3px solid var(--red);
+  margin-bottom: 12px;
+  page-break-inside: avoid;
+  overflow: hidden;
 }
-.finding.sev-high { border-left-color: var(--orange); }
-.finding.sev-medium { border-left-color: var(--amber); }
-
-.finding-top { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
-.finding-sev { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
-.finding-sec { font-size: 6pt; color: var(--text-3); }
-.finding-ref { font-size: 6pt; color: var(--blue); font-weight: 600; margin-left: auto; }
-
-.finding-title { font-size: 9pt; font-weight: 700; color: var(--navy); line-height: 1.35; margin-bottom: 8px; }
-
+.finding-header {
+  background: var(--bg);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid var(--border);
+}
+.finding-num { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
+.finding-sev-badge {
+  font-size: 6pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 1px 6px; border-radius: 2px;
+}
+.finding-section { font-size: 6pt; color: var(--text-3); }
+.finding-basis { font-size: 6pt; color: var(--blue); font-weight: 600; margin-left: auto; }
+.finding-body { padding: 10px 12px; }
+.finding-title { font-size: 9.5pt; font-weight: 700; color: var(--navy); line-height: 1.35; margin-bottom: 8px; }
 .finding-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.fc-label { font-size: 5.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 2px; }
-.fc-text { font-size: 7.5pt; color: var(--text-2); line-height: 1.5; }
-
-/* ============================================================
-   PHASE CARDS
-   ============================================================ */
-.phase {
-  background: white; border: 1px solid var(--border);
-  border-radius: 3px; border-top: 3px solid var(--p1);
-  padding: 12px 14px; margin-bottom: 12px;
-  page-break-inside: avoid; break-inside: avoid;
+.fc-label { font-size: 5.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 3px; }
+.fc-text { font-size: 7.5pt; color: var(--text-2); line-height: 1.55; }
+.finding-action {
+  background: #eff6ff;
+  border-top: 1px solid #bfdbfe;
+  padding: 8px 12px;
 }
-.phase.ph2 { border-top-color: var(--p2); }
-.phase.ph3 { border-top-color: var(--p3); }
+.finding-action-label { font-size: 5.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 3px; }
+.finding-action-text { font-size: 7.5pt; color: #1e40af; line-height: 1.55; }
 
-.phase-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-.phase-win { font-size: 6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
+/* ── Phase cards ── */
+.phase {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  border-top: 3px solid var(--p1);
+  margin-bottom: 12px;
+  page-break-inside: avoid;
+  overflow: hidden;
+}
+.ph2 { border-top-color: var(--p2); }
+.ph3 { border-top-color: var(--p3); }
+
+.phase-header {
+  padding: 8px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.phase-window { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
 .phase-badge { font-size: 5.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 2px; }
 .pb1 { background: #eff6ff; color: var(--p1); }
 .pb2 { background: #fffbeb; color: var(--p2); }
 .pb3 { background: #f0fdf4; color: var(--p3); }
 
-.phase-name { font-size: 10pt; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
-.phase-rat { font-size: 7.5pt; color: var(--text-2); line-height: 1.5; margin-bottom: 8px; max-width: 56ch; }
+.phase-body { padding: 10px 12px; }
+.phase-name { font-size: 10pt; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.phase-rat { font-size: 7.5pt; color: var(--text-2); line-height: 1.5; margin-bottom: 10px; max-width: 58ch; }
 
-.phase-actions { list-style: none; margin-bottom: 6px; }
+.phase-actions { list-style: none; margin-bottom: 8px; }
 .phase-actions li {
   display: flex; align-items: flex-start; gap: 7px;
   padding: 4px 0; border-bottom: 1px solid var(--border-light);
   font-size: 7.5pt; line-height: 1.4;
+  page-break-inside: avoid;
 }
 .phase-actions li:last-child { border-bottom: none; }
 .act-n {
@@ -373,238 +428,590 @@ body {
 .an1 { background: var(--p1); }
 .an2 { background: var(--p2); }
 .an3 { background: var(--p3); }
-.act-t { flex: 1; }
-.act-o {
+.act-text { flex: 1; }
+.act-owner {
   font-size: 6pt; color: var(--text-3); font-weight: 500;
-  padding: 1px 5px; background: var(--bg);
-  border: 1px solid var(--border-light); border-radius: 2px;
+  padding: 1px 5px; background: white;
+  border: 1px solid var(--border); border-radius: 2px;
   white-space: nowrap; flex-shrink: 0;
 }
 
-.phase-del { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--border); }
-.phase-del-lbl { font-size: 5.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 2px; }
-.phase-del-txt { font-size: 7pt; color: var(--text-2); line-height: 1.5; }
-
-/* ============================================================
-   DOMAIN CARDS
-   ============================================================ */
-.domcard {
-  background: white; border: 1px solid var(--border);
-  border-radius: 3px; padding: 12px 14px; margin-bottom: 10px;
-  page-break-inside: avoid; break-inside: avoid;
+.phase-deliverables {
+  border-top: 1px solid var(--border);
+  padding: 6px 12px;
+  background: var(--bg);
 }
-.domcard-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.domcard-n { font-size: 6pt; font-weight: 700; color: var(--gold); }
-.domcard-sec { font-size: 6pt; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; }
-.domcard-s { margin-left: auto; font-size: 8pt; font-weight: 700; }
-.domcard-concept { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 11pt; color: var(--navy); margin-bottom: 4px; }
-.domcard-txt { font-size: 7.5pt; color: var(--text-2); line-height: 1.55; max-width: 58ch; }
+.phase-del-label { font-size: 5.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 2px; }
+.phase-del-text { font-size: 7pt; color: var(--text-2); line-height: 1.5; }
 
-/* ============================================================
-   OUTLOOK & NOTICE
-   ============================================================ */
-.outlook-block { margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid; }
-.outlook-block strong { color: var(--text); font-weight: 600; font-size: 8.5pt; }
-.outlook-block p { font-size: 8pt; color: var(--text-2); line-height: 1.6; max-width: 58ch; margin-top: 2px; }
+/* ── Domain cards ── */
+.domcard {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  margin-bottom: 10px;
+  page-break-inside: avoid;
+  overflow: hidden;
+}
+.domcard-header {
+  background: var(--navy);
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.domcard-num { font-size: 6pt; font-weight: 700; color: var(--gold); }
+.domcard-name { font-size: 6pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.6); }
+.domcard-score { margin-left: auto; font-size: 9pt; font-weight: 700; color: white; }
+.domcard-body { padding: 10px 12px; }
+.domcard-concept {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 11pt;
+  color: var(--navy);
+  margin-bottom: 5px;
+}
+.domcard-band { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.domcard-text { font-size: 7.5pt; color: var(--text-2); line-height: 1.55; }
+
+/* ── Outlook ── */
+.outlook-block {
+  border-left: 2px solid var(--blue);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  page-break-inside: avoid;
+  background: var(--bg);
+  border-radius: 0 2px 2px 0;
+}
+.outlook-title { font-size: 8.5pt; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+.outlook-text { font-size: 8pt; color: var(--text-2); line-height: 1.6; }
 
 .notice {
   background: var(--bg); border: 1px solid var(--border);
   border-radius: 3px; padding: 12px 14px;
-  page-break-inside: avoid; break-inside: avoid;
+  page-break-inside: avoid;
 }
-.notice-h { font-size: 6.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--navy); margin-bottom: 4px; }
-.notice-t { font-size: 7pt; color: var(--text-2); line-height: 1.55; max-width: 58ch; }
+.notice-title { font-size: 6.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--navy); margin-bottom: 5px; }
+.notice-text { font-size: 7pt; color: var(--text-2); line-height: 1.6; }
 
 .signoff {
-  margin-top: 24px; padding-top: 14px;
+  margin-top: 20px;
+  padding-top: 12px;
   border-top: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: flex-end;
-  page-break-inside: avoid; break-inside: avoid;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  page-break-inside: avoid;
 }
-.signoff-brand { font-size: 9.5pt; font-weight: 700; color: var(--navy); letter-spacing: 0.1em; text-transform: uppercase; }
+.signoff-brand { font-size: 9pt; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.1em; }
 .signoff-brand .gold { color: var(--gold); }
-.signoff-sub { font-size: 6.5pt; color: var(--text-3); margin-top: 1px; }
-.signoff-r { text-align: right; font-size: 6.5pt; color: var(--text-3); }
+.signoff-sub { font-size: 6pt; color: var(--text-3); margin-top: 2px; }
+.signoff-right { text-align: right; font-size: 6.5pt; color: var(--text-3); }
 </style>
 </head>
 <body>
 <div id="report"></div>
 <script>
-// Data injected by generate-report.js at build time
+// ── Data injected by renderer-service.js ──
 /*__REPORT_DATA__*/
 
-const DM = {
-  s1:{name:'AI Inventory & Classification',weight:'Standard',basis:'EU AI Act Art.9/16, ICO Accountability Framework'},
-  s2:{name:'Governance & Accountability',weight:'Primary',basis:'FCA SM&CR, EU AI Act Art.27, ICO Accountability Framework'},
-  s3:{name:'Data Quality & Lineage',weight:'Standard',basis:'UK GDPR Art.30, EU AI Act Art.10, ICO Guidance'},
-  s4:{name:'Human Oversight & Controls',weight:'High',basis:'UK GDPR Art.22, EU AI Act Art.14, FCA SM&CR'},
-  s5:{name:'Explainability & Transparency',weight:'High',basis:'UK GDPR Art.13/14/22, EU AI Act Art.12, ICO Guidance'},
-  s6:{name:'Compliance & Legal Alignment',weight:'High',basis:'UK GDPR Art.35, EU AI Act Art.9, FCA DP5/22'},
-  s7:{name:'Operational Controls & Resilience',weight:'Baseline',basis:'EU AI Act Art.72/73, FCA PS7/21'}
+// ════════════════════════════════════════════════════════════
+// FRAMEWORK DATA — mirrors report.html exactly
+// ════════════════════════════════════════════════════════════
+
+const W  = {s1:.14,s2:.20,s3:.10,s4:.16,s5:.16,s6:.18,s7:.06};
+const SN = {s1:'AI Inventory & Classification',s2:'Governance & Accountability',s3:'Data Quality & Lineage',s4:'Human Oversight & Controls',s5:'Explainability & Transparency',s6:'Compliance & Legal Alignment',s7:'Operational Controls & Resilience'};
+const SM = {'Financial Services':1.00,'Healthcare & Life Sciences':1.00,'Public Sector / Government':.95,'Legal & Professional Services':.92,'Technology & SaaS':.88,'Retail & E-commerce':.85,'Education':.82,'Manufacturing & Logistics':.80,'Other':.90};
+
+const RB = [
+  {min:80,max:100,id:'low',      label:'Low Risk',           heading:'Governance Established — Maintenance Mode',       summary:'Your organisation demonstrates strong AI governance maturity across the assessed areas. The priority is to sustain, evolve, and stress-test frameworks as AI deployments develop and regulatory obligations mature.'},
+  {min:65,max:79, id:'lowmod',   label:'Low–Moderate Risk',  heading:'Foundations Present — Targeted Gaps Remain',      summary:'Meaningful governance foundations are established, but specific gaps create regulatory exposure. These are addressable with targeted action rather than a full rebuild.'},
+  {min:45,max:64, id:'moderate', label:'Moderate Risk',      heading:'Governance Gaps — Regulatory Exposure Likely',    summary:'Material governance gaps exist across multiple areas. Organisations at this maturity level face meaningful risk of enforcement attention, reputational exposure, or operational failure.'},
+  {min:25,max:44, id:'high',     label:'High Risk',          heading:'Significant Exposure — Intervention Required',    summary:'Significant and widespread governance deficiencies. This level of exposure represents current, active vulnerability to regulatory action, legal challenge, and operational harm.'},
+  {min:0, max:24, id:'critical', label:'Critical Risk',      heading:'Governance Absent — Urgent Escalation Needed',    summary:'AI governance is largely absent. This requires board-level escalation and specialist engagement now. Continued operation without governance controls creates severe regulatory and legal exposure.'}
+];
+
+const BAND_COLORS = {critical:'#dc2626',high:'#c2410c',moderate:'#b45309',lowmod:'#92400e',low:'#15803d'};
+
+const FD = {
+  pf_governance:{section:'Governance & Accountability',severity:'critical',impact:'The absence of a named AI governance owner creates a structural accountability gap. Under the EU AI Act and FCA operational resilience expectations, clear documented ownership is a baseline requirement — not a best practice. In any enforcement investigation, this is the first question asked: who is accountable?',rec:'Appoint a named individual as AI Governance Lead with a documented mandate, defined scope covering all AI systems in use, and a formal reporting line to board or senior executive level. This appointment must be recorded in role documentation and circulated internally.'},
+  pf_oversight:{section:'Human Oversight & Controls',severity:'critical',impact:'Automated decisions affecting individuals without adequate human review create direct regulatory exposure. UK GDPR Article 22 imposes specific requirements where decisions are solely automated. EU AI Act Article 14 makes human oversight a mandatory technical and organisational requirement for high-risk AI systems.',rec:'Implement mandatory human review protocols for all AI-assisted decisions that materially affect individuals. Document the protocol, define what constitutes a high-impact outcome, name the review function, and maintain records. Where AI outputs are acted upon without review, restrict that workflow until controls are in place.'},
+  pf_dpia:{section:'Compliance & Legal Alignment',severity:'critical',impact:'A Data Protection Impact Assessment is a legal requirement under UK GDPR Article 35 for AI systems involving systematic or high-risk processing of personal data. The absence of a required DPIA removes a critical layer of documented due diligence and is an ICO enforcement priority.',rec:'Commission DPIAs for all AI systems processing personal data, prioritising those making or informing decisions about individuals. Engage your DPO or external privacy counsel. DPIAs must be completed before deployment and reviewed when systems change materially.'},
+  pf_transparency:{section:'Compliance & Legal Alignment',severity:'high',impact:'UK GDPR Articles 13 and 14 require proactive disclosure when automated processes materially affect individuals. The ICO has been explicit: generic privacy policy references are insufficient. Transparency must be layered, timely, and decision-specific.',rec:'Audit all individual-facing processes involving AI-assisted decisions. Implement layered transparency notices at the point of interaction. Document these notices and review against ICO layered transparency guidance.'},
+  pf_no_inventory:{section:'AI Inventory & Classification',severity:'high',impact:'Without a documented AI inventory, the organisation cannot determine its regulatory scope, cannot demonstrate governance readiness, and cannot identify which systems require enhanced controls. Regulators treat the absence of an inventory as evidence that governance has not been implemented.',rec:'Conduct an immediate AI inventory audit covering all systems in operational use, under active development, or embedded in third-party tools. Document purpose, data inputs, decision outputs, and vendor for each system.'},
+  pf_no_policy:{section:'Governance & Accountability',severity:'high',impact:'Without documented AI use policies, staff have no authoritative guidance on acceptable use, prohibited applications, risk escalation, or governance obligations. This creates unmanaged operational risk across every function using AI tools.',rec:'Develop and implement a comprehensive AI Use Policy covering permitted and prohibited applications, risk assessment requirements, data handling obligations, human oversight requirements, incident reporting, and staff responsibilities.'}
 };
 
-const REGS = [
-  {fw:'EU AI Act',ref:'Art. 9',ob:'Risk management system for high-risk AI systems',t:'mandatory',dom:'Governance & Accountability'},
-  {fw:'EU AI Act',ref:'Art. 14',ob:'Human oversight measures for high-risk AI systems',t:'mandatory',dom:'Human Oversight & Controls'},
-  {fw:'EU AI Act',ref:'Art. 16',ob:'Obligations of providers of high-risk AI systems',t:'mandatory',dom:'AI Inventory & Classification'},
-  {fw:'EU AI Act',ref:'Art. 27',ob:'Registration of high-risk AI systems in EU database',t:'mandatory',dom:'Compliance & Legal Alignment'},
-  {fw:'UK GDPR',ref:'Art. 22',ob:'Rights related to automated decision-making and profiling',t:'mandatory',dom:'Human Oversight & Controls'},
-  {fw:'UK GDPR',ref:'Art. 35',ob:'Data Protection Impact Assessment for high-risk processing',t:'mandatory',dom:'Compliance & Legal Alignment'},
-  {fw:'UK GDPR',ref:'Art. 13/14',ob:'Transparency obligations for data subjects',t:'mandatory',dom:'Explainability & Transparency'},
-  {fw:'UK GDPR',ref:'Art. 30',ob:'Records of processing activities',t:'mandatory',dom:'Data Quality & Lineage'},
-  {fw:'FCA',ref:'SM&CR',ob:'Named senior manager accountability for AI governance',t:'mandatory',dom:'Governance & Accountability'},
-  {fw:'FCA',ref:'DP5/22',ob:'AI embedded in operational risk frameworks',t:'advisory',dom:'Operational Controls & Resilience'},
-  {fw:'FCA',ref:'PS7/21',ob:'Operational resilience for important business services',t:'mandatory',dom:'Operational Controls & Resilience'},
-  {fw:'ICO',ref:'AI Guidance',ob:'Accountability framework compliance for AI processing',t:'advisory',dom:'Governance & Accountability'},
-  {fw:'ISO/IEC 42001',ref:'Clause 6',ob:'AI risk assessment and management planning',t:'advisory',dom:'Governance & Accountability'},
-  {fw:'ISO/IEC 42001',ref:'Clause 8',ob:'Operational planning and control for AI management',t:'advisory',dom:'Operational Controls & Resilience'}
+const RF_TEMPLATE = {section:'Regulatory Compliance',severity:'regulatory',impact:'Your selected regulatory regime creates specific obligations in relation to AI governance that exist independently of your overall maturity score. These are mandatory disclosure and accountability requirements, not recommendations, and must be addressed regardless of where other governance gaps are prioritised.',rec:'Review the specific regulatory guidance cited for your regime. Engage your compliance function or external regulatory counsel to map obligations against your current AI use profile and governance arrangements.'};
+
+const PREMIUM = {
+  s1:{concept:'The Invisible Fleet',
+    critical:{assessment:'No structured AI system inventory exists. The organisation does not know which AI tools are in operational use, who authorised their deployment, what data they process, or whether any qualify as high-risk under EU AI Act Annex III. This is not a documentation gap — it is a fundamental governance failure that makes all downstream controls impossible to operate.',exposure:'Without an inventory, the organisation cannot demonstrate scope of governance, respond to regulatory requests for AI disclosure, or identify which systems require enhanced controls. The EU AI Act requires providers and deployers of high-risk AI systems to maintain technical documentation from the point of deployment.'},
+    high:{assessment:'Partial AI system visibility exists but no centralised, maintained inventory. AI tools are documented informally or not at all across business units. Without complete inventory, governance controls cannot be applied systematically and regulatory scope cannot be confirmed.',exposure:'Gaps in inventory coverage mean governance controls are applied inconsistently. High-risk AI deployments may exist outside the governance perimeter. EU AI Act Annex III classification cannot be completed without a full system register.'},
+    moderate:{assessment:'Initial progress on AI system cataloguing has been made, but the inventory remains incomplete. Gaps in coverage mean the full scope of AI-related regulatory obligations cannot be confirmed.',exposure:'Incomplete inventory creates uneven compliance risk across the AI portfolio. Systems outside the inventory may be operating without appropriate governance controls.'},
+    low:{assessment:'A documented AI system inventory exists and is maintained. Systems are classified by purpose, data type, and risk level.',exposure:'Ensure the inventory is reviewed when new AI tools are adopted and that EU AI Act Annex III classification is confirmed for each system annually.'}
+  },
+  s2:{concept:'The Governance Vacuum',
+    critical:{assessment:'No named individual holds documented accountability for AI governance decisions. There is no AI governance policy, committee structure, or board-level reporting mechanism. Governance decisions regarding AI adoption, risk acceptance, and control implementation are informal, undocumented, or delegated without clear accountability lines.',exposure:'This is the most consequential gap identified. Regulatory frameworks universally begin their examination with governance structures. Under FCA SM&CR, the absence of a named Senior Manager accountable for AI governance is a binary compliance failure.'},
+    high:{assessment:'Governance ownership is informally assigned without documented mandate, defined scope, or formal reporting line. AI governance decisions are made without documented authority or board visibility.',exposure:'Informal governance cannot withstand regulatory examination. The ability to demonstrate that governance decisions were made by an authorised individual with appropriate mandate is a baseline requirement.'},
+    moderate:{assessment:'Governance ownership arrangements exist informally but lack the documentation, mandate, and reporting structure required to satisfy regulatory expectations.',exposure:'Informal governance cannot be evidenced to regulators. Documented appointment, defined scope, and formal board reporting are required.'},
+    low:{assessment:'Named AI governance ownership is established with documented mandate and board-level reporting. Policy framework covers core governance requirements.',exposure:'Ensure governance framework is reviewed annually and that new AI deployments are automatically subject to governance oversight before operational use.'}
+  },
+  s3:{concept:'The Untraceable Decision',
+    critical:{assessment:'No data lineage documentation exists for AI systems. The organisation cannot identify the source of training data, validate data quality, or trace the provenance of inputs to AI-driven decisions. This creates fundamental explainability and accountability failures across all AI deployments.',exposure:'EU AI Act Article 10 requires that high-risk AI systems use training data that meets quality standards and that data governance practices are documented. UK GDPR accountability requirements extend to the data used in automated decision-making.'},
+    high:{assessment:'Data provenance is partially documented for some AI systems but coverage is inconsistent. Training data sources are not systematically recorded and data quality standards are not formally defined.',exposure:'Inconsistent data lineage documentation means explainability and auditability cannot be demonstrated consistently. Regulatory requests for data provenance information cannot be satisfied across all systems.'},
+    moderate:{assessment:'Data lineage documentation exists for some AI systems but is not comprehensive or consistently applied. Gaps create uneven compliance risk across the AI portfolio.',exposure:'Incomplete lineage documentation creates auditability gaps. Systems without documented data provenance cannot be included in regulatory disclosures.'},
+    low:{assessment:'Data quality controls and lineage documentation are established and consistently applied across AI systems in scope.',exposure:'Maintain documentation currency as models are retrained or data sources change. Periodic data quality audits should be scheduled and their outputs retained.'}
+  },
+  s4:{concept:'The Absent Brake',
+    critical:{assessment:'No documented human oversight mechanisms exist for AI-assisted decisions. Where AI systems produce outputs that inform or determine decisions affecting individuals, no process exists to ensure meaningful human review occurs before those decisions take effect.',exposure:'This is a binary compliance position under UK GDPR Article 22 and EU AI Act Article 14. Either the protocols exist and are documented, or they do not. The absence of override protocols means automated decisions cannot be defended against challenge.'},
+    high:{assessment:'Human review occurs informally for some AI-assisted decisions but no documented protocol exists. Override authority is undefined and escalation pathways are absent.',exposure:'Informal human review cannot be evidenced. Where AI outputs are acted upon without documented review, the organisation cannot demonstrate compliance with human oversight requirements.'},
+    moderate:{assessment:'Human review processes exist for some AI-assisted decisions but are not formalised, consistently applied, or documented to the standard required for regulatory purposes.',exposure:'Undocumented oversight processes cannot satisfy regulatory examination. Formal protocols, defined triggers, and maintained records are required.'},
+    low:{assessment:'Human oversight protocols are documented and consistently applied for AI-assisted decisions affecting individuals. Override authority is defined and records are maintained.',exposure:'Test override capability periodically to confirm controls operate as intended. Ensure new AI deployments are assessed against oversight protocol requirements before go-live.'}
+  },
+  s5:{concept:'The Black Box Problem',
+    critical:{assessment:'No transparency or explainability framework exists. Individuals affected by AI-driven decisions receive no information about the logic, significance, or consequences of automated processing. No mechanism exists to respond to explanation requests under UK GDPR Article 22.',exposure:'UK GDPR Articles 13 and 14 require proactive disclosure of automated processing to data subjects. The ICO has been explicit that generic privacy policy references are insufficient. EU AI Act Articles 12 and 13 require transparency to deployers and, for high-risk systems, to affected individuals.'},
+    high:{assessment:'Limited transparency measures exist but no systematic framework ensures consistent disclosure across AI systems. Explanation capability is absent or untested.',exposure:'Ad hoc transparency measures cannot satisfy regulatory requirements. Systematic transparency obligations apply to all AI systems processing personal data and making decisions with significant effects.'},
+    moderate:{assessment:'Some explainability mechanisms exist but are not systematically documented or consistently applied across all AI systems that affect individuals.',exposure:'Inconsistent explainability creates uneven compliance exposure. A documented transparency framework covering all in-scope systems is required.'},
+    low:{assessment:'Transparency and explainability mechanisms are documented and operational. Processes exist to respond to explanation requests from affected individuals.',exposure:'Review transparency notices when systems change and ensure explanation capability is tested periodically against regulatory standards.'}
+  },
+  s6:{concept:'The Obligations Gap',
+    critical:{assessment:'No formal compliance mapping exists against applicable AI regulatory frameworks. The organisation has not assessed which obligations under the EU AI Act, UK GDPR, FCA guidance, or sector-specific frameworks apply to its AI deployments. No DPIAs have been conducted.',exposure:'Compliance obligations are not optional pending internal capacity. The ICO has signalled enforcement priority on organisations that cannot demonstrate documented compliance assessment. EU AI Act obligations are activation-triggered — gaps identified after August 2026 will face immediate enforcement exposure.'},
+    high:{assessment:'Some regulatory awareness exists but formal compliance documentation — including DPIAs, lawful basis assessments, and regulatory obligation mapping — is incomplete or absent.',exposure:'Awareness without documentation does not satisfy regulatory requirements. Compliance must be evidenced, not assumed.'},
+    moderate:{assessment:'Compliance obligations are understood but coverage is incomplete and monitoring is not formalised. Reactive compliance creates gaps between obligation and practice.',exposure:'Systematic compliance mapping against all applicable frameworks is required. DPIAs must be completed before deployment, not retrospectively.'},
+    low:{assessment:'Regulatory obligations are mapped against current AI deployments and maintained as a live register. DPIAs are completed for qualifying systems.',exposure:'Implement regulatory horizon scanning to track emerging obligations. Schedule annual compliance reviews and update mapping when systems change materially.'}
+  },
+  s7:{concept:'The Silent Failure Risk',
+    critical:{assessment:'No operational monitoring or incident response capability exists for AI systems. Model performance degradation, output errors, and system failures cannot be detected, escalated, or remediated. The organisation has no visibility of AI failure modes.',exposure:'EU AI Act Article 72 requires post-market monitoring for high-risk AI systems. FCA operational resilience requirements extend to AI-dependent business services. Undetected model drift affects thousands of individual outcomes before identification.'},
+    high:{assessment:'Minimal monitoring exists but lacks defined thresholds, documented escalation pathways, and AI-specific failure mode detection.',exposure:'Monitoring without thresholds cannot trigger escalation. AI systems require specific monitoring parameters calibrated to their output characteristics.'},
+    moderate:{assessment:'Basic operational monitoring exists but lacks the formal structure, defined thresholds, and documented escalation pathways required to satisfy regulatory expectations.',exposure:'Informal monitoring cannot demonstrate control. The ability to show that monitoring was conducted and escalation occurred when thresholds were triggered is a core governance requirement.'},
+    low:{assessment:'Operational controls and monitoring are established with defined thresholds and documented escalation pathways.',exposure:'Schedule quarterly performance reviews and test incident response capability. Ensure monitoring parameters are reviewed when models are retrained.'}
+  }
+};
+
+const RM_ACTIONS = {
+  s1:{owner:'AI Lead / CTO',    del:'Complete AI System Register',        actions:['Commission full AI inventory audit across all business units','Document each system: purpose, data inputs, decision outputs, vendor relationship','Classify systems against EU AI Act Annex III categories','Assign named governance owner per system in the register']},
+  s2:{owner:'Board / CEO',      del:'AI Governance Lead Appointment + Policy', actions:['Appoint named AI Oversight Lead with documented mandate and veto authority','Establish board-level AI governance reporting line','Draft, ratify, and publish AI Use Policy with named functional owners','Record appointment in role documentation and circulate to all relevant staff']},
+  s3:{owner:'Data / CISO',      del:'Data Lineage Documentation',         actions:['Map data provenance for all AI systems processing personal data','Implement data version control and lineage logging','Document model training datasets, versions, and update cadence','Establish data quality thresholds and breach monitoring protocols']},
+  s4:{owner:'Operations / Risk',del:'Human Oversight Protocol',           actions:['Define human review triggers for all AI-assisted decisions affecting individuals','Document override protocols and escalation pathways','Name review function and responsibility per decision type','Conduct and document operational testing of override capability']},
+  s5:{owner:'Legal / Compliance',del:'Transparency & Explainability Framework', actions:['Audit all individual-facing AI processes for transparency obligations','Implement layered transparency notices at point of interaction','Document explainability method per AI system','Establish process for responding to explanation requests under Art.22']},
+  s6:{owner:'Legal / Compliance',del:'Regulatory Obligation Register',    actions:['Map all applicable regulatory obligations against current AI use profile','Commission DPIAs for all high-risk AI processing of personal data','Engage external counsel to confirm EU AI Act Annex III scope','Implement regulatory change monitoring across all applicable frameworks']},
+  s7:{owner:'Technology / Risk', del:'AI Operational Resilience Protocol',actions:['Implement model performance monitoring with defined drift thresholds','Establish AI incident response pathway and named escalation contacts','Document recovery time objectives for AI-dependent business services','Schedule quarterly performance review cycle with documented outputs']}
+};
+
+const REG_TABLE = [
+  {reg:'EU AI Act',art:'Art. 6 & Annex III',obl:'Risk classification and registration of high-risk AI systems',type:'M',pen:'Up to EUR 30M or 6% of global annual turnover',dl:'August 2026'},
+  {reg:'EU AI Act',art:'Art. 14',obl:'Human oversight measures for high-risk AI systems',type:'M',pen:'Up to EUR 30M or 6% of global annual turnover',dl:'August 2026'},
+  {reg:'EU AI Act',art:'Art. 13 & 12',obl:'Transparency to deployers and automatic event logging',type:'M',pen:'Up to EUR 15M or 3% of global annual turnover',dl:'August 2026'},
+  {reg:'EU AI Act',art:'Art. 27',obl:'Fundamental rights impact assessment by deployers',type:'M',pen:'Up to EUR 15M or 3% of global annual turnover',dl:'August 2026'},
+  {reg:'UK GDPR',art:'Art. 35',obl:'Data Protection Impact Assessment for high-risk AI processing',type:'M',pen:'Up to GBP 17.5M or 4% of global annual turnover',dl:'Immediate'},
+  {reg:'UK GDPR',art:'Art. 22',obl:'Safeguards for solely automated decision-making with significant effects',type:'M',pen:'Up to GBP 17.5M or 4% of global annual turnover',dl:'Immediate'},
+  {reg:'UK GDPR',art:'Art. 13–14',obl:'Transparency obligations: inform individuals of AI-assisted decisions',type:'M',pen:'Up to GBP 17.5M or 4% of global annual turnover',dl:'Immediate'},
+  {reg:'FCA / SM&CR',art:'PS7/21 & PRs',obl:'Named Senior Manager accountability for AI-driven customer outcomes',type:'M',pen:'Individual sanctions; prohibition from regulated activity',dl:'Immediate'},
+  {reg:'ISO/IEC 42001',art:'Sections 6–9',obl:'AI management system: risk assessment, monitoring, and evaluation',type:'A',pen:'Certification benchmark; increasing client and regulator expectation',dl:'Ongoing'}
 ];
 
 const OUTLOOK = [
-  {t:'EU AI Act Enforcement Timeline',p:'High-risk AI obligations under the EU AI Act take full effect in August 2026. Organisations without documented governance frameworks, conformity assessment preparations, and registered AI systems face potential enforcement action from the AI Office and national supervisory authorities. Foundational governance structures must be established within the Phase 1 window to allow sufficient preparation time.'},
-  {t:'ICO Regulatory Posture',p:'The Information Commissioner\'s Office has signalled increasing scrutiny of automated decision-making systems and AI-driven data processing. Organisations that cannot demonstrate documented DPIAs, lawful basis assessments, and transparency mechanisms face elevated enforcement risk. Recent enforcement notices have specifically targeted governance failures around automated profiling.'},
-  {t:'Sector-Specific Regulatory Trajectory',p:'Regulated industries face compounding obligations as sector-specific regulators overlay AI governance expectations onto existing compliance frameworks. Financial services firms face FCA expectations under SM&CR for named accountability, while legal and professional services firms face SRA guidance on client disclosure obligations for AI use.'},
-  {t:'Board-Level Governance Imperative',p:'The trajectory of regulatory enforcement across all jurisdictions points to an expectation of board-level visibility and documented accountability for AI governance decisions. Organisations where AI governance is delegated without documented board oversight face the most consequential enforcement exposure. Establishing board-level governance infrastructure is the single highest-priority recommendation of this assessment.'}
+  {t:'Regulatory Trajectory',p:'The EU AI Act\'s high-risk obligations apply from August 2026. Organisations without conformity-ready governance frameworks will face material compliance gaps at activation. The ICO has signalled increased enforcement attention on automated decision-making, particularly in sectors where AI influences credit, employment, or healthcare outcomes.'},
+  {t:'Operational Risk Window',p:'The period between now and August 2026 represents a critical governance window. Organisations that establish documented governance frameworks, complete required DPIAs, and appoint named accountability holders will be positioned to demonstrate compliance readiness. Those that do not will face regulatory scrutiny without the evidence base to defend their position.'},
+  {t:'Board Accountability',p:'Under the EU AI Act and UK SM&CR, accountability for AI governance failures is increasingly individual, not just organisational. Board members and named Senior Managers who fail to ensure adequate AI governance frameworks face personal regulatory exposure. The governance actions in this report are not recommendations — they are the documented evidence of governance intention that regulators will require.'},
+  {t:'MLA Group Assessment',p:'This report reflects a point-in-time assessment. MLA Group recommends a structured follow-up review within 90 days to verify that priority actions have been implemented and to recalibrate the risk position. The regulatory environment is evolving — governance frameworks must evolve with it.'}
 ];
 
-// Helpers
-function sc(s){return s<30?'c':s<45?'h':s<60?'m':'o'}
-function sevC(s){return{critical:'#dc2626',high:'#ea580c',medium:'#d97706'}[s]||'#475569'}
-function rc(b){return{critical:'#dc2626',high:'#ea580c',moderate:'#d97706','low-mod':'#2563eb',low:'#15803d'}[b]||'#2563eb'}
-function fd(iso){return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}
-function x(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+// ════════════════════════════════════════════════════════════
+// RECONSTRUCTION UTILITIES
+// ════════════════════════════════════════════════════════════
 
-function render(d) {
-  const date = fd(d.created_at);
-  const color = rc(d.risk_band);
-  const circ = 2 * Math.PI * 35;
-  const off = circ - (d.adjusted_score / 100) * circ;
+function ps(s){
+  if(!s) return '';
+  return String(s)
+    .replace(/[\u2014\u2013]/g,'-')
+    .replace(/[\u2018\u2019]/g,"'")
+    .replace(/[\u201C\u201D]/g,'"')
+    .replace(/\u2026/g,'...')
+    .replace(/\u00A0/g,' ')
+    .trim();
+}
+
+function x(s){ if(!s) return ''; const d=document.createElement('div'); d.textContent=ps(s); return d.innerHTML; }
+
+function getBand(adj, bandId){
+  if(bandId){ for(let b of RB){ if(b.id===bandId) return b; } }
+  for(let b of RB){ if(adj>=b.min && adj<=b.max) return b; }
+  return RB[2];
+}
+
+function recon(row){
+  const sp = row.section_scores || {};
+  const band = getBand(row.adjusted_score||0, row.risk_band);
+  const sec = row.sector || 'Other';
+  const mult = SM[sec] || 0.90;
+  const pf = (row.priority_flags||[]).map(f=>({
+    id: f.id||'', label: f.label||'', basis: f.basis||'', severity: f.severity||'high'
+  }));
+  const bsm = {s1:9,s2:18,s3:12,s4:12,s5:15,s6:15,s7:15};
+  let rs = row.raw_scores || {};
+  if(Object.keys(rs).length===0){
+    Object.keys(sp).forEach(s=>{ rs[s]=Math.round((sp[s]/100)*(bsm[s]||15)); });
+  }
+  return {
+    adjustedScore: row.adjusted_score||0,
+    weightedScore: row.weighted_score||0,
+    multiplier: mult,
+    sector: sec,
+    orgSize: row.org_size||'',
+    respondentName: (row.respondent_name||'').trim(),
+    respondentRole: (row.respondent_role||'').trim(),
+    band,
+    sectionPcts: sp,
+    rawScores: rs,
+    priorityFlags: pf,
+    regimeFlags: row.regime_flags||[],
+    uncertaintyCount: row.uncertainty_count||0,
+    selectedCategories: row.selected_categories||[],
+    frameworkVersion: row.framework_version||'2.0.0'
+  };
+}
+
+function buildFindings(R){
+  const list = [];
+  R.priorityFlags.forEach(f=>{
+    const d = FD[f.id] || {section:'General',severity:f.severity||'high',impact:'This governance area requires attention.',rec:'Review with your compliance function.'};
+    list.push({label:ps(f.label),basis:ps(f.basis),section:d.section,severity:d.severity,impact:d.impact,rec:d.rec});
+  });
+  (R.regimeFlags||[]).forEach(f=>{
+    list.push({label:ps(f.label),basis:ps(f.basis),section:RF_TEMPLATE.section,severity:RF_TEMPLATE.severity,impact:RF_TEMPLATE.impact,rec:RF_TEMPLATE.rec});
+  });
+  if(R.uncertaintyCount>=3){
+    list.push({label:`Elevated uncertainty: ${R.uncertaintyCount} responses flagged insufficient internal visibility`,basis:'Risk band elevated per framework uncertainty threshold',section:'Assessment Integrity',severity:'moderate',impact:`This assessment recorded ${R.uncertaintyCount} uncertainty flags — instances where the respondent indicated incomplete visibility into their own AI governance arrangements. An organisation that does not know whether a control exists cannot claim that control for compliance purposes. The reported score should be understood as a ceiling, not a floor.`,rec:'Conduct an internal governance stocktake to establish the factual position on each uncertain area before any regulatory engagement.'});
+  }
+  if(R.selectedCategories&&R.selectedCategories.length>0&&!R.selectedCategories.includes('none')){
+    list.push({label:'High-risk AI category detected — EU AI Act Annex III obligations apply from August 2026',basis:`EU AI Act Annex III; Categories: ${R.selectedCategories.join(', ')}`,section:'AI Inventory & Classification',severity:'critical',impact:'AI systems in Annex III categories are subject to mandatory conformity assessments, technical documentation requirements, human oversight obligations under Article 14, and logging requirements under Article 12. High-risk obligations apply from August 2026.',rec:'Conduct a formal EU AI Act scoping assessment for each high-risk category identified. Map current systems against the full Annex III compliance checklist and prioritise conformity assessment preparation immediately.'});
+  }
+  return list;
+}
+
+function buildRoadmap(R){
+  const domains = ['s1','s2','s3','s4','s5','s6','s7'];
+  const scored = domains.map(s=>({
+    key:s, pct:R.sectionPcts[s]||0, w:W[s]||0,
+    risk:(1-((R.sectionPcts[s]||0)/100))*(W[s]||0)
+  })).sort((a,b)=>b.risk-a.risk);
+
+  const p1keys = scored.slice(0,2).map(d=>d.key);
+  const p2keys = scored.slice(2,4).map(d=>d.key);
+  const p3keys = scored.slice(4).map(d=>d.key);
+
+  const makePhase = (keys,name,window,badge) => ({
+    name, window, badge,
+    rationale: `Prioritised by risk contribution score. Focus: ${keys.map(k=>SN[k]+' ('+Math.round(W[k]*100)+'% weight)').join(' and ')}.`,
+    actions: keys.flatMap(k=>{
+      const a = RM_ACTIONS[k]||{owner:'Compliance',actions:['Review and document current position'],del:'Assessment Complete'};
+      return a.actions.map(txt=>({text:txt,owner:a.owner,del:a.del}));
+    }).slice(0,6),
+    deliverables: [...new Set(keys.map(k=>(RM_ACTIONS[k]||{del:'Documented Output'}).del))]
+  });
+
+  return {
+    p1: makePhase(p1keys,'Phase 1: Defensive Shielding','Days 0–30','Immediate Priority'),
+    p2: makePhase(p2keys,'Phase 2: Structural Foundation','Days 31–60','Structural Build'),
+    p3: makePhase(p3keys,'Phase 3: Operational Excellence','Days 61–90+','Ongoing')
+  };
+}
+
+function bandClass(score){
+  if(score<30) return 'c';
+  if(score<45) return 'h';
+  if(score<65) return 'm';
+  return 'l';
+}
+
+function domainAssessment(sk, bandId){
+  const prem = PREMIUM[sk];
+  if(!prem) return '';
+  const map = {critical:'critical',high:'high',moderate:'moderate',lowmod:'moderate',low:'low'};
+  const key = map[bandId] || 'high';
+  const pd = prem[key] || prem.high || {};
+  return pd.assessment || pd.exposure || '';
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════════════
+
+function render(rawData){
+  // Reconstruct full data object from raw Supabase row
+  const R = recon(rawData);
+  const org = ps(rawData.organisation || 'Organisation');
+  const date = new Date(rawData.created_at || Date.now())
+    .toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const rpt = rawData._report || {};
+  const bandColor = BAND_COLORS[R.band.id] || '#2563eb';
+  const findings = buildFindings(R);
+  const roadmap = buildRoadmap(R);
+
+  const circ = 2 * Math.PI * 32;
+  const off = circ - (R.adjustedScore / 100) * circ;
   const dk = ['s1','s2','s3','s4','s5','s6','s7'];
-  const doms = dk.map(k => ({ key:k, ...DM[k], score:d.section_scores[k] }));
-  const rpt = d._report || {};
+
   let o = '';
 
   // ═══ COVER ═══
   o += `<div class="cover">
-    <div class="cover-brand">MLA<span class="gold">·</span>GROUP</div>
-    <div class="cover-brand-sub">AI Governance Risk Advisory</div>
-    <div class="cover-accent"></div>
-    <div class="cover-doc-type">AI Governance Diagnostic Report</div>
-    <div class="cover-title">Governance Maturity <span class="font-accent">Assessment.</span></div>
-    <div class="cover-subtitle">A structured governance assessment against applicable UK and EU regulatory frameworks, producing board-grade risk classification, domain analysis, and sequenced remediation guidance.</div>
-    <div class="cover-score">
-      <div class="ring">
-        <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="35"/><circle class="ring-fill" cx="40" cy="40" r="35" stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
-        <div class="ring-val">${d.adjusted_score}<span>%</span></div>
+    <div class="cover-top">
+      <div class="cover-logo">MLA<span class="gold">·</span>GROUP</div>
+      <div class="cover-logo-sub">AI Governance Risk Advisory · mlagroup.co.uk</div>
+      <div class="cover-type">AI Governance Risk Assessment</div>
+      <div class="cover-rule"></div>
+      <div class="cover-org">${x(org)}</div>
+      <div class="cover-desc">A structured governance assessment against applicable UK and EU regulatory frameworks, producing board-grade risk classification, domain analysis, and sequenced remediation guidance.</div>
+      <div class="cover-score-row">
+        <div class="ring">
+          <svg viewBox="0 0 72 72">
+            <circle class="ring-bg" cx="36" cy="36" r="32"/>
+            <circle class="ring-fill" cx="36" cy="36" r="32" stroke="${bandColor}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/>
+          </svg>
+          <div class="ring-val">${R.adjustedScore}</div>
+        </div>
+        <div class="cover-score-text">
+          <div class="cover-score-label">Maturity Score</div>
+          <div class="cover-band-pill" style="background:${bandColor}">${x(R.band.label)}</div>
+          <div class="cover-band-heading">${x(R.band.heading)}</div>
+        </div>
       </div>
-      <div><div class="score-band">${x(d.band_label)}</div><div class="score-heading">${x(d.band_heading)}</div></div>
-    </div>
-    <div class="meta-grid">
-      <div class="meta-item"><div class="meta-label">Prepared For</div><div class="meta-value">${x(d.organisation)}</div></div>
-      <div class="meta-item"><div class="meta-label">Sector</div><div class="meta-value">${x(d.sector)}</div></div>
-      <div class="meta-item"><div class="meta-label">Respondent</div><div class="meta-value">${x(d.respondent_name)}, ${x(d.respondent_role)}</div></div>
-      <div class="meta-item"><div class="meta-label">Assessment Date</div><div class="meta-value">${date}</div></div>
-      <div class="meta-item"><div class="meta-label">Organisation Size</div><div class="meta-value">${x(d.org_size)} employees</div></div>
-      <div class="meta-item"><div class="meta-label">Framework Version</div><div class="meta-value">v${x(d.framework_version)}</div></div>
-    </div>
-    <div class="toc">
-      <div class="toc-title">Report Contents</div>
-      <div class="toc-grid">
-        <div class="toc-item"><span class="toc-num">01</span><span class="toc-name">Executive Brief</span></div>
-        <div class="toc-item"><span class="toc-num">05</span><span class="toc-name">Priority Findings</span></div>
-        <div class="toc-item"><span class="toc-num">02</span><span class="toc-name">Governance Maturity Dashboard</span></div>
-        <div class="toc-item"><span class="toc-num">06</span><span class="toc-name">Remediation Roadmap</span></div>
-        <div class="toc-item"><span class="toc-num">03</span><span class="toc-name">Regulatory Obligations Register</span></div>
-        <div class="toc-item"><span class="toc-num">07</span><span class="toc-name">Domain Assessment Detail</span></div>
-        <div class="toc-item"><span class="toc-num">04</span><span class="toc-name">Risk Band Classification</span></div>
-        <div class="toc-item"><span class="toc-num">08</span><span class="toc-name">Forward Risk Outlook</span></div>
+      <div class="cover-meta">
+        <div class="cover-meta-item"><div class="cover-meta-label">Prepared For</div><div class="cover-meta-value">${x(rawData.respondent_name||'')}${rawData.respondent_role?` — ${x(rawData.respondent_role)}`:''}${org?`<br>${x(org)}`:''}</div></div>
+        <div class="cover-meta-item"><div class="cover-meta-label">Sector</div><div class="cover-meta-value">${x(R.sector)}</div></div>
+        <div class="cover-meta-item"><div class="cover-meta-label">Organisation Size</div><div class="cover-meta-value">${x(R.orgSize)}</div></div>
+        <div class="cover-meta-item"><div class="cover-meta-label">Assessment Date</div><div class="cover-meta-value">${date}</div></div>
       </div>
     </div>
-    ${rpt.id ? `<div class="report-id">Report ID: ${x(rpt.id)} · Snapshot: ${x(rpt.snapshot_hash)} · Generated: ${rpt.generated_at ? fd(rpt.generated_at) : date}</div>` : ''}
-  </div>`;
-
-  // ═══ 01 — EXECUTIVE BRIEF ═══
-  o += `<div class="section">
-    <div class="section-label">01 — Executive Brief</div>
-    <div class="section-title">Board-Level <span class="font-accent">Summary.</span></div>
-    <div class="section-intro">An executive summary of governance maturity classification, critical findings requiring board attention, and applicable regulatory obligations.</div>
-    <div class="verdict"><div class="verdict-label">Assessment Verdict</div><div class="verdict-text">${x(d.band_summary)}</div></div>
-    <div class="sub-heading">Board Attention Items</div>
-    <ul class="attn-list">${d.priority_flags.map((f,i)=>`<li data-n="${i+1}"><strong>${x(f.label)}</strong><span class="attn-sub">${x(f.section)} · ${x(f.basis)}</span></li>`).join('')}</ul>
-    <div class="sub-heading">Key Regulatory Frameworks</div>
-    <table class="tbl"><thead><tr><th style="width:16%">Framework</th><th style="width:12%">Ref</th><th>Obligation</th><th style="width:12%">Type</th></tr></thead><tbody>${REGS.slice(0,9).map(r=>`<tr><td style="font-weight:600">${x(r.fw)}</td><td>${x(r.ref)}</td><td>${x(r.ob)}</td><td><span class="badge b-${r.t}">${r.t}</span></td></tr>`).join('')}</tbody></table>
-  </div>`;
-
-  // ═══ 02 — DASHBOARD ═══
-  o += `<div class="section">
-    <div class="section-label">02 — Governance Maturity Dashboard</div>
-    <div class="section-title">Domain Performance <span class="font-accent">Overview.</span></div>
-    <div class="section-intro">Scores across seven governance domains, weighted by regulatory enforcement priority.</div>
-    <div class="dash">
-      <div class="dash-top"><div><div class="dash-lbl">Adjusted Exposure Score</div><div class="dash-score">${d.adjusted_score}<span>%</span></div></div><div style="text-align:right"><div class="dash-lbl">Risk Band</div><div class="dash-band" style="color:${color}">${x(d.band_label)}</div></div></div>
-      ${doms.map((dm,i)=>{const s=sc(dm.score);return`<div class="dom-row"><span class="dom-n">S${i+1}</span><span class="dom-name">${x(dm.name)}</span><div class="dom-bar-w"><div class="dom-bar bar-${s}" style="width:${dm.score}%"></div></div><span class="dom-s sc-${s}">${dm.score}%</span><span class="dom-w">${x(dm.weight)}</span></div>`}).join('')}
+    <div class="cover-bottom">
+      <div class="cover-summary" style="color:${bandColor};border-left-color:${bandColor}">
+        <div class="cover-summary-label">${x(R.band.label)} — ${x(R.band.heading)}</div>
+        <div class="cover-summary-text">${x(R.band.summary)}</div>
+      </div>
+      <div class="toc">
+        <div class="toc-heading">Report Contents</div>
+        <div class="toc-grid">
+          <div class="toc-item"><span class="toc-num">01</span>Executive Brief</div>
+          <div class="toc-item"><span class="toc-num">05</span>Priority Findings</div>
+          <div class="toc-item"><span class="toc-num">02</span>Governance Maturity Dashboard</div>
+          <div class="toc-item"><span class="toc-num">06</span>Remediation Roadmap</div>
+          <div class="toc-item"><span class="toc-num">03</span>Regulatory Register</div>
+          <div class="toc-item"><span class="toc-num">07</span>Domain Assessment Detail</div>
+          <div class="toc-item"><span class="toc-num">04</span>Risk Band Classification</div>
+          <div class="toc-item"><span class="toc-num">08</span>Forward Risk Outlook</div>
+        </div>
+      </div>
+      ${rpt.id ? `<div class="report-id-line">Report ID: ${x(rpt.id)} &nbsp;·&nbsp; Snapshot: ${x(rpt.snapshot_hash)} &nbsp;·&nbsp; Generated: ${rpt.generated_at?new Date(rpt.generated_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):date} &nbsp;·&nbsp; Framework v${x(rpt.framework_version||R.frameworkVersion)}</div>` : ''}
     </div>
-    <div class="legend">
-      <div class="leg-item"><span class="leg-dot" style="background:var(--red)"></span><strong class="sc-c">0–29%</strong> Critical</div>
-      <div class="leg-item"><span class="leg-dot" style="background:var(--amber)"></span><strong class="sc-m">45–59%</strong> Gaps present</div>
-      <div class="leg-item"><span class="leg-dot" style="background:var(--orange)"></span><strong class="sc-h">30–44%</strong> Significant weakness</div>
-      <div class="leg-item"><span class="leg-dot" style="background:var(--green)"></span><strong class="sc-o">60%+</strong> Foundations present</div>
+  </div>`;
+
+  // ═══ 01 EXECUTIVE BRIEF ═══
+  o += `<div class="section">
+    <span class="section-label">01 — Executive Brief</span>
+    <div class="section-title">Board-Level <span class="font-serif">Summary.</span></div>
+    <p class="section-intro">On ${date}, MLA Group completed an AI Governance Risk Diagnostic for ${x(org)}. This brief is prepared for board-level review and summarises the risk position, principal regulatory obligations, and the priority actions requiring board attention.</p>
+    <div class="verdict" style="border-left-color:${bandColor}">
+      <div class="verdict-label" style="color:${bandColor}">${x(R.band.label)} — ${x(R.band.heading)}</div>
+      <div class="verdict-text">${x(R.band.summary)}</div>
     </div>
-    <div class="sub-heading" style="margin-top:16px">Domain Weight Classification</div>
-    <table class="tbl"><thead><tr><th>Domain</th><th>Primary Regulatory Basis</th><th style="width:10%">Weight</th><th style="width:8%">Score</th></tr></thead><tbody>${doms.map(dm=>`<tr><td style="font-weight:600">${x(dm.name)}</td><td style="font-size:6.5pt;color:var(--text-2)">${x(dm.basis)}</td><td>${x(dm.weight)}</td><td class="sc-${sc(dm.score)}" style="font-weight:700">${dm.score}%</td></tr>`).join('')}</tbody></table>
+    <div class="sub-label">Board Attention Items</div>
+    <ul class="attn-list">
+      ${findings.slice(0,3).map((f,i)=>`<li data-n="${i+1}"><strong>${x(f.label)}</strong><span class="attn-sub">${x(f.section)}${f.basis?` · ${x(f.basis)}`:''}</span></li>`).join('')}
+    </ul>
+    <div class="sub-label">Key Regulatory Obligations</div>
+    <table class="tbl">
+      <thead><tr><th style="width:18%">Framework</th><th style="width:10%">Article</th><th>Obligation</th><th style="width:10%">Type</th><th style="width:12%">Deadline</th></tr></thead>
+      <tbody>
+        ${REG_TABLE.slice(0,7).map(r=>`<tr><td style="font-weight:600">${x(r.reg)}</td><td style="color:var(--text-2)">${x(r.art)}</td><td>${x(r.obl)}</td><td><span class="badge ${r.type==='M'?'b-mandatory':'b-advisory'}">${r.type==='M'?'Mandatory':'Advisory'}</span></td><td style="color:var(--text-2)">${x(r.dl)}</td></tr>`).join('')}
+      </tbody>
+    </table>
   </div>`;
 
-  // ═══ 03 — REGULATORY REGISTER ═══
+  // ═══ 02 DASHBOARD ═══
   o += `<div class="section">
-    <div class="section-label">03 — Regulatory Obligations Register</div>
-    <div class="section-title">Applicable <span class="font-accent">Obligations.</span></div>
-    <div class="section-intro">Complete register of regulatory obligations assessed in this diagnostic.</div>
-    <table class="tbl"><thead><tr><th style="width:14%">Framework</th><th style="width:10%">Ref</th><th>Obligation</th><th style="width:17%">Domain</th><th style="width:10%">Type</th></tr></thead><tbody>${REGS.map(r=>`<tr><td style="font-weight:600">${x(r.fw)}</td><td>${x(r.ref)}</td><td>${x(r.ob)}</td><td style="font-size:6.5pt;color:var(--text-2)">${x(r.dom)}</td><td><span class="badge b-${r.t}">${r.t}</span></td></tr>`).join('')}</tbody></table>
-    <div class="notice" style="margin-top:12px"><div class="notice-h">Classification Note</div><div class="notice-t"><strong>Mandatory</strong> obligations represent requirements where non-compliance may result in enforcement action. <strong>Advisory</strong> obligations represent standards of best practice referenced by regulators. Their absence is frequently cited in regulatory findings as evidence of governance inadequacy.</div></div>
+    <span class="section-label">02 — Governance Maturity Dashboard</span>
+    <div class="section-title">Domain Performance <span class="font-serif">Overview.</span></div>
+    <p class="section-intro">Domain scores reflect the proportion of maximum available points achieved in each governance area, weighted by regulatory enforcement priority.</p>
+    <div class="dash-banner">
+      <div>
+        <div class="dash-score-sub">Adjusted Exposure Score</div>
+        <div class="dash-score-num">${R.adjustedScore}%</div>
+      </div>
+      <div>
+        <div class="dash-band" style="color:${bandColor}">${x(R.band.label)}</div>
+        <div class="dash-band-sub">${x(R.band.heading)}</div>
+      </div>
+    </div>
+    ${dk.map((sk,i)=>{
+      const sc = R.sectionPcts[sk]||0;
+      const bc2 = bandClass(sc);
+      const wt = Math.round(W[sk]*100);
+      return `<div class="dom-row">
+        <span class="dom-n">S${i+1}</span>
+        <span class="dom-name">${x(SN[sk])}</span>
+        <div class="dom-bar-w"><div class="dom-bar b-${bc2}" style="width:${sc}%"></div></div>
+        <span class="dom-pct c-${bc2}">${sc}%</span>
+        <span class="dom-wt">${wt}% weight</span>
+      </div>`;
+    }).join('')}
+    <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px;font-size:7pt"><span style="width:8px;height:8px;border-radius:2px;background:var(--red);display:inline-block"></span>0–29% Critical</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:7pt"><span style="width:8px;height:8px;border-radius:2px;background:var(--orange);display:inline-block"></span>30–44% High</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:7pt"><span style="width:8px;height:8px;border-radius:2px;background:var(--amber);display:inline-block"></span>45–64% Moderate</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:7pt"><span style="width:8px;height:8px;border-radius:2px;background:var(--green);display:inline-block"></span>65%+ Low</div>
+    </div>
+    <div class="sub-label" style="margin-top:14px">Domain Weight Classification</div>
+    <table class="tbl">
+      <thead><tr><th>Domain</th><th style="width:10%">Weight</th><th style="width:8%">Score</th><th>Primary Regulatory Basis</th></tr></thead>
+      <tbody>
+        ${dk.map((sk,i)=>{const sc=R.sectionPcts[sk]||0;const bc2=bandClass(sc);return`<tr><td style="font-weight:600">S${i+1} — ${x(SN[sk])}</td><td>${Math.round(W[sk]*100)}%</td><td class="c-${bc2}" style="font-weight:700">${sc}%</td><td style="font-size:6.5pt;color:var(--text-2)">${['EU AI Act Art.9/16, ICO Accountability Framework','FCA SM&CR, EU AI Act Art.27, ICO Accountability Framework','UK GDPR Art.30, EU AI Act Art.10','UK GDPR Art.22, EU AI Act Art.14, FCA SM&CR','UK GDPR Art.13/14/22, EU AI Act Art.12','UK GDPR Art.35, EU AI Act Art.9, FCA DP5/22','EU AI Act Art.72/73, FCA PS7/21'][i]}</td></tr>`;}).join('')}
+      </tbody>
+    </table>
   </div>`;
 
-  // ═══ 04 — PRIORITY FINDINGS ═══
+  // ═══ 03 REGULATORY REGISTER ═══
   o += `<div class="section">
-    <div class="section-label">04 — Priority Findings</div>
-    <div class="section-title">Critical Governance <span class="font-accent">Findings.</span></div>
-    <div class="section-intro">Findings requiring immediate attention, each carrying a specific regulatory basis and documented impact assessment.</div>
-    ${d.priority_flags.map(f=>`<div class="finding sev-${f.severity}"><div class="finding-top"><span class="finding-sev" style="color:${sevC(f.severity)}">${f.severity.toUpperCase()}</span><span class="finding-sec">${x(f.section)}</span><span class="finding-ref">${x(f.basis)}</span></div><div class="finding-title">${x(f.label)}</div><div class="finding-cols"><div><div class="fc-label">Impact Assessment</div><div class="fc-text">${x(f.impact)}</div></div><div><div class="fc-label">Recommended Action</div><div class="fc-text">${x(f.rec)}</div></div></div></div>`).join('')}
+    <span class="section-label">03 — Regulatory Register</span>
+    <div class="section-title">Applicable <span class="font-serif">Obligations.</span></div>
+    <p class="section-intro">Mandatory obligations are legal requirements with defined enforcement consequences. Advisory obligations represent regulatory best practice with increasing enforcement weight.</p>
+    <table class="tbl">
+      <thead><tr><th style="width:14%">Regulation</th><th style="width:12%">Article</th><th>Obligation</th><th style="width:10%">Type</th><th style="width:22%">Penalty Exposure</th><th style="width:10%">Deadline</th></tr></thead>
+      <tbody>
+        ${REG_TABLE.map(r=>`<tr><td style="font-weight:600">${x(r.reg)}</td><td style="color:var(--text-2)">${x(r.art)}</td><td>${x(r.obl)}</td><td><span class="badge ${r.type==='M'?'b-mandatory':'b-advisory'}">${r.type==='M'?'Mandatory':'Advisory'}</span></td><td style="font-size:6.5pt;color:var(--text-2)">${x(r.pen)}</td><td style="font-weight:600;color:var(--text-2)">${x(r.dl)}</td></tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="notice">
+      <div class="notice-title">Classification Note</div>
+      <div class="notice-text"><strong>Mandatory</strong> obligations represent requirements where non-compliance may result in enforcement action, financial penalty, or individual regulatory sanction. <strong>Advisory</strong> obligations represent standards of best practice referenced by regulators — their absence is frequently cited in regulatory findings as evidence of governance inadequacy.</div>
+    </div>
   </div>`;
 
-  // ═══ 05 — ROADMAP ═══
-  const phases = [{k:'p1',c:'',an:'an1',pb:'pb1'},{k:'p2',c:'ph2',an:'an2',pb:'pb2'},{k:'p3',c:'ph3',an:'an3',pb:'pb3'}];
+  // ═══ 04 RISK BAND CLASSIFICATION ═══
   o += `<div class="section">
-    <div class="section-label">05 — Remediation Roadmap</div>
-    <div class="section-title">30 / 60 / 90-Day <span class="font-accent">Action Plan.</span></div>
-    <div class="section-intro">Sequenced remediation programme prioritised by risk contribution score and regulatory enforcement probability.</div>
-    ${phases.map(p=>{const ph=d.roadmap[p.k];if(!ph)return'';return`<div class="phase ${p.c}"><div class="phase-top"><span class="phase-win">${x(ph.window)}</span><span class="phase-badge ${p.pb}">${x(ph.badge)}</span></div><div class="phase-name">${x(ph.name)}</div><div class="phase-rat">${x(ph.rationale)}</div>${ph.actions?.length?`<ul class="phase-actions">${ph.actions.map((a,i)=>`<li><span class="act-n ${p.an}">${i+1}</span><span class="act-t">${x(a.text)}</span><span class="act-o">${x(a.owner)}</span></li>`).join('')}</ul>`:''}${ph.deliverables?.length?`<div class="phase-del"><div class="phase-del-lbl">Key Deliverables</div><div class="phase-del-txt">${ph.deliverables.map(x).join(' · ')}</div></div>`:''}</div>`}).join('')}
+    <span class="section-label">04 — Risk Band Classification</span>
+    <div class="section-title">Five-Band <span class="font-serif">Framework.</span></div>
+    <p class="section-intro">The MLA diagnostic produces one of five risk band classifications. Each band represents a distinct governance position requiring a distinct response.</p>
+    <table class="tbl">
+      <thead><tr><th style="width:18%">Band</th><th style="width:14%">Score Range</th><th>Classification</th><th>Report Framing</th></tr></thead>
+      <tbody>
+        ${RB.map(b=>{const isCurrent=b.id===R.band.id;return`<tr style="${isCurrent?'background:#fffbeb;':''}"><td style="font-weight:700;color:${BAND_COLORS[b.id]}">${x(b.label)}</td><td style="color:var(--text-2)">${b.min}–${b.max}%</td><td style="font-size:7.5pt">${x(b.summary).substring(0,120)}...</td><td style="font-size:7pt;color:var(--text-2)">${x(b.heading)}${isCurrent?' <strong style="color:'+BAND_COLORS[b.id]+'">← Current</strong>':''}</td></tr>`;}).join('')}
+      </tbody>
+    </table>
   </div>`;
 
-  // ═══ 06 — DOMAIN DETAIL ═══
+  // ═══ 05 PRIORITY FINDINGS ═══
   o += `<div class="section">
-    <div class="section-label">06 — Domain Assessment Detail</div>
-    <div class="section-title">Governance Domain <span class="font-accent">Analysis.</span></div>
-    <div class="section-intro">Detailed assessment narrative for each governance domain.</div>
-    ${dk.map((k,i)=>{const dm=DM[k],c=d.domain_concepts[k],s=d.section_scores[k];if(!c)return'';return`<div class="domcard"><div class="domcard-top"><span class="domcard-n">S${i+1}</span><span class="domcard-sec">${x(dm.name)}</span><span class="domcard-s sc-${sc(s)}">${s}%</span></div><div class="domcard-concept">"${x(c.concept)}"</div><div class="domcard-txt">${x(c.assessment)}</div></div>`}).join('')}
+    <span class="section-label">05 — Priority Findings</span>
+    <div class="section-title">Critical Governance <span class="font-serif">Findings.</span></div>
+    <p class="section-intro">Findings are drawn directly from assessment responses and ordered by severity. Each identifies a specific governance gap, its regulatory consequence, and the required action.</p>
+    ${findings.map((f,i)=>{
+      const sevColor = f.severity==='critical'?'#dc2626':f.severity==='high'?'#ea580c':f.severity==='regulatory'?'#2563eb':'#d97706';
+      const sevBg = f.severity==='critical'?'#fef2f2':f.severity==='high'?'#fff7ed':f.severity==='regulatory'?'#eff6ff':'#fffbeb';
+      return `<div class="finding" style="border-left-color:${sevColor}">
+        <div class="finding-header">
+          <span class="finding-num">Finding ${String(i+1).padStart(2,'0')}</span>
+          <span class="finding-sev-badge" style="color:${sevColor};background:${sevBg}">${f.severity==='regulatory'?'REGULATORY':f.severity.toUpperCase()}</span>
+          <span class="finding-section">${x(f.section)}</span>
+          ${f.basis?`<span class="finding-basis">${x(f.basis)}</span>`:''}
+        </div>
+        <div class="finding-body">
+          <div class="finding-title">${x(f.label)}</div>
+          <div class="finding-cols">
+            <div><div class="fc-label">Business & Regulatory Impact</div><div class="fc-text">${x(f.impact)}</div></div>
+            <div><div class="fc-label">Recommended Action</div><div class="fc-text">${x(f.rec)}</div></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
   </div>`;
 
-  // ═══ 07 — OUTLOOK ═══
+  // ═══ 06 ROADMAP ═══
+  const phClasses = ['','ph2','ph3'];
+  const phBadges = ['pb1','pb2','pb3'];
+  const phActs = ['an1','an2','an3'];
   o += `<div class="section">
-    <div class="section-label">07 — Forward Risk Outlook</div>
-    <div class="section-title">Regulatory Trajectory & <span class="font-accent">Implications.</span></div>
-    <div class="section-intro">An assessment of the forward regulatory landscape and its implications for remediation priorities.</div>
-    ${OUTLOOK.map(ol=>`<div class="outlook-block"><strong>${x(ol.t)}.</strong><p>${x(ol.p)}</p></div>`).join('')}
-    <div class="notice" style="margin-top:16px"><div class="notice-h">Important Notice</div><div class="notice-t">This diagnostic provides governance maturity assessment and does not constitute legal advice. MLA Group Ltd is not a law firm and does not provide legal advice or legal opinions. Outputs should not be relied upon as legal opinion or as confirmation of regulatory compliance. Organisations are advised to engage qualified legal and regulatory compliance professionals when implementing governance changes or making submissions to regulatory bodies.</div></div>
+    <span class="section-label">06 — Remediation Roadmap</span>
+    <div class="section-title">30 / 60 / 90-Day <span class="font-serif">Action Plan.</span></div>
+    <p class="section-intro">Phases are sequenced by risk contribution score, ensuring resources address areas of greatest regulatory exposure first.</p>
+    ${['p1','p2','p3'].map((pk,pi)=>{
+      const ph = roadmap[pk];
+      if(!ph) return '';
+      return `<div class="phase ${phClasses[pi]}">
+        <div class="phase-header">
+          <span class="phase-window">${x(ph.window)}</span>
+          <span class="phase-badge ${phBadges[pi]}">${x(ph.badge)}</span>
+        </div>
+        <div class="phase-body">
+          <div class="phase-name">${x(ph.name)}</div>
+          <div class="phase-rat">${x(ph.rationale)}</div>
+          <ul class="phase-actions">
+            ${(ph.actions||[]).map((a,ai)=>`<li><span class="act-n ${phActs[pi]}">${ai+1}</span><span class="act-text">${x(a.text)}</span><span class="act-owner">${x(a.owner)}</span></li>`).join('')}
+          </ul>
+        </div>
+        ${ph.deliverables&&ph.deliverables.length?`<div class="phase-deliverables"><div class="phase-del-label">Key Deliverables</div><div class="phase-del-text">${ph.deliverables.map(d=>x(d)).join(' &nbsp;·&nbsp; ')}</div></div>`:''}
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // ═══ 07 DOMAIN DETAIL ═══
+  o += `<div class="section">
+    <span class="section-label">07 — Domain Assessment Detail</span>
+    <div class="section-title">Governance Domain <span class="font-serif">Analysis.</span></div>
+    <p class="section-intro">Detailed assessment narrative for each governance domain. The concept name captures the principal risk dynamic identified in this organisation's posture.</p>
+    ${dk.map((sk,i)=>{
+      const sc = R.sectionPcts[sk]||0;
+      const bc2 = bandClass(sc);
+      const domBandId = sc<30?'critical':sc<45?'high':sc<65?'moderate':sc<80?'lowmod':'low';
+      const domColor = BAND_COLORS[domBandId]||'#2563eb';
+      const domBandLabel = RB.find(b=>b.id===domBandId)?.label||'';
+      const prem = PREMIUM[sk];
+      const concept = prem?.concept||SN[sk];
+      const assessment = domainAssessment(sk, domBandId);
+      return `<div class="domcard">
+        <div class="domcard-header">
+          <span class="domcard-num">S${i+1}</span>
+          <span class="domcard-name">${x(SN[sk])}</span>
+          <span class="domcard-score">${sc}%</span>
+        </div>
+        <div class="domcard-body">
+          <div class="domcard-band" style="color:${domColor}">${x(domBandLabel)}</div>
+          <div class="domcard-concept">"${x(concept)}"</div>
+          <div class="domcard-text">${x(assessment)}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // ═══ 08 OUTLOOK ═══
+  o += `<div class="section">
+    <span class="section-label">08 — Forward Risk Outlook</span>
+    <div class="section-title">Regulatory Trajectory & <span class="font-serif">Implications.</span></div>
+    <p class="section-intro">An assessment of the forward regulatory landscape and its implications for ${x(org)}'s remediation priorities.</p>
+    ${OUTLOOK.map(ol=>`<div class="outlook-block"><div class="outlook-title">${x(ol.t)}</div><div class="outlook-text">${x(ol.p)}</div></div>`).join('')}
+    <div class="notice" style="margin-top:16px">
+      <div class="notice-title">Important Notice</div>
+      <div class="notice-text">This diagnostic provides governance maturity assessment and does not constitute legal advice. MLA Group Ltd is not a law firm. Outputs should not be relied upon as legal opinion or as confirmation of regulatory compliance. Organisations are advised to engage qualified legal and regulatory compliance professionals when implementing governance changes. Framework version ${x(R.frameworkVersion)}.</div>
+    </div>
     <div class="signoff">
-      <div><div class="signoff-brand">MLA<span class="gold">·</span>GROUP</div><div class="signoff-sub">AI Governance Risk Advisory · mlagroup.co.uk</div></div>
-      <div class="signoff-r"><div>Report generated ${date}</div><div>Framework v${x(d.framework_version)}</div>${rpt.id ? `<div>Report ID: ${x(rpt.id)}</div>` : ''}</div>
+      <div>
+        <div class="signoff-brand">MLA<span class="gold">·</span>GROUP</div>
+        <div class="signoff-sub">AI Governance Risk Advisory &nbsp;·&nbsp; mlagroup.co.uk</div>
+      </div>
+      <div class="signoff-right">
+        <div>Report generated ${date}</div>
+        <div>Framework v${x(R.frameworkVersion)}</div>
+        ${rpt.id?`<div>Report ID: ${x(rpt.id)}</div>`:''}
+      </div>
     </div>
   </div>`;
 
   document.getElementById('report').innerHTML = o;
 }
 
-if (typeof REPORT_DATA !== 'undefined') {
+// ── Entry point ──
+if(typeof REPORT_DATA !== 'undefined'){
   render(REPORT_DATA);
 }
 </script>
