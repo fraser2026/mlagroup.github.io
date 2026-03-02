@@ -363,6 +363,18 @@ body {
 }
 .btn-dl:hover { background: var(--accent-h); }
 .btn-dl svg { width: 11px; height: 11px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-pdf {
+  background: transparent; color: var(--sub);
+  border: 1px solid var(--border2);
+  padding: 7px 14px; border-radius: 7px;
+  font-size: 0.75rem; font-weight: 600;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  white-space: nowrap; transition: all 0.15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.btn-pdf:hover { background: rgba(255,255,255,0.04); color: var(--main); border-color: rgba(255,255,255,0.18); }
+.btn-pdf svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-pdf:disabled { opacity: 0.45; cursor: not-allowed; }
 .btn-unlock {
   background: transparent; color: var(--sky);
   border: 1px solid rgba(96,165,250,0.25);
@@ -914,7 +926,7 @@ body {
             <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Sector benchmarking</div>
             <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Team member activity</div>
           </div>
-          <a href="mailto:governance@mlagroup.co.uk?subject=Analytics%20Access" class="btn-upgrade">
+          <a href="/cdn-cgi/l/email-protection#7611190013041817181513361b1a17110419030658151958031d490503141c1315024b3718171a0f021f1505534446371515130505" class="btn-upgrade">
             Request early access
             <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
           </a>
@@ -924,7 +936,7 @@ body {
     </div><!-- /content-scroll -->
   </div><!-- /main -->
 </div><!-- /app -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1096,7 +1108,10 @@ function renderDashboard(paidDiagnosticIds) {
         </div>
       </div>
       ${resultPaid
-        ? `<button class="btn-dl" onclick="downloadReport('${l.id}')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download PDF</button>`
+        ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <button class="btn-dl" onclick="downloadReport('${l.id}')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</button>
+            <button id="pdf-btn-${l.id}" class="btn-pdf" onclick="savePDF('${l.id}')"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Save as PDF</button>
+           </div>`
         : `<a href="pricing.html" class="btn-unlock">Unlock Full Report — £79</a>`
       }`;
   }
@@ -1120,7 +1135,10 @@ function renderReports(paidDiagnosticIds) {
     const band = r.risk_band || 'moderate';
     const resultPaid = isPaid || paidDiagnosticIds.has(r.id);
     const actionBtn = resultPaid
-      ? `<button class="btn-dl" onclick="downloadReport('${r.id}')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download PDF</button>`
+      ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button class="btn-dl" onclick="downloadReport('${r.id}')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</button>
+          <button id="pdf-btn-${r.id}" class="btn-pdf" onclick="savePDF('${r.id}')"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Save as PDF</button>
+         </div>`
       : `<a href="pricing.html" class="btn-unlock">Unlock — £79</a>`;
 
     return `
@@ -1191,6 +1209,26 @@ function copyReferral() {
 // ── DOWNLOAD ──────────────────────────────────────────────────
 function downloadReport(resultId) {
   window.open('report.html?rid=' + resultId, '_blank');
+}
+
+async function savePDF(resultId) {
+  const btn = document.getElementById('pdf-btn-' + resultId);
+  if (!btn) return;
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<svg viewBox="0 0 12 12"><path d="M6 2v8M3 7l3 3 3-3M1 11h10"/></svg>Generating…';
+  btn.disabled = true;
+  try {
+    const { data, error } = await sb.functions.invoke('generate-report', {
+      body: { response_id: resultId }
+    });
+    if (error || !data?.download_url) throw new Error(error?.message || 'Generation failed');
+    window.open(data.download_url, '_blank');
+  } catch (err) {
+    alert('PDF generation failed: ' + err.message);
+  } finally {
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  }
 }
 
 // ── UTILS ─────────────────────────────────────────────────────
