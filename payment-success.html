@@ -180,7 +180,7 @@
         <div style="font-size:0.82rem;color:var(--sub);">Activating your report access.</div>
       </div>
 
-      <!-- ACTIVATING: polls until paid:true confirmed in DB -->
+      <!-- ACTIVATING: polls until diagnostic linked to user in DB -->
       <div id="state-activating" style="display:none;text-align:center;padding:20px 0;">
         <div class="spin"></div>
         <div style="font-family:'Instrument Serif',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Activating your access…</div>
@@ -305,6 +305,13 @@
   const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+  // ── Read session_id from Stripe return URL (survives redirect) ──
+  const urlParams = new URLSearchParams(window.location.search);
+  const STRIPE_SESSION_ID = urlParams.get('session_id') || '';
+
+  // ── Read result_id from localStorage (survives redirect, set by results.html) ──
+  const STORED_RESULT_ID = localStorage.getItem('mla_result_id') || '';
+
   function show(id) {
     ['state-loading','state-activating','state-success','state-signup','state-error'].forEach(s => {
       document.getElementById(s).style.display = s === id ? 'block' : 'none';
@@ -314,16 +321,47 @@
     }
   }
 
-  // Poll until paid:true confirmed in DB, then show success
+  // ── Call link-diagnostic edge function (the single source of truth) ──
+  async function callLinkDiagnostic(userId) {
+    if (!STRIPE_SESSION_ID) {
+      console.warn('[payment-success] No session_id in URL — skipping link-diagnostic');
+      return null;
+    }
+    try {
+      const res = await fetch(SUPABASE_URL + '/functions/v1/link-diagnostic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+        body: JSON.stringify({
+          session_id: STRIPE_SESSION_ID,
+          user_id: userId,
+          result_id: STORED_RESULT_ID,
+        })
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        console.error('[payment-success] link-diagnostic error:', json);
+        return null;
+      }
+      console.log('[payment-success] link-diagnostic success:', json);
+      // Clean up localStorage now that linking is confirmed
+      localStorage.removeItem('mla_result_id');
+      return json.diagnostic_id || null;
+    } catch (e) {
+      console.error('[payment-success] link-diagnostic fetch failed:', e);
+      return null;
+    }
+  }
+
+  // ── Poll until diagnostic_results row linked to user in DB ──
   async function waitForActivation(userId) {
     show('state-activating');
     const bar = document.getElementById('progress-bar');
     const sub = document.getElementById('activating-sub');
     const messages = [
       'Confirming with payment provider…',
+      'Linking your report…',
       'Activating report access…',
       'Almost there…',
-      'Just a moment…'
     ];
     let progress = 5;
     let attempts = 0;
@@ -332,14 +370,11 @@
     return new Promise((resolve) => {
       const interval = setInterval(async () => {
         attempts++;
-        // Animate progress bar (never reaches 100 until confirmed)
         progress = Math.min(progress + (90 / maxAttempts), 90);
         bar.style.width = progress + '%';
         sub.textContent = messages[Math.min(Math.floor(attempts / 5), messages.length - 1)];
 
         try {
-          // Poll for diagnostic_results — exactly what the portal queries
-          // Only resolve once the row is confirmed linked, not just paid:true
           const { data } = await sb
             .from('diagnostic_results')
             .select('id')
@@ -359,7 +394,7 @@
 
         if (attempts >= maxAttempts) {
           clearInterval(interval);
-          // Timeout: show success anyway — paid was set client-side at signup
+          // Timeout: show success anyway — link-diagnostic already ran
           document.getElementById('nav-status').style.display = 'flex';
           show('state-success');
           resolve(false);
@@ -369,28 +404,11 @@
   }
 
   function getDiagnosticData() {
+    // Try sessionStorage first (available if same-tab, no redirect wipe)
+    // Then fall back — after Stripe redirect this will be empty, which is fine
+    // because link-diagnostic uses the Stripe session metadata server-side
     try { return JSON.parse(sessionStorage.getItem('mla_diagnostic_result') || '{}'); }
     catch(e) { return {}; }
-  }
-
-  async function linkDiagnostic(userId, userEmail) {
-    const pendingId = sessionStorage.getItem('pending_result_id');
-    if (pendingId) {
-      const { error } = await sb.from('diagnostic_results').update({ user_id: userId }).eq('id', pendingId);
-      if (!error) { sessionStorage.removeItem('pending_result_id'); return pendingId; }
-    }
-    if (userEmail) {
-      const { data: rows } = await sb
-        .from('diagnostic_results').select('id')
-        .eq('respondent_email', userEmail.toLowerCase().trim())
-        .is('user_id', null)
-        .order('created_at', { ascending: false }).limit(1);
-      if (rows?.length > 0) {
-        await sb.from('diagnostic_results').update({ user_id: userId }).eq('id', rows[0].id);
-        return rows[0].id;
-      }
-    }
-    return null;
   }
 
   async function populateProfile(userId, diagData, fullName) {
@@ -401,29 +419,23 @@
     }, { onConflict: 'id' });
   }
 
-  async function linkEntitlement(userId, diagnosticId, email) {
-    const { data: ents } = await sb.from('entitlements').select('id')
-      .eq('customer_email', email.toLowerCase().trim())
-      .eq('status', 'active').is('user_id', null)
-      .order('created_at', { ascending: false }).limit(1);
-    if (ents?.length > 0) {
-      await sb.from('entitlements').update({ user_id: userId, diagnostic_id: diagnosticId }).eq('id', ents[0].id);
-    }
-  }
-
+  // ── Main flow on page load ──
   window.addEventListener('load', async () => {
     try {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
+        // ── Already logged in: call link-diagnostic, then poll ──
         const userId    = session.user.id;
-        const userEmail = session.user.email;
         const diagData  = getDiagnosticData();
-        const diagnosticId = await linkDiagnostic(userId, userEmail);
         await populateProfile(userId, diagData, null);
-        await linkEntitlement(userId, diagnosticId, userEmail);
-        // Poll until Stripe webhook confirms paid:true
+
+        // Call the server-side linker — this is the fix
+        await callLinkDiagnostic(userId);
+
+        // Poll until the portal will actually show the report
         await waitForActivation(userId);
       } else {
+        // ── Not logged in: show signup form ──
         const diagData = getDiagnosticData();
         if (diagData.respondent_name) {
           const parts = diagData.respondent_name.trim().split(' ');
@@ -458,18 +470,23 @@
     try {
       const fullName = (first + ' ' + last).trim();
       const diagData = getDiagnosticData();
+
+      // 1. Create the account
       const { data, error } = await sb.auth.signUp({ email, password });
       if (error) throw error;
       const userId = data.user?.id;
       if (!userId) throw new Error('Account created but user ID missing.');
-      const diagnosticId = await linkDiagnostic(userId, email);
+
+      // 2. Set profile (name, org, paid)
       await populateProfile(userId, diagData, fullName);
-      await linkEntitlement(userId, diagnosticId, email);
-      if (diagData.respondent_email && diagData.respondent_email !== email) {
-        await linkEntitlement(userId, diagnosticId, diagData.respondent_email);
-      }
-      // Poll until paid:true confirmed — covers webhook delay
+
+      // 3. Call link-diagnostic — does EVERYTHING server-side atomically
+      //    Links diagnostic, sets paid, creates/updates entitlement
+      await callLinkDiagnostic(userId);
+
+      // 4. Poll until portal will show the report
       await waitForActivation(userId);
+
     } catch(e) {
       console.error(e);
       btn.disabled = false;
