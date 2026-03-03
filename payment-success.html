@@ -338,8 +338,14 @@
         sub.textContent = messages[Math.min(Math.floor(attempts / 5), messages.length - 1)];
 
         try {
-          const { data } = await sb.from('profiles').select('paid').eq('id', userId).single();
-          if (data?.paid === true) {
+          // Poll for diagnostic_results — exactly what the portal queries
+          // Only resolve once the row is confirmed linked, not just paid:true
+          const { data } = await sb
+            .from('diagnostic_results')
+            .select('id')
+            .eq('user_id', userId)
+            .limit(1);
+          if (data && data.length > 0) {
             clearInterval(interval);
             bar.style.width = '100%';
             setTimeout(() => {
