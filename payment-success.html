@@ -180,6 +180,17 @@
         <div style="font-size:0.82rem;color:var(--sub);">Activating your report access.</div>
       </div>
 
+      <!-- ACTIVATING: polls until paid:true confirmed in DB -->
+      <div id="state-activating" style="display:none;text-align:center;padding:20px 0;">
+        <div class="spin"></div>
+        <div style="font-family:'Instrument Serif',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Activating your access…</div>
+        <div style="font-size:0.82rem;color:var(--sub);margin-bottom:28px;">This usually takes a few seconds.</div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:100px;height:4px;overflow:hidden;max-width:280px;margin:0 auto 8px;">
+          <div id="progress-bar" style="height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:100px;width:5%;transition:width 0.6s ease;"></div>
+        </div>
+        <div id="activating-sub" style="font-size:0.72rem;color:var(--muted);margin-top:10px;">Confirming with payment provider…</div>
+      </div>
+
       <!-- SUCCESS -->
       <div id="state-success" style="display:none;">
         <div class="success-ring">
@@ -295,12 +306,60 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   function show(id) {
-    ['state-loading','state-success','state-signup','state-error'].forEach(s => {
+    ['state-loading','state-activating','state-success','state-signup','state-error'].forEach(s => {
       document.getElementById(s).style.display = s === id ? 'block' : 'none';
     });
     if (id === 'state-success' || id === 'state-signup') {
       document.getElementById('nav-status').style.display = 'flex';
     }
+  }
+
+  // Poll until paid:true confirmed in DB, then show success
+  async function waitForActivation(userId) {
+    show('state-activating');
+    const bar = document.getElementById('progress-bar');
+    const sub = document.getElementById('activating-sub');
+    const messages = [
+      'Confirming with payment provider…',
+      'Activating report access…',
+      'Almost there…',
+      'Just a moment…'
+    ];
+    let progress = 5;
+    let attempts = 0;
+    const maxAttempts = 20; // 40 seconds max
+
+    return new Promise((resolve) => {
+      const interval = setInterval(async () => {
+        attempts++;
+        // Animate progress bar (never reaches 100 until confirmed)
+        progress = Math.min(progress + (90 / maxAttempts), 90);
+        bar.style.width = progress + '%';
+        sub.textContent = messages[Math.min(Math.floor(attempts / 5), messages.length - 1)];
+
+        try {
+          const { data } = await sb.from('profiles').select('paid').eq('id', userId).single();
+          if (data?.paid === true) {
+            clearInterval(interval);
+            bar.style.width = '100%';
+            setTimeout(() => {
+              document.getElementById('nav-status').style.display = 'flex';
+              show('state-success');
+              resolve(true);
+            }, 400);
+            return;
+          }
+        } catch(e) { /* keep polling */ }
+
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          // Timeout: show success anyway — paid was set client-side at signup
+          document.getElementById('nav-status').style.display = 'flex';
+          show('state-success');
+          resolve(false);
+        }
+      }, 2000);
+    });
   }
 
   function getDiagnosticData() {
@@ -356,8 +415,8 @@
         const diagnosticId = await linkDiagnostic(userId, userEmail);
         await populateProfile(userId, diagData, null);
         await linkEntitlement(userId, diagnosticId, userEmail);
-        show('state-success');
-        // No auto-redirect — user clicks "Open my portal" when ready
+        // Poll until Stripe webhook confirms paid:true
+        await waitForActivation(userId);
       } else {
         const diagData = getDiagnosticData();
         if (diagData.respondent_name) {
@@ -403,9 +462,8 @@
       if (diagData.respondent_email && diagData.respondent_email !== email) {
         await linkEntitlement(userId, diagnosticId, diagData.respondent_email);
       }
-      // Show success — user clicks "Open my portal" manually
-      // This ensures the Stripe webhook has time to process before portal loads
-      show('state-success');
+      // Poll until paid:true confirmed — covers webhook delay
+      await waitForActivation(userId);
     } catch(e) {
       console.error(e);
       btn.disabled = false;
