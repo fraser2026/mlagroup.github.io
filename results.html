@@ -456,6 +456,7 @@ async function startCheckout() {
   try {
     const { data: { session } } = await sb.auth.getSession();
     const result = JSON.parse(sessionStorage.getItem('mla_diagnostic_result') || '{}');
+    const resultId = result.id || localStorage.getItem('mla_result_id') || '';
 
     const res = await fetch(SUPABASE_URL + '/functions/v1/create-checkout-session', {
       method: 'POST',
@@ -527,7 +528,9 @@ function init() {
   renderRecs(bandId);
   startPageCycle({ org, sector, score, band: band.label, color: band.color });
 
-  if (result.id) sessionStorage.setItem('pending_result_id', result.id);
+  if (result.id) {
+  sessionStorage.setItem('pending_result_id', result.id);
+  localStorage.setItem('mla_result_id', result.id);
 }
 
 init();
