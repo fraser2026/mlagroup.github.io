@@ -1232,7 +1232,12 @@ async function savePDF(resultId) {
     if (!res.ok) throw new Error('Server error: ' + res.status);
     const data = await res.json();
     if (!data?.download_url) throw new Error('No download URL returned');
-    window.open(data.download_url, '_blank');
+    const a = document.createElement('a');
+    a.href = data.download_url;
+    a.download = 'MLA-Governance-Report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   } catch (err) {
     alert('PDF generation failed: ' + err.message);
   } finally {
