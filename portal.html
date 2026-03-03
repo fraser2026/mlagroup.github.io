@@ -1220,11 +1220,18 @@ async function savePDF(resultId) {
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) throw new Error('Not authenticated');
-    const { data, error } = await sb.functions.invoke('generate-report', {
-      body: { response_id: resultId },
-      headers: { Authorization: `Bearer ${session.access_token}` }
+    const res = await fetch(SUPABASE_URL + '/functions/v1/generate-report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+        'apikey': SUPABASE_KEY
+      },
+      body: JSON.stringify({ response_id: resultId })
     });
-    if (error || !data?.download_url) throw new Error(error?.message || 'Generation failed');
+    if (!res.ok) throw new Error('Server error: ' + res.status);
+    const data = await res.json();
+    if (!data?.download_url) throw new Error('No download URL returned');
     window.open(data.download_url, '_blank');
   } catch (err) {
     alert('PDF generation failed: ' + err.message);
