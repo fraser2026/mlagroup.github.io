@@ -462,7 +462,7 @@ async function startCheckout() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
       body: JSON.stringify({
-        result_id: result.id || '',
+        result_id: resultId,
         user_id: session?.user?.id || '',
         email: session?.user?.email || '',
       })
