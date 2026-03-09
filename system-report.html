@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>AI System Governance Report | MLA Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#020617;--card:#070f24;--card2:#0a1628;--border:rgba(255,255,255,0.07);--accent:#2563eb;--sky:#60a5fa;--main:#f1f5f9;--sub:#cbd5e1;--muted:#64748b;--muted2:#94a3b8;--green:#4ade80;--amber:#fbbf24;--red:#f87171}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--sub);-webkit-font-smoothing:antialiased;min-height:100vh}
+@media print{body{background:#020617;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Nav */
+.report-nav{display:flex;justify-content:space-between;align-items:center;padding:0 48px;height:56px;border-bottom:1px solid var(--border);background:rgba(2,6,23,0.95);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.nav-logo{font-size:.95rem;font-weight:600;letter-spacing:-.02em;color:var(--main);text-decoration:none}
+.nav-logo em{font-family:'Instrument Serif',serif;font-style:italic;color:var(--sky)}
+.nav-actions{display:flex;gap:8px}
+.nav-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;border:none;transition:background .15s;text-decoration:none}
+.nav-btn-primary{background:var(--accent);color:white}.nav-btn-primary:hover{background:#1d4ed8}
+.nav-btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.nav-btn-ghost:hover{color:var(--main);border-color:rgba(255,255,255,0.13)}
+.nav-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media print{.report-nav{display:none}}
+
+/* Report shell */
+.report{max-width:860px;margin:0 auto;padding:0 32px 80px}
+
+/* Hero */
+.report-hero{padding:48px 0 40px;position:relative}
+.report-hero::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:400px;height:120px;background:radial-gradient(ellipse,rgba(37,99,235,0.08),transparent 70%);pointer-events:none}
+.report-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 13px;border-radius:99px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.badge-high{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.18);color:var(--red)}
+.badge-medium{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.18);color:var(--amber)}
+.badge-low{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18);color:var(--green)}
+.badge-dot{width:5px;height:5px;border-radius:50%;animation:blink 2.2s ease-in-out infinite}
+.badge-high .badge-dot{background:var(--red)}.badge-medium .badge-dot{background:var(--amber)}.badge-low .badge-dot{background:var(--green)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.report-sublabel{font-size:.62rem;color:rgba(148,163,184,0.4);margin-bottom:18px;font-style:italic;letter-spacing:.02em}
+.report-sys-name{font-family:'Instrument Serif',serif;font-size:2.2rem;font-weight:400;color:rgba(255,255,255,0.9);line-height:1.05;letter-spacing:-.025em;margin-bottom:10px}
+.report-desc{font-size:.78rem;color:rgba(148,163,184,0.6);line-height:1.75;max-width:560px;margin-bottom:24px}
+.report-meta{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.meta-cell{padding:12px 16px;background:rgba(255,255,255,0.015);border-right:1px solid var(--border)}
+.meta-cell:last-child{border-right:none}
+.meta-label{font-size:.52rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(148,163,184,0.35);margin-bottom:3px;font-weight:600}
+.meta-val{font-size:.76rem;color:rgba(255,255,255,0.78);font-weight:500}
+@media(max-width:640px){.report-meta{grid-template-columns:1fr 1fr}.meta-cell:nth-child(2){border-right:none}}
+
+/* Score hero */
+.score-hero{display:flex;align-items:center;gap:32px;padding:36px 0;border-bottom:1px solid var(--border);margin-bottom:32px}
+.score-ring{position:relative;width:120px;height:120px;flex-shrink:0}
+.score-ring svg{width:120px;height:120px;transform:rotate(-90deg)}
+.score-ring-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:8}
+.score-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease}
+.score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-center-num{font-size:2rem;font-weight:700;line-height:1}
+.score-center-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:2px}
+.score-info h3{font-family:'Instrument Serif',serif;font-size:1.3rem;color:var(--main);margin-bottom:6px}
+.score-info p{font-size:.8rem;color:var(--muted);line-height:1.7;max-width:400px}
+
+/* Section scores */
+.section-title{font-family:'Instrument Serif',serif;font-size:1.3rem;color:var(--main);margin-bottom:16px;letter-spacing:-.02em}
+.section-label{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:rgba(148,163,184,0.3);margin-bottom:6px}
+.domain-row{display:grid;grid-template-columns:180px 1fr 40px;align-items:center;gap:12px;padding:8px 0}
+.domain-name{font-size:.72rem;color:rgba(148,163,184,0.6);text-align:right}
+.domain-bar{height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden}
+.domain-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1)}
+.domain-pct{font-size:.68rem;font-weight:600;text-align:right}
+
+/* Report card */
+.rpt-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+.rpt-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,rgba(37,99,235,0.3),transparent 60%)}
+.rpt-card-title{font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:14px}
+
+/* Flags */
+.flag-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.flag-item:last-child{border-bottom:none}
+.flag-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem;font-weight:700;margin-top:2px}
+.flag-high{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.15)}
+.flag-text{font-size:.8rem;color:var(--sub);line-height:1.6}
+.flag-reg{font-size:.7rem;color:var(--muted);margin-top:2px}
+
+/* Tier validation */
+.tier-alert{background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:10px;padding:18px 20px;margin-bottom:20px}
+.tier-alert-title{font-size:.78rem;font-weight:600;color:var(--amber);margin-bottom:6px}
+.tier-alert-body{font-size:.78rem;color:var(--muted2);line-height:1.7}
+
+/* Reg mapping */
+.reg-item{padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.reg-item:last-child{border-bottom:none}
+.reg-title{font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:2px}
+.reg-ref{font-size:.68rem;color:var(--sky);margin-bottom:4px}
+.reg-desc{font-size:.75rem;color:var(--muted);line-height:1.6}
+
+/* Next steps */
+.step-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.step-item:last-child{border-bottom:none}
+.step-num{width:22px;height:22px;border-radius:6px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:var(--sky);flex-shrink:0;margin-top:2px}
+.step-text{font-size:.8rem;color:var(--sub);line-height:1.6}
+
+/* Footer */
+.report-footer{border-top:1px solid var(--border);padding:32px 0;margin-top:40px;text-align:center}
+.report-footer p{font-size:.68rem;color:rgba(148,163,184,0.3);line-height:1.75;max-width:500px;margin:0 auto}
+
+/* Loading */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px}
+.loading-spinner{width:40px;height:40px;border-radius:50%;border:2.5px solid rgba(37,99,235,0.15);border-top-color:var(--sky);animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:.85rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="report-nav">
+  <a href="portal.html" class="nav-logo">mla<em>group.</em></a>
+  <div class="nav-actions">
+    <a href="portal.html" class="nav-btn nav-btn-ghost">&#8592; Portal</a>
+    <button class="nav-btn nav-btn-primary" onclick="window.print()"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Print / Save PDF</button>
+  </div>
+</div>
+
+<div class="report" id="report-container">
+  <div class="loading" id="loading"><div class="loading-spinner"></div><div class="loading-text">Loading assessment report…</div></div>
+</div>
+
+<script>
+const SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const params=new URLSearchParams(window.location.search);
+const ASSESS_ID=params.get('aid');
+
+const BAND_L={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};
+const BAND_C={high:'#f87171',medium:'#fbbf24',low:'#4ade80'};
+const BAND_DESC={
+  high:'This AI system has significant governance gaps that create regulatory exposure and operational risk. Priority remediation is recommended before the system is expanded or placed into production.',
+  medium:'This AI system has a functional governance foundation but material gaps remain. Targeted improvements are needed to meet regulatory expectations and reduce residual risk.',
+  low:'This AI system demonstrates strong governance maturity. The priority is to maintain and evolve these controls as the system, regulations, and data landscape develop.'
+};
+const TIER_L={unacceptable:'Unacceptable',high:'High',limited:'Limited',minimal:'Minimal'};
+const STATUS_L={planned:'Planned',development:'Development',pilot:'Pilot',production:'Production',decommissioned:'Decommissioned'};
+
+const REG_MAP={
+  s1:{articles:['EU AI Act Annex III — Risk classification','EU AI Act Article 6 — Classification rules for high-risk systems'],desc:'This section establishes the system\u2019s risk tier and regulatory scope under the EU AI Act.'},
+  s2:{articles:['UK GDPR Article 5 — Data processing principles','UK GDPR Article 6 — Lawful basis','UK GDPR Article 35 — DPIA requirement','EU AI Act Article 10 — Data governance'],desc:'Data governance obligations apply to any AI system processing personal data.'},
+  s3:{articles:['EU AI Act Article 13 — Transparency obligations','EU AI Act Article 50 — AI interaction disclosure','UK GDPR Article 22 — Automated decision-making'],desc:'Transparency requirements ensure individuals understand when and how AI affects them.'},
+  s4:{articles:['EU AI Act Article 14 — Human oversight measures'],desc:'Human oversight is a core requirement for high-risk AI systems under the EU AI Act.'},
+  s5:{articles:['EU AI Act Article 15 — Accuracy, robustness, cybersecurity'],desc:'AI systems must be resilient against adversarial threats and perform reliably throughout their lifecycle.'},
+  s6:{articles:['EU AI Act Article 9 — Risk management system','EU AI Act Article 11 — Technical documentation','EU AI Act Article 17 — Quality management'],desc:'Accountability and documentation requirements form the basis of regulatory compliance evidence.'},
+  s7:{articles:['EU AI Act Article 26 — Obligations of deployers'],desc:'Deployers of third-party AI systems carry specific obligations for oversight, monitoring, and transparency.'}
+};
+
+const RECS_BY_SECTION={
+  s1:['Review the system\u2019s classification against EU AI Act Annex III criteria and document the rationale','Conduct a formal impact assessment to quantify the system\u2019s effect on individuals'],
+  s2:['Document the lawful basis for all personal data processing under UK GDPR Article 6','Implement systematic data quality monitoring with defined metrics and review schedules','Conduct or update a Data Protection Impact Assessment (DPIA) for this system'],
+  s3:['Implement clear AI disclosure at the point of user interaction','Establish and document an explanation methodology for AI-driven outputs','Deploy comprehensive input/output logging with defined retention periods'],
+  s4:['Define and document mandatory human review protocols for high-impact outputs','Establish a formal override process with records and escalation paths','Implement oversight effectiveness monitoring with defined metrics'],
+  s5:['Conduct AI-specific adversarial security testing (prompt injection, data poisoning)','Implement automated performance monitoring with drift detection thresholds','Document an AI-specific incident response procedure with defined scenarios'],
+  s6:['Appoint a named system owner with documented responsibilities and reporting line','Create and maintain comprehensive technical documentation for this system','Establish audit-ready decision logs with defined retention periods'],
+  s7:['Review vendor contracts for AI-specific governance, data handling, and liability provisions','Request model cards or transparency reports from the AI provider','Implement change management processes that cover third-party model updates']
+};
+
+async function init(){
+  if(!ASSESS_ID){document.getElementById('loading').innerHTML='<div style="color:var(--red);font-size:.85rem;">No assessment ID provided.</div>';return}
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+
+  const{data:assess,error:aErr}=await sb.from('registry_assessments').select('*').eq('id',ASSESS_ID).single();
+  if(aErr||!assess){document.getElementById('loading').innerHTML='<div style="color:var(--red);font-size:.85rem;">Assessment not found.</div>';return}
+
+  const{data:sys}=await sb.from('ai_systems').select('*').eq('id',assess.system_id).single();
+  const{data:org}=await sb.from('organisations').select('name').eq('id',assess.org_id).single();
+  const{data:profile}=await sb.from('profiles').select('full_name').eq('id',assess.requested_by).single();
+
+  renderReport(assess,sys||{},org||{},profile||{});
+}
+
+function renderReport(a,sys,org,profile){
+  const band=a.risk_band||'medium';
+  const score=a.overall_score||0;
+  const ss=a.section_scores||{};
+  const tv=a.tier_validation;
+  const col=BAND_C[band];
+  const circ=2*Math.PI*48;
+  const dashOffset=circ-(circ*(score/100));
+  const today=new Date(a.requested_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  // Build priority flags from section scores
+  const flags=[];
+  Object.entries(ss).forEach(([id,d])=>{
+    if(d.score<40){const rm=REG_MAP[id];flags.push({section:d.title,score:d.score,regulatory:rm?rm.articles[0]:''})}
+  });
+
+  // Build recommendations from low-scoring sections
+  const recs=[];
+  Object.entries(ss).forEach(([id,d])=>{
+    if(d.score<70&&RECS_BY_SECTION[id]){RECS_BY_SECTION[id].forEach(r=>{if(recs.length<8)recs.push(r)})}
+  });
+
+  // Build engaged regulations
+  const engagedRegs=[];
+  Object.entries(ss).forEach(([id,d])=>{
+    const rm=REG_MAP[id];if(rm)rm.articles.forEach(art=>{engagedRegs.push({title:art,desc:rm.desc,sectionScore:d.score})})
+  });
+
+  const c=document.getElementById('report-container');
+  c.innerHTML=`
+    <div class="report-hero">
+      <div class="report-badge badge-${band}"><span class="badge-dot"></span>${BAND_L[band]} — System Governance Assessment</div>
+      <div class="report-sublabel">AI System Governance Report — Prepared by MLA Group</div>
+      <div class="report-sys-name">${esc(sys.name||'AI System')}</div>
+      <div class="report-desc">${esc(sys.description||'This report presents findings of the AI system governance assessment, evaluating maturity across 7 governance domains and mapping regulatory exposure.')}</div>
+      <div class="report-meta">
+        <div class="meta-cell"><div class="meta-label">Organisation</div><div class="meta-val">${esc(org.name||'—')}</div></div>
+        <div class="meta-cell"><div class="meta-label">System Owner</div><div class="meta-val">${esc(sys.system_owner||'—')}</div></div>
+        <div class="meta-cell"><div class="meta-label">Risk Tier</div><div class="meta-val">${sys.risk_tier?'<em style="opacity:.6;font-style:italic;">Suggested</em> '+esc(TIER_L[sys.risk_tier]||sys.risk_tier):'Unclassified'}</div></div>
+        <div class="meta-cell"><div class="meta-label">Assessment Date</div><div class="meta-val">${today}</div></div>
+      </div>
+    </div>
+
+    <!-- Overall Score -->
+    <div class="score-hero">
+      <div class="score-ring">
+        <svg viewBox="0 0 120 120">
+          <circle class="score-ring-bg" cx="60" cy="60" r="48"/>
+          <circle class="score-ring-fill" cx="60" cy="60" r="48" stroke="${col}" stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}"/>
+        </svg>
+        <div class="score-center">
+          <div class="score-center-num" style="color:${col};">${score}%</div>
+          <div class="score-center-label">Score</div>
+        </div>
+      </div>
+      <div class="score-info">
+        <h3>${BAND_L[band]}</h3>
+        <p>${BAND_DESC[band]}</p>
+      </div>
+    </div>
+
+    ${tv&&tv.mismatch?`<div class="tier-alert"><div class="tier-alert-title">Risk Tier Mismatch Detected</div><div class="tier-alert-body">${esc(tv.message||'Assessment responses suggest this system may require a higher risk classification than currently assigned. MLA Group recommends reviewing the classification against EU AI Act Annex III criteria.')}</div></div>`:''}
+
+    <!-- Section Scores -->
+    <div class="rpt-card">
+      <div class="section-label">Section 01</div>
+      <div class="rpt-card-title">Governance Maturity by Domain</div>
+      ${Object.entries(ss).map(([id,d])=>{
+        const pct=d.score||0;
+        const c2=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
+        return `<div class="domain-row"><span class="domain-name">${esc(d.title||id)}</span><div class="domain-bar"><div class="domain-fill" style="width:${pct}%;background:${c2};"></div></div><span class="domain-pct" style="color:${c2};">${pct}%</span></div>`;
+      }).join('')}
+    </div>
+
+    ${flags.length?`<div class="rpt-card">
+      <div class="section-label">Section 02</div>
+      <div class="rpt-card-title">Priority Governance Gaps</div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">The following domains scored below 40% and represent critical governance gaps requiring immediate attention.</p>
+      ${flags.map(f=>`<div class="flag-item"><div class="flag-icon flag-high">!</div><div><div class="flag-text"><strong>${esc(f.section)}</strong> scored ${f.score}% — significantly below the minimum governance threshold.</div><div class="flag-reg">${esc(f.regulatory)}</div></div></div>`).join('')}
+    </div>`:''}
+
+    <!-- Regulatory Mapping -->
+    <div class="rpt-card">
+      <div class="section-label">Section 0${flags.length?'3':'2'}</div>
+      <div class="rpt-card-title">Regulatory Obligations Engaged</div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Based on the assessment responses, the following regulatory articles and obligations are engaged for this AI system.</p>
+      ${engagedRegs.slice(0,10).map(r=>`<div class="reg-item"><div class="reg-title">${esc(r.title)}</div><div class="reg-desc">${esc(r.desc)}</div></div>`).join('')}
+    </div>
+
+    ${recs.length?`<div class="rpt-card">
+      <div class="section-label">Section 0${flags.length?'4':'3'}</div>
+      <div class="rpt-card-title">Recommended Next Steps</div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">The following actions address the governance gaps identified in this assessment, prioritised by regulatory significance.</p>
+      ${recs.map((r,i)=>`<div class="step-item"><div class="step-num">${i+1}</div><div class="step-text">${esc(r)}</div></div>`).join('')}
+    </div>`:''}
+
+    <div class="report-footer">
+      <p><strong style="color:var(--main);">MLA Group Ltd</strong> — AI Governance & Risk Consultancy<br><br>
+      This report represents a structured assessment of the governance position of the named AI system at a single point in time. It does not constitute legal advice, regulatory certification, or audit opinion. Assessment version ${esc(a.questionnaire_version||'1.0.0')}. Report generated ${today}.</p>
+    </div>
+  `;
+
+  // Animate score ring
+  setTimeout(()=>{const fill=document.querySelector('.score-ring-fill');if(fill)fill.style.strokeDashoffset=dashOffset},100);
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+init();
+</script>
+</body>
+</html>
