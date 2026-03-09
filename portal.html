@@ -156,16 +156,6 @@ textarea.field-input{resize:vertical;min-height:80px}
 
 <div class="modal-overlay" id="system-modal"><div class="modal"><div class="modal-header"><div><h3 id="sysmod-title">Register AI System</h3><p id="sysmod-sub">Add a new system to the governance registry</p></div><button class="modal-close" onclick="closeSystemModal()">✕</button></div><div class="modal-body"><input type="hidden" id="sysmod-id" value=""><div class="section-divider"><span>Identity</span></div><div class="field-group"><label class="field-label">System Name <span class="req">*</span></label><input type="text" class="field-input" id="sysmod-name" placeholder="e.g. Customer Chatbot, Credit Scoring Model"></div><div class="field-group"><label class="field-label">Description</label><textarea class="field-input" id="sysmod-desc" rows="3" placeholder="What does this system do?"></textarea></div><div class="field-row"><div class="field-group"><label class="field-label">Vendor</label><input type="text" class="field-input" id="sysmod-vendor" placeholder="e.g. OpenAI, In-house"></div><div class="field-group"><label class="field-label">System Type</label><select class="field-input" id="sysmod-type"><option value="">Select</option><option value="third_party">Third Party</option><option value="in_house">In-House</option><option value="hybrid">Hybrid</option></select></div></div><div class="section-divider"><span>EU AI Act Classification</span></div><div class="field-group"><label class="field-label">Purpose Category</label><select class="field-input" id="sysmod-purpose" onchange="onPurposeChange()"><option value="">Select purpose (Annex III mapping)</option><option disabled style="color:var(--sky);font-weight:700;">── High Risk (Annex III) ──</option><option value="biometric_identification">Biometric identification</option><option value="critical_infrastructure">Critical infrastructure management</option><option value="education_access">Education and vocational training access</option><option value="employment_management">Employment and worker management</option><option value="essential_services_access">Access to essential services (credit, insurance)</option><option value="law_enforcement">Law enforcement</option><option value="migration_border">Migration and border control</option><option value="justice_administration">Administration of justice</option><option disabled style="color:var(--sky);font-weight:700;">── Limited Risk ──</option><option value="customer_chatbot">Customer-facing chatbot / virtual assistant</option><option value="content_generation">Content generation (text, image, audio)</option><option value="emotion_recognition">Emotion recognition</option><option disabled style="color:var(--sky);font-weight:700;">── Minimal Risk ──</option><option value="internal_automation">Internal process automation</option><option value="data_analytics">Data analytics and reporting</option><option value="other">Other (classify manually)</option></select><div class="tier-suggestion" id="sysmod-tier-hint"></div></div><div class="field-row"><div class="field-group"><label class="field-label">Risk Tier</label><select class="field-input" id="sysmod-tier"><option value="">Not classified</option><option value="unacceptable">Unacceptable</option><option value="high">High</option><option value="limited">Limited</option><option value="minimal">Minimal</option></select></div><div class="field-group"><label class="field-label">Deployment Status</label><select class="field-input" id="sysmod-status"><option value="planned">Planned</option><option value="development">Development</option><option value="pilot">Pilot</option><option value="production">Production</option><option value="decommissioned">Decommissioned</option></select></div></div><div class="field-group" id="sysmod-rationale-wrap" style="display:none;"><label class="field-label">Classification Rationale</label><textarea class="field-input" id="sysmod-rationale" rows="2" placeholder="Why was this tier assigned?"></textarea></div><div class="section-divider"><span>Governance Metadata</span></div><div class="field-row"><div class="field-group"><label class="field-label">System Owner <span class="req">*</span></label><input type="text" class="field-input" id="sysmod-owner" placeholder="Named accountable individual"></div><div class="field-group"><label class="field-label">Department</label><input type="text" class="field-input" id="sysmod-dept" placeholder="e.g. Operations, Risk"></div></div><div class="field-group"><label class="field-label">Notes</label><textarea class="field-input" id="sysmod-notes" rows="2" placeholder="Any additional context"></textarea></div><div id="sysmod-error" class="field-error"></div></div><div class="modal-footer"><button class="btn-topbar btn-topbar-ghost" onclick="closeSystemModal()">Cancel</button><button class="btn-topbar btn-topbar-primary" id="sysmod-submit" onclick="submitSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register System</button></div></div></div>
 
-<div class="modal-overlay" id="assess-modal"><div class="modal" style="max-width:480px;"><div class="modal-header"><div><h3>Run Assessment</h3><p id="assess-sys-name" style="color:var(--sky);">—</p></div><button class="modal-close" onclick="closeAssessmentModal()">✕</button></div><div class="modal-body">
-<p style="font-size:.82rem;color:var(--sub);line-height:1.7;margin-bottom:20px;">Answer the following questions about this AI system. MLA Group will review your submission and provide tailored compliance controls.</p>
-<div class="field-group"><label class="field-label">Does this system process personal data?</label><select class="field-input" id="aq-personal"><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option><option value="unsure">Unsure</option></select></div>
-<div class="field-group"><label class="field-label">Does this system make automated decisions?</label><select class="field-input" id="aq-automated"><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option><option value="unsure">Unsure</option></select></div>
-<div class="field-group"><label class="field-label">Does it affect individuals' rights, access to services, or financial position?</label><select class="field-input" id="aq-affects"><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option><option value="unsure">Unsure</option></select></div>
-<div class="field-group"><label class="field-label">Does it generate synthetic content (text, images, audio, video)?</label><select class="field-input" id="aq-synthetic"><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option><option value="unsure">Unsure</option></select></div>
-<div class="field-group"><label class="field-label">Additional notes for MLA Group</label><textarea class="field-input" id="aq-notes" rows="3" placeholder="Any context that would help our assessment…"></textarea></div>
-<div id="assess-error" class="field-error"></div>
-</div><div class="modal-footer"><button class="btn-topbar btn-topbar-ghost" onclick="closeAssessmentModal()">Cancel</button><button class="btn-topbar btn-topbar-primary" id="assess-submit" onclick="submitAssessment()">Record Assessment</button></div></div></div>
-
 <script>
 const SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
 const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
@@ -247,8 +237,12 @@ async function init(){
   if(currentResults.length>0){const b=document.getElementById('report-count-badge');b.textContent=currentResults.length;b.style.display='inline-flex'}
   document.getElementById('paywall-banner').style.display=isPaid?'none':'flex';
   renderReports(paidIds);
-  if(profile?.org_id)ensureOrg().then(()=>loadSystems()).then(()=>renderDashboard(paidIds)).catch(()=>renderDashboard(paidIds));
+  if(profile?.org_id)ensureOrg().then(()=>loadSystems()).then(()=>{renderDashboard(paidIds);handleDeepLink()}).catch(()=>renderDashboard(paidIds));
   else renderDashboard(paidIds);
+}
+function handleDeepLink(){
+  const h=window.location.hash;
+  if(h.startsWith('#registry-detail-')){const sysId=h.replace('#registry-detail-','');if(sysId)openSystemDetail(sysId);window.location.hash=''}
 }
 
 // ═══ AUTO-PROVISIONING ════════════════════════════════════════
@@ -357,41 +351,55 @@ async function renderAssessmentTab(assessments){
     '</div>'}).join('');
 }
 
-// Assessment modal
+// Assessment modal → now redirects to assessment.html
 function openAssessmentModal(){
-  const sys=allSystems.find(s=>s.id===currentSystemId);if(!sys)return;
-  document.getElementById('assess-sys-name').textContent=sys.name;
-  ['aq-personal','aq-automated','aq-affects','aq-synthetic'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('aq-notes').value='';
-  document.getElementById('assess-error').style.display='none';
-  document.getElementById('assess-modal').classList.add('open');
+  if(!currentSystemId)return;
+  window.location.href='assessment.html?system_id='+currentSystemId;
 }
-function closeAssessmentModal(){document.getElementById('assess-modal').classList.remove('open')}
+function closeAssessmentModal(){}
 
-async function submitAssessment(){
-  const p=document.getElementById('aq-personal').value;
-  const a=document.getElementById('aq-automated').value;
-  const af=document.getElementById('aq-affects').value;
-  const s=document.getElementById('aq-synthetic').value;
-  const errEl=document.getElementById('assess-error');
-  if(!p||!a||!af||!s){errEl.textContent='Please answer all four questions.';errEl.style.display='block';return}
-  errEl.style.display='none';
-  const btn=document.getElementById('assess-submit');btn.textContent='Submitting…';btn.disabled=true;
-  try{
-    const{error}=await sb.from('registry_assessments').insert({
-      system_id:currentSystemId,org_id:currentOrg.id,
-      processes_personal_data:p,makes_automated_decisions:a,
-      affects_individuals:af,generates_synthetic_content:s,
-      client_notes:document.getElementById('aq-notes').value.trim()||null,
-      requested_by:currentUser.id,status:'submitted'
-    });
-    if(error)throw error;
-    // Audit log
-    await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'assessment_submitted',entity_type:'ai_system',entity_id:currentSystemId,changes:{_actor_name:actorName()}});
-    closeAssessmentModal();
-    await openSystemDetail(currentSystemId);
-  }catch(err){errEl.textContent='Error: '+err.message;errEl.style.display='block'}
-  finally{btn.textContent='Record Assessment';btn.disabled=false}
+async function renderAssessmentTab(assessments){
+  const el=document.getElementById('tab-assessment');
+  if(!assessments.length){
+    el.innerHTML='<div class="empty-state" style="padding:36px 0;"><h4>No assessments yet</h4><p style="max-width:360px;margin:0 auto 20px;">Run an assessment to evaluate this AI system\u2019s governance maturity across 7 domains and receive a risk score.</p><button class="btn-dl" onclick="openAssessmentModal()" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button></div>';
+    return;
+  }
+  const BAND_L={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};
+  const BAND_C={high:'#f87171',medium:'#fde047',low:'#4ade80'};
+  const nm=await loadNames(assessments.map(a=>a.requested_by).concat(assessments.map(a=>a.completed_by).filter(Boolean)));
+  el.innerHTML=assessments.map((a,i)=>{
+    const band=a.risk_band||'medium';
+    const score=a.overall_score;
+    const stLabel=ASSESS_STATUS_LABELS[a.status]||a.status;
+    const stCol=ASSESS_STATUS_COLORS[a.status]||'var(--muted)';
+    const isLatest=i===0;
+    const ss=a.section_scores||{};
+    const tv=a.tier_validation;
+    // Section score bars
+    const secBars=Object.entries(ss).map(([k,v])=>{
+      const pct=v.score||0;
+      const col=pct>=70?'#4ade80':pct>=40?'#fde047':'#f87171';
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:.7rem;color:var(--muted);width:160px;text-align:right;flex-shrink:0;">'+esc(v.title||k)+'</span><div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:2px;"></div></div><span style="font-size:.68rem;color:'+col+';width:32px;text-align:right;font-weight:600;">'+pct+'%</span></div>';
+    }).join('');
+    return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:12px;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'+
+        '<div style="display:flex;align-items:center;gap:10px;">'+
+          (score!==null&&score!==undefined?'<span style="font-size:1.8rem;font-weight:700;color:'+(BAND_C[band]||'var(--muted)')+';">'+score+'%</span>':'')+
+          '<span style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;color:'+(BAND_C[band]||'var(--muted)')+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+(BAND_L[band]||band)+'</span>'+
+          (isLatest?'<span style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4ade80;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);padding:2px 7px;border-radius:100px;">Latest</span>':'')+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;">'+
+          '<span style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;color:'+stCol+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+esc(stLabel)+'</span>'+
+          '<span style="font-size:.72rem;color:var(--muted);">'+fmtDateLong(a.requested_at)+'</span>'+
+        '</div>'+
+      '</div>'+
+      (Object.keys(ss).length?'<div style="margin-bottom:14px;">'+secBars+'</div>':'')+
+      (tv&&tv.mismatch?'<div style="font-size:.76rem;color:var(--amber);background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;">'+esc(tv.message||'Risk tier mismatch detected. MLA Group recommends reviewing the classification.')+'</div>':'')+
+      (a.client_notes?'<div style="font-size:.76rem;color:var(--muted);line-height:1.65;background:rgba(255,255,255,0.02);border-left:2px solid var(--border);padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:12px;">'+esc(a.client_notes)+'</div>':'')+
+      '<div style="font-size:.7rem;color:var(--muted);">Submitted by '+esc(nm[a.requested_by]||'Unknown')+(a.sector?' · '+esc(a.sector):'')+'</div>'+
+      (a.status==='controls_issued'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;"><div style="font-size:.72rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">MLA Controls Issued</div>'+(a.mla_notes?'<div style="font-size:.78rem;color:var(--sub);line-height:1.65;">'+esc(a.mla_notes)+'</div>':'')+'<div style="font-size:.68rem;color:var(--muted);margin-top:6px;">Completed by '+(nm[a.completed_by]||'MLA Group')+' · '+fmtDateLong(a.completed_at)+'</div></div>':'')+
+      (a.status==='submitted'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.12);border-radius:8px;"><div style="font-size:.78rem;color:var(--sub);line-height:1.65;">Your assessment has been submitted. MLA Group will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
+    '</div>'}).join('');
 }
 function switchDetailTab(id,btn){document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active')}
 
