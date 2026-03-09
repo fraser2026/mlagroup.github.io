@@ -3,1563 +3,395 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
 <title>Portal | MLA Group</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* ══════════════════════════════════════════════════════════════
-   TOKENS
-══════════════════════════════════════════════════════════════ */
-:root {
-  --bg:        #020617;
-  --sidebar:   #050d1f;
-  --surface:   rgba(8,15,35,0.7);
-  --surface2:  rgba(10,18,42,0.9);
-  --border:    rgba(255,255,255,0.055);
-  --border2:   rgba(255,255,255,0.10);
-  --accent:    #2563eb;
-  --accent-h:  #1d4ed8;
-  --sky:       #60a5fa;
-  --main:      #f1f5f9;
-  --sub:       #94a3b8;
-  --muted:     #475569;
-  --muted2:    #334155;
-  --green:     #22c55e;
-  --amber:     #f59e0b;
-  --red:       #ef4444;
-  --sidebar-w: 228px;
-  --topbar-h:  56px;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   RESET & BASE
-══════════════════════════════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--sub);
-  -webkit-font-smoothing: antialiased;
-  overflow: hidden;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   AMBIENT BACKGROUND
-══════════════════════════════════════════════════════════════ */
-.bg-ambient {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(ellipse 50% 40% at 75% 50%, rgba(37,99,235,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 50% at 20% 20%, rgba(37,99,235,0.03) 0%, transparent 55%);
-}
-.bg-grid {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, transparent, rgba(0,0,0,0.4) 20%, rgba(0,0,0,0.4) 80%, transparent);
-}
-
-/* ══════════════════════════════════════════════════════════════
-   LAYOUT SHELL
-══════════════════════════════════════════════════════════════ */
-.app { display: flex; height: 100vh; position: relative; z-index: 1; }
-
-/* ══════════════════════════════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════════════════════════════ */
-.sidebar {
-  width: var(--sidebar-w); flex-shrink: 0;
-  background: var(--sidebar); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; height: 100vh;
-  position: relative; z-index: 10;
-}
-.sidebar-logo {
-  height: var(--topbar-h); display: flex; align-items: center;
-  padding: 0 18px; border-bottom: 1px solid var(--border); flex-shrink: 0;
-}
-.logo-mark { font-size: 0.92rem; font-weight: 600; letter-spacing: -0.02em; color: var(--main); text-decoration: none; }
-.logo-mark em { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--sky); }
-.logo-badge {
-  margin-left: auto; font-size: 0.58rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.1em; color: var(--sky);
-  background: rgba(37,99,235,0.1); border: 1px solid rgba(37,99,235,0.2);
-  padding: 2px 7px; border-radius: 100px;
-}
-.sidebar-nav { flex: 1; overflow-y: auto; padding: 14px 10px; scrollbar-width: none; }
-.sidebar-nav::-webkit-scrollbar { display: none; }
-.nav-section-label {
-  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.13em; color: var(--muted2); padding: 0 8px; margin: 16px 0 6px;
-}
-.nav-section-label:first-child { margin-top: 0; }
-.nav-item {
-  display: flex; align-items: center; gap: 9px;
-  padding: 8px 10px; border-radius: 8px; cursor: pointer; text-decoration: none;
-  font-size: 0.82rem; font-weight: 500; color: var(--muted);
-  transition: background 0.12s, color 0.12s; position: relative;
-  user-select: none; margin-bottom: 1px;
-}
-.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--sub); }
-.nav-item.active { background: rgba(37,99,235,0.1); color: var(--sky); }
-.nav-item.active::before {
-  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 2px; height: 16px; background: var(--sky); border-radius: 0 2px 2px 0;
-}
-.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.nav-item .nav-lock { margin-left: auto; width: 13px; height: 13px; stroke: var(--muted2); stroke-width: 1.8; }
-.nav-item.locked { opacity: 0.6; cursor: default; }
-.nav-item.locked:hover { background: none; color: var(--muted); }
-.nav-badge { margin-left: auto; font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 100px; }
-.badge-new { background: rgba(37,99,235,0.15); color: var(--sky); border: 1px solid rgba(37,99,235,0.2); }
-.badge-pro { background: rgba(245,158,11,0.1); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
-.badge-count { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
-.sidebar-footer { border-top: 1px solid var(--border); padding: 12px 10px; flex-shrink: 0; }
-.user-tile { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background 0.12s; }
-.user-tile:hover { background: rgba(255,255,255,0.04); }
-.user-avatar { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #2563eb, #60a5fa); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: white; flex-shrink: 0; }
-.user-info { flex: 1; min-width: 0; }
-.user-name { font-size: 0.78rem; font-weight: 600; color: var(--main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.user-role { font-size: 0.68rem; color: var(--muted); }
-.user-tile svg { width: 14px; height: 14px; flex-shrink: 0; stroke: var(--muted); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-
-/* ══════════════════════════════════════════════════════════════
-   MAIN CONTENT AREA
-══════════════════════════════════════════════════════════════ */
-.main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; min-width: 0; }
-.topbar {
-  height: var(--topbar-h); flex-shrink: 0; display: flex; align-items: center;
-  padding: 0 28px; gap: 16px; border-bottom: 1px solid var(--border);
-  background: rgba(2,6,23,0.5); backdrop-filter: blur(20px);
-}
-.topbar-title { font-size: 0.85rem; font-weight: 600; color: var(--main); display: flex; align-items: center; gap: 8px; }
-.topbar-title svg { width: 15px; height: 15px; stroke: var(--sky); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-.btn-topbar { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: background 0.15s; }
-.btn-topbar-primary { background: var(--accent); color: white; }
-.btn-topbar-primary:hover { background: var(--accent-h); }
-.btn-topbar-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-.btn-topbar-ghost:hover { color: var(--main); border-color: var(--border2); }
-.btn-topbar svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.content-scroll { flex: 1; overflow-y: auto; padding: 28px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent; }
-.content-scroll::-webkit-scrollbar { width: 4px; }
-.content-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
-.view { display: none; animation: viewIn 0.2s ease; }
-.view.active { display: block; }
-@keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ══════════════════════════════════════════════════════════════
-   SHARED COMPONENTS
-══════════════════════════════════════════════════════════════ */
-.page-header { margin-bottom: 24px; }
-.page-header h2 { font-family: 'Instrument Serif', serif; font-size: 1.6rem; font-weight: 400; letter-spacing: -0.02em; color: var(--main); margin-bottom: 4px; }
-.page-header p { font-size: 0.82rem; color: var(--muted); }
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-.stats-grid-4 { grid-template-columns: repeat(4, 1fr); }
-.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; transition: border-color 0.15s; }
-.stat-card:hover { border-color: var(--border2); }
-.stat-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 10px; }
-.stat-value { font-size: 1.7rem; font-weight: 700; color: var(--main); line-height: 1; }
-.stat-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
-.panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-.panel-title { font-size: 0.82rem; font-weight: 600; color: var(--main); }
-.panel-sub { font-size: 0.72rem; color: var(--muted); margin-left: auto; }
-.panel-body { padding: 20px; }
-
-/* Band/risk pills — used by both diagnostic and registry */
-.band-pill { font-size: 0.67rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; white-space: nowrap; }
-.band-low      { background: rgba(34,197,94,0.1);  color: #4ade80;  border: 1px solid rgba(34,197,94,0.15); }
-.band-lowmod   { background: rgba(34,197,94,0.07); color: #86efac;  border: 1px solid rgba(34,197,94,0.1); }
-.band-moderate { background: rgba(234,179,8,0.1);  color: #fde047;  border: 1px solid rgba(234,179,8,0.15); }
-.band-high     { background: rgba(239,68,68,0.1);  color: #fca5a5;  border: 1px solid rgba(239,68,68,0.15); }
-.band-critical { background: rgba(239,68,68,0.15); color: #f87171;  border: 1px solid rgba(239,68,68,0.2); }
-.score-low      { color: #4ade80; }
-.score-lowmod   { color: #86efac; }
-.score-moderate { color: #fde047; }
-.score-high     { color: #fca5a5; }
-.score-critical { color: #f87171; }
-
-/* EU AI Act risk tier pills */
-.tier-pill { font-size: 0.65rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; white-space: nowrap; text-transform: capitalize; }
-.tier-unacceptable { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
-.tier-high         { background: rgba(239,68,68,0.1);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.15); }
-.tier-limited      { background: rgba(234,179,8,0.1);  color: #fde047; border: 1px solid rgba(234,179,8,0.15); }
-.tier-minimal      { background: rgba(34,197,94,0.1);  color: #4ade80; border: 1px solid rgba(34,197,94,0.15); }
-.tier-none         { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
-
-/* Deployment status pills */
-.status-pill { font-size: 0.65rem; font-weight: 700; padding: 3px 9px; border-radius: 100px; text-transform: capitalize; white-space: nowrap; }
-.status-production      { background: rgba(34,197,94,0.08);  color: #4ade80;  border: 1px solid rgba(34,197,94,0.15); }
-.status-pilot           { background: rgba(96,165,250,0.08);  color: #93c5fd;  border: 1px solid rgba(96,165,250,0.15); }
-.status-development     { background: rgba(167,139,250,0.08); color: #c4b5fd;  border: 1px solid rgba(167,139,250,0.15); }
-.status-planned         { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
-.status-decommissioned  { background: rgba(255,255,255,0.03); color: var(--muted2); border: 1px solid var(--border); }
-
-/* Compliance status */
-.cstatus-pill { font-size: 0.62rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
-.cstatus-compliant      { background: rgba(34,197,94,0.1);  color: #4ade80;  border: 1px solid rgba(34,197,94,0.15); }
-.cstatus-in_progress    { background: rgba(96,165,250,0.08);  color: #93c5fd;  border: 1px solid rgba(96,165,250,0.15); }
-.cstatus-not_started    { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
-.cstatus-non_compliant  { background: rgba(239,68,68,0.1);  color: #fca5a5;  border: 1px solid rgba(239,68,68,0.15); }
-.cstatus-not_applicable { background: rgba(255,255,255,0.03); color: var(--muted2); border: 1px solid var(--border); }
-
-/* Buttons */
-.btn-dl { background: var(--accent); color: white; border: none; padding: 7px 14px; border-radius: 7px; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: background 0.15s; display: flex; align-items: center; gap: 5px; }
-.btn-dl:hover { background: var(--accent-h); }
-.btn-dl svg { width: 11px; height: 11px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.btn-pdf { background: transparent; color: var(--sub); border: 1px solid var(--border2); padding: 7px 14px; border-radius: 7px; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: all 0.15s; display: flex; align-items: center; gap: 5px; }
-.btn-pdf:hover { background: rgba(255,255,255,0.04); color: var(--main); border-color: rgba(255,255,255,0.18); }
-.btn-pdf svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.btn-pdf:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-unlock { background: transparent; color: var(--sky); border: 1px solid rgba(96,165,250,0.25); padding: 7px 14px; border-radius: 7px; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; text-decoration: none; transition: background 0.15s, border-color 0.15s; }
-.btn-unlock:hover { background: rgba(96,165,250,0.07); border-color: rgba(96,165,250,0.4); }
-
-/* Result cards (diagnostic reports) */
-.result-list { display: flex; flex-direction: column; gap: 8px; }
-.result-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; transition: border-color 0.15s, transform 0.12s; }
-.result-card:hover { border-color: var(--border2); transform: translateX(2px); }
-.result-org { font-size: 0.88rem; font-weight: 600; color: var(--main); margin-bottom: 3px; }
-.result-meta { font-size: 0.72rem; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
-.result-meta span::before { content: '·'; margin-right: 10px; color: var(--muted2); }
-.result-meta span:first-child::before { display: none; }
-.result-right { display: flex; align-items: center; gap: 10px; }
-.score-badge { text-align: right; }
-.score-num { font-size: 1.3rem; font-weight: 700; line-height: 1; }
-.score-lbl { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-
-/* Locked/empty/loading states */
-.locked-view { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 380px; text-align: center; }
-.locked-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 1px solid var(--border); }
-.locked-icon svg { width: 22px; height: 22px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.locked-title { font-family: 'Instrument Serif', serif; font-size: 1.3rem; font-weight: 400; color: var(--main); margin-bottom: 8px; }
-.locked-desc { font-size: 0.82rem; color: var(--muted); max-width: 320px; line-height: 1.7; margin-bottom: 24px; }
-.locked-features { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; text-align: left; width: 280px; }
-.locked-feat { display: flex; align-items: center; gap: 10px; font-size: 0.78rem; color: var(--sub); }
-.locked-feat svg { width: 13px; height: 13px; stroke: var(--sky); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-.btn-upgrade { display: inline-flex; align-items: center; gap: 7px; background: var(--accent); color: white; padding: 10px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: background 0.15s; }
-.btn-upgrade:hover { background: var(--accent-h); }
-.btn-upgrade svg { width: 12px; height: 12px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.empty-state { text-align: center; padding: 56px 24px; }
-.empty-state h4 { font-size: 0.9rem; font-weight: 600; color: var(--main); margin-bottom: 6px; }
-.empty-state p { font-size: 0.78rem; color: var(--muted); margin-bottom: 20px; }
-.loading-state { text-align: center; padding: 56px; color: var(--muted); font-size: 0.82rem; }
-
-/* Dashboard */
-.welcome-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 24px; position: relative; overflow: hidden; }
-.welcome-bar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, var(--accent), transparent 50%); }
-.welcome-avatar { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #1e40af, #3b82f6); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: white; }
-.welcome-text h3 { font-family: 'Instrument Serif', serif; font-size: 1.1rem; font-weight: 400; color: var(--main); }
-.welcome-text p { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-.welcome-actions { margin-left: auto; display: flex; gap: 8px; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.78rem; }
-.activity-item:last-child { border-bottom: none; padding-bottom: 0; }
-.activity-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-.activity-body { flex: 1; color: var(--sub); line-height: 1.5; }
-.activity-body strong { color: var(--main); font-weight: 500; }
-.activity-time { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
-
-/* Settings */
-.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.field-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
-.field-label .req { color: var(--red); margin-left: 2px; }
-.field-input {
-  width: 100%; padding: 9px 12px;
-  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--main);
-  font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
-  outline: none; transition: border-color 0.15s, background 0.15s;
-  -webkit-appearance: none; margin-bottom: 12px;
-}
-.field-input:focus { border-color: rgba(37,99,235,0.4); background: rgba(37,99,235,0.02); }
-.field-input[disabled] { opacity: 0.45; cursor: not-allowed; }
-select.field-input { cursor: pointer; }
-textarea.field-input { resize: vertical; min-height: 80px; }
-
-/* Paywall */
-.paywall-banner { background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(8,15,35,0.8)); border: 1px solid rgba(37,99,235,0.2); border-radius: 12px; padding: 18px 22px; display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
-.paywall-banner h4 { font-size: 0.88rem; font-weight: 600; color: var(--main); margin-bottom: 3px; }
-.paywall-banner p { font-size: 0.76rem; color: var(--muted); }
-.paywall-banner a { margin-left: auto; flex-shrink: 0; background: var(--accent); color: white; padding: 8px 16px; border-radius: 7px; font-size: 0.78rem; font-weight: 600; text-decoration: none; white-space: nowrap; transition: background 0.15s; }
-.paywall-banner a:hover { background: var(--accent-h); }
-
-/* Referral */
-.invite-box { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; gap: 0; overflow: hidden; }
-.invite-url { flex: 1; padding: 10px 12px; font-size: 0.78rem; color: var(--sub); font-family: 'DM Sans', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.invite-copy { padding: 10px 14px; background: rgba(37,99,235,0.12); border-left: 1px solid var(--border); cursor: pointer; font-size: 0.72rem; font-weight: 600; color: var(--sky); transition: background 0.15s; white-space: nowrap; border: none; font-family: 'DM Sans', sans-serif; }
-.invite-copy:hover { background: rgba(37,99,235,0.2); }
-
-/* ══════════════════════════════════════════════════════════════
-   REGISTRY-SPECIFIC COMPONENTS
-══════════════════════════════════════════════════════════════ */
-
-/* System table */
-.sys-table { width: 100%; border-collapse: collapse; }
-.sys-table thead tr { border-bottom: 1px solid var(--border); }
-.sys-table th { padding: 10px 14px; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); text-align: left; white-space: nowrap; }
-.sys-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.1s; cursor: pointer; }
-.sys-table tbody tr:last-child { border-bottom: none; }
-.sys-table tbody tr:hover { background: rgba(255,255,255,0.02); }
-.sys-table td { padding: 13px 14px; font-size: 0.8rem; vertical-align: middle; }
-.sys-name { font-weight: 600; color: var(--main); margin-bottom: 2px; }
-.sys-desc { font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
-
-/* Filter bar */
-.filter-btn { padding: 4px 12px; border-radius: 100px; font-size: 0.72rem; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.12s; }
-.filter-btn:hover { color: var(--sub); border-color: var(--border2); }
-.filter-btn.active { background: rgba(37,99,235,0.1); color: var(--sky); border-color: rgba(37,99,235,0.2); }
-
-/* Tabs */
-.tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 20px; }
-.tab-btn { padding: 10px 16px; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--muted); font-size: 0.78rem; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; margin-bottom: -1px; }
-.tab-btn:hover { color: var(--sub); }
-.tab-btn.active { color: var(--sky); border-bottom-color: var(--sky); }
-.tab-panel { display: none; padding: 20px; }
-.tab-panel.active { display: block; }
-
-/* Meta grid */
-.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; }
-.meta-item label { display: block; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.10em; color: var(--muted); margin-bottom: 5px; }
-.meta-item span { font-size: 0.82rem; color: var(--sub); }
-.meta-id { font-family: 'DM Sans', monospace; font-size: 0.7rem !important; color: var(--muted) !important; }
-
-/* Compliance obligation row */
-.obligation-row { padding: 14px 0; border-bottom: 1px solid var(--border); }
-.obligation-row:last-child { border-bottom: none; }
-.obligation-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
-.obligation-info { flex: 1; }
-.obligation-title { font-size: 0.82rem; font-weight: 600; color: var(--main); margin-bottom: 2px; }
-.obligation-ref { font-size: 0.68rem; color: var(--muted); }
-.obligation-desc { font-size: 0.76rem; color: var(--muted); line-height: 1.6; margin-bottom: 8px; }
-.obligation-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.obligation-select { padding: 5px 10px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--main); font-family: 'DM Sans', sans-serif; font-size: 0.75rem; cursor: pointer; outline: none; }
-.obligation-select:focus { border-color: rgba(37,99,235,0.4); }
-.obligation-evidence { width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: var(--sub); font-family: 'DM Sans', sans-serif; font-size: 0.75rem; resize: vertical; min-height: 60px; outline: none; }
-.obligation-evidence:focus { border-color: rgba(37,99,235,0.4); }
-.framework-section { margin-bottom: 20px; }
-.framework-label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.13em; color: var(--sky); padding: 10px 0 6px; display: flex; align-items: center; gap: 10px; }
-.framework-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-/* Audit timeline */
-.audit-timeline { display: flex; flex-direction: column; }
-.audit-item { display: flex; gap: 14px; }
-.audit-line { display: flex; flex-direction: column; align-items: center; width: 18px; flex-shrink: 0; }
-.audit-node { width: 8px; height: 8px; border-radius: 50%; background: rgba(37,99,235,0.3); border: 1px solid rgba(96,165,250,0.3); margin-top: 14px; flex-shrink: 0; }
-.audit-connector { flex: 1; width: 1px; background: var(--border); margin-top: 4px; }
-.audit-content { flex: 1; padding: 10px 0 20px; }
-.audit-action { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; font-family: 'DM Sans', monospace; color: var(--sky); margin-bottom: 4px; }
-.audit-meta { font-size: 0.7rem; color: var(--muted); }
-.audit-changes { font-size: 0.68rem; color: var(--muted); background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-family: 'DM Sans', monospace; line-height: 1.6; margin-top: 6px; }
-
-/* Breadcrumb */
-.breadcrumb { display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--muted); cursor: pointer; background: none; border: none; padding: 0 0 18px; font-family: 'DM Sans', sans-serif; transition: color 0.12s; }
-.breadcrumb:hover { color: var(--sub); }
-.breadcrumb svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-/* Modal */
-.modal-overlay { position: fixed; inset: 0; z-index: 999; background: rgba(2,6,23,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-.modal-overlay.open { opacity: 1; pointer-events: all; }
-.modal { background: var(--sidebar); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; transform: translateY(12px); transition: transform 0.2s; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent; }
-.modal-overlay.open .modal { transform: translateY(0); }
-.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; position: sticky; top: 0; background: var(--sidebar); z-index: 2; }
-.modal-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.2rem; font-weight: 400; color: var(--main); margin-bottom: 3px; }
-.modal-header p { font-size: 0.78rem; color: var(--muted); }
-.modal-close { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 2px; transition: color 0.15s; }
-.modal-close:hover { color: var(--main); }
-.modal-body { padding: 20px 24px; }
-.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; position: sticky; bottom: 0; background: var(--sidebar); z-index: 2; }
-.section-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 14px; }
-.section-divider span { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.13em; color: var(--muted); white-space: nowrap; }
-.section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.field-group { margin-bottom: 14px; }
-.field-group .field-input { margin-bottom: 0; }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.field-error { font-size: 0.7rem; color: var(--red); margin-top: 4px; display: none; }
-.tier-suggestion { font-size: 0.72rem; color: var(--sky); background: rgba(37,99,235,0.06); border: 1px solid rgba(37,99,235,0.15); border-radius: 6px; padding: 8px 12px; margin-top: 8px; display: none; }
-
-/* Compliance progress bar */
-.cprogress-bar { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
-.cprogress-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
-
-/* Mobile */
-.mobile-toggle { display: none; }
-.sidebar-overlay { display: none; }
-
-@media(max-width: 768px) {
-  .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; z-index: 200; transition: left 0.25s cubic-bezier(0.16,1,0.3,1); }
-  .sidebar.open { left: 0; }
-  .sidebar-overlay { display: none; position: fixed; inset: 0; z-index: 199; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
-  .sidebar-overlay.show { display: block; }
-  .mobile-toggle { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: none; border: 1px solid var(--border); cursor: pointer; color: var(--sub); }
-  .mobile-toggle svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .stats-grid, .stats-grid-4 { grid-template-columns: 1fr 1fr; }
-  .two-col { grid-template-columns: 1fr; }
-  .settings-grid { grid-template-columns: 1fr; }
-  .result-card { grid-template-columns: 1fr; }
-  .result-right { flex-wrap: wrap; }
-  .welcome-actions { display: none; }
-  .content-scroll { padding: 20px 16px; }
-  .field-row { grid-template-columns: 1fr; }
-  .meta-grid { grid-template-columns: 1fr; }
-}
-@media(max-width: 480px) { .stats-grid, .stats-grid-4 { grid-template-columns: 1fr; } }
+:root{--bg:#020617;--sidebar:#050d1f;--surface:rgba(8,15,35,0.7);--surface2:rgba(10,18,42,0.9);--border:rgba(255,255,255,0.055);--border2:rgba(255,255,255,0.10);--accent:#2563eb;--accent-h:#1d4ed8;--sky:#60a5fa;--main:#f1f5f9;--sub:#94a3b8;--muted:#475569;--muted2:#334155;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--sidebar-w:228px;--topbar-h:56px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--sub);-webkit-font-smoothing:antialiased;overflow:hidden}
+.bg-ambient{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 50% 40% at 75% 50%,rgba(37,99,235,0.04) 0%,transparent 60%),radial-gradient(ellipse 40% 50% at 20% 20%,rgba(37,99,235,0.03) 0%,transparent 55%)}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,transparent,rgba(0,0,0,0.4) 20%,rgba(0,0,0,0.4) 80%,transparent)}
+.app{display:flex;height:100vh;position:relative;z-index:1}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:relative;z-index:10}
+.sidebar-logo{height:var(--topbar-h);display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.logo-mark{font-size:.92rem;font-weight:600;letter-spacing:-.02em;color:var(--main);text-decoration:none}.logo-mark em{font-family:'Instrument Serif',serif;font-style:italic;color:var(--sky)}
+.logo-badge{margin-left:auto;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--sky);background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);padding:2px 7px;border-radius:100px}
+.sidebar-nav{flex:1;overflow-y:auto;padding:14px 10px;scrollbar-width:none}.sidebar-nav::-webkit-scrollbar{display:none}
+.nav-section-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--muted2);padding:0 8px;margin:16px 0 6px}.nav-section-label:first-child{margin-top:0}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;text-decoration:none;font-size:.82rem;font-weight:500;color:var(--muted);transition:background .12s,color .12s;position:relative;user-select:none;margin-bottom:1px}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--sub)}.nav-item.active{background:rgba(37,99,235,0.1);color:var(--sky)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:16px;background:var(--sky);border-radius:0 2px 2px 0}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-item .nav-lock{margin-left:auto;width:13px;height:13px;stroke:var(--muted2);stroke-width:1.8}.nav-item.locked{opacity:.6;cursor:default}.nav-item.locked:hover{background:none;color:var(--muted)}
+.nav-badge{margin-left:auto;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:2px 6px;border-radius:100px}
+.badge-new{background:rgba(37,99,235,0.15);color:var(--sky);border:1px solid rgba(37,99,235,0.2)}.badge-count{background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border)}
+.sidebar-footer{border-top:1px solid var(--border);padding:12px 10px;flex-shrink:0}
+.user-tile{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .12s}.user-tile:hover{background:rgba(255,255,255,0.04)}
+.user-avatar{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#60a5fa);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:white;flex-shrink:0}
+.user-info{flex:1;min-width:0}.user-name{font-size:.78rem;font-weight:600;color:var(--main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.user-role{font-size:.68rem;color:var(--muted)}
+.user-tile>svg{width:14px;height:14px;flex-shrink:0;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
+.topbar{height:var(--topbar-h);flex-shrink:0;display:flex;align-items:center;padding:0 28px;gap:16px;border-bottom:1px solid var(--border);background:rgba(2,6,23,0.5);backdrop-filter:blur(20px)}
+.topbar-title{font-size:.85rem;font-weight:600;color:var(--main);display:flex;align-items:center;gap:8px}
+.topbar-title svg{width:15px;height:15px;stroke:var(--sky);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn-topbar{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:background .15s}
+.btn-topbar-primary{background:var(--accent);color:white}.btn-topbar-primary:hover{background:var(--accent-h)}
+.btn-topbar-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-topbar-ghost:hover{color:var(--main);border-color:var(--border2)}
+.btn-topbar svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.content-scroll{flex:1;overflow-y:auto;padding:28px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent}
+.content-scroll::-webkit-scrollbar{width:4px}.content-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);border-radius:4px}
+.view{display:none;animation:viewIn .2s ease}.view.active{display:block}@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-header{margin-bottom:24px}.page-header h2{font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:400;letter-spacing:-.02em;color:var(--main);margin-bottom:4px}.page-header p{font-size:.82rem;color:var(--muted)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}.stats-grid-4{grid-template-columns:repeat(4,1fr)}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;transition:border-color .15s}.stat-card:hover{border-color:var(--border2)}
+.stat-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:10px}.stat-value{font-size:1.7rem;font-weight:700;color:var(--main);line-height:1}.stat-sub{font-size:.72rem;color:var(--muted);margin-top:4px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.panel-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.panel-title{font-size:.82rem;font-weight:600;color:var(--main)}.panel-sub{font-size:.72rem;color:var(--muted);margin-left:auto}.panel-body{padding:20px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px}
+.meta-item label{display:block;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.10em;color:var(--muted);margin-bottom:5px}.meta-item span{font-size:.82rem;color:var(--sub)}.meta-id{font-family:'DM Sans',monospace;font-size:.7rem!important;color:var(--muted)!important}
+.band-pill{font-size:.67rem;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap}
+.band-low{background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.15)}.band-lowmod{background:rgba(34,197,94,0.07);color:#86efac;border:1px solid rgba(34,197,94,0.1)}.band-moderate{background:rgba(234,179,8,0.1);color:#fde047;border:1px solid rgba(234,179,8,0.15)}.band-high{background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.15)}.band-critical{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
+.score-low{color:#4ade80}.score-lowmod{color:#86efac}.score-moderate{color:#fde047}.score-high{color:#fca5a5}.score-critical{color:#f87171}
+.tier-pill{font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap;text-transform:capitalize}
+.tier-unacceptable{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.25)}.tier-high{background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.15)}.tier-limited{background:rgba(234,179,8,0.1);color:#fde047;border:1px solid rgba(234,179,8,0.15)}.tier-minimal{background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.15)}.tier-none{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border)}
+.status-pill{font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:100px;text-transform:capitalize;white-space:nowrap}
+.status-production{background:rgba(34,197,94,0.08);color:#4ade80;border:1px solid rgba(34,197,94,0.15)}.status-pilot{background:rgba(96,165,250,0.08);color:#93c5fd;border:1px solid rgba(96,165,250,0.15)}.status-development{background:rgba(167,139,250,0.08);color:#c4b5fd;border:1px solid rgba(167,139,250,0.15)}.status-planned{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border)}.status-decommissioned{background:rgba(255,255,255,0.03);color:var(--muted2);border:1px solid var(--border)}
+.role-chip{font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:.07em}
+.role-owner{background:rgba(167,139,250,0.1);color:#c4b5fd;border:1px solid rgba(167,139,250,0.2)}.role-admin{background:rgba(34,197,94,0.08);color:#4ade80;border:1px solid rgba(34,197,94,0.15)}.role-editor{background:rgba(96,165,250,0.08);color:#93c5fd;border:1px solid rgba(96,165,250,0.15)}.role-viewer{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border)}
+.btn-dl{background:var(--accent);color:white;border:none;padding:7px 14px;border-radius:7px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background .15s;display:flex;align-items:center;gap:5px}.btn-dl:hover{background:var(--accent-h)}.btn-dl svg{width:11px;height:11px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-pdf{background:transparent;color:var(--sub);border:1px solid var(--border2);padding:7px 14px;border-radius:7px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:5px}.btn-pdf:hover{background:rgba(255,255,255,0.04);color:var(--main)}.btn-pdf svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.btn-pdf:disabled{opacity:.45;cursor:not-allowed}
+.btn-unlock{background:transparent;color:var(--sky);border:1px solid rgba(96,165,250,0.25);padding:7px 14px;border-radius:7px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;text-decoration:none;transition:background .15s,border-color .15s}.btn-unlock:hover{background:rgba(96,165,250,0.07);border-color:rgba(96,165,250,0.4)}
+.btn-upgrade{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:white;padding:10px 20px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:background .15s}.btn-upgrade:hover{background:var(--accent-h)}.btn-upgrade svg{width:12px;height:12px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.result-list{display:flex;flex-direction:column;gap:8px}
+.result-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;transition:border-color .15s,transform .12s}.result-card:hover{border-color:var(--border2);transform:translateX(2px)}
+.result-org{font-size:.88rem;font-weight:600;color:var(--main);margin-bottom:3px}.result-meta{font-size:.72rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}.result-meta span::before{content:'·';margin-right:10px;color:var(--muted2)}.result-meta span:first-child::before{display:none}.result-right{display:flex;align-items:center;gap:10px}.score-badge{text-align:right}.score-num{font-size:1.3rem;font-weight:700;line-height:1}.score-lbl{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field-label{font-size:.72rem;font-weight:600;color:var(--muted);margin-bottom:6px;display:block}.field-label .req{color:var(--red);margin-left:2px}
+.field-input{width:100%;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;color:var(--main);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;transition:border-color .15s,background .15s;-webkit-appearance:none;margin-bottom:12px}.field-input:focus{border-color:rgba(37,99,235,0.4);background:rgba(37,99,235,0.02)}.field-input[disabled]{opacity:.45;cursor:not-allowed}
+select.field-input{cursor:pointer;color-scheme:dark}select.field-input option{background:#0a1628;color:var(--main)}
+textarea.field-input{resize:vertical;min-height:80px}
+.field-group{margin-bottom:14px}.field-group .field-input{margin-bottom:0}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field-error{font-size:.7rem;color:var(--red);margin-top:4px;display:none}
+.tier-suggestion{font-size:.72rem;color:var(--sky);background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.15);border-radius:6px;padding:8px 12px;margin-top:8px;display:none}
+.welcome-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:24px;position:relative;overflow:hidden}.welcome-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent 50%)}
+.welcome-avatar{width:44px;height:44px;border-radius:12px;flex-shrink:0;background:linear-gradient(135deg,#1e40af,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:white}
+.welcome-text h3{font-family:'Instrument Serif',serif;font-size:1.1rem;font-weight:400;color:var(--main)}.welcome-text p{font-size:.78rem;color:var(--muted);margin-top:2px}.welcome-actions{margin-left:auto;display:flex;gap:8px}
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:.78rem}.activity-item:last-child{border-bottom:none;padding-bottom:0}.activity-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0}.activity-body{flex:1;color:var(--sub);line-height:1.5}.activity-body strong{color:var(--main);font-weight:500}.activity-time{font-size:.68rem;color:var(--muted);white-space:nowrap}
+.paywall-banner{background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(8,15,35,0.8));border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:16px;margin-bottom:20px}.paywall-banner h4{font-size:.88rem;font-weight:600;color:var(--main);margin-bottom:3px}.paywall-banner p{font-size:.76rem;color:var(--muted)}.paywall-banner a{margin-left:auto;flex-shrink:0;background:var(--accent);color:white;padding:8px 16px;border-radius:7px;font-size:.78rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s}.paywall-banner a:hover{background:var(--accent-h)}
+.invite-box{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;overflow:hidden}.invite-url{flex:1;padding:10px 12px;font-size:.78rem;color:var(--sub);font-family:'DM Sans',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.invite-copy{padding:10px 14px;background:rgba(37,99,235,0.12);border-left:1px solid var(--border);cursor:pointer;font-size:.72rem;font-weight:600;color:var(--sky);transition:background .15s;white-space:nowrap;border:none;font-family:'DM Sans',sans-serif}.invite-copy:hover{background:rgba(37,99,235,0.2)}
+.sys-table{width:100%;border-collapse:collapse}.sys-table thead tr{border-bottom:1px solid var(--border)}.sys-table th{padding:10px 14px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);text-align:left;white-space:nowrap}.sys-table tbody tr{border-bottom:1px solid rgba(255,255,255,0.03);transition:background .1s;cursor:pointer}.sys-table tbody tr:last-child{border-bottom:none}.sys-table tbody tr:hover{background:rgba(255,255,255,0.02)}.sys-table td{padding:13px 14px;font-size:.8rem;vertical-align:middle}.sys-name{font-weight:600;color:var(--main);margin-bottom:2px}.sys-desc{font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.filter-btn{padding:4px 12px;border-radius:100px;font-size:.72rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .12s}.filter-btn:hover{color:var(--sub);border-color:var(--border2)}.filter-btn.active{background:rgba(37,99,235,0.1);color:var(--sky);border-color:rgba(37,99,235,0.2)}
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 20px}.tab-btn{padding:10px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;margin-bottom:-1px}.tab-btn:hover{color:var(--sub)}.tab-btn.active{color:var(--sky);border-bottom-color:var(--sky)}.tab-panel{display:none;padding:20px}.tab-panel.active{display:block}
+.cprogress-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}.cprogress-fill{height:100%;border-radius:2px;transition:width .4s ease}
+.breadcrumb{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted);cursor:pointer;background:none;border:none;padding:0 0 18px;font-family:'DM Sans',sans-serif;transition:color .12s}.breadcrumb:hover{color:var(--sub)}.breadcrumb svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.obligation-row{padding:14px 0;border-bottom:1px solid var(--border)}.obligation-row:last-child{border-bottom:none}.obligation-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px}.obligation-info{flex:1}.obligation-title{font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px}.obligation-ref{font-size:.68rem;color:var(--muted)}.obligation-desc{font-size:.76rem;color:var(--muted);line-height:1.6;margin-bottom:8px}
+.obligation-select{padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--main);font-family:'DM Sans',sans-serif;font-size:.75rem;cursor:pointer;outline:none;color-scheme:dark}.obligation-select option{background:#0a1628;color:var(--main)}.obligation-select:focus{border-color:rgba(37,99,235,0.4)}
+.obligation-evidence{width:100%;margin-top:8px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);color:var(--sub);font-family:'DM Sans',sans-serif;font-size:.75rem;resize:vertical;min-height:60px;outline:none}.obligation-evidence:focus{border-color:rgba(37,99,235,0.4)}
+.framework-section{margin-bottom:20px}.framework-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--sky);padding:10px 0 6px;display:flex;align-items:center;gap:10px}.framework-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.audit-timeline{display:flex;flex-direction:column}.audit-item{display:flex;gap:14px}.audit-line{display:flex;flex-direction:column;align-items:center;width:18px;flex-shrink:0}.audit-node{width:8px;height:8px;border-radius:50%;background:rgba(37,99,235,0.3);border:1px solid rgba(96,165,250,0.3);margin-top:14px;flex-shrink:0}.audit-connector{flex:1;width:1px;background:var(--border);margin-top:4px}.audit-content{flex:1;padding:10px 0 20px}.audit-action{font-size:.8rem;font-weight:500;color:var(--main);margin-bottom:4px}.audit-meta{font-size:.7rem;color:var(--muted)}
+.member-row{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.03)}.member-row:last-child{border-bottom:none}.member-avatar{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,rgba(37,99,235,0.3),rgba(96,165,250,0.15));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--sky);flex-shrink:0}.member-info{flex:1;min-width:0}.member-name{font-size:.82rem;font-weight:600;color:var(--main)}.member-email{font-size:.7rem;color:var(--muted);margin-top:1px}
+.locked-view{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:380px;text-align:center}.locked-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid var(--border)}.locked-icon svg{width:22px;height:22px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.locked-title{font-family:'Instrument Serif',serif;font-size:1.3rem;font-weight:400;color:var(--main);margin-bottom:8px}.locked-desc{font-size:.82rem;color:var(--muted);max-width:320px;line-height:1.7;margin-bottom:24px}.locked-features{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;text-align:left;width:280px}.locked-feat{display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--sub)}.locked-feat svg{width:13px;height:13px;stroke:var(--sky);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.empty-state{text-align:center;padding:56px 24px}.empty-state h4{font-size:.9rem;font-weight:600;color:var(--main);margin-bottom:6px}.empty-state p{font-size:.78rem;color:var(--muted);margin-bottom:20px}.loading-state{text-align:center;padding:56px;color:var(--muted);font-size:.82rem}
+.modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(2,6,23,0.8);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s}.modal-overlay.open{opacity:1;pointer-events:all}.modal{background:var(--sidebar);border:1px solid var(--border);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;transform:translateY(12px);transition:transform .2s;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent}.modal-overlay.open .modal{transform:translateY(0)}.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;position:sticky;top:0;background:var(--sidebar);z-index:2}.modal-header h3{font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:400;color:var(--main);margin-bottom:3px}.modal-header p{font-size:.78rem;color:var(--muted)}.modal-close{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;transition:color .15s}.modal-close:hover{color:var(--main)}.modal-body{padding:20px 24px}.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--sidebar);z-index:2}
+.section-divider{display:flex;align-items:center;gap:12px;margin:20px 0 14px}.section-divider span{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);white-space:nowrap}.section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.mobile-toggle{display:none}.sidebar-overlay{display:none}
+@media(max-width:768px){.sidebar{position:fixed;left:-100%;top:0;bottom:0;z-index:200;transition:left .25s cubic-bezier(0.16,1,0.3,1)}.sidebar.open{left:0}.sidebar-overlay{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)}.sidebar-overlay.show{display:block}.mobile-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:none;border:1px solid var(--border);cursor:pointer;color:var(--sub)}.mobile-toggle svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.stats-grid,.stats-grid-4{grid-template-columns:1fr 1fr}.two-col,.settings-grid,.field-row,.meta-grid{grid-template-columns:1fr}.result-card{grid-template-columns:1fr}.welcome-actions{display:none}.content-scroll{padding:20px 16px}}
+@media(max-width:480px){.stats-grid,.stats-grid-4{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
-<div class="bg-ambient"></div>
-<div class="bg-grid"></div>
-<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
-
+<div class="bg-ambient"></div><div class="bg-grid"></div><div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 <div class="app">
+<aside class="sidebar" id="sidebar"><div class="sidebar-logo"><a href="index.html" class="logo-mark">mla<em>group.</em></a><span class="logo-badge">Portal</span></div>
+<nav class="sidebar-nav">
+<div class="nav-section-label">Workspace</div>
+<div class="nav-item active" onclick="navigate('dashboard',this)"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>
+<div class="nav-item" onclick="navigate('reports',this)"><svg viewBox="0 0 16 16"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/></svg>Reports<span class="nav-badge badge-new" id="report-count-badge" style="display:none;"></span></div>
+<div class="nav-section-label">Registry</div>
+<div class="nav-item" id="nav-registry" onclick="navigateRegistry(this)"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg>AI Systems<span class="nav-badge badge-count" id="sys-count-badge" style="display:none;"></span></div>
+<div class="nav-item" id="nav-org" onclick="navigateOrg(this)"><svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/></svg>Organisation</div>
+<div class="nav-section-label">Account</div>
+<div class="nav-item" onclick="navigate('settings',this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/></svg>Settings</div>
+<div class="nav-section-label">Growth</div>
+<div class="nav-item" onclick="navigate('referral',this)"><svg viewBox="0 0 16 16"><circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/></svg>Referral<span class="nav-badge badge-new">New</span></div>
+<div class="nav-section-label">Intelligence</div>
+<div class="nav-item locked" onclick="navigate('analytics',this)"><svg viewBox="0 0 16 16"><path d="M1 12l4-4 3 3 4-5 3 3"/></svg>Analytics<svg class="nav-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg></div>
+</nav>
+<div class="sidebar-footer"><div class="user-tile" onclick="navigate('settings',document.querySelector('[onclick*=settings]'))"><div class="user-avatar" id="sidebar-avatar">?</div><div class="user-info"><div class="user-name" id="sidebar-name">Loading…</div><div class="user-role">Governance User</div></div><svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg></div></div>
+</aside>
+<div class="main">
+<div class="topbar"><button class="mobile-toggle" onclick="openSidebar()"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button><div class="topbar-title" id="topbar-title"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div><div class="topbar-right" id="topbar-right"><a href="diagnostic.html" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>New Diagnostic</a><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button></div></div>
+<div class="content-scroll">
 
-  <!-- ══════════════════════ SIDEBAR ══════════════════════ -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <a href="index.html" class="logo-mark">mla<em>group.</em></a>
-      <span class="logo-badge">Portal</span>
-    </div>
+<div id="view-dashboard" class="view active">
+<div class="welcome-bar"><div class="welcome-avatar" id="dash-avatar">?</div><div class="welcome-text"><h3>Good to see you<span id="dash-name"></span></h3><p id="dash-subtext">Your AI governance portal</p></div><div class="welcome-actions"><a href="diagnostic.html" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>New Diagnostic</a></div></div>
+<div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Diagnostics</div><div class="stat-value" id="dash-count">—</div><div class="stat-sub">Assessments</div></div><div class="stat-card"><div class="stat-label">Latest Score</div><div class="stat-value" id="dash-score">—</div><div class="stat-sub">Governance maturity</div></div><div class="stat-card"><div class="stat-label">AI Systems</div><div class="stat-value" id="dash-sys-count">—</div><div class="stat-sub">In registry</div></div><div class="stat-card"><div class="stat-label">Compliance</div><div class="stat-value" id="dash-compliance">—</div><div class="stat-sub">Overall progress</div></div></div>
+<div class="panel"><div class="panel-header"><div class="panel-title">Recent Activity</div></div><div class="panel-body" id="dash-activity"><div class="loading-state" style="padding:20px 0;">Loading…</div></div></div>
+<div class="panel"><div class="panel-header"><div class="panel-title">Quick Actions</div></div><div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+<div onclick="navigate('reports',document.querySelectorAll('.nav-item')[1])" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">View Reports</div><div style="font-size:.7rem;color:var(--muted);">Download your PDFs</div></div>
+<div onclick="navigateRegistry(document.getElementById('nav-registry'))" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">AI Registry</div><div style="font-size:.7rem;color:var(--muted);">Document AI systems</div></div>
+<a href="diagnostic.html" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;text-decoration:none;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M8 1v14M1 8h14"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">New Diagnostic</div><div style="font-size:.7rem;color:var(--muted);">Run fresh assessment</div></a>
+</div></div></div>
 
-    <nav class="sidebar-nav">
-      <div class="nav-section-label">Workspace</div>
+<div id="view-reports" class="view"><div class="page-header"><h2>Reports</h2><p>Your AI governance diagnostic history and PDF downloads.</p></div><div id="paywall-banner" style="display:none;" class="paywall-banner"><div><h4>Unlock your full AI Governance Risk Report</h4><p>Complete board-ready PDF with findings, regulatory mapping, and remediation roadmap.</p></div><a href="pricing.html">Get Full Report — £295</a></div><div id="reports-container" class="loading-state">Loading your reports…</div></div>
 
-      <div class="nav-item active" onclick="navigate('dashboard', this)">
-        <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
-        Dashboard
-      </div>
+<div id="view-settings" class="view"><div class="page-header"><h2>Account Settings</h2><p>Manage your profile, credentials and preferences.</p></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Profile Information</div></div><div class="panel-body"><div class="settings-grid"><div><label class="field-label">First name</label><input type="text" class="field-input" id="set-first" placeholder="—"></div><div><label class="field-label">Last name</label><input type="text" class="field-input" id="set-last" placeholder="—"></div></div><label class="field-label">Organisation</label><input type="text" class="field-input" id="set-org" placeholder="—"><label class="field-label">Email address</label><input type="email" class="field-input" id="set-email" disabled><div style="font-size:.7rem;color:var(--muted);margin-top:-6px;margin-bottom:12px;">Contact support to change your email.</div><button onclick="saveProfile()" class="btn-topbar btn-topbar-primary" style="margin-top:4px;">Save changes</button></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Password</div></div><div class="panel-body"><label class="field-label">New password</label><input type="password" class="field-input" id="set-pw" placeholder="Min. 8 characters"><label class="field-label">Confirm password</label><input type="password" class="field-input" id="set-pw2" placeholder="Repeat password"><div id="set-pw-msg" style="font-size:.75rem;margin-bottom:12px;display:none;"></div><button onclick="changePassword()" class="btn-topbar btn-topbar-ghost">Update password</button></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Danger Zone</div></div><div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;"><div><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:3px;">Sign out of all devices</div><div style="font-size:.75rem;color:var(--muted);">Ends all active sessions.</div></div><button onclick="signOut()" class="btn-topbar btn-topbar-ghost" style="color:var(--red);border-color:rgba(239,68,68,0.2);">Sign out</button></div></div></div>
 
-      <div class="nav-item" onclick="navigate('reports', this)">
-        <svg viewBox="0 0 16 16"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/></svg>
-        Reports
-        <span class="nav-badge badge-new" id="report-count-badge" style="display:none;"></span>
-      </div>
+<div id="view-referral" class="view"><div class="page-header"><h2>Referral Programme</h2><p>Refer colleagues and earn credit.</p></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;"><div class="stat-card"><div class="stat-label">Referrals Sent</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Converted</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Credit Earned</div><div class="stat-value">£0</div></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Your Referral Link</div></div><div class="panel-body"><p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Share this link with colleagues. When they purchase a report you'll both receive credit.</p><div class="invite-box"><div class="invite-url" id="referral-link">mlagroup.co.uk/ref/loading…</div><button class="invite-copy" onclick="copyReferral()">Copy link</button></div></div></div></div>
 
-      <div class="nav-section-label">Registry</div>
+<div id="view-analytics" class="view"><div class="locked-view"><div class="locked-icon" style="background:rgba(37,99,235,0.06);"><svg viewBox="0 0 22 22" stroke="var(--sky)"><path d="M1 16l5-6 4 4 5-7 6 6"/></svg></div><div class="locked-title">Analytics & Usage</div><div class="locked-desc">Track report views, downloads, risk trends, and team activity.</div><a href="mailto:fraser@mlagroup.co.uk" class="btn-upgrade">Request early access <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2l4 4-4 4"/></svg></a></div></div>
 
-      <div class="nav-item" id="nav-registry" onclick="navigateRegistry(this)">
-        <svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg>
-        AI Systems
-        <span class="nav-badge badge-count" id="sys-count-badge" style="display:none;"></span>
-      </div>
+<div id="view-registry" class="view"><div class="page-header"><h2>AI Systems Registry</h2><p id="reg-subtext">Document and classify your organisation's AI systems.</p></div><div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Total Systems</div><div class="stat-value" id="reg-total">—</div><div class="stat-sub">Registered</div></div><div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value" style="color:#fca5a5;" id="reg-high">—</div><div class="stat-sub">EU AI Act tier</div></div><div class="stat-card"><div class="stat-label">In Production</div><div class="stat-value" style="color:#4ade80;" id="reg-prod">—</div><div class="stat-sub">Live systems</div></div><div class="stat-card"><div class="stat-label">Compliance</div><div class="stat-value" id="reg-compliance">—</div><div class="stat-sub" id="reg-compliance-sub">Overall progress</div></div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;"><span style="font-size:.72rem;color:var(--muted);">Filter:</span><button class="filter-btn active" onclick="setRegFilter('all',this)">All</button><button class="filter-btn" onclick="setRegFilter('production',this)">Production</button><button class="filter-btn" onclick="setRegFilter('pilot',this)">Pilot</button><button class="filter-btn" onclick="setRegFilter('development',this)">Development</button><button class="filter-btn" onclick="setRegFilter('planned',this)">Planned</button></div><div class="panel"><div class="panel-header"><div class="panel-title">Systems</div><div class="panel-sub" id="reg-table-count"></div></div><div id="reg-table-wrap"><div class="loading-state">Loading registry…</div></div></div></div>
 
-      <div class="nav-section-label">Account</div>
+<div id="view-registry-detail" class="view"><button class="breadcrumb" onclick="navigate('registry',document.getElementById('nav-registry'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>AI Systems Registry</button><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);letter-spacing:-.02em;" id="det-name">—</h2><span id="det-tier-badge"></span><span id="det-status-badge"></span></div><div style="display:flex;align-items:center;gap:12px;font-size:.75rem;color:var(--muted);flex-wrap:wrap;" id="det-subtitle"></div></div><button class="btn-topbar btn-topbar-primary" onclick="openEditSystem()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button></div><div class="panel" style="overflow:visible;"><div class="tab-bar"><button class="tab-btn active" onclick="switchDetailTab('overview',this)">Overview</button><button class="tab-btn" onclick="switchDetailTab('compliance',this)">Compliance</button><button class="tab-btn" onclick="switchDetailTab('audit',this)">Audit Log</button></div><div class="tab-panel active" id="tab-overview"></div><div class="tab-panel" id="tab-compliance"></div><div class="tab-panel" id="tab-audit"></div></div></div>
 
-      <div class="nav-item" onclick="navigate('settings', this)">
-        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/></svg>
-        Settings
-      </div>
+<div id="view-org" class="view"><div class="page-header"><h2>Organisation</h2><p>Entity profile, membership and access management.</p></div><div class="two-col"><div class="panel"><div class="panel-header"><div class="panel-title">Organisation Profile</div></div><div class="panel-body"><div class="meta-grid" id="org-profile-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Subscription</div></div><div class="panel-body"><div class="meta-grid" id="org-sub-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Members</div><div class="panel-sub" id="org-member-count"></div></div><div id="org-members-wrap"><div class="loading-state">Loading members…</div></div></div></div>
 
-      <div class="nav-section-label">Growth</div>
+</div></div></div>
 
-      <div class="nav-item" onclick="navigate('referral', this)">
-        <svg viewBox="0 0 16 16"><circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/></svg>
-        Referral
-        <span class="nav-badge badge-new">New</span>
-      </div>
-
-      <div class="nav-section-label">Intelligence</div>
-
-      <div class="nav-item locked" onclick="navigate('analytics', this)">
-        <svg viewBox="0 0 16 16"><path d="M1 12l4-4 3 3 4-5 3 3"/></svg>
-        Analytics
-        <svg class="nav-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
-      </div>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="user-tile" onclick="navigate('settings', document.querySelector('[onclick*=settings]'))">
-        <div class="user-avatar" id="sidebar-avatar">?</div>
-        <div class="user-info">
-          <div class="user-name" id="sidebar-name">Loading…</div>
-          <div class="user-role">Governance User</div>
-        </div>
-        <svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg>
-      </div>
-    </div>
-  </aside>
-
-  <!-- ══════════════════════ MAIN ══════════════════════ -->
-  <div class="main">
-
-    <div class="topbar">
-      <button class="mobile-toggle" onclick="openSidebar()">
-        <svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-      </button>
-      <div class="topbar-title" id="topbar-title">
-        <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
-        Dashboard
-      </div>
-      <div class="topbar-right" id="topbar-right">
-        <a href="diagnostic.html" class="btn-topbar btn-topbar-primary">
-          <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>
-          New Diagnostic
-        </a>
-        <button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>
-      </div>
-    </div>
-
-    <div class="content-scroll">
-
-      <!-- ══════ DASHBOARD VIEW ══════ -->
-      <div id="view-dashboard" class="view active">
-        <div class="welcome-bar">
-          <div class="welcome-avatar" id="dash-avatar">?</div>
-          <div class="welcome-text">
-            <h3>Good to see you<span id="dash-name"></span></h3>
-            <p id="dash-subtext">Your AI governance portal — reports, settings and more.</p>
-          </div>
-          <div class="welcome-actions">
-            <a href="diagnostic.html" class="btn-topbar btn-topbar-primary">
-              <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>
-              New Diagnostic
-            </a>
-          </div>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-label">Diagnostics Run</div><div class="stat-value" id="dash-count">—</div><div class="stat-sub">Total assessments</div></div>
-          <div class="stat-card"><div class="stat-label">Latest Score</div><div class="stat-value" id="dash-score">—</div><div class="stat-sub" id="dash-score-sub">Governance maturity</div></div>
-          <div class="stat-card"><div class="stat-label">Risk Band</div><div class="stat-value" id="dash-band" style="font-size:1rem;padding-top:6px;">—</div><div class="stat-sub" id="dash-date">No assessments yet</div></div>
-        </div>
-
-        <div class="two-col">
-          <div class="panel"><div class="panel-header"><div class="panel-title">Recent Activity</div></div><div class="panel-body" id="dash-activity"><div class="loading-state" style="padding:20px 0;">Loading…</div></div></div>
-          <div class="panel"><div class="panel-header"><div class="panel-title">Your Latest Assessment</div></div><div class="panel-body" id="dash-latest"><div class="loading-state" style="padding:20px 0;">Loading…</div></div></div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header"><div class="panel-title">Quick Actions</div></div>
-          <div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-            <div onclick="navigate('reports', document.querySelectorAll('.nav-item')[1])" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg>
-              <div style="font-size:0.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">View Reports</div>
-              <div style="font-size:0.7rem;color:var(--muted);">Download your PDFs</div>
-            </div>
-            <a href="diagnostic.html" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;text-decoration:none;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M8 1v14M1 8h14"/></svg>
-              <div style="font-size:0.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">New Diagnostic</div>
-              <div style="font-size:0.7rem;color:var(--muted);">Run fresh assessment</div>
-            </a>
-            <div onclick="navigateRegistry(document.getElementById('nav-registry'))" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg>
-              <div style="font-size:0.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">AI Registry</div>
-              <div style="font-size:0.7rem;color:var(--muted);">Document AI systems</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════ REPORTS VIEW ══════ -->
-      <div id="view-reports" class="view">
-        <div class="page-header"><h2>Reports</h2><p>Your AI governance diagnostic history and PDF downloads.</p></div>
-        <div id="paywall-banner" style="display:none;" class="paywall-banner">
-          <div><h4>Unlock your full AI Governance Risk Report</h4><p>Get the complete 8-page board-ready PDF with findings, regulatory mapping, and remediation roadmap.</p></div>
-          <a href="pricing.html">Get Full Report — £295</a>
-        </div>
-        <div id="reports-container" class="loading-state">Loading your reports…</div>
-      </div>
-
-      <!-- ══════ SETTINGS VIEW ══════ -->
-      <div id="view-settings" class="view">
-        <div class="page-header"><h2>Account Settings</h2><p>Manage your profile, credentials and preferences.</p></div>
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-header"><div class="panel-title">Profile Information</div><div class="panel-sub">Changes saved automatically</div></div>
-          <div class="panel-body">
-            <div class="settings-grid">
-              <div><label class="field-label">First name</label><input type="text" class="field-input" id="set-first" placeholder="—"></div>
-              <div><label class="field-label">Last name</label><input type="text" class="field-input" id="set-last" placeholder="—"></div>
-            </div>
-            <label class="field-label">Organisation</label><input type="text" class="field-input" id="set-org" placeholder="—">
-            <label class="field-label">Email address</label><input type="email" class="field-input" id="set-email" disabled>
-            <div style="font-size:0.7rem;color:var(--muted);margin-top:-6px;margin-bottom:12px;">Contact support to change your email address.</div>
-            <button onclick="saveProfile()" class="btn-topbar btn-topbar-primary" style="margin-top:4px;">Save changes</button>
-          </div>
-        </div>
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-header"><div class="panel-title">Password</div></div>
-          <div class="panel-body">
-            <label class="field-label">New password</label><input type="password" class="field-input" id="set-pw" placeholder="Min. 8 characters">
-            <label class="field-label">Confirm password</label><input type="password" class="field-input" id="set-pw2" placeholder="Repeat password">
-            <div id="set-pw-msg" style="font-size:0.75rem;margin-bottom:12px;display:none;"></div>
-            <button onclick="changePassword()" class="btn-topbar btn-topbar-ghost">Update password</button>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><div class="panel-title">Danger Zone</div></div>
-          <div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
-            <div>
-              <div style="font-size:0.82rem;font-weight:600;color:var(--main);margin-bottom:3px;">Sign out of all devices</div>
-              <div style="font-size:0.75rem;color:var(--muted);">Ends all active sessions including this one.</div>
-            </div>
-            <button onclick="signOut()" class="btn-topbar btn-topbar-ghost" style="color:var(--red);border-color:rgba(239,68,68,0.2);">Sign out</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════ REFERRAL VIEW ══════ -->
-      <div id="view-referral" class="view">
-        <div class="page-header"><h2>Referral Programme</h2><p>Refer colleagues and earn credit toward future reports.</p></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;">
-          <div class="stat-card"><div class="stat-label">Referrals Sent</div><div class="stat-value">0</div><div class="stat-sub">Invites shared</div></div>
-          <div class="stat-card"><div class="stat-label">Converted</div><div class="stat-value">0</div><div class="stat-sub">Paid referrals</div></div>
-          <div class="stat-card"><div class="stat-label">Credit Earned</div><div class="stat-value">£0</div><div class="stat-sub">Applied to account</div></div>
-        </div>
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-header"><div class="panel-title">Your Referral Link</div></div>
-          <div class="panel-body">
-            <p style="font-size:0.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Share this link with colleagues. When they purchase a report you'll both receive £15 credit toward your next diagnostic.</p>
-            <div class="invite-box"><div class="invite-url" id="referral-link">mlagroup.co.uk/ref/loading…</div><button class="invite-copy" onclick="copyReferral()">Copy link</button></div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><div class="panel-title">Referral History</div></div>
-          <div class="panel-body">
-            <div class="empty-state" style="padding:32px 0;"><div style="font-size:1.8rem;margin-bottom:12px;">👥</div><h4>No referrals yet</h4><p>Share your link above to start earning credit.</p></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════ ANALYTICS VIEW (locked) ══════ -->
-      <div id="view-analytics" class="view">
-        <div class="locked-view">
-          <div class="locked-icon" style="background:rgba(37,99,235,0.06);"><svg viewBox="0 0 22 22" stroke="var(--sky)"><path d="M1 16l5-6 4 4 5-7 6 6"/></svg></div>
-          <div class="locked-title">Analytics & Usage</div>
-          <div class="locked-desc">Track report views, downloads, risk trend over time, and team activity — all in one place.</div>
-          <div class="locked-features">
-            <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Risk score trend over time</div>
-            <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Report download history</div>
-            <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Sector benchmarking</div>
-            <div class="locked-feat"><svg viewBox="0 0 14 14"><polyline points="2 7 5 10 12 3"/></svg>Team member activity</div>
-          </div>
-          <a href="mailto:fraser@mlagroup.co.uk" class="btn-upgrade">Request early access <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2l4 4-4 4"/></svg></a>
-        </div>
-      </div>
-
-      <!-- ══════ REGISTRY: SYSTEM LIST VIEW ══════ -->
-      <div id="view-registry" class="view">
-        <div class="page-header">
-          <h2>AI Systems Registry</h2>
-          <p id="reg-subtext">Document and classify your organisation's AI systems against EU AI Act requirements.</p>
-        </div>
-
-        <div class="stats-grid stats-grid-4" id="reg-stats">
-          <div class="stat-card"><div class="stat-label">Total Systems</div><div class="stat-value" id="reg-total">—</div><div class="stat-sub">Registered</div></div>
-          <div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value" style="color:#fca5a5;" id="reg-high">—</div><div class="stat-sub">EU AI Act tier</div></div>
-          <div class="stat-card"><div class="stat-label">In Production</div><div class="stat-value" style="color:#4ade80;" id="reg-prod">—</div><div class="stat-sub">Live systems</div></div>
-          <div class="stat-card"><div class="stat-label">Compliance</div><div class="stat-value" id="reg-compliance">—</div><div class="stat-sub" id="reg-compliance-sub">Overall progress</div></div>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-          <span style="font-size:0.72rem;color:var(--muted);">Filter:</span>
-          <button class="filter-btn active" onclick="setRegFilter('all', this)">All</button>
-          <button class="filter-btn" onclick="setRegFilter('production', this)">Production</button>
-          <button class="filter-btn" onclick="setRegFilter('pilot', this)">Pilot</button>
-          <button class="filter-btn" onclick="setRegFilter('development', this)">Development</button>
-          <button class="filter-btn" onclick="setRegFilter('planned', this)">Planned</button>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">Systems</div>
-            <div class="panel-sub" id="reg-table-count">Loading…</div>
-          </div>
-          <div id="reg-table-wrap"><div class="loading-state">Loading registry…</div></div>
-        </div>
-      </div>
-
-      <!-- ══════ REGISTRY: SYSTEM DETAIL VIEW ══════ -->
-      <div id="view-registry-detail" class="view">
-        <button class="breadcrumb" onclick="navigate('registry', document.getElementById('nav-registry'))">
-          <svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>
-          AI Systems Registry
-        </button>
-
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;">
-          <div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-              <h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);letter-spacing:-0.02em;" id="det-name">—</h2>
-              <span id="det-tier-badge"></span>
-              <span id="det-status-badge"></span>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;font-size:0.75rem;color:var(--muted);flex-wrap:wrap;" id="det-subtitle"></div>
-          </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn-topbar btn-topbar-primary" onclick="openEditSystem()">
-              <svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>
-              Edit
-            </button>
-          </div>
-        </div>
-
-        <div class="panel" style="overflow:visible;">
-          <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchDetailTab('overview',this)">Overview</button>
-            <button class="tab-btn" onclick="switchDetailTab('compliance',this)">Compliance</button>
-            <button class="tab-btn" onclick="switchDetailTab('audit',this)">Audit Log</button>
-          </div>
-          <div class="tab-panel active" id="tab-overview"></div>
-          <div class="tab-panel" id="tab-compliance"></div>
-          <div class="tab-panel" id="tab-audit"></div>
-        </div>
-      </div>
-
-    </div><!-- /content-scroll -->
-  </div><!-- /main -->
-</div><!-- /app -->
-
-<!-- ═══════════════ ADD/EDIT SYSTEM MODAL ═══════════════ -->
-<div class="modal-overlay" id="system-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <div>
-        <h3 id="sysmod-title">Register AI System</h3>
-        <p id="sysmod-sub">Add a new system to the governance registry</p>
-      </div>
-      <button class="modal-close" onclick="closeSystemModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="sysmod-id" value="">
-      <div class="section-divider"><span>Identity</span></div>
-      <div class="field-group">
-        <label class="field-label">System Name <span class="req">*</span></label>
-        <input type="text" class="field-input" id="sysmod-name" placeholder="e.g. Customer Chatbot, Credit Scoring Model">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Description</label>
-        <textarea class="field-input" id="sysmod-desc" rows="3" placeholder="What does this system do? What is its business purpose?"></textarea>
-      </div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">Vendor / Provider</label>
-          <input type="text" class="field-input" id="sysmod-vendor" placeholder="e.g. OpenAI, In-house">
-        </div>
-        <div class="field-group">
-          <label class="field-label">System Type</label>
-          <select class="field-input" id="sysmod-type">
-            <option value="">Select type</option>
-            <option value="third_party">Third Party</option>
-            <option value="in_house">In-House</option>
-            <option value="hybrid">Hybrid</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="section-divider"><span>EU AI Act Classification</span></div>
-      <div class="field-group">
-        <label class="field-label">Purpose Category</label>
-        <select class="field-input" id="sysmod-purpose" onchange="onPurposeChange()">
-          <option value="">Select purpose (Annex III mapping)</option>
-          <optgroup label="High Risk (Annex III)">
-            <option value="biometric_identification">Biometric identification</option>
-            <option value="critical_infrastructure">Critical infrastructure management</option>
-            <option value="education_access">Education and vocational training access</option>
-            <option value="employment_management">Employment and worker management</option>
-            <option value="essential_services_access">Access to essential services (credit, insurance)</option>
-            <option value="law_enforcement">Law enforcement</option>
-            <option value="migration_border">Migration and border control</option>
-            <option value="justice_administration">Administration of justice</option>
-          </optgroup>
-          <optgroup label="Limited Risk">
-            <option value="customer_chatbot">Customer-facing chatbot / virtual assistant</option>
-            <option value="content_generation">Content generation (text, image, audio)</option>
-            <option value="emotion_recognition">Emotion recognition</option>
-          </optgroup>
-          <optgroup label="Minimal Risk">
-            <option value="internal_automation">Internal process automation</option>
-            <option value="data_analytics">Data analytics and reporting</option>
-          </optgroup>
-          <option value="other">Other (classify manually)</option>
-        </select>
-        <div class="tier-suggestion" id="sysmod-tier-hint"></div>
-      </div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">Risk Tier</label>
-          <select class="field-input" id="sysmod-tier">
-            <option value="">Not classified</option>
-            <option value="unacceptable">Unacceptable</option>
-            <option value="high">High</option>
-            <option value="limited">Limited</option>
-            <option value="minimal">Minimal</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Deployment Status</label>
-          <select class="field-input" id="sysmod-status">
-            <option value="planned">Planned</option>
-            <option value="development">Development</option>
-            <option value="pilot">Pilot</option>
-            <option value="production">Production</option>
-            <option value="decommissioned">Decommissioned</option>
-          </select>
-        </div>
-      </div>
-      <div class="field-group" id="sysmod-rationale-wrap" style="display:none;">
-        <label class="field-label">Classification Rationale</label>
-        <textarea class="field-input" id="sysmod-rationale" rows="2" placeholder="Why was this tier assigned? (Required if overriding the suggested tier)"></textarea>
-      </div>
-
-      <div class="section-divider"><span>Governance Metadata</span></div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label">System Owner <span class="req">*</span></label>
-          <input type="text" class="field-input" id="sysmod-owner" placeholder="Named accountable individual">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Department</label>
-          <input type="text" class="field-input" id="sysmod-dept" placeholder="e.g. Operations, Risk">
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Notes</label>
-        <textarea class="field-input" id="sysmod-notes" rows="2" placeholder="Any additional context"></textarea>
-      </div>
-      <div id="sysmod-error" class="field-error"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-topbar btn-topbar-ghost" onclick="closeSystemModal()">Cancel</button>
-      <button class="btn-topbar btn-topbar-primary" id="sysmod-submit" onclick="submitSystem()">
-        <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>
-        Register System
-      </button>
-    </div>
-  </div>
-</div>
-
+<div class="modal-overlay" id="system-modal"><div class="modal"><div class="modal-header"><div><h3 id="sysmod-title">Register AI System</h3><p id="sysmod-sub">Add a new system to the governance registry</p></div><button class="modal-close" onclick="closeSystemModal()">✕</button></div><div class="modal-body"><input type="hidden" id="sysmod-id" value=""><div class="section-divider"><span>Identity</span></div><div class="field-group"><label class="field-label">System Name <span class="req">*</span></label><input type="text" class="field-input" id="sysmod-name" placeholder="e.g. Customer Chatbot, Credit Scoring Model"></div><div class="field-group"><label class="field-label">Description</label><textarea class="field-input" id="sysmod-desc" rows="3" placeholder="What does this system do?"></textarea></div><div class="field-row"><div class="field-group"><label class="field-label">Vendor</label><input type="text" class="field-input" id="sysmod-vendor" placeholder="e.g. OpenAI, In-house"></div><div class="field-group"><label class="field-label">System Type</label><select class="field-input" id="sysmod-type"><option value="">Select</option><option value="third_party">Third Party</option><option value="in_house">In-House</option><option value="hybrid">Hybrid</option></select></div></div><div class="section-divider"><span>EU AI Act Classification</span></div><div class="field-group"><label class="field-label">Purpose Category</label><select class="field-input" id="sysmod-purpose" onchange="onPurposeChange()"><option value="">Select purpose (Annex III mapping)</option><optgroup label="High Risk (Annex III)"><option value="biometric_identification">Biometric identification</option><option value="critical_infrastructure">Critical infrastructure management</option><option value="education_access">Education and vocational training access</option><option value="employment_management">Employment and worker management</option><option value="essential_services_access">Access to essential services (credit, insurance)</option><option value="law_enforcement">Law enforcement</option><option value="migration_border">Migration and border control</option><option value="justice_administration">Administration of justice</option></optgroup><optgroup label="Limited Risk"><option value="customer_chatbot">Customer-facing chatbot / virtual assistant</option><option value="content_generation">Content generation (text, image, audio)</option><option value="emotion_recognition">Emotion recognition</option></optgroup><optgroup label="Minimal Risk"><option value="internal_automation">Internal process automation</option><option value="data_analytics">Data analytics and reporting</option></optgroup><option value="other">Other (classify manually)</option></select><div class="tier-suggestion" id="sysmod-tier-hint"></div></div><div class="field-row"><div class="field-group"><label class="field-label">Risk Tier</label><select class="field-input" id="sysmod-tier"><option value="">Not classified</option><option value="unacceptable">Unacceptable</option><option value="high">High</option><option value="limited">Limited</option><option value="minimal">Minimal</option></select></div><div class="field-group"><label class="field-label">Deployment Status</label><select class="field-input" id="sysmod-status"><option value="planned">Planned</option><option value="development">Development</option><option value="pilot">Pilot</option><option value="production">Production</option><option value="decommissioned">Decommissioned</option></select></div></div><div class="field-group" id="sysmod-rationale-wrap" style="display:none;"><label class="field-label">Classification Rationale</label><textarea class="field-input" id="sysmod-rationale" rows="2" placeholder="Why was this tier assigned?"></textarea></div><div class="section-divider"><span>Governance Metadata</span></div><div class="field-row"><div class="field-group"><label class="field-label">System Owner <span class="req">*</span></label><input type="text" class="field-input" id="sysmod-owner" placeholder="Named accountable individual"></div><div class="field-group"><label class="field-label">Department</label><input type="text" class="field-input" id="sysmod-dept" placeholder="e.g. Operations, Risk"></div></div><div class="field-group"><label class="field-label">Notes</label><textarea class="field-input" id="sysmod-notes" rows="2" placeholder="Any additional context"></textarea></div><div id="sysmod-error" class="field-error"></div></div><div class="modal-footer"><button class="btn-topbar btn-topbar-ghost" onclick="closeSystemModal()">Cancel</button><button class="btn-topbar btn-topbar-primary" id="sysmod-submit" onclick="submitSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register System</button></div></div></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-//  MLA GROUP PORTAL — MAIN SCRIPT
-// ═══════════════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const BAND_LABELS={low:'Low Risk',lowmod:'Low-Moderate',moderate:'Moderate',high:'High Risk',critical:'Critical'};
+const TIER_LABELS={unacceptable:'Unacceptable',high:'High Risk',limited:'Limited',minimal:'Minimal'};
+const STATUS_LABELS={planned:'Planned',development:'Development',pilot:'Pilot',production:'Production',decommissioned:'Decommissioned'};
+const PLAN_LABELS={essentials:'Essentials',professional:'Professional',enterprise:'Enterprise'};
+const TYPE_LABELS={third_party:'Third Party',in_house:'In-House',hybrid:'Hybrid'};
+const PURPOSE_TIER_MAP={biometric_identification:'high',critical_infrastructure:'high',education_access:'high',employment_management:'high',essential_services_access:'high',law_enforcement:'high',migration_border:'high',justice_administration:'high',customer_chatbot:'limited',content_generation:'limited',emotion_recognition:'limited',internal_automation:'minimal',data_analytics:'minimal'};
+let currentUser=null,currentProfile=null,currentResults=[],isPaid=false;
+let currentOrg=null,allSystems=[],currentSystemId=null,regFilter='all';
+let profilesCache={};
 
-const BAND_LABELS = { low:'Low Risk', lowmod:'Low-Moderate', moderate:'Moderate', high:'High Risk', critical:'Critical' };
-const TIER_LABELS = { unacceptable:'Unacceptable', high:'High Risk', limited:'Limited', minimal:'Minimal' };
-const STATUS_LABELS = { planned:'Planned', development:'Development', pilot:'Pilot', production:'Production', decommissioned:'Decommissioned' };
-const CSTATUS_LABELS = { not_started:'Not Started', in_progress:'In Progress', compliant:'Compliant', non_compliant:'Non-Compliant', not_applicable:'N/A' };
-const PURPOSE_TIER_MAP = {
-  biometric_identification:'high', critical_infrastructure:'high', education_access:'high',
-  employment_management:'high', essential_services_access:'high', law_enforcement:'high',
-  migration_border:'high', justice_administration:'high',
-  customer_chatbot:'limited', content_generation:'limited', emotion_recognition:'limited',
-  internal_automation:'minimal', data_analytics:'minimal'
-};
+function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}
+function fmtDateLong(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+async function signOut(){await sb.auth.signOut();window.location.href='login.html'}
+function actorName(){return currentProfile?.full_name||currentUser?.email?.split('@')[0]||'Unknown'}
 
-let currentUser = null;
-let currentProfile = null;
-let currentResults = [];
-let isPaid = false;
-let currentOrg = null;
-let allSystems = [];
-let currentSystemId = null;
-let regFilter = 'all';
-
-// ── TOPBAR METADATA ───────────────────────────────────────────
-const topbarTitles = {
-  dashboard:         { label:'Dashboard',          icon:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>' },
-  reports:           { label:'Reports',            icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>' },
-  settings:          { label:'Settings',           icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>' },
-  referral:          { label:'Referral',           icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>' },
-  analytics:         { label:'Analytics',          icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>' },
-  registry:          { label:'AI Systems Registry', icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>' },
-  'registry-detail': { label:'System Detail',      icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>' },
-};
-
-// ── NAVIGATION ────────────────────────────────────────────────
-function navigate(viewId, navEl) {
-  if (navEl && navEl.classList.contains('locked')) return;
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  if (navEl) navEl.classList.add('active');
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + viewId).classList.add('active');
-
-  // Update topbar
-  const t = topbarTitles[viewId];
-  if (t) {
-    document.getElementById('topbar-title').innerHTML =
-      `<svg viewBox="0 0 16 16" style="width:15px;height:15px;stroke:var(--sky);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;">${t.icon}</svg>${t.label}`;
+// ═══ AUDIT FORMATTING ═════════════════════════════════════════
+function fmtAudit(entry,namesMap){
+  const c=entry.changes||{};const who=(namesMap||{})[entry.user_id]||c._actor_name||'System';
+  let text='';
+  switch(entry.action){
+    case 'system_created':text=`Registered new AI system: <strong>${esc(c.name||'')}</strong>`;break;
+    case 'system_updated':text='Updated system details';break;
+    case 'risk_tier_set':text=`Classified as <strong>${TIER_LABELS[c.risk_tier?.new]||c.risk_tier?.new||''}</strong> under EU AI Act`;break;
+    case 'risk_tier_changed':text=`Reclassified from ${TIER_LABELS[c.risk_tier?.old]||'Unclassified'} to <strong>${TIER_LABELS[c.risk_tier?.new]||''}</strong>`;break;
+    case 'compliance_status_updated':text=`Updated compliance status across ${c.obligation_count||c.updated_count||'multiple'} obligations`;break;
+    default:text=entry.action.replace(/_/g,' ');
   }
+  return {who,text,time:fmtDateLong(entry.created_at)};
+}
+async function loadNames(userIds){
+  const missing=[...new Set(userIds)].filter(id=>id&&!profilesCache[id]);
+  if(missing.length){const{data}=await sb.from('profiles').select('id,full_name,email').in('id',missing);(data||[]).forEach(p=>{profilesCache[p.id]=p.full_name||p.email||'Unknown'})}
+  const map={};userIds.forEach(id=>{if(id)map[id]=profilesCache[id]||'Unknown'});return map;
+}
 
-  // Update topbar actions based on view
-  const tr = document.getElementById('topbar-right');
-  if (viewId === 'registry') {
-    tr.innerHTML = `<button class="btn-topbar btn-topbar-primary" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>`;
-  } else if (viewId === 'registry-detail') {
-    tr.innerHTML = `<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>`;
-  } else {
-    tr.innerHTML = `<a href="diagnostic.html" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>New Diagnostic</a><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>`;
-  }
+// ═══ NAVIGATION ═══════════════════════════════════════════════
+const topbarTitles={dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>'},reports:{label:'Reports',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>'},settings:{label:'Settings',icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>'},referral:{label:'Referral',icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>'},analytics:{label:'Analytics',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},registry:{label:'AI Systems Registry',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'),'registry-detail':{label:'System Detail',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},org:{label:'Organisation',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/>'}};
+
+function navigate(viewId,navEl){
+  if(navEl&&navEl.classList.contains('locked'))return;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));if(navEl)navEl.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+viewId).classList.add('active');
+  const t=topbarTitles[viewId];if(t)document.getElementById('topbar-title').innerHTML=`<svg viewBox="0 0 16 16" style="width:15px;height:15px;stroke:var(--sky);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;">${t.icon}</svg>${t.label}`;
+  const tr=document.getElementById('topbar-right');
+  if(viewId==='registry')tr.innerHTML='<button class="btn-topbar btn-topbar-primary" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
+  else if(viewId==='registry-detail'||viewId==='org')tr.innerHTML='<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
+  else tr.innerHTML='<a href="diagnostic.html" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>New Diagnostic</a><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   closeSidebar();
 }
+async function navigateRegistry(navEl){navigate('registry',navEl);if(!currentOrg)await ensureOrg();if(!allSystems.length)await loadSystems()}
+async function navigateOrg(navEl){navigate('org',navEl);if(!currentOrg)await ensureOrg();await renderOrgPage()}
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('show')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
 
-async function navigateRegistry(navEl) {
-  navigate('registry', navEl);
-  if (!currentOrg) await ensureOrg();
-  if (allSystems.length === 0) await loadSystems();
+// ═══ INIT ═════════════════════════════════════════════════════
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();if(!session){window.location.href='login.html';return}
+  currentUser=session.user;
+  const[{data:profile},{data:entitlements}]=await Promise.all([sb.from('profiles').select('full_name,organisation,paid,org_id').eq('id',currentUser.id).single(),sb.from('entitlements').select('id,diagnostic_id,status').eq('user_id',currentUser.id).eq('status','active')]);
+  currentProfile=profile;isPaid=(entitlements&&entitlements.length>0)||profile?.paid===true;
+  const paidIds=new Set((entitlements||[]).map(e=>e.diagnostic_id).filter(Boolean));
+  const fullName=profile?.full_name||currentUser.email.split('@')[0];const firstName=fullName.split(' ')[0];
+  const initials=fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  profilesCache[currentUser.id]=fullName;
+  document.getElementById('sidebar-name').textContent=fullName;document.getElementById('sidebar-avatar').textContent=initials;
+  document.getElementById('dash-avatar').textContent=initials;document.getElementById('dash-name').textContent=', '+firstName;
+  if(profile?.organisation)document.getElementById('dash-subtext').textContent=profile.organisation+' · AI Governance Portal';
+  if(profile?.full_name){const p=profile.full_name.split(' ');document.getElementById('set-first').value=p[0]||'';document.getElementById('set-last').value=p.slice(1).join(' ')||''}
+  document.getElementById('set-org').value=profile?.organisation||'';document.getElementById('set-email').value=currentUser.email;
+  document.getElementById('referral-link').textContent='mlagroup.co.uk/ref/'+currentUser.id.substring(0,8);
+  const{data:results}=await sb.from('diagnostic_results').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  currentResults=results||[];
+  if(currentResults.length>0){const b=document.getElementById('report-count-badge');b.textContent=currentResults.length;b.style.display='inline-flex'}
+  document.getElementById('paywall-banner').style.display=isPaid?'none':'flex';
+  renderReports(paidIds);
+  if(profile?.org_id)ensureOrg().then(()=>loadSystems()).then(()=>renderDashboard(paidIds)).catch(()=>renderDashboard(paidIds));
+  else renderDashboard(paidIds);
 }
 
-function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
-function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-
-// ── INIT ──────────────────────────────────────────────────────
-async function init() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = 'login.html'; return; }
-  currentUser = session.user;
-
-  const [{ data: profile }, { data: entitlements }] = await Promise.all([
-    sb.from('profiles').select('full_name, organisation, paid, org_id').eq('id', currentUser.id).single(),
-    sb.from('entitlements').select('id, diagnostic_id, status').eq('user_id', currentUser.id).eq('status', 'active')
-  ]);
-
-  currentProfile = profile;
-  isPaid = (entitlements && entitlements.length > 0) || profile?.paid === true;
-  const paidDiagnosticIds = new Set((entitlements || []).map(e => e.diagnostic_id).filter(Boolean));
-
-  const fullName = profile?.full_name || currentUser.email.split('@')[0];
-  const firstName = fullName.split(' ')[0];
-  const initials = fullName.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
-
-  document.getElementById('sidebar-name').textContent = fullName;
-  document.getElementById('sidebar-avatar').textContent = initials;
-  document.getElementById('dash-avatar').textContent = initials;
-  document.getElementById('dash-name').textContent = ', ' + firstName;
-  if (profile?.organisation) document.getElementById('dash-subtext').textContent = profile.organisation + ' · AI Governance Portal';
-
-  // Settings form
-  if (profile?.full_name) {
-    const parts = profile.full_name.split(' ');
-    document.getElementById('set-first').value = parts[0] || '';
-    document.getElementById('set-last').value  = parts.slice(1).join(' ') || '';
-  }
-  document.getElementById('set-org').value   = profile?.organisation || '';
-  document.getElementById('set-email').value = currentUser.email;
-
-  // Referral
-  document.getElementById('referral-link').textContent = `mlagroup.co.uk/ref/${currentUser.id.substring(0,8)}`;
-
-  // Load diagnostic results
-  const { data: results } = await sb.from('diagnostic_results').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-  currentResults = results || [];
-
-  renderDashboard(paidDiagnosticIds);
-  renderReports(paidDiagnosticIds);
-
-  if (currentResults.length > 0) {
-    const badge = document.getElementById('report-count-badge');
-    badge.textContent = currentResults.length;
-    badge.style.display = 'inline-flex';
-  }
-  document.getElementById('paywall-banner').style.display = isPaid ? 'none' : 'flex';
-
-  // If user already has an org, preload registry data in background
-  if (profile?.org_id) {
-    ensureOrg().then(() => loadSystems());
-  }
+// ═══ AUTO-PROVISIONING ════════════════════════════════════════
+async function ensureOrg(){
+  if(currentOrg)return currentOrg;
+  if(currentProfile?.org_id){const{data}=await sb.from('organisations').select('*').eq('id',currentProfile.org_id).single();if(data){currentOrg=data;return data}}
+  const{data:existing}=await sb.from('organisations').select('*').eq('created_by',currentUser.id).limit(1).single();
+  if(existing){currentOrg=existing;if(!currentProfile.org_id){await sb.from('profiles').update({org_id:existing.id}).eq('id',currentUser.id);currentProfile.org_id=existing.id}return existing}
+  const orgName=currentProfile?.organisation||'My Organisation';
+  const{data:newOrg,error}=await sb.from('organisations').insert({name:orgName,created_by:currentUser.id}).select().single();
+  if(error){console.error('Org creation error:',error);return null}
+  await sb.from('org_members').insert({org_id:newOrg.id,user_id:currentUser.id,role:'owner',accepted_at:new Date().toISOString()});
+  await sb.from('profiles').update({org_id:newOrg.id}).eq('id',currentUser.id);currentProfile.org_id=newOrg.id;currentOrg=newOrg;return newOrg;
 }
 
-// ── AUTO-PROVISIONING ─────────────────────────────────────────
-async function ensureOrg() {
-  if (currentOrg) return currentOrg;
-
-  // Check if org already exists
-  if (currentProfile?.org_id) {
-    const { data } = await sb.from('organisations').select('*').eq('id', currentProfile.org_id).single();
-    if (data) { currentOrg = data; return data; }
-  }
-
-  // Check if we created one before but profile wasn't updated
-  const { data: existing } = await sb.from('organisations').select('*').eq('created_by', currentUser.id).limit(1).single();
-  if (existing) {
-    currentOrg = existing;
-    if (!currentProfile.org_id) {
-      await sb.from('profiles').update({ org_id: existing.id }).eq('id', currentUser.id);
-      currentProfile.org_id = existing.id;
-    }
-    return existing;
-  }
-
-  // Create new org
-  const orgName = currentProfile?.organisation || 'My Organisation';
-  const { data: newOrg, error: orgErr } = await sb.from('organisations').insert({ name: orgName, created_by: currentUser.id }).select().single();
-  if (orgErr) { console.error('Org creation error:', orgErr); return null; }
-
-  // Create membership
-  await sb.from('org_members').insert({ org_id: newOrg.id, user_id: currentUser.id, role: 'owner', accepted_at: new Date().toISOString() });
-
-  // Link profile
-  await sb.from('profiles').update({ org_id: newOrg.id }).eq('id', currentUser.id);
-  currentProfile.org_id = newOrg.id;
-  currentOrg = newOrg;
-  return newOrg;
+// ═══ REGISTRY: LOAD ═══════════════════════════════════════════
+async function loadSystems(){
+  if(!currentOrg)return;
+  const{data,error}=await sb.from('ai_systems').select('*,system_compliance(id,status)').eq('org_id',currentOrg.id).order('updated_at',{ascending:false});
+  allSystems=error?[]:(data||[]);renderRegistryStats();renderSystemTable();
+  if(allSystems.length>0){document.getElementById('sys-count-badge').textContent=allSystems.length;document.getElementById('sys-count-badge').style.display='inline-flex'}
+  document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
+  let tOb=0,dOb=0;allSystems.forEach(s=>(s.system_compliance||[]).forEach(c=>{tOb++;if(c.status==='compliant'||c.status==='not_applicable')dOb++}));
+  document.getElementById('dash-compliance').textContent=tOb>0?Math.round(dOb/tOb*100)+'%':'—';
 }
-
-// ── REGISTRY: LOAD SYSTEMS ────────────────────────────────────
-async function loadSystems() {
-  if (!currentOrg) return;
-  const { data, error } = await sb
-    .from('ai_systems')
-    .select('*, system_compliance(id, status)')
-    .eq('org_id', currentOrg.id)
-    .order('updated_at', { ascending: false });
-
-  if (error) { console.error('Load systems error:', error); allSystems = []; }
-  else { allSystems = data || []; }
-
-  renderRegistryStats();
-  renderSystemTable();
-
-  if (allSystems.length > 0) {
-    document.getElementById('sys-count-badge').textContent = allSystems.length;
-    document.getElementById('sys-count-badge').style.display = 'inline-flex';
-  }
+function getCP(sys){const sc=sys.system_compliance||[];if(!sc.length)return null;return Math.round(sc.filter(c=>c.status==='compliant'||c.status==='not_applicable').length/sc.length*100)}
+function renderRegistryStats(){
+  document.getElementById('reg-total').textContent=allSystems.length;
+  document.getElementById('reg-high').textContent=allSystems.filter(s=>s.risk_tier==='high'||s.risk_tier==='unacceptable').length;
+  document.getElementById('reg-prod').textContent=allSystems.filter(s=>s.deployment_status==='production').length;
+  let tOb=0,dOb=0;allSystems.forEach(s=>(s.system_compliance||[]).forEach(c=>{tOb++;if(c.status==='compliant'||c.status==='not_applicable')dOb++}));
+  const pct=tOb>0?Math.round(dOb/tOb*100):null;
+  document.getElementById('reg-compliance').textContent=pct!==null?pct+'%':'—';document.getElementById('reg-compliance-sub').textContent=tOb>0?dOb+' of '+tOb+' obligations':'No obligations yet';
 }
-
-function getCompliancePercent(sys) {
-  const sc = sys.system_compliance || [];
-  if (sc.length === 0) return null;
-  const done = sc.filter(c => c.status === 'compliant' || c.status === 'not_applicable').length;
-  return Math.round((done / sc.length) * 100);
+function renderSystemTable(){
+  const filtered=regFilter==='all'?allSystems:allSystems.filter(s=>s.deployment_status===regFilter);
+  document.getElementById('reg-table-count').textContent=filtered.length+' system'+(filtered.length!==1?'s':'');
+  if(!filtered.length){document.getElementById('reg-table-wrap').innerHTML='<div class="empty-state"><h4>'+(allSystems.length===0?'No systems registered yet':'No systems match this filter')+'</h4><p>'+(allSystems.length===0?'Register your first AI system.':'Try a different filter.')+'</p>'+(allSystems.length===0?'<button class="btn-dl" onclick="openAddSystem()" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register First System</button>':'')+'</div>';return}
+  document.getElementById('reg-table-wrap').innerHTML='<div style="overflow-x:auto;"><table class="sys-table"><thead><tr><th>System</th><th>Risk Tier</th><th>Status</th><th>Compliance</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{const tier=sys.risk_tier||'none';const cp=getCP(sys);const cpC=cp===null?'var(--muted)':cp>=80?'#4ade80':cp>=40?'#fde047':'#fca5a5';return '<tr onclick="openSystemDetail(\''+sys.id+'\')"><td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td><td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td><td><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status)+'</span></td><td style="min-width:100px;">'+(cp!==null?'<div style="display:flex;align-items:center;gap:8px;"><div class="cprogress-bar" style="flex:1;"><div class="cprogress-fill" style="width:'+cp+'%;background:'+cpC+';"></div></div><span style="font-size:.72rem;color:'+cpC+';font-weight:600;">'+cp+'%</span></div>':'<span style="font-size:.72rem;color:var(--muted);">—</span>')+'</td><td style="font-size:.72rem;color:var(--muted);white-space:nowrap;">'+fmtDate(sys.updated_at)+'</td></tr>'}).join('')+'</tbody></table></div>';
 }
+function setRegFilter(s,btn){regFilter=s;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSystemTable()}
 
-function renderRegistryStats() {
-  const total = allSystems.length;
-  const high = allSystems.filter(s => s.risk_tier === 'high' || s.risk_tier === 'unacceptable').length;
-  const prod = allSystems.filter(s => s.deployment_status === 'production').length;
-
-  // Overall compliance
-  let totalOb = 0, doneOb = 0;
-  allSystems.forEach(s => {
-    (s.system_compliance || []).forEach(c => { totalOb++; if (c.status === 'compliant' || c.status === 'not_applicable') doneOb++; });
-  });
-  const pct = totalOb > 0 ? Math.round((doneOb / totalOb) * 100) : null;
-
-  document.getElementById('reg-total').textContent = total;
-  document.getElementById('reg-high').textContent = high;
-  document.getElementById('reg-prod').textContent = prod;
-  document.getElementById('reg-compliance').textContent = pct !== null ? pct + '%' : '—';
-  document.getElementById('reg-compliance-sub').textContent = totalOb > 0 ? `${doneOb} of ${totalOb} obligations` : 'No obligations yet';
-}
-
-function renderSystemTable() {
-  const filtered = regFilter === 'all' ? allSystems : allSystems.filter(s => s.deployment_status === regFilter);
-  document.getElementById('reg-table-count').textContent = filtered.length + ' system' + (filtered.length !== 1 ? 's' : '');
-
-  if (filtered.length === 0) {
-    document.getElementById('reg-table-wrap').innerHTML = `<div class="empty-state">
-      <h4>${allSystems.length === 0 ? 'No systems registered yet' : 'No systems match this filter'}</h4>
-      <p>${allSystems.length === 0 ? 'Register your first AI system to begin building your governance inventory.' : 'Try a different filter.'}</p>
-      ${allSystems.length === 0 ? '<button class="btn-dl" onclick="openAddSystem()" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register First System</button>' : ''}
-    </div>`;
-    return;
-  }
-
-  const rows = filtered.map(sys => {
-    const tier = sys.risk_tier || 'none';
-    const cp = getCompliancePercent(sys);
-    const cpColor = cp === null ? 'var(--muted)' : cp >= 80 ? '#4ade80' : cp >= 40 ? '#fde047' : '#fca5a5';
-    return `<tr onclick="openSystemDetail('${sys.id}')">
-      <td><div class="sys-name">${esc(sys.name)}</div><div class="sys-desc">${esc(sys.description || '')}</div></td>
-      <td><span class="tier-pill tier-${tier}">${TIER_LABELS[tier] || 'Unclassified'}</span></td>
-      <td><span class="status-pill status-${sys.deployment_status}">${STATUS_LABELS[sys.deployment_status] || sys.deployment_status}</span></td>
-      <td style="min-width:100px;">${cp !== null ? `<div style="display:flex;align-items:center;gap:8px;"><div class="cprogress-bar" style="flex:1;"><div class="cprogress-fill" style="width:${cp}%;background:${cpColor};"></div></div><span style="font-size:0.72rem;color:${cpColor};font-weight:600;">${cp}%</span></div>` : '<span style="font-size:0.72rem;color:var(--muted);">—</span>'}</td>
-      <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap;">${fmtDate(sys.updated_at)}</td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('reg-table-wrap').innerHTML = `<div style="overflow-x:auto;">
-    <table class="sys-table"><thead><tr><th>System</th><th>Risk Tier</th><th>Status</th><th>Compliance</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table>
-  </div>`;
-}
-
-function setRegFilter(status, btn) {
-  regFilter = status;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderSystemTable();
-}
-
-// ── REGISTRY: SYSTEM DETAIL ───────────────────────────────────
-async function openSystemDetail(sysId) {
-  currentSystemId = sysId;
-  const sys = allSystems.find(s => s.id === sysId);
-  if (!sys) return;
-
-  // Load full compliance data with framework details
-  const { data: compliance } = await sb
-    .from('system_compliance')
-    .select('*, compliance_frameworks(*)')
-    .eq('system_id', sysId)
-    .order('created_at', { ascending: true });
-
-  // Load audit log
-  const { data: auditLog } = await sb
-    .from('registry_audit_log')
-    .select('*')
-    .eq('entity_id', sysId)
-    .order('created_at', { ascending: false });
-
-  const tier = sys.risk_tier || 'none';
-
-  // Header
-  document.getElementById('det-name').textContent = sys.name;
-  document.getElementById('det-tier-badge').innerHTML = `<span class="tier-pill tier-${tier}">${TIER_LABELS[tier] || 'Unclassified'}</span>`;
-  document.getElementById('det-status-badge').innerHTML = `<span class="status-pill status-${sys.deployment_status}">${STATUS_LABELS[sys.deployment_status] || ''}</span>`;
-  document.getElementById('det-subtitle').innerHTML = [
-    sys.system_type ? `<span>${esc({third_party:'Third Party',in_house:'In-House',hybrid:'Hybrid'}[sys.system_type] || sys.system_type)}</span>` : '',
-    sys.system_owner ? `<span>Owner: <span style="color:var(--sub);">${esc(sys.system_owner)}</span></span>` : '',
-    sys.department ? `<span>${esc(sys.department)}</span>` : '',
-  ].filter(Boolean).join('<span style="color:var(--muted2);">·</span>');
-
-  // Overview tab
-  document.getElementById('tab-overview').innerHTML = `
-    <div style="margin-bottom:16px;">
-      <div class="stat-label" style="margin-bottom:6px;">Description</div>
-      <p style="font-size:0.82rem;color:var(--sub);line-height:1.7;">${esc(sys.description || 'No description provided.')}</p>
-    </div>
-    <div class="meta-grid">
-      <div class="meta-item"><label>System ID</label><span class="meta-id">${esc(sys.id)}</span></div>
-      <div class="meta-item"><label>System Type</label><span>${esc({third_party:'Third Party',in_house:'In-House',hybrid:'Hybrid'}[sys.system_type] || '—')}</span></div>
-      <div class="meta-item"><label>Vendor</label><span>${esc(sys.vendor || '—')}</span></div>
-      <div class="meta-item"><label>Department</label><span>${esc(sys.department || '—')}</span></div>
-      <div class="meta-item"><label>System Owner</label><span>${esc(sys.system_owner || '—')}</span></div>
-      <div class="meta-item"><label>Deployment Status</label><span><span class="status-pill status-${sys.deployment_status}">${STATUS_LABELS[sys.deployment_status] || ''}</span></span></div>
-      <div class="meta-item"><label>Purpose Category</label><span>${esc(sys.purpose_category ? sys.purpose_category.replace(/_/g, ' ') : '—')}</span></div>
-      <div class="meta-item"><label>Risk Tier</label><span><span class="tier-pill tier-${tier}">${TIER_LABELS[tier] || 'Unclassified'}</span></span></div>
-      ${sys.risk_tier_rationale ? `<div class="meta-item" style="grid-column:1/-1;"><label>Classification Rationale</label><span>${esc(sys.risk_tier_rationale)}</span></div>` : ''}
-      <div class="meta-item"><label>Registered</label><span>${fmtDate(sys.created_at)}</span></div>
-      <div class="meta-item"><label>Last Updated</label><span>${fmtDate(sys.updated_at)}</span></div>
-    </div>`;
-
-  // Compliance tab
-  renderComplianceTab(compliance || []);
-
-  // Audit tab
-  if (!auditLog || auditLog.length === 0) {
-    document.getElementById('tab-audit').innerHTML = `<div class="empty-state" style="padding:28px 0;"><h4>No audit entries</h4><p>Entries are created automatically on system changes.</p></div>`;
-  } else {
-    document.getElementById('tab-audit').innerHTML = `
-      <p style="font-size:0.72rem;color:var(--muted);margin-bottom:16px;font-style:italic;">Immutable governance history. Entries cannot be modified or deleted.</p>
-      <div class="audit-timeline">${auditLog.map((entry, i) => {
-        const changes = entry.changes && Object.keys(entry.changes).length ? JSON.stringify(entry.changes, null, 2) : null;
-        return `<div class="audit-item">
-          <div class="audit-line"><div class="audit-node"></div>${i < auditLog.length - 1 ? '<div class="audit-connector"></div>' : ''}</div>
-          <div class="audit-content">
-            <div class="audit-action">${esc(entry.action)}</div>
-            <div class="audit-meta">${fmtDateLong(entry.created_at)}</div>
-            ${changes ? `<div class="audit-changes">${esc(changes)}</div>` : ''}
-          </div>
-        </div>`;
-      }).join('')}</div>`;
-  }
-
+// ═══ SYSTEM DETAIL ════════════════════════════════════════════
+async function openSystemDetail(sysId){
+  currentSystemId=sysId;const sys=allSystems.find(s=>s.id===sysId);if(!sys)return;
+  const[{data:compliance},{data:auditLog}]=await Promise.all([sb.from('system_compliance').select('*,compliance_frameworks(*)').eq('system_id',sysId).order('created_at',{ascending:true}),sb.from('registry_audit_log').select('*').eq('entity_id',sysId).order('created_at',{ascending:false})]);
+  const tier=sys.risk_tier||'none';
+  document.getElementById('det-name').textContent=sys.name;
+  document.getElementById('det-tier-badge').innerHTML='<span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span>';
+  document.getElementById('det-status-badge').innerHTML='<span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||'')+'</span>';
+  document.getElementById('det-subtitle').innerHTML=[sys.system_type?'<span>'+esc(TYPE_LABELS[sys.system_type]||sys.system_type)+'</span>':'',sys.system_owner?'<span>Owner: <span style="color:var(--sub);">'+esc(sys.system_owner)+'</span></span>':'',sys.department?'<span>'+esc(sys.department)+'</span>':''].filter(Boolean).join('<span style="color:var(--muted2);"> · </span>');
+  // Overview
+  document.getElementById('tab-overview').innerHTML='<div style="margin-bottom:16px;"><div class="stat-label" style="margin-bottom:6px;">Description</div><p style="font-size:.82rem;color:var(--sub);line-height:1.7;">'+esc(sys.description||'No description provided.')+'</p></div><div class="meta-grid"><div class="meta-item"><label>System ID</label><span class="meta-id">'+esc(sys.id)+'</span></div><div class="meta-item"><label>System Type</label><span>'+esc(TYPE_LABELS[sys.system_type]||'—')+'</span></div><div class="meta-item"><label>Vendor</label><span>'+esc(sys.vendor||'—')+'</span></div><div class="meta-item"><label>Department</label><span>'+esc(sys.department||'—')+'</span></div><div class="meta-item"><label>System Owner</label><span>'+esc(sys.system_owner||'—')+'</span></div><div class="meta-item"><label>Deployment</label><span><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||'')+'</span></span></div><div class="meta-item"><label>Purpose Category</label><span>'+esc(sys.purpose_category?sys.purpose_category.replace(/_/g,' '):'—')+'</span></div><div class="meta-item"><label>Risk Tier</label><span><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></span></div>'+(sys.risk_tier_rationale?'<div class="meta-item" style="grid-column:1/-1;"><label>Classification Rationale</label><span>'+esc(sys.risk_tier_rationale)+'</span></div>':'')+'<div class="meta-item"><label>Registered</label><span>'+fmtDate(sys.created_at)+'</span></div><div class="meta-item"><label>Last Updated</label><span>'+fmtDate(sys.updated_at)+'</span></div></div>';
+  // Compliance
+  renderComplianceTab(compliance||[]);
+  // Audit with names
+  const logs=auditLog||[];
+  if(!logs.length)document.getElementById('tab-audit').innerHTML='<div class="empty-state" style="padding:28px 0;"><h4>No audit entries</h4><p>Entries are created automatically on system changes.</p></div>';
+  else{const nm=await loadNames(logs.map(e=>e.user_id));document.getElementById('tab-audit').innerHTML='<div class="audit-timeline">'+logs.map((entry,i)=>{const a=fmtAudit(entry,nm);return '<div class="audit-item"><div class="audit-line"><div class="audit-node"></div>'+(i<logs.length-1?'<div class="audit-connector"></div>':'')+'</div><div class="audit-content"><div class="audit-action">'+a.text+'</div><div class="audit-meta">'+esc(a.who)+' · '+a.time+'</div></div></div>'}).join('')+'</div>'}
   // Reset tabs
-  document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('#view-registry-detail .tab-btn')[0].classList.add('active');
-  document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-overview').classList.add('active');
+  document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('#view-registry-detail .tab-btn')[0].classList.add('active');
+  document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-overview').classList.add('active');
+  navigate('registry-detail',null);document.getElementById('nav-registry').classList.add('active');
+}
+function renderComplianceTab(compliance){
+  if(!compliance.length){document.getElementById('tab-compliance').innerHTML='<div class="empty-state" style="padding:28px 0;"><h4>No compliance obligations</h4><p>Set a risk tier to auto-populate applicable regulatory obligations.</p></div>';return}
+  const grouped={};const fOrder=['eu_ai_act','uk_gdpr','fca'];const fLabels={eu_ai_act:'EU AI Act',uk_gdpr:'UK GDPR',fca:'FCA'};
+  compliance.forEach(c=>{const fw=c.compliance_frameworks?.framework||'unknown';if(!grouped[fw])grouped[fw]=[];grouped[fw].push(c)});
+  Object.values(grouped).forEach(arr=>arr.sort((a,b)=>(a.compliance_frameworks?.display_order||0)-(b.compliance_frameworks?.display_order||0)));
+  let html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><div style="font-size:.78rem;color:var(--muted);">'+compliance.length+' obligations across '+Object.keys(grouped).length+' framework'+(Object.keys(grouped).length>1?'s':'')+'</div><button class="btn-topbar btn-topbar-primary" onclick="saveAllCompliance()" id="save-compliance-btn" style="padding:5px 12px;font-size:.72rem;">Save Changes</button></div>';
+  fOrder.forEach(fw=>{const items=grouped[fw];if(!items)return;
+    html+='<div class="framework-section"><div class="framework-label">'+fLabels[fw]+'</div>'+items.map(c=>{const cf=c.compliance_frameworks||{};
+      return '<div class="obligation-row"><div class="obligation-header"><div class="obligation-info"><div class="obligation-title">'+esc(cf.obligation_title||'')+'</div><div class="obligation-ref">'+esc(cf.article_reference||'')+'</div></div><select class="obligation-select" data-cid="'+c.id+'" onchange="markComplianceDirty()"><option value="not_started"'+(c.status==='not_started'?' selected':'')+'>Not Started</option><option value="in_progress"'+(c.status==='in_progress'?' selected':'')+'>In Progress</option><option value="compliant"'+(c.status==='compliant'?' selected':'')+'>Compliant</option><option value="non_compliant"'+(c.status==='non_compliant'?' selected':'')+'>Non-Compliant</option><option value="not_applicable"'+(c.status==='not_applicable'?' selected':'')+'>N/A</option></select></div><div class="obligation-desc">'+esc(cf.obligation_description||'')+'</div>'+(cf.guidance_text?'<div style="font-size:.72rem;color:var(--sky);background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.1);border-radius:6px;padding:8px 10px;margin-bottom:8px;line-height:1.5;"><strong>MLA Guidance:</strong> '+esc(cf.guidance_text)+'</div>':'')+'<textarea class="obligation-evidence" data-cid="'+c.id+'" placeholder="Evidence notes…">'+esc(c.evidence_notes||'')+'</textarea></div>'}).join('')+'</div>'});
+  document.getElementById('tab-compliance').innerHTML=html;
+}
+function markComplianceDirty(){const btn=document.getElementById('save-compliance-btn');if(btn){btn.textContent='Save Changes •';btn.style.background='#1d4ed8'}}
+async function saveAllCompliance(){
+  const btn=document.getElementById('save-compliance-btn');if(btn){btn.textContent='Saving…';btn.disabled=true}
+  const selects=document.querySelectorAll('#tab-compliance .obligation-select');let count=0,hadErr=false;
+  for(const sel of selects){const cid=sel.dataset.cid;const ta=document.querySelector('.obligation-evidence[data-cid="'+cid+'"]');
+    const{error}=await sb.from('system_compliance').update({status:sel.value,evidence_notes:ta?ta.value.trim()||null:null,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',cid);
+    if(error){console.error(error);hadErr=true}else count++}
+  if(!hadErr&&currentSystemId)await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'compliance_status_updated',entity_type:'ai_system',entity_id:currentSystemId,changes:{obligation_count:count,_actor_name:actorName()}});
+  if(btn){btn.textContent=hadErr?'Error — retry':'Saved';btn.disabled=false}
+  if(!hadErr){setTimeout(()=>{if(btn)btn.textContent='Save Changes'},2000);await loadSystems()}
+}
+function switchDetailTab(id,btn){document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active')}
 
-  navigate('registry-detail', null);
-  document.getElementById('nav-registry').classList.add('active');
+// ═══ ADD/EDIT SYSTEM ══════════════════════════════════════════
+function openAddSystem(){document.getElementById('sysmod-id').value='';document.getElementById('sysmod-title').textContent='Register AI System';document.getElementById('sysmod-sub').textContent='Add a new system to the governance registry';document.getElementById('sysmod-submit').innerHTML='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg> Register System';clearSystemForm();document.getElementById('system-modal').classList.add('open')}
+function openEditSystem(){const sys=allSystems.find(s=>s.id===currentSystemId);if(!sys)return;document.getElementById('sysmod-id').value=sys.id;document.getElementById('sysmod-title').textContent='Edit System';document.getElementById('sysmod-sub').textContent=sys.name;document.getElementById('sysmod-submit').innerHTML='Save Changes';document.getElementById('sysmod-name').value=sys.name||'';document.getElementById('sysmod-desc').value=sys.description||'';document.getElementById('sysmod-vendor').value=sys.vendor||'';document.getElementById('sysmod-type').value=sys.system_type||'';document.getElementById('sysmod-purpose').value=sys.purpose_category||'';document.getElementById('sysmod-tier').value=sys.risk_tier||'';document.getElementById('sysmod-status').value=sys.deployment_status||'planned';document.getElementById('sysmod-rationale').value=sys.risk_tier_rationale||'';document.getElementById('sysmod-owner').value=sys.system_owner||'';document.getElementById('sysmod-dept').value=sys.department||'';document.getElementById('sysmod-notes').value=sys.notes||'';onPurposeChange();document.getElementById('system-modal').classList.add('open')}
+function clearSystemForm(){['sysmod-name','sysmod-desc','sysmod-vendor','sysmod-rationale','sysmod-owner','sysmod-dept','sysmod-notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('sysmod-type').value='';document.getElementById('sysmod-purpose').value='';document.getElementById('sysmod-tier').value='';document.getElementById('sysmod-status').value='planned';document.getElementById('sysmod-tier-hint').style.display='none';document.getElementById('sysmod-rationale-wrap').style.display='none';document.getElementById('sysmod-error').style.display='none'}
+function closeSystemModal(){document.getElementById('system-modal').classList.remove('open')}
+function onPurposeChange(){const purpose=document.getElementById('sysmod-purpose').value;const suggested=PURPOSE_TIER_MAP[purpose];const hint=document.getElementById('sysmod-tier-hint');const tierSel=document.getElementById('sysmod-tier');const rw=document.getElementById('sysmod-rationale-wrap');
+  if(suggested){hint.innerHTML='Suggested tier: <strong>'+(TIER_LABELS[suggested])+'</strong> — based on EU AI Act Annex III.';hint.style.display='block';tierSel.value=suggested}else if(purpose==='other'){hint.innerHTML='Please classify manually.';hint.style.display='block'}else hint.style.display='none';
+  rw.style.display=(tierSel.value&&tierSel.value!==suggested)?'block':'none';tierSel.onchange=()=>{rw.style.display=(tierSel.value&&tierSel.value!==suggested)?'block':'none'}}
+async function submitSystem(){
+  const name=document.getElementById('sysmod-name').value.trim();const owner=document.getElementById('sysmod-owner').value.trim();const errEl=document.getElementById('sysmod-error');
+  if(!name||!owner){errEl.textContent='System name and owner are required.';errEl.style.display='block';return}errEl.style.display='none';
+  const btn=document.getElementById('sysmod-submit');const origH=btn.innerHTML;btn.textContent='Saving…';btn.disabled=true;if(!currentOrg)await ensureOrg();
+  const payload={org_id:currentOrg.id,name,description:document.getElementById('sysmod-desc').value.trim()||null,vendor:document.getElementById('sysmod-vendor').value.trim()||null,system_type:document.getElementById('sysmod-type').value||null,purpose_category:document.getElementById('sysmod-purpose').value||null,risk_tier:document.getElementById('sysmod-tier').value||null,risk_tier_rationale:document.getElementById('sysmod-rationale').value.trim()||null,risk_tier_set_by:document.getElementById('sysmod-tier').value?currentUser.id:null,deployment_status:document.getElementById('sysmod-status').value,system_owner:owner,department:document.getElementById('sysmod-dept').value.trim()||null,notes:document.getElementById('sysmod-notes').value.trim()||null};
+  const editId=document.getElementById('sysmod-id').value;
+  try{if(editId){const{error}=await sb.from('ai_systems').update(payload).eq('id',editId);if(error)throw error;await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'system_updated',entity_type:'ai_system',entity_id:editId,changes:{_actor_name:actorName()}})}
+    else{payload.created_by=currentUser.id;const{error}=await sb.from('ai_systems').insert(payload);if(error)throw error}
+    closeSystemModal();await loadSystems();if(editId)openSystemDetail(editId);
+  }catch(err){errEl.textContent='Error: '+err.message;errEl.style.display='block'}finally{btn.innerHTML=origH;btn.disabled=false}}
+
+// ═══ ORGANISATION PAGE ════════════════════════════════════════
+async function renderOrgPage(){
+  if(!currentOrg)return;
+  const plan=PLAN_LABELS[currentOrg.plan]||currentOrg.plan||'Essentials';
+  const subSt=currentOrg.subscription_status==='active'?'Active':currentOrg.subscription_status==='trialing'?'Trial':currentOrg.subscription_status==='none'?'Not subscribed':currentOrg.subscription_status||'—';
+  document.getElementById('org-profile-grid').innerHTML='<div class="meta-item"><label>Organisation Name</label><span>'+esc(currentOrg.name)+'</span></div><div class="meta-item"><label>Sector</label><span>'+esc(currentOrg.sector||currentProfile?.organisation||'—')+'</span></div><div class="meta-item"><label>Organisation Size</label><span>'+esc(currentOrg.org_size||'—')+'</span></div><div class="meta-item"><label>Organisation ID</label><span class="meta-id">'+esc(currentOrg.id)+'</span></div>';
+  document.getElementById('org-sub-grid').innerHTML='<div class="meta-item"><label>Registry Phase</label><span>Phase 1</span></div><div class="meta-item"><label>Membership Tier</label><span>'+esc(plan)+'</span></div><div class="meta-item"><label>Subscription Status</label><span>'+esc(subSt)+'</span></div><div class="meta-item"><label>AI Systems Registered</label><span>'+allSystems.length+'</span></div>';
+  const{data:members}=await sb.from('org_members').select('*').eq('org_id',currentOrg.id).order('created_at',{ascending:true});
+  if(!members||!members.length){document.getElementById('org-members-wrap').innerHTML='<div class="empty-state" style="padding:24px 0;"><p>No members found.</p></div>';return}
+  document.getElementById('org-member-count').textContent=members.length+' member'+(members.length!==1?'s':'');
+  const{data:memberProfiles}=await sb.from('profiles').select('id,full_name,email').in('id',members.map(m=>m.user_id));
+  const profMap={};(memberProfiles||[]).forEach(p=>{profMap[p.id]=p});
+  const sysByUser={};allSystems.forEach(s=>{sysByUser[s.created_by]=(sysByUser[s.created_by]||0)+1});
+  document.getElementById('org-members-wrap').innerHTML=members.map(m=>{const p=profMap[m.user_id]||{};const name=p.full_name||'Unknown';const email=p.email||'—';const init=name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();const sc=sysByUser[m.user_id]||0;
+    return '<div class="member-row"><div class="member-avatar">'+esc(init)+'</div><div class="member-info"><div class="member-name">'+esc(name)+'</div><div class="member-email">'+esc(email)+'</div></div><div style="font-size:.72rem;color:var(--muted);text-align:right;min-width:70px;">'+sc+' system'+(sc!==1?'s':'')+'</div><span class="role-chip role-'+(m.role||'viewer')+'">'+(m.role||'viewer')+'</span></div>'}).join('');
 }
 
-function renderComplianceTab(compliance) {
-  if (compliance.length === 0) {
-    document.getElementById('tab-compliance').innerHTML = `<div class="empty-state" style="padding:28px 0;">
-      <h4>No compliance obligations</h4>
-      <p>Set a risk tier on this system to auto-populate applicable regulatory obligations.</p>
-    </div>`;
-    return;
-  }
-
-  // Group by framework — EU AI Act first
-  const grouped = {};
-  const fOrder = ['eu_ai_act', 'uk_gdpr', 'fca'];
-  const fLabels = { eu_ai_act: 'EU AI Act', uk_gdpr: 'UK GDPR', fca: 'FCA' };
-  compliance.forEach(c => {
-    const fw = c.compliance_frameworks?.framework || 'unknown';
-    if (!grouped[fw]) grouped[fw] = [];
-    grouped[fw].push(c);
-  });
-
-  // Sort within each group by display_order
-  Object.values(grouped).forEach(arr => arr.sort((a,b) => (a.compliance_frameworks?.display_order || 0) - (b.compliance_frameworks?.display_order || 0)));
-
-  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-    <div style="font-size:0.78rem;color:var(--muted);">${compliance.length} obligations across ${Object.keys(grouped).length} framework${Object.keys(grouped).length > 1 ? 's' : ''}</div>
-    <button class="btn-topbar btn-topbar-primary" onclick="saveAllCompliance()" id="save-compliance-btn" style="padding:5px 12px;font-size:0.72rem;">Save Changes</button>
-  </div>`;
-
-  fOrder.forEach(fw => {
-    const items = grouped[fw];
-    if (!items) return;
-    html += `<div class="framework-section">
-      <div class="framework-label">${fLabels[fw] || fw}</div>
-      ${items.map(c => {
-        const cf = c.compliance_frameworks || {};
-        return `<div class="obligation-row" data-compliance-id="${c.id}">
-          <div class="obligation-header">
-            <div class="obligation-info">
-              <div class="obligation-title">${esc(cf.obligation_title || '')}</div>
-              <div class="obligation-ref">${esc(cf.article_reference || '')}</div>
-            </div>
-            <select class="obligation-select" data-cid="${c.id}" onchange="markComplianceDirty()">
-              <option value="not_started" ${c.status==='not_started'?'selected':''}>Not Started</option>
-              <option value="in_progress" ${c.status==='in_progress'?'selected':''}>In Progress</option>
-              <option value="compliant" ${c.status==='compliant'?'selected':''}>Compliant</option>
-              <option value="non_compliant" ${c.status==='non_compliant'?'selected':''}>Non-Compliant</option>
-              <option value="not_applicable" ${c.status==='not_applicable'?'selected':''}>N/A</option>
-            </select>
-          </div>
-          <div class="obligation-desc">${esc(cf.obligation_description || '')}</div>
-          ${cf.guidance_text ? `<div style="font-size:0.72rem;color:var(--sky);background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.1);border-radius:6px;padding:8px 10px;margin-bottom:8px;line-height:1.5;"><strong style="font-weight:600;">MLA Guidance:</strong> ${esc(cf.guidance_text)}</div>` : ''}
-          <textarea class="obligation-evidence" data-cid="${c.id}" placeholder="Evidence notes — what exists, what's needed…">${esc(c.evidence_notes || '')}</textarea>
-        </div>`;
-      }).join('')}
-    </div>`;
-  });
-
-  document.getElementById('tab-compliance').innerHTML = html;
+// ═══ DASHBOARD ════════════════════════════════════════════════
+async function renderDashboard(paidIds){
+  document.getElementById('dash-count').textContent=currentResults.length||'0';
+  document.getElementById('dash-score').textContent=currentResults.length>0?(currentResults[0].adjusted_score||0)+'%':'—';
+  document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
+  let tOb=0,dOb=0;allSystems.forEach(s=>(s.system_compliance||[]).forEach(c=>{tOb++;if(c.status==='compliant'||c.status==='not_applicable')dOb++}));
+  document.getElementById('dash-compliance').textContent=tOb>0?Math.round(dOb/tOb*100)+'%':'—';
+  const feed=[];const bandColors={low:'#4ade80',lowmod:'#86efac',moderate:'#fde047',high:'#fca5a5',critical:'#f87171'};
+  currentResults.forEach(r=>{const band=r.risk_band||'moderate';feed.push({time:new Date(r.created_at),color:bandColors[band]||'#60a5fa',html:'Diagnostic completed — <strong>'+esc(r.organisation||'Assessment')+'</strong><br>'+(BAND_LABELS[band]||band)+' · '+(r.adjusted_score||0)+'%',date:fmtDate(r.created_at)})});
+  if(currentOrg){const{data:auditEntries}=await sb.from('registry_audit_log').select('*').eq('org_id',currentOrg.id).order('created_at',{ascending:false}).limit(20);
+    if(auditEntries&&auditEntries.length){const nm=await loadNames(auditEntries.map(e=>e.user_id));
+      auditEntries.forEach(entry=>{const a=fmtAudit(entry,nm);feed.push({time:new Date(entry.created_at),color:'#60a5fa',html:a.text+'<br><span style="font-size:.68rem;color:var(--muted);">'+esc(a.who)+'</span>',date:fmtDate(entry.created_at)})})}}
+  feed.sort((a,b)=>b.time-a.time);
+  const actEl=document.getElementById('dash-activity');
+  if(!feed.length)actEl.innerHTML='<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No activity yet. Run your first diagnostic to get started.</div>';
+  else actEl.innerHTML=feed.slice(0,8).map(f=>'<div class="activity-item"><div class="activity-dot" style="background:'+f.color+';"></div><div class="activity-body">'+f.html+'</div><div class="activity-time">'+f.date+'</div></div>').join('');
 }
 
-function markComplianceDirty() {
-  const btn = document.getElementById('save-compliance-btn');
-  if (btn) { btn.textContent = 'Save Changes •'; btn.style.background = '#1d4ed8'; }
+// ═══ REPORTS ══════════════════════════════════════════════════
+function renderReports(paidIds){
+  const c=document.getElementById('reports-container');if(!currentResults.length){c.innerHTML='<div class="empty-state"><h4>No assessments yet</h4><p>Complete your first diagnostic to see results.</p><a href="diagnostic.html" class="btn-dl" style="display:inline-flex;text-decoration:none;margin-top:4px;">Start First Diagnostic</a></div>';return}
+  c.className='result-list';c.innerHTML=currentResults.map(r=>{const band=r.risk_band||'moderate';const paid=isPaid||paidIds.has(r.id);const btn=paid?'<div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn-dl" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</button><button id="pdf-btn-'+r.id+'" class="btn-pdf" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Save as PDF</button></div>':'<a href="pricing.html" class="btn-unlock">Unlock — £295</a>';return '<div class="result-card"><div><div class="result-org">'+esc(r.organisation||'Assessment')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'<span>v'+(r.framework_version||'2.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Score</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div></div>'}).join('');
 }
 
-async function saveAllCompliance() {
-  const btn = document.getElementById('save-compliance-btn');
-  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
-
-  const selects = document.querySelectorAll('#tab-compliance .obligation-select');
-  const textareas = document.querySelectorAll('#tab-compliance .obligation-evidence');
-
-  const updates = [];
-  selects.forEach(sel => {
-    const cid = sel.dataset.cid;
-    const ta = document.querySelector(`.obligation-evidence[data-cid="${cid}"]`);
-    updates.push({
-      id: cid,
-      status: sel.value,
-      evidence_notes: ta ? ta.value.trim() || null : null,
-      reviewed_by: currentUser.id,
-      reviewed_at: new Date().toISOString()
-    });
-  });
-
-  let hadError = false;
-  for (const u of updates) {
-    const { error } = await sb.from('system_compliance').update({
-      status: u.status, evidence_notes: u.evidence_notes,
-      reviewed_by: u.reviewed_by, reviewed_at: u.reviewed_at
-    }).eq('id', u.id);
-    if (error) { console.error('Compliance save error:', error); hadError = true; }
-  }
-
-  // Log audit entry
-  if (!hadError && currentSystemId) {
-    const sys = allSystems.find(s => s.id === currentSystemId);
-    if (sys) {
-      await sb.from('registry_audit_log').insert({
-        org_id: currentOrg.id, user_id: currentUser.id,
-        action: 'compliance_status_updated', entity_type: 'ai_system',
-        entity_id: currentSystemId,
-        changes: { updated_count: updates.length }
-      });
-    }
-  }
-
-  if (btn) { btn.textContent = hadError ? 'Error — retry' : 'Saved'; btn.disabled = false; }
-  if (!hadError) {
-    setTimeout(() => { if (btn) btn.textContent = 'Save Changes'; }, 2000);
-    // Refresh system data for updated compliance %
-    await loadSystems();
-  }
-}
-
-function switchDetailTab(id, btn) {
-  document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-}
-
-// ── REGISTRY: ADD/EDIT SYSTEM ─────────────────────────────────
-function openAddSystem() {
-  document.getElementById('sysmod-id').value = '';
-  document.getElementById('sysmod-title').textContent = 'Register AI System';
-  document.getElementById('sysmod-sub').textContent = 'Add a new system to the governance registry';
-  document.getElementById('sysmod-submit').innerHTML = '<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg> Register System';
-  clearSystemForm();
-  document.getElementById('system-modal').classList.add('open');
-}
-
-function openEditSystem() {
-  const sys = allSystems.find(s => s.id === currentSystemId);
-  if (!sys) return;
-  document.getElementById('sysmod-id').value = sys.id;
-  document.getElementById('sysmod-title').textContent = 'Edit System';
-  document.getElementById('sysmod-sub').textContent = sys.name;
-  document.getElementById('sysmod-submit').innerHTML = 'Save Changes';
-  document.getElementById('sysmod-name').value = sys.name || '';
-  document.getElementById('sysmod-desc').value = sys.description || '';
-  document.getElementById('sysmod-vendor').value = sys.vendor || '';
-  document.getElementById('sysmod-type').value = sys.system_type || '';
-  document.getElementById('sysmod-purpose').value = sys.purpose_category || '';
-  document.getElementById('sysmod-tier').value = sys.risk_tier || '';
-  document.getElementById('sysmod-status').value = sys.deployment_status || 'planned';
-  document.getElementById('sysmod-rationale').value = sys.risk_tier_rationale || '';
-  document.getElementById('sysmod-owner').value = sys.system_owner || '';
-  document.getElementById('sysmod-dept').value = sys.department || '';
-  document.getElementById('sysmod-notes').value = sys.notes || '';
-  onPurposeChange();
-  document.getElementById('system-modal').classList.add('open');
-}
-
-function clearSystemForm() {
-  ['sysmod-name','sysmod-desc','sysmod-vendor','sysmod-rationale','sysmod-owner','sysmod-dept','sysmod-notes'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('sysmod-type').value = '';
-  document.getElementById('sysmod-purpose').value = '';
-  document.getElementById('sysmod-tier').value = '';
-  document.getElementById('sysmod-status').value = 'planned';
-  document.getElementById('sysmod-tier-hint').style.display = 'none';
-  document.getElementById('sysmod-rationale-wrap').style.display = 'none';
-  document.getElementById('sysmod-error').style.display = 'none';
-}
-
-function closeSystemModal() { document.getElementById('system-modal').classList.remove('open'); }
-
-function onPurposeChange() {
-  const purpose = document.getElementById('sysmod-purpose').value;
-  const suggested = PURPOSE_TIER_MAP[purpose];
-  const hint = document.getElementById('sysmod-tier-hint');
-  const tierSel = document.getElementById('sysmod-tier');
-  const rationaleWrap = document.getElementById('sysmod-rationale-wrap');
-
-  if (suggested) {
-    hint.innerHTML = `Suggested tier: <strong>${TIER_LABELS[suggested]}</strong> — based on EU AI Act Annex III classification.`;
-    hint.style.display = 'block';
-    tierSel.value = suggested;
-  } else if (purpose === 'other') {
-    hint.innerHTML = 'Please classify this system manually based on your assessment of its risk profile.';
-    hint.style.display = 'block';
-  } else {
-    hint.style.display = 'none';
-  }
-
-  // Show rationale if tier differs from suggestion
-  rationaleWrap.style.display = (tierSel.value && tierSel.value !== suggested) ? 'block' : 'none';
-  tierSel.onchange = () => {
-    rationaleWrap.style.display = (tierSel.value && tierSel.value !== suggested) ? 'block' : 'none';
-  };
-}
-
-async function submitSystem() {
-  const name = document.getElementById('sysmod-name').value.trim();
-  const owner = document.getElementById('sysmod-owner').value.trim();
-  const errEl = document.getElementById('sysmod-error');
-
-  if (!name || !owner) {
-    errEl.textContent = 'System name and owner are required.';
-    errEl.style.display = 'block';
-    return;
-  }
-  errEl.style.display = 'none';
-
-  const btn = document.getElementById('sysmod-submit');
-  const origHtml = btn.innerHTML;
-  btn.textContent = 'Saving…'; btn.disabled = true;
-
-  if (!currentOrg) await ensureOrg();
-
-  const payload = {
-    org_id:              currentOrg.id,
-    name:                name,
-    description:         document.getElementById('sysmod-desc').value.trim() || null,
-    vendor:              document.getElementById('sysmod-vendor').value.trim() || null,
-    system_type:         document.getElementById('sysmod-type').value || null,
-    purpose_category:    document.getElementById('sysmod-purpose').value || null,
-    risk_tier:           document.getElementById('sysmod-tier').value || null,
-    risk_tier_rationale: document.getElementById('sysmod-rationale').value.trim() || null,
-    risk_tier_set_by:    document.getElementById('sysmod-tier').value ? currentUser.id : null,
-    deployment_status:   document.getElementById('sysmod-status').value,
-    system_owner:        owner,
-    department:          document.getElementById('sysmod-dept').value.trim() || null,
-    notes:               document.getElementById('sysmod-notes').value.trim() || null,
-  };
-
-  const editId = document.getElementById('sysmod-id').value;
-
-  try {
-    if (editId) {
-      // Update
-      const { error } = await sb.from('ai_systems').update(payload).eq('id', editId);
-      if (error) throw error;
-      // Audit log for update (trigger handles risk_tier changes, but we log general updates too)
-      await sb.from('registry_audit_log').insert({
-        org_id: currentOrg.id, user_id: currentUser.id,
-        action: 'system_updated', entity_type: 'ai_system', entity_id: editId,
-        changes: { fields_updated: Object.keys(payload).filter(k => payload[k] !== null) }
-      });
-    } else {
-      // Insert
-      payload.created_by = currentUser.id;
-      const { error } = await sb.from('ai_systems').insert(payload);
-      if (error) throw error;
-      // Audit log is handled by the DB trigger (fn_populate_compliance_on_insert)
-    }
-
-    closeSystemModal();
-    await loadSystems();
-
-    // If editing, refresh detail view
-    if (editId) openSystemDetail(editId);
-  } catch (err) {
-    errEl.textContent = 'Error: ' + err.message;
-    errEl.style.display = 'block';
-  } finally {
-    btn.innerHTML = origHtml;
-    btn.disabled = false;
-  }
-}
-
-// ── DASHBOARD ─────────────────────────────────────────────────
-function renderDashboard(paidDiagnosticIds) {
-  document.getElementById('dash-count').textContent = currentResults.length || '0';
-  if (currentResults.length > 0) {
-    const l = currentResults[0];
-    const band = l.risk_band || 'moderate';
-    document.getElementById('dash-score').textContent = (l.adjusted_score || 0) + '%';
-    const bandEl = document.getElementById('dash-band');
-    bandEl.textContent = BAND_LABELS[band] || band;
-    bandEl.className = 'stat-value score-' + band;
-    document.getElementById('dash-date').textContent = 'Updated ' + fmtDate(l.created_at);
-  }
-
-  const actEl = document.getElementById('dash-activity');
-  if (currentResults.length === 0) {
-    actEl.innerHTML = '<div style="font-size:0.78rem;color:var(--muted);padding:8px 0;">No activity yet. Run your first diagnostic to get started.</div>';
-  } else {
-    const colors = { low:'#4ade80', lowmod:'#86efac', moderate:'#fde047', high:'#fca5a5', critical:'#f87171' };
-    actEl.innerHTML = currentResults.slice(0,4).map(r => {
-      const band = r.risk_band || 'moderate';
-      return `<div class="activity-item"><div class="activity-dot" style="background:${colors[band]||'#60a5fa'};"></div><div class="activity-body">Diagnostic completed — <strong>${esc(r.organisation||'Assessment')}</strong><br>${BAND_LABELS[band]||band} · ${r.adjusted_score||0}%</div><div class="activity-time">${fmtDate(r.created_at)}</div></div>`;
-    }).join('');
-  }
-
-  const latestEl = document.getElementById('dash-latest');
-  if (currentResults.length === 0) {
-    latestEl.innerHTML = `<div style="text-align:center;padding:20px 0;"><div style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">No assessments yet.</div><a href="diagnostic.html" class="btn-dl" style="display:inline-flex;text-decoration:none;">Start first diagnostic</a></div>`;
-  } else {
-    const l = currentResults[0];
-    const band = l.risk_band || 'moderate';
-    const resultPaid = isPaid || paidDiagnosticIds.has(l.id);
-    latestEl.innerHTML = `
-      <div style="margin-bottom:14px;"><div style="font-size:0.88rem;font-weight:600;color:var(--main);margin-bottom:4px;">${esc(l.organisation||'Assessment')}</div><div style="font-size:0.72rem;color:var(--muted);">${fmtDate(l.created_at)} · ${esc(l.sector||'')}</div></div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-        <div class="score-num score-${band}" style="font-size:2rem;font-weight:700;">${l.adjusted_score||0}%</div>
-        <div><div class="band-pill band-${band}" style="margin-bottom:4px;">${BAND_LABELS[band]||band}</div><div style="font-size:0.68rem;color:var(--muted);">Framework v${l.framework_version||'2.0.0'}</div></div>
-      </div>
-      ${resultPaid
-        ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><button class="btn-dl" onclick="downloadReport('${l.id}')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</button><button id="pdf-btn-${l.id}" class="btn-pdf" onclick="savePDF('${l.id}')"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Save as PDF</button></div>`
-        : `<a href="pricing.html" class="btn-unlock">Unlock Full Report — £295</a>`
-      }`;
-  }
-}
-
-// ── REPORTS ───────────────────────────────────────────────────
-function renderReports(paidDiagnosticIds) {
-  const container = document.getElementById('reports-container');
-  if (currentResults.length === 0) {
-    container.innerHTML = `<div class="empty-state"><h4>No assessments yet</h4><p>Complete your first AI governance diagnostic to see your results here.</p><a href="diagnostic.html" class="btn-dl" style="display:inline-flex;text-decoration:none;margin-top:4px;">Start First Diagnostic</a></div>`;
-    return;
-  }
-  container.className = 'result-list';
-  container.innerHTML = currentResults.map(r => {
-    const band = r.risk_band || 'moderate';
-    const resultPaid = isPaid || paidDiagnosticIds.has(r.id);
-    const actionBtn = resultPaid
-      ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><button class="btn-dl" onclick="downloadReport('${r.id}')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</button><button id="pdf-btn-${r.id}" class="btn-pdf" onclick="savePDF('${r.id}')"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Save as PDF</button></div>`
-      : `<a href="pricing.html" class="btn-unlock">Unlock — £295</a>`;
-    return `<div class="result-card"><div><div class="result-org">${esc(r.organisation||'Assessment')}</div><div class="result-meta"><span>${fmtDate(r.created_at)}</span>${r.sector ? `<span>${esc(r.sector)}</span>` : ''}<span>v${r.framework_version||'2.0.0'}</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num score-${band}">${r.adjusted_score||0}%</div><div class="score-lbl">Score</div></div><div class="band-pill band-${band}">${BAND_LABELS[band]||band}</div>${actionBtn}</div></div>`;
-  }).join('');
-}
-
-// ── SETTINGS ──────────────────────────────────────────────────
-async function saveProfile() {
-  const first = document.getElementById('set-first').value.trim();
-  const last  = document.getElementById('set-last').value.trim();
-  const org   = document.getElementById('set-org').value.trim();
-  const full  = (first + ' ' + last).trim();
-  const { error } = await sb.from('profiles').upsert({ id: currentUser.id, full_name: full, organisation: org }, { onConflict: 'id' });
-  if (!error) {
-    document.getElementById('sidebar-name').textContent = full || currentUser.email.split('@')[0];
-    const initials = full.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-    document.getElementById('sidebar-avatar').textContent = initials;
-    document.getElementById('dash-avatar').textContent = initials;
-    alert('Profile saved.');
-  } else { alert('Error saving profile. Please try again.'); }
-}
-
-async function changePassword() {
-  const pw  = document.getElementById('set-pw').value;
-  const pw2 = document.getElementById('set-pw2').value;
-  const msg = document.getElementById('set-pw-msg');
-  msg.style.display = 'block';
-  if (pw.length < 8) { msg.style.color = 'var(--red)'; msg.textContent = 'Password must be at least 8 characters.'; return; }
-  if (pw !== pw2)    { msg.style.color = 'var(--red)'; msg.textContent = 'Passwords do not match.'; return; }
-  const { error } = await sb.auth.updateUser({ password: pw });
-  if (error) { msg.style.color = 'var(--red)'; msg.textContent = error.message; }
-  else { msg.style.color = '#4ade80'; msg.textContent = 'Password updated successfully.'; document.getElementById('set-pw').value = ''; document.getElementById('set-pw2').value = ''; }
-}
-
-function copyReferral() {
-  const link = document.getElementById('referral-link').textContent;
-  navigator.clipboard.writeText('https://' + link).then(() => {
-    const btn = document.querySelector('.invite-copy');
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy link', 2000);
-  });
-}
-
-// ── DOWNLOAD / PDF ────────────────────────────────────────────
-function downloadReport(resultId) { window.open('report.html?rid=' + resultId, '_blank'); }
-
-async function savePDF(resultId) {
-  const btn = document.getElementById('pdf-btn-' + resultId);
-  if (!btn) return;
-  const orig = btn.innerHTML;
-  btn.innerHTML = '<svg viewBox="0 0 12 12"><path d="M6 2v8M3 7l3 3 3-3M1 11h10"/></svg>Generating…';
-  btn.disabled = true;
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) throw new Error('Not authenticated');
-    const res = await fetch(SUPABASE_URL + '/functions/v1/generate-report', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token, 'apikey': SUPABASE_KEY },
-      body: JSON.stringify({ response_id: resultId })
-    });
-    if (!res.ok) throw new Error('Server error: ' + res.status);
-    const data = await res.json();
-    if (!data?.download_url) throw new Error('No download URL returned');
-    const a = document.createElement('a'); a.href = data.download_url; a.download = 'MLA-Governance-Report.pdf'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  } catch (err) { alert('PDF generation failed: ' + err.message); }
-  finally { btn.innerHTML = orig; btn.disabled = false; }
-}
-
-// ── UTILS ─────────────────────────────────────────────────────
-function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : ''; }
-function fmtDateLong(iso) { return iso ? new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—'; }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-async function signOut() { await sb.auth.signOut(); window.location.href = 'login.html'; }
+// ═══ SETTINGS ═════════════════════════════════════════════════
+async function saveProfile(){const first=document.getElementById('set-first').value.trim();const last=document.getElementById('set-last').value.trim();const org=document.getElementById('set-org').value.trim();const full=(first+' '+last).trim();const{error}=await sb.from('profiles').upsert({id:currentUser.id,full_name:full,organisation:org},{onConflict:'id'});if(!error){document.getElementById('sidebar-name').textContent=full||currentUser.email.split('@')[0];const ini=full.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();document.getElementById('sidebar-avatar').textContent=ini;document.getElementById('dash-avatar').textContent=ini;alert('Profile saved.')}else alert('Error saving.')}
+async function changePassword(){const pw=document.getElementById('set-pw').value;const pw2=document.getElementById('set-pw2').value;const msg=document.getElementById('set-pw-msg');msg.style.display='block';if(pw.length<8){msg.style.color='var(--red)';msg.textContent='Min. 8 characters.';return}if(pw!==pw2){msg.style.color='var(--red)';msg.textContent='Passwords do not match.';return}const{error}=await sb.auth.updateUser({password:pw});if(error){msg.style.color='var(--red)';msg.textContent=error.message}else{msg.style.color='#4ade80';msg.textContent='Password updated.';document.getElementById('set-pw').value='';document.getElementById('set-pw2').value=''}}
+function copyReferral(){const link=document.getElementById('referral-link').textContent;navigator.clipboard.writeText('https://'+link).then(()=>{const btn=document.querySelector('.invite-copy');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy link',2000)})}
+function downloadReport(id){window.open('report.html?rid='+id,'_blank')}
+async function savePDF(resultId){const btn=document.getElementById('pdf-btn-'+resultId);if(!btn)return;const orig=btn.innerHTML;btn.innerHTML='Generating…';btn.disabled=true;try{const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Not authenticated');const res=await fetch(SUPABASE_URL+'/functions/v1/generate-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},body:JSON.stringify({response_id:resultId})});if(!res.ok)throw new Error('Server error: '+res.status);const data=await res.json();if(!data?.download_url)throw new Error('No URL');const a=document.createElement('a');a.href=data.download_url;a.download='MLA-Governance-Report.pdf';document.body.appendChild(a);a.click();document.body.removeChild(a)}catch(err){alert('PDF generation failed: '+err.message)}finally{btn.innerHTML=orig;btn.disabled=false}}
 
 init();
-</script>
-</body>
-</html>
+</script></body></html>
