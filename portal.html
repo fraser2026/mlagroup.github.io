@@ -150,7 +150,7 @@ textarea.field-input{resize:vertical;min-height:80px}
  
 <div id="view-registry" class="view"><div class="page-header"><h2>AI Systems Registry</h2><p id="reg-subtext">Document and classify your organisation's AI systems.</p></div><div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Total Systems</div><div class="stat-value" id="reg-total">—</div><div class="stat-sub">Registered</div></div><div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value" style="color:#fca5a5;" id="reg-high">—</div><div class="stat-sub">EU AI Act tier</div></div><div class="stat-card"><div class="stat-label">In Production</div><div class="stat-value" style="color:#4ade80;" id="reg-prod">—</div><div class="stat-sub">Live systems</div></div><div class="stat-card"><div class="stat-label">Compliance</div><div class="stat-value" id="reg-compliance">—</div><div class="stat-sub" id="reg-compliance-sub">Overall progress</div></div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;"><span style="font-size:.72rem;color:var(--muted);">Filter:</span><button class="filter-btn active" onclick="setRegFilter('all',this)">All</button><button class="filter-btn" onclick="setRegFilter('production',this)">Production</button><button class="filter-btn" onclick="setRegFilter('pilot',this)">Pilot</button><button class="filter-btn" onclick="setRegFilter('development',this)">Development</button><button class="filter-btn" onclick="setRegFilter('planned',this)">Planned</button></div><div class="panel"><div class="panel-header"><div class="panel-title">Systems</div><div class="panel-sub" id="reg-table-count"></div></div><div id="reg-table-wrap"><div class="loading-state">Loading registry…</div></div></div></div>
  
-<div id="view-registry-detail" class="view"><button class="breadcrumb" onclick="navigate('registry',document.getElementById('nav-registry'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Registry</button><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);letter-spacing:-.02em;" id="det-name">—</h2><span id="det-tier-badge"></span><span id="det-status-badge"></span><span id="det-assess-badge"></span></div><div style="display:flex;align-items:center;gap:12px;font-size:.75rem;color:var(--muted);flex-wrap:wrap;" id="det-subtitle"></div></div><div style="display:flex;gap:8px;"><button class="btn-topbar btn-topbar-primary" onclick="openAssessmentModal()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button><button class="btn-topbar btn-topbar-ghost" onclick="openEditSystem()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button></div></div><div class="panel" style="overflow:visible;"><div class="tab-bar"><button class="tab-btn active" onclick="switchDetailTab('overview',this)">Overview</button><button class="tab-btn" onclick="switchDetailTab('assessment',this)">Assessment</button><button class="tab-btn" onclick="switchDetailTab('audit',this)">Audit Log</button></div><div class="tab-panel active" id="tab-overview"></div><div class="tab-panel" id="tab-assessment"></div><div class="tab-panel" id="tab-audit"></div></div></div>
+<div id="view-registry-detail" class="view"><button class="breadcrumb" onclick="navigate('registry',document.getElementById('nav-registry'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Registry</button><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);letter-spacing:-.02em;" id="det-name">—</h2><span id="det-tier-badge"></span><span id="det-status-badge"></span><span id="det-assess-badge"></span></div><div style="display:flex;align-items:center;gap:12px;font-size:.75rem;color:var(--muted);flex-wrap:wrap;" id="det-subtitle"></div></div><div style="display:flex;gap:8px;"><button class="btn-topbar btn-topbar-primary" onclick="openAssessmentModal()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button><button class="btn-topbar btn-topbar-ghost" onclick="openEditSystem()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button></div></div><div class="panel" style="overflow:visible;"><div class="tab-bar"><button class="tab-btn active" onclick="switchDetailTab('overview',this)">Overview</button><button class="tab-btn" onclick="switchDetailTab('assessment',this)">Assessment</button><button class="tab-btn" onclick="switchDetailTab('sys-controls',this)">Controls</button><button class="tab-btn" onclick="switchDetailTab('audit',this)">Audit Log</button></div><div class="tab-panel active" id="tab-overview"></div><div class="tab-panel" id="tab-assessment"></div><div class="tab-panel" id="tab-sys-controls"></div><div class="tab-panel" id="tab-audit"></div></div></div>
  
 <div id="view-org" class="view"><div class="page-header"><h2>Organisation</h2><p>Entity profile, membership and access management.</p></div><div class="two-col"><div class="panel"><div class="panel-header"><div class="panel-title">Organisation Profile</div></div><div class="panel-body"><div class="meta-grid" id="org-profile-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Subscription</div></div><div class="panel-body"><div class="meta-grid" id="org-sub-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Members</div><div class="panel-sub" id="org-member-count"></div></div><div id="org-members-wrap"><div class="loading-state">Loading members…</div></div></div></div>
  
@@ -364,6 +364,8 @@ async function openSystemDetail(sysId){
   document.getElementById('tab-overview').innerHTML='<div style="margin-bottom:16px;"><div class="stat-label" style="margin-bottom:6px;">Description</div><p style="font-size:.82rem;color:var(--sub);line-height:1.7;">'+esc(sys.description||'No description provided.')+'</p></div><div class="meta-grid"><div class="meta-item"><label>System ID</label><span class="meta-id">'+esc(sys.id)+'</span></div><div class="meta-item"><label>System Type</label><span>'+esc(TYPE_LABELS[sys.system_type]||'—')+'</span></div><div class="meta-item"><label>Vendor</label><span>'+esc(sys.vendor||'—')+'</span></div><div class="meta-item"><label>Department</label><span>'+esc(sys.department||'—')+'</span></div><div class="meta-item"><label>System Owner</label><span>'+esc(sys.system_owner||'—')+'</span></div><div class="meta-item"><label>Deployment</label><span><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||'')+'</span></span></div><div class="meta-item"><label>Purpose Category</label><span>'+esc(sys.purpose_category?sys.purpose_category.replace(/_/g,' '):'—')+'</span></div><div class="meta-item"><label>Risk Tier</label><span><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></span></div>'+(sys.risk_tier_rationale?'<div class="meta-item" style="grid-column:1/-1;"><label>Classification Rationale</label><span>'+esc(sys.risk_tier_rationale)+'</span></div>':'')+'<div class="meta-item"><label>Registered</label><span>'+fmtDate(sys.created_at)+'</span></div><div class="meta-item"><label>Last Updated</label><span>'+fmtDate(sys.updated_at)+'</span></div></div>';
   // Assessment tab
   renderAssessmentTab(assessments||[]);
+  // System controls tab
+  await renderSystemControlsTab(sysId);
   // Audit with names
   const logs=auditLog||[];
   if(!logs.length)document.getElementById('tab-audit').innerHTML='<div class="empty-state" style="padding:28px 0;"><h4>No audit entries</h4><p>Entries are created automatically on system changes.</p></div>';
@@ -404,6 +406,53 @@ async function renderAssessmentTab(assessments){
       (a.status==='controls_issued'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;"><div style="font-size:.72rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">MLA Controls Issued</div>'+(a.mla_notes?'<div style="font-size:.78rem;color:var(--sub);line-height:1.65;">'+esc(a.mla_notes)+'</div>':'')+'<div style="font-size:.68rem;color:var(--muted);margin-top:6px;">Completed by '+(nm[a.completed_by]||'MLA Group')+' · '+fmtDateLong(a.completed_at)+'</div></div>':'')+
       (a.status==='submitted'||a.status==='in_review'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.12);border-radius:8px;"><div style="font-size:.78rem;color:var(--sub);line-height:1.65;">Your assessment has been submitted. MLA Group will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
     '</div>'}).join('');
+}
+ 
+// System-level controls tab
+async function renderSystemControlsTab(sysId){
+  const el=document.getElementById('tab-sys-controls');
+  if(!allControls.length)await loadControls();
+  // Get assignments for this specific system
+  const{data:sysAssignments}=await sb.from('control_assignments').select('*').eq('system_id',sysId).eq('org_id',currentOrg.id);
+  // Also get org-level assignments (controls 1-3 apply to whole org)
+  const{data:orgAssignments}=await sb.from('control_assignments').select('*').eq('org_id',currentOrg.id).is('system_id',null);
+  const allSysCtrl=[...(sysAssignments||[]),...(orgAssignments||[])];
+  
+  if(!allSysCtrl.length){
+    el.innerHTML='<div class="empty-state" style="padding:36px 0;"><h4>No controls triggered yet</h4><p style="max-width:380px;margin:0 auto 20px;">Run an assessment on this AI system. Controls will be automatically triggered based on governance gaps identified.</p><button class="btn-dl" onclick="openAssessmentModal()" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button></div>';
+    return;
+  }
+  
+  const done=allSysCtrl.filter(a=>a.status==='implemented'||a.status==='verified').length;
+  const total=allSysCtrl.length;
+  const pct=total>0?Math.round(done/total*100):0;
+  const pctCol=pct>=70?'#4ade80':pct>=40?'#fbbf24':'#f87171';
+  
+  let html='<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;"><div style="flex:1;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><span style="font-size:1.5rem;font-weight:700;color:'+pctCol+';">'+pct+'%</span><span style="font-size:.72rem;color:var(--muted);">'+done+' of '+total+' controls implemented</span></div><div class="cprogress-bar" style="height:6px;"><div class="cprogress-fill" style="width:'+pct+'%;background:'+pctCol+';"></div></div></div></div>';
+  
+  // Group by type
+  const groups={organisation:[],system:[],assurance:[]};
+  allSysCtrl.forEach(a=>{
+    const ctrl=allControls.find(c=>c.id===a.control_id);
+    if(ctrl)groups[ctrl.control_type].push({assign:a,ctrl});
+  });
+  
+  const typeLabels={organisation:'Organisation Controls',system:'System Controls',assurance:'Assurance Controls'};
+  ['organisation','system','assurance'].forEach(t=>{
+    const items=groups[t];if(!items.length)return;
+    html+='<div style="margin-bottom:16px;"><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:'+TYPE_COLORS[t]+';padding:8px 0 6px;display:flex;align-items:center;gap:10px;">'+typeLabels[t]+'<span style="flex:1;height:1px;background:var(--border);"></span></div>';
+    items.forEach(({assign:a,ctrl:c})=>{
+      const st=a.status||'not_started';
+      html+='<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;" onclick="openControlDetail(\''+c.id+'\')">'+
+        '<div style="width:24px;height:24px;border-radius:6px;background:'+TYPE_BG[t]+';border:1px solid '+TYPE_BORDER[t]+';display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:'+TYPE_COLORS[t]+';flex-shrink:0;">'+c.control_number+'</div>'+
+        '<div style="flex:1;min-width:0;"><div style="font-size:.8rem;font-weight:600;color:var(--main);">'+esc(c.title)+'</div></div>'+
+        '<span style="font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+CTRL_STATUS_L[st]+'</span>'+
+      '</div>';
+    });
+    html+='</div>';
+  });
+  
+  el.innerHTML=html;
 }
  
 // Assessment modal → now redirects to assessment.html
