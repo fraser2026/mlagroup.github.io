@@ -115,6 +115,8 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="nav-section-label">Registry</div>
 <div class="nav-item" id="nav-registry" onclick="navigateRegistry(this)"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg>Registry<span class="nav-badge badge-count" id="sys-count-badge" style="display:none;"></span></div>
 <div class="nav-item" id="nav-org" onclick="navigateOrg(this)"><svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/></svg>Organisation</div>
+<div class="nav-section-label">Governance</div>
+<div class="nav-item" id="nav-controls" onclick="navigateControls(this)"><svg viewBox="0 0 16 16"><path d="M8 1l2 4 5 .7-3.5 3.4.8 5L8 12l-4.3 2.1.8-5L1 5.7 6 5z"/></svg>Controls<span class="nav-badge badge-count" id="ctrl-count-badge" style="display:none;"></span></div>
 <div class="nav-section-label">Account</div>
 <div class="nav-item" onclick="navigate('settings',this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/></svg>Settings</div>
 <div class="nav-section-label">Growth</div>
@@ -127,35 +129,89 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="main">
 <div class="topbar"><button class="mobile-toggle" onclick="openSidebar()"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button><div class="topbar-title" id="topbar-title"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div><div class="topbar-right" id="topbar-right"><button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button></div></div>
 <div class="content-scroll">
-
+ 
 <div id="view-dashboard" class="view active">
 <div class="welcome-bar"><div class="welcome-avatar" id="dash-avatar">?</div><div class="welcome-text"><h3>Good to see you<span id="dash-name"></span></h3><p id="dash-subtext">Your AI governance portal</p></div><div class="welcome-actions"><button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button></div></div>
-<div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Diagnostics</div><div class="stat-value" id="dash-count">—</div><div class="stat-sub">Assessments</div></div><div class="stat-card"><div class="stat-label">Latest Score</div><div class="stat-value" id="dash-score">—</div><div class="stat-sub">Governance maturity</div></div><div class="stat-card"><div class="stat-label">AI Systems</div><div class="stat-value" id="dash-sys-count">—</div><div class="stat-sub">In registry</div></div><div class="stat-card"><div class="stat-label">Compliance</div><div class="stat-value" id="dash-compliance">—</div><div class="stat-sub">Overall progress</div></div></div>
+<div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Diagnostics</div><div class="stat-value" id="dash-count">—</div><div class="stat-sub">Assessments</div></div><div class="stat-card"><div class="stat-label">AI Systems</div><div class="stat-value" id="dash-sys-count">—</div><div class="stat-sub">In registry</div></div><div class="stat-card"><div class="stat-label">Governance</div><div class="stat-value" id="dash-compliance">—</div><div class="stat-sub" id="dash-gov-maturity">Score</div></div><div class="stat-card"><div class="stat-label">Latest Score</div><div class="stat-value" id="dash-score">—</div><div class="stat-sub">Diagnostic</div></div></div>
 <div class="panel"><div class="panel-header"><div class="panel-title">Recent Activity</div></div><div class="panel-body" id="dash-activity"><div class="loading-state" style="padding:20px 0;">Loading…</div></div></div>
 <div class="panel"><div class="panel-header"><div class="panel-title">Quick Actions</div></div><div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
 <div onclick="navigate('reports',document.querySelectorAll('.nav-item')[1])" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">View Reports</div><div style="font-size:.7rem;color:var(--muted);">Download your PDFs</div></div>
 <div onclick="navigateRegistry(document.getElementById('nav-registry'))" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">AI Registry</div><div style="font-size:.7rem;color:var(--muted);">Document AI systems</div></div>
 <a href="diagnostic.html" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;text-decoration:none;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M8 1v14M1 8h14"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">New Diagnostic</div><div style="font-size:.7rem;color:var(--muted);">Run fresh assessment</div></a>
 </div></div></div>
-
+ 
 <div id="view-reports" class="view"><div class="page-header"><h2>Reports</h2><p>Your AI governance diagnostic history and PDF downloads.</p></div><div id="paywall-banner" style="display:none;" class="paywall-banner"><div><h4>Unlock your full AI Governance Risk Report</h4><p>Complete board-ready PDF with findings, regulatory mapping, and remediation roadmap.</p></div><a href="pricing.html">Get Full Report — £295</a></div><div id="reports-container" class="loading-state">Loading your reports…</div></div>
-
+ 
 <div id="view-settings" class="view"><div class="page-header"><h2>Account Settings</h2><p>Manage your profile, credentials and preferences.</p></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Profile Information</div></div><div class="panel-body"><div class="settings-grid"><div><label class="field-label">First name</label><input type="text" class="field-input" id="set-first" placeholder="—"></div><div><label class="field-label">Last name</label><input type="text" class="field-input" id="set-last" placeholder="—"></div></div><label class="field-label">Organisation</label><input type="text" class="field-input" id="set-org" placeholder="—"><label class="field-label">Email address</label><input type="email" class="field-input" id="set-email" disabled><div style="font-size:.7rem;color:var(--muted);margin-top:-6px;margin-bottom:12px;">Contact support to change your email.</div><button onclick="saveProfile()" class="btn-topbar btn-topbar-primary" style="margin-top:4px;">Save changes</button></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Password</div></div><div class="panel-body"><label class="field-label">New password</label><input type="password" class="field-input" id="set-pw" placeholder="Min. 8 characters"><label class="field-label">Confirm password</label><input type="password" class="field-input" id="set-pw2" placeholder="Repeat password"><div id="set-pw-msg" style="font-size:.75rem;margin-bottom:12px;display:none;"></div><button onclick="changePassword()" class="btn-topbar btn-topbar-ghost">Update password</button></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Danger Zone</div></div><div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;"><div><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:3px;">Sign out of all devices</div><div style="font-size:.75rem;color:var(--muted);">Ends all active sessions.</div></div><button onclick="signOut()" class="btn-topbar btn-topbar-ghost" style="color:var(--red);border-color:rgba(239,68,68,0.2);">Sign out</button></div></div></div>
-
+ 
 <div id="view-referral" class="view"><div class="page-header"><h2>Referral Programme</h2><p>Refer colleagues and earn credit.</p></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;"><div class="stat-card"><div class="stat-label">Referrals Sent</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Converted</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Credit Earned</div><div class="stat-value">£0</div></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Your Referral Link</div></div><div class="panel-body"><p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Share this link with colleagues. When they purchase a report you'll both receive credit.</p><div class="invite-box"><div class="invite-url" id="referral-link">mlagroup.co.uk/ref/loading…</div><button class="invite-copy" onclick="copyReferral()">Copy link</button></div></div></div></div>
-
+ 
 <div id="view-analytics" class="view"><div class="locked-view"><div class="locked-icon" style="background:rgba(37,99,235,0.06);"><svg viewBox="0 0 22 22" stroke="var(--sky)"><path d="M1 16l5-6 4 4 5-7 6 6"/></svg></div><div class="locked-title">Analytics & Usage</div><div class="locked-desc">Track report views, downloads, risk trends, and team activity.</div><a href="mailto:fraser@mlagroup.co.uk" class="btn-upgrade">Request early access <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2l4 4-4 4"/></svg></a></div></div>
-
+ 
 <div id="view-registry" class="view"><div class="page-header"><h2>AI Systems Registry</h2><p id="reg-subtext">Document and classify your organisation's AI systems.</p></div><div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Total Systems</div><div class="stat-value" id="reg-total">—</div><div class="stat-sub">Registered</div></div><div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value" style="color:#fca5a5;" id="reg-high">—</div><div class="stat-sub">EU AI Act tier</div></div><div class="stat-card"><div class="stat-label">In Production</div><div class="stat-value" style="color:#4ade80;" id="reg-prod">—</div><div class="stat-sub">Live systems</div></div><div class="stat-card"><div class="stat-label">Compliance</div><div class="stat-value" id="reg-compliance">—</div><div class="stat-sub" id="reg-compliance-sub">Overall progress</div></div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;"><span style="font-size:.72rem;color:var(--muted);">Filter:</span><button class="filter-btn active" onclick="setRegFilter('all',this)">All</button><button class="filter-btn" onclick="setRegFilter('production',this)">Production</button><button class="filter-btn" onclick="setRegFilter('pilot',this)">Pilot</button><button class="filter-btn" onclick="setRegFilter('development',this)">Development</button><button class="filter-btn" onclick="setRegFilter('planned',this)">Planned</button></div><div class="panel"><div class="panel-header"><div class="panel-title">Systems</div><div class="panel-sub" id="reg-table-count"></div></div><div id="reg-table-wrap"><div class="loading-state">Loading registry…</div></div></div></div>
-
+ 
 <div id="view-registry-detail" class="view"><button class="breadcrumb" onclick="navigate('registry',document.getElementById('nav-registry'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Registry</button><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);letter-spacing:-.02em;" id="det-name">—</h2><span id="det-tier-badge"></span><span id="det-status-badge"></span><span id="det-assess-badge"></span></div><div style="display:flex;align-items:center;gap:12px;font-size:.75rem;color:var(--muted);flex-wrap:wrap;" id="det-subtitle"></div></div><div style="display:flex;gap:8px;"><button class="btn-topbar btn-topbar-primary" onclick="openAssessmentModal()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button><button class="btn-topbar btn-topbar-ghost" onclick="openEditSystem()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button></div></div><div class="panel" style="overflow:visible;"><div class="tab-bar"><button class="tab-btn active" onclick="switchDetailTab('overview',this)">Overview</button><button class="tab-btn" onclick="switchDetailTab('assessment',this)">Assessment</button><button class="tab-btn" onclick="switchDetailTab('audit',this)">Audit Log</button></div><div class="tab-panel active" id="tab-overview"></div><div class="tab-panel" id="tab-assessment"></div><div class="tab-panel" id="tab-audit"></div></div></div>
-
+ 
 <div id="view-org" class="view"><div class="page-header"><h2>Organisation</h2><p>Entity profile, membership and access management.</p></div><div class="two-col"><div class="panel"><div class="panel-header"><div class="panel-title">Organisation Profile</div></div><div class="panel-body"><div class="meta-grid" id="org-profile-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Subscription</div></div><div class="panel-body"><div class="meta-grid" id="org-sub-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Members</div><div class="panel-sub" id="org-member-count"></div></div><div id="org-members-wrap"><div class="loading-state">Loading members…</div></div></div></div>
-
+ 
+<!-- CONTROLS LIST -->
+<div id="view-controls" class="view">
+<div class="page-header"><h2>Governance Controls</h2><p>12 foundational controls across organisation, system, and assurance layers.</p></div>
+<div class="stats-grid stats-grid-4">
+  <div class="stat-card"><div class="stat-label">Governance Score</div><div class="stat-value" id="gov-score">—</div><div class="stat-sub" id="gov-maturity">—</div></div>
+  <div class="stat-card"><div class="stat-label">Organisation</div><div class="stat-value" id="gov-org-pct">—</div><div class="stat-sub" id="gov-org-count">0 / 3 controls</div></div>
+  <div class="stat-card"><div class="stat-label">System</div><div class="stat-value" id="gov-sys-pct">—</div><div class="stat-sub" id="gov-sys-count">0 / 6 controls</div></div>
+  <div class="stat-card"><div class="stat-label">Assurance</div><div class="stat-value" id="gov-ass-pct">—</div><div class="stat-sub" id="gov-ass-count">0 / 3 controls</div></div>
+</div>
+<div id="controls-org-section"></div>
+<div id="controls-sys-section"></div>
+<div id="controls-ass-section"></div>
+<!-- Dossier teaser -->
+<div style="background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.12);border-radius:12px;padding:20px 24px;margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+  <div><div style="font-size:.85rem;font-weight:600;color:var(--main);margin-bottom:3px;">AI Governance Dossier</div><div style="font-size:.76rem;color:var(--muted);line-height:1.6;">Complete governance export compiling registry, assessments, controls, evidence, and audit trail.</div></div>
+  <div style="display:flex;gap:8px;"><span style="font-size:.72rem;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:6px 12px;border-radius:6px;">🔒 PDF Export — Enterprise</span><span style="font-size:.72rem;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:6px 12px;border-radius:6px;">🔒 JSON Export — Enterprise</span></div>
+</div>
+</div>
+ 
+<!-- CONTROL DETAIL -->
+<div id="view-control-detail" class="view">
+<button class="breadcrumb" onclick="navigate('controls',document.getElementById('nav-controls'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Governance Controls</button>
+<div style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+    <span id="cd-type-badge" style="font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;"></span>
+    <span id="cd-pillar-badge" style="font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;"></span>
+    <span id="cd-status-badge" style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;"></span>
+  </div>
+  <h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);letter-spacing:-.02em;" id="cd-title">—</h2>
+  <p style="font-size:.82rem;color:var(--muted);line-height:1.7;margin-top:6px;" id="cd-desc">—</p>
+  <p style="font-size:.78rem;color:var(--muted2);line-height:1.6;margin-top:8px;font-style:italic;" id="cd-purpose"></p>
+</div>
+<div class="panel" style="margin-bottom:16px;">
+  <div class="panel-header"><div class="panel-title">Implementation Tasks</div><div class="panel-sub" id="cd-task-count"></div></div>
+  <div class="panel-body" id="cd-tasks"><div class="loading-state" style="padding:10px 0;">Loading…</div></div>
+</div>
+<div class="panel" style="margin-bottom:16px;">
+  <div class="panel-header"><div class="panel-title">Evidence</div></div>
+  <div class="panel-body" id="cd-evidence">
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;" id="cd-evidence-types"></div>
+    <div id="cd-evidence-list"></div>
+    <div style="margin-top:12px;padding:14px;border:1px dashed var(--border);border-radius:8px;text-align:center;">
+      <input type="file" id="evidence-file" style="display:none;" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg" onchange="uploadEvidence()">
+      <button onclick="document.getElementById('evidence-file').click()" class="btn-topbar btn-topbar-ghost" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Upload Evidence</button>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:6px;">PDF, DOCX, PNG, JPG — max 5MB</div>
+    </div>
+  </div>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;">
+  <button class="btn-topbar btn-topbar-primary" id="cd-save-btn" onclick="saveControlProgress()">Save Progress</button>
+  <button class="btn-topbar btn-topbar-ghost" id="cd-complete-btn" onclick="markControlComplete()">Mark as Implemented</button>
+</div>
+</div>
+ 
 </div></div></div>
-
+ 
 <div class="modal-overlay" id="system-modal"><div class="modal"><div class="modal-header"><div><h3 id="sysmod-title">Register AI System</h3><p id="sysmod-sub">Add a new system to the governance registry</p></div><button class="modal-close" onclick="closeSystemModal()">✕</button></div><div class="modal-body"><input type="hidden" id="sysmod-id" value=""><div class="section-divider"><span>Identity</span></div><div class="field-group"><label class="field-label">System Name <span class="req">*</span></label><input type="text" class="field-input" id="sysmod-name" placeholder="e.g. Customer Chatbot, Credit Scoring Model"></div><div class="field-group"><label class="field-label">Description</label><textarea class="field-input" id="sysmod-desc" rows="3" placeholder="What does this system do?"></textarea></div><div class="field-row"><div class="field-group"><label class="field-label">Vendor</label><input type="text" class="field-input" id="sysmod-vendor" placeholder="e.g. OpenAI, In-house"></div><div class="field-group"><label class="field-label">System Type</label><select class="field-input" id="sysmod-type"><option value="">Select</option><option value="third_party">Third Party</option><option value="in_house">In-House</option><option value="hybrid">Hybrid</option></select></div></div><div class="section-divider"><span>EU AI Act Classification</span></div><div class="field-group"><label class="field-label">Purpose Category</label><select class="field-input" id="sysmod-purpose" onchange="onPurposeChange()"><option value="">Select purpose (Annex III mapping)</option><option disabled style="color:var(--sky);font-weight:700;">── High Risk (Annex III) ──</option><option value="biometric_identification">Biometric identification</option><option value="critical_infrastructure">Critical infrastructure management</option><option value="education_access">Education and vocational training access</option><option value="employment_management">Employment and worker management</option><option value="essential_services_access">Access to essential services (credit, insurance)</option><option value="law_enforcement">Law enforcement</option><option value="migration_border">Migration and border control</option><option value="justice_administration">Administration of justice</option><option disabled style="color:var(--sky);font-weight:700;">── Limited Risk ──</option><option value="customer_chatbot">Customer-facing chatbot / virtual assistant</option><option value="content_generation">Content generation (text, image, audio)</option><option value="emotion_recognition">Emotion recognition</option><option disabled style="color:var(--sky);font-weight:700;">── Minimal Risk ──</option><option value="internal_automation">Internal process automation</option><option value="data_analytics">Data analytics and reporting</option><option value="other">Other (classify manually)</option></select><div class="tier-suggestion" id="sysmod-tier-hint"></div></div><div class="field-row"><div class="field-group"><label class="field-label">Risk Tier</label><select class="field-input" id="sysmod-tier"><option value="">Not classified</option><option value="unacceptable">Unacceptable</option><option value="high">High</option><option value="limited">Limited</option><option value="minimal">Minimal</option></select></div><div class="field-group"><label class="field-label">Deployment Status</label><select class="field-input" id="sysmod-status"><option value="planned">Planned</option><option value="development">Development</option><option value="pilot">Pilot</option><option value="production">Production</option><option value="decommissioned">Decommissioned</option></select></div></div><div class="field-group" id="sysmod-rationale-wrap" style="display:none;"><label class="field-label">Classification Rationale</label><textarea class="field-input" id="sysmod-rationale" rows="2" placeholder="Why was this tier assigned?"></textarea></div><div class="section-divider"><span>Governance Metadata</span></div><div class="field-row"><div class="field-group"><label class="field-label">System Owner <span class="req">*</span></label><input type="text" class="field-input" id="sysmod-owner" placeholder="Named accountable individual"></div><div class="field-group"><label class="field-label">Department</label><input type="text" class="field-input" id="sysmod-dept" placeholder="e.g. Operations, Risk"></div></div><div class="field-group"><label class="field-label">Notes</label><textarea class="field-input" id="sysmod-notes" rows="2" placeholder="Any additional context"></textarea></div><div id="sysmod-error" class="field-error"></div></div><div class="modal-footer"><button class="btn-topbar btn-topbar-ghost" onclick="closeSystemModal()">Cancel</button><button class="btn-topbar btn-topbar-primary" id="sysmod-submit" onclick="submitSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register System</button></div></div></div>
-
+ 
 <script>
 const SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
 const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
@@ -169,13 +225,13 @@ const PURPOSE_TIER_MAP={biometric_identification:'high',critical_infrastructure:
 let currentUser=null,currentProfile=null,currentResults=[],isPaid=false;
 let currentOrg=null,allSystems=[],currentSystemId=null,regFilter='all';
 let profilesCache={};
-
+ 
 function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}
 function fmtDateLong(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 async function signOut(){await sb.auth.signOut();window.location.href='login.html'}
 function actorName(){return currentProfile?.full_name||currentUser?.email?.split('@')[0]||'Unknown'}
-
+ 
 // ═══ AUDIT FORMATTING ═════════════════════════════════════════
 function fmtAudit(entry,namesMap){
   const c=entry.changes||{};const who=(namesMap||{})[entry.user_id]||c._actor_name||'System';
@@ -187,6 +243,8 @@ function fmtAudit(entry,namesMap){
     case 'risk_tier_changed':text=`Reclassified from ${TIER_LABELS[c.risk_tier?.old]||'Unclassified'} to <strong>${TIER_LABELS[c.risk_tier?.new]||''}</strong>`;break;
     case 'compliance_status_updated':text=`Updated compliance status across ${c.obligation_count||c.updated_count||'multiple'} obligations`;break;
     case 'assessment_submitted':text='Submitted an assessment for review by MLA Group';break;
+    case 'control_updated':text='Updated progress on <strong>'+esc(c.control||'')+'</strong>';break;
+    case 'control_implemented':text='Marked <strong>'+esc(c.control||'')+'</strong> as implemented';break;
     default:text=entry.action.replace(/_/g,' ');
   }
   return {who,text,time:fmtDateLong(entry.created_at)};
@@ -196,10 +254,10 @@ async function loadNames(userIds){
   if(missing.length){const{data}=await sb.from('profiles').select('id,full_name,email').in('id',missing);(data||[]).forEach(p=>{profilesCache[p.id]=p.full_name||p.email||'Unknown'})}
   const map={};userIds.forEach(id=>{if(id)map[id]=profilesCache[id]||'Unknown'});return map;
 }
-
+ 
 // ═══ NAVIGATION ═══════════════════════════════════════════════
-const topbarTitles={dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>'},reports:{label:'Reports',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>'},settings:{label:'Settings',icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>'},referral:{label:'Referral',icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>'},analytics:{label:'Analytics',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},registry:{label:'AI Systems Registry',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},'registry-detail':{label:'System Detail',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},org:{label:'Organisation',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/>'}};
-
+const topbarTitles={dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>'},reports:{label:'Reports',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>'},settings:{label:'Settings',icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>'},referral:{label:'Referral',icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>'},analytics:{label:'Analytics',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},registry:{label:'AI Systems Registry',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},'registry-detail':{label:'System Detail',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},org:{label:'Organisation',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/>'},controls:{label:'Governance Controls',icon:'<path d="M8 1l2 4 5 .7-3.5 3.4.8 5L8 12l-4.3 2.1.8-5L1 5.7 6 5z"/>'},'control-detail':{label:'Control Detail',icon:'<path d="M8 1l2 4 5 .7-3.5 3.4.8 5L8 12l-4.3 2.1.8-5L1 5.7 6 5z"/>'}};
+ 
 function navigate(viewId,navEl){
   if(navEl&&navEl.classList.contains('locked'))return;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));if(navEl)navEl.classList.add('active');
@@ -207,15 +265,15 @@ function navigate(viewId,navEl){
   const t=topbarTitles[viewId];if(t)document.getElementById('topbar-title').innerHTML=`<svg viewBox="0 0 16 16" style="width:15px;height:15px;stroke:var(--sky);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;">${t.icon}</svg>${t.label}`;
   const tr=document.getElementById('topbar-right');
   if(viewId==='registry')tr.innerHTML='<button class="btn-topbar btn-topbar-primary" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
-  else if(viewId==='registry-detail'||viewId==='org')tr.innerHTML='<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
+  else if(viewId==='registry-detail'||viewId==='org'||viewId==='controls'||viewId==='control-detail')tr.innerHTML='<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   else tr.innerHTML='<button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   closeSidebar();
 }
-async function navigateRegistry(navEl){navigate('registry',navEl);if(!currentOrg)await ensureOrg();if(!allSystems.length)await loadSystems()}
+async function navigateRegistry(navEl){navigate('registry',navEl);if(!currentOrg)await ensureOrg();if(!allSystems.length)await loadSystems();if(!allControls.length)await loadControls()}
 async function navigateOrg(navEl){navigate('org',navEl);if(!currentOrg)await ensureOrg();await renderOrgPage()}
 function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('show')}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
-
+ 
 // ═══ INIT ═════════════════════════════════════════════════════
 async function init(){
   const{data:{session}}=await sb.auth.getSession();if(!session){window.location.href='login.html';return}
@@ -237,14 +295,14 @@ async function init(){
   if(currentResults.length>0){const b=document.getElementById('report-count-badge');b.textContent=currentResults.length;b.style.display='inline-flex'}
   document.getElementById('paywall-banner').style.display=isPaid?'none':'flex';
   renderReports(paidIds);
-  if(profile?.org_id)ensureOrg().then(()=>loadSystems()).then(()=>{renderDashboard(paidIds);handleDeepLink()}).catch(()=>renderDashboard(paidIds));
+  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);handleDeepLink()}).catch(()=>renderDashboard(paidIds));
   else renderDashboard(paidIds);
 }
 function handleDeepLink(){
   const h=window.location.hash;
   if(h.startsWith('#registry-detail-')){const sysId=h.replace('#registry-detail-','');if(sysId)openSystemDetail(sysId);window.location.hash=''}
 }
-
+ 
 // ═══ AUTO-PROVISIONING ════════════════════════════════════════
 async function ensureOrg(){
   if(currentOrg)return currentOrg;
@@ -261,7 +319,7 @@ async function ensureOrg(){
   await sb.from('org_members').insert({org_id:newOrg.id,user_id:currentUser.id,role:'owner',accepted_at:new Date().toISOString()});
   await sb.from('profiles').update({org_id:newOrg.id}).eq('id',currentUser.id);currentProfile.org_id=newOrg.id;currentOrg=newOrg;return newOrg;
 }
-
+ 
 // ═══ REGISTRY: LOAD ═══════════════════════════════════════════
 async function loadSystems(){
   if(!currentOrg)return;
@@ -269,17 +327,14 @@ async function loadSystems(){
   allSystems=error?[]:(data||[]);renderRegistryStats();renderSystemTable();
   if(allSystems.length>0){document.getElementById('sys-count-badge').textContent=allSystems.length;document.getElementById('sys-count-badge').style.display='inline-flex'}
   document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
-  let tOb=0,dOb=0;allSystems.forEach(s=>(s.system_compliance||[]).forEach(c=>{tOb++;if(c.status==='compliant'||c.status==='not_applicable')dOb++}));
-  document.getElementById('dash-compliance').textContent=tOb>0?Math.round(dOb/tOb*100)+'%':'—';
 }
 function getCP(sys){const sc=sys.system_compliance||[];if(!sc.length)return null;return Math.round(sc.filter(c=>c.status==='compliant'||c.status==='not_applicable').length/sc.length*100)}
 function renderRegistryStats(){
   document.getElementById('reg-total').textContent=allSystems.length;
   document.getElementById('reg-high').textContent=allSystems.filter(s=>s.risk_tier==='high'||s.risk_tier==='unacceptable').length;
   document.getElementById('reg-prod').textContent=allSystems.filter(s=>s.deployment_status==='production').length;
-  let tOb=0,dOb=0;allSystems.forEach(s=>(s.system_compliance||[]).forEach(c=>{tOb++;if(c.status==='compliant'||c.status==='not_applicable')dOb++}));
-  const pct=tOb>0?Math.round(dOb/tOb*100):null;
-  document.getElementById('reg-compliance').textContent=pct!==null?pct+'%':'—';document.getElementById('reg-compliance-sub').textContent=tOb>0?dOb+' of '+tOb+' obligations':'No obligations yet';
+  if(allControls.length){const g=getGovScore();document.getElementById('reg-compliance').textContent=g.score+'%';document.getElementById('reg-compliance-sub').textContent=getMaturity(g.score)}
+  else{document.getElementById('reg-compliance').textContent='—';document.getElementById('reg-compliance-sub').textContent='Run controls'}
 }
 function renderSystemTable(){
   const filtered=regFilter==='all'?allSystems:allSystems.filter(s=>s.deployment_status===regFilter);
@@ -288,12 +343,12 @@ function renderSystemTable(){
   document.getElementById('reg-table-wrap').innerHTML='<div style="overflow-x:auto;"><table class="sys-table"><thead><tr><th>System</th><th>Risk Tier</th><th>Status</th><th>Compliance</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{const tier=sys.risk_tier||'none';const cp=getCP(sys);const cpC=cp===null?'var(--muted)':cp>=80?'#4ade80':cp>=40?'#fde047':'#fca5a5';return '<tr onclick="openSystemDetail(\''+sys.id+'\')"><td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td><td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td><td><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status)+'</span></td><td style="min-width:100px;">'+(cp!==null?'<div style="display:flex;align-items:center;gap:8px;"><div class="cprogress-bar" style="flex:1;"><div class="cprogress-fill" style="width:'+cp+'%;background:'+cpC+';"></div></div><span style="font-size:.72rem;color:'+cpC+';font-weight:600;">'+cp+'%</span></div>':'<span style="font-size:.72rem;color:var(--muted);">—</span>')+'</td><td style="font-size:.72rem;color:var(--muted);white-space:nowrap;">'+fmtDate(sys.updated_at)+'</td></tr>'}).join('')+'</tbody></table></div>';
 }
 function setRegFilter(s,btn){regFilter=s;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSystemTable()}
-
+ 
 // ═══ SYSTEM DETAIL ════════════════════════════════════════════
 const ASSESS_STATUS_LABELS={submitted:'Awaiting MLA Review',in_review:'Under Review',controls_issued:'Controls Issued'};
 const ASSESS_STATUS_COLORS={submitted:'#fde047',in_review:'#93c5fd',controls_issued:'#4ade80'};
 const Q_LABELS={yes:'Yes',no:'No',unsure:'Unsure'};
-
+ 
 async function openSystemDetail(sysId){
   currentSystemId=sysId;const sys=allSystems.find(s=>s.id===sysId);if(!sys)return;
   const[{data:assessments},{data:auditLog}]=await Promise.all([sb.from('registry_assessments').select('*').eq('system_id',sysId).order('requested_at',{ascending:false}),sb.from('registry_audit_log').select('*').eq('entity_id',sysId).order('created_at',{ascending:false})]);
@@ -318,7 +373,7 @@ async function openSystemDetail(sysId){
   document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-overview').classList.add('active');
   navigate('registry-detail',null);document.getElementById('nav-registry').classList.add('active');
 }
-
+ 
 async function renderAssessmentTab(assessments){
   const el=document.getElementById('tab-assessment');
   if(!assessments.length){
@@ -350,14 +405,14 @@ async function renderAssessmentTab(assessments){
       (a.status==='submitted'||a.status==='in_review'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.12);border-radius:8px;"><div style="font-size:.78rem;color:var(--sub);line-height:1.65;">Your assessment has been submitted. MLA Group will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
     '</div>'}).join('');
 }
-
+ 
 // Assessment modal → now redirects to assessment.html
 function openAssessmentModal(){
   if(!currentSystemId)return;
   window.location.href='assessment.html?system_id='+currentSystemId;
 }
 function closeAssessmentModal(){}
-
+ 
 async function renderAssessmentTab(assessments){
   const el=document.getElementById('tab-assessment');
   if(!assessments.length){
@@ -403,7 +458,7 @@ async function renderAssessmentTab(assessments){
     '</div>'}).join('');
 }
 function switchDetailTab(id,btn){document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active')}
-
+ 
 // ═══ ADD/EDIT SYSTEM ══════════════════════════════════════════
 function openAddSystem(){document.getElementById('sysmod-id').value='';document.getElementById('sysmod-title').textContent='Register AI System';document.getElementById('sysmod-sub').textContent='Add a new system to the governance registry';document.getElementById('sysmod-submit').innerHTML='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg> Register System';clearSystemForm();document.getElementById('system-modal').classList.add('open')}
 function openEditSystem(){const sys=allSystems.find(s=>s.id===currentSystemId);if(!sys)return;document.getElementById('sysmod-id').value=sys.id;document.getElementById('sysmod-title').textContent='Edit System';document.getElementById('sysmod-sub').textContent=sys.name;document.getElementById('sysmod-submit').innerHTML='Save Changes';document.getElementById('sysmod-name').value=sys.name||'';document.getElementById('sysmod-desc').value=sys.description||'';document.getElementById('sysmod-vendor').value=sys.vendor||'';document.getElementById('sysmod-type').value=sys.system_type||'';document.getElementById('sysmod-purpose').value=sys.purpose_category||'';document.getElementById('sysmod-tier').value=sys.risk_tier||'';document.getElementById('sysmod-status').value=sys.deployment_status||'planned';document.getElementById('sysmod-rationale').value=sys.risk_tier_rationale||'';document.getElementById('sysmod-owner').value=sys.system_owner||'';document.getElementById('sysmod-dept').value=sys.department||'';document.getElementById('sysmod-notes').value=sys.notes||'';onPurposeChange();document.getElementById('system-modal').classList.add('open')}
@@ -422,7 +477,7 @@ async function submitSystem(){
     else{payload.created_by=currentUser.id;const{error}=await sb.from('ai_systems').insert(payload);if(error)throw error}
     closeSystemModal();await loadSystems();if(editId)openSystemDetail(editId);
   }catch(err){errEl.textContent='Error: '+err.message;errEl.style.display='block'}finally{btn.innerHTML=origH;btn.disabled=false}}
-
+ 
 // ═══ ORGANISATION PAGE ════════════════════════════════════════
 async function renderOrgPage(){
   if(!currentOrg)return;
@@ -439,14 +494,14 @@ async function renderOrgPage(){
   document.getElementById('org-members-wrap').innerHTML=members.map(m=>{const p=profMap[m.user_id]||{};const name=p.full_name||'Unknown';const email=p.email||'—';const init=name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();const sc=sysByUser[m.user_id]||0;
     return '<div class="member-row"><div class="member-avatar">'+esc(init)+'</div><div class="member-info"><div class="member-name">'+esc(name)+'</div><div class="member-email">'+esc(email)+'</div></div><div style="font-size:.72rem;color:var(--muted);text-align:right;min-width:70px;">'+sc+' system'+(sc!==1?'s':'')+'</div><span class="role-chip role-'+(m.role||'viewer')+'">'+(m.role||'viewer')+'</span></div>'}).join('');
 }
-
+ 
 // ═══ DASHBOARD ════════════════════════════════════════════════
 async function renderDashboard(paidIds){
   document.getElementById('dash-count').textContent=currentResults.length||'0';
   document.getElementById('dash-score').textContent=currentResults.length>0?(currentResults[0].adjusted_score||0)+'%':'—';
   document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
-  let tOb=0,dOb=0;allSystems.forEach(s=>(s.system_compliance||[]).forEach(c=>{tOb++;if(c.status==='compliant'||c.status==='not_applicable')dOb++}));
-  document.getElementById('dash-compliance').textContent=tOb>0?Math.round(dOb/tOb*100)+'%':'—';
+  if(allControls.length){const g=getGovScore();document.getElementById('dash-compliance').textContent=g.score+'%';document.getElementById('dash-compliance').style.color=g.score>=70?'#4ade80':g.score>=40?'#fbbf24':'#f87171';document.getElementById('dash-gov-maturity').textContent=getMaturity(g.score)}
+  else{document.getElementById('dash-compliance').textContent='—'}
   const feed=[];const bandColors={low:'#4ade80',lowmod:'#86efac',moderate:'#fde047',high:'#fca5a5',critical:'#f87171'};
   currentResults.forEach(r=>{const band=r.risk_band||'moderate';feed.push({time:new Date(r.created_at),color:bandColors[band]||'#60a5fa',html:'Diagnostic completed — <strong>'+esc(r.organisation||'Assessment')+'</strong><br>'+(BAND_LABELS[band]||band)+' · '+(r.adjusted_score||0)+'%',date:fmtDate(r.created_at)})});
   if(currentOrg){const{data:auditEntries}=await sb.from('registry_audit_log').select('*').eq('org_id',currentOrg.id).order('created_at',{ascending:false}).limit(20);
@@ -457,19 +512,191 @@ async function renderDashboard(paidIds){
   if(!feed.length)actEl.innerHTML='<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No activity yet. Run your first diagnostic to get started.</div>';
   else actEl.innerHTML=feed.slice(0,8).map(f=>'<div class="activity-item"><div class="activity-dot" style="background:'+f.color+';"></div><div class="activity-body">'+f.html+'</div><div class="activity-time">'+f.date+'</div></div>').join('');
 }
-
+ 
 // ═══ REPORTS ══════════════════════════════════════════════════
 function renderReports(paidIds){
   const c=document.getElementById('reports-container');if(!currentResults.length){c.innerHTML='<div class="empty-state"><h4>No assessments yet</h4><p>Complete your first diagnostic to see results.</p><a href="diagnostic.html" class="btn-dl" style="display:inline-flex;text-decoration:none;margin-top:4px;">Start First Diagnostic</a></div>';return}
   c.className='result-list';c.innerHTML=currentResults.map(r=>{const band=r.risk_band||'moderate';const paid=isPaid||paidIds.has(r.id);const btn=paid?'<div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn-dl" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</button><button id="pdf-btn-'+r.id+'" class="btn-pdf" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Save as PDF</button></div>':'<a href="pricing.html" class="btn-unlock">Unlock — £295</a>';return '<div class="result-card"><div><div class="result-org">'+esc(r.organisation||'Assessment')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'<span>v'+(r.framework_version||'2.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Score</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div></div>'}).join('');
 }
-
+ 
 // ═══ SETTINGS ═════════════════════════════════════════════════
 async function saveProfile(){const first=document.getElementById('set-first').value.trim();const last=document.getElementById('set-last').value.trim();const org=document.getElementById('set-org').value.trim();const full=(first+' '+last).trim();const{error}=await sb.from('profiles').upsert({id:currentUser.id,full_name:full,organisation:org},{onConflict:'id'});if(!error){document.getElementById('sidebar-name').textContent=full||currentUser.email.split('@')[0];const ini=full.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();document.getElementById('sidebar-avatar').textContent=ini;document.getElementById('dash-avatar').textContent=ini;alert('Profile saved.')}else alert('Error saving.')}
 async function changePassword(){const pw=document.getElementById('set-pw').value;const pw2=document.getElementById('set-pw2').value;const msg=document.getElementById('set-pw-msg');msg.style.display='block';if(pw.length<8){msg.style.color='var(--red)';msg.textContent='Min. 8 characters.';return}if(pw!==pw2){msg.style.color='var(--red)';msg.textContent='Passwords do not match.';return}const{error}=await sb.auth.updateUser({password:pw});if(error){msg.style.color='var(--red)';msg.textContent=error.message}else{msg.style.color='#4ade80';msg.textContent='Password updated.';document.getElementById('set-pw').value='';document.getElementById('set-pw2').value=''}}
 function copyReferral(){const link=document.getElementById('referral-link').textContent;navigator.clipboard.writeText('https://'+link).then(()=>{const btn=document.querySelector('.invite-copy');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy link',2000)})}
 function downloadReport(id){window.open('report.html?rid='+id,'_blank')}
 async function savePDF(resultId){const btn=document.getElementById('pdf-btn-'+resultId);if(!btn)return;const orig=btn.innerHTML;btn.innerHTML='Generating…';btn.disabled=true;try{const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Not authenticated');const res=await fetch(SUPABASE_URL+'/functions/v1/generate-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},body:JSON.stringify({response_id:resultId})});if(!res.ok)throw new Error('Server error: '+res.status);const data=await res.json();if(!data?.download_url)throw new Error('No URL');const a=document.createElement('a');a.href=data.download_url;a.download='MLA-Governance-Report.pdf';document.body.appendChild(a);a.click();document.body.removeChild(a)}catch(err){alert('PDF generation failed: '+err.message)}finally{btn.innerHTML=orig;btn.disabled=false}}
-
+ 
+// ═══ GOVERNANCE CONTROLS ══════════════════════════════════════
+const TYPE_COLORS={organisation:'#60a5fa',system:'#f87171',assurance:'#fbbf24'};
+const TYPE_BG={organisation:'rgba(96,165,250,0.08)',system:'rgba(248,113,113,0.08)',assurance:'rgba(251,191,36,0.08)'};
+const TYPE_BORDER={organisation:'rgba(96,165,250,0.2)',system:'rgba(248,113,113,0.2)',assurance:'rgba(251,191,36,0.2)'};
+const PILLAR_COLORS={visibility:'#60a5fa',accountability:'#c4b5fd',control:'#4ade80',assurance:'#fbbf24'};
+const CTRL_STATUS_L={not_started:'Not Started',in_progress:'In Progress',implemented:'Implemented',verified:'Verified'};
+const CTRL_STATUS_C={not_started:'var(--muted)',in_progress:'#93c5fd',implemented:'#4ade80',verified:'#4ade80'};
+const MATURITY_BANDS=[{max:30,label:'Initial'},{max:50,label:'Developing'},{max:70,label:'Structured'},{max:85,label:'Managed'},{max:100,label:'Governance Ready'}];
+let allControls=[],allTasks=[],allAssignments=[],currentControlId=null;
+ 
+async function navigateControls(navEl){navigate('controls',navEl);if(!currentOrg)await ensureOrg();await loadControls()}
+ 
+async function loadControls(){
+  if(!currentOrg)return;
+  const[{data:controls},{data:tasks},{data:assignments}]=await Promise.all([
+    sb.from('governance_controls').select('*').eq('is_active',true).order('display_order'),
+    sb.from('control_tasks').select('*').order('display_order'),
+    sb.from('control_assignments').select('*').eq('org_id',currentOrg.id)
+  ]);
+  allControls=controls||[];allTasks=tasks||[];allAssignments=assignments||[];
+  renderControlsList();
+  // Update badge
+  const done=allAssignments.filter(a=>a.status==='implemented'||a.status==='verified').length;
+  const total=allControls.length;
+  if(total){document.getElementById('ctrl-count-badge').textContent=done+'/'+total;document.getElementById('ctrl-count-badge').style.display='inline-flex'}
+}
+ 
+function getGovScore(){
+  const typeWeights={organisation:0.30,system:0.40,assurance:0.30};
+  const byType={organisation:{done:0,total:0},system:{done:0,total:0},assurance:{done:0,total:0}};
+  allControls.forEach(c=>{
+    const t=c.control_type;byType[t].total++;
+    const a=allAssignments.find(a=>a.control_id===c.id&&!a.system_id);
+    if(a&&(a.status==='implemented'||a.status==='verified'))byType[t].done++;
+  });
+  let score=0;
+  Object.entries(byType).forEach(([t,d])=>{
+    const pct=d.total>0?d.done/d.total:0;
+    score+=pct*typeWeights[t]*100;
+  });
+  return{score:Math.round(score),byType};
+}
+ 
+function getMaturity(score){return MATURITY_BANDS.find(b=>score<=b.max)?.label||'Initial'}
+ 
+function renderControlsList(){
+  const gov=getGovScore();
+  document.getElementById('gov-score').textContent=gov.score+'%';
+  document.getElementById('gov-score').style.color=gov.score>=70?'#4ade80':gov.score>=40?'#fbbf24':'#f87171';
+  document.getElementById('gov-maturity').textContent=getMaturity(gov.score);
+  ['organisation','system','assurance'].forEach(t=>{
+    const d=gov.byType[t];const pct=d.total>0?Math.round(d.done/d.total*100):0;
+    document.getElementById('gov-'+t.substring(0,3)+'-pct').textContent=pct+'%';
+    document.getElementById('gov-'+t.substring(0,3)+'-count').textContent=d.done+' / '+d.total+' controls';
+  });
+  // Render sections
+  const groups={organisation:[],system:[],assurance:[]};
+  allControls.forEach(c=>groups[c.control_type]?.push(c));
+  const typeLabels={organisation:'Organisation Controls',system:'System Controls',assurance:'Assurance Controls'};
+  ['organisation','system','assurance'].forEach(t=>{
+    const items=groups[t];if(!items.length)return;
+    const el=document.getElementById('controls-'+t.substring(0,3)+'-section');
+    el.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS[t]+';"></span>'+typeLabels[t]+'</div><div class="panel-sub">'+items.length+' controls</div></div>'+
+    items.map(c=>{
+      const a=allAssignments.find(x=>x.control_id===c.id&&!x.system_id);
+      const st=a?.status||'not_started';
+      const triggered=!!a;
+      return '<div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:background .1s;" onclick="openControlDetail(\''+c.id+'\')" onmouseover="this.style.background=\'rgba(255,255,255,0.02)\'" onmouseout="this.style.background=\'none\'">'+
+        '<div style="width:28px;height:28px;border-radius:8px;background:'+TYPE_BG[t]+';border:1px solid '+TYPE_BORDER[t]+';display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+TYPE_COLORS[t]+';flex-shrink:0;">'+c.control_number+'</div>'+
+        '<div style="flex:1;min-width:0;"><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px;">'+esc(c.title)+'</div><div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(c.description.substring(0,100))+'…</div></div>'+
+        '<span style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+CTRL_STATUS_L[st]+'</span>'+
+      '</div>'}).join('')+'</div>';
+  });
+}
+ 
+async function openControlDetail(ctrlId){
+  currentControlId=ctrlId;
+  const ctrl=allControls.find(c=>c.id===ctrlId);if(!ctrl)return;
+  // Ensure assignment exists
+  let assign=allAssignments.find(a=>a.control_id===ctrlId&&!a.system_id);
+  if(!assign){
+    const{data,error}=await sb.from('control_assignments').insert({control_id:ctrlId,org_id:currentOrg.id,status:'not_started',triggered_by:'manual'}).select().single();
+    if(!error&&data){assign=data;allAssignments.push(data)}
+  }
+  const tasks=allTasks.filter(t=>t.control_id===ctrlId).sort((a,b)=>a.display_order-b.display_order);
+  const taskResp=assign?.task_responses||{};
+ 
+  // Header badges
+  const tCol=TYPE_COLORS[ctrl.control_type];const tBg=TYPE_BG[ctrl.control_type];const tBor=TYPE_BORDER[ctrl.control_type];
+  document.getElementById('cd-type-badge').textContent=ctrl.control_type;
+  document.getElementById('cd-type-badge').style.cssText='font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+tCol+';background:'+tBg+';border:1px solid '+tBor;
+  const pCol=PILLAR_COLORS[ctrl.pillar]||'var(--muted)';
+  document.getElementById('cd-pillar-badge').textContent=ctrl.pillar;
+  document.getElementById('cd-pillar-badge').style.cssText='font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+pCol+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)';
+  const st=assign?.status||'not_started';
+  document.getElementById('cd-status-badge').textContent=CTRL_STATUS_L[st];
+  document.getElementById('cd-status-badge').style.cssText='font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)';
+ 
+  document.getElementById('cd-title').textContent=ctrl.title;
+  document.getElementById('cd-desc').textContent=ctrl.description;
+  document.getElementById('cd-purpose').textContent=ctrl.purpose||'';
+  document.getElementById('cd-task-count').textContent=tasks.length+' tasks';
+ 
+  // Render tasks
+  document.getElementById('cd-tasks').innerHTML=tasks.map(t=>{
+    const val=taskResp['task_'+t.task_number]||'';
+    let input='';
+    if(t.task_type==='checkbox')input='<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.82rem;color:var(--sub);"><input type="checkbox" data-task="'+t.task_number+'" '+(val==='done'?'checked':'')+' style="accent-color:var(--accent);width:16px;height:16px;"> Mark as complete</label>';
+    else if(t.task_type==='select'){const opts=t.options?.options||[];input='<select class="field-input" data-task="'+t.task_number+'" style="margin-bottom:0;"><option value="">Select</option>'+opts.map(o=>'<option'+(val===o?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select>'}
+    else if(t.task_type==='text')input='<textarea class="field-input" data-task="'+t.task_number+'" rows="2" style="margin-bottom:0;min-height:60px;" placeholder="Enter details…">'+esc(val)+'</textarea>';
+    else if(t.task_type==='fields'){const fields=t.options?.fields||[];input=fields.map(f=>'<div style="margin-bottom:8px;"><label style="font-size:.68rem;color:var(--muted);margin-bottom:3px;display:block;">'+esc(f)+'</label><input type="text" class="field-input" data-task="'+t.task_number+'" data-field="'+esc(f)+'" value="'+esc((taskResp['task_'+t.task_number+'_'+f])||'')+'" style="margin-bottom:0;" placeholder="'+esc(f)+'"></div>').join('')}
+    return '<div style="padding:14px 0;border-bottom:1px solid var(--border);"><div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;"><span style="width:22px;height:22px;border-radius:6px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:var(--sky);flex-shrink:0;">'+t.task_number+'</span><div><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:3px;">'+esc(t.title)+'</div><div style="font-size:.76rem;color:var(--muted);line-height:1.6;">'+esc(t.description||'')+'</div></div></div>'+input+'</div>'}).join('');
+ 
+  // Evidence types
+  const evTypes=ctrl.evidence_types||[];
+  document.getElementById('cd-evidence-types').innerHTML=evTypes.length?'<strong style="color:var(--main);font-size:.72rem;">Suggested evidence:</strong> '+evTypes.map(e=>esc(e)).join(' · '):'';
+ 
+  // Load existing evidence
+  const{data:evidence}=await sb.from('evidence_uploads').select('*').eq('control_assignment_id',assign?.id||'00000000-0000-0000-0000-000000000000').order('uploaded_at',{ascending:false});
+  document.getElementById('cd-evidence-list').innerHTML=(evidence||[]).map(e=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="flex:1;"><div style="font-size:.78rem;color:var(--main);">'+esc(e.file_name)+'</div><div style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(e.uploaded_at)+(e.description?' · '+esc(e.description):'')+'</div></div></div>').join('')||'<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No evidence uploaded yet.</div>';
+ 
+  navigate('control-detail',null);
+  document.getElementById('nav-controls').classList.add('active');
+}
+ 
+async function saveControlProgress(){
+  if(!currentControlId||!currentOrg)return;
+  const assign=allAssignments.find(a=>a.control_id===currentControlId&&!a.system_id);if(!assign)return;
+  const resp={};
+  document.querySelectorAll('#cd-tasks [data-task]').forEach(el=>{
+    const tn=el.dataset.task;
+    if(el.type==='checkbox')resp['task_'+tn]=el.checked?'done':'';
+    else if(el.dataset.field)resp['task_'+tn+'_'+el.dataset.field]=el.value;
+    else resp['task_'+tn]=el.value;
+  });
+  const btn=document.getElementById('cd-save-btn');btn.textContent='Saving…';btn.disabled=true;
+  const newStatus=assign.status==='not_started'?'in_progress':assign.status;
+  await sb.from('control_assignments').update({task_responses:resp,status:newStatus}).eq('id',assign.id);
+  assign.task_responses=resp;assign.status=newStatus;
+  btn.textContent='Saved';btn.disabled=false;
+  setTimeout(()=>{btn.textContent='Save Progress'},2000);
+  await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_updated',entity_type:'governance_control',entity_id:currentControlId,changes:{_actor_name:actorName(),control:allControls.find(c=>c.id===currentControlId)?.title}});
+}
+ 
+async function markControlComplete(){
+  if(!currentControlId||!currentOrg)return;
+  const assign=allAssignments.find(a=>a.control_id===currentControlId&&!a.system_id);if(!assign)return;
+  // Save tasks first
+  await saveControlProgress();
+  const btn=document.getElementById('cd-complete-btn');btn.textContent='Updating…';btn.disabled=true;
+  await sb.from('control_assignments').update({status:'implemented',completed_by:currentUser.id,completed_at:new Date().toISOString()}).eq('id',assign.id);
+  assign.status='implemented';
+  document.getElementById('cd-status-badge').textContent='Implemented';
+  document.getElementById('cd-status-badge').style.color='#4ade80';
+  btn.textContent='Implemented ✓';
+  await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_implemented',entity_type:'governance_control',entity_id:currentControlId,changes:{_actor_name:actorName(),control:allControls.find(c=>c.id===currentControlId)?.title}});
+  await loadControls();
+}
+ 
+async function uploadEvidence(){
+  const fileInput=document.getElementById('evidence-file');
+  const file=fileInput.files[0];if(!file)return;
+  if(file.size>5*1024*1024){alert('File must be under 5MB.');return}
+  const assign=allAssignments.find(a=>a.control_id===currentControlId&&!a.system_id);if(!assign)return;
+  const path='evidence/'+currentOrg.id+'/'+assign.id+'/'+Date.now()+'_'+file.name;
+  const{error:upErr}=await sb.storage.from('governance-reports').upload(path,file,{contentType:file.type,upsert:false});
+  if(upErr){alert('Upload failed: '+upErr.message);return}
+  await sb.from('evidence_uploads').insert({control_assignment_id:assign.id,org_id:currentOrg.id,file_name:file.name,file_path:path,file_type:file.type,file_size:file.size,uploaded_by:currentUser.id});
+  fileInput.value='';
+  openControlDetail(currentControlId);
+}
+ 
 init();
 </script></body></html>
