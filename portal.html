@@ -443,7 +443,7 @@ async function renderSystemControlsTab(sysId){
     html+='<div style="margin-bottom:16px;"><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:'+TYPE_COLORS[t]+';padding:8px 0 6px;display:flex;align-items:center;gap:10px;">'+typeLabels[t]+'<span style="flex:1;height:1px;background:var(--border);"></span></div>';
     items.forEach(({assign:a,ctrl:c})=>{
       const st=a.status||'not_started';
-      html+='<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;" onclick="openControlDetail(\''+c.id+'\')">'+
+      html+='<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;" onclick="openControlDetail(\''+c.id+'\',\''+a.id+'\')">'+
         '<div style="width:24px;height:24px;border-radius:6px;background:'+TYPE_BG[t]+';border:1px solid '+TYPE_BORDER[t]+';display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:'+TYPE_COLORS[t]+';flex-shrink:0;">'+c.control_number+'</div>'+
         '<div style="flex:1;min-width:0;"><div style="font-size:.8rem;font-weight:600;color:var(--main);">'+esc(c.title)+'</div></div>'+
         '<span style="font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+CTRL_STATUS_L[st]+'</span>'+
@@ -605,10 +605,22 @@ async function loadControls(){
 function getGovScore(){
   const typeWeights={organisation:0.30,system:0.40,assurance:0.30};
   const byType={organisation:{done:0,total:0},system:{done:0,total:0},assurance:{done:0,total:0}};
-  allControls.forEach(c=>{
+  // Org-level controls: count from reference data, check if assigned + implemented
+  allControls.filter(c=>c.is_org_level).forEach(c=>{
     const t=c.control_type;byType[t].total++;
-    const a=allAssignments.find(a=>a.control_id===c.id&&!a.system_id);
+    const a=allAssignments.find(x=>x.control_id===c.id&&!x.system_id);
     if(a&&(a.status==='implemented'||a.status==='verified'))byType[t].done++;
+  });
+  // Per-system controls: count each assignment individually
+  allControls.filter(c=>!c.is_org_level).forEach(c=>{
+    const sysAssigns=allAssignments.filter(x=>x.control_id===c.id&&x.system_id);
+    const t=c.control_type;
+    sysAssigns.forEach(a=>{
+      byType[t].total++;
+      if(a.status==='implemented'||a.status==='verified')byType[t].done++;
+    });
+    // If no assignments yet for this control, still count it as pending (once per control)
+    if(!sysAssigns.length){byType[t].total++}
   });
   let score=0;
   Object.entries(byType).forEach(([t,d])=>{
@@ -628,40 +640,100 @@ function renderControlsList(){
   ['organisation','system','assurance'].forEach(t=>{
     const d=gov.byType[t];const pct=d.total>0?Math.round(d.done/d.total*100):0;
     document.getElementById('gov-'+t.substring(0,3)+'-pct').textContent=pct+'%';
-    document.getElementById('gov-'+t.substring(0,3)+'-count').textContent=d.done+' / '+d.total+' controls';
+    document.getElementById('gov-'+t.substring(0,3)+'-count').textContent=d.done+' / '+d.total;
   });
-  // Render sections
-  const groups={organisation:[],system:[],assurance:[]};
-  allControls.forEach(c=>groups[c.control_type]?.push(c));
-  const typeLabels={organisation:'Organisation Controls',system:'System Controls',assurance:'Assurance Controls'};
-  ['organisation','system','assurance'].forEach(t=>{
-    const items=groups[t];if(!items.length)return;
-    const el=document.getElementById('controls-'+t.substring(0,3)+'-section');
-    el.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS[t]+';"></span>'+typeLabels[t]+'</div><div class="panel-sub">'+items.length+' controls</div></div>'+
-    items.map(c=>{
+  // Build system name lookup
+  const sysNames={};allSystems.forEach(s=>{sysNames[s.id]=s.name});
+  // Render org-level controls
+  const orgCtrls=allControls.filter(c=>c.is_org_level);
+  const perSysCtrls=allControls.filter(c=>!c.is_org_level);
+  
+  // Organisation section: show global controls
+  const orgEl=document.getElementById('controls-org-section');
+  if(orgCtrls.length){
+    orgEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.organisation+';"></span>Organisation Controls<span style="font-size:.6rem;font-weight:700;color:var(--sky);background:rgba(37,99,235,0.1);padding:2px 7px;border-radius:100px;margin-left:6px;">Global</span></div></div>'+
+    orgCtrls.map(c=>{
       const a=allAssignments.find(x=>x.control_id===c.id&&!x.system_id);
       const st=a?.status||'not_started';
-      const triggered=!!a;
-      return '<div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:background .1s;" onclick="openControlDetail(\''+c.id+'\')" onmouseover="this.style.background=\'rgba(255,255,255,0.02)\'" onmouseout="this.style.background=\'none\'">'+
-        '<div style="width:28px;height:28px;border-radius:8px;background:'+TYPE_BG[t]+';border:1px solid '+TYPE_BORDER[t]+';display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+TYPE_COLORS[t]+';flex-shrink:0;">'+c.control_number+'</div>'+
-        '<div style="flex:1;min-width:0;"><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px;">'+esc(c.title)+'</div><div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(c.description.substring(0,100))+'…</div></div>'+
-        '<span style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+CTRL_STATUS_L[st]+'</span>'+
-      '</div>'}).join('')+'</div>';
+      return renderControlRow(c,st,'organisation',null,a?.id);
+    }).join('')+'</div>';
+  }
+  
+  // System & Assurance: group by AI system
+  const sysEl=document.getElementById('controls-sys-section');
+  const assEl=document.getElementById('controls-ass-section');
+  
+  // Get unique systems that have assignments
+  const systemIds=[...new Set(allAssignments.filter(a=>a.system_id).map(a=>a.system_id))];
+  
+  if(!systemIds.length&&perSysCtrls.length){
+    sysEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.system+';"></span>System & Assurance Controls</div></div><div class="empty-state" style="padding:28px 0;"><h4>No system controls triggered yet</h4><p>Run an assessment on an AI system to trigger applicable controls.</p></div></div>';
+    assEl.innerHTML='';
+    return;
+  }
+  
+  let sysHtml='';let assHtml='';
+  systemIds.forEach(sysId=>{
+    const sysName=sysNames[sysId]||'Unknown System';
+    const sysAssigns=allAssignments.filter(a=>a.system_id===sysId);
+    // Split into system controls and assurance controls
+    const sysList=[];const assList=[];
+    sysAssigns.forEach(a=>{
+      const ctrl=allControls.find(c=>c.id===a.control_id);
+      if(!ctrl)return;
+      if(ctrl.control_type==='assurance')assList.push({ctrl,assign:a});
+      else sysList.push({ctrl,assign:a});
+    });
+    if(sysList.length){
+      sysHtml+='<div class="panel" style="margin-bottom:12px;"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.system+';"></span>'+esc(sysName)+'</div><div class="panel-sub">'+sysList.length+' controls</div></div>'+
+      sysList.sort((a,b)=>a.ctrl.display_order-b.ctrl.display_order).map(({ctrl:c,assign:a})=>renderControlRow(c,a.status,'system',sysId,a.id)).join('')+'</div>';
+    }
+    if(assList.length){
+      assHtml+='<div class="panel" style="margin-bottom:12px;"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.assurance+';"></span>'+esc(sysName)+' — Assurance</div><div class="panel-sub">'+assList.length+' controls</div></div>'+
+      assList.sort((a,b)=>a.ctrl.display_order-b.ctrl.display_order).map(({ctrl:c,assign:a})=>renderControlRow(c,a.status,'assurance',sysId,a.id)).join('')+'</div>';
+    }
   });
+  sysEl.innerHTML=sysHtml||'';
+  assEl.innerHTML=assHtml||'';
 }
  
-async function openControlDetail(ctrlId){
+function renderControlRow(c,st,type,sysId,assignId){
+  const aid=assignId?"'"+assignId+"'":"null";
+  return '<div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:background .1s;" onclick="openControlDetail(\''+c.id+'\','+aid+')" onmouseover="this.style.background=\'rgba(255,255,255,0.02)\'" onmouseout="this.style.background=\'none\'">'+
+    '<div style="width:28px;height:28px;border-radius:8px;background:'+TYPE_BG[type]+';border:1px solid '+TYPE_BORDER[type]+';display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+TYPE_COLORS[type]+';flex-shrink:0;">'+c.control_number+'</div>'+
+    '<div style="flex:1;min-width:0;"><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px;">'+esc(c.title)+'</div><div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(c.description.substring(0,100))+'…</div></div>'+
+    '<span style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+CTRL_STATUS_L[st]+'</span>'+
+  '</div>';
+}
+ 
+let currentAssignId=null; // tracks the specific assignment being edited
+ 
+async function openControlDetail(ctrlId,assignId){
   currentControlId=ctrlId;
   const ctrl=allControls.find(c=>c.id===ctrlId);if(!ctrl)return;
-  // Ensure assignment exists
-  let assign=allAssignments.find(a=>a.control_id===ctrlId&&!a.system_id);
-  if(!assign){
-    const{data,error}=await sb.from('control_assignments').insert({control_id:ctrlId,org_id:currentOrg.id,status:'not_started',triggered_by:'manual'}).select().single();
-    if(!error&&data){assign=data;allAssignments.push(data)}
+  // Find or create the right assignment
+  let assign=null;
+  if(assignId){
+    assign=allAssignments.find(a=>a.id===assignId);
   }
+  if(!assign){
+    // For org-level controls, find/create org assignment
+    if(ctrl.is_org_level){
+      assign=allAssignments.find(a=>a.control_id===ctrlId&&!a.system_id);
+      if(!assign){
+        const{data,error}=await sb.from('control_assignments').insert({control_id:ctrlId,org_id:currentOrg.id,system_id:null,status:'not_started',triggered_by:'manual'}).select().single();
+        if(!error&&data){assign=data;allAssignments.push(data)}
+      }
+    }
+  }
+  if(!assign){navigate('controls',document.getElementById('nav-controls'));return}
+  currentAssignId=assign.id;
+  
   const tasks=allTasks.filter(t=>t.control_id===ctrlId).sort((a,b)=>a.display_order-b.display_order);
   const taskResp=assign?.task_responses||{};
- 
+  // System context
+  const sysName=assign.system_id?allSystems.find(s=>s.id===assign.system_id)?.name:null;
+  
   // Header badges
   const tCol=TYPE_COLORS[ctrl.control_type];const tBg=TYPE_BG[ctrl.control_type];const tBor=TYPE_BORDER[ctrl.control_type];
   document.getElementById('cd-type-badge').textContent=ctrl.control_type;
@@ -673,7 +745,7 @@ async function openControlDetail(ctrlId){
   document.getElementById('cd-status-badge').textContent=CTRL_STATUS_L[st];
   document.getElementById('cd-status-badge').style.cssText='font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)';
  
-  document.getElementById('cd-title').textContent=ctrl.title;
+  document.getElementById('cd-title').textContent=ctrl.title+(sysName?' — '+sysName:'')+(ctrl.is_org_level?' (Global)':'');
   document.getElementById('cd-desc').textContent=ctrl.description;
   document.getElementById('cd-purpose').textContent=ctrl.purpose||'';
   document.getElementById('cd-task-count').textContent=tasks.length+' tasks';
@@ -693,16 +765,21 @@ async function openControlDetail(ctrlId){
   document.getElementById('cd-evidence-types').innerHTML=evTypes.length?'<strong style="color:var(--main);font-size:.72rem;">Suggested evidence:</strong> '+evTypes.map(e=>esc(e)).join(' · '):'';
  
   // Load existing evidence
-  const{data:evidence}=await sb.from('evidence_uploads').select('*').eq('control_assignment_id',assign?.id||'00000000-0000-0000-0000-000000000000').order('uploaded_at',{ascending:false});
-  document.getElementById('cd-evidence-list').innerHTML=(evidence||[]).map(e=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="flex:1;"><div style="font-size:.78rem;color:var(--main);">'+esc(e.file_name)+'</div><div style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(e.uploaded_at)+(e.description?' · '+esc(e.description):'')+'</div></div></div>').join('')||'<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No evidence uploaded yet.</div>';
+  const{data:evidence}=await sb.from('evidence_uploads').select('*').eq('control_assignment_id',assign.id).order('uploaded_at',{ascending:false});
+  document.getElementById('cd-evidence-list').innerHTML=(evidence||[]).map(e=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="flex:1;"><div style="font-size:.78rem;color:var(--main);">'+esc(e.file_name)+'</div><div style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(e.uploaded_at)+'</div></div></div>').join('')||'<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No evidence uploaded yet.</div>';
+ 
+  // Update buttons based on current status
+  const cBtn=document.getElementById('cd-complete-btn');
+  if(st==='implemented'||st==='verified'){cBtn.textContent='Implemented ✓';cBtn.disabled=true}
+  else{cBtn.textContent='Mark as Implemented';cBtn.disabled=false}
  
   navigate('control-detail',null);
   document.getElementById('nav-controls').classList.add('active');
 }
  
 async function saveControlProgress(){
-  if(!currentControlId||!currentOrg)return;
-  const assign=allAssignments.find(a=>a.control_id===currentControlId&&!a.system_id);if(!assign)return;
+  if(!currentAssignId||!currentOrg)return;
+  const assign=allAssignments.find(a=>a.id===currentAssignId);if(!assign)return;
   const resp={};
   document.querySelectorAll('#cd-tasks [data-task]').forEach(el=>{
     const tn=el.dataset.task;
@@ -720,8 +797,8 @@ async function saveControlProgress(){
 }
  
 async function markControlComplete(){
-  if(!currentControlId||!currentOrg)return;
-  const assign=allAssignments.find(a=>a.control_id===currentControlId&&!a.system_id);if(!assign)return;
+  if(!currentAssignId||!currentOrg)return;
+  const assign=allAssignments.find(a=>a.id===currentAssignId);if(!assign)return;
   // Save tasks first
   await saveControlProgress();
   const btn=document.getElementById('cd-complete-btn');btn.textContent='Updating…';btn.disabled=true;
@@ -738,13 +815,14 @@ async function uploadEvidence(){
   const fileInput=document.getElementById('evidence-file');
   const file=fileInput.files[0];if(!file)return;
   if(file.size>5*1024*1024){alert('File must be under 5MB.');return}
-  const assign=allAssignments.find(a=>a.control_id===currentControlId&&!a.system_id);if(!assign)return;
+  if(!currentAssignId)return;
+  const assign=allAssignments.find(a=>a.id===currentAssignId);if(!assign)return;
   const path='evidence/'+currentOrg.id+'/'+assign.id+'/'+Date.now()+'_'+file.name;
   const{error:upErr}=await sb.storage.from('governance-reports').upload(path,file,{contentType:file.type,upsert:false});
   if(upErr){alert('Upload failed: '+upErr.message);return}
-  await sb.from('evidence_uploads').insert({control_assignment_id:assign.id,org_id:currentOrg.id,file_name:file.name,file_path:path,file_type:file.type,file_size:file.size,uploaded_by:currentUser.id});
+  await sb.from('evidence_uploads').insert({control_assignment_id:assign.id,org_id:currentOrg.id,system_id:assign.system_id||null,file_name:file.name,file_path:path,file_type:file.type,file_size:file.size,uploaded_by:currentUser.id});
   fileInput.value='';
-  openControlDetail(currentControlId);
+  openControlDetail(currentControlId,currentAssignId);
 }
  
 init();
