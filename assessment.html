@@ -446,7 +446,7 @@ function finishAssessment(lastSectionId){
  
 async function saveAssessment(result){
   try{
-    const{error}=await sb.from('registry_assessments').insert({
+    const{data:inserted,error}=await sb.from('registry_assessments').insert({
       system_id:SYSTEM_ID,
       org_id:currentOrg.id,
       responses:result.responses,
@@ -459,16 +459,17 @@ async function saveAssessment(result){
       tier_validation:result.tierVal,
       requested_by:currentUser.id,
       status:'submitted'
-    });
+    }).select('id').single();
     if(error)throw error;
+    const assessId=inserted?.id||null;
     // Audit log
     await sb.from('registry_audit_log').insert({
       org_id:currentOrg.id,user_id:currentUser.id,
       action:'assessment_submitted',entity_type:'ai_system',entity_id:SYSTEM_ID,
-      changes:{overall_score:result.overall,risk_band:result.band,sector:assessSector}
+      changes:{overall_score:result.overall,risk_band:result.band,sector:assessSector,assessment_id:assessId}
     });
     // Trigger governance controls based on responses
-    await triggerControls(result.responses);
+    await triggerControls(result.responses,assessId);
     // Redirect back to portal
     setTimeout(()=>{window.location.href='portal.html#registry-detail-'+SYSTEM_ID},1500);
   }catch(err){
@@ -493,29 +494,29 @@ const TRIGGER_MAP=[
   {control_number:12, questions:['q3_3','q6_4'], threshold:1},  // Audit Logging
 ];
  
-async function triggerControls(responses){
+async function triggerControls(responses,assessId){
   try{
-    // Load controls reference
     const{data:controls}=await sb.from('governance_controls').select('id,control_number,is_org_level').eq('is_active',true);
     if(!controls)return;
     const ctrlMap={};controls.forEach(c=>{ctrlMap[c.control_number]=c});
-    // Check which controls are triggered
     const triggered=[];
     TRIGGER_MAP.forEach(rule=>{
       const ctrl=ctrlMap[rule.control_number];if(!ctrl)return;
       const anyBelow=rule.questions.some(qid=>responses[qid]!==undefined&&responses[qid]<=rule.threshold);
       if(anyBelow)triggered.push(ctrl);
     });
-    // Also always trigger Control 2 (AI System Inventory) — auto-complete check is separate
     if(ctrlMap[2])triggered.push(ctrlMap[2]);
     if(!triggered.length)return;
-    // Create assignments for triggered controls (upsert pattern)
     for(const ctrl of triggered){
-      const payload={control_id:ctrl.id,org_id:currentOrg.id,status:'not_started',triggered_by:'assessment'};
+      const payload={control_id:ctrl.id,org_id:currentOrg.id,status:'not_started',triggered_by:'assessment',assessment_id:assessId||null};
       if(!ctrl.is_org_level)payload.system_id=SYSTEM_ID;
-      // Use insert with ON CONFLICT DO NOTHING equivalent
-      await sb.from('control_assignments').upsert(payload,{onConflict:ctrl.is_org_level?'control_id,org_id':'control_id,org_id',ignoreDuplicates:true});
+      else payload.system_id=null;
+      // Insert, ignore duplicate (unique constraint handles idempotency)
+      const{error}=await sb.from('control_assignments').insert(payload);
+      if(error&&error.code!=='23505')console.error('Control trigger error:',ctrl.control_number,error);
+      // 23505 = unique_violation = already assigned, which is fine
     }
+    console.log('Triggered '+triggered.length+' controls');
   }catch(err){console.error('Trigger controls error:',err)}
 }
  
