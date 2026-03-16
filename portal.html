@@ -107,7 +107,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <body>
 <div class="bg-ambient"></div><div class="bg-grid"></div><div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 <div class="app">
-<aside class="sidebar" id="sidebar"><div class="sidebar-logo"><a href="index.html" class="logo-mark">mla<em>group.</em></a><span class="logo-badge">Portal</span></div>
+<aside class="sidebar" id="sidebar"><div class="sidebar-logo"><a href="#" onclick="navigate('dashboard',document.querySelector('.nav-item'));return false;" class="logo-mark">mla<em>group.</em></a><span class="logo-badge">Portal</span></div>
 <nav class="sidebar-nav">
 <div class="nav-section-label">Workspace</div>
 <div class="nav-item active" onclick="navigate('dashboard',this)"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>
@@ -116,7 +116,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="nav-item" id="nav-registry" onclick="navigateRegistry(this)"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg>Registry<span class="nav-badge badge-count" id="sys-count-badge" style="display:none;"></span></div>
 <div class="nav-item" id="nav-org" onclick="navigateOrg(this)"><svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/></svg>Organisation</div>
 <div class="nav-section-label">Governance</div>
-<div class="nav-item" id="nav-controls" onclick="navigateControls(this)"><svg viewBox="0 0 16 16"><path d="M8 1l2 4 5 .7-3.5 3.4.8 5L8 12l-4.3 2.1.8-5L1 5.7 6 5z"/></svg>Controls<span class="nav-badge badge-count" id="ctrl-count-badge" style="display:none;"></span></div>
+<div class="nav-item" id="nav-controls" onclick="navigateControls(this)"><svg viewBox="0 0 16 16"><path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/></svg>Controls<span class="nav-badge badge-count" id="ctrl-count-badge" style="display:none;"></span></div>
 <div class="nav-section-label">Account</div>
 <div class="nav-item" onclick="navigate('settings',this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/></svg>Settings</div>
 <div class="nav-section-label">Growth</div>
@@ -140,9 +140,13 @@ textarea.field-input{resize:vertical;min-height:80px}
 <a href="diagnostic.html" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;text-decoration:none;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M8 1v14M1 8h14"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">New Diagnostic</div><div style="font-size:.7rem;color:var(--muted);">Run fresh assessment</div></a>
 </div></div></div>
  
-<div id="view-reports" class="view"><div class="page-header"><h2>Reports</h2><p>Your AI governance diagnostic history and PDF downloads.</p></div><div id="paywall-banner" style="display:none;" class="paywall-banner"><div><h4>Unlock your full AI Governance Risk Report</h4><p>Complete board-ready PDF with findings, regulatory mapping, and remediation roadmap.</p></div><a href="pricing.html">Get Full Report — £295</a></div><div id="reports-container" class="loading-state">Loading your reports…</div></div>
+<div id="view-reports" class="view"><div class="page-header"><h2>Reports & Documents</h2><p>Diagnostic exposure reports, system governance assessments, and compliance documentation.</p></div><div id="paywall-banner" style="display:none;" class="paywall-banner"><div><h4>Unlock your full AI Governance Risk Report</h4><p>Complete board-ready PDF with findings, regulatory mapping, and remediation roadmap.</p></div><a href="pricing.html">Get Full Report — £295</a></div>
+<div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Exposure Reports</div><div class="panel-sub">Initial diagnostic assessments</div></div><div class="panel-body" id="reports-diagnostic"><div style="font-size:.78rem;color:var(--muted);padding:8px 0;">Loading…</div></div></div>
+<div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">System Assessment Reports</div><div class="panel-sub">Per-system governance evaluations</div></div><div class="panel-body" id="reports-assessments"><div style="font-size:.78rem;color:var(--muted);padding:8px 0;">Loading…</div></div></div>
+<div style="background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.12);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;"><div><div style="font-size:.85rem;font-weight:600;color:var(--main);margin-bottom:3px;">Governance Dossier</div><div style="font-size:.76rem;color:var(--muted);line-height:1.6;">Comprehensive governance export — registry, assessments, controls, evidence, and audit trail compiled into a single document.</div></div><span style="font-size:.72rem;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:6px 12px;border-radius:6px;white-space:nowrap;">🔒 Enterprise Plan</span></div>
+</div>
  
-<div id="view-settings" class="view"><div class="page-header"><h2>Account Settings</h2><p>Manage your profile, credentials and preferences.</p></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Profile Information</div></div><div class="panel-body"><div class="settings-grid"><div><label class="field-label">First name</label><input type="text" class="field-input" id="set-first" placeholder="—"></div><div><label class="field-label">Last name</label><input type="text" class="field-input" id="set-last" placeholder="—"></div></div><label class="field-label">Organisation</label><input type="text" class="field-input" id="set-org" placeholder="—"><label class="field-label">Email address</label><input type="email" class="field-input" id="set-email" disabled><div style="font-size:.7rem;color:var(--muted);margin-top:-6px;margin-bottom:12px;">Contact support to change your email.</div><button onclick="saveProfile()" class="btn-topbar btn-topbar-primary" style="margin-top:4px;">Save changes</button></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Password</div></div><div class="panel-body"><label class="field-label">New password</label><input type="password" class="field-input" id="set-pw" placeholder="Min. 8 characters"><label class="field-label">Confirm password</label><input type="password" class="field-input" id="set-pw2" placeholder="Repeat password"><div id="set-pw-msg" style="font-size:.75rem;margin-bottom:12px;display:none;"></div><button onclick="changePassword()" class="btn-topbar btn-topbar-ghost">Update password</button></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Danger Zone</div></div><div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;"><div><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:3px;">Sign out of all devices</div><div style="font-size:.75rem;color:var(--muted);">Ends all active sessions.</div></div><button onclick="signOut()" class="btn-topbar btn-topbar-ghost" style="color:var(--red);border-color:rgba(239,68,68,0.2);">Sign out</button></div></div></div>
+<div id="view-settings" class="view"><div class="page-header"><h2>Account Settings</h2><p>Manage your profile, credentials and preferences.</p></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Profile Information</div></div><div class="panel-body"><div class="settings-grid"><div><label class="field-label">First name</label><input type="text" class="field-input" id="set-first" placeholder="—"></div><div><label class="field-label">Last name</label><input type="text" class="field-input" id="set-last" placeholder="—"></div></div><label class="field-label">Organisation</label><input type="text" class="field-input" id="set-org" placeholder="—"><label class="field-label">Email address</label><input type="email" class="field-input" id="set-email" disabled><div style="font-size:.7rem;color:var(--muted);margin-top:-6px;margin-bottom:12px;">Contact support to change your email.</div><button onclick="saveProfile()" class="btn-topbar btn-topbar-primary" style="margin-top:4px;">Save changes</button></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Password</div></div><div class="panel-body"><label class="field-label">New password</label><input type="password" class="field-input" id="set-pw" placeholder="Min. 8 characters"><label class="field-label">Confirm password</label><input type="password" class="field-input" id="set-pw2" placeholder="Repeat password"><div id="set-pw-msg" style="font-size:.75rem;margin-bottom:12px;display:none;"></div><button onclick="changePassword()" class="btn-topbar btn-topbar-ghost">Update password</button></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Session</div></div><div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;"><div><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:3px;">Sign out</div><div style="font-size:.75rem;color:var(--muted);">End your current session.</div></div><button onclick="signOut()" class="btn-topbar btn-topbar-ghost">Sign out</button></div></div></div>
  
 <div id="view-referral" class="view"><div class="page-header"><h2>Referral Programme</h2><p>Refer colleagues and earn credit.</p></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;"><div class="stat-card"><div class="stat-label">Referrals Sent</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Converted</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Credit Earned</div><div class="stat-value">£0</div></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Your Referral Link</div></div><div class="panel-body"><p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Share this link with colleagues. When they purchase a report you'll both receive credit.</p><div class="invite-box"><div class="invite-url" id="referral-link">mlagroup.co.uk/ref/loading…</div><button class="invite-copy" onclick="copyReferral()">Copy link</button></div></div></div></div>
  
@@ -273,9 +277,10 @@ async function loadNames(userIds){
 }
  
 // ═══ NAVIGATION ═══════════════════════════════════════════════
-const topbarTitles={dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>'},reports:{label:'Reports',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>'},settings:{label:'Settings',icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>'},referral:{label:'Referral',icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>'},analytics:{label:'Analytics',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},registry:{label:'AI Systems Registry',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},'registry-detail':{label:'System Detail',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},org:{label:'Organisation',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/>'},controls:{label:'Governance Controls',icon:'<path d="M8 1l2 4 5 .7-3.5 3.4.8 5L8 12l-4.3 2.1.8-5L1 5.7 6 5z"/>'},'control-detail':{label:'Control Detail',icon:'<path d="M8 1l2 4 5 .7-3.5 3.4.8 5L8 12l-4.3 2.1.8-5L1 5.7 6 5z"/>'}};
+const topbarTitles={dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>'},reports:{label:'Reports',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>'},settings:{label:'Settings',icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>'},referral:{label:'Referral',icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>'},analytics:{label:'Analytics',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},registry:{label:'AI Systems Registry',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},'registry-detail':{label:'System Detail',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},org:{label:'Organisation',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/>'},controls:{label:'Governance Controls',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'},'control-detail':{label:'Control Detail',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'}};
  
-function navigate(viewId,navEl){
+let navHistory=[];
+function navigate(viewId,navEl,skipHistory){
   if(navEl&&navEl.classList.contains('locked'))return;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));if(navEl)navEl.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+viewId).classList.add('active');
@@ -285,7 +290,17 @@ function navigate(viewId,navEl){
   else if(viewId==='registry-detail'||viewId==='org'||viewId==='controls'||viewId==='control-detail')tr.innerHTML='<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   else tr.innerHTML='<button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   closeSidebar();
+  // Browser history
+  if(!skipHistory){history.pushState({view:viewId},'','#'+viewId);navHistory.push(viewId)}
 }
+window.addEventListener('popstate',function(e){
+  if(e.state&&e.state.view){
+    const viewId=e.state.view;
+    const navMap={dashboard:'.nav-item:first-child',reports:'[onclick*="reports"]',registry:'#nav-registry',org:'#nav-org',controls:'#nav-controls',settings:'[onclick*="settings"]',referral:'[onclick*="referral"]'};
+    const navEl=navMap[viewId]?document.querySelector(navMap[viewId]):null;
+    navigate(viewId,navEl,true);
+  }
+});
 async function navigateRegistry(navEl){navigate('registry',navEl);if(!currentOrg)await ensureOrg();if(!allSystems.length)await loadSystems();if(!allControls.length)await loadControls()}
 async function navigateOrg(navEl){navigate('org',navEl);if(!currentOrg)await ensureOrg();await renderOrgPage()}
 function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('show')}
@@ -312,7 +327,8 @@ async function init(){
   if(currentResults.length>0){const b=document.getElementById('report-count-badge');b.textContent=currentResults.length;b.style.display='inline-flex'}
   document.getElementById('paywall-banner').style.display=isPaid?'none':'flex';
   renderReports(paidIds);
-  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);handleDeepLink()}).catch(()=>renderDashboard(paidIds));
+  history.replaceState({view:'dashboard'},'','#dashboard');
+  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadAssessmentReports();handleDeepLink()}).catch(()=>renderDashboard(paidIds));
   else renderDashboard(paidIds);
 }
 function handleDeepLink(){
@@ -581,8 +597,22 @@ async function renderDashboard(paidIds){
  
 // ═══ REPORTS ══════════════════════════════════════════════════
 function renderReports(paidIds){
-  const c=document.getElementById('reports-container');if(!currentResults.length){c.innerHTML='<div class="empty-state"><h4>No assessments yet</h4><p>Complete your first diagnostic to see results.</p><a href="diagnostic.html" class="btn-dl" style="display:inline-flex;text-decoration:none;margin-top:4px;">Start First Diagnostic</a></div>';return}
-  c.className='result-list';c.innerHTML=currentResults.map(r=>{const band=r.risk_band||'moderate';const paid=isPaid||paidIds.has(r.id);const btn=paid?'<div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn-dl" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</button><button id="pdf-btn-'+r.id+'" class="btn-pdf" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Save as PDF</button></div>':'<a href="pricing.html" class="btn-unlock">Unlock — £295</a>';return '<div class="result-card"><div><div class="result-org">'+esc(r.organisation||'Assessment')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'<span>v'+(r.framework_version||'2.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Score</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div></div>'}).join('');
+  // Diagnostic reports
+  const dc=document.getElementById('reports-diagnostic');
+  if(!currentResults.length){dc.innerHTML='<div style="text-align:center;padding:20px 0;"><div style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">No diagnostic reports yet.</div><a href="diagnostic.html" class="btn-dl" style="display:inline-flex;text-decoration:none;">Run Diagnostic</a></div>'}
+  else{dc.innerHTML='<div class="result-list">'+currentResults.map(r=>{const band=r.risk_band||'moderate';const paid=isPaid||paidIds.has(r.id);const btn=paid?'<div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn-dl" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</button></div>':'<a href="pricing.html" class="btn-unlock">Unlock — £295</a>';return '<div class="result-card"><div><div class="result-org">'+esc(r.organisation||'Diagnostic')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'</div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Exposure</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div></div>'}).join('')+'</div>'}
+}
+async function loadAssessmentReports(){
+  if(!currentOrg)return;
+  const{data:assessments}=await sb.from('registry_assessments').select('*').eq('org_id',currentOrg.id).order('requested_at',{ascending:false});
+  const ac=document.getElementById('reports-assessments');
+  if(!assessments||!assessments.length){ac.innerHTML='<div style="text-align:center;padding:20px 0;font-size:.82rem;color:var(--muted);">No system assessments yet. Run an assessment from the Registry.</div>';return}
+  const sysNames={};allSystems.forEach(s=>{sysNames[s.id]=s.name});
+  const BAND_R={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};const BAND_CR={high:'#f87171',medium:'#fbbf24',low:'#4ade80'};
+  ac.innerHTML='<div class="result-list">'+assessments.map(a=>{
+    const band=a.risk_band||'medium';const sn=sysNames[a.system_id]||'AI System';
+    return '<div class="result-card"><div><div class="result-org">'+esc(sn)+'</div><div class="result-meta"><span>'+fmtDate(a.requested_at)+'</span>'+(a.sector?'<span>'+esc(a.sector)+'</span>':'')+'<span>v'+(a.questionnaire_version||'1.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num" style="color:'+(BAND_CR[band]||'var(--muted)')+';">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</div><div class="score-lbl">Governance</div></div><div class="band-pill band-'+band+'">'+(BAND_R[band]||band)+'</div><a href="system-report.html?aid='+a.id+'" target="_blank" class="btn-dl" style="text-decoration:none;"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</a></div></div>';
+  }).join('')+'</div>';
 }
  
 // ═══ SETTINGS ═════════════════════════════════════════════════
@@ -622,22 +652,22 @@ async function loadControls(){
 function getGovScore(){
   const typeWeights={organisation:0.30,system:0.40,assurance:0.30};
   const byType={organisation:{done:0,total:0},system:{done:0,total:0},assurance:{done:0,total:0}};
-  // Org-level controls: count from reference data, check if assigned + implemented
+  // Org-level controls (1,2): count once each
   allControls.filter(c=>c.is_org_level).forEach(c=>{
-    const t=c.control_type;byType[t].total++;
+    byType.organisation.total++;
     const a=allAssignments.find(x=>x.control_id===c.id&&!x.system_id);
-    if(a&&(a.status==='implemented'||a.status==='verified'))byType[t].done++;
+    if(a&&(a.status==='implemented'||a.status==='verified'))byType.organisation.done++;
   });
-  // Per-system controls: count each assignment individually
+  // Per-system controls: group into system vs assurance
   allControls.filter(c=>!c.is_org_level).forEach(c=>{
+    const bucket=c.control_type==='assurance'?'assurance':'system';
     const sysAssigns=allAssignments.filter(x=>x.control_id===c.id&&x.system_id);
-    const t=c.control_type;
-    sysAssigns.forEach(a=>{
-      byType[t].total++;
-      if(a.status==='implemented'||a.status==='verified')byType[t].done++;
-    });
-    // If no assignments yet for this control, still count it as pending (once per control)
-    if(!sysAssigns.length){byType[t].total++}
+    if(sysAssigns.length){
+      sysAssigns.forEach(a=>{
+        byType[bucket].total++;
+        if(a.status==='implemented'||a.status==='verified')byType[bucket].done++;
+      });
+    }else{byType[bucket].total++}
   });
   let score=0;
   Object.entries(byType).forEach(([t,d])=>{
@@ -657,7 +687,7 @@ function renderControlsList(){
   ['organisation','system','assurance'].forEach(t=>{
     const d=gov.byType[t];const pct=d.total>0?Math.round(d.done/d.total*100):0;
     document.getElementById('gov-'+t.substring(0,3)+'-pct').textContent=pct+'%';
-    document.getElementById('gov-'+t.substring(0,3)+'-count').textContent=d.done+' / '+d.total;
+    document.getElementById('gov-'+t.substring(0,3)+'-count').textContent=d.done+' of '+d.total+' implemented';
   });
   // Build system name lookup
   const sysNames={};allSystems.forEach(s=>{sysNames[s.id]=s.name});
@@ -665,10 +695,10 @@ function renderControlsList(){
   const orgCtrls=allControls.filter(c=>c.is_org_level);
   const perSysCtrls=allControls.filter(c=>!c.is_org_level);
   
-  // Organisation section: show global controls
+  // Organisation section: show org-level controls
   const orgEl=document.getElementById('controls-org-section');
   if(orgCtrls.length){
-    orgEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.organisation+';"></span>Organisation Controls<span style="font-size:.6rem;font-weight:700;color:var(--sky);background:rgba(37,99,235,0.1);padding:2px 7px;border-radius:100px;margin-left:6px;">Global</span></div></div>'+
+    orgEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.organisation+';"></span>Organisation Controls</div><div class="panel-sub">Applies once per organisation</div></div>'+
     orgCtrls.map(c=>{
       const a=allAssignments.find(x=>x.control_id===c.id&&!x.system_id);
       const st=a?.status||'not_started';
@@ -860,22 +890,67 @@ async function loadSupportForControl(assignId){
   const histEl=document.getElementById('cd-support-history');
   const formEl=document.getElementById('cd-support-form');
   if(!assignId){histEl.innerHTML='';return}
-  const{data:requests}=await sb.from('support_requests').select('*').eq('control_assignment_id',assignId).order('requested_at',{ascending:false});
-  if(!requests||!requests.length){histEl.innerHTML='';formEl.style.display='block';return}
-  const nm=await loadNames(requests.map(r=>r.requested_by));
-  histEl.innerHTML=requests.map(r=>{
-    const isOpen=r.status==='open';
-    return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'+
-        '<span style="font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+(isOpen?'#fbbf24':'#4ade80')+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+(isOpen?'Awaiting Response':'MLA Responded')+'</span>'+
-        '<span style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(r.requested_at)+'</span>'+
-      '</div>'+
-      '<div style="font-size:.8rem;color:var(--sub);line-height:1.7;margin-bottom:10px;background:rgba(255,255,255,0.02);border-left:2px solid var(--border);padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.client_message)+'</div>'+
-      '<div style="font-size:.68rem;color:var(--muted);">Requested by '+esc(nm[r.requested_by]||'Unknown')+'</div>'+
-      (r.mla_response?'<div style="margin-top:12px;padding:12px 14px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;"><div style="font-size:.62rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">MLA Group Response</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;">'+esc(r.mla_response)+'</div><div style="font-size:.68rem;color:var(--muted);margin-top:6px;">'+fmtDateLong(r.responded_at)+'</div></div>':'')+
-    '</div>';
-  }).join('');
-  formEl.style.display='block';
+  // Load all requests for this assignment
+  const{data:requests}=await sb.from('support_requests').select('*').eq('control_assignment_id',assignId).order('requested_at',{ascending:true});
+  const openReq=(requests||[]).find(r=>r.status==='open'||r.status==='responded');
+  
+  if(!requests||!requests.length){
+    // No requests — show new request form
+    histEl.innerHTML='';
+    formEl.innerHTML='<p style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:12px;">If you need help implementing this control, request guidance from an MLA governance expert.</p><textarea class="field-input" id="cd-support-msg" rows="3" placeholder="Describe what you need help with…" style="margin-bottom:8px;"></textarea><button class="btn-topbar btn-topbar-primary" onclick="submitSupportRequest()" style="padding:6px 14px;font-size:.75rem;">Request MLA Expert</button><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div>';
+    return;
+  }
+  
+  // Has requests — show conversation thread
+  let threadHtml='';
+  for(const req of requests){
+    // Load messages for this request
+    const{data:msgs}=await sb.from('support_messages').select('*').eq('request_id',req.id).order('created_at',{ascending:true});
+    const allMsgs=msgs||[];
+    const nm=await loadNames([req.requested_by,...allMsgs.map(m=>m.sender_id)]);
+    const isOpen=req.status==='open';
+    
+    threadHtml+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;">';
+    threadHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span style="font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+(isOpen?'#fbbf24':req.status==='responded'?'#4ade80':'var(--muted)')+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+(isOpen?'Awaiting MLA Response':req.status==='responded'?'MLA Responded':'Closed')+'</span><span style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(req.requested_at)+'</span></div>';
+    
+    // Original message
+    threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:var(--sky);font-weight:600;margin-bottom:4px;">'+esc(nm[req.requested_by]||'You')+'</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:rgba(37,99,235,0.03);border-left:2px solid var(--accent);padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(req.client_message)+'</div></div>';
+    
+    // Legacy MLA response (from old support_requests.mla_response)
+    if(req.mla_response&&!allMsgs.some(m=>m.sender_type==='mla')){
+      threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:#4ade80;font-weight:600;margin-bottom:4px;">MLA Group</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:rgba(34,197,94,0.03);border-left:2px solid #22c55e;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(req.mla_response)+'</div><div style="font-size:.68rem;color:var(--muted);margin-top:4px;">'+fmtDateLong(req.responded_at)+'</div></div>';
+    }
+    
+    // Thread messages
+    allMsgs.forEach(m=>{
+      const isMLA=m.sender_type==='mla';
+      const col=isMLA?'#4ade80':'var(--sky)';
+      const bgCol=isMLA?'rgba(34,197,94,0.03)':'rgba(37,99,235,0.03)';
+      const borderCol=isMLA?'#22c55e':'var(--accent)';
+      const name=isMLA?'MLA Group':esc(nm[m.sender_id]||'You');
+      threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:'+col+';font-weight:600;margin-bottom:4px;">'+name+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(m.created_at)+'</span></div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:'+bgCol+';border-left:2px solid '+borderCol+';padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(m.message)+'</div>';
+      if(m.file_name)threadHtml+='<div style="margin-top:6px;font-size:.72rem;color:var(--sky);cursor:pointer;" onclick="viewSupportFile(\''+esc(m.file_path)+'\')">📎 '+esc(m.file_name)+'</div>';
+      threadHtml+='</div>';
+    });
+    
+    threadHtml+='</div>';
+  }
+  histEl.innerHTML=threadHtml;
+  
+  // Reply form — if there's an active request, show reply box
+  if(openReq){
+    formEl.innerHTML='<div style="border-top:1px solid var(--border);padding-top:12px;"><textarea class="field-input" id="cd-support-msg" rows="2" placeholder="Reply to MLA Group…" style="margin-bottom:8px;"></textarea><div style="display:flex;gap:8px;align-items:center;"><input type="file" id="support-file" style="display:none;" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg" /><button class="btn-topbar btn-topbar-ghost" onclick="document.getElementById(\'support-file\').click()" style="padding:5px 10px;font-size:.72rem;">Attach File</button><span id="support-file-name" style="font-size:.7rem;color:var(--muted);"></span><button class="btn-topbar btn-topbar-primary" onclick="sendSupportReply(\''+openReq.id+'\')" style="margin-left:auto;padding:6px 14px;font-size:.75rem;">Send Reply</button></div><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div></div>';
+    const fileInput=document.getElementById('support-file');
+    if(fileInput)fileInput.onchange=function(){document.getElementById('support-file-name').textContent=this.files[0]?.name||''};
+  }else{
+    // All requests closed — show new request option
+    formEl.innerHTML='<div style="border-top:1px solid var(--border);padding-top:12px;"><textarea class="field-input" id="cd-support-msg" rows="2" placeholder="Ask a new question…" style="margin-bottom:8px;"></textarea><button class="btn-topbar btn-topbar-primary" onclick="submitSupportRequest()" style="padding:6px 14px;font-size:.75rem;">New Request</button><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div></div>';
+  }
+}
+ 
+async function viewSupportFile(filePath){
+  const{data}=await sb.storage.from('governance-reports').createSignedUrl(filePath,3600);
+  if(data?.signedUrl)window.open(data.signedUrl,'_blank');
 }
  
 async function submitSupportRequest(){
@@ -883,22 +958,39 @@ async function submitSupportRequest(){
   const msg=document.getElementById('cd-support-msg').value.trim();
   const stEl=document.getElementById('cd-support-status');
   if(!msg){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Please describe what you need help with.';return}
-  const btn=document.getElementById('cd-support-btn');btn.textContent='Sending…';btn.disabled=true;stEl.style.display='none';
+  stEl.style.display='none';
   const assign=allAssignments.find(a=>a.id===currentAssignId);
-  const{error}=await sb.from('support_requests').insert({
-    control_assignment_id:currentAssignId,
-    control_id:currentControlId,
-    org_id:currentOrg.id,
-    system_id:assign?.system_id||null,
-    client_message:msg,
-    requested_by:currentUser.id
-  });
-  if(error){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Error: '+error.message;btn.textContent='Request MLA Expert';btn.disabled=false;return}
-  // Audit
+  const{data:req,error}=await sb.from('support_requests').insert({
+    control_assignment_id:currentAssignId,control_id:currentControlId,org_id:currentOrg.id,
+    system_id:assign?.system_id||null,client_message:msg,requested_by:currentUser.id
+  }).select('id').single();
+  if(error){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Error: '+error.message;return}
   await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'support_requested',entity_type:'governance_control',entity_id:assign?.system_id||currentControlId,changes:{_actor_name:actorName(),control:allControls.find(c=>c.id===currentControlId)?.title}});
-  document.getElementById('cd-support-msg').value='';
-  btn.textContent='Request MLA Expert';btn.disabled=false;
-  stEl.style.display='block';stEl.style.color='#4ade80';stEl.textContent='Request sent — MLA Group will respond shortly.';
+  await loadSupportForControl(currentAssignId);
+}
+ 
+async function sendSupportReply(reqId){
+  if(!currentOrg)return;
+  const msg=document.getElementById('cd-support-msg').value.trim();
+  const stEl=document.getElementById('cd-support-status');
+  if(!msg){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Please enter a message.';return}
+  stEl.style.display='none';
+  // Upload file if attached
+  let fileName=null,filePath=null,fileType=null;
+  const fileInput=document.getElementById('support-file');
+  if(fileInput&&fileInput.files[0]){
+    const file=fileInput.files[0];
+    if(file.size>5*1024*1024){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='File must be under 5MB.';return}
+    filePath='support/'+currentOrg.id+'/'+reqId+'/'+Date.now()+'_'+file.name;
+    const{error:upErr}=await sb.storage.from('governance-reports').upload(filePath,file,{contentType:file.type});
+    if(upErr){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='File upload failed.';return}
+    fileName=file.name;fileType=file.type;
+  }
+  const{error}=await sb.from('support_messages').insert({
+    request_id:reqId,sender_id:currentUser.id,sender_type:'client',message:msg,
+    file_name:fileName,file_path:filePath,file_type:fileType
+  });
+  if(error){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Error: '+error.message;return}
   await loadSupportForControl(currentAssignId);
 }
  
