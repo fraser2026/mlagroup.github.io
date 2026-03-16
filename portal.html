@@ -245,8 +245,11 @@ function fmtAudit(entry,namesMap){
     case 'assessment_submitted':text='Submitted an assessment for review by MLA Group';break;
     case 'control_updated':text='Updated progress on <strong>'+esc(c.control||'')+'</strong>';break;
     case 'control_implemented':text='Marked <strong>'+esc(c.control||'')+'</strong> as implemented';break;
+    case 'mla_review_updated':text='MLA Group updated assessment status to <strong>'+(c.status==='controls_issued'?'Controls Issued':c.status==='in_review'?'Under Review':c.status||'')+'</strong>';break;
     default:text=entry.action.replace(/_/g,' ');
   }
+  // Override actor name for MLA actions
+  if(c._is_mla)return{who:'MLA Group',text,time:fmtDateLong(entry.created_at)};
   return {who,text,time:fmtDateLong(entry.created_at)};
 }
 async function loadNames(userIds){
@@ -764,9 +767,19 @@ async function openControlDetail(ctrlId,assignId){
   const evTypes=ctrl.evidence_types||[];
   document.getElementById('cd-evidence-types').innerHTML=evTypes.length?'<strong style="color:var(--main);font-size:.72rem;">Suggested evidence:</strong> '+evTypes.map(e=>esc(e)).join(' · '):'';
  
-  // Load existing evidence
+  // Load existing evidence with download links
   const{data:evidence}=await sb.from('evidence_uploads').select('*').eq('control_assignment_id',assign.id).order('uploaded_at',{ascending:false});
-  document.getElementById('cd-evidence-list').innerHTML=(evidence||[]).map(e=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="flex:1;"><div style="font-size:.78rem;color:var(--main);">'+esc(e.file_name)+'</div><div style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(e.uploaded_at)+'</div></div></div>').join('')||'<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No evidence uploaded yet.</div>';
+  if(evidence&&evidence.length){
+    const evHtml=[];
+    for(const e of evidence){
+      const{data:urlData}=await sb.storage.from('governance-reports').createSignedUrl(e.file_path,3600);
+      const url=urlData?.signedUrl||'#';
+      evHtml.push('<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="flex:1;min-width:0;"><div style="font-size:.78rem;color:var(--main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(e.file_name)+'</div><div style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(e.uploaded_at)+'</div></div><a href="'+url+'" target="_blank" style="flex-shrink:0;font-size:.72rem;font-weight:600;color:var(--sky);text-decoration:none;padding:5px 10px;border:1px solid rgba(96,165,250,0.2);border-radius:6px;transition:background .15s;" onmouseover="this.style.background=\'rgba(96,165,250,0.08)\'" onmouseout="this.style.background=\'none\'">View</a></div>');
+    }
+    document.getElementById('cd-evidence-list').innerHTML=evHtml.join('');
+  }else{
+    document.getElementById('cd-evidence-list').innerHTML='<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No evidence uploaded yet.</div>';
+  }
  
   // Update buttons based on current status
   const cBtn=document.getElementById('cd-complete-btn');
