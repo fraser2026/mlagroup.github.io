@@ -469,6 +469,9 @@ async function submitSupportResponse(reqId){
   if(r){
     await sb.from('registry_audit_log').insert({org_id:r.org_id,user_id:currentUser.id,action:'support_responded',entity_type:'governance_control',entity_id:r.system_id||r.control_id,changes:{_actor_name:'MLA Group',_is_mla:true,control:getCtrlName(r.control_id)}});
     r.status='responded';r.mla_response=response;
+    // Create in-portal alert for client
+    var ctrlNameForAlert=getCtrlName(r.control_id);
+    await sb.from('governance_alerts').insert({org_id:r.org_id,alert_type:'support_response',severity:'info',title:'MLA Group responded to your support request',body:'You have a new response regarding "'+ctrlNameForAlert+'". Open the control in your portal to view the full conversation and reply.',ref_id:r.control_assignment_id||null,ref_type:'support_request'});
     // Email the client
     const{data:clientProfile}=await sb.from('profiles').select('full_name,email').eq('id',r.requested_by).single();
     if(clientProfile?.email){
