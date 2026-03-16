@@ -649,7 +649,34 @@ async function saveProfile(){const first=document.getElementById('set-first').va
 async function changePassword(){const pw=document.getElementById('set-pw').value;const pw2=document.getElementById('set-pw2').value;const msg=document.getElementById('set-pw-msg');msg.style.display='block';if(pw.length<8){msg.style.color='var(--red)';msg.textContent='Min. 8 characters.';return}if(pw!==pw2){msg.style.color='var(--red)';msg.textContent='Passwords do not match.';return}const{error}=await sb.auth.updateUser({password:pw});if(error){msg.style.color='var(--red)';msg.textContent=error.message}else{msg.style.color='#4ade80';msg.textContent='Password updated.';document.getElementById('set-pw').value='';document.getElementById('set-pw2').value=''}}
 function copyReferral(){const link=document.getElementById('referral-link').textContent;navigator.clipboard.writeText('https://'+link).then(()=>{const btn=document.querySelector('.invite-copy');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy link',2000)})}
 function downloadReport(id){window.open('report.html?rid='+id,'_blank')}
-async function savePDF(resultId){const btn=document.getElementById('pdf-btn-'+resultId);if(!btn)return;const orig=btn.innerHTML;btn.innerHTML='Generating…';btn.disabled=true;try{const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error('Not authenticated');const res=await fetch(SUPABASE_URL+'/functions/v1/generate-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},body:JSON.stringify({response_id:resultId})});if(!res.ok)throw new Error('Server error: '+res.status);const data=await res.json();if(!data?.download_url)throw new Error('No URL');window.open(data.download_url,'_blank')}catch(err){alert('PDF generation failed: '+err.message)}finally{btn.innerHTML=orig;btn.disabled=false}}
+async function savePDF(resultId){
+  var btn=document.getElementById('pdf-btn-'+resultId);if(!btn)return;
+  var orig=btn.innerHTML;btn.innerHTML='Generating...';btn.disabled=true;
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(2,6,23,0.92);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;';
+  overlay.innerHTML='<div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(37,99,235,0.15);border-top-color:#60a5fa;animation:spin .8s linear infinite;"></div>'+
+    '<div style="text-align:center;"><div style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;font-weight:400;color:#f1f5f9;margin-bottom:8px;">Generating your report</div>'+
+    '<div style="font-size:.82rem;color:#475569;max-width:320px;line-height:1.7;" id="pdf-status-msg">Connecting to report server...</div></div>'+
+    '<div style="width:280px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;"><div id="pdf-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:2px;transition:width 1s ease;"></div></div>'+
+    '<div style="font-size:.72rem;color:#334155;text-align:center;line-height:1.7;">This can take up to 60 seconds on first generation.<br>Please keep this tab open.</div>';
+  document.body.appendChild(overlay);
+  var messages=[{t:0,msg:'Connecting to report server...',pct:5},{t:4000,msg:'Loading your governance data...',pct:20},{t:10000,msg:'Rendering report layout...',pct:38},{t:18000,msg:'Applying regulatory mappings...',pct:52},{t:26000,msg:'Compiling risk findings...',pct:65},{t:36000,msg:'Generating PDF document...',pct:78},{t:48000,msg:'Almost there, finalising...',pct:90}];
+  var timers=messages.map(function(m){return setTimeout(function(){var el=document.getElementById('pdf-status-msg');var bar=document.getElementById('pdf-progress-bar');if(el)el.textContent=m.msg;if(bar)bar.style.width=m.pct+'%';},m.t);});
+  try{
+    var sd=await sb.auth.getSession();var session=sd.data.session;if(!session)throw new Error('Not authenticated');
+    var res=await fetch(SUPABASE_URL+'/functions/v1/generate-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},body:JSON.stringify({response_id:resultId})});
+    if(!res.ok)throw new Error('Server error: '+res.status);
+    var data=await res.json();if(!data||!data.download_url)throw new Error('No URL');
+    timers.forEach(function(t){clearTimeout(t);});
+    var bar=document.getElementById('pdf-progress-bar');var msg=document.getElementById('pdf-status-msg');
+    if(bar)bar.style.width='100%';if(msg)msg.textContent='Report ready - opening in new tab...';
+    setTimeout(function(){window.open(data.download_url,'_blank');if(document.body.contains(overlay))document.body.removeChild(overlay);},800);
+  }catch(err){
+    timers.forEach(function(t){clearTimeout(t);});
+    if(document.body.contains(overlay))document.body.removeChild(overlay);
+    alert('PDF generation failed: '+err.message);
+  }finally{btn.innerHTML=orig;btn.disabled=false;}
+}
  
 // ═══ GOVERNANCE CONTROLS ══════════════════════════════════════
 const TYPE_COLORS={organisation:'#60a5fa',system:'#f87171',assurance:'#fbbf24'};
