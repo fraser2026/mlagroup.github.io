@@ -74,6 +74,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="nav-label">Overview</div>
 <div class="nav-item active" onclick="showView('dashboard',this)"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>
 <div class="nav-item" onclick="showView('queue',this)"><svg viewBox="0 0 16 16"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg>Assessment Queue<span class="nav-badge" id="queue-badge" style="display:none;">0</span></div>
+<div class="nav-item" onclick="showView('support',this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/><path d="M5.5 6a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5M8 12.5v.01"/></svg>Support Requests<span class="nav-badge" id="support-badge" style="display:none;">0</span></div>
 <div class="nav-label">Clients</div>
 <div class="nav-item" onclick="showView('clients',this)"><svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/></svg>All Clients</div>
 <div class="nav-label">Tools</div>
@@ -111,6 +112,16 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div id="assess-detail-content"><div class="loading">Loading…</div></div>
 </div>
  
+<div id="view-support" class="view">
+<div class="page-header"><h2>Support Requests</h2><p>Client requests for help with governance controls.</p></div>
+<div id="support-list"><div class="loading">Loading…</div></div>
+</div>
+ 
+<div id="view-support-detail" class="view">
+<button style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;padding:0 0 16px;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;" onclick="showView('support',document.querySelectorAll('.nav-item')[2])"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L4 6l4 4"/></svg>Back to Support</button>
+<div id="support-detail-content"><div class="loading">Loading…</div></div>
+</div>
+ 
 </div>
 </div>
 </div>
@@ -121,7 +132,7 @@ const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
  
 let currentUser=null;
-let allOrgs=[],allSystems=[],allAssessments=[];
+let allOrgs=[],allSystems=[],allAssessments=[],allSupport=[],allControlsAdmin=[];
  
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—'}
@@ -138,7 +149,7 @@ function showView(id,navEl){
   if(navEl)navEl.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+id).classList.add('active');
-  const titles={dashboard:'Admin Dashboard',queue:'Assessment Queue',clients:'All Clients','assessment-detail':'Assessment Detail'};
+  const titles={dashboard:'Admin Dashboard',queue:'Assessment Queue',clients:'All Clients','assessment-detail':'Assessment Detail',support:'Support Requests','support-detail':'Support Detail'};
   document.getElementById('topbar-title').textContent=titles[id]||'Admin';
 }
  
@@ -156,12 +167,14 @@ async function init(){
 }
  
 async function loadData(){
-  const[{data:orgs},{data:systems},{data:assessments}]=await Promise.all([
+  const[{data:orgs},{data:systems},{data:assessments},{data:support},{data:controls}]=await Promise.all([
     sb.from('organisations').select('*').order('created_at',{ascending:false}),
-    sb.from('ai_systems').select('id,name,org_id,risk_tier,deployment_status,system_owner,vendor').order('created_at',{ascending:false}),
-    sb.from('registry_assessments').select('*').order('requested_at',{ascending:false})
+    sb.from('ai_systems').select('id,name,org_id,risk_tier,deployment_status,system_owner,vendor,description').order('created_at',{ascending:false}),
+    sb.from('registry_assessments').select('*').order('requested_at',{ascending:false}),
+    sb.from('support_requests').select('*').order('requested_at',{ascending:false}),
+    sb.from('governance_controls').select('id,control_number,title,control_type').eq('is_active',true)
   ]);
-  allOrgs=orgs||[];allSystems=systems||[];allAssessments=assessments||[];
+  allOrgs=orgs||[];allSystems=systems||[];allAssessments=assessments||[];allSupport=support||[];allControlsAdmin=controls||[];
   
   // Stats
   const pending=allAssessments.filter(a=>a.status==='submitted');
@@ -171,9 +184,13 @@ async function loadData(){
   document.getElementById('s-pending').textContent=pending.length;
   if(pending.length){document.getElementById('queue-badge').textContent=pending.length;document.getElementById('queue-badge').style.display='inline-flex'}
   
+  const openSupport=allSupport.filter(s=>s.status==='open');
+  if(openSupport.length){document.getElementById('support-badge').textContent=openSupport.length;document.getElementById('support-badge').style.display='inline-flex'}
+  
   renderDashRecent();
   renderQueue();
   renderClients();
+  renderSupportList();
 }
  
 function getOrgName(orgId){return allOrgs.find(o=>o.id===orgId)?.name||'Unknown'}
@@ -315,6 +332,137 @@ async function saveReview(assessId){
   document.getElementById('s-pending').textContent=pending.length;
   if(pending.length){document.getElementById('queue-badge').textContent=pending.length;document.getElementById('queue-badge').style.display='inline-flex'}
   else{document.getElementById('queue-badge').style.display='none'}
+}
+ 
+function getCtrlName(ctrlId){return allControlsAdmin.find(c=>c.id===ctrlId)?.title||'Unknown Control'}
+function getCtrlNum(ctrlId){return allControlsAdmin.find(c=>c.id===ctrlId)?.control_number||'?'}
+ 
+function renderSupportList(){
+  const open=allSupport.filter(s=>s.status==='open');
+  const responded=allSupport.filter(s=>s.status!=='open');
+  if(!allSupport.length){document.getElementById('support-list').innerHTML='<div class="panel"><div class="empty">No support requests.</div></div>';return}
+  let html='';
+  if(open.length){
+    html+='<div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Open Requests</div><div class="panel-sub" style="color:#fbbf24;">'+open.length+' awaiting response</div></div><table class="tbl"><thead><tr><th>Organisation</th><th>AI System</th><th>Control</th><th>Message</th><th>Requested</th></tr></thead><tbody>'+
+    open.map(r=>'<tr onclick="openSupportDetail(\''+r.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(r.org_id))+'</td><td>'+esc(r.system_id?getSysName(r.system_id):'Org-level')+'</td><td><span style="font-size:.72rem;color:var(--sky);">'+getCtrlNum(r.control_id)+'. '+esc(getCtrlName(r.control_id))+'</span></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--muted2);">'+esc(r.client_message.substring(0,80))+'</td><td style="font-size:.72rem;color:var(--muted);white-space:nowrap;">'+fmtDate(r.requested_at)+'</td></tr>').join('')+
+    '</tbody></table></div>';
+  }
+  if(responded.length){
+    html+='<div class="panel"><div class="panel-header"><div class="panel-title">Responded</div><div class="panel-sub">'+responded.length+'</div></div><table class="tbl"><thead><tr><th>Organisation</th><th>Control</th><th>Status</th><th>Responded</th></tr></thead><tbody>'+
+    responded.map(r=>'<tr onclick="openSupportDetail(\''+r.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(r.org_id))+'</td><td>'+esc(getCtrlName(r.control_id))+'</td><td><span class="pill pill-done">Responded</span></td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(r.responded_at)+'</td></tr>').join('')+
+    '</tbody></table></div>';
+  }
+  document.getElementById('support-list').innerHTML=html;
+}
+ 
+async function openSupportDetail(reqId){
+  const r=allSupport.find(x=>x.id===reqId);if(!r)return;
+  const orgName=getOrgName(r.org_id);
+  const sysName=r.system_id?getSysName(r.system_id):null;
+  const sys=r.system_id?allSystems.find(s=>s.id===r.system_id):null;
+  const ctrlName=getCtrlName(r.control_id);
+  const ctrlNum=getCtrlNum(r.control_id);
+  // Load the control assignment to see task progress
+  const{data:assign}=await sb.from('control_assignments').select('*').eq('id',r.control_assignment_id).single();
+  const taskResp=assign?.task_responses||{};
+  const taskCount=Object.keys(taskResp).filter(k=>taskResp[k]&&taskResp[k]!=='').length;
+  // Load requester name
+  const nm=await loadAdminNames([r.requested_by]);
+  
+  document.getElementById('support-detail-content').innerHTML=`
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <span class="pill ${r.status==='open'?'pill-pending':'pill-done'}">${r.status==='open'?'Open — Awaiting Response':'Responded'}</span>
+      </div>
+      <h2 style="font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:400;color:var(--main);margin-bottom:4px;">${esc(ctrlNum+'. '+ctrlName)}</h2>
+      <div style="font-size:.78rem;color:var(--muted);">${esc(orgName)}${sysName?' — '+esc(sysName):''}</div>
+    </div>
+    
+    <div class="detail-card">
+      <div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:10px;">Client Request</div>
+      <div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(255,255,255,0.02);border-left:2px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;">${esc(r.client_message)}</div>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:8px;">From ${esc(nm[r.requested_by]||'Unknown')} · ${fmtDateLong(r.requested_at)}</div>
+    </div>
+    
+    ${sys?`<div class="detail-card">
+      <div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:10px;">AI System Context</div>
+      <div class="meta-grid">
+        <div><div class="detail-label">System</div><div class="detail-val">${esc(sys.name)}</div></div>
+        <div><div class="detail-label">Owner</div><div class="detail-val">${esc(sys.system_owner||'—')}</div></div>
+        <div><div class="detail-label">Risk Tier</div><div class="detail-val">${sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified'}</div></div>
+        <div><div class="detail-label">Vendor</div><div class="detail-val">${esc(sys.vendor||'—')}</div></div>
+      </div>
+      ${sys.description?'<div style="font-size:.76rem;color:var(--muted);line-height:1.6;margin-top:10px;">'+esc(sys.description)+'</div>':''}
+    </div>`:''}
+    
+    <div class="detail-card">
+      <div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Control Progress</div>
+      <div style="font-size:.78rem;color:var(--muted);">Status: <span style="color:var(--sub);">${assign?assign.status.replace(/_/g,' '):'Unknown'}</span></div>
+      <div style="font-size:.78rem;color:var(--muted);">Tasks completed: <span style="color:var(--sub);">${taskCount}</span></div>
+    </div>
+    
+    ${r.mla_response?`<div class="detail-card" style="border-color:rgba(34,197,94,0.15);">
+      <div style="font-size:.72rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Your Response</div>
+      <div style="font-size:.82rem;color:var(--sub);line-height:1.75;">${esc(r.mla_response)}</div>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:6px;">${fmtDateLong(r.responded_at)}</div>
+    </div>`:''}
+    
+    <div class="panel" style="margin-top:20px;">
+      <div class="panel-header"><div class="panel-title">${r.status==='open'?'Respond to Client':'Update Response'}</div></div>
+      <div style="padding:20px;">
+        <label class="field-label">MLA Response</label>
+        <textarea class="field-input" id="sr-response" placeholder="Provide guidance on implementing this control…">${esc(r.mla_response||'')}</textarea>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="submitSupportResponse('${r.id}')">Send Response to Client</button>
+        </div>
+        <div id="sr-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
+      </div>
+    </div>
+  `;
+  
+  showView('support-detail',null);
+}
+ 
+async function loadAdminNames(ids){
+  const map={};
+  if(!ids.length)return map;
+  const{data}=await sb.from('profiles').select('id,full_name,email').in('id',ids);
+  (data||[]).forEach(p=>{map[p.id]=p.full_name||p.email||'Unknown'});
+  return map;
+}
+ 
+async function submitSupportResponse(reqId){
+  const response=document.getElementById('sr-response').value.trim();
+  const msg=document.getElementById('sr-msg');
+  if(!response){msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Please write a response.';return}
+  msg.style.display='block';msg.style.color='var(--muted)';msg.textContent='Sending…';
+  
+  const{error}=await sb.from('support_requests').update({
+    mla_response:response,
+    responded_by:currentUser.id,
+    responded_at:new Date().toISOString(),
+    status:'responded'
+  }).eq('id',reqId);
+  
+  if(error){msg.style.color='var(--red)';msg.textContent='Error: '+error.message;return}
+  
+  // Audit log on client's org
+  const r=allSupport.find(x=>x.id===reqId);
+  if(r){
+    await sb.from('registry_audit_log').insert({
+      org_id:r.org_id,user_id:currentUser.id,
+      action:'support_responded',entity_type:'governance_control',
+      entity_id:r.system_id||r.control_id,
+      changes:{_actor_name:'MLA Group',_is_mla:true,control:getCtrlName(r.control_id)}
+    });
+    r.status='responded';r.mla_response=response;r.responded_at=new Date().toISOString();
+  }
+  
+  msg.style.color='#4ade80';msg.textContent='Response sent — client will see this on their control page.';
+  // Update badges
+  const openCount=allSupport.filter(s=>s.status==='open').length;
+  if(openCount){document.getElementById('support-badge').textContent=openCount;document.getElementById('support-badge').style.display='inline-flex'}
+  else document.getElementById('support-badge').style.display='none';
 }
  
 init();
