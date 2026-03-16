@@ -327,6 +327,7 @@ async function saveReview(assessId){
   }
   
   msg.style.color='#4ade80';msg.textContent='Updated — client will see this on their next visit.';
+  renderDashRecent();
   // Refresh stats
   const pending=allAssessments.filter(x=>x.status==='submitted');
   document.getElementById('s-pending').textContent=pending.length;
@@ -362,71 +363,62 @@ async function openSupportDetail(reqId){
   const sys=r.system_id?allSystems.find(s=>s.id===r.system_id):null;
   const ctrlName=getCtrlName(r.control_id);
   const ctrlNum=getCtrlNum(r.control_id);
-  // Load the control assignment to see task progress
   const{data:assign}=await sb.from('control_assignments').select('*').eq('id',r.control_assignment_id).single();
   const taskResp=assign?.task_responses||{};
   const taskCount=Object.keys(taskResp).filter(k=>taskResp[k]&&taskResp[k]!=='').length;
-  // Load requester name
-  const nm=await loadAdminNames([r.requested_by]);
+  // Load messages
+  const{data:msgs}=await sb.from('support_messages').select('*').eq('request_id',r.id).order('created_at',{ascending:true});
+  const allMsgs=msgs||[];
+  const senderIds=[r.requested_by,...allMsgs.map(m=>m.sender_id)];
+  const nm=await loadAdminNames(senderIds);
+  
+  // Build message thread HTML
+  let threadHtml='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:var(--sky);font-weight:600;margin-bottom:4px;">'+esc(nm[r.requested_by]||'Client')+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(r.requested_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(37,99,235,0.03);border-left:2px solid #2563eb;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.client_message)+'</div></div>';
+  if(r.mla_response&&!allMsgs.some(m=>m.sender_type==='mla')){
+    threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:#4ade80;font-weight:600;margin-bottom:4px;">MLA Group <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(r.responded_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(34,197,94,0.03);border-left:2px solid #22c55e;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.mla_response)+'</div></div>';
+  }
+  allMsgs.forEach(m=>{
+    const isMLA=m.sender_type==='mla';
+    threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:'+(isMLA?'#4ade80':'var(--sky)')+';font-weight:600;margin-bottom:4px;">'+(isMLA?'MLA Group':esc(nm[m.sender_id]||'Client'))+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(m.created_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:'+(isMLA?'rgba(34,197,94,0.03)':'rgba(37,99,235,0.03)')+';border-left:2px solid '+(isMLA?'#22c55e':'#2563eb')+';padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(m.message)+'</div>';
+    if(m.file_name)threadHtml+='<div style="margin-top:4px;"><a href="#" onclick="viewAdminFile(\''+esc(m.file_path)+'\');return false;" style="font-size:.72rem;color:var(--sky);text-decoration:none;">📎 '+esc(m.file_name)+'</a></div>';
+    threadHtml+='</div>';
+  });
   
   document.getElementById('support-detail-content').innerHTML=`
     <div style="margin-bottom:20px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-        <span class="pill ${r.status==='open'?'pill-pending':'pill-done'}">${r.status==='open'?'Open — Awaiting Response':'Responded'}</span>
+        <span class="pill ${r.status==='open'?'pill-pending':r.status==='responded'?'pill-done':'pill-review'}">${r.status==='open'?'Awaiting Response':r.status==='responded'?'Responded':'Closed'}</span>
       </div>
       <h2 style="font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:400;color:var(--main);margin-bottom:4px;">${esc(ctrlNum+'. '+ctrlName)}</h2>
       <div style="font-size:.78rem;color:var(--muted);">${esc(orgName)}${sysName?' — '+esc(sysName):''}</div>
     </div>
-    
-    <div class="detail-card">
-      <div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:10px;">Client Request</div>
-      <div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(255,255,255,0.02);border-left:2px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;">${esc(r.client_message)}</div>
-      <div style="font-size:.68rem;color:var(--muted);margin-top:8px;">From ${esc(nm[r.requested_by]||'Unknown')} · ${fmtDateLong(r.requested_at)}</div>
-    </div>
-    
-    ${sys?`<div class="detail-card">
-      <div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:10px;">AI System Context</div>
-      <div class="meta-grid">
-        <div><div class="detail-label">System</div><div class="detail-val">${esc(sys.name)}</div></div>
-        <div><div class="detail-label">Owner</div><div class="detail-val">${esc(sys.system_owner||'—')}</div></div>
-        <div><div class="detail-label">Risk Tier</div><div class="detail-val">${sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified'}</div></div>
-        <div><div class="detail-label">Vendor</div><div class="detail-val">${esc(sys.vendor||'—')}</div></div>
+    ${sys?`<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:10px;">AI System Context</div><div class="meta-grid"><div><div class="detail-label">System</div><div class="detail-val">${esc(sys.name)}</div></div><div><div class="detail-label">Owner</div><div class="detail-val">${esc(sys.system_owner||'—')}</div></div><div><div class="detail-label">Risk Tier</div><div class="detail-val">${sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified'}</div></div><div><div class="detail-label">Vendor</div><div class="detail-val">${esc(sys.vendor||'—')}</div></div></div></div>`:''}
+    <div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Control Progress</div><div style="font-size:.78rem;color:var(--muted);">Status: <span style="color:var(--sub);">${assign?assign.status.replace(/_/g,' '):'Unknown'}</span> · Tasks completed: <span style="color:var(--sub);">${taskCount}</span></div></div>
+    <div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:14px;">Conversation</div>${threadHtml}</div>
+    <div class="panel" style="margin-top:16px;"><div class="panel-header"><div class="panel-title">Reply</div></div><div style="padding:20px;">
+      <textarea class="field-input" id="sr-response" placeholder="Write your response…"></textarea>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="file" id="admin-support-file" style="display:none;" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg"/>
+        <button class="btn btn-ghost" onclick="document.getElementById('admin-support-file').click()" style="padding:5px 10px;font-size:.72rem;">Attach File</button>
+        <span id="admin-file-name" style="font-size:.7rem;color:var(--muted);"></span>
+        <button class="btn btn-primary" onclick="submitSupportResponse('${r.id}')" style="margin-left:auto;">Send Response</button>
       </div>
-      ${sys.description?'<div style="font-size:.76rem;color:var(--muted);line-height:1.6;margin-top:10px;">'+esc(sys.description)+'</div>':''}
-    </div>`:''}
-    
-    <div class="detail-card">
-      <div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Control Progress</div>
-      <div style="font-size:.78rem;color:var(--muted);">Status: <span style="color:var(--sub);">${assign?assign.status.replace(/_/g,' '):'Unknown'}</span></div>
-      <div style="font-size:.78rem;color:var(--muted);">Tasks completed: <span style="color:var(--sub);">${taskCount}</span></div>
-    </div>
-    
-    ${r.mla_response?`<div class="detail-card" style="border-color:rgba(34,197,94,0.15);">
-      <div style="font-size:.72rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Your Response</div>
-      <div style="font-size:.82rem;color:var(--sub);line-height:1.75;">${esc(r.mla_response)}</div>
-      <div style="font-size:.68rem;color:var(--muted);margin-top:6px;">${fmtDateLong(r.responded_at)}</div>
-    </div>`:''}
-    
-    <div class="panel" style="margin-top:20px;">
-      <div class="panel-header"><div class="panel-title">${r.status==='open'?'Respond to Client':'Update Response'}</div></div>
-      <div style="padding:20px;">
-        <label class="field-label">MLA Response</label>
-        <textarea class="field-input" id="sr-response" placeholder="Provide guidance on implementing this control…">${esc(r.mla_response||'')}</textarea>
-        <div style="display:flex;gap:10px;">
-          <button class="btn btn-primary" onclick="submitSupportResponse('${r.id}')">Send Response to Client</button>
-        </div>
-        <div id="sr-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
-      </div>
-    </div>
+      <div id="sr-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
+    </div></div>
   `;
-  
+  const af=document.getElementById('admin-support-file');
+  if(af)af.onchange=function(){document.getElementById('admin-file-name').textContent=this.files[0]?.name||''};
   showView('support-detail',null);
 }
  
+async function viewAdminFile(filePath){
+  const{data}=await sb.storage.from('governance-reports').createSignedUrl(filePath,3600);
+  if(data?.signedUrl)window.open(data.signedUrl,'_blank');
+}
+ 
 async function loadAdminNames(ids){
-  const map={};
-  if(!ids.length)return map;
-  const{data}=await sb.from('profiles').select('id,full_name,email').in('id',ids);
+  const map={};if(!ids.length)return map;
+  const{data}=await sb.from('profiles').select('id,full_name,email').in('id',[...new Set(ids)]);
   (data||[]).forEach(p=>{map[p.id]=p.full_name||p.email||'Unknown'});
   return map;
 }
@@ -436,33 +428,37 @@ async function submitSupportResponse(reqId){
   const msg=document.getElementById('sr-msg');
   if(!response){msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Please write a response.';return}
   msg.style.display='block';msg.style.color='var(--muted)';msg.textContent='Sending…';
-  
-  const{error}=await sb.from('support_requests').update({
-    mla_response:response,
-    responded_by:currentUser.id,
-    responded_at:new Date().toISOString(),
-    status:'responded'
-  }).eq('id',reqId);
-  
+  // Upload file if attached
+  let fileName=null,filePath=null,fileType=null;
+  const fileInput=document.getElementById('admin-support-file');
+  if(fileInput&&fileInput.files[0]){
+    const file=fileInput.files[0];
+    const r=allSupport.find(x=>x.id===reqId);
+    filePath='support/'+r.org_id+'/'+reqId+'/'+Date.now()+'_'+file.name;
+    const{error:upErr}=await sb.storage.from('governance-reports').upload(filePath,file,{contentType:file.type});
+    if(upErr){msg.style.color='var(--red)';msg.textContent='File upload failed: '+upErr.message;return}
+    fileName=file.name;fileType=file.type;
+  }
+  // Insert message
+  const{error}=await sb.from('support_messages').insert({
+    request_id:reqId,sender_id:currentUser.id,sender_type:'mla',message:response,
+    file_name:fileName,file_path:filePath,file_type:fileType
+  });
   if(error){msg.style.color='var(--red)';msg.textContent='Error: '+error.message;return}
-  
-  // Audit log on client's org
+  // Update request status
+  await sb.from('support_requests').update({status:'responded',responded_by:currentUser.id,responded_at:new Date().toISOString(),mla_response:response}).eq('id',reqId);
+  // Audit
   const r=allSupport.find(x=>x.id===reqId);
   if(r){
-    await sb.from('registry_audit_log').insert({
-      org_id:r.org_id,user_id:currentUser.id,
-      action:'support_responded',entity_type:'governance_control',
-      entity_id:r.system_id||r.control_id,
-      changes:{_actor_name:'MLA Group',_is_mla:true,control:getCtrlName(r.control_id)}
-    });
-    r.status='responded';r.mla_response=response;r.responded_at=new Date().toISOString();
+    await sb.from('registry_audit_log').insert({org_id:r.org_id,user_id:currentUser.id,action:'support_responded',entity_type:'governance_control',entity_id:r.system_id||r.control_id,changes:{_actor_name:'MLA Group',_is_mla:true,control:getCtrlName(r.control_id)}});
+    r.status='responded';r.mla_response=response;
   }
-  
-  msg.style.color='#4ade80';msg.textContent='Response sent — client will see this on their control page.';
-  // Update badges
+  msg.style.color='#4ade80';msg.textContent='Response sent.';
   const openCount=allSupport.filter(s=>s.status==='open').length;
   if(openCount){document.getElementById('support-badge').textContent=openCount;document.getElementById('support-badge').style.display='inline-flex'}
   else document.getElementById('support-badge').style.display='none';
+  // Reload the detail to show updated thread
+  setTimeout(()=>openSupportDetail(reqId),1000);
 }
  
 init();
