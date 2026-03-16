@@ -167,6 +167,16 @@ textarea.field-input{resize:vertical;min-height:80px}
   <div class="stat-card"><div class="stat-label">System</div><div class="stat-value" id="gov-sys-pct">—</div><div class="stat-sub" id="gov-sys-count">0 / 6 controls</div></div>
   <div class="stat-card"><div class="stat-label">Assurance</div><div class="stat-value" id="gov-ass-pct">—</div><div class="stat-sub" id="gov-ass-count">0 / 3 controls</div></div>
 </div>
+ <div class="panel" style="margin-bottom:16px;">
+  <div class="panel-header">
+    <div class="panel-title">Score Trend</div>
+    <div class="panel-sub" id="score-history-sub">Governance score over time</div>
+    <button onclick="snapshotGovernanceScore('manual_recalculate')" style="margin-left:12px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;" onmouseover="this.style.color='var(--main)'" onmouseout="this.style.color='var(--muted)'">Recalculate</button>
+  </div>
+  <div class="panel-body" style="padding:16px 20px 8px;">
+    <div id="score-history-chart"><div style="text-align:center;padding:32px 0;font-size:.78rem;color:var(--muted);">Loading score history…</div></div>
+  </div>
+</div>
 <div id="controls-org-section"></div>
 <div id="controls-sys-section"></div>
 <div id="controls-ass-section"></div>
@@ -444,6 +454,7 @@ async function renderAssessmentTab(assessments){
 // System-level controls tab
 async function renderSystemControlsTab(sysId){
   const el=document.getElementById('tab-sys-controls');
+ 
   if(!allControls.length)await loadControls();
   // Get assignments for this specific system
   const{data:sysAssignments}=await sb.from('control_assignments').select('*').eq('system_id',sysId).eq('org_id',currentOrg.id);
@@ -632,7 +643,7 @@ const CTRL_STATUS_C={not_started:'var(--muted)',in_progress:'#93c5fd',implemente
 const MATURITY_BANDS=[{max:30,label:'Initial'},{max:50,label:'Developing'},{max:70,label:'Structured'},{max:85,label:'Managed'},{max:100,label:'Governance Ready'}];
 let allControls=[],allTasks=[],allAssignments=[],currentControlId=null;
  
-async function navigateControls(navEl){navigate('controls',navEl);if(!currentOrg)await ensureOrg();await loadControls()}
+async function navigateControls(navEl){navigate('controls',navEl);if(!currentOrg)await ensureOrg();await loadControls();await loadScoreHistory();}
  
 async function loadControls(){
   if(!currentOrg)return;
@@ -869,6 +880,8 @@ async function markControlComplete(){
   btn.textContent='Implemented ✓';
   await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_implemented',entity_type:'governance_control',entity_id:currentControlId,changes:{_actor_name:actorName(),control:allControls.find(c=>c.id===currentControlId)?.title}});
   await loadControls();
+await snapshotGovernanceScore('control_status_changed', currentControlId);
+ 
 }
  
 async function uploadEvidence(){
@@ -992,6 +1005,68 @@ async function sendSupportReply(reqId){
   });
   if(error){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Error: '+error.message;return}
   await loadSupportForControl(currentAssignId);
+}
+ 
+// ═══ PHASE 4A: SCORE HISTORY ══════════════════════════════════
+
+async function snapshotGovernanceScore(triggerEvent, triggerRef=null){
+  if(!currentOrg||!allControls.length)return;
+  const gov=getGovScore();
+  const orgPct=Math.round(gov.byType.organisation.total>0?gov.byType.organisation.done/gov.byType.organisation.total*100:0);
+  const sysPct=Math.round(gov.byType.system.total>0?gov.byType.system.done/gov.byType.system.total*100:0);
+  const assPct=Math.round(gov.byType.assurance.total>0?gov.byType.assurance.done/gov.byType.assurance.total*100:0);
+  await sb.from('governance_score_history').insert({
+    org_id:currentOrg.id,
+    composite_score:gov.score,
+    org_layer_score:orgPct,
+    system_layer_score:sysPct,
+    assurance_layer_score:assPct,
+    controls_total:allAssignments.length,
+    controls_implemented:allAssignments.filter(a=>a.status==='implemented'||a.status==='verified').length,
+    trigger_event:triggerEvent,
+    trigger_ref:triggerRef||null,
+    created_by:currentUser?.id||null
+  });
+  await loadScoreHistory();
+}
+
+async function loadScoreHistory(){
+  const el=document.getElementById('score-history-chart');
+  if(!el||!currentOrg)return;
+  const{data}=await sb.from('governance_score_history')
+    .select('composite_score,org_layer_score,system_layer_score,assurance_layer_score,snapshot_at,trigger_event')
+    .eq('org_id',currentOrg.id)
+    .order('snapshot_at',{ascending:true})
+    .limit(20);
+  const history=data||[];
+  if(history.length<2){
+    el.innerHTML='<div style="text-align:center;padding:32px 0;font-size:.78rem;color:var(--muted);">Implement controls to start building your score trend.</div>';
+    return;
+  }
+  const W=600,H=130,PL=36,PR=16,PT=16,PB=30;
+  const cW=W-PL-PR,cH=H-PT-PB;
+  const xS=i=>PL+(i/(history.length-1))*cW;
+  const yS=v=>PT+cH-((v)/100)*cH;
+  const last=history[history.length-1];
+  const col=last.composite_score>=70?'#4ade80':last.composite_score>=40?'#fbbf24':'#f87171';
+  const pts=history.map((h,i)=>`${xS(i).toFixed(1)},${yS(h.composite_score).toFixed(1)}`);
+  const linePath='M'+pts.join('L');
+  const areaPath=linePath+` L${xS(history.length-1).toFixed(1)},${PT+cH} L${xS(0).toFixed(1)},${PT+cH}Z`;
+  const fmtLabel=iso=>new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const labelIdxs=[...new Set([0,Math.floor((history.length-1)/2),history.length-1])];
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+    <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${col}" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="${col}" stop-opacity="0.01"/>
+    </linearGradient></defs>
+    ${[25,50,75].map(v=>`<line x1="${PL}" y1="${yS(v).toFixed(1)}" x2="${W-PR}" y2="${yS(v).toFixed(1)}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    <text x="${PL-5}" y="${(yS(v)+4).toFixed(1)}" text-anchor="end" fill="rgba(255,255,255,0.18)" font-size="9" font-family="DM Sans,sans-serif">${v}</text>`).join('')}
+    <path d="${areaPath}" fill="url(#sg)"/>
+    <path d="${linePath}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${history.map((h,i)=>`<circle cx="${xS(i).toFixed(1)}" cy="${yS(h.composite_score).toFixed(1)}" r="3" fill="${h.composite_score>=70?'#4ade80':h.composite_score>=40?'#fbbf24':'#f87171'}" stroke="#020617" stroke-width="1.5"/>`).join('')}
+    <text x="${xS(history.length-1).toFixed(1)}" y="${(yS(last.composite_score)-9).toFixed(1)}" text-anchor="middle" fill="${col}" font-size="11" font-weight="700" font-family="DM Sans,sans-serif">${last.composite_score}%</text>
+    ${labelIdxs.map(i=>`<text x="${xS(i).toFixed(1)}" y="${H-6}" text-anchor="middle" fill="rgba(255,255,255,0.22)" font-size="9" font-family="DM Sans,sans-serif">${fmtLabel(history[i].snapshot_at)}</text>`).join('')}
+  </svg>`;
 }
  
 init();
