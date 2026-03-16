@@ -134,7 +134,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div id="view-dashboard" class="view active">
 <div class="welcome-bar"><div class="welcome-avatar" id="dash-avatar">?</div><div class="welcome-text"><h3>Good to see you<span id="dash-name"></span></h3><p id="dash-subtext">Your AI governance portal</p></div><div class="welcome-actions"><button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button></div></div>
 <div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Diagnostics</div><div class="stat-value" id="dash-count">—</div><div class="stat-sub">Assessments</div></div><div class="stat-card"><div class="stat-label">AI Systems</div><div class="stat-value" id="dash-sys-count">—</div><div class="stat-sub">In registry</div></div><div class="stat-card"><div class="stat-label">Governance</div><div class="stat-value" id="dash-compliance">—</div><div class="stat-sub" id="dash-gov-maturity">Score</div></div><div class="stat-card"><div class="stat-label">Latest Score</div><div class="stat-value" id="dash-score">—</div><div class="stat-sub">Diagnostic</div></div></div>
-<div class="panel"><div class="panel-header"><div class="panel-title">Recent Activity</div></div><div class="panel-body" id="dash-activity"><div class="loading-state" style="padding:20px 0;">Loading…</div></div></div>
+<div class="panel" id="my-tasks-panel" style="display:none;"><div class="panel-header"><div class="panel-title">My Tasks</div><div class="panel-sub" id="my-tasks-count"></div></div><div class="panel-body" id="my-tasks-body"></div></div> <div class="panel"><div class="panel-header"><div class="panel-title">Recent Activity</div></div><div class="panel-body" id="dash-activity"><div class="loading-state" style="padding:20px 0;">Loading…</div></div></div>
 <div class="panel"><div class="panel-header"><div class="panel-title">Quick Actions</div></div><div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
 <div onclick="navigate('reports',document.querySelectorAll('.nav-item')[1])" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">View Reports</div><div style="font-size:.7rem;color:var(--muted);">Download your PDFs</div></div>
 <div onclick="navigateRegistry(document.getElementById('nav-registry'))" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">AI Registry</div><div style="font-size:.7rem;color:var(--muted);">Document AI systems</div></div>
@@ -258,6 +258,28 @@ textarea.field-input{resize:vertical;min-height:80px}
   <h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);letter-spacing:-.02em;" id="cd-title">—</h2>
   <p style="font-size:.82rem;color:var(--muted);line-height:1.7;margin-top:6px;" id="cd-desc">—</p>
   <p style="font-size:.78rem;color:var(--muted2);line-height:1.6;margin-top:8px;font-style:italic;" id="cd-purpose"></p>
+</div>
+<div class="panel" style="margin-bottom:16px;">
+  <div class="panel" style="margin-bottom:16px;">
+  <div class="panel-header"><div class="panel-title">Assignment</div></div>
+  <div class="panel-body" id="cd-assignment">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" id="cd-assign-grid">
+      <div>
+        <label class="field-label">Assigned To</label>
+        <select class="field-input" id="cd-assign-to" style="margin-bottom:0;" onchange="saveAssignment()"><option value="">Unassigned</option></select>
+      </div>
+      <div>
+        <label class="field-label">Due Date</label>
+        <input type="date" class="field-input" id="cd-due-date" style="margin-bottom:0;color-scheme:dark;" onchange="saveAssignment()">
+      </div>
+      <div>
+        <label class="field-label">Priority</label>
+        <select class="field-input" id="cd-priority" style="margin-bottom:0;" onchange="saveAssignment()"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="critical">Critical</option></select>
+      </div>
+    </div>
+    <div id="cd-assign-info" style="margin-top:10px;font-size:.72rem;color:var(--muted);display:none;"></div>
+    <div id="cd-assign-status" style="font-size:.72rem;margin-top:6px;display:none;"></div>
+  </div>
 </div>
 <div class="panel" style="margin-bottom:16px;">
   <div class="panel-header"><div class="panel-title">Implementation Tasks</div><div class="panel-sub" id="cd-task-count"></div></div>
@@ -663,6 +685,7 @@ async function renderDashboard(paidIds){
   const actEl=document.getElementById('dash-activity');
   if(!feed.length)actEl.innerHTML='<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No activity yet. Run your first diagnostic to get started.</div>';
   else actEl.innerHTML=feed.slice(0,8).map(f=>'<div class="activity-item"><div class="activity-dot" style="background:'+f.color+';"></div><div class="activity-body">'+f.html+'</div><div class="activity-time">'+f.date+'</div></div>').join('');
+  renderMyTasks();
 }
  
 // ═══ REPORTS ══════════════════════════════════════════════════
@@ -930,6 +953,7 @@ async function openControlDetail(ctrlId,assignId){
   // Load support requests for this control
   await loadSupportForControl(assign.id);
  
+  await loadAssignmentUI(assign);
   navigate('control-detail',null);
   document.getElementById('nav-controls').classList.add('active');
 }
@@ -1584,6 +1608,127 @@ async function submitESignature(){
   btn.textContent='Sign & Acknowledge';btn.disabled=false;
   await loadPolicies();
   openPolicyDetail(currentPolicyId);
+}
+ 
+// ═══ PHASE 3: TASK OWNERSHIP ══════════════════════════════════
+var orgMembersCache=[];
+ 
+async function loadOrgMembers(){
+  if(!currentOrg)return[];
+  if(orgMembersCache.length)return orgMembersCache;
+  var result=await sb.from('org_members').select('user_id').eq('org_id',currentOrg.id);
+  var memberIds=(result.data||[]).map(function(m){return m.user_id});
+  if(!memberIds.length)return[];
+  var profileResult=await sb.from('profiles').select('id,full_name,email').in('id',memberIds);
+  orgMembersCache=(profileResult.data||[]).map(function(p){return{id:p.id,name:p.full_name||p.email||'Unknown'}});
+  return orgMembersCache;
+}
+ 
+async function populateAssignDropdown(){
+  var select=document.getElementById('cd-assign-to');
+  if(!select)return;
+  var members=await loadOrgMembers();
+  var html='<option value="">Unassigned</option>';
+  members.forEach(function(m){
+    html+='<option value="'+m.id+'">'+esc(m.name)+'</option>';
+  });
+  select.innerHTML=html;
+}
+ 
+async function loadAssignmentUI(assign){
+  await populateAssignDropdown();
+  var select=document.getElementById('cd-assign-to');
+  var dateInput=document.getElementById('cd-due-date');
+  var prioritySelect=document.getElementById('cd-priority');
+  var infoEl=document.getElementById('cd-assign-info');
+  if(!assign){infoEl.style.display='none';return}
+  if(assign.assigned_to)select.value=assign.assigned_to;
+  if(assign.due_date)dateInput.value=assign.due_date;
+  if(assign.priority)prioritySelect.value=assign.priority;
+  // Show assignment info
+  if(assign.assigned_at&&assign.assigned_by){
+    var nm=await loadNames([assign.assigned_by]);
+    infoEl.innerHTML='Assigned by '+esc(nm[assign.assigned_by]||'Unknown')+' on '+fmtDateLong(assign.assigned_at);
+    infoEl.style.display='block';
+  }else{
+    infoEl.style.display='none';
+  }
+}
+ 
+async function saveAssignment(){
+  if(!currentAssignId||!currentOrg)return;
+  var assign=allAssignments.find(function(a){return a.id===currentAssignId});
+  if(!assign)return;
+  var assignTo=document.getElementById('cd-assign-to').value||null;
+  var dueDate=document.getElementById('cd-due-date').value||null;
+  var priority=document.getElementById('cd-priority').value||'medium';
+  var statusEl=document.getElementById('cd-assign-status');
+  var update={assigned_to:assignTo,due_date:dueDate,priority:priority};
+  // Only set assigned_by/at if newly assigning
+  if(assignTo&&!assign.assigned_to){
+    update.assigned_by=currentUser.id;
+    update.assigned_at=new Date().toISOString();
+  }else if(!assignTo){
+    update.assigned_by=null;
+    update.assigned_at=null;
+  }
+  var result=await sb.from('control_assignments').update(update).eq('id',currentAssignId);
+  if(result.error){
+    statusEl.style.display='block';statusEl.style.color='var(--red)';statusEl.textContent='Error saving: '+result.error.message;return;
+  }
+  // Update local cache
+  assign.assigned_to=assignTo;assign.due_date=dueDate;assign.priority=priority;
+  assign.assigned_by=update.assigned_by||assign.assigned_by;
+  assign.assigned_at=update.assigned_at||assign.assigned_at;
+  statusEl.style.display='block';statusEl.style.color='#4ade80';statusEl.textContent='Saved';
+  setTimeout(function(){statusEl.style.display='none'},2000);
+  // Audit log for assignment changes
+  if(assignTo){
+    var nm=await loadNames([assignTo]);
+    await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_assigned',entity_type:'governance_control',entity_id:currentControlId,changes:{_actor_name:actorName(),control:allControls.find(function(c){return c.id===currentControlId})?.title,assigned_to_name:nm[assignTo]||'Unknown',due_date:dueDate,priority:priority}});
+  }
+}
+ 
+async function renderMyTasks(){
+  if(!currentUser||!allAssignments.length||!allControls.length)return;
+  var myTasks=allAssignments.filter(function(a){
+    return a.assigned_to===currentUser.id&&a.status!=='implemented'&&a.status!=='verified';
+  });
+  var panel=document.getElementById('my-tasks-panel');
+  if(!panel)return;
+  if(!myTasks.length){panel.style.display='none';return}
+  panel.style.display='block';
+  document.getElementById('my-tasks-count').textContent=myTasks.length+' task'+(myTasks.length!==1?'s':'');
+  var sysNames={};allSystems.forEach(function(s){sysNames[s.id]=s.name});
+  var PRIORITY_C={low:'var(--muted)',medium:'#93c5fd',high:'#fbbf24',critical:'#f87171'};
+  var PRIORITY_L={low:'Low',medium:'Medium',high:'High',critical:'Critical'};
+  var today=new Date().toISOString().split('T')[0];
+  var body=document.getElementById('my-tasks-body');
+  body.innerHTML=myTasks.sort(function(a,b){
+    // Sort: overdue first, then by due date, then by priority
+    var aOverdue=a.due_date&&a.due_date<today?1:0;
+    var bOverdue=b.due_date&&b.due_date<today?1:0;
+    if(bOverdue!==aOverdue)return bOverdue-aOverdue;
+    if(a.due_date&&b.due_date)return a.due_date.localeCompare(b.due_date);
+    if(a.due_date)return -1;if(b.due_date)return 1;return 0;
+  }).map(function(a){
+    var ctrl=allControls.find(function(c){return c.id===a.control_id});
+    if(!ctrl)return '';
+    var sysName=a.system_id?sysNames[a.system_id]:null;
+    var isOverdue=a.due_date&&a.due_date<today;
+    var dueText=a.due_date?fmtDate(a.due_date+'T00:00:00'):'No due date';
+    var dueColor=isOverdue?'#f87171':a.due_date?'var(--sub)':'var(--muted)';
+    var priCol=PRIORITY_C[a.priority]||'var(--muted)';
+    var tCol=TYPE_COLORS[ctrl.control_type]||'var(--muted)';
+    var tBg=TYPE_BG[ctrl.control_type]||'rgba(255,255,255,0.04)';
+    var tBor=TYPE_BORDER[ctrl.control_type]||'rgba(255,255,255,0.08)';
+    var aid="'"+a.id+"'";
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;" onclick="openControlDetail(\''+ctrl.id+'\','+aid+')" onmouseover="this.style.background=\'rgba(255,255,255,0.02)\'" onmouseout="this.style.background=\'none\'">' +
+      '<div style="width:28px;height:28px;border-radius:8px;background:'+tBg+';border:1px solid '+tBor+';display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+tCol+';flex-shrink:0;">'+ctrl.control_number+'</div>' +
+      '<div style="flex:1;min-width:0;"><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px;">'+esc(ctrl.title)+(sysName?' — '+esc(sysName):'')+'</div><div style="display:flex;align-items:center;gap:8px;font-size:.7rem;"><span style="color:'+dueColor+';">'+(isOverdue?'Overdue — ':'')+dueText+'</span><span style="color:'+priCol+';">'+PRIORITY_L[a.priority]+'</span></div></div>' +
+      '<span style="font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;color:'+CTRL_STATUS_C[a.status]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+CTRL_STATUS_L[a.status]+'</span>' +
+    '</div>';
+  }).join('');
 }
  
 // Add policies to topbar titles
