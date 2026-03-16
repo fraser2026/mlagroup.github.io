@@ -677,14 +677,14 @@ async function renderDashboard(paidIds){
   if(allControls.length){const g=getGovScore();document.getElementById('dash-compliance').textContent=g.score+'%';document.getElementById('dash-compliance').style.color=g.score>=70?'#4ade80':g.score>=40?'#fbbf24':'#f87171';document.getElementById('dash-gov-maturity').textContent=getMaturity(g.score)}
   else{document.getElementById('dash-compliance').textContent='—'}
   const feed=[];const bandColors={low:'#4ade80',lowmod:'#86efac',moderate:'#fde047',high:'#fca5a5',critical:'#f87171'};
-  currentResults.forEach(r=>{const band=r.risk_band||'moderate';feed.push({time:new Date(r.created_at),color:bandColors[band]||'#60a5fa',html:'Diagnostic completed — <strong>'+esc(r.organisation||'Assessment')+'</strong><br>'+(BAND_LABELS[band]||band)+' · '+(r.adjusted_score||0)+'%',date:fmtDate(r.created_at)})});
+  currentResults.forEach(r=>{const band=r.risk_band||'moderate';feed.push({time:new Date(r.created_at),color:bandColors[band]||'#60a5fa',html:'Diagnostic completed — <strong>'+esc(r.organisation||'Assessment')+'</strong><br>'+(BAND_LABELS[band]||band)+' · '+(r.adjusted_score||0)+'%',date:fmtDate(r.created_at),click:"navigate('reports',document.querySelectorAll('.nav-item')[1])"})});
   if(currentOrg){const{data:auditEntries}=await sb.from('registry_audit_log').select('*').eq('org_id',currentOrg.id).order('created_at',{ascending:false}).limit(20);
     if(auditEntries&&auditEntries.length){const nm=await loadNames(auditEntries.map(e=>e.user_id));
-      auditEntries.forEach(entry=>{const a=fmtAudit(entry,nm);feed.push({time:new Date(entry.created_at),color:'#60a5fa',html:a.text+'<br><span style="font-size:.68rem;color:var(--muted);">'+esc(a.who)+'</span>',date:fmtDate(entry.created_at)})})}}
+      auditEntries.forEach(entry=>{const a=fmtAudit(entry,nm);var clickAction=getActivityClick(entry);feed.push({time:new Date(entry.created_at),color:'#60a5fa',html:a.text+'<br><span style="font-size:.68rem;color:var(--muted);">'+esc(a.who)+'</span>',date:fmtDate(entry.created_at),click:clickAction})})}}
   feed.sort((a,b)=>b.time-a.time);
   const actEl=document.getElementById('dash-activity');
   if(!feed.length)actEl.innerHTML='<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No activity yet. Run your first diagnostic to get started.</div>';
-  else actEl.innerHTML=feed.slice(0,8).map(f=>'<div class="activity-item"><div class="activity-dot" style="background:'+f.color+';"></div><div class="activity-body">'+f.html+'</div><div class="activity-time">'+f.date+'</div></div>').join('');
+  else actEl.innerHTML=feed.slice(0,8).map(f=>'<div class="activity-item" style="'+(f.click?'cursor:pointer;':'')+'border-radius:8px;padding:10px 8px;margin:0 -8px;transition:background .1s;" '+(f.click?'onclick="'+f.click+'" onmouseover="this.style.background=\'rgba(255,255,255,0.03)\'" onmouseout="this.style.background=\'none\'"':'')+'><div class="activity-dot" style="background:'+f.color+';"></div><div class="activity-body">'+f.html+'</div><div class="activity-time">'+f.date+'</div></div>').join('');
   renderMyTasks();
 }
  
@@ -1305,19 +1305,27 @@ async function loadScoreHistory(){
   const areaPath=linePath+` L${xS(history.length-1).toFixed(1)},${PT+cH} L${xS(0).toFixed(1)},${PT+cH}Z`;
   const fmtLabel=iso=>new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
   const labelIdxs=[...new Set([0,Math.floor((history.length-1)/2),history.length-1])];
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
-    <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${col}" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="${col}" stop-opacity="0.01"/>
-    </linearGradient></defs>
-    ${[25,50,75].map(v=>`<line x1="${PL}" y1="${yS(v).toFixed(1)}" x2="${W-PR}" y2="${yS(v).toFixed(1)}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-    <text x="${PL-5}" y="${(yS(v)+4).toFixed(1)}" text-anchor="end" fill="rgba(255,255,255,0.18)" font-size="9" font-family="DM Sans,sans-serif">${v}</text>`).join('')}
-    <path d="${areaPath}" fill="url(#sg)"/>
-    <path d="${linePath}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    ${history.map((h,i)=>`<circle cx="${xS(i).toFixed(1)}" cy="${yS(h.composite_score).toFixed(1)}" r="3" fill="${h.composite_score>=70?'#4ade80':h.composite_score>=40?'#fbbf24':'#f87171'}" stroke="#020617" stroke-width="1.5"/>`).join('')}
-    <text x="${xS(history.length-1).toFixed(1)}" y="${(yS(last.composite_score)-9).toFixed(1)}" text-anchor="middle" fill="${col}" font-size="11" font-weight="700" font-family="DM Sans,sans-serif">${last.composite_score}%</text>
-    ${labelIdxs.map(i=>`<text x="${xS(i).toFixed(1)}" y="${H-6}" text-anchor="middle" fill="rgba(255,255,255,0.22)" font-size="9" font-family="DM Sans,sans-serif">${fmtLabel(history[i].snapshot_at)}</text>`).join('')}
-  </svg>`;
+  var firstScore=history[0].composite_score;
+  var delta=last.composite_score-firstScore;
+  var deltaSign=delta>=0?'+':'';
+  var deltaCol=delta>0?'#4ade80':delta<0?'#f87171':'var(--muted)';
+  el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px;"><div style="display:flex;align-items:baseline;gap:10px;"><span style="font-size:1.4rem;font-weight:700;color:'+col+';">'+last.composite_score+'%</span><span style="font-size:.78rem;font-weight:600;color:'+deltaCol+';">'+deltaSign+delta+' pts</span></div><div style="display:flex;align-items:center;gap:12px;font-size:.68rem;color:var(--muted);"><span>'+history.length+' snapshots</span><span>'+fmtLabel(history[0].snapshot_at)+' — '+fmtLabel(history[history.length-1].snapshot_at)+'</span></div></div>'+
+  '<svg viewBox="0 0 '+W+' '+(H+10)+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">'+
+    '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0%" stop-color="'+col+'" stop-opacity="0.22"/>'+
+      '<stop offset="100%" stop-color="'+col+'" stop-opacity="0.02"/>'+
+    '</linearGradient>'+
+    '<filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>'+
+    [0,25,50,75,100].map(function(v){return '<line x1="'+PL+'" y1="'+yS(v).toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yS(v).toFixed(1)+'" stroke="rgba(255,255,255,'+(v===50?'0.06':'0.03')+')" stroke-width="1"/>'+
+    '<text x="'+(PL-6)+'" y="'+(yS(v)+3.5).toFixed(1)+'" text-anchor="end" fill="rgba(255,255,255,0.2)" font-size="9" font-family="DM Sans,sans-serif">'+v+'</text>'}).join('')+
+    '<path d="'+areaPath+'" fill="url(#sg)"/>'+
+    '<path d="'+linePath+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>'+
+    '<path d="'+linePath+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
+    history.map(function(h,i){var dotCol=h.composite_score>=70?'#4ade80':h.composite_score>=40?'#fbbf24':'#f87171';return '<circle cx="'+xS(i).toFixed(1)+'" cy="'+yS(h.composite_score).toFixed(1)+'" r="4" fill="#020617" stroke="'+dotCol+'" stroke-width="2"/>'+(i>0&&i<history.length-1?'<text x="'+xS(i).toFixed(1)+'" y="'+(yS(h.composite_score)-8).toFixed(1)+'" text-anchor="middle" fill="rgba(255,255,255,0.25)" font-size="8" font-family="DM Sans,sans-serif">'+h.composite_score+'</text>':'')}).join('')+
+    '<circle cx="'+xS(history.length-1).toFixed(1)+'" cy="'+yS(last.composite_score).toFixed(1)+'" r="5.5" fill="#020617" stroke="'+col+'" stroke-width="2.5"/>'+
+    '<circle cx="'+xS(history.length-1).toFixed(1)+'" cy="'+yS(last.composite_score).toFixed(1)+'" r="2" fill="'+col+'"/>'+
+    labelIdxs.map(function(i){return '<text x="'+xS(i).toFixed(1)+'" y="'+(H+6)+'" text-anchor="middle" fill="rgba(255,255,255,0.28)" font-size="9" font-family="DM Sans,sans-serif">'+fmtLabel(history[i].snapshot_at)+'</text>'}).join('')+
+  '</svg>';
 }
 
 // ═══ PHASE 3: POLICIES ════════════════════════════════════════
@@ -1608,6 +1616,32 @@ async function submitESignature(){
   btn.textContent='Sign & Acknowledge';btn.disabled=false;
   await loadPolicies();
   openPolicyDetail(currentPolicyId);
+}
+ 
+// ═══ ACTIVITY CLICK ROUTING ═══════════════════════════════════
+function getActivityClick(entry){
+  var et=entry.entity_type;var eid=entry.entity_id;var act=entry.action;
+  if(act==='system_created'||act==='system_updated'||act==='risk_tier_set'||act==='risk_tier_changed'||act==='assessment_submitted'||act==='mla_review_updated'){
+    return "openSystemDetail('"+eid+"')";
+  }
+  if(act==='compliance_status_updated'){
+    return "openSystemDetail('"+eid+"')";
+  }
+  if(act==='control_updated'||act==='control_implemented'||act==='control_assigned'){
+    var assignForCtrl=allAssignments.find(function(a){return a.control_id===eid});
+    var aid=assignForCtrl?assignForCtrl.id:null;
+    if(aid)return "openControlDetail('"+eid+"','"+aid+"')";
+    return "navigateControls(document.getElementById('nav-controls'))";
+  }
+  if(act==='support_requested'||act==='support_responded'){
+    var assignForSupport=allAssignments.find(function(a){return a.control_id===eid||a.system_id===eid});
+    if(assignForSupport)return "openControlDetail('"+assignForSupport.control_id+"','"+assignForSupport.id+"')";
+    return "navigateControls(document.getElementById('nav-controls'))";
+  }
+  if(act==='policy_adopted'||act==='policy_acknowledged'||act==='policy_esigned'){
+    return "openPolicyDetail('"+eid+"')";
+  }
+  return null;
 }
  
 // ═══ PHASE 3: TASK OWNERSHIP ══════════════════════════════════
