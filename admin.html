@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{--bg:#020617;--sidebar:#050d1f;--surface:rgba(8,15,35,0.7);--surface2:rgba(10,18,42,0.9);--border:rgba(255,255,255,0.055);--border2:rgba(255,255,255,0.10);--accent:#2563eb;--accent-h:#1d4ed8;--sky:#60a5fa;--main:#f1f5f9;--sub:#94a3b8;--muted:#475569;--muted2:#334155;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--sidebar-w:220px;--topbar-h:56px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
@@ -423,7 +424,73 @@ async function loadAdminNames(ids){
   return map;
 }
  
+async function sendClientEmail(toEmail, toName, title, body){
+  try{
+    if(typeof emailjs==='undefined')return;
+    emailjs.init('vxitc5LFJHMfNcmUL');
+    await emailjs.send('service_umdte26','template_o6h9et7',{
+      to_name:toName||'there',
+      to_email:toEmail,
+      alert_title:title,
+      alert_body:body
+    });
+    console.log('Support reply email sent to '+toEmail);
+  }catch(err){
+    console.error('EmailJS error:',err);
+  }
+}
+
 async function submitSupportResponse(reqId){
+  const response=document.getElementById('sr-response').value.trim();
+  const msg=document.getElementById('sr-msg');
+  if(!response){msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Please write a response.';return}
+  msg.style.display='block';msg.style.color='var(--muted)';msg.textContent='Sending…';
+  // Upload file if attached
+  let fileName=null,filePath=null,fileType=null;
+  const fileInput=document.getElementById('admin-support-file');
+  if(fileInput&&fileInput.files[0]){
+    const file=fileInput.files[0];
+    const r=allSupport.find(x=>x.id===reqId);
+    filePath='support/'+r.org_id+'/'+reqId+'/'+Date.now()+'_'+file.name;
+    const{error:upErr}=await sb.storage.from('governance-reports').upload(filePath,file,{contentType:file.type});
+    if(upErr){msg.style.color='var(--red)';msg.textContent='File upload failed: '+upErr.message;return}
+    fileName=file.name;fileType=file.type;
+  }
+  // Insert message
+  const{error}=await sb.from('support_messages').insert({
+    request_id:reqId,sender_id:currentUser.id,sender_type:'mla',message:response,
+    file_name:fileName,file_path:filePath,file_type:fileType
+  });
+  if(error){msg.style.color='var(--red)';msg.textContent='Error: '+error.message;return}
+  // Update request status
+  const r=allSupport.find(x=>x.id===reqId);
+  await sb.from('support_requests').update({status:'responded',responded_by:currentUser.id,responded_at:new Date().toISOString(),mla_response:response}).eq('id',reqId);
+  // Audit
+  if(r){
+    await sb.from('registry_audit_log').insert({org_id:r.org_id,user_id:currentUser.id,action:'support_responded',entity_type:'governance_control',entity_id:r.system_id||r.control_id,changes:{_actor_name:'MLA Group',_is_mla:true,control:getCtrlName(r.control_id)}});
+    r.status='responded';r.mla_response=response;
+    // Email the client
+    const{data:clientProfile}=await sb.from('profiles').select('full_name,email').eq('id',r.requested_by).single();
+    if(clientProfile?.email){
+      const ctrlName=getCtrlName(r.control_id);
+      await sendClientEmail(
+        clientProfile.email,
+        clientProfile.full_name?.split(' ')[0]||'there',
+        'MLA Group has responded to your support request',
+        `You have a new response from MLA Group regarding your support request on "${ctrlName}".\n\n${response}\n\nLog in to your portal to view the full conversation and reply.`
+      );
+    }
+  }
+  msg.style.color='#4ade80';msg.textContent='Response sent.';
+  const openCount=allSupport.filter(s=>s.status==='open').length;
+  if(openCount){document.getElementById('support-badge').textContent=openCount;document.getElementById('support-badge').style.display='inline-flex'}
+  else document.getElementById('support-badge').style.display='none';
+  setTimeout(()=>openSupportDetail(reqId),1000);
+}
+ 
+${response}
+
+Log in to your portal to view the full conversation and reply.`       );     }   }   msg.style.color='#4ade80';msg.textContent='Response sent.';   const openCount=allSupport.filter(s=>s.status==='open').length;   if(openCount){document.getElementById('support-badge').textContent=openCount;document.getElementById('support-badge').style.display='inline-flex'}   else document.getElementById('support-badge').style.display='none';   setTimeout(()=>openSupportDetail(reqId),1000); }
   const response=document.getElementById('sr-response').value.trim();
   const msg=document.getElementById('sr-msg');
   if(!response){msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Please write a response.';return}
