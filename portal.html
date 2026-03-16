@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{--bg:#020617;--sidebar:#050d1f;--surface:rgba(8,15,35,0.7);--surface2:rgba(10,18,42,0.9);--border:rgba(255,255,255,0.055);--border2:rgba(255,255,255,0.10);--accent:#2563eb;--accent-h:#1d4ed8;--sky:#60a5fa;--main:#f1f5f9;--sub:#94a3b8;--muted:#475569;--muted2:#334155;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--sidebar-w:228px;--topbar-h:56px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
@@ -127,7 +128,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="sidebar-footer"><div class="user-tile" onclick="navigate('settings',document.querySelector('[onclick*=settings]'))"><div class="user-avatar" id="sidebar-avatar">?</div><div class="user-info"><div class="user-name" id="sidebar-name">Loading…</div><div class="user-role">Governance User</div></div><svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg></div></div>
 </aside>
 <div class="main">
-<div class="topbar"><button class="mobile-toggle" onclick="openSidebar()"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button><div class="topbar-title" id="topbar-title"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div><div class="topbar-right" id="topbar-right"><button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button></div></div>
+<div class="topbar"><button class="mobile-toggle" onclick="openSidebar()"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button><div class="topbar-title" id="topbar-title"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div><div id="topbar-bell" onclick="navigateAlerts()" style="position:relative;cursor:pointer;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='none'"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg><span id="bell-badge" style="display:none;position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#ef4444;border-radius:50%;font-size:.55rem;font-weight:700;color:white;align-items:center;justify-content:center;border:2px solid var(--bg);">0</span></div><div class="topbar-right" id="topbar-right"><button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button></div></div>
 <div class="content-scroll">
  
 <div id="view-dashboard" class="view active">
@@ -157,6 +158,23 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div id="view-registry-detail" class="view"><button class="breadcrumb" onclick="navigate('registry',document.getElementById('nav-registry'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Registry</button><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);letter-spacing:-.02em;" id="det-name">—</h2><span id="det-tier-badge"></span><span id="det-status-badge"></span><span id="det-assess-badge"></span></div><div style="display:flex;align-items:center;gap:12px;font-size:.75rem;color:var(--muted);flex-wrap:wrap;" id="det-subtitle"></div></div><div style="display:flex;gap:8px;"><button class="btn-topbar btn-topbar-primary" onclick="openAssessmentModal()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button><button class="btn-topbar btn-topbar-ghost" onclick="openEditSystem()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button></div></div><div class="panel" style="overflow:visible;"><div class="tab-bar"><button class="tab-btn active" onclick="switchDetailTab('overview',this)">Overview</button><button class="tab-btn" onclick="switchDetailTab('assessment',this)">Assessment</button><button class="tab-btn" onclick="switchDetailTab('sys-controls',this)">Controls</button><button class="tab-btn" onclick="switchDetailTab('audit',this)">Audit Log</button></div><div class="tab-panel active" id="tab-overview"></div><div class="tab-panel" id="tab-assessment"></div><div class="tab-panel" id="tab-sys-controls"></div><div class="tab-panel" id="tab-audit"></div></div></div>
  
 <div id="view-org" class="view"><div class="page-header"><h2>Organisation</h2><p>Entity profile, membership and access management.</p></div><div class="two-col"><div class="panel"><div class="panel-header"><div class="panel-title">Organisation Profile</div></div><div class="panel-body"><div class="meta-grid" id="org-profile-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Subscription</div></div><div class="panel-body"><div class="meta-grid" id="org-sub-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Members</div><div class="panel-sub" id="org-member-count"></div></div><div id="org-members-wrap"><div class="loading-state">Loading members…</div></div></div></div>
+
+<!-- ALERTS -->
+<div id="view-alerts" class="view">
+<div class="page-header"><h2>Alerts</h2><p>Governance alerts, score changes, and action items requiring your attention.</p></div>
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+  <div class="stat-card"><div class="stat-label">Unread</div><div class="stat-value" id="alert-stat-unread" style="color:#f87171;">—</div><div class="stat-sub">Require attention</div></div>
+  <div class="stat-card"><div class="stat-label">Active</div><div class="stat-value" id="alert-stat-active">—</div><div class="stat-sub">Open alerts</div></div>
+  <div class="stat-card"><div class="stat-label">Resolved</div><div class="stat-value" style="color:#4ade80;" id="alert-stat-resolved">—</div><div class="stat-sub">This session</div></div>
+</div>
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">Active Alerts</div>
+    <button onclick="checkAndCreateAlerts()" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;" onmouseover="this.style.color='var(--main)'" onmouseout="this.style.color='var(--muted)'">Check Now</button>
+  </div>
+  <div class="panel-body" id="alerts-list"><div class="loading-state">Loading alerts…</div></div>
+</div>
+</div>
  
 <!-- CONTROLS LIST -->
 <div id="view-controls" class="view">
@@ -287,7 +305,7 @@ async function loadNames(userIds){
 }
  
 // ═══ NAVIGATION ═══════════════════════════════════════════════
-const topbarTitles={dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>'},reports:{label:'Reports',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>'},settings:{label:'Settings',icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>'},referral:{label:'Referral',icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>'},analytics:{label:'Analytics',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},registry:{label:'AI Systems Registry',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},'registry-detail':{label:'System Detail',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},org:{label:'Organisation',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/>'},controls:{label:'Governance Controls',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'},'control-detail':{label:'Control Detail',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'}};
+const topbarTitles={dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>'},reports:{label:'Reports',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>'},settings:{label:'Settings',icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>'},referral:{label:'Referral',icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>'},analytics:{label:'Analytics',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},registry:{label:'AI Systems Registry',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},'registry-detail':{label:'System Detail',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},org:{label:'Organisation',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/>'},controls:{label:'Governance Controls',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'},'control-detail':{label:'Control Detail',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'},'alerts':{label:'Alerts',icon:'<path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/>'}};
  
 let navHistory=[];
 function navigate(viewId,navEl,skipHistory){
@@ -338,7 +356,7 @@ async function init(){
   document.getElementById('paywall-banner').style.display=isPaid?'none':'flex';
   renderReports(paidIds);
   history.replaceState({view:'dashboard'},'','#dashboard');
-  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadAssessmentReports();handleDeepLink()}).catch(()=>renderDashboard(paidIds));
+  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>checkAndCreateAlerts(),3000)}).catch(()=>renderDashboard(paidIds));
   else renderDashboard(paidIds);
 }
 function handleDeepLink(){
@@ -1005,6 +1023,147 @@ async function sendSupportReply(reqId){
   });
   if(error){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Error: '+error.message;return}
   await loadSupportForControl(currentAssignId);
+}
+
+ // ═══ PHASE 4B: ALERTS ═════════════════════════════════════════
+const EMAILJS_SVC='service_umdte26';
+const EMAILJS_TPL='template_o6h9et7';
+const EMAILJS_KEY='vxitc5LFJHMfNcmUL';
+
+async function navigateAlerts(){
+  navigate('alerts',null);
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  if(!currentOrg)await ensureOrg();
+  await renderAlertsView();
+}
+
+async function checkAndCreateAlerts(){
+  if(!currentOrg||!currentUser)return;
+  try{
+    // Score drop check
+    const{data:history}=await sb.from('governance_score_history').select('composite_score,snapshot_at').eq('org_id',currentOrg.id).order('snapshot_at',{ascending:false}).limit(2);
+    if(history&&history.length===2){
+      const drop=history[1].composite_score-history[0].composite_score;
+      if(drop>=10){
+        await maybeCreateAlert('score_drop','critical','Governance Score Drop Detected',`Your governance score has fallen by ${drop} points to ${history[0].composite_score}%. Review your controls and take action to restore your compliance position.`,null,null);
+      }
+    }
+    // Control overdue check
+    const sixtyDaysAgo=new Date(Date.now()-60*24*60*60*1000).toISOString();
+    const{data:overdue}=await sb.from('control_assignments').select('*').eq('org_id',currentOrg.id).eq('status','in_progress').lt('updated_at',sixtyDaysAgo);
+    if(overdue&&overdue.length){
+      for(const a of overdue){
+        const ctrl=allControls.find(c=>c.id===a.control_id);
+        const ctrlName=ctrl?.title||'A governance control';
+        await maybeCreateAlert('control_overdue','warning','Control Overdue: '+ctrlName,`${ctrlName} has been in progress for over 60 days without completion. Open the control and complete the implementation tasks.`,a.id,'control_assignment');
+      }
+    }
+    // Assessment due check
+    const ninetyDaysAgo=new Date(Date.now()-90*24*60*60*1000).toISOString();
+    for(const sys of allSystems){
+      const{data:assessments}=await sb.from('registry_assessments').select('requested_at').eq('system_id',sys.id).order('requested_at',{ascending:false}).limit(1);
+      const last=assessments&&assessments.length?assessments[0]:null;
+      if(!last||last.requested_at<ninetyDaysAgo){
+        await maybeCreateAlert('assessment_due','warning','Assessment Due: '+sys.name,`${sys.name} has not been assessed in over 90 days. Run a new assessment to keep your governance score current and accurate.`,sys.id,'ai_system');
+      }
+    }
+    await loadAlerts();
+    if(document.getElementById('view-alerts').classList.contains('active'))await renderAlertsView();
+  }catch(err){console.error('Alert check error:',err)}
+}
+
+async function maybeCreateAlert(type,severity,title,body,refId,refType){
+  // Deduplicate — don't create if unresolved alert of same type+ref already exists
+  const query=sb.from('governance_alerts').select('id').eq('org_id',currentOrg.id).eq('alert_type',type).is('resolved_at',null).eq('is_dismissed',false);
+  if(refId)query.eq('ref_id',refId);
+  const{data:existing}=await query.limit(1);
+  if(existing&&existing.length)return;
+  const{data,error}=await sb.from('governance_alerts').insert({org_id:currentOrg.id,alert_type:type,severity,title,body,ref_id:refId||null,ref_type:refType||null}).select().single();
+  if(!error&&data)await sendAlertEmail(title,body);
+}
+
+async function sendAlertEmail(title,body){
+  try{
+    if(typeof emailjs==='undefined')return;
+    emailjs.init(EMAILJS_KEY);
+    await emailjs.send(EMAILJS_SVC,EMAILJS_TPL,{
+      to_name:currentProfile?.full_name?.split(' ')[0]||'there',
+      to_email:currentUser.email,
+      alert_title:title,
+      alert_body:body
+    });
+  }catch(err){console.error('EmailJS send error:',err)}
+}
+
+async function loadAlerts(){
+  if(!currentOrg)return[];
+  const{data}=await sb.from('governance_alerts').select('*').eq('org_id',currentOrg.id).eq('is_dismissed',false).order('created_at',{ascending:false}).limit(50);
+  const alerts=data||[];
+  const unread=alerts.filter(a=>!a.is_read&&!a.resolved_at).length;
+  updateBellCount(unread);
+  return alerts;
+}
+
+function updateBellCount(count){
+  const badge=document.getElementById('bell-badge');
+  if(!badge)return;
+  if(count>0){badge.textContent=count>9?'9+':count;badge.style.display='flex'}
+  else badge.style.display='none';
+}
+
+async function renderAlertsView(){
+  const el=document.getElementById('alerts-list');
+  if(!el||!currentOrg)return;
+  const alerts=await loadAlerts();
+  // Mark all visible as read
+  const unreadIds=alerts.filter(a=>!a.is_read&&!a.resolved_at).map(a=>a.id);
+  if(unreadIds.length){
+    await sb.from('governance_alerts').update({is_read:true}).in('id',unreadIds);
+    updateBellCount(0);
+  }
+  // Update stat cards
+  const active=alerts.filter(a=>!a.resolved_at);
+  const resolved=alerts.filter(a=>a.resolved_at);
+  document.getElementById('alert-stat-unread').textContent=unreadIds.length||'0';
+  document.getElementById('alert-stat-active').textContent=active.length||'0';
+  document.getElementById('alert-stat-resolved').textContent=resolved.length||'0';
+  if(!active.length){
+    el.innerHTML='<div class="empty-state"><h4>No active alerts</h4><p>Your governance platform is monitoring for score drops, overdue controls, and assessments due for review.</p></div>';
+    return;
+  }
+  const SEV_C={info:'#60a5fa',warning:'#fbbf24',critical:'#f87171'};
+  const SEV_BG={info:'rgba(96,165,250,0.06)',warning:'rgba(251,191,36,0.06)',critical:'rgba(239,68,68,0.06)'};
+  const TYPE_L={score_drop:'Score Drop',control_overdue:'Control Overdue',assessment_due:'Assessment Due',control_regression:'Regression',compliance_rule_fired:'Automation'};
+  el.innerHTML=active.map(a=>{
+    const col=SEV_C[a.severity]||'var(--muted)';
+    const bg=SEV_BG[a.severity]||'rgba(255,255,255,0.02)';
+    return `<div style="background:${bg};border:1px solid rgba(255,255,255,0.06);border-left:3px solid ${col};border-radius:10px;padding:18px 20px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${col};background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:2px 8px;border-radius:100px;">${esc(a.severity)}</span>
+          <span style="font-size:.68rem;color:var(--muted);">${TYPE_L[a.alert_type]||a.alert_type}</span>
+        </div>
+        <span style="font-size:.68rem;color:var(--muted);white-space:nowrap;">${fmtDate(a.created_at)}</span>
+      </div>
+      <div style="font-size:.88rem;font-weight:600;color:var(--main);margin-bottom:6px;">${esc(a.title)}</div>
+      <div style="font-size:.78rem;color:var(--sub);line-height:1.65;margin-bottom:14px;">${esc(a.body||'')}</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="resolveAlert('${a.id}')" class="btn-topbar btn-topbar-primary" style="padding:5px 12px;font-size:.72rem;">Mark Resolved</button>
+        <button onclick="dismissAlert('${a.id}')" class="btn-topbar btn-topbar-ghost" style="padding:5px 12px;font-size:.72rem;">Dismiss</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function resolveAlert(alertId){
+  await sb.from('governance_alerts').update({resolved_at:new Date().toISOString(),resolved_by:currentUser.id,is_read:true}).eq('id',alertId);
+  await renderAlertsView();
+  await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_updated',entity_type:'governance_alert',entity_id:alertId,changes:{_actor_name:actorName(),control:'Alert resolved'}});
+}
+
+async function dismissAlert(alertId){
+  await sb.from('governance_alerts').update({is_dismissed:true}).eq('id',alertId);
+  await renderAlertsView();
 }
  
 // ═══ PHASE 4A: SCORE HISTORY ══════════════════════════════════
