@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>MLA Admin | MLA Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#020617;--sidebar:#050d1f;--surface:rgba(8,15,35,0.7);--surface2:rgba(10,18,42,0.9);--border:rgba(255,255,255,0.055);--border2:rgba(255,255,255,0.10);--accent:#2563eb;--accent-h:#1d4ed8;--sky:#60a5fa;--main:#f1f5f9;--sub:#94a3b8;--muted:#475569;--muted2:#334155;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--sidebar-w:220px;--topbar-h:56px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--sub);-webkit-font-smoothing:antialiased;overflow:hidden}
+.bg-ambient{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 50% 40% at 75% 50%,rgba(239,68,68,0.03) 0%,transparent 60%)}
+.app{display:flex;height:100vh;position:relative;z-index:1}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh}
+.sidebar-logo{height:var(--topbar-h);display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.logo-mark{font-size:.92rem;font-weight:600;letter-spacing:-.02em;color:var(--main);text-decoration:none}.logo-mark em{font-family:'Instrument Serif',serif;font-style:italic;color:var(--red)}
+.logo-badge{margin-left:auto;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--red);background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);padding:2px 7px;border-radius:100px}
+.sidebar-nav{flex:1;overflow-y:auto;padding:14px 10px}
+.nav-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--muted2);padding:0 8px;margin:16px 0 6px}.nav-label:first-child{margin-top:0}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--muted);transition:background .12s,color .12s;position:relative;user-select:none;margin-bottom:1px}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--sub)}.nav-item.active{background:rgba(239,68,68,0.08);color:var(--red)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:16px;background:var(--red);border-radius:0 2px 2px 0}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-badge{margin-left:auto;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:100px;background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.sidebar-footer{border-top:1px solid var(--border);padding:12px 10px;flex-shrink:0}
+.user-tile{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px}
+.user-avatar{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#dc2626,#ef4444);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:white;flex-shrink:0}
+.user-name{font-size:.78rem;font-weight:600;color:var(--main)}.user-role{font-size:.68rem;color:var(--muted)}
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
+.topbar{height:var(--topbar-h);flex-shrink:0;display:flex;align-items:center;padding:0 28px;gap:16px;border-bottom:1px solid var(--border);background:rgba(2,6,23,0.5);backdrop-filter:blur(20px)}
+.topbar-title{font-size:.85rem;font-weight:600;color:var(--main)}.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;border:none;transition:background .15s;text-decoration:none}
+.btn-primary{background:var(--accent);color:white}.btn-primary:hover{background:var(--accent-h)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{color:var(--main);border-color:var(--border2)}
+.content{flex:1;overflow-y:auto;padding:28px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent}
+.view{display:none;animation:fadeIn .2s ease}.view.active{display:block}@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-header{margin-bottom:24px}.page-header h2{font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:400;letter-spacing:-.02em;color:var(--main);margin-bottom:4px}.page-header p{font-size:.82rem;color:var(--muted)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}.stat-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:10px}.stat-value{font-size:1.7rem;font-weight:700;color:var(--main);line-height:1}.stat-sub{font-size:.72rem;color:var(--muted);margin-top:4px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.panel-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.panel-title{font-size:.82rem;font-weight:600;color:var(--main)}.panel-sub{font-size:.72rem;color:var(--muted);margin-left:auto}
+.tbl{width:100%;border-collapse:collapse}
+.tbl thead tr{border-bottom:1px solid var(--border)}.tbl th{padding:10px 14px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);text-align:left;white-space:nowrap}
+.tbl tbody tr{border-bottom:1px solid rgba(255,255,255,0.03);transition:background .1s;cursor:pointer}.tbl tbody tr:hover{background:rgba(255,255,255,0.02)}.tbl td{padding:13px 14px;font-size:.8rem;vertical-align:middle}
+.pill{font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap}
+.pill-pending{color:#fbbf24;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.18)}
+.pill-review{color:#93c5fd;background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.18)}
+.pill-done{color:#4ade80;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18)}
+.empty{text-align:center;padding:48px 24px;color:var(--muted);font-size:.82rem}
+.loading{text-align:center;padding:48px;color:var(--muted);font-size:.82rem}
+/* Detail panel */
+.detail-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:14px}
+.detail-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px}
+.detail-val{font-size:.82rem;color:var(--sub)}
+.field-label{font-size:.72rem;font-weight:600;color:var(--muted);margin-bottom:6px;display:block}
+.field-input{width:100%;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;color:var(--main);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;transition:border-color .15s;margin-bottom:12px;-webkit-appearance:none}
+.field-input:focus{border-color:rgba(37,99,235,0.4)}
+select.field-input{cursor:pointer;color-scheme:dark}select.field-input option{background:#0a1628;color:var(--main)}
+textarea.field-input{resize:vertical;min-height:80px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px}
+@media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}.meta-grid{grid-template-columns:1fr}.sidebar{display:none}.content{padding:20px 16px}}
+</style>
+</head>
+<body>
+<div class="bg-ambient"></div>
+<div class="app">
+<aside class="sidebar">
+<div class="sidebar-logo"><a href="index.html" class="logo-mark">mla<em>group.</em></a><span class="logo-badge">Admin</span></div>
+<nav class="sidebar-nav">
+<div class="nav-label">Overview</div>
+<div class="nav-item active" onclick="showView('dashboard',this)"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>
+<div class="nav-item" onclick="showView('queue',this)"><svg viewBox="0 0 16 16"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg>Assessment Queue<span class="nav-badge" id="queue-badge" style="display:none;">0</span></div>
+<div class="nav-label">Clients</div>
+<div class="nav-item" onclick="showView('clients',this)"><svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/></svg>All Clients</div>
+<div class="nav-label">Tools</div>
+<div class="nav-item" onclick="window.location.href='portal.html'"><svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg>Client Portal</div>
+</nav>
+<div class="sidebar-footer"><div class="user-tile"><div class="user-avatar">ML</div><div><div class="user-name">MLA Group</div><div class="user-role">Administrator</div></div></div></div>
+</aside>
+<div class="main">
+<div class="topbar"><div class="topbar-title" id="topbar-title">Admin Dashboard</div><div class="topbar-right"><button class="btn btn-ghost" onclick="signOut()">Sign out</button></div></div>
+<div class="content">
+ 
+<div id="view-dashboard" class="view active">
+<div class="page-header"><h2>MLA Admin Dashboard</h2><p>Cross-client overview of all organisations and assessments.</p></div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-label">Organisations</div><div class="stat-value" id="s-orgs">—</div><div class="stat-sub">Registered</div></div>
+<div class="stat-card"><div class="stat-label">AI Systems</div><div class="stat-value" id="s-systems">—</div><div class="stat-sub">Across all clients</div></div>
+<div class="stat-card"><div class="stat-label">Assessments</div><div class="stat-value" id="s-assessments">—</div><div class="stat-sub">Total submitted</div></div>
+<div class="stat-card"><div class="stat-label">Awaiting Review</div><div class="stat-value" style="color:#fbbf24;" id="s-pending">—</div><div class="stat-sub">Need MLA action</div></div>
+</div>
+<div class="panel"><div class="panel-header"><div class="panel-title">Recent Assessments</div></div><div id="dash-recent"><div class="loading">Loading…</div></div></div>
+</div>
+ 
+<div id="view-queue" class="view">
+<div class="page-header"><h2>Assessment Queue</h2><p>Submitted assessments awaiting MLA review and control delivery.</p></div>
+<div id="queue-list"><div class="loading">Loading…</div></div>
+</div>
+ 
+<div id="view-clients" class="view">
+<div class="page-header"><h2>All Clients</h2><p>Organisations registered on the MLA platform.</p></div>
+<div id="client-list"><div class="loading">Loading…</div></div>
+</div>
+ 
+<div id="view-assessment-detail" class="view">
+<button style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;padding:0 0 16px;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;" onclick="showView('queue',document.querySelectorAll('.nav-item')[1])"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L4 6l4 4"/></svg>Back to Queue</button>
+<div id="assess-detail-content"><div class="loading">Loading…</div></div>
+</div>
+ 
+</div>
+</div>
+</div>
+ 
+<script>
+const SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ 
+let currentUser=null;
+let allOrgs=[],allSystems=[],allAssessments=[];
+ 
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—'}
+function fmtDateLong(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
+async function signOut(){await sb.auth.signOut();window.location.href='login.html'}
+ 
+const BAND_L={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};
+const BAND_C={high:'#f87171',medium:'#fbbf24',low:'#4ade80'};
+const STATUS_L={submitted:'Awaiting Review',in_review:'Under Review',controls_issued:'Controls Issued'};
+const STATUS_P={submitted:'pill-pending',in_review:'pill-review',controls_issued:'pill-done'};
+ 
+function showView(id,navEl){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(navEl)navEl.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  const titles={dashboard:'Admin Dashboard',queue:'Assessment Queue',clients:'All Clients','assessment-detail':'Assessment Detail'};
+  document.getElementById('topbar-title').textContent=titles[id]||'Admin';
+}
+ 
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='login.html';return}
+  currentUser=session.user;
+  // Check admin role
+  const{data:profile}=await sb.from('profiles').select('role,full_name').eq('id',currentUser.id).single();
+  if(!profile||profile.role!=='mla_admin'){
+    document.querySelector('.content').innerHTML='<div class="empty" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;"><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Access Denied</h2><p>This page is restricted to MLA Group administrators.</p><a href="portal.html" class="btn btn-primary" style="margin-top:16px;">Go to Portal</a></div>';
+    return;
+  }
+  await loadData();
+}
+ 
+async function loadData(){
+  const[{data:orgs},{data:systems},{data:assessments}]=await Promise.all([
+    sb.from('organisations').select('*').order('created_at',{ascending:false}),
+    sb.from('ai_systems').select('id,name,org_id,risk_tier,deployment_status,system_owner,vendor').order('created_at',{ascending:false}),
+    sb.from('registry_assessments').select('*').order('requested_at',{ascending:false})
+  ]);
+  allOrgs=orgs||[];allSystems=systems||[];allAssessments=assessments||[];
+  
+  // Stats
+  const pending=allAssessments.filter(a=>a.status==='submitted');
+  document.getElementById('s-orgs').textContent=allOrgs.length;
+  document.getElementById('s-systems').textContent=allSystems.length;
+  document.getElementById('s-assessments').textContent=allAssessments.length;
+  document.getElementById('s-pending').textContent=pending.length;
+  if(pending.length){document.getElementById('queue-badge').textContent=pending.length;document.getElementById('queue-badge').style.display='inline-flex'}
+  
+  renderDashRecent();
+  renderQueue();
+  renderClients();
+}
+ 
+function getOrgName(orgId){return allOrgs.find(o=>o.id===orgId)?.name||'Unknown'}
+function getSysName(sysId){return allSystems.find(s=>s.id===sysId)?.name||'Unknown'}
+ 
+function renderDashRecent(){
+  const recent=allAssessments.slice(0,10);
+  if(!recent.length){document.getElementById('dash-recent').innerHTML='<div class="empty">No assessments yet.</div>';return}
+  document.getElementById('dash-recent').innerHTML='<table class="tbl"><thead><tr><th>Organisation</th><th>AI System</th><th>Score</th><th>Status</th><th>Date</th></tr></thead><tbody>'+
+  recent.map(a=>{
+    const band=a.risk_band||'medium';
+    return '<tr onclick="openAssessmentDetail(\''+a.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(a.org_id))+'</td><td>'+esc(getSysName(a.system_id))+'</td><td style="font-weight:600;color:'+(BAND_C[band]||'var(--muted)')+';">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</td><td><span class="pill '+(STATUS_P[a.status]||'')+'">'+(STATUS_L[a.status]||a.status)+'</span></td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(a.requested_at)+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+ 
+function renderQueue(){
+  const pending=allAssessments.filter(a=>a.status==='submitted'||a.status==='in_review');
+  if(!pending.length){document.getElementById('queue-list').innerHTML='<div class="panel"><div class="empty">No assessments awaiting review.</div></div>';return}
+  document.getElementById('queue-list').innerHTML='<div class="panel"><table class="tbl"><thead><tr><th>Organisation</th><th>AI System</th><th>Score</th><th>Risk</th><th>Status</th><th>Submitted</th></tr></thead><tbody>'+
+  pending.map(a=>{
+    const band=a.risk_band||'medium';
+    return '<tr onclick="openAssessmentDetail(\''+a.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(a.org_id))+'</td><td>'+esc(getSysName(a.system_id))+'</td><td style="font-weight:600;color:'+(BAND_C[band]||'var(--muted)')+';">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</td><td><span class="pill '+(band==='high'?'pill-pending':band==='low'?'pill-done':'pill-review')+'">'+(BAND_L[band]||band)+'</span></td><td><span class="pill '+(STATUS_P[a.status]||'')+'">'+(STATUS_L[a.status]||a.status)+'</span></td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(a.requested_at)+'</td></tr>';
+  }).join('')+'</tbody></table></div>';
+}
+ 
+function renderClients(){
+  if(!allOrgs.length){document.getElementById('client-list').innerHTML='<div class="panel"><div class="empty">No clients registered.</div></div>';return}
+  document.getElementById('client-list').innerHTML='<div class="panel"><table class="tbl"><thead><tr><th>Organisation</th><th>Sector</th><th>AI Systems</th><th>Assessments</th><th>Pending</th><th>Created</th></tr></thead><tbody>'+
+  allOrgs.map(o=>{
+    const sysCnt=allSystems.filter(s=>s.org_id===o.id).length;
+    const aCnt=allAssessments.filter(a=>a.org_id===o.id).length;
+    const pCnt=allAssessments.filter(a=>a.org_id===o.id&&a.status==='submitted').length;
+    return '<tr><td style="font-weight:600;color:var(--main);">'+esc(o.name)+'</td><td style="font-size:.75rem;">'+esc(o.sector||'—')+'</td><td>'+sysCnt+'</td><td>'+aCnt+'</td><td>'+(pCnt>0?'<span class="pill pill-pending">'+pCnt+'</span>':'0')+'</td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(o.created_at)+'</td></tr>';
+  }).join('')+'</tbody></table></div>';
+}
+ 
+async function openAssessmentDetail(assessId){
+  const a=allAssessments.find(x=>x.id===assessId);if(!a)return;
+  const sys=allSystems.find(s=>s.id===a.system_id)||{};
+  const orgName=getOrgName(a.org_id);
+  const band=a.risk_band||'medium';
+  const ss=a.section_scores||{};
+  const tv=a.tier_validation;
+  
+  // Section score bars
+  const secBars=Object.entries(ss).map(([k,v])=>{
+    const pct=v.score||0;const col=pct>=70?'#4ade80':pct>=40?'#fbbf24':'#f87171';
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:.7rem;color:var(--muted);width:180px;text-align:right;flex-shrink:0;">'+esc(v.title||k)+'</span><div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:3px;"></div></div><span style="font-size:.68rem;color:'+col+';width:32px;text-align:right;font-weight:600;">'+pct+'%</span></div>';
+  }).join('');
+  
+  const el=document.getElementById('assess-detail-content');
+  el.innerHTML=`
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">${esc(orgName)}</div>
+        <h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);">${esc(sys.name||'AI System')}</h2>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <span style="font-size:1.6rem;font-weight:700;color:${BAND_C[band]||'var(--muted)'};">${a.overall_score!==null?a.overall_score+'%':'—'}</span>
+          <span class="pill ${STATUS_P[a.status]||''}">${STATUS_L[a.status]||a.status}</span>
+        </div>
+      </div>
+      <div style="text-align:right;font-size:.72rem;color:var(--muted);">
+        Submitted: ${fmtDateLong(a.requested_at)}<br>
+        Sector: ${esc(a.sector||'—')}<br>
+        Version: ${esc(a.questionnaire_version||'1.0.0')}
+      </div>
+    </div>
+    
+    ${secBars?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:12px;">Section Scores</div>'+secBars+'</div>':''}
+    
+    ${tv&&tv.mismatch?'<div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:10px;padding:14px 18px;margin-bottom:14px;"><div style="font-size:.78rem;font-weight:600;color:var(--amber);margin-bottom:4px;">Risk Tier Mismatch</div><div style="font-size:.76rem;color:var(--muted2);line-height:1.6;">'+esc(tv.message||'Risk tier mismatch detected.')+'</div></div>':''}
+    
+    <div class="detail-card">
+      <div class="meta-grid">
+        <div><div class="detail-label">System Owner</div><div class="detail-val">${esc(sys.system_owner||'—')}</div></div>
+        <div><div class="detail-label">Vendor</div><div class="detail-val">${esc(sys.vendor||'—')}</div></div>
+        <div><div class="detail-label">Risk Tier</div><div class="detail-val">${sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified'}</div></div>
+        <div><div class="detail-label">Deployment</div><div class="detail-val">${esc(sys.deployment_status||'—')}</div></div>
+      </div>
+    </div>
+    
+    ${a.client_notes?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Client Notes</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;">'+esc(a.client_notes)+'</div></div>':''}
+    
+    <div class="panel" style="margin-top:20px;">
+      <div class="panel-header"><div class="panel-title">MLA Review</div></div>
+      <div style="padding:20px;">
+        <label class="field-label">Status</label>
+        <select class="field-input" id="ad-status">
+          <option value="submitted" ${a.status==='submitted'?'selected':''}>Submitted — Awaiting Review</option>
+          <option value="in_review" ${a.status==='in_review'?'selected':''}>Under Review</option>
+          <option value="controls_issued" ${a.status==='controls_issued'?'selected':''}>Controls Issued</option>
+        </select>
+        <label class="field-label">MLA Notes for Client</label>
+        <textarea class="field-input" id="ad-notes" placeholder="Notes visible to the client — findings, recommendations, next steps…">${esc(a.mla_notes||'')}</textarea>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="saveReview('${a.id}')">Save & Update Client</button>
+          <a href="system-report.html?aid=${a.id}" target="_blank" class="btn btn-ghost">View Report</a>
+        </div>
+        <div id="ad-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
+      </div>
+    </div>
+  `;
+  
+  showView('assessment-detail',null);
+}
+ 
+async function saveReview(assessId){
+  const status=document.getElementById('ad-status').value;
+  const notes=document.getElementById('ad-notes').value.trim();
+  const msg=document.getElementById('ad-msg');
+  msg.style.display='block';msg.style.color='var(--muted)';msg.textContent='Saving…';
+  
+  const update={status,mla_notes:notes||null};
+  if(status==='controls_issued'){
+    update.completed_by=currentUser.id;
+    update.completed_at=new Date().toISOString();
+  }
+  
+  const{error}=await sb.from('registry_assessments').update(update).eq('id',assessId);
+  if(error){msg.style.color='var(--red)';msg.textContent='Error: '+error.message;return}
+  
+  // Audit log — this will show as "MLA Group" on client side
+  const a=allAssessments.find(x=>x.id===assessId);
+  if(a){
+    await sb.from('registry_audit_log').insert({
+      org_id:a.org_id,
+      user_id:currentUser.id,
+      action:'mla_review_updated',
+      entity_type:'assessment',
+      entity_id:assessId,
+      changes:{status,_actor_name:'MLA Group',_is_mla:true}
+    });
+    a.status=status;a.mla_notes=notes;
+  }
+  
+  msg.style.color='#4ade80';msg.textContent='Updated — client will see this on their next visit.';
+  // Refresh stats
+  const pending=allAssessments.filter(x=>x.status==='submitted');
+  document.getElementById('s-pending').textContent=pending.length;
+  if(pending.length){document.getElementById('queue-badge').textContent=pending.length;document.getElementById('queue-badge').style.display='inline-flex'}
+  else{document.getElementById('queue-badge').style.display='none'}
+}
+ 
+init();
+</script>
+</body>
+</html>
