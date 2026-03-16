@@ -206,6 +206,18 @@ textarea.field-input{resize:vertical;min-height:80px}
   <button class="btn-topbar btn-topbar-primary" id="cd-save-btn" onclick="saveControlProgress()">Save Progress</button>
   <button class="btn-topbar btn-topbar-ghost" id="cd-complete-btn" onclick="markControlComplete()">Mark as Implemented</button>
 </div>
+<div class="panel" style="margin-top:16px;">
+  <div class="panel-header"><div class="panel-title">Need help with this control?</div></div>
+  <div class="panel-body" id="cd-support">
+    <div id="cd-support-history"></div>
+    <div id="cd-support-form">
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:12px;">If you're unsure how to implement this control, request help from an MLA governance expert. Describe what you need and we'll respond with tailored guidance.</p>
+      <textarea class="field-input" id="cd-support-msg" rows="3" placeholder="Describe what you need help with…" style="margin-bottom:8px;"></textarea>
+      <button class="btn-topbar btn-topbar-primary" id="cd-support-btn" onclick="submitSupportRequest()" style="padding:6px 14px;font-size:.75rem;">Request MLA Expert</button>
+      <div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div>
+    </div>
+  </div>
+</div>
 </div>
  
 </div></div></div>
@@ -246,6 +258,8 @@ function fmtAudit(entry,namesMap){
     case 'control_updated':text='Updated progress on <strong>'+esc(c.control||'')+'</strong>';break;
     case 'control_implemented':text='Marked <strong>'+esc(c.control||'')+'</strong> as implemented';break;
     case 'mla_review_updated':text='MLA Group updated assessment status to <strong>'+(c.status==='controls_issued'?'Controls Issued':c.status==='in_review'?'Under Review':c.status||'')+'</strong>';break;
+    case 'support_requested':text='Requested MLA expert help on <strong>'+esc(c.control||'')+'</strong>';break;
+    case 'support_responded':text='MLA Group responded to support request on <strong>'+esc(c.control||'')+'</strong>';break;
     default:text=entry.action.replace(/_/g,' ');
   }
   // Override actor name for MLA actions
@@ -786,6 +800,9 @@ async function openControlDetail(ctrlId,assignId){
   if(st==='implemented'||st==='verified'){cBtn.textContent='Implemented ✓';cBtn.disabled=true}
   else{cBtn.textContent='Mark as Implemented';cBtn.disabled=false}
  
+  // Load support requests for this control
+  await loadSupportForControl(assign.id);
+ 
   navigate('control-detail',null);
   document.getElementById('nav-controls').classList.add('active');
 }
@@ -836,6 +853,53 @@ async function uploadEvidence(){
   await sb.from('evidence_uploads').insert({control_assignment_id:assign.id,org_id:currentOrg.id,system_id:assign.system_id||null,file_name:file.name,file_path:path,file_type:file.type,file_size:file.size,uploaded_by:currentUser.id});
   fileInput.value='';
   openControlDetail(currentControlId,currentAssignId);
+}
+ 
+// ═══ SUPPORT REQUESTS ═════════════════════════════════════════
+async function loadSupportForControl(assignId){
+  const histEl=document.getElementById('cd-support-history');
+  const formEl=document.getElementById('cd-support-form');
+  if(!assignId){histEl.innerHTML='';return}
+  const{data:requests}=await sb.from('support_requests').select('*').eq('control_assignment_id',assignId).order('requested_at',{ascending:false});
+  if(!requests||!requests.length){histEl.innerHTML='';formEl.style.display='block';return}
+  const nm=await loadNames(requests.map(r=>r.requested_by));
+  histEl.innerHTML=requests.map(r=>{
+    const isOpen=r.status==='open';
+    return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'+
+        '<span style="font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+(isOpen?'#fbbf24':'#4ade80')+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+(isOpen?'Awaiting Response':'MLA Responded')+'</span>'+
+        '<span style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(r.requested_at)+'</span>'+
+      '</div>'+
+      '<div style="font-size:.8rem;color:var(--sub);line-height:1.7;margin-bottom:10px;background:rgba(255,255,255,0.02);border-left:2px solid var(--border);padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.client_message)+'</div>'+
+      '<div style="font-size:.68rem;color:var(--muted);">Requested by '+esc(nm[r.requested_by]||'Unknown')+'</div>'+
+      (r.mla_response?'<div style="margin-top:12px;padding:12px 14px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;"><div style="font-size:.62rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">MLA Group Response</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;">'+esc(r.mla_response)+'</div><div style="font-size:.68rem;color:var(--muted);margin-top:6px;">'+fmtDateLong(r.responded_at)+'</div></div>':'')+
+    '</div>';
+  }).join('');
+  formEl.style.display='block';
+}
+ 
+async function submitSupportRequest(){
+  if(!currentAssignId||!currentControlId||!currentOrg)return;
+  const msg=document.getElementById('cd-support-msg').value.trim();
+  const stEl=document.getElementById('cd-support-status');
+  if(!msg){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Please describe what you need help with.';return}
+  const btn=document.getElementById('cd-support-btn');btn.textContent='Sending…';btn.disabled=true;stEl.style.display='none';
+  const assign=allAssignments.find(a=>a.id===currentAssignId);
+  const{error}=await sb.from('support_requests').insert({
+    control_assignment_id:currentAssignId,
+    control_id:currentControlId,
+    org_id:currentOrg.id,
+    system_id:assign?.system_id||null,
+    client_message:msg,
+    requested_by:currentUser.id
+  });
+  if(error){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Error: '+error.message;btn.textContent='Request MLA Expert';btn.disabled=false;return}
+  // Audit
+  await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'support_requested',entity_type:'governance_control',entity_id:assign?.system_id||currentControlId,changes:{_actor_name:actorName(),control:allControls.find(c=>c.id===currentControlId)?.title}});
+  document.getElementById('cd-support-msg').value='';
+  btn.textContent='Request MLA Expert';btn.disabled=false;
+  stEl.style.display='block';stEl.style.color='#4ade80';stEl.textContent='Request sent — MLA Group will respond shortly.';
+  await loadSupportForControl(currentAssignId);
 }
  
 init();
