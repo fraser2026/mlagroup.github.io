@@ -302,9 +302,9 @@ async function saveReview(assessId){
       org_id:a.org_id,
       user_id:currentUser.id,
       action:'mla_review_updated',
-      entity_type:'assessment',
-      entity_id:assessId,
-      changes:{status,_actor_name:'MLA Group',_is_mla:true}
+      entity_type:'ai_system',
+      entity_id:a.system_id,
+      changes:{status,assessment_id:assessId,_actor_name:'MLA Group',_is_mla:true}
     });
     a.status=status;a.mla_notes=notes;
   }
