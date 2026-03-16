@@ -539,9 +539,13 @@ async function renderSystemControlsTab(sysId){
   if(!allControls.length)await loadControls();
   // Get assignments for this specific system
   const{data:sysAssignments}=await sb.from('control_assignments').select('*').eq('system_id',sysId).eq('org_id',currentOrg.id);
-  // Also get org-level assignments (controls 1-3 apply to whole org)
-  const{data:orgAssignments}=await sb.from('control_assignments').select('*').eq('org_id',currentOrg.id).is('system_id',null);
-  const allSysCtrl=[...(sysAssignments||[]),...(orgAssignments||[])];
+  var allSysCtrl=sysAssignments||[];
+  // Only include org-level controls if this system has been assessed
+  const{data:sysAssessCheck}=await sb.from('registry_assessments').select('id').eq('system_id',sysId).limit(1);
+  if(sysAssessCheck&&sysAssessCheck.length){
+    const{data:orgAssignments}=await sb.from('control_assignments').select('*').eq('org_id',currentOrg.id).is('system_id',null);
+    allSysCtrl=allSysCtrl.concat(orgAssignments||[]);
+  }
   
   if(!allSysCtrl.length){
     el.innerHTML='<div class="empty-state" style="padding:36px 0;"><h4>No controls triggered yet</h4><p style="max-width:380px;margin:0 auto 20px;">Run an assessment on this AI system. Controls will be automatically triggered based on governance gaps identified.</p><button class="btn-dl" onclick="openAssessmentModal()" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button></div>';
