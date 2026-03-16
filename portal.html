@@ -1213,19 +1213,10 @@ async function loadScoreHistory(){
   const areaPath=linePath+` L${xS(history.length-1).toFixed(1)},${PT+cH} L${xS(0).toFixed(1)},${PT+cH}Z`;
   const fmtLabel=iso=>new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
   const labelIdxs=[...new Set([0,Math.floor((history.length-1)/2),history.length-1])];
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
-    <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${col}" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="${col}" stop-opacity="0.01"/>
-    </linearGradient></defs>
-    ${[25,50,75].map(v=>`<line x1="${PL}" y1="${yS(v).toFixed(1)}" x2="${W-PR}" y2="${yS(v).toFixed(1)}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-    <text x="${PL-5}" y="${(yS(v)+4).toFixed(1)}" text-anchor="end" fill="rgba(255,255,255,0.18)" font-size="9" font-family="DM Sans,sans-serif">${v}</text>`).join('')}
-    <path d="${areaPath}" fill="url(#sg)"/>
-    <path d="${linePath}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    ${history.map((h,i)=>`<circle cx="${xS(i).toFixed(1)}" cy="${yS(h.composite_score).toFixed(1)}" r="3" fill="${h.composite_score>=70?'#4ade80':h.composite_score>=40?'#fbbf24':'#f87171'}" stroke="#020617" stroke-width="1.5"/>`).join('')}
-    <text x="${xS(history.length-1).toFixed(1)}" y="${(yS(last.composite_score)-9).toFixed(1)}" text-anchor="middle" fill="${col}" font-size="11" font-weight="700" font-family="DM Sans,sans-serif">${last.composite_score}%</text>
-    ${labelIdxs.map(i=>`<text x="${xS(i).toFixed(1)}" y="${H-6}" text-anchor="middle" fill="rgba(255,255,255,0.22)" font-size="9" font-family="DM Sans,sans-serif">${fmtLabel(history[i].snapshot_at)}</text>`).join('')}
-  </svg>`;
+  var gridLines=[25,50,75].map(function(v){return '<line x1="'+PL+'" y1="'+yS(v).toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yS(v).toFixed(1)+'" stroke="rgba(255,255,255,0.04)" stroke-width="1"/><text x="'+(PL-5)+'" y="'+(yS(v)+4).toFixed(1)+'" text-anchor="end" fill="rgba(255,255,255,0.18)" font-size="9" font-family="DM Sans,sans-serif">'+v+'</text>';}).join('');
+  var circles=history.map(function(h,i){return '<circle cx="'+xS(i).toFixed(1)+'" cy="'+yS(h.composite_score).toFixed(1)+'" r="3" fill="'+(h.composite_score>=70?'#4ade80':h.composite_score>=40?'#fbbf24':'#f87171')+'" stroke="#020617" stroke-width="1.5"/>';}).join('');
+  var labels=labelIdxs.map(function(i){return '<text x="'+xS(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" fill="rgba(255,255,255,0.22)" font-size="9" font-family="DM Sans,sans-serif">'+fmtLabel(history[i].snapshot_at)+'</text>';}).join('');
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+col+'" stop-opacity="0.18"/><stop offset="100%" stop-color="'+col+'" stop-opacity="0.01"/></linearGradient></defs>'+gridLines+'<path d="'+areaPath+'" fill="url(#sg)"/><path d="'+linePath+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+circles+'<text x="'+xS(history.length-1).toFixed(1)+'" y="'+(yS(last.composite_score)-9).toFixed(1)+'" text-anchor="middle" fill="'+col+'" font-size="11" font-weight="700" font-family="DM Sans,sans-serif">'+last.composite_score+'%</text>'+labels+'</svg>';
 }
  
 init();
