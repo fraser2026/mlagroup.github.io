@@ -353,7 +353,7 @@ function fmtAudit(entry,namesMap){
     case 'control_updated':text='Updated progress on <strong>'+esc(c.control||'')+'</strong>';break;
     case 'control_implemented':text='Marked <strong>'+esc(c.control||'')+'</strong> as implemented';break;
     case 'mla_review_updated':text='MLA Group updated assessment status to <strong>'+(c.status==='controls_issued'?'Controls Issued':c.status==='in_review'?'Under Review':c.status||'')+'</strong>';break;
-    case 'support_requested':text='Requested MLA expert help on <strong>'+esc(c.control||'')+'</strong>';break;
+    case 'control_assigned':text='Assigned <strong>'+esc(c.control||'')+'</strong> to <strong>'+esc(c.assigned_to_name||'a team member')+'</strong>'+(c.due_date?' — due '+c.due_date:'');break;     case 'policy_adopted':text='Adopted policy <strong>'+esc(c.policy||'')+'</strong>';break;     case 'policy_acknowledged':text='Acknowledged policy <strong>'+esc(c.policy||'')+'</strong> (v'+esc(c.version||'')+')';break;     case 'policy_esigned':text='E-signed policy <strong>'+esc(c.policy||'')+'</strong> (v'+esc(c.version||'')+')';break;     case 'support_requested':text='Requested MLA expert help on <strong>'+esc(c.control||'')+'</strong>';break;
     case 'support_responded':text='MLA Group responded to support request on <strong>'+esc(c.control||'')+'</strong>';break;
     default:text=entry.action.replace(/_/g,' ');
   }
@@ -1631,7 +1631,10 @@ function getActivityClick(entry){
   if(act==='compliance_status_updated'){
     return "openSystemDetail('"+eid+"')";
   }
-  if(act==='control_updated'||act==='control_implemented'||act==='control_assigned'){
+  if(act==='control_assigned'){
+    return "navigateControls(document.getElementById('nav-controls'))";
+  }
+  if(act==='control_updated'||act==='control_implemented'){
     var assignForCtrl=allAssignments.find(function(a){return a.control_id===eid});
     var aid=assignForCtrl?assignForCtrl.id:null;
     if(aid)return "openControlDetail('"+eid+"','"+aid+"')";
