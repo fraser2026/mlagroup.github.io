@@ -76,6 +76,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="nav-item active" onclick="showView('dashboard',this)"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>
 <div class="nav-item" onclick="showView('queue',this)"><svg viewBox="0 0 16 16"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg>Assessment Queue<span class="nav-badge" id="queue-badge" style="display:none;">0</span></div>
 <div class="nav-item" onclick="showView('support',this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/><path d="M5.5 6a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5M8 12.5v.01"/></svg>Support Requests<span class="nav-badge" id="support-badge" style="display:none;">0</span></div>
+<div class="nav-item" onclick="showView('policies-admin',this)"><svg viewBox="0 0 16 16"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Policies<span class="nav-badge" id="policies-badge" style="display:none;">0</span></div>
 <div class="nav-label">Clients</div>
 <div class="nav-item" onclick="showView('clients',this)"><svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/></svg>All Clients</div>
 <div class="nav-label">Tools</div>
@@ -123,6 +124,48 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div id="support-detail-content"><div class="loading">Loading…</div></div>
 </div>
  
+<div id="view-policies-admin" class="view">
+<div class="page-header"><h2>Client Policies</h2><p>Manage governance policies across all client organisations and track acknowledgment status.</p></div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-label">Total Policies</div><div class="stat-value" id="sp-total">—</div><div class="stat-sub">Across all clients</div></div>
+<div class="stat-card"><div class="stat-label">Acknowledged</div><div class="stat-value" style="color:#4ade80;" id="sp-acked">—</div><div class="stat-sub">Total acknowledgments</div></div>
+<div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value" style="color:#fbbf24;" id="sp-pending">—</div><div class="stat-sub">Across all orgs</div></div>
+<div class="stat-card"><div class="stat-label">Templates</div><div class="stat-value" id="sp-templates">—</div><div class="stat-sub">Available</div></div>
+</div>
+<div style="display:flex;gap:10px;margin-bottom:16px;">
+<button class="btn btn-primary" onclick="openDeployTemplateModal()"><svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><path d="M6 1v10M1 6h10"/></svg> Deploy Template to Client</button>
+</div>
+<div class="panel"><div class="panel-header"><div class="panel-title">All Client Policies</div><div class="panel-sub" id="sp-list-count"></div></div><div id="sp-policy-list"><div class="loading">Loading…</div></div></div>
+</div>
+ 
+<div id="view-policy-admin-detail" class="view">
+<button style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;padding:0 0 16px;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;" onclick="showView('policies-admin',document.querySelectorAll('.nav-item')[3])"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L4 6l4 4"/></svg>Back to Policies</button>
+<div id="policy-admin-detail-content"><div class="loading">Loading…</div></div>
+</div>
+ 
+</div>
+</div>
+</div>
+ 
+<!-- Deploy Template Modal -->
+<div style="position:fixed;inset:0;z-index:999;background:rgba(2,6,23,0.8);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;" id="deploy-modal">
+<div style="background:var(--sidebar);border:1px solid var(--border);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;">
+<div style="padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;">
+<div><h3 style="font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:400;color:var(--main);margin-bottom:3px;">Deploy Policy Template</h3><p style="font-size:.78rem;color:var(--muted);">Adopt a template for a client organisation.</p></div>
+<button style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;" onclick="closeDeployModal()">&#10005;</button>
+</div>
+<div style="padding:20px 24px;">
+<label class="field-label">Organisation</label>
+<select class="field-input" id="deploy-org"><option value="">Select organisation</option></select>
+<label class="field-label">Template</label>
+<select class="field-input" id="deploy-tpl"><option value="">Select template</option></select>
+<div id="deploy-tpl-desc" style="font-size:.76rem;color:var(--muted);line-height:1.6;margin-bottom:12px;display:none;"></div>
+<div id="deploy-error" style="font-size:.75rem;color:var(--red);margin-bottom:8px;display:none;"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;">
+<button class="btn btn-ghost" onclick="closeDeployModal()">Cancel</button>
+<button class="btn btn-primary" id="deploy-submit" onclick="submitDeployTemplate()">Deploy Policy</button>
+</div>
+<div id="deploy-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
 </div>
 </div>
 </div>
@@ -134,6 +177,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
  
 let currentUser=null;
 let allOrgs=[],allSystems=[],allAssessments=[],allSupport=[],allControlsAdmin=[];
+let allPoliciesAdmin=[],allAcksAdmin=[],allTemplatesAdmin=[];
  
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—'}
@@ -144,22 +188,25 @@ const BAND_L={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};
 const BAND_C={high:'#f87171',medium:'#fbbf24',low:'#4ade80'};
 const STATUS_L={submitted:'Awaiting Review',in_review:'Under Review',controls_issued:'Controls Issued'};
 const STATUS_P={submitted:'pill-pending',in_review:'pill-review',controls_issued:'pill-done'};
+const POLICY_CATS={ai_governance:'AI Governance',data_protection:'Data Protection',acceptable_use:'Acceptable Use',risk_management:'Risk Management',security:'Security',ethics:'Ethics',other:'Other'};
+const POLICY_CAT_COLORS={ai_governance:'#60a5fa',data_protection:'#c4b5fd',acceptable_use:'#4ade80',risk_management:'#fbbf24',security:'#f87171',ethics:'#93c5fd',other:'var(--muted)'};
  
 function showView(id,navEl){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(navEl)navEl.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+id).classList.add('active');
-  const titles={dashboard:'Admin Dashboard',queue:'Assessment Queue',clients:'All Clients','assessment-detail':'Assessment Detail',support:'Support Requests','support-detail':'Support Detail'};
+  var titles={dashboard:'Admin Dashboard',queue:'Assessment Queue',clients:'All Clients','assessment-detail':'Assessment Detail',support:'Support Requests','support-detail':'Support Detail','policies-admin':'Client Policies','policy-admin-detail':'Policy Detail'};
   document.getElementById('topbar-title').textContent=titles[id]||'Admin';
 }
  
 async function init(){
-  const{data:{session}}=await sb.auth.getSession();
+  var result=await sb.auth.getSession();
+  var session=result.data.session;
   if(!session){window.location.href='login.html';return}
   currentUser=session.user;
-  // Check admin role
-  const{data:profile}=await sb.from('profiles').select('role,full_name').eq('id',currentUser.id).single();
+  var profileResult=await sb.from('profiles').select('role,full_name').eq('id',currentUser.id).single();
+  var profile=profileResult.data;
   if(!profile||profile.role!=='mla_admin'){
     document.querySelector('.content').innerHTML='<div class="empty" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;"><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Access Denied</h2><p>This page is restricted to MLA Group administrators.</p><a href="portal.html" class="btn btn-primary" style="margin-top:16px;">Go to Portal</a></div>';
     return;
@@ -168,51 +215,66 @@ async function init(){
 }
  
 async function loadData(){
-  const[{data:orgs},{data:systems},{data:assessments},{data:support},{data:controls}]=await Promise.all([
+  var results=await Promise.all([
     sb.from('organisations').select('*').order('created_at',{ascending:false}),
     sb.from('ai_systems').select('id,name,org_id,risk_tier,deployment_status,system_owner,vendor,description').order('created_at',{ascending:false}),
     sb.from('registry_assessments').select('*').order('requested_at',{ascending:false}),
     sb.from('support_requests').select('*').order('requested_at',{ascending:false}),
-    sb.from('governance_controls').select('id,control_number,title,control_type').eq('is_active',true)
+    sb.from('governance_controls').select('id,control_number,title,control_type').eq('is_active',true),
+    sb.from('policy_documents').select('*').order('created_at',{ascending:false}),
+    sb.from('policy_acknowledgments').select('*').order('acknowledged_at',{ascending:false}),
+    sb.from('policy_templates').select('*').eq('is_active',true).order('display_order')
   ]);
-  allOrgs=orgs||[];allSystems=systems||[];allAssessments=assessments||[];allSupport=support||[];allControlsAdmin=controls||[];
+  allOrgs=results[0].data||[];
+  allSystems=results[1].data||[];
+  allAssessments=results[2].data||[];
+  allSupport=results[3].data||[];
+  allControlsAdmin=results[4].data||[];
+  allPoliciesAdmin=results[5].data||[];
+  allAcksAdmin=results[6].data||[];
+  allTemplatesAdmin=results[7].data||[];
   
   // Stats
-  const pending=allAssessments.filter(a=>a.status==='submitted');
+  var pending=allAssessments.filter(function(a){return a.status==='submitted'});
   document.getElementById('s-orgs').textContent=allOrgs.length;
   document.getElementById('s-systems').textContent=allSystems.length;
   document.getElementById('s-assessments').textContent=allAssessments.length;
   document.getElementById('s-pending').textContent=pending.length;
   if(pending.length){document.getElementById('queue-badge').textContent=pending.length;document.getElementById('queue-badge').style.display='inline-flex'}
   
-  const openSupport=allSupport.filter(s=>s.status==='open');
+  var openSupport=allSupport.filter(function(s){return s.status==='open'});
   if(openSupport.length){document.getElementById('support-badge').textContent=openSupport.length;document.getElementById('support-badge').style.display='inline-flex'}
+  
+  // Policies badge - count policies with pending acks
+  var pendingPolicyCount=countPendingAcks();
+  if(pendingPolicyCount>0){document.getElementById('policies-badge').textContent=pendingPolicyCount;document.getElementById('policies-badge').style.display='inline-flex'}
   
   renderDashRecent();
   renderQueue();
   renderClients();
   renderSupportList();
+  renderPoliciesAdmin();
 }
  
-function getOrgName(orgId){return allOrgs.find(o=>o.id===orgId)?.name||'Unknown'}
-function getSysName(sysId){return allSystems.find(s=>s.id===sysId)?.name||'Unknown'}
+function getOrgName(orgId){return allOrgs.find(function(o){return o.id===orgId})?.name||'Unknown'}
+function getSysName(sysId){return allSystems.find(function(s){return s.id===sysId})?.name||'Unknown'}
  
 function renderDashRecent(){
-  const recent=allAssessments.slice(0,10);
+  var recent=allAssessments.slice(0,10);
   if(!recent.length){document.getElementById('dash-recent').innerHTML='<div class="empty">No assessments yet.</div>';return}
   document.getElementById('dash-recent').innerHTML='<table class="tbl"><thead><tr><th>Organisation</th><th>AI System</th><th>Score</th><th>Status</th><th>Date</th></tr></thead><tbody>'+
-  recent.map(a=>{
-    const band=a.risk_band||'medium';
+  recent.map(function(a){
+    var band=a.risk_band||'medium';
     return '<tr onclick="openAssessmentDetail(\''+a.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(a.org_id))+'</td><td>'+esc(getSysName(a.system_id))+'</td><td style="font-weight:600;color:'+(BAND_C[band]||'var(--muted)')+';">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</td><td><span class="pill '+(STATUS_P[a.status]||'')+'">'+(STATUS_L[a.status]||a.status)+'</span></td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(a.requested_at)+'</td></tr>';
   }).join('')+'</tbody></table>';
 }
  
 function renderQueue(){
-  const pending=allAssessments.filter(a=>a.status==='submitted'||a.status==='in_review');
+  var pending=allAssessments.filter(function(a){return a.status==='submitted'||a.status==='in_review'});
   if(!pending.length){document.getElementById('queue-list').innerHTML='<div class="panel"><div class="empty">No assessments awaiting review.</div></div>';return}
   document.getElementById('queue-list').innerHTML='<div class="panel"><table class="tbl"><thead><tr><th>Organisation</th><th>AI System</th><th>Score</th><th>Risk</th><th>Status</th><th>Submitted</th></tr></thead><tbody>'+
-  pending.map(a=>{
-    const band=a.risk_band||'medium';
+  pending.map(function(a){
+    var band=a.risk_band||'medium';
     return '<tr onclick="openAssessmentDetail(\''+a.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(a.org_id))+'</td><td>'+esc(getSysName(a.system_id))+'</td><td style="font-weight:600;color:'+(BAND_C[band]||'var(--muted)')+';">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</td><td><span class="pill '+(band==='high'?'pill-pending':band==='low'?'pill-done':'pill-review')+'">'+(BAND_L[band]||band)+'</span></td><td><span class="pill '+(STATUS_P[a.status]||'')+'">'+(STATUS_L[a.status]||a.status)+'</span></td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(a.requested_at)+'</td></tr>';
   }).join('')+'</tbody></table></div>';
 }
@@ -220,207 +282,139 @@ function renderQueue(){
 function renderClients(){
   if(!allOrgs.length){document.getElementById('client-list').innerHTML='<div class="panel"><div class="empty">No clients registered.</div></div>';return}
   document.getElementById('client-list').innerHTML='<div class="panel"><table class="tbl"><thead><tr><th>Organisation</th><th>Sector</th><th>AI Systems</th><th>Assessments</th><th>Pending</th><th>Created</th></tr></thead><tbody>'+
-  allOrgs.map(o=>{
-    const sysCnt=allSystems.filter(s=>s.org_id===o.id).length;
-    const aCnt=allAssessments.filter(a=>a.org_id===o.id).length;
-    const pCnt=allAssessments.filter(a=>a.org_id===o.id&&a.status==='submitted').length;
+  allOrgs.map(function(o){
+    var sysCnt=allSystems.filter(function(s){return s.org_id===o.id}).length;
+    var aCnt=allAssessments.filter(function(a){return a.org_id===o.id}).length;
+    var pCnt=allAssessments.filter(function(a){return a.org_id===o.id&&a.status==='submitted'}).length;
     return '<tr><td style="font-weight:600;color:var(--main);">'+esc(o.name)+'</td><td style="font-size:.75rem;">'+esc(o.sector||'—')+'</td><td>'+sysCnt+'</td><td>'+aCnt+'</td><td>'+(pCnt>0?'<span class="pill pill-pending">'+pCnt+'</span>':'0')+'</td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(o.created_at)+'</td></tr>';
   }).join('')+'</tbody></table></div>';
 }
  
 async function openAssessmentDetail(assessId){
-  const a=allAssessments.find(x=>x.id===assessId);if(!a)return;
-  const sys=allSystems.find(s=>s.id===a.system_id)||{};
-  const orgName=getOrgName(a.org_id);
-  const band=a.risk_band||'medium';
-  const ss=a.section_scores||{};
-  const tv=a.tier_validation;
+  var a=allAssessments.find(function(x){return x.id===assessId});if(!a)return;
+  var sys=allSystems.find(function(s){return s.id===a.system_id})||{};
+  var orgName=getOrgName(a.org_id);
+  var band=a.risk_band||'medium';
+  var ss=a.section_scores||{};
+  var tv=a.tier_validation;
   
-  // Section score bars
-  const secBars=Object.entries(ss).map(([k,v])=>{
-    const pct=v.score||0;const col=pct>=70?'#4ade80':pct>=40?'#fbbf24':'#f87171';
+  var secBars=Object.entries(ss).map(function(entry){
+    var k=entry[0],v=entry[1];
+    var pct=v.score||0;var col=pct>=70?'#4ade80':pct>=40?'#fbbf24':'#f87171';
     return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:.7rem;color:var(--muted);width:180px;text-align:right;flex-shrink:0;">'+esc(v.title||k)+'</span><div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:3px;"></div></div><span style="font-size:.68rem;color:'+col+';width:32px;text-align:right;font-weight:600;">'+pct+'%</span></div>';
   }).join('');
   
-  const el=document.getElementById('assess-detail-content');
-  el.innerHTML=`
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
-      <div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">${esc(orgName)}</div>
-        <h2 style="font-family:'Instrument Serif',serif;font-size:1.5rem;font-weight:400;color:var(--main);">${esc(sys.name||'AI System')}</h2>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
-          <span style="font-size:1.6rem;font-weight:700;color:${BAND_C[band]||'var(--muted)'};">${a.overall_score!==null?a.overall_score+'%':'—'}</span>
-          <span class="pill ${STATUS_P[a.status]||''}">${STATUS_L[a.status]||a.status}</span>
-        </div>
-      </div>
-      <div style="text-align:right;font-size:.72rem;color:var(--muted);">
-        Submitted: ${fmtDateLong(a.requested_at)}<br>
-        Sector: ${esc(a.sector||'—')}<br>
-        Version: ${esc(a.questionnaire_version||'1.0.0')}
-      </div>
-    </div>
-    
-    ${secBars?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:12px;">Section Scores</div>'+secBars+'</div>':''}
-    
-    ${tv&&tv.mismatch?'<div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:10px;padding:14px 18px;margin-bottom:14px;"><div style="font-size:.78rem;font-weight:600;color:var(--amber);margin-bottom:4px;">Risk Tier Mismatch</div><div style="font-size:.76rem;color:var(--muted2);line-height:1.6;">'+esc(tv.message||'Risk tier mismatch detected.')+'</div></div>':''}
-    
-    <div class="detail-card">
-      <div class="meta-grid">
-        <div><div class="detail-label">System Owner</div><div class="detail-val">${esc(sys.system_owner||'—')}</div></div>
-        <div><div class="detail-label">Vendor</div><div class="detail-val">${esc(sys.vendor||'—')}</div></div>
-        <div><div class="detail-label">Risk Tier</div><div class="detail-val">${sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified'}</div></div>
-        <div><div class="detail-label">Deployment</div><div class="detail-val">${esc(sys.deployment_status||'—')}</div></div>
-      </div>
-    </div>
-    
-    ${a.client_notes?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Client Notes</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;">'+esc(a.client_notes)+'</div></div>':''}
-    
-    <div class="panel" style="margin-top:20px;">
-      <div class="panel-header"><div class="panel-title">MLA Review</div></div>
-      <div style="padding:20px;">
-        <label class="field-label">Status</label>
-        <select class="field-input" id="ad-status">
-          <option value="submitted" ${a.status==='submitted'?'selected':''}>Submitted — Awaiting Review</option>
-          <option value="in_review" ${a.status==='in_review'?'selected':''}>Under Review</option>
-          <option value="controls_issued" ${a.status==='controls_issued'?'selected':''}>Controls Issued</option>
-        </select>
-        <label class="field-label">MLA Notes for Client</label>
-        <textarea class="field-input" id="ad-notes" placeholder="Notes visible to the client — findings, recommendations, next steps…">${esc(a.mla_notes||'')}</textarea>
-        <div style="display:flex;gap:10px;">
-          <button class="btn btn-primary" onclick="saveReview('${a.id}')">Save & Update Client</button>
-          <a href="system-report.html?aid=${a.id}" target="_blank" class="btn btn-ghost">View Report</a>
-        </div>
-        <div id="ad-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
-      </div>
-    </div>
-  `;
+  var el=document.getElementById('assess-detail-content');
+  el.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;"><div><div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">'+esc(orgName)+'</div><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.5rem;font-weight:400;color:var(--main);">'+esc(sys.name||'AI System')+'</h2><div style="display:flex;align-items:center;gap:8px;margin-top:6px;"><span style="font-size:1.6rem;font-weight:700;color:'+(BAND_C[band]||'var(--muted)')+';">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</span><span class="pill '+(STATUS_P[a.status]||'')+'">'+(STATUS_L[a.status]||a.status)+'</span></div></div><div style="text-align:right;font-size:.72rem;color:var(--muted);">Submitted: '+fmtDateLong(a.requested_at)+'<br>Sector: '+esc(a.sector||'—')+'<br>Version: '+esc(a.questionnaire_version||'1.0.0')+'</div></div>'+
+    (secBars?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:12px;">Section Scores</div>'+secBars+'</div>':'')+
+    (tv&&tv.mismatch?'<div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:10px;padding:14px 18px;margin-bottom:14px;"><div style="font-size:.78rem;font-weight:600;color:var(--amber);margin-bottom:4px;">Risk Tier Mismatch</div><div style="font-size:.76rem;color:var(--muted2);line-height:1.6;">'+esc(tv.message||'Risk tier mismatch detected.')+'</div></div>':'')+
+    '<div class="detail-card"><div class="meta-grid"><div><div class="detail-label">System Owner</div><div class="detail-val">'+esc(sys.system_owner||'—')+'</div></div><div><div class="detail-label">Vendor</div><div class="detail-val">'+esc(sys.vendor||'—')+'</div></div><div><div class="detail-label">Risk Tier</div><div class="detail-val">'+(sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified')+'</div></div><div><div class="detail-label">Deployment</div><div class="detail-val">'+esc(sys.deployment_status||'—')+'</div></div></div></div>'+
+    (a.client_notes?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Client Notes</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;">'+esc(a.client_notes)+'</div></div>':'')+
+    '<div class="panel" style="margin-top:20px;"><div class="panel-header"><div class="panel-title">MLA Review</div></div><div style="padding:20px;"><label class="field-label">Status</label><select class="field-input" id="ad-status"><option value="submitted" '+(a.status==='submitted'?'selected':'')+'>Submitted — Awaiting Review</option><option value="in_review" '+(a.status==='in_review'?'selected':'')+'>Under Review</option><option value="controls_issued" '+(a.status==='controls_issued'?'selected':'')+'>Controls Issued</option></select><label class="field-label">MLA Notes for Client</label><textarea class="field-input" id="ad-notes" placeholder="Notes visible to the client — findings, recommendations, next steps…">'+esc(a.mla_notes||'')+'</textarea><div style="display:flex;gap:10px;"><button class="btn btn-primary" onclick="saveReview(\''+a.id+'\')">Save &amp; Update Client</button><a href="system-report.html?aid='+a.id+'" target="_blank" class="btn btn-ghost">View Report</a></div><div id="ad-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div></div></div>';
   
   showView('assessment-detail',null);
 }
  
 async function saveReview(assessId){
-  const status=document.getElementById('ad-status').value;
-  const notes=document.getElementById('ad-notes').value.trim();
-  const msg=document.getElementById('ad-msg');
+  var status=document.getElementById('ad-status').value;
+  var notes=document.getElementById('ad-notes').value.trim();
+  var msg=document.getElementById('ad-msg');
   msg.style.display='block';msg.style.color='var(--muted)';msg.textContent='Saving…';
   
-  const update={status,mla_notes:notes||null};
+  var update={status:status,mla_notes:notes||null};
   if(status==='controls_issued'){
     update.completed_by=currentUser.id;
     update.completed_at=new Date().toISOString();
   }
   
-  const{error}=await sb.from('registry_assessments').update(update).eq('id',assessId);
-  if(error){msg.style.color='var(--red)';msg.textContent='Error: '+error.message;return}
+  var result=await sb.from('registry_assessments').update(update).eq('id',assessId);
+  if(result.error){msg.style.color='var(--red)';msg.textContent='Error: '+result.error.message;return}
   
-  // Audit log — this will show as "MLA Group" on client side
-  const a=allAssessments.find(x=>x.id===assessId);
+  var a=allAssessments.find(function(x){return x.id===assessId});
   if(a){
     await sb.from('registry_audit_log').insert({
-      org_id:a.org_id,
-      user_id:currentUser.id,
-      action:'mla_review_updated',
-      entity_type:'ai_system',
-      entity_id:a.system_id,
-      changes:{status,assessment_id:assessId,_actor_name:'MLA Group',_is_mla:true}
+      org_id:a.org_id,user_id:currentUser.id,action:'mla_review_updated',entity_type:'ai_system',entity_id:a.system_id,
+      changes:{status:status,assessment_id:assessId,_actor_name:'MLA Group',_is_mla:true}
     });
     a.status=status;a.mla_notes=notes;
   }
   
   msg.style.color='#4ade80';msg.textContent='Updated — client will see this on their next visit.';
   renderDashRecent();
-  // Refresh stats
-  const pending=allAssessments.filter(x=>x.status==='submitted');
-  document.getElementById('s-pending').textContent=pending.length;
-  if(pending.length){document.getElementById('queue-badge').textContent=pending.length;document.getElementById('queue-badge').style.display='inline-flex'}
+  var pendingCount=allAssessments.filter(function(x){return x.status==='submitted'}).length;
+  document.getElementById('s-pending').textContent=pendingCount;
+  if(pendingCount){document.getElementById('queue-badge').textContent=pendingCount;document.getElementById('queue-badge').style.display='inline-flex'}
   else{document.getElementById('queue-badge').style.display='none'}
 }
  
-function getCtrlName(ctrlId){return allControlsAdmin.find(c=>c.id===ctrlId)?.title||'Unknown Control'}
-function getCtrlNum(ctrlId){return allControlsAdmin.find(c=>c.id===ctrlId)?.control_number||'?'}
+function getCtrlName(ctrlId){var c=allControlsAdmin.find(function(c){return c.id===ctrlId});return c?c.title:'Unknown Control'}
+function getCtrlNum(ctrlId){var c=allControlsAdmin.find(function(c){return c.id===ctrlId});return c?c.control_number:'?'}
  
 function renderSupportList(){
-  const open=allSupport.filter(s=>s.status==='open');
-  const responded=allSupport.filter(s=>s.status!=='open');
+  var open=allSupport.filter(function(s){return s.status==='open'});
+  var responded=allSupport.filter(function(s){return s.status!=='open'});
   if(!allSupport.length){document.getElementById('support-list').innerHTML='<div class="panel"><div class="empty">No support requests.</div></div>';return}
-  let html='';
+  var html='';
   if(open.length){
     html+='<div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Open Requests</div><div class="panel-sub" style="color:#fbbf24;">'+open.length+' awaiting response</div></div><table class="tbl"><thead><tr><th>Organisation</th><th>AI System</th><th>Control</th><th>Message</th><th>Requested</th></tr></thead><tbody>'+
-    open.map(r=>'<tr onclick="openSupportDetail(\''+r.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(r.org_id))+'</td><td>'+esc(r.system_id?getSysName(r.system_id):'Org-level')+'</td><td><span style="font-size:.72rem;color:var(--sky);">'+getCtrlNum(r.control_id)+'. '+esc(getCtrlName(r.control_id))+'</span></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--muted2);">'+esc(r.client_message.substring(0,80))+'</td><td style="font-size:.72rem;color:var(--muted);white-space:nowrap;">'+fmtDate(r.requested_at)+'</td></tr>').join('')+
+    open.map(function(r){return '<tr onclick="openSupportDetail(\''+r.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(r.org_id))+'</td><td>'+esc(r.system_id?getSysName(r.system_id):'Org-level')+'</td><td><span style="font-size:.72rem;color:var(--sky);">'+getCtrlNum(r.control_id)+'. '+esc(getCtrlName(r.control_id))+'</span></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--muted2);">'+esc(r.client_message.substring(0,80))+'</td><td style="font-size:.72rem;color:var(--muted);white-space:nowrap;">'+fmtDate(r.requested_at)+'</td></tr>'}).join('')+
     '</tbody></table></div>';
   }
   if(responded.length){
     html+='<div class="panel"><div class="panel-header"><div class="panel-title">Responded</div><div class="panel-sub">'+responded.length+'</div></div><table class="tbl"><thead><tr><th>Organisation</th><th>Control</th><th>Status</th><th>Responded</th></tr></thead><tbody>'+
-    responded.map(r=>'<tr onclick="openSupportDetail(\''+r.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(r.org_id))+'</td><td>'+esc(getCtrlName(r.control_id))+'</td><td><span class="pill pill-done">Responded</span></td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(r.responded_at)+'</td></tr>').join('')+
+    responded.map(function(r){return '<tr onclick="openSupportDetail(\''+r.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(r.org_id))+'</td><td>'+esc(getCtrlName(r.control_id))+'</td><td><span class="pill pill-done">Responded</span></td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(r.responded_at)+'</td></tr>'}).join('')+
     '</tbody></table></div>';
   }
   document.getElementById('support-list').innerHTML=html;
 }
  
 async function openSupportDetail(reqId){
-  const r=allSupport.find(x=>x.id===reqId);if(!r)return;
-  const orgName=getOrgName(r.org_id);
-  const sysName=r.system_id?getSysName(r.system_id):null;
-  const sys=r.system_id?allSystems.find(s=>s.id===r.system_id):null;
-  const ctrlName=getCtrlName(r.control_id);
-  const ctrlNum=getCtrlNum(r.control_id);
-  const{data:assign}=await sb.from('control_assignments').select('*').eq('id',r.control_assignment_id).single();
-  const taskResp=assign?.task_responses||{};
-  const taskCount=Object.keys(taskResp).filter(k=>taskResp[k]&&taskResp[k]!=='').length;
-  // Load messages
-  const{data:msgs}=await sb.from('support_messages').select('*').eq('request_id',r.id).order('created_at',{ascending:true});
-  const allMsgs=msgs||[];
-  const senderIds=[r.requested_by,...allMsgs.map(m=>m.sender_id)];
-  const nm=await loadAdminNames(senderIds);
+  var r=allSupport.find(function(x){return x.id===reqId});if(!r)return;
+  var orgName=getOrgName(r.org_id);
+  var sysName=r.system_id?getSysName(r.system_id):null;
+  var sys=r.system_id?allSystems.find(function(s){return s.id===r.system_id}):null;
+  var ctrlName=getCtrlName(r.control_id);
+  var ctrlNum=getCtrlNum(r.control_id);
+  var assignResult=await sb.from('control_assignments').select('*').eq('id',r.control_assignment_id).single();
+  var assign=assignResult.data;
+  var taskResp=assign?.task_responses||{};
+  var taskCount=Object.keys(taskResp).filter(function(k){return taskResp[k]&&taskResp[k]!==''}).length;
+  var msgsResult=await sb.from('support_messages').select('*').eq('request_id',r.id).order('created_at',{ascending:true});
+  var allMsgs=msgsResult.data||[];
+  var senderIds=[r.requested_by].concat(allMsgs.map(function(m){return m.sender_id}));
+  var nm=await loadAdminNames(senderIds);
   
-  // Build message thread HTML
-  let threadHtml='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:var(--sky);font-weight:600;margin-bottom:4px;">'+esc(nm[r.requested_by]||'Client')+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(r.requested_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(37,99,235,0.03);border-left:2px solid #2563eb;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.client_message)+'</div></div>';
-  if(r.mla_response&&!allMsgs.some(m=>m.sender_type==='mla')){
+  var threadHtml='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:var(--sky);font-weight:600;margin-bottom:4px;">'+esc(nm[r.requested_by]||'Client')+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(r.requested_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(37,99,235,0.03);border-left:2px solid #2563eb;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.client_message)+'</div></div>';
+  if(r.mla_response&&!allMsgs.some(function(m){return m.sender_type==='mla'})){
     threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:#4ade80;font-weight:600;margin-bottom:4px;">MLA Group <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(r.responded_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(34,197,94,0.03);border-left:2px solid #22c55e;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.mla_response)+'</div></div>';
   }
-  allMsgs.forEach(m=>{
-    const isMLA=m.sender_type==='mla';
+  allMsgs.forEach(function(m){
+    var isMLA=m.sender_type==='mla';
     threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:'+(isMLA?'#4ade80':'var(--sky)')+';font-weight:600;margin-bottom:4px;">'+(isMLA?'MLA Group':esc(nm[m.sender_id]||'Client'))+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(m.created_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:'+(isMLA?'rgba(34,197,94,0.03)':'rgba(37,99,235,0.03)')+';border-left:2px solid '+(isMLA?'#22c55e':'#2563eb')+';padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(m.message)+'</div>';
-    if(m.file_name)threadHtml+='<div style="margin-top:4px;"><a href="#" onclick="viewAdminFile(\''+esc(m.file_path)+'\');return false;" style="font-size:.72rem;color:var(--sky);text-decoration:none;">📎 '+esc(m.file_name)+'</a></div>';
+    if(m.file_name)threadHtml+='<div style="margin-top:4px;"><a href="#" onclick="viewAdminFile(\''+esc(m.file_path)+'\');return false;" style="font-size:.72rem;color:var(--sky);text-decoration:none;">&#128206; '+esc(m.file_name)+'</a></div>';
     threadHtml+='</div>';
   });
   
-  document.getElementById('support-detail-content').innerHTML=`
-    <div style="margin-bottom:20px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-        <span class="pill ${r.status==='open'?'pill-pending':r.status==='responded'?'pill-done':'pill-review'}">${r.status==='open'?'Awaiting Response':r.status==='responded'?'Responded':'Closed'}</span>
-      </div>
-      <h2 style="font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:400;color:var(--main);margin-bottom:4px;">${esc(ctrlNum+'. '+ctrlName)}</h2>
-      <div style="font-size:.78rem;color:var(--muted);">${esc(orgName)}${sysName?' — '+esc(sysName):''}</div>
-    </div>
-    ${sys?`<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:10px;">AI System Context</div><div class="meta-grid"><div><div class="detail-label">System</div><div class="detail-val">${esc(sys.name)}</div></div><div><div class="detail-label">Owner</div><div class="detail-val">${esc(sys.system_owner||'—')}</div></div><div><div class="detail-label">Risk Tier</div><div class="detail-val">${sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified'}</div></div><div><div class="detail-label">Vendor</div><div class="detail-val">${esc(sys.vendor||'—')}</div></div></div></div>`:''}
-    <div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Control Progress</div><div style="font-size:.78rem;color:var(--muted);">Status: <span style="color:var(--sub);">${assign?assign.status.replace(/_/g,' '):'Unknown'}</span> · Tasks completed: <span style="color:var(--sub);">${taskCount}</span></div></div>
-    <div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:14px;">Conversation</div>${threadHtml}</div>
-    <div class="panel" style="margin-top:16px;"><div class="panel-header"><div class="panel-title">Reply</div></div><div style="padding:20px;">
-      <textarea class="field-input" id="sr-response" placeholder="Write your response…"></textarea>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <input type="file" id="admin-support-file" style="display:none;" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg"/>
-        <button class="btn btn-ghost" onclick="document.getElementById('admin-support-file').click()" style="padding:5px 10px;font-size:.72rem;">Attach File</button>
-        <span id="admin-file-name" style="font-size:.7rem;color:var(--muted);"></span>
-        <button class="btn btn-primary" onclick="submitSupportResponse('${r.id}')" style="margin-left:auto;">Send Response</button>
-      </div>
-      <div id="sr-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
-    </div></div>
-  `;
-  const af=document.getElementById('admin-support-file');
+  document.getElementById('support-detail-content').innerHTML=
+    '<div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><span class="pill '+(r.status==='open'?'pill-pending':r.status==='responded'?'pill-done':'pill-review')+'">'+(r.status==='open'?'Awaiting Response':r.status==='responded'?'Responded':'Closed')+'</span></div><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;font-weight:400;color:var(--main);margin-bottom:4px;">'+esc(ctrlNum+'. '+ctrlName)+'</h2><div style="font-size:.78rem;color:var(--muted);">'+esc(orgName)+(sysName?' — '+esc(sysName):'')+'</div></div>'+
+    (sys?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:10px;">AI System Context</div><div class="meta-grid"><div><div class="detail-label">System</div><div class="detail-val">'+esc(sys.name)+'</div></div><div><div class="detail-label">Owner</div><div class="detail-val">'+esc(sys.system_owner||'—')+'</div></div><div><div class="detail-label">Risk Tier</div><div class="detail-val">'+(sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified')+'</div></div><div><div class="detail-label">Vendor</div><div class="detail-val">'+esc(sys.vendor||'—')+'</div></div></div></div>':'')+
+    '<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Control Progress</div><div style="font-size:.78rem;color:var(--muted);">Status: <span style="color:var(--sub);">'+(assign?assign.status.replace(/_/g,' '):'Unknown')+'</span> · Tasks completed: <span style="color:var(--sub);">'+taskCount+'</span></div></div>'+
+    '<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:14px;">Conversation</div>'+threadHtml+'</div>'+
+    '<div class="panel" style="margin-top:16px;"><div class="panel-header"><div class="panel-title">Reply</div></div><div style="padding:20px;"><textarea class="field-input" id="sr-response" placeholder="Write your response…"></textarea><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="admin-support-file" style="display:none;" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg"/><button class="btn btn-ghost" onclick="document.getElementById(\'admin-support-file\').click()" style="padding:5px 10px;font-size:.72rem;">Attach File</button><span id="admin-file-name" style="font-size:.7rem;color:var(--muted);"></span><button class="btn btn-primary" onclick="submitSupportResponse(\''+r.id+'\')" style="margin-left:auto;">Send Response</button></div><div id="sr-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div></div></div>';
+  var af=document.getElementById('admin-support-file');
   if(af)af.onchange=function(){document.getElementById('admin-file-name').textContent=this.files[0]?.name||''};
   showView('support-detail',null);
 }
  
 async function viewAdminFile(filePath){
-  const{data}=await sb.storage.from('governance-reports').createSignedUrl(filePath,3600);
-  if(data?.signedUrl)window.open(data.signedUrl,'_blank');
+  var result=await sb.storage.from('governance-reports').createSignedUrl(filePath,3600);
+  if(result.data?.signedUrl)window.open(result.data.signedUrl,'_blank');
 }
  
 async function loadAdminNames(ids){
-  const map={};if(!ids.length)return map;
-  const{data}=await sb.from('profiles').select('id,full_name,email').in('id',[...new Set(ids)]);
-  (data||[]).forEach(p=>{map[p.id]=p.full_name||p.email||'Unknown'});
+  var map={};if(!ids.length)return map;
+  var result=await sb.from('profiles').select('id,full_name,email').in('id',[...new Set(ids)]);
+  (result.data||[]).forEach(function(p){map[p.id]=p.full_name||p.email||'Unknown'});
   return map;
 }
  
@@ -439,56 +433,249 @@ async function sendClientEmail(toEmail, toName, title, body){
     console.error('EmailJS error:',err);
   }
 }
-
+ 
 async function submitSupportResponse(reqId){
-  const response=document.getElementById('sr-response').value.trim();
-  const msg=document.getElementById('sr-msg');
+  var response=document.getElementById('sr-response').value.trim();
+  var msg=document.getElementById('sr-msg');
   if(!response){msg.style.display='block';msg.style.color='var(--red)';msg.textContent='Please write a response.';return}
   msg.style.display='block';msg.style.color='var(--muted)';msg.textContent='Sending…';
-  // Upload file if attached
-  let fileName=null,filePath=null,fileType=null;
-  const fileInput=document.getElementById('admin-support-file');
+  var fileName=null,filePath=null,fileType=null;
+  var fileInput=document.getElementById('admin-support-file');
   if(fileInput&&fileInput.files[0]){
-    const file=fileInput.files[0];
-    const r=allSupport.find(x=>x.id===reqId);
+    var file=fileInput.files[0];
+    var r=allSupport.find(function(x){return x.id===reqId});
     filePath='support/'+r.org_id+'/'+reqId+'/'+Date.now()+'_'+file.name;
-    const{error:upErr}=await sb.storage.from('governance-reports').upload(filePath,file,{contentType:file.type});
-    if(upErr){msg.style.color='var(--red)';msg.textContent='File upload failed: '+upErr.message;return}
+    var upResult=await sb.storage.from('governance-reports').upload(filePath,file,{contentType:file.type});
+    if(upResult.error){msg.style.color='var(--red)';msg.textContent='File upload failed: '+upResult.error.message;return}
     fileName=file.name;fileType=file.type;
   }
-  // Insert message
-  const{error}=await sb.from('support_messages').insert({
+  var insertResult=await sb.from('support_messages').insert({
     request_id:reqId,sender_id:currentUser.id,sender_type:'mla',message:response,
     file_name:fileName,file_path:filePath,file_type:fileType
   });
-  if(error){msg.style.color='var(--red)';msg.textContent='Error: '+error.message;return}
-  // Update request status
-  const r=allSupport.find(x=>x.id===reqId);
+  if(insertResult.error){msg.style.color='var(--red)';msg.textContent='Error: '+insertResult.error.message;return}
+  var r=allSupport.find(function(x){return x.id===reqId});
   await sb.from('support_requests').update({status:'responded',responded_by:currentUser.id,responded_at:new Date().toISOString(),mla_response:response}).eq('id',reqId);
-  // Audit
   if(r){
     await sb.from('registry_audit_log').insert({org_id:r.org_id,user_id:currentUser.id,action:'support_responded',entity_type:'governance_control',entity_id:r.system_id||r.control_id,changes:{_actor_name:'MLA Group',_is_mla:true,control:getCtrlName(r.control_id)}});
     r.status='responded';r.mla_response=response;
-    // Create in-portal alert for client
     var ctrlNameForAlert=getCtrlName(r.control_id);
     await sb.from('governance_alerts').insert({org_id:r.org_id,alert_type:'support_response',severity:'info',title:'MLA Group responded to your support request',body:'You have a new response regarding "'+ctrlNameForAlert+'". Open the control in your portal to view the full conversation and reply.',ref_id:r.control_assignment_id||null,ref_type:'support_request'});
-    // Email the client
-    const{data:clientProfile}=await sb.from('profiles').select('full_name,email').eq('id',r.requested_by).single();
+    var clientProfileResult=await sb.from('profiles').select('full_name,email').eq('id',r.requested_by).single();
+    var clientProfile=clientProfileResult.data;
     if(clientProfile?.email){
-      const ctrlName=getCtrlName(r.control_id);
+      var ctrlName=getCtrlName(r.control_id);
       await sendClientEmail(
         clientProfile.email,
         clientProfile.full_name?.split(' ')[0]||'there',
         'MLA Group has responded to your support request',
-        `You have a new response from MLA Group regarding your support request on "${ctrlName}".\n\n${response}\n\nLog in to your portal to view the full conversation and reply.`
+        'You have a new response from MLA Group regarding your support request on "'+ctrlName+'".\n\n'+response+'\n\nLog in to your portal to view the full conversation and reply.'
       );
     }
   }
   msg.style.color='#4ade80';msg.textContent='Response sent.';
-  const openCount=allSupport.filter(s=>s.status==='open').length;
+  var openCount=allSupport.filter(function(s){return s.status==='open'}).length;
   if(openCount){document.getElementById('support-badge').textContent=openCount;document.getElementById('support-badge').style.display='inline-flex'}
   else document.getElementById('support-badge').style.display='none';
-  setTimeout(()=>openSupportDetail(reqId),1000);
+  setTimeout(function(){openSupportDetail(reqId)},1000);
+}
+ 
+// ═══ POLICIES ADMIN ═══════════════════════════════════════════
+ 
+function countPendingAcks(){
+  // Count how many published policies have at least one org member who hasn't acknowledged
+  var count=0;
+  allPoliciesAdmin.forEach(function(p){
+    if(!p.published_at||!p.requires_acknowledgment)return;
+    var orgAcks=allAcksAdmin.filter(function(a){return a.policy_id===p.id&&a.version_acknowledged===p.version});
+    // We don't know total members per org without extra queries, so just flag if zero acks
+    if(orgAcks.length===0)count++;
+  });
+  return count;
+}
+ 
+function renderPoliciesAdmin(){
+  var published=allPoliciesAdmin.filter(function(p){return p.published_at});
+  var totalAcks=allAcksAdmin.length;
+  // Pending: policies requiring ack with < 1 ack for current version
+  var pendingCount=0;
+  published.forEach(function(p){
+    if(!p.requires_acknowledgment)return;
+    var versionAcks=allAcksAdmin.filter(function(a){return a.policy_id===p.id&&a.version_acknowledged===p.version});
+    if(versionAcks.length===0)pendingCount++;
+  });
+  
+  document.getElementById('sp-total').textContent=published.length;
+  document.getElementById('sp-acked').textContent=totalAcks;
+  document.getElementById('sp-pending').textContent=pendingCount;
+  document.getElementById('sp-templates').textContent=allTemplatesAdmin.length;
+  document.getElementById('sp-list-count').textContent=published.length+' polic'+(published.length!==1?'ies':'y');
+  
+  var el=document.getElementById('sp-policy-list');
+  if(!published.length){
+    el.innerHTML='<div class="empty">No policies deployed yet. Use "Deploy Template to Client" to get started.</div>';
+    return;
+  }
+  
+  el.innerHTML='<table class="tbl"><thead><tr><th>Organisation</th><th>Policy</th><th>Category</th><th>Version</th><th>Acknowledgments</th><th>Published</th></tr></thead><tbody>'+
+  published.map(function(p){
+    var cat=POLICY_CATS[p.category]||p.category||'—';
+    var catCol=POLICY_CAT_COLORS[p.category]||'var(--muted)';
+    var ackCount=allAcksAdmin.filter(function(a){return a.policy_id===p.id&&a.version_acknowledged===p.version}).length;
+    var needsAck=p.requires_acknowledgment;
+    var ackDisplay=needsAck?(ackCount>0?'<span class="pill pill-done">'+ackCount+' ack'+(ackCount!==1?'s':'')+'</span>':'<span class="pill pill-pending">0 acks</span>'):'<span style="font-size:.72rem;color:var(--muted);">Not required</span>';
+    return '<tr onclick="openPolicyAdminDetail(\''+p.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(p.org_id))+'</td><td><span style="color:var(--main);font-weight:500;">'+esc(p.title)+'</span></td><td><span style="font-size:.72rem;color:'+catCol+';">'+esc(cat)+'</span></td><td style="font-size:.72rem;color:var(--muted);">v'+esc(p.version)+'</td><td>'+ackDisplay+'</td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(p.published_at)+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+ 
+async function openPolicyAdminDetail(policyId){
+  var pol=allPoliciesAdmin.find(function(p){return p.id===policyId});
+  if(!pol)return;
+  var orgName=getOrgName(pol.org_id);
+  var cat=POLICY_CATS[pol.category]||pol.category||'—';
+  var catCol=POLICY_CAT_COLORS[pol.category]||'var(--muted)';
+  
+  // Load all org members
+  var membersResult=await sb.from('org_members').select('user_id').eq('org_id',pol.org_id);
+  var memberIds=(membersResult.data||[]).map(function(m){return m.user_id});
+  var nm=await loadAdminNames(memberIds);
+  
+  // Load acks for this policy
+  var acksResult=await sb.from('policy_acknowledgments').select('*').eq('policy_id',policyId).order('acknowledged_at',{ascending:false});
+  var acks=acksResult.data||[];
+  var ackedUserIds={};
+  acks.forEach(function(a){if(a.version_acknowledged===pol.version)ackedUserIds[a.user_id]=a});
+  
+  // Load e-signatures
+  var sigsResult=await sb.from('e_signatures').select('*').eq('document_id',policyId).eq('document_type','policy');
+  var sigs=sigsResult.data||[];
+  var sigsByUser={};
+  sigs.forEach(function(s){sigsByUser[s.user_id]=s});
+  
+  var el=document.getElementById('policy-admin-detail-content');
+  
+  // Member acknowledgment status
+  var memberHtml='';
+  if(memberIds.length){
+    memberHtml='<div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Acknowledgment Status</div><div class="panel-sub">'+Object.keys(ackedUserIds).length+' of '+memberIds.length+' acknowledged</div></div><table class="tbl"><thead><tr><th>Member</th><th>Status</th><th>Method</th><th>Date</th></tr></thead><tbody>'+
+    memberIds.map(function(uid){
+      var name=nm[uid]||'Unknown';
+      var ack=ackedUserIds[uid];
+      var sig=sigsByUser[uid];
+      if(ack){
+        var method=ack.acknowledgment_method==='e_signature'?'E-Signature':'Click';
+        return '<tr><td style="font-weight:600;color:var(--main);">'+esc(name)+'</td><td><span class="pill pill-done">Acknowledged</span></td><td style="font-size:.72rem;color:var(--muted);">'+method+(sig?' ('+esc(sig.signatory_name)+')':'')+'</td><td style="font-size:.72rem;color:var(--muted);">'+fmtDateLong(ack.acknowledged_at)+'</td></tr>';
+      }else{
+        return '<tr><td style="font-weight:600;color:var(--main);">'+esc(name)+'</td><td><span class="pill pill-pending">Pending</span></td><td style="font-size:.72rem;color:var(--muted);">—</td><td style="font-size:.72rem;color:var(--muted);">—</td></tr>';
+      }
+    }).join('')+'</tbody></table></div>';
+  }
+  
+  // Render markdown content preview
+  var contentPreview='';
+  if(pol.content){
+    var preview=pol.content.substring(0,500);
+    if(pol.content.length>500)preview+='…';
+    contentPreview='<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:10px;">Content Preview</div><div style="font-size:.78rem;color:var(--sub);line-height:1.7;white-space:pre-wrap;">'+esc(preview)+'</div></div>';
+  }
+  
+  el.innerHTML=
+    '<div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><span style="font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+catCol+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+esc(cat)+'</span><span style="font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">v'+esc(pol.version)+'</span></div><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.5rem;font-weight:400;color:var(--main);margin-bottom:4px;">'+esc(pol.title)+'</h2><div style="font-size:.78rem;color:var(--muted);">'+esc(orgName)+' · Published '+fmtDate(pol.published_at)+'</div></div>'+
+    '<div class="detail-card"><div class="meta-grid"><div><div class="detail-label">Organisation</div><div class="detail-val">'+esc(orgName)+'</div></div><div><div class="detail-label">Category</div><div class="detail-val" style="color:'+catCol+';">'+esc(cat)+'</div></div><div><div class="detail-label">Requires Acknowledgment</div><div class="detail-val">'+(pol.requires_acknowledgment?'Yes':'No')+'</div></div><div><div class="detail-label">Acknowledgment Frequency</div><div class="detail-val">'+(pol.acknowledgment_frequency==='on_update'?'On each update':'Once only')+'</div></div></div></div>'+
+    (pol.description?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:6px;">Description</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;">'+esc(pol.description)+'</div></div>':'')+
+    contentPreview+
+    memberHtml;
+  
+  showView('policy-admin-detail',null);
+}
+ 
+// ═══ DEPLOY TEMPLATE ══════════════════════════════════════════
+ 
+function openDeployTemplateModal(){
+  var orgSelect=document.getElementById('deploy-org');
+  orgSelect.innerHTML='<option value="">Select organisation</option>'+allOrgs.map(function(o){return '<option value="'+o.id+'">'+esc(o.name)+'</option>'}).join('');
+  var tplSelect=document.getElementById('deploy-tpl');
+  tplSelect.innerHTML='<option value="">Select template</option>'+allTemplatesAdmin.map(function(t){return '<option value="'+t.id+'">'+esc(t.title)+'</option>'}).join('');
+  tplSelect.onchange=function(){
+    var tpl=allTemplatesAdmin.find(function(t){return t.id===tplSelect.value});
+    var desc=document.getElementById('deploy-tpl-desc');
+    if(tpl&&tpl.description){desc.textContent=tpl.description;desc.style.display='block'}
+    else{desc.style.display='none'}
+  };
+  document.getElementById('deploy-error').style.display='none';
+  document.getElementById('deploy-msg').style.display='none';
+  document.getElementById('deploy-modal').style.opacity='1';
+  document.getElementById('deploy-modal').style.pointerEvents='all';
+}
+ 
+function closeDeployModal(){
+  document.getElementById('deploy-modal').style.opacity='0';
+  document.getElementById('deploy-modal').style.pointerEvents='none';
+}
+ 
+async function submitDeployTemplate(){
+  var orgId=document.getElementById('deploy-org').value;
+  var tplId=document.getElementById('deploy-tpl').value;
+  var errEl=document.getElementById('deploy-error');
+  var msgEl=document.getElementById('deploy-msg');
+  if(!orgId||!tplId){errEl.textContent='Please select both an organisation and a template.';errEl.style.display='block';return}
+  errEl.style.display='none';
+  
+  var tpl=allTemplatesAdmin.find(function(t){return t.id===tplId});
+  var org=allOrgs.find(function(o){return o.id===orgId});
+  if(!tpl||!org)return;
+  
+  // Check if already deployed
+  var existing=allPoliciesAdmin.find(function(p){return p.org_id===orgId&&p.title===tpl.title});
+  if(existing){errEl.textContent='This template has already been deployed to '+org.name+'.';errEl.style.display='block';return}
+  
+  var btn=document.getElementById('deploy-submit');
+  btn.textContent='Deploying…';btn.disabled=true;
+  
+  var orgName=org.name||'The Organisation';
+  var content=(tpl.content_template||'').replace(/\{\{org_name\}\}/g,orgName);
+  
+  // Find linked control if template has one
+  var linkedControlId=null;
+  if(tpl.linked_control_number&&allControlsAdmin.length){
+    var ctrl=allControlsAdmin.find(function(c){return c.control_number===tpl.linked_control_number});
+    if(ctrl)linkedControlId=ctrl.id;
+  }
+  
+  var result=await sb.from('policy_documents').insert({
+    org_id:orgId,
+    title:tpl.title,
+    description:tpl.description,
+    content:content,
+    version:'1.0',
+    category:tpl.category,
+    requires_acknowledgment:true,
+    acknowledgment_frequency:'on_update',
+    linked_control_id:linkedControlId,
+    published_at:new Date().toISOString(),
+    created_by:currentUser.id
+  }).select().single();
+  
+  if(result.error){
+    errEl.textContent='Error: '+result.error.message;errEl.style.display='block';
+    btn.textContent='Deploy Policy';btn.disabled=false;
+    return;
+  }
+  
+  // Audit
+  await sb.from('registry_audit_log').insert({
+    org_id:orgId,user_id:currentUser.id,action:'policy_adopted',entity_type:'policy',entity_id:result.data?result.data.id:null,
+    changes:{_actor_name:'MLA Group',_is_mla:true,policy:tpl.title}
+  });
+  
+  // Refresh
+  allPoliciesAdmin.push(result.data);
+  
+  msgEl.style.display='block';msgEl.style.color='#4ade80';msgEl.textContent='Policy "'+tpl.title+'" deployed to '+org.name+'.';
+  btn.textContent='Deploy Policy';btn.disabled=false;
+  
+  renderPoliciesAdmin();
+  setTimeout(function(){closeDeployModal()},1500);
 }
  
 init();
