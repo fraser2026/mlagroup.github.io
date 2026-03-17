@@ -134,8 +134,10 @@ textarea.field-input{resize:vertical;min-height:80px}
 </div>
 <div style="display:flex;gap:10px;margin-bottom:16px;">
 <button class="btn btn-primary" onclick="openDeployTemplateModal()"><svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><path d="M6 1v10M1 6h10"/></svg> Deploy Template to Client</button>
+<button class="btn btn-ghost" onclick="openTemplateEditor(null)"><svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><path d="M6 1v10M1 6h10"/></svg> Create New Template</button>
 </div>
 <div class="panel"><div class="panel-header"><div class="panel-title">All Client Policies</div><div class="panel-sub" id="sp-list-count"></div></div><div id="sp-policy-list"><div class="loading">Loading…</div></div></div>
+<div class="panel"><div class="panel-header"><div class="panel-title">Policy Templates</div><div class="panel-sub" id="sp-tpl-count"></div></div><div id="sp-template-list"><div class="loading">Loading…</div></div></div>
 </div>
  
 <div id="view-policy-admin-detail" class="view">
@@ -166,6 +168,80 @@ textarea.field-input{resize:vertical;min-height:80px}
 <button class="btn btn-primary" id="deploy-submit" onclick="submitDeployTemplate()">Deploy Policy</button>
 </div>
 <div id="deploy-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
+</div>
+</div>
+</div>
+ 
+<!-- Template Editor Modal -->
+<div style="position:fixed;inset:0;z-index:999;background:rgba(2,6,23,0.8);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;" id="tpl-editor-modal">
+<div style="background:var(--sidebar);border:1px solid var(--border);border-radius:14px;width:100%;max-width:720px;max-height:90vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent;">
+<div style="padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;position:sticky;top:0;background:var(--sidebar);z-index:2;">
+<div><h3 style="font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:400;color:var(--main);margin-bottom:3px;" id="tpl-editor-title">Create Policy Template</h3><p style="font-size:.78rem;color:var(--muted);" id="tpl-editor-sub">Define a reusable policy template that can be deployed to any client.</p></div>
+<button style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;" onclick="closeTemplateEditor()">&#10005;</button>
+</div>
+<div style="padding:20px 24px;">
+<input type="hidden" id="tpl-edit-id" value="">
+<label class="field-label">Template Title <span style="color:var(--red);">*</span></label>
+<input type="text" class="field-input" id="tpl-edit-name" placeholder="e.g. AI Governance Policy">
+<label class="field-label">Description</label>
+<input type="text" class="field-input" id="tpl-edit-desc" placeholder="Brief description of what this policy covers">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+<div><label class="field-label">Category</label>
+<select class="field-input" id="tpl-edit-cat"><option value="ai_governance">AI Governance</option><option value="data_protection">Data Protection</option><option value="acceptable_use">Acceptable Use</option><option value="risk_management">Risk Management</option><option value="security">Security</option><option value="ethics">Ethics</option><option value="other">Other</option></select></div>
+<div><label class="field-label">Linked Control Number</label>
+<input type="number" class="field-input" id="tpl-edit-ctrl" placeholder="e.g. 1, 4, 7 (optional)" min="1" max="12"></div>
+</div>
+<label class="field-label">Policy Content (Markdown)</label>
+<div style="font-size:.68rem;color:var(--muted);margin-bottom:8px;line-height:1.5;">Use <strong style="color:var(--sub);"># Heading</strong>, <strong style="color:var(--sub);">## Sub-heading</strong>, <strong style="color:var(--sub);">**bold**</strong>, <strong style="color:var(--sub);">- list items</strong>. Use <strong style="color:var(--sky);">{{org_name}}</strong> as a placeholder for the client organisation name.</div>
+<textarea class="field-input" id="tpl-edit-content" rows="16" style="min-height:280px;font-family:'DM Sans',monospace;font-size:.78rem;line-height:1.7;white-space:pre-wrap;" placeholder="# Policy Title&#10;&#10;## 1. Purpose&#10;&#10;This policy establishes {{org_name}}'s approach to...&#10;&#10;## 2. Scope&#10;&#10;This policy applies to all employees of {{org_name}} who..."></textarea>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+<button class="btn btn-ghost" onclick="previewTemplateContent()" style="font-size:.72rem;padding:5px 12px;">Preview</button>
+<span style="font-size:.68rem;color:var(--muted);" id="tpl-edit-charcount"></span>
+</div>
+<div id="tpl-edit-preview" style="display:none;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:12px;font-size:.82rem;color:var(--sub);line-height:1.8;max-height:300px;overflow-y:auto;"></div>
+<div id="tpl-edit-error" style="font-size:.75rem;color:var(--red);margin-bottom:8px;display:none;"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border);">
+<button class="btn btn-ghost" onclick="closeTemplateEditor()">Cancel</button>
+<button class="btn btn-primary" id="tpl-edit-submit" onclick="saveTemplate()">Save Template</button>
+</div>
+<div id="tpl-edit-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
+</div>
+</div>
+</div>
+ 
+<!-- Edit Client Policy Modal -->
+<div style="position:fixed;inset:0;z-index:999;background:rgba(2,6,23,0.8);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;" id="edit-policy-modal">
+<div style="background:var(--sidebar);border:1px solid var(--border);border-radius:14px;width:100%;max-width:720px;max-height:90vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent;">
+<div style="padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;position:sticky;top:0;background:var(--sidebar);z-index:2;">
+<div><h3 style="font-family:'Instrument Serif',serif;font-size:1.2rem;font-weight:400;color:var(--main);margin-bottom:3px;" id="ep-modal-title">Edit Client Policy</h3><p style="font-size:.78rem;color:var(--muted);" id="ep-modal-sub"></p></div>
+<button style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;" onclick="closeEditPolicyModal()">&#10005;</button>
+</div>
+<div style="padding:20px 24px;">
+<input type="hidden" id="ep-id" value="">
+<label class="field-label">Title</label>
+<input type="text" class="field-input" id="ep-title" placeholder="Policy title">
+<label class="field-label">Description</label>
+<input type="text" class="field-input" id="ep-desc" placeholder="Brief description">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+<div><label class="field-label">Category</label>
+<select class="field-input" id="ep-cat"><option value="ai_governance">AI Governance</option><option value="data_protection">Data Protection</option><option value="acceptable_use">Acceptable Use</option><option value="risk_management">Risk Management</option><option value="security">Security</option><option value="ethics">Ethics</option><option value="other">Other</option></select></div>
+<div><label class="field-label">Current Version</label>
+<input type="text" class="field-input" id="ep-version" disabled style="opacity:.6;"></div>
+</div>
+<label class="field-label">Policy Content (Markdown)</label>
+<textarea class="field-input" id="ep-content" rows="14" style="min-height:240px;font-family:'DM Sans',monospace;font-size:.78rem;line-height:1.7;white-space:pre-wrap;"></textarea>
+<div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:8px;padding:12px 16px;margin-bottom:12px;">
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.78rem;color:var(--sub);">
+<input type="checkbox" id="ep-bump-version" checked style="accent-color:var(--accent);width:16px;height:16px;">
+<div><strong style="color:var(--main);">Bump version</strong> (recommended for content changes)<br><span style="font-size:.7rem;color:var(--muted);">Increments version and requires all members to re-acknowledge the updated policy.</span></div>
+</label>
+</div>
+<div id="ep-error" style="font-size:.75rem;color:var(--red);margin-bottom:8px;display:none;"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border);">
+<button class="btn btn-ghost" onclick="closeEditPolicyModal()">Cancel</button>
+<button class="btn btn-primary" id="ep-submit" onclick="saveEditedPolicy()">Save Changes</button>
+</div>
+<div id="ep-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
 </div>
 </div>
 </div>
@@ -514,6 +590,7 @@ function renderPoliciesAdmin(){
   var el=document.getElementById('sp-policy-list');
   if(!published.length){
     el.innerHTML='<div class="empty">No policies deployed yet. Use "Deploy Template to Client" to get started.</div>';
+    renderTemplatesAdmin();
     return;
   }
   
@@ -526,6 +603,7 @@ function renderPoliciesAdmin(){
     var ackDisplay=needsAck?(ackCount>0?'<span class="pill pill-done">'+ackCount+' ack'+(ackCount!==1?'s':'')+'</span>':'<span class="pill pill-pending">0 acks</span>'):'<span style="font-size:.72rem;color:var(--muted);">Not required</span>';
     return '<tr onclick="openPolicyAdminDetail(\''+p.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(p.org_id))+'</td><td><span style="color:var(--main);font-weight:500;">'+esc(p.title)+'</span></td><td><span style="font-size:.72rem;color:'+catCol+';">'+esc(cat)+'</span></td><td style="font-size:.72rem;color:var(--muted);">v'+esc(p.version)+'</td><td>'+ackDisplay+'</td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(p.published_at)+'</td></tr>';
   }).join('')+'</tbody></table>';
+  renderTemplatesAdmin();
 }
  
 async function openPolicyAdminDetail(policyId){
@@ -583,6 +661,7 @@ async function openPolicyAdminDetail(policyId){
     '<div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><span style="font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+catCol+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+esc(cat)+'</span><span style="font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">v'+esc(pol.version)+'</span></div><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.5rem;font-weight:400;color:var(--main);margin-bottom:4px;">'+esc(pol.title)+'</h2><div style="font-size:.78rem;color:var(--muted);">'+esc(orgName)+' · Published '+fmtDate(pol.published_at)+'</div></div>'+
     '<div class="detail-card"><div class="meta-grid"><div><div class="detail-label">Organisation</div><div class="detail-val">'+esc(orgName)+'</div></div><div><div class="detail-label">Category</div><div class="detail-val" style="color:'+catCol+';">'+esc(cat)+'</div></div><div><div class="detail-label">Requires Acknowledgment</div><div class="detail-val">'+(pol.requires_acknowledgment?'Yes':'No')+'</div></div><div><div class="detail-label">Acknowledgment Frequency</div><div class="detail-val">'+(pol.acknowledgment_frequency==='on_update'?'On each update':'Once only')+'</div></div></div></div>'+
     (pol.description?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:6px;">Description</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;">'+esc(pol.description)+'</div></div>':'')+
+    '<div style="display:flex;gap:10px;margin-bottom:16px;"><button class="btn btn-primary" onclick="openEditPolicyModal(\''+pol.id+'\')"><svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><path d="M9 1l2 2-7 7H2V8z"/></svg> Edit Policy</button></div>'+
     contentPreview+
     memberHtml;
   
@@ -676,6 +755,219 @@ async function submitDeployTemplate(){
   
   renderPoliciesAdmin();
   setTimeout(function(){closeDeployModal()},1500);
+}
+ 
+// ═══ TEMPLATES MANAGEMENT ═════════════════════════════════════
+ 
+function renderTemplatesAdmin(){
+  var el=document.getElementById('sp-template-list');
+  document.getElementById('sp-tpl-count').textContent=allTemplatesAdmin.length+' template'+(allTemplatesAdmin.length!==1?'s':'');
+  if(!allTemplatesAdmin.length){
+    el.innerHTML='<div class="empty">No templates yet. Create your first policy template.</div>';
+    return;
+  }
+  el.innerHTML='<table class="tbl"><thead><tr><th>Template</th><th>Category</th><th>Linked Control</th><th>Content</th><th>Actions</th></tr></thead><tbody>'+
+  allTemplatesAdmin.map(function(t){
+    var cat=POLICY_CATS[t.category]||t.category||'—';
+    var catCol=POLICY_CAT_COLORS[t.category]||'var(--muted)';
+    var ctrlLabel=t.linked_control_number?'Control '+t.linked_control_number:'—';
+    var hasContent=(t.content_template&&t.content_template.length>10);
+    return '<tr><td><div style="font-weight:600;color:var(--main);">'+esc(t.title)+'</div><div style="font-size:.7rem;color:var(--muted);margin-top:2px;">'+esc((t.description||'').substring(0,60))+(t.description&&t.description.length>60?'...':'')+'</div></td><td><span style="font-size:.72rem;color:'+catCol+';">'+esc(cat)+'</span></td><td style="font-size:.72rem;color:var(--muted);">'+ctrlLabel+'</td><td>'+(hasContent?'<span class="pill pill-done">'+t.content_template.length+' chars</span>':'<span class="pill pill-pending">Empty</span>')+'</td><td style="white-space:nowrap;"><button class="btn btn-ghost" style="padding:4px 10px;font-size:.68rem;display:inline-flex;" onclick="event.stopPropagation();openTemplateEditor(\''+t.id+'\')">Edit</button></td></tr>';
+  }).join('')+'</tbody></table>';
+}
+ 
+function openTemplateEditor(tplId){
+  var tpl=tplId?allTemplatesAdmin.find(function(t){return t.id===tplId}):null;
+  document.getElementById('tpl-edit-id').value=tpl?tpl.id:'';
+  document.getElementById('tpl-editor-title').textContent=tpl?'Edit Template':'Create Policy Template';
+  document.getElementById('tpl-editor-sub').textContent=tpl?'Editing: '+tpl.title:'Define a reusable policy template that can be deployed to any client.';
+  document.getElementById('tpl-edit-name').value=tpl?tpl.title:'';
+  document.getElementById('tpl-edit-desc').value=tpl?tpl.description||'':'';
+  document.getElementById('tpl-edit-cat').value=tpl?tpl.category||'ai_governance':'ai_governance';
+  document.getElementById('tpl-edit-ctrl').value=tpl&&tpl.linked_control_number?tpl.linked_control_number:'';
+  document.getElementById('tpl-edit-content').value=tpl?tpl.content_template||'':'';
+  document.getElementById('tpl-edit-preview').style.display='none';
+  document.getElementById('tpl-edit-error').style.display='none';
+  document.getElementById('tpl-edit-msg').style.display='none';
+  document.getElementById('tpl-edit-submit').textContent=tpl?'Save Changes':'Create Template';
+  updateCharCount();
+  document.getElementById('tpl-edit-content').oninput=updateCharCount;
+  document.getElementById('tpl-editor-modal').style.opacity='1';
+  document.getElementById('tpl-editor-modal').style.pointerEvents='all';
+}
+ 
+function closeTemplateEditor(){
+  document.getElementById('tpl-editor-modal').style.opacity='0';
+  document.getElementById('tpl-editor-modal').style.pointerEvents='none';
+}
+ 
+function updateCharCount(){
+  var content=document.getElementById('tpl-edit-content').value;
+  document.getElementById('tpl-edit-charcount').textContent=content.length+' characters';
+}
+ 
+function renderMarkdownAdmin(md){
+  if(!md)return '<span style="color:var(--muted);">No content.</span>';
+  var html=esc(md);
+  html=html.replace(/^### (.+)$/gm,'<h4 style="font-size:.85rem;font-weight:600;color:var(--main);margin:16px 0 6px;">$1</h4>');
+  html=html.replace(/^## (.+)$/gm,'<h3 style="font-size:.95rem;font-weight:600;color:var(--main);margin:20px 0 8px;">$1</h3>');
+  html=html.replace(/^# (.+)$/gm,'<h2 style="font-family:\'Instrument Serif\',serif;font-size:1.15rem;font-weight:400;color:var(--main);margin:24px 0 10px;">$1</h2>');
+  html=html.replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--main);font-weight:600;">$1</strong>');
+  html=html.replace(/^- (.+)$/gm,'<div style="display:flex;gap:8px;padding:3px 0;"><span style="color:var(--sky);flex-shrink:0;">&#8226;</span><span>$1</span></div>');
+  html=html.replace(/\n\n/g,'</p><p style="margin:10px 0;">');
+  html='<p style="margin:10px 0;">'+html+'</p>';
+  return html;
+}
+ 
+function previewTemplateContent(){
+  var content=document.getElementById('tpl-edit-content').value;
+  var previewEl=document.getElementById('tpl-edit-preview');
+  if(!content){previewEl.style.display='none';return}
+  var rendered=renderMarkdownAdmin(content.replace(/\{\{org_name\}\}/g,'<span style="color:var(--sky);font-weight:600;">[Organisation Name]</span>'));
+  previewEl.innerHTML=rendered;
+  previewEl.style.display='block';
+}
+ 
+async function saveTemplate(){
+  var title=document.getElementById('tpl-edit-name').value.trim();
+  var errEl=document.getElementById('tpl-edit-error');
+  var msgEl=document.getElementById('tpl-edit-msg');
+  if(!title){errEl.textContent='Template title is required.';errEl.style.display='block';return}
+  errEl.style.display='none';
+  
+  var editId=document.getElementById('tpl-edit-id').value;
+  var btn=document.getElementById('tpl-edit-submit');
+  btn.textContent='Saving...';btn.disabled=true;
+  
+  var payload={
+    title:title,
+    description:document.getElementById('tpl-edit-desc').value.trim()||null,
+    category:document.getElementById('tpl-edit-cat').value,
+    linked_control_number:parseInt(document.getElementById('tpl-edit-ctrl').value)||null,
+    content_template:document.getElementById('tpl-edit-content').value||null
+  };
+  
+  var result;
+  if(editId){
+    result=await sb.from('policy_templates').update(payload).eq('id',editId).select().single();
+  }else{
+    payload.is_active=true;
+    payload.display_order=allTemplatesAdmin.length+1;
+    result=await sb.from('policy_templates').insert(payload).select().single();
+  }
+  
+  if(result.error){
+    errEl.textContent='Error: '+result.error.message;errEl.style.display='block';
+    btn.textContent=editId?'Save Changes':'Create Template';btn.disabled=false;
+    return;
+  }
+  
+  // Update local cache
+  if(editId){
+    var idx=allTemplatesAdmin.findIndex(function(t){return t.id===editId});
+    if(idx>=0)allTemplatesAdmin[idx]=result.data;
+  }else{
+    allTemplatesAdmin.push(result.data);
+  }
+  
+  msgEl.style.display='block';msgEl.style.color='#4ade80';
+  msgEl.textContent=editId?'Template updated.':'Template created.';
+  btn.textContent=editId?'Save Changes':'Create Template';btn.disabled=false;
+  
+  renderPoliciesAdmin();
+  setTimeout(function(){closeTemplateEditor()},1200);
+}
+ 
+// ═══ EDIT CLIENT POLICY ═══════════════════════════════════════
+ 
+function openEditPolicyModal(policyId){
+  var pol=allPoliciesAdmin.find(function(p){return p.id===policyId});
+  if(!pol)return;
+  var orgName=getOrgName(pol.org_id);
+  document.getElementById('ep-id').value=pol.id;
+  document.getElementById('ep-modal-title').textContent='Edit Policy';
+  document.getElementById('ep-modal-sub').textContent=orgName+' — v'+pol.version;
+  document.getElementById('ep-title').value=pol.title||'';
+  document.getElementById('ep-desc').value=pol.description||'';
+  document.getElementById('ep-cat').value=pol.category||'ai_governance';
+  document.getElementById('ep-version').value=pol.version;
+  document.getElementById('ep-content').value=pol.content||'';
+  document.getElementById('ep-bump-version').checked=true;
+  document.getElementById('ep-error').style.display='none';
+  document.getElementById('ep-msg').style.display='none';
+  document.getElementById('edit-policy-modal').style.opacity='1';
+  document.getElementById('edit-policy-modal').style.pointerEvents='all';
+}
+ 
+function closeEditPolicyModal(){
+  document.getElementById('edit-policy-modal').style.opacity='0';
+  document.getElementById('edit-policy-modal').style.pointerEvents='none';
+}
+ 
+function bumpVersion(version){
+  // "1.0" -> "1.1", "1.9" -> "2.0"
+  var parts=(version||'1.0').split('.');
+  var major=parseInt(parts[0])||1;
+  var minor=parseInt(parts[1])||0;
+  minor++;
+  if(minor>=10){major++;minor=0}
+  return major+'.'+minor;
+}
+ 
+async function saveEditedPolicy(){
+  var policyId=document.getElementById('ep-id').value;
+  var title=document.getElementById('ep-title').value.trim();
+  var errEl=document.getElementById('ep-error');
+  var msgEl=document.getElementById('ep-msg');
+  if(!title){errEl.textContent='Policy title is required.';errEl.style.display='block';return}
+  errEl.style.display='none';
+  
+  var pol=allPoliciesAdmin.find(function(p){return p.id===policyId});
+  if(!pol)return;
+  
+  var btn=document.getElementById('ep-submit');
+  btn.textContent='Saving...';btn.disabled=true;
+  
+  var shouldBump=document.getElementById('ep-bump-version').checked;
+  var newVersion=shouldBump?bumpVersion(pol.version):pol.version;
+  
+  var update={
+    title:title,
+    description:document.getElementById('ep-desc').value.trim()||null,
+    category:document.getElementById('ep-cat').value,
+    content:document.getElementById('ep-content').value,
+    version:newVersion,
+    updated_at:new Date().toISOString()
+  };
+  
+  var result=await sb.from('policy_documents').update(update).eq('id',policyId).select().single();
+  if(result.error){
+    errEl.textContent='Error: '+result.error.message;errEl.style.display='block';
+    btn.textContent='Save Changes';btn.disabled=false;
+    return;
+  }
+  
+  // Update local cache
+  var idx=allPoliciesAdmin.findIndex(function(p){return p.id===policyId});
+  if(idx>=0)allPoliciesAdmin[idx]=result.data;
+  
+  // Audit
+  await sb.from('registry_audit_log').insert({
+    org_id:pol.org_id,user_id:currentUser.id,
+    action:shouldBump?'policy_updated_version':'policy_updated',
+    entity_type:'policy',entity_id:policyId,
+    changes:{_actor_name:'MLA Group',_is_mla:true,policy:title,version:newVersion,previous_version:pol.version}
+  });
+  
+  msgEl.style.display='block';msgEl.style.color='#4ade80';
+  msgEl.textContent='Policy updated'+(shouldBump?' to v'+newVersion+'. All members will need to re-acknowledge.':'.');
+  btn.textContent='Save Changes';btn.disabled=false;
+  
+  renderPoliciesAdmin();
+  setTimeout(function(){
+    closeEditPolicyModal();
+    openPolicyAdminDetail(policyId);
+  },1500);
 }
  
 init();
