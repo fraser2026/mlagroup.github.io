@@ -419,7 +419,7 @@ async function init(){
   document.getElementById('paywall-banner').style.display=isPaid?'none':'flex';
   renderReports(paidIds);
   history.replaceState({view:'dashboard'},'','#dashboard');
-  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>checkAndCreateAlerts(),3000)}).catch(()=>renderDashboard(paidIds));
+  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
   else renderDashboard(paidIds);
 }
 function handleDeepLink(){
@@ -754,7 +754,7 @@ const PILLAR_COLORS={visibility:'#60a5fa',accountability:'#c4b5fd',control:'#4ad
 const CTRL_STATUS_L={not_started:'Not Started',in_progress:'In Progress',implemented:'Implemented',verified:'Verified'};
 const CTRL_STATUS_C={not_started:'var(--muted)',in_progress:'#93c5fd',implemented:'#4ade80',verified:'#4ade80'};
 const MATURITY_BANDS=[{max:30,label:'Initial'},{max:50,label:'Developing'},{max:70,label:'Structured'},{max:85,label:'Managed'},{max:100,label:'Governance Ready'}];
-let allControls=[],allTasks=[],allAssignments=[],currentControlId=null;
+let allControls=[],allTasks=[],allAssignments=[],currentControlId=null; let allComplianceRules=[];
  
 async function navigateControls(navEl){navigate('controls',navEl);if(!currentOrg)await ensureOrg();await loadControls();await loadScoreHistory();}
  
@@ -920,7 +920,30 @@ async function openControlDetail(ctrlId,assignId){
   document.getElementById('cd-desc').textContent=ctrl.description;
   document.getElementById('cd-purpose').textContent=ctrl.purpose||'';
   document.getElementById('cd-task-count').textContent=tasks.length+' tasks';
+
+  // Check for linked policy needing acknowledgment
+  var linkedPolBanner='';
+  if(allPolicies.length){
+    var linkedPol=allPolicies.find(function(p){return p.linked_control_id===ctrlId&&p.published_at&&p.requires_acknowledgment});
+    if(linkedPol){
+      var polAcked=allAcknowledgments.find(function(a){return a.policy_id===linkedPol.id&&a.version_acknowledged===linkedPol.version});
+      if(!polAcked){
+        linkedPolBanner='<div style="background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.18);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg><div style="flex:1;"><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px;">Linked policy requires your acknowledgment</div><div style="font-size:.75rem;color:var(--muted);line-height:1.5;">The policy &ldquo;'+esc(linkedPol.title)+'&rdquo; (v'+esc(linkedPol.version)+') is linked to this control and needs to be acknowledged before this control can be considered fully implemented.</div></div><button class="btn-topbar btn-topbar-primary" style="flex-shrink:0;padding:6px 14px;font-size:.72rem;" onclick="openPolicyDetail(\''+linkedPol.id+'\')">Review Policy</button></div>';
+      }
+    }
+  }
  
+  // Render linked policy banner above tasks
+  var tasksPanel=document.getElementById('cd-tasks').parentElement.parentElement;
+  if(linkedPolBanner){
+    var bannerEl=document.getElementById('cd-policy-banner');
+    if(bannerEl)bannerEl.remove();
+    tasksPanel.insertAdjacentHTML('beforebegin','<div id="cd-policy-banner">'+linkedPolBanner+'</div>');
+  }else{
+    var oldBanner=document.getElementById('cd-policy-banner');
+    if(oldBanner)oldBanner.remove();
+  }
+
   // Render tasks
   document.getElementById('cd-tasks').innerHTML=tasks.map(t=>{
     const val=taskResp['task_'+t.task_number]||'';
@@ -1121,8 +1144,145 @@ async function sendSupportReply(reqId){
   await loadSupportForControl(currentAssignId);
 }
 
+// ═══ PHASE 4C: COMPLIANCE AUTOMATION ENGINE ═══════════════════
+
+async function loadAndRunComplianceEngine(){
+  if(!currentOrg)return;
+  try{
+    var result=await sb.from('compliance_rules').select('*').eq('is_active',true);
+    allComplianceRules=result.data||[];
+    if(allComplianceRules.length)await runComplianceEngine();
+  }catch(err){console.error('Compliance engine load error:',err)}
+}
+
+async function runComplianceEngine(){
+  if(!currentOrg||!allComplianceRules.length)return;
+  for(var i=0;i<allComplianceRules.length;i++){
+    var rule=allComplianceRules[i];
+    try{
+      await evaluateRule(rule);
+    }catch(err){console.error('Rule eval error:',rule.id,err)}
+  }
+  // Refresh controls if any were auto-advanced
+  await loadControls();
+}
+
+async function evaluateRule(rule){
+  var params=rule.condition_params||{};
+  switch(rule.condition_type){
+    case 'registry_threshold':
+      await evalRegistryThreshold(rule,params);
+      break;
+    case 'audit_log_exists':
+      await evalAuditLogExists(rule,params);
+      break;
+    case 'assessment_age_days':
+      if(params.status==='in_progress'){
+        await evalControlOverdue(rule,params);
+      }else{
+        await evalAssessmentAge(rule,params);
+      }
+      break;
+    case 'score_drop_threshold':
+      await evalScoreDrop(rule,params);
+      break;
+  }
+}
+
+async function evalRegistryThreshold(rule,params){
+  var minSystems=params.min_systems||1;
+  if(allSystems.length<minSystems)return;
+  if(!rule.control_id)return;
+  var assign=allAssignments.find(function(a){return a.control_id===rule.control_id&&!a.system_id});
+  if(!assign)return;
+  if(assign.status==='implemented'||assign.status==='verified')return;
+  // Check if already fired
+  if(await alreadyLogged(rule.id,null))return;
+  // Auto-advance to implemented
+  await sb.from('control_assignments').update({status:'implemented',completed_at:new Date().toISOString()}).eq('id',assign.id);
+  assign.status='implemented';
+  await logAutomation(rule.id,null,'advanced_to_implemented','Auto-completed: '+allSystems.length+' system(s) registered, meets threshold of '+minSystems);
+  await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_implemented',entity_type:'governance_control',entity_id:rule.control_id,changes:{_actor_name:'Compliance Engine',_is_mla:false,control:allControls.find(function(c){return c.id===rule.control_id})?.title||'Control',automation_rule:rule.rule_name}});
+  await snapshotGovernanceScore('automation_rule_fired',rule.id);
+}
+
+async function evalAuditLogExists(rule,params){
+  if(!rule.control_id)return;
+  var assign=allAssignments.find(function(a){return a.control_id===rule.control_id&&!a.system_id});
+  if(!assign)return;
+  if(assign.status!=='not_started')return;
+  if(await alreadyLogged(rule.id,null))return;
+  var logResult=await sb.from('registry_audit_log').select('id').eq('org_id',currentOrg.id).limit(1);
+  if(!logResult.data||!logResult.data.length)return;
+  await sb.from('control_assignments').update({status:'in_progress'}).eq('id',assign.id);
+  assign.status='in_progress';
+  await logAutomation(rule.id,null,'advanced_to_in_progress','Auto-progressed: audit log entries detected for organisation');
+  await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_updated',entity_type:'governance_control',entity_id:rule.control_id,changes:{_actor_name:'Compliance Engine',_is_mla:false,control:allControls.find(function(c){return c.id===rule.control_id})?.title||'Control',automation_rule:rule.rule_name}});
+}
+
+async function evalAssessmentAge(rule,params){
+  var days=params.days||90;
+  var cutoff=new Date(Date.now()-days*24*60*60*1000).toISOString();
+  for(var i=0;i<allSystems.length;i++){
+    var sys=allSystems[i];
+    if(await alreadyLogged(rule.id,sys.id))continue;
+    var aResult=await sb.from('registry_assessments').select('requested_at').eq('system_id',sys.id).order('requested_at',{ascending:false}).limit(1);
+    var last=aResult.data&&aResult.data.length?aResult.data[0]:null;
+    if(!last||last.requested_at<cutoff){
+      await maybeCreateAlert('assessment_due','warning','Assessment Due: '+sys.name,sys.name+' has not been assessed in over '+days+' days. Run a new assessment to keep your governance score current.',sys.id,'ai_system');
+      await logAutomation(rule.id,sys.id,'alert_created','Assessment overdue by '+days+'+ days for '+sys.name);
+    }
+  }
+}
+
+async function evalControlOverdue(rule,params){
+  var days=params.days||60;
+  var cutoff=new Date(Date.now()-days*24*60*60*1000).toISOString();
+  var overdue=allAssignments.filter(function(a){return a.status==='in_progress'&&a.updated_at&&a.updated_at<cutoff});
+  for(var i=0;i<overdue.length;i++){
+    var a=overdue[i];
+    if(await alreadyLogged(rule.id,a.id))continue;
+    var ctrl=allControls.find(function(c){return c.id===a.control_id});
+    var ctrlName=ctrl?ctrl.title:'A governance control';
+    await maybeCreateAlert('control_overdue','warning','Control Overdue: '+ctrlName,ctrlName+' has been in progress for over '+days+' days without completion.',a.id,'control_assignment');
+    await logAutomation(rule.id,a.id,'alert_created','Control overdue: '+ctrlName+' in progress for '+days+'+ days');
+  }
+}
+
+async function evalScoreDrop(rule,params){
+  var threshold=params.drop_threshold||10;
+  if(await alreadyLogged(rule.id,null))return;
+  var hResult=await sb.from('governance_score_history').select('composite_score,snapshot_at').eq('org_id',currentOrg.id).order('snapshot_at',{ascending:false}).limit(2);
+  var history=hResult.data;
+  if(!history||history.length<2)return;
+  var drop=history[1].composite_score-history[0].composite_score;
+  if(drop>=threshold){
+    await maybeCreateAlert('score_drop','critical','Governance Score Drop Detected','Your governance score has fallen by '+drop+' points to '+history[0].composite_score+'%. Review your controls and take action.',null,null);
+    await logAutomation(rule.id,null,'alert_created','Score dropped by '+drop+' points (threshold: '+threshold+')');
+  }
+}
+
+async function alreadyLogged(ruleId,entityId){
+  var q=sb.from('compliance_automation_log').select('id').eq('org_id',currentOrg.id).eq('rule_id',ruleId);
+  if(entityId)q=q.eq('system_id',entityId);
+  else q=q.is('system_id',null);
+  var result=await q.limit(1);
+  return result.data&&result.data.length>0;
+}
+
+async function logAutomation(ruleId,systemId,outcome,detail){
+  await sb.from('compliance_automation_log').insert({
+    org_id:currentOrg.id,
+    system_id:systemId||null,
+    rule_id:ruleId,
+    triggered_at:new Date().toISOString(),
+    outcome:outcome,
+    outcome_detail:detail||null
+  });
+}
+
  // ═══ PHASE 4B: ALERTS ═════════════════════════════════════════
-const EMAILJS_SVC='service_umdte26';
+ const EMAILJS_SVC='service_umdte26';
 const EMAILJS_TPL='template_o6h9et7';
 const EMAILJS_KEY='vxitc5LFJHMfNcmUL';
 
@@ -1567,6 +1727,7 @@ async function acknowledgePolicyClick(){
   await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'policy_acknowledged',entity_type:'policy',entity_id:currentPolicyId,changes:{_actor_name:actorName(),policy:pol.title,version:pol.version,method:'click'}});
   await loadPolicies();
   openPolicyDetail(currentPolicyId);
+  await snapshotGovernanceScore('policy_acknowledged',currentPolicyId);
 }
  
 function openESignModal(){
