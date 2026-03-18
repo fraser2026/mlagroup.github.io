@@ -1201,7 +1201,7 @@ async function evalRegistryThreshold(rule,params){
   // Auto-advance to implemented
   await sb.from('control_assignments').update({status:'implemented',completed_at:new Date().toISOString()}).eq('id',assign.id);
   assign.status='implemented';
-  await logAutomation(rule.id,null,'advanced_to_implemented','Auto-completed: '+allSystems.length+' system(s) registered, meets threshold of '+minSystems);
+  await logAutomation(rule.id,null,'control_advanced','Auto-completed: '+allSystems.length+' system(s) registered, meets threshold of '+minSystems);
   await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_implemented',entity_type:'governance_control',entity_id:rule.control_id,changes:{_actor_name:'Compliance Engine',_is_mla:false,control:allControls.find(function(c){return c.id===rule.control_id})?.title||'Control',automation_rule:rule.rule_name}});
   await snapshotGovernanceScore('automation_rule_fired',rule.id);
 }
@@ -1216,7 +1216,7 @@ async function evalAuditLogExists(rule,params){
   if(!logResult.data||!logResult.data.length)return;
   await sb.from('control_assignments').update({status:'in_progress'}).eq('id',assign.id);
   assign.status='in_progress';
-  await logAutomation(rule.id,null,'advanced_to_in_progress','Auto-progressed: audit log entries detected for organisation');
+  await logAutomation(rule.id,null,'control_advanced','Auto-progressed: audit log entries detected for organisation');
   await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_updated',entity_type:'governance_control',entity_id:rule.control_id,changes:{_actor_name:'Compliance Engine',_is_mla:false,control:allControls.find(function(c){return c.id===rule.control_id})?.title||'Control',automation_rule:rule.rule_name}});
 }
 
