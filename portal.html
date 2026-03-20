@@ -422,7 +422,7 @@ async function init(){
   if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
   else renderDashboard(paidIds);
 }
-ffunction handleDeepLink(){
+function handleDeepLink(){
   var navTarget=localStorage.getItem('mla_nav_target');
   if(navTarget){
     localStorage.removeItem('mla_nav_target');
