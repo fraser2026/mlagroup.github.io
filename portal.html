@@ -823,12 +823,10 @@ function renderControlsList(){
   // Organisation section: show org-level controls
   const orgEl=document.getElementById('controls-org-section');
   if(orgCtrls.length){
-    orgEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.organisation+';"></span>Organisation Controls</div><div class="panel-sub">Applies once per organisation</div></div>'+
-    orgCtrls.map(c=>{
-      const a=allAssignments.find(x=>x.control_id===c.id&&!x.system_id);
-      const st=a?.status||'not_started';
-      return renderControlRow(c,st,'organisation',null,a?.id);
-    }).join('')+'</div>';
+    var orgItems=orgCtrls.map(function(c){var a=allAssignments.find(function(x){return x.control_id===c.id&&!x.system_id});var st=a?a.status:'not_started';return{ctrl:c,assign:a,st:st}});
+    orgItems.sort(function(a,b){return controlUrgency(a.st,a.assign)-controlUrgency(b.st,b.assign)});
+    orgEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.organisation+';"></span>Organisation Controls</div><div class="panel-sub">Applies once per organisation</div></div><div style="padding:4px 20px 8px;font-size:.72rem;color:var(--muted);line-height:1.5;">Governance policies and structures that apply across your entire organisation.</div>'+
+    orgItems.map(function(item){return renderControlRow(item.ctrl,item.st,'organisation',null,item.assign?item.assign.id:null,item.assign)}).join('')+'</div>';
   }
   
   // System & Assurance: group by AI system
@@ -858,22 +856,39 @@ function renderControlsList(){
     });
     if(sysList.length){
       sysHtml+='<div class="panel" style="margin-bottom:12px;"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.system+';"></span>'+esc(sysName)+'</div><div class="panel-sub">'+sysList.length+' controls</div></div>'+
-      sysList.sort((a,b)=>a.ctrl.display_order-b.ctrl.display_order).map(({ctrl:c,assign:a})=>renderControlRow(c,a.status,'system',sysId,a.id)).join('')+'</div>';
+      sysList.sort(function(a,b){return controlUrgency(a.assign.status,a.assign)-controlUrgency(b.assign.status,b.assign)}).map(function(item){return renderControlRow(item.ctrl,item.assign.status,'system',sysId,item.assign.id,item.assign)}).join('')+'</div>';
     }
     if(assList.length){
-      assHtml+='<div class="panel" style="margin-bottom:12px;"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.assurance+';"></span>'+esc(sysName)+' — Assurance</div><div class="panel-sub">'+assList.length+' controls</div></div>'+
-      assList.sort((a,b)=>a.ctrl.display_order-b.ctrl.display_order).map(({ctrl:c,assign:a})=>renderControlRow(c,a.status,'assurance',sysId,a.id)).join('')+'</div>';
+      assHtml+='<div class="panel" style="margin-bottom:12px;"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.assurance+';"></span>'+esc(sysName)+' — Assurance</div><div class="panel-sub">'+assList.length+' controls</div></div><div style="padding:4px 20px 8px;font-size:.72rem;color:var(--muted);line-height:1.5;">Independent checks and audit processes that verify your governance is working.</div>'+
+      assList.sort(function(a,b){return controlUrgency(a.assign.status,a.assign)-controlUrgency(b.assign.status,b.assign)}).map(function(item){return renderControlRow(item.ctrl,item.assign.status,'assurance',sysId,item.assign.id,item.assign)}).join('')+'</div>';
     }
   });
   sysEl.innerHTML=sysHtml||'';
   assEl.innerHTML=assHtml||'';
 }
  
-function renderControlRow(c,st,type,sysId,assignId){
-  const aid=assignId?"'"+assignId+"'":"null";
-  return '<div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:background .1s;" onclick="openControlDetail(\''+c.id+'\','+aid+')" onmouseover="this.style.background=\'rgba(255,255,255,0.02)\'" onmouseout="this.style.background=\'none\'">'+
+function controlUrgency(st,assign){
+  var today=new Date().toISOString().split('T')[0];
+  if(assign&&assign.due_date&&assign.due_date<today&&st!=='implemented'&&st!=='verified')return 0;
+  if(st==='not_started')return 1;
+  if(st==='in_progress')return 2;
+  if(st==='implemented')return 3;
+  if(st==='verified')return 4;
+  return 5;
+}
+
+function renderControlRow(c,st,type,sysId,assignId,assign){
+  var aid=assignId?"'"+assignId+"'":"null";
+  var today=new Date().toISOString().split('T')[0];
+  var isOverdue=assign&&assign.due_date&&assign.due_date<today&&st!=='implemented'&&st!=='verified';
+  var dueMeta='';
+  if(isOverdue)dueMeta=' <span style="font-size:.62rem;color:#f87171;font-weight:600;margin-left:4px;">OVERDUE</span>';
+  else if(assign&&assign.due_date&&st!=='implemented'&&st!=='verified')dueMeta=' <span style="font-size:.62rem;color:var(--muted);margin-left:4px;">Due '+fmtDate(assign.due_date+'T00:00:00')+'</span>';
+  var leftBorder=isOverdue?'border-left:3px solid #f87171;padding-left:17px;':'';
+  var hoverOut=isOverdue?'rgba(239,68,68,0.03)':'none';
+  return '<div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:background .1s;'+leftBorder+'background:'+hoverOut+';" onclick="openControlDetail(\''+c.id+'\','+aid+')" onmouseover="this.style.background=\'rgba(255,255,255,0.02)\'" onmouseout="this.style.background=\''+hoverOut+'\'">'+
     '<div style="width:28px;height:28px;border-radius:8px;background:'+TYPE_BG[type]+';border:1px solid '+TYPE_BORDER[type]+';display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+TYPE_COLORS[type]+';flex-shrink:0;">'+c.control_number+'</div>'+
-    '<div style="flex:1;min-width:0;"><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px;">'+esc(c.title)+'</div><div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(c.description.substring(0,100))+'…</div></div>'+
+    '<div style="flex:1;min-width:0;"><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px;">'+esc(c.title)+dueMeta+'</div><div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(c.description.substring(0,100))+'...</div></div>'+
     '<span style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+CTRL_STATUS_L[st]+'</span>'+
   '</div>';
 }
