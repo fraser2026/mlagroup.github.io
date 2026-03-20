@@ -496,7 +496,7 @@ const TRIGGER_MAP=[
  
 async function triggerControls(responses,assessId){
   try{
-    const{data:controls}=await sb.from('governance_controls').select('id,control_number,is_org_level').eq('is_active',true);
+    const{data:controls}=await sb.from('governance_controls').select('id,control_number,title,is_org_level').eq('is_active',true);
     if(!controls)return;
     const ctrlMap={};controls.forEach(c=>{ctrlMap[c.control_number]=c});
     const triggered=[];
