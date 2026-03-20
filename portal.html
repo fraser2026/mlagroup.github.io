@@ -418,12 +418,17 @@ async function init(){
   if(currentResults.length>0){const b=document.getElementById('report-count-badge');b.textContent=currentResults.length;b.style.display='inline-flex'}
   document.getElementById('paywall-banner').style.display=isPaid?'none':'flex';
   renderReports(paidIds);
-  var entryHash=window.location.hash;   history.replaceState({view:'dashboard'},'','#dashboard');
-  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadAssessmentReports();handleDeepLink(entryHash);loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
+  history.replaceState({view:'dashboard'},'','#dashboard');
+  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
   else renderDashboard(paidIds);
 }
-ffunction handleDeepLink(overrideHash){
-  const h=overrideHash||window.location.hash;
+ffunction handleDeepLink(){
+  var navTarget=localStorage.getItem('mla_nav_target');
+  if(navTarget){
+    localStorage.removeItem('mla_nav_target');
+    if(navTarget.startsWith('system-controls-')){var scId=navTarget.replace('system-controls-','');if(scId){openSystemDetail(scId).then(function(){switchDetailTab('sys-controls',document.querySelectorAll('#view-registry-detail .tab-btn')[2])});return}}
+  }
+  const h=window.location.hash;
   if(h.startsWith('#system-controls-')){var scSysId=h.replace('#system-controls-','');if(scSysId){openSystemDetail(scSysId).then(function(){switchDetailTab('sys-controls',document.querySelectorAll('#view-registry-detail .tab-btn')[2])})};window.location.hash='';return}   if(h==='#controls'){navigateControls(document.getElementById('nav-controls'));window.location.hash='';return}
   if(h==='#policies'){navigatePolicies(document.getElementById('nav-policies'));window.location.hash='';return}
   if(h==='#registry'){navigateRegistry(document.getElementById('nav-registry'));window.location.hash='';return}
