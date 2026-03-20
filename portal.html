@@ -1970,7 +1970,7 @@ async function renderNextSteps(){
     (assessedResult.data||[]).forEach(function(a){assessedIds[a.system_id]=true});
     allSystems.forEach(function(s){
       if(!assessedIds[s.id]){
-        steps.push({icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/>',color:'#fbbf24',title:'Run assessment on '+s.name,desc:'Evaluate governance maturity and trigger tailored controls.',action:'currentSystemId="'+s.id+'";openAssessmentModal()',label:'Assess',urgent:false});
+        steps.push({icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/>',color:'#fbbf24',title:'Run assessment on '+s.name,desc:'Evaluate governance maturity and trigger tailored controls.',action:"currentSystemId='"+s.id+"';openAssessmentModal()",label:'Assess',urgent:false});
       }
     });
   }
@@ -1986,7 +1986,7 @@ async function renderNextSteps(){
     if(!p.requires_acknowledgment||!p.published_at)return;
     var acked=allAcknowledgments.find(function(a){return a.policy_id===p.id&&a.version_acknowledged===p.version});
     if(!acked){
-      steps.push({icon:'<path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/>',color:'#c4b5fd',title:'Acknowledge: '+p.title,desc:'Review and acknowledge this governance policy (v'+p.version+').',action:'openPolicyDetail("'+p.id+'")',label:'Review',urgent:false});
+      steps.push({icon:'<path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/>',color:'#c4b5fd',title:'Acknowledge: '+p.title,desc:'Review and acknowledge this governance policy (v'+p.version+').',action:"openPolicyDetail('"+p.id+"')",label:'Review',urgent:false});
     }
   });
 
@@ -1998,7 +1998,7 @@ async function renderNextSteps(){
       var ctrl=allControls.find(function(c){return c.id===a.control_id});
       if(!ctrl)return;
       overdueIds[a.id]=true;
-      steps.push({icon:'<circle cx="8" cy="8" r="7"/><path d="M8 4v4l2.5 2.5"/>',color:'#f87171',title:'Overdue: '+ctrl.title,desc:'Due '+fmtDate(a.due_date+'T00:00:00')+'. Take action to stay compliant.',action:'openControlDetail("'+ctrl.id+'","'+a.id+'")',label:'Open',urgent:true});
+      steps.push({icon:'<circle cx="8" cy="8" r="7"/><path d="M8 4v4l2.5 2.5"/>',color:'#f87171',title:'Overdue: '+ctrl.title,desc:'Due '+fmtDate(a.due_date+'T00:00:00')+'. Take action to stay compliant.',action:"openControlDetail('"+ctrl.id+"','"+a.id+"')",label:'Open',urgent:true});
     }
   });
 
@@ -2011,7 +2011,7 @@ async function renderNextSteps(){
     var ctrl=allControls.find(function(c){return c.id===a.control_id});
     if(!ctrl)return;
     var sysName=a.system_id?(allSystems.find(function(s){return s.id===a.system_id})||{}).name:null;
-    steps.push({icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>',color:'#4ade80',title:'Start: '+ctrl.title+(sysName?' — '+sysName:''),desc:'Begin implementing this governance control.',action:'openControlDetail("'+ctrl.id+'","'+a.id+'")',label:'Open',urgent:false});
+    steps.push({icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>',color:'#4ade80',title:'Start: '+ctrl.title+(sysName?' — '+sysName:''),desc:'Begin implementing this governance control.',action:"openControlDetail('"+ctrl.id+"','"+a.id+"')",label:'Open',urgent:false});
     notStartedCount++;
   });
 
