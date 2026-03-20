@@ -469,9 +469,9 @@ async function saveAssessment(result){
       changes:{overall_score:result.overall,risk_band:result.band,sector:assessSector,assessment_id:assessId}
     });
     // Trigger governance controls based on responses
-    await triggerControls(result.responses,assessId);
-    // Redirect back to portal
-    setTimeout(()=>{window.location.href='portal.html#registry-detail-'+SYSTEM_ID},1500);
+    var triggered=await triggerControls(result.responses,assessId);
+    // Show results screen
+    showResultsScreen(result,triggered||[],assessId);
   }catch(err){
     document.getElementById('calcOverlay').classList.remove('active');
     alert('Error saving assessment: '+err.message);
@@ -517,10 +517,11 @@ async function triggerControls(responses,assessId){
       // 23505 = unique_violation = already assigned, which is fine
     }
     console.log('Triggered '+triggered.length+' controls');
-  }catch(err){console.error('Trigger controls error:',err)}
+    return triggered;
+  }catch(err){console.error('Trigger controls error:',err);return[]}
 }
  
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function showResultsScreen(result,triggered,assessId){   document.getElementById('calcOverlay').classList.remove('active');   document.getElementById('progressWrap').style.display='none';   var band=result.band;   var bandLabel=band==='low'?'Low Risk':band==='high'?'High Risk':'Medium Risk';   var bandCol=band==='low'?'#4ade80':band==='high'?'#f87171':'#fde047';   var ss=result.sectionScores||{};   var secBars=Object.entries(ss).map(function(entry){     var v=entry[1];var pct=v.score||0;     var col=pct>=70?'#4ade80':pct>=40?'#fde047':'#f87171';     return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:.75rem;color:var(--muted2);width:180px;text-align:right;flex-shrink:0;">'+esc(v.title||entry[0])+'</span><div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:3px;"></div></div><span style="font-size:.72rem;color:'+col+';width:36px;text-align:right;font-weight:600;">'+pct+'%</span></div>';   }).join('');   var ctrlHtml='';   if(triggered.length){     ctrlHtml='<div style="margin-top:24px;"><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--sky);margin-bottom:12px;">Controls Triggered</div><div style="display:flex;flex-direction:column;gap:6px;">'+     triggered.map(function(c){       return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;"><div style="width:24px;height:24px;border-radius:6px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--sky);flex-shrink:0;">'+c.control_number+'</div><span style="font-size:.8rem;color:var(--main);">'+esc(c.title||'Control '+c.control_number)+'</span></div>';     }).join('')+'</div></div>';   }else{     ctrlHtml='<div style="margin-top:24px;padding:16px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;text-align:center;"><div style="font-size:.85rem;font-weight:600;color:#4ade80;margin-bottom:4px;">No controls triggered</div><div style="font-size:.78rem;color:var(--muted);">This system scored well across all governance domains.</div></div>';   }   var container=document.getElementById('screens-container');   container.innerHTML='<div class="card" style="text-align:center;padding:36px 28px 20px;"><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--sky);margin-bottom:12px;">Assessment Complete</div><div style="font-family:\'Instrument Serif\',serif;font-size:1.5rem;font-weight:400;color:var(--main);margin-bottom:6px;">'+esc(systemData.name)+'</div><div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:16px 0;"><span style="font-size:2.2rem;font-weight:700;color:'+bandCol+';">'+result.overall+'%</span><span style="font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:100px;color:'+bandCol+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+bandLabel+'</span></div><div style="max-width:480px;margin:0 auto;">'+secBars+'</div>'+ctrlHtml+'<div style="margin-top:28px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><a href="portal.html#controls" class="btn-primary" style="text-decoration:none;padding:12px 24px;">View Controls</a><a href="system-report.html?aid='+(assessId||'')+'" target="_blank" class="btn-secondary" style="text-decoration:none;padding:12px 24px;">View Full Report</a><a href="portal.html#registry-detail-'+SYSTEM_ID+'" class="btn-secondary" style="text-decoration:none;padding:12px 24px;">Back to System</a></div></div>'; }  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
  
 init();
 </script>
