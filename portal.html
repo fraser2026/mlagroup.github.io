@@ -423,16 +423,23 @@ async function init(){
   else renderDashboard(paidIds);
 }
 function handleDeepLink(){
-  var navTarget=localStorage.getItem('mla_nav_target');
-  if(navTarget){
-    localStorage.removeItem('mla_nav_target');
-    if(navTarget.startsWith('system-controls-')){var scId=navTarget.replace('system-controls-','');if(scId){openSystemDetail(scId).then(function(){switchDetailTab('sys-controls',document.querySelectorAll('#view-registry-detail .tab-btn')[2])});return}}
+  var urlParams=new URLSearchParams(window.location.search);
+  var goto=urlParams.get('goto');
+  if(goto&&goto.startsWith('system-controls-')){
+    var scId=goto.replace('system-controls-','');
+    if(scId){
+      history.replaceState(null,'',window.location.pathname);
+      openSystemDetail(scId).then(function(){
+        switchDetailTab('sys-controls',document.querySelectorAll('#view-registry-detail .tab-btn')[2]);
+      });
+      return;
+    }
   }
-  const h=window.location.hash;
-  if(h.startsWith('#system-controls-')){var scSysId=h.replace('#system-controls-','');if(scSysId){openSystemDetail(scSysId).then(function(){switchDetailTab('sys-controls',document.querySelectorAll('#view-registry-detail .tab-btn')[2])})};window.location.hash='';return}   if(h==='#controls'){navigateControls(document.getElementById('nav-controls'));window.location.hash='';return}
+  var h=window.location.hash;
+  if(h==='#controls'){navigateControls(document.getElementById('nav-controls'));window.location.hash='';return}
   if(h==='#policies'){navigatePolicies(document.getElementById('nav-policies'));window.location.hash='';return}
   if(h==='#registry'){navigateRegistry(document.getElementById('nav-registry'));window.location.hash='';return}
-  if(h.startsWith('#registry-detail-')){const sysId=h.replace('#registry-detail-','');if(sysId)openSystemDetail(sysId);window.location.hash=''}
+  if(h.startsWith('#registry-detail-')){var sysId=h.replace('#registry-detail-','');if(sysId)openSystemDetail(sysId);window.location.hash=''}
 }
  
 // ═══ AUTO-PROVISIONING ════════════════════════════════════════
