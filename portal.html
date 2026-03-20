@@ -259,10 +259,10 @@ textarea.field-input{resize:vertical;min-height:80px}
   <p style="font-size:.82rem;color:var(--muted);line-height:1.7;margin-top:6px;" id="cd-desc">—</p>
   <p style="font-size:.78rem;color:var(--muted2);line-height:1.6;margin-top:8px;font-style:italic;" id="cd-purpose"></p>
 </div>
+<div id="cd-progress-bar" style="margin-bottom:16px;"></div>
 <div class="panel" style="margin-bottom:16px;">
   <div class="panel" style="margin-bottom:16px;">
   <div class="panel-header"><div class="panel-title">Assignment</div></div>
-  <div class="panel-body" id="cd-assignment">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" id="cd-assign-grid">
       <div>
         <label class="field-label">Assigned To</label>
@@ -921,6 +921,29 @@ async function openControlDetail(ctrlId,assignId){
   document.getElementById('cd-desc').textContent=ctrl.description;
   document.getElementById('cd-purpose').textContent=ctrl.purpose||'';
   document.getElementById('cd-task-count').textContent=tasks.length+' tasks';
+
+  // Task progress bar
+  var tasksDone=0;
+  var tasksTotal=tasks.length;
+  tasks.forEach(function(t){
+    var val=taskResp['task_'+t.task_number]||'';
+    if(t.task_type==='checkbox'&&val==='done')tasksDone++;
+    else if(t.task_type==='fields'){
+      var fields=t.options?.fields||[];
+      var allFilled=fields.length>0&&fields.every(function(f){return(taskResp['task_'+t.task_number+'_'+f]||'').trim()!==''});
+      if(allFilled)tasksDone++;
+    }
+    else if(t.task_type!=='checkbox'&&val.trim()!=='')tasksDone++;
+  });
+  var taskPct=tasksTotal>0?Math.round(tasksDone/tasksTotal*100):0;
+  var taskPctCol=taskPct>=100?'#4ade80':taskPct>=50?'#fbbf24':'var(--sky)';
+  var isComplete=assign&&(assign.status==='implemented'||assign.status==='verified');
+  var progressEl=document.getElementById('cd-progress-bar');
+  if(tasksTotal>0){
+    progressEl.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span style="font-size:.85rem;font-weight:700;color:'+taskPctCol+';">'+taskPct+'%</span><span style="font-size:.78rem;color:var(--sub);font-weight:500;">'+tasksDone+' of '+tasksTotal+' tasks complete</span></div>'+(isComplete?'<span style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;color:#4ade80;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18);">Implemented</span>':(taskPct===100?'<span style="font-size:.72rem;color:#4ade80;font-weight:600;">Ready to mark as Implemented</span>':''))+'</div><div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+taskPct+'%;background:'+taskPctCol+';border-radius:3px;transition:width .4s ease;"></div></div></div>';
+  }else{
+    progressEl.innerHTML='';
+  }
 
   // Check for linked policy needing acknowledgment
   var linkedPolBanner='';
