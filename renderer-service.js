@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 3001;
 const TEMPLATE_PATH = join(__dirname, 'report-template.html');
 
 // Pre-load template
-const TEMPLATE_HTML = readFileSync(TEMPLATE_PATH, 'utf-8');
+const TEMPLATE_HTML = readFileSync(TEMPLATE_PATH, 'utf-8');   const CERT_TEMPLATE_PATH = join(__dirname, 'certificate-template.html'); const CERT_TEMPLATE_HTML = readFileSync(CERT_TEMPLATE_PATH, 'utf-8');
 
 // ── Health check ──
 app.get('/health', (req, res) => {
@@ -130,6 +130,74 @@ app.post('/render', async (req, res) => {
   }
 });
 
+  // ── Certificate render endpoint ──
+app.post('/render-certificate', async (req, res) => {
+  const startTime = Date.now();
+  let browser;
+ 
+  try {
+    const certData = req.body;
+    if (!certData || !certData.certificate_id) {
+      return res.status(400).json({ error: 'Invalid certificate data' });
+    }
+ 
+    console.log(`[Renderer] Generating certificate: ${certData.certificate_id}`);
+ 
+    const renderedHtml = CERT_TEMPLATE_HTML.replace(
+      '/*__CERT_DATA__*/',
+      `const CERT_DATA = ${JSON.stringify(certData)};`
+    );
+ 
+    browser = await puppeteer.launch({
+      headless: 'new',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--font-render-hinting=none',
+      ],
+    });
+ 
+    const page = await browser.newPage();
+ 
+    await page.setViewport({ width: 1122, height: 794 });
+ 
+    await page.setContent(renderedHtml, {
+      waitUntil: 'networkidle0',
+      timeout: 30000,
+    });
+    await page.evaluateHandle('document.fonts.ready');
+ 
+    const pdfBuffer = await page.pdf({
+      width: '1122px',
+      height: '794px',
+      margin: { top: 0, bottom: 0, left: 0, right: 0 },
+      printBackground: true,
+      preferCSSPageSize: true,
+      displayHeaderFooter: false,
+    });
+ 
+    await browser.close();
+    browser = null;
+ 
+    const elapsed = Date.now() - startTime;
+    console.log(`[Renderer] Certificate complete: ${(pdfBuffer.length / 1024).toFixed(0)} KB in ${elapsed}ms`);
+ 
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Length': pdfBuffer.length,
+      'Cache-Control': 'no-store',
+    });
+    res.send(pdfBuffer);
+ 
+  } catch (err) {
+    console.error(`[Renderer] Certificate error: ${err.message}`);
+    if (browser) await browser.close();
+    res.status(500).json({ error: err.message });
+  }
+});
+ 
 app.listen(PORT, () => {
   console.log(`[Renderer] MLA Report Renderer listening on port ${PORT}`);
 });
