@@ -2171,8 +2171,10 @@ function downloadCertificatePDF(){
   }
   var overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(2,6,23,0.92);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;';
-  overlay.innerHTML='<div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(186,155,95,0.15);border-top-color:#ba9b5f;animation:spin .8s linear infinite;"></div><div style="text-align:center;"><div style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;font-weight:400;color:#f1f5f9;margin-bottom:8px;">Generating your certificate</div><div style="font-size:.82rem;color:#475569;">This may take up to 30 seconds.</div></div>';
+  overlay.innerHTML='<div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(37,99,235,0.15);border-top-color:#60a5fa;animation:spin .8s linear infinite;"></div><div style="text-align:center;"><div style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;font-weight:400;color:#f1f5f9;margin-bottom:8px;">Generating your certificate</div><div style="font-size:.82rem;color:#475569;max-width:320px;line-height:1.7;" id="cert-status-msg">Connecting to certificate server...</div></div><div style="width:280px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;"><div id="cert-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:2px;transition:width 1s ease;"></div></div><div style="font-size:.72rem;color:#334155;text-align:center;line-height:1.7;">This can take up to 30 seconds on first load.<br>Please keep this tab open.</div>';
   document.body.appendChild(overlay);
+  var certMsgs=[{t:0,msg:'Connecting to certificate server...',pct:5},{t:3000,msg:'Loading certificate data...',pct:20},{t:8000,msg:'Rendering certificate layout...',pct:45},{t:15000,msg:'Generating PDF document...',pct:70},{t:22000,msg:'Almost there, finalising...',pct:88}];
+  var certTimers=certMsgs.map(function(m){return setTimeout(function(){var el=document.getElementById('cert-status-msg');var bar=document.getElementById('cert-progress-bar');if(el)el.textContent=m.msg;if(bar)bar.style.width=m.pct+'%';},m.t);});
   var certPayload={certificate_id:activeCert.certificate_id,organisation:currentOrg.name,governance_score:activeCert.governance_score,certification_level:activeCert.certification_level,issued_at:activeCert.issued_at,expires_at:activeCert.expires_at};
   fetch('https://mla-pdf-service.onrender.com/render-certificate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(certPayload)}).then(function(res){if(!res.ok)throw new Error('Server error: '+res.status);return res.blob()}).then(function(blob){
     var storagePath='certificates/'+currentOrg.id+'/'+activeCert.certificate_id+'.pdf';
@@ -2184,10 +2186,12 @@ function downloadCertificatePDF(){
       });
     });
   }).then(function(signResult){
-    if(document.body.contains(overlay))document.body.removeChild(overlay);
-    if(signResult.data&&signResult.data.signedUrl)window.open(signResult.data.signedUrl,'_blank');
-    else alert('Certificate generated but could not create download link. Try again.');
+    certTimers.forEach(function(t){clearTimeout(t);});
+    var bar=document.getElementById('cert-progress-bar');var msg=document.getElementById('cert-status-msg');
+    if(bar)bar.style.width='100%';if(msg)msg.textContent='Certificate ready - opening...';
+    setTimeout(function(){if(document.body.contains(overlay))document.body.removeChild(overlay);if(signResult.data&&signResult.data.signedUrl)window.open(signResult.data.signedUrl,'_blank');else alert('Certificate generated but could not create download link. Try again.');},800);
   }).catch(function(err){
+    certTimers.forEach(function(t){clearTimeout(t);});
     if(document.body.contains(overlay))document.body.removeChild(overlay);
     alert('Certificate PDF generation failed: '+err.message);
   });
