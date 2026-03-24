@@ -2167,9 +2167,30 @@ function downloadCertificatePDF(){
       if(r.data&&r.data.signedUrl)window.open(r.data.signedUrl,'_blank');
       else alert('Could not generate download link.');
     });
-  }else{
-    alert('PDF generation coming soon. Your certificate is active and publicly verifiable.');
+    return;
   }
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(2,6,23,0.92);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;';
+  overlay.innerHTML='<div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(186,155,95,0.15);border-top-color:#ba9b5f;animation:spin .8s linear infinite;"></div><div style="text-align:center;"><div style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;font-weight:400;color:#f1f5f9;margin-bottom:8px;">Generating your certificate</div><div style="font-size:.82rem;color:#475569;">This may take up to 30 seconds.</div></div>';
+  document.body.appendChild(overlay);
+  var certPayload={certificate_id:activeCert.certificate_id,organisation:currentOrg.name,governance_score:activeCert.governance_score,certification_level:activeCert.certification_level,issued_at:activeCert.issued_at,expires_at:activeCert.expires_at};
+  fetch('https://mla-pdf-service.onrender.com/render-certificate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(certPayload)}).then(function(res){if(!res.ok)throw new Error('Server error: '+res.status);return res.blob()}).then(function(blob){
+    var storagePath='certificates/'+currentOrg.id+'/'+activeCert.certificate_id+'.pdf';
+    return sb.storage.from('governance-reports').upload(storagePath,blob,{contentType:'application/pdf',upsert:true}).then(function(upResult){
+      if(upResult.error)throw new Error('Upload failed: '+upResult.error.message);
+      return sb.from('governance_certificates').update({pdf_path:storagePath}).eq('id',activeCert.id).then(function(){
+        activeCert.pdf_path=storagePath;
+        return sb.storage.from('governance-reports').createSignedUrl(storagePath,3600);
+      });
+    });
+  }).then(function(signResult){
+    if(document.body.contains(overlay))document.body.removeChild(overlay);
+    if(signResult.data&&signResult.data.signedUrl)window.open(signResult.data.signedUrl,'_blank');
+    else alert('Certificate generated but could not create download link. Try again.');
+  }).catch(function(err){
+    if(document.body.contains(overlay))document.body.removeChild(overlay);
+    alert('Certificate PDF generation failed: '+err.message);
+  });
 }
  
 async function renderCertificateCard(){
