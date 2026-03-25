@@ -185,6 +185,7 @@ textarea.field-input{resize:vertical;min-height:80px}
   <div class="stat-card"><div class="stat-label">System</div><div class="stat-value" id="gov-sys-pct">—</div><div class="stat-sub" id="gov-sys-count">0 / 6 controls</div></div>
   <div class="stat-card"><div class="stat-label">Assurance</div><div class="stat-value" id="gov-ass-pct">—</div><div class="stat-sub" id="gov-ass-count">0 / 3 controls</div></div>
 </div>
+<div id="controls-tier-banner" style="display:none;" class="paywall-banner"><div><h4>Unlock governance certification and compliance reports</h4><p>Subscribe to track control maturity, generate assessment reports, and earn your governance certificate.</p></div><a href="#" onclick="navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();return false;">View Plans</a></div>
  <div class="panel" style="margin-bottom:16px;">
   <div class="panel-header">
     <div class="panel-title">Score Trend</div>
@@ -416,7 +417,7 @@ async function init(){
   const{data:results}=await sb.from('diagnostic_results').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
   currentResults=results||[];
   if(currentResults.length>0){const b=document.getElementById('report-count-badge');b.textContent=currentResults.length;b.style.display='inline-flex'}
-  document.getElementById('paywall-banner').style.display=(isPaid||isPaidTier())?'none':'flex'; document.getElementById('tier-banner').style.display=isPaidTier()?'none':'flex';
+  document.getElementById('paywall-banner').style.display=(isPaid||isPaidTier())?'none':'flex'; document.getElementById('tier-banner').style.display=isPaidTier()?'none':'flex'; document.getElementById('controls-tier-banner').style.display=isPaidTier()?'none':'flex';
   renderReports(paidIds);
   history.replaceState({view:'dashboard'},'','#dashboard');
   if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
