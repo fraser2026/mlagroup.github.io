@@ -2166,7 +2166,7 @@ function downloadCertificatePDF(){
   if(!isPaidTier()){navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();return}
   var activeCert=allCertificates.find(function(c){return c.status==='active'});
   if(!activeCert){alert('No active certificate found.');return}
-
+  if(activeCert.pdf_path){
     sb.storage.from('governance-reports').createSignedUrl(activeCert.pdf_path,3600).then(function(r){
       if(r.data&&r.data.signedUrl)window.open(r.data.signedUrl,'_blank');
       else alert('Could not generate download link.');
