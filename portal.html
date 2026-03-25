@@ -426,6 +426,11 @@ async function init(){
 function handleDeepLink(){
   var urlParams=new URLSearchParams(window.location.search);
   var goto=urlParams.get('goto');
+  if(goto==='plans'){
+    history.replaceState(null,'',window.location.pathname+'#plans');
+    navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();
+    return;
+  }
   if(goto&&goto.startsWith('system-controls-')){
     var scId=goto.replace('system-controls-','');
     if(scId){
