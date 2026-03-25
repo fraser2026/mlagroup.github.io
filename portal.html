@@ -186,7 +186,7 @@ textarea.field-input{resize:vertical;min-height:80px}
   <div class="stat-card"><div class="stat-label">Assurance</div><div class="stat-value" id="gov-ass-pct">—</div><div class="stat-sub" id="gov-ass-count">0 / 3 controls</div></div>
 </div>
 <div id="controls-tier-banner" style="display:none;" class="paywall-banner"><div><h4>Unlock governance certification and compliance reports</h4><p>Subscribe to track control maturity, generate assessment reports, and earn your governance certificate.</p></div><a href="#" onclick="navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();return false;">View Plans</a></div>
- <div class="panel" style="margin-bottom:16px;">
+ <div class="panel" style="margin-bottom:16px;background:rgba(15,23,42,0.6);border:1px solid rgba(148,163,184,0.08);border-radius:12px;box-shadow:none;">
   <div class="panel-header">
     <div class="panel-title">Score Trend</div>
     <div class="panel-sub" id="score-history-sub">Governance score over time</div>
@@ -469,12 +469,24 @@ async function ensureOrg(){
 // ═══ REGISTRY: LOAD ═══════════════════════════════════════════
 async function loadSystems(){
   if(!currentOrg)return;
-  const{data,error}=await sb.from('ai_systems').select('*,system_compliance(id,status)').eq('org_id',currentOrg.id).order('updated_at',{ascending:false});
-  allSystems=error?[]:(data||[]);renderRegistryStats();renderSystemTable();
+  var results=await Promise.all([
+    sb.from('ai_systems').select('*,system_compliance(id,status)').eq('org_id',currentOrg.id).order('updated_at',{ascending:false}),
+    sb.from('registry_assessments').select('system_id,overall_score').eq('org_id',currentOrg.id).order('created_at',{ascending:false}),
+    sb.from('control_assignments').select('system_id,status').eq('org_id',currentOrg.id)
+  ]);
+  allSystems=results[0].error?[]:(results[0].data||[]);
+  var assessments=results[1].data||[];
+  var assignments=results[2].data||[];
+  var assessBySystem={};
+  for(var a=0;a<assessments.length;a++){var as=assessments[a];if(as.system_id&&!assessBySystem[as.system_id])assessBySystem[as.system_id]=as.overall_score}
+  var assignBySystem={};
+  for(var c=0;c<assignments.length;c++){var ca=assignments[c];if(ca.system_id){if(!assignBySystem[ca.system_id])assignBySystem[ca.system_id]={total:0,done:0};assignBySystem[ca.system_id].total++;if(ca.status==='implemented'||ca.status==='verified')assignBySystem[ca.system_id].done++}}
+  for(var s=0;s<allSystems.length;s++){allSystems[s]._assessScore=assessBySystem[allSystems[s].id]||null;var ca2=assignBySystem[allSystems[s].id];allSystems[s]._ctrlPct=(ca2&&ca2.total>0)?Math.round(ca2.done/ca2.total*100):null}
+  renderRegistryStats();renderSystemTable();
   if(allSystems.length>0){document.getElementById('sys-count-badge').textContent=allSystems.length;document.getElementById('sys-count-badge').style.display='inline-flex'}
   document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
 }
-function getCP(sys){const sc=sys.system_compliance||[];if(!sc.length)return null;return Math.round(sc.filter(c=>c.status==='compliant'||c.status==='not_applicable').length/sc.length*100)}
+function getCP(sys){if(sys._assessScore!==null&&sys._assessScore!==undefined)return sys._assessScore;if(sys._ctrlPct!==null&&sys._ctrlPct!==undefined)return sys._ctrlPct;var sc=sys.system_compliance||[];if(sc.length)return Math.round(sc.filter(function(c){return c.status==='compliant'||c.status==='not_applicable'}).length/sc.length*100);return null}
 function renderRegistryStats(){
   document.getElementById('reg-total').textContent=allSystems.length;
   document.getElementById('reg-high').textContent=allSystems.filter(s=>s.risk_tier==='high'||s.risk_tier==='unacceptable').length;
@@ -486,7 +498,7 @@ function renderSystemTable(){
   const filtered=regFilter==='all'?allSystems:allSystems.filter(s=>s.deployment_status===regFilter);
   document.getElementById('reg-table-count').textContent=filtered.length+' system'+(filtered.length!==1?'s':'');
   if(!filtered.length){document.getElementById('reg-table-wrap').innerHTML='<div class="empty-state"><h4>'+(allSystems.length===0?'No systems registered yet':'No systems match this filter')+'</h4><p>'+(allSystems.length===0?'Register your first AI system.':'Try a different filter.')+'</p>'+(allSystems.length===0?'<button class="btn-dl" onclick="openAddSystem()" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register First System</button>':'')+'</div>';return}
-  document.getElementById('reg-table-wrap').innerHTML='<div style="overflow-x:auto;"><table class="sys-table"><thead><tr><th>System</th><th>Risk Tier</th><th>Status</th><th>Compliance</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{const tier=sys.risk_tier||'none';const cp=getCP(sys);const cpC=cp===null?'var(--muted)':cp>=80?'#4ade80':cp>=40?'#fde047':'#fca5a5';return '<tr onclick="openSystemDetail(\''+sys.id+'\')"><td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td><td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td><td><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status)+'</span></td><td style="min-width:100px;">'+(cp!==null?'<div style="display:flex;align-items:center;gap:8px;"><div class="cprogress-bar" style="flex:1;"><div class="cprogress-fill" style="width:'+cp+'%;background:'+cpC+';"></div></div><span style="font-size:.72rem;color:'+cpC+';font-weight:600;">'+cp+'%</span></div>':'<span style="font-size:.72rem;color:var(--muted);">—</span>')+'</td><td style="font-size:.72rem;color:var(--muted);white-space:nowrap;">'+fmtDate(sys.updated_at)+'</td></tr>'}).join('')+'</tbody></table></div>';
+  document.getElementById('reg-table-wrap').innerHTML='<div style="overflow-x:auto;"><table class="sys-table"><thead><tr><th>System</th><th>Risk Tier</th><th>Status</th><th>Compliance</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{const tier=sys.risk_tier||'none';const cp=getCP(sys);const cpC=cp===null?'#64748b':cp>=85?'#22c55e':cp>=70?'#38bdf8':cp>=50?'#fbbf24':'#ef4444';return '<tr onclick="openSystemDetail(\''+sys.id+'\')"><td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td><td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td><td><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status)+'</span></td><td style="min-width:100px;">'+(cp!==null?'<div style="display:flex;align-items:center;gap:8px;"><div class="cprogress-bar" style="flex:1;"><div class="cprogress-fill" style="width:'+cp+'%;background:'+cpC+';"></div></div><span style="font-size:.72rem;color:'+cpC+';font-weight:600;">'+cp+'%</span></div>':'<span style="font-size:.72rem;color:#64748b;">Not assessed</span>')+'</td><td style="font-size:.72rem;color:var(--muted);white-space:nowrap;">'+fmtDate(sys.updated_at)+'</td></tr>'}).join('')+'</tbody></table></div>';
 }
 function setRegFilter(s,btn){regFilter=s;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSystemTable()}
  
@@ -1539,50 +1551,44 @@ async function snapshotGovernanceScore(triggerEvent, triggerRef=null){
 }
 
 async function loadScoreHistory(){
-  const el=document.getElementById('score-history-chart');
+  var el=document.getElementById('score-history-chart');
   if(!el||!currentOrg)return;
-  const{data}=await sb.from('governance_score_history')
+  var result=await sb.from('governance_score_history')
     .select('composite_score,org_layer_score,system_layer_score,assurance_layer_score,snapshot_at,trigger_event')
     .eq('org_id',currentOrg.id)
     .order('snapshot_at',{ascending:true})
     .limit(20);
-  const history=data||[];
+  var history=(result.data)||[];
   if(history.length<2){
     el.innerHTML='<div style="text-align:center;padding:32px 0;font-size:.78rem;color:var(--muted);">Implement controls to start building your score trend.</div>';
     return;
   }
-  const W=600,H=130,PL=36,PR=16,PT=16,PB=30;
-  const cW=W-PL-PR,cH=H-PT-PB;
-  const xS=i=>PL+(i/(history.length-1))*cW;
-  const yS=v=>PT+cH-((v)/100)*cH;
-  const last=history[history.length-1];
-  const col=last.composite_score>=70?'#4ade80':last.composite_score>=40?'#fbbf24':'#f87171';
-  const pts=history.map((h,i)=>`${xS(i).toFixed(1)},${yS(h.composite_score).toFixed(1)}`);
-  const linePath='M'+pts.join('L');
-  const areaPath=linePath+` L${xS(history.length-1).toFixed(1)},${PT+cH} L${xS(0).toFixed(1)},${PT+cH}Z`;
-  const fmtLabel=iso=>new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  const labelIdxs=[...new Set([0,Math.floor((history.length-1)/2),history.length-1])];
-  var firstScore=history[0].composite_score;
-  var delta=last.composite_score-firstScore;
+  var W=660,H=180,PL=40,PR=20,PT=20,PB=32;
+  var cW=W-PL-PR,cH=H-PT-PB;
+  var xS=function(i){return PL+(i/(history.length-1))*cW};
+  var yS=function(v){return PT+cH-((v)/100)*cH};
+  var last=history[history.length-1];
+  var prev=history.length>=2?history[history.length-2]:null;
+  var delta=prev?(last.composite_score-prev.composite_score):0;
   var deltaSign=delta>=0?'+':'';
-  var deltaCol=delta>0?'#4ade80':delta<0?'#f87171':'var(--muted)';
-  el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px;"><div style="display:flex;align-items:baseline;gap:10px;"><span style="font-size:1.4rem;font-weight:700;color:'+col+';">'+last.composite_score+'%</span><span style="font-size:.78rem;font-weight:600;color:'+deltaCol+';">'+deltaSign+delta+' pts</span></div><div style="display:flex;align-items:center;gap:12px;font-size:.68rem;color:var(--muted);"><span>'+history.length+' snapshots</span><span>'+fmtLabel(history[0].snapshot_at)+' — '+fmtLabel(history[history.length-1].snapshot_at)+'</span></div></div>'+
-  '<svg viewBox="0 0 '+W+' '+(H+10)+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">'+
-    '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">'+
-      '<stop offset="0%" stop-color="'+col+'" stop-opacity="0.22"/>'+
-      '<stop offset="100%" stop-color="'+col+'" stop-opacity="0.02"/>'+
-    '</linearGradient>'+
-    '<filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>'+
-    [0,25,50,75,100].map(function(v){return '<line x1="'+PL+'" y1="'+yS(v).toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yS(v).toFixed(1)+'" stroke="rgba(255,255,255,'+(v===50?'0.06':'0.03')+')" stroke-width="1"/>'+
-    '<text x="'+(PL-6)+'" y="'+(yS(v)+3.5).toFixed(1)+'" text-anchor="end" fill="rgba(255,255,255,0.2)" font-size="9" font-family="DM Sans,sans-serif">'+v+'</text>'}).join('')+
-    '<path d="'+areaPath+'" fill="url(#sg)"/>'+
-    '<path d="'+linePath+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>'+
-    '<path d="'+linePath+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
-    history.map(function(h,i){var dotCol=h.composite_score>=70?'#4ade80':h.composite_score>=40?'#fbbf24':'#f87171';return '<circle cx="'+xS(i).toFixed(1)+'" cy="'+yS(h.composite_score).toFixed(1)+'" r="4" fill="#020617" stroke="'+dotCol+'" stroke-width="2"/>'+(i>0&&i<history.length-1?'<text x="'+xS(i).toFixed(1)+'" y="'+(yS(h.composite_score)-8).toFixed(1)+'" text-anchor="middle" fill="rgba(255,255,255,0.25)" font-size="8" font-family="DM Sans,sans-serif">'+h.composite_score+'</text>':'')}).join('')+
-    '<circle cx="'+xS(history.length-1).toFixed(1)+'" cy="'+yS(last.composite_score).toFixed(1)+'" r="5.5" fill="#020617" stroke="'+col+'" stroke-width="2.5"/>'+
-    '<circle cx="'+xS(history.length-1).toFixed(1)+'" cy="'+yS(last.composite_score).toFixed(1)+'" r="2" fill="'+col+'"/>'+
-    labelIdxs.map(function(i){return '<text x="'+xS(i).toFixed(1)+'" y="'+(H+6)+'" text-anchor="middle" fill="rgba(255,255,255,0.28)" font-size="9" font-family="DM Sans,sans-serif">'+fmtLabel(history[i].snapshot_at)+'</text>'}).join('')+
-  '</svg>';
+  var deltaCol=delta>0?'#22c55e':delta<0?'#ef4444':'#64748b';
+  var deltaArrow=delta>0?'\u2191':delta<0?'\u2193':'';
+  var pts=[];
+  for(var i=0;i<history.length;i++){pts.push(xS(i).toFixed(1)+','+yS(history[i].composite_score).toFixed(1))}
+  var linePath='M'+pts.join('L');
+  var areaPath=linePath+' L'+xS(history.length-1).toFixed(1)+','+yS(0).toFixed(1)+' L'+xS(0).toFixed(1)+','+yS(0).toFixed(1)+'Z';
+  var fmtLabel=function(iso){return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'})};
+  var labelIdxs=[0];
+  if(history.length>2)labelIdxs.push(Math.floor((history.length-1)/2));
+  labelIdxs.push(history.length-1);
+  var gridLines='';
+  var gridVals=[0,25,50,75,100];
+  for(var g=0;g<gridVals.length;g++){var v=gridVals[g];gridLines+='<line x1="'+PL+'" y1="'+yS(v).toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yS(v).toFixed(1)+'" stroke="rgba(148,163,184,0.06)" stroke-width="1"/>'+'<text x="'+(PL-8)+'" y="'+(yS(v)+3).toFixed(1)+'" text-anchor="end" fill="#64748b" font-size="9" font-weight="500" font-family="DM Sans,sans-serif">'+v+'%</text>'}
+  var dots='';
+  for(var d=0;d<history.length;d++){dots+='<circle cx="'+xS(d).toFixed(1)+'" cy="'+yS(history[d].composite_score).toFixed(1)+'" r="3" fill="#38bdf8" stroke="rgba(15,23,42,1)" stroke-width="2"/>'}
+  var xLabels='';
+  for(var x=0;x<labelIdxs.length;x++){var li=labelIdxs[x];xLabels+='<text x="'+xS(li).toFixed(1)+'" y="'+(H+2)+'" text-anchor="middle" fill="#64748b" font-size="9" font-weight="500" font-family="DM Sans,sans-serif">'+fmtLabel(history[li].snapshot_at)+'</text>'}
+  el.innerHTML='<div style="display:flex;align-items:flex-start;gap:24px;">'+'<div style="flex-shrink:0;width:120px;padding-top:4px;">'+'<div style="font-size:2.2rem;font-weight:700;color:#fff;font-family:DM Sans,sans-serif;line-height:1;">'+last.composite_score+'%</div>'+'<div style="font-size:0.7rem;color:#64748b;margin-top:4px;">Current Score</div>'+'<div style="font-size:0.78rem;font-weight:600;color:'+deltaCol+';margin-top:6px;">'+deltaArrow+' '+deltaSign+delta+' pts</div>'+'</div>'+'<div style="flex:1;min-width:0;">'+'<svg viewBox="0 0 '+W+' '+(H+8)+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;min-height:160px;">'+'<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">'+'<stop offset="0%" stop-color="rgba(56,189,248,0.15)"/>'+'<stop offset="100%" stop-color="rgba(56,189,248,0)"/>'+'</linearGradient></defs>'+gridLines+'<path d="'+areaPath+'" fill="url(#sg)"/>'+'<path d="'+linePath+'" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+xLabels+'</svg>'+'</div>'+'</div>';
 }
 
 // ═══ PHASE 3: POLICIES ════════════════════════════════════════
