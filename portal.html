@@ -153,7 +153,7 @@ textarea.field-input{resize:vertical;min-height:80px}
  
 <div id="view-analytics" class="view"><div class="locked-view"><div class="locked-icon" style="background:rgba(37,99,235,0.06);"><svg viewBox="0 0 22 22" stroke="var(--sky)"><path d="M1 16l5-6 4 4 5-7 6 6"/></svg></div><div class="locked-title">Analytics & Usage</div><div class="locked-desc">Track report views, downloads, risk trends, and team activity.</div><a href="mailto:fraser@mlagroup.co.uk" class="btn-upgrade">Request early access <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2l4 4-4 4"/></svg></a></div></div>  <div id="view-plans" class="view"><div class="page-header"><h2>Subscription Plans</h2><p>Choose the right governance tier for your organisation.</p></div><div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:32px;"><span style="font-size:.84rem;font-weight:500;color:var(--muted);cursor:pointer;transition:color .2s;" id="portal-lbl-m" onclick="setPortalPeriod('monthly')" style="color:var(--main);">Monthly</span><div style="position:relative;width:48px;height:26px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:13px;cursor:pointer;transition:background .2s,border-color .2s;" id="portal-tog" onclick="togglePortalPeriod()"><div style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 1px 4px rgba(0,0,0,0.3);" id="portal-tog-dot"></div></div><span style="font-size:.84rem;font-weight:500;color:var(--muted);cursor:pointer;transition:color .2s;" id="portal-lbl-a" onclick="setPortalPeriod('annual')">Annual</span><span style="font-size:.64rem;font-weight:700;color:var(--green);background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.12);padding:3px 10px;border-radius:100px;">Save 17%</span></div><div id="portal-pricing-cards"></div><div id="portal-checkout-loading" style="display:none;padding:24px;text-align:center;font-size:.82rem;color:var(--muted);border:1px solid var(--border);border-radius:10px;margin-top:20px;">Loading secure checkout...</div><div id="portal-checkout-container" style="display:none;margin-top:20px;border-radius:10px;overflow:hidden;border:1px solid var(--border);max-width:480px;margin-left:auto;margin-right:auto;"></div></div>
  
-<div id="view-registry" class="view"><div class="page-header"><h2>AI Systems Registry</h2><p id="reg-subtext">Document and classify your organisation's AI systems.</p></div><div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Total Systems</div><div class="stat-value" id="reg-total">—</div><div class="stat-sub">Registered</div></div><div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value" style="color:#fca5a5;" id="reg-high">—</div><div class="stat-sub">EU AI Act tier</div></div><div class="stat-card"><div class="stat-label">In Production</div><div class="stat-value" style="color:#4ade80;" id="reg-prod">—</div><div class="stat-sub">Live systems</div></div><div class="stat-card"><div class="stat-label">Compliance</div><div class="stat-value" id="reg-compliance">—</div><div class="stat-sub" id="reg-compliance-sub">Overall progress</div></div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;"><span style="font-size:.72rem;color:var(--muted);">Filter:</span><button class="filter-btn active" onclick="setRegFilter('all',this)">All</button><button class="filter-btn" onclick="setRegFilter('production',this)">Production</button><button class="filter-btn" onclick="setRegFilter('pilot',this)">Pilot</button><button class="filter-btn" onclick="setRegFilter('development',this)">Development</button><button class="filter-btn" onclick="setRegFilter('planned',this)">Planned</button></div><div class="panel"><div class="panel-header"><div class="panel-title">Systems</div><div class="panel-sub" id="reg-table-count"></div></div><div id="reg-table-wrap"><div class="loading-state">Loading registry…</div></div></div></div>
+<div id="view-registry" class="view"><div class="page-header"><h2>AI Systems Registry</h2><p id="reg-subtext">Document and classify your organisation's AI systems.</p></div><div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Total Systems</div><div class="stat-value" id="reg-total">—</div><div class="stat-sub">Registered</div></div><div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value" style="color:#fca5a5;" id="reg-high">—</div><div class="stat-sub">EU AI Act tier</div></div><div class="stat-card"><div class="stat-label">In Production</div><div class="stat-value" style="color:#4ade80;" id="reg-prod">—</div><div class="stat-sub">Live systems</div></div><div class="stat-card"><div class="stat-label">Maturity</div><div class="stat-value" id="reg-compliance">—</div><div class="stat-sub" id="reg-compliance-sub">Overall progress</div></div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;"><span style="font-size:.72rem;color:var(--muted);">Filter:</span><button class="filter-btn active" onclick="setRegFilter('all',this)">All</button><button class="filter-btn" onclick="setRegFilter('production',this)">Production</button><button class="filter-btn" onclick="setRegFilter('pilot',this)">Pilot</button><button class="filter-btn" onclick="setRegFilter('development',this)">Development</button><button class="filter-btn" onclick="setRegFilter('planned',this)">Planned</button></div><div class="panel"><div class="panel-header"><div class="panel-title">Systems</div><div class="panel-sub" id="reg-table-count"></div></div><div id="reg-table-wrap"><div class="loading-state">Loading registry…</div></div></div></div>
  
 <div id="view-registry-detail" class="view"><button class="breadcrumb" onclick="navigate('registry',document.getElementById('nav-registry'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Registry</button><div style="margin-bottom:16px;"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;"><div style="display:flex;align-items:center;gap:12px;"><h2 style="font-family:'DM Sans',sans-serif;font-size:1.4rem;font-weight:600;color:var(--main);letter-spacing:-.02em;" id="det-name">—</h2></div><div style="display:flex;align-items:center;gap:8px;"><span id="det-tier-badge"></span><button class="btn-topbar btn-topbar-primary" onclick="openAssessmentModal()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button><button class="btn-topbar btn-topbar-ghost" onclick="openEditSystem()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button></div></div><div style="display:flex;align-items:center;gap:24px;margin-top:6px;flex-wrap:wrap;" id="det-subtitle"></div><div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;" id="det-tags"></div></div><div class="panel" style="overflow:visible;"><div class="tab-bar"><button class="tab-btn active" onclick="switchDetailTab('overview',this)">Overview</button><button class="tab-btn" onclick="switchDetailTab('assessment',this)">Assessment</button><button class="tab-btn" onclick="switchDetailTab('sys-controls',this)">Controls</button><button class="tab-btn" onclick="switchDetailTab('audit',this)">Audit Log</button></div><div class="tab-panel active" id="tab-overview"></div><div class="tab-panel" id="tab-assessment"></div><div class="tab-panel" id="tab-sys-controls"></div><div class="tab-panel" id="tab-audit"></div></div></div>
  
@@ -382,6 +382,7 @@ function navigate(viewId,navEl,skipHistory){
   else if(viewId==='registry-detail'||viewId==='org'||viewId==='controls'||viewId==='control-detail')tr.innerHTML='<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   else tr.innerHTML='<button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   closeSidebar();
+  window.scrollTo(0,0);
   // Browser history
   if(!skipHistory){history.pushState({view:viewId},'','#'+viewId);navHistory.push(viewId)}
 }
@@ -486,7 +487,7 @@ async function loadSystems(){
   if(allSystems.length>0){document.getElementById('sys-count-badge').textContent=allSystems.length;document.getElementById('sys-count-badge').style.display='inline-flex'}
   document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
 }
-function getCP(sys){if(sys._assessScore!==null&&sys._assessScore!==undefined)return sys._assessScore;if(sys._ctrlPct!==null&&sys._ctrlPct!==undefined)return sys._ctrlPct;var sc=sys.system_compliance||[];if(sc.length)return Math.round(sc.filter(function(c){return c.status==='compliant'||c.status==='not_applicable'}).length/sc.length*100);return null}
+function getCP(sys){var aScore=(sys._assessScore!==null&&sys._assessScore!==undefined)?sys._assessScore:null;var cPct=(sys._ctrlPct!==null&&sys._ctrlPct!==undefined)?sys._ctrlPct:null;var pPct=null;if(allPolicies.length){var pubPols=allPolicies.filter(function(p){return p.requires_acknowledgment&&p.published_at});if(pubPols.length){var acked=pubPols.filter(function(p){return allAcknowledgments.find(function(a){return a.policy_id===p.id&&a.version_acknowledged===p.version})}).length;pPct=Math.round(acked/pubPols.length*100)}}if(aScore===null&&cPct===null&&pPct===null){var sc=sys.system_compliance||[];if(sc.length)return Math.round(sc.filter(function(c){return c.status==='compliant'||c.status==='not_applicable'}).length/sc.length*100);return null}var blended=(aScore!==null?aScore*0.5:0)+(cPct!==null?cPct*0.35:0)+(pPct!==null?pPct*0.15:0);return Math.round(blended)}
 function renderRegistryStats(){
   document.getElementById('reg-total').textContent=allSystems.length;
   document.getElementById('reg-high').textContent=allSystems.filter(s=>s.risk_tier==='high'||s.risk_tier==='unacceptable').length;
@@ -498,7 +499,7 @@ function renderSystemTable(){
   const filtered=regFilter==='all'?allSystems:allSystems.filter(s=>s.deployment_status===regFilter);
   document.getElementById('reg-table-count').textContent=filtered.length+' system'+(filtered.length!==1?'s':'');
   if(!filtered.length){document.getElementById('reg-table-wrap').innerHTML='<div class="empty-state"><h4>'+(allSystems.length===0?'No systems registered yet':'No systems match this filter')+'</h4><p>'+(allSystems.length===0?'Register your first AI system.':'Try a different filter.')+'</p>'+(allSystems.length===0?'<button class="btn-dl" onclick="openAddSystem()" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register First System</button>':'')+'</div>';return}
-  document.getElementById('reg-table-wrap').innerHTML='<div style="overflow-x:auto;"><table class="sys-table"><thead><tr><th>System</th><th>Risk Tier</th><th>Status</th><th>Compliance</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{const tier=sys.risk_tier||'none';const cp=getCP(sys);const cpC=cp===null?'#64748b':cp>=85?'#22c55e':cp>=70?'#38bdf8':cp>=50?'#fbbf24':'#ef4444';return '<tr onclick="openSystemDetail(\''+sys.id+'\')"><td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td><td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td><td><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status)+'</span></td><td style="min-width:100px;">'+(cp!==null?'<div style="display:flex;align-items:center;gap:8px;"><div class="cprogress-bar" style="flex:1;"><div class="cprogress-fill" style="width:'+cp+'%;background:'+cpC+';"></div></div><span style="font-size:.72rem;color:'+cpC+';font-weight:600;">'+cp+'%</span></div>':'<span style="font-size:.72rem;color:#64748b;">Not assessed</span>')+'</td><td style="font-size:.72rem;color:var(--muted);white-space:nowrap;">'+fmtDate(sys.updated_at)+'</td></tr>'}).join('')+'</tbody></table></div>';
+  document.getElementById('reg-table-wrap').innerHTML='<div style="overflow-x:auto;"><table class="sys-table"><thead><tr><th>System</th><th>Risk Tier</th><th>Status</th><th>Maturity</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{const tier=sys.risk_tier||'none';const cp=getCP(sys);const cpC=cp===null?'#64748b':cp>=85?'#22c55e':cp>=70?'#38bdf8':cp>=50?'#fbbf24':'#ef4444';return '<tr onclick="openSystemDetail(\''+sys.id+'\')"><td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td><td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td><td><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status)+'</span></td><td style="min-width:100px;">'+(cp!==null?'<div style="display:flex;align-items:center;gap:8px;"><div class="cprogress-bar" style="flex:1;"><div class="cprogress-fill" style="width:'+cp+'%;background:'+cpC+';"></div></div><span style="font-size:.72rem;color:'+cpC+';font-weight:600;">'+cp+'%</span></div>':'<span style="font-size:.72rem;color:#64748b;">Not assessed</span>')+'</td><td style="font-size:.72rem;color:var(--muted);white-space:nowrap;">'+fmtDate(sys.updated_at)+'</td></tr>'}).join('')+'</tbody></table></div>';
 }
 function setRegFilter(s,btn){regFilter=s;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSystemTable()}
  
@@ -817,10 +818,11 @@ async function loadControls(){
   ]);
   allControls=controls||[];allTasks=tasks||[];allAssignments=assignments||[];
   renderControlsList();
-  // Update badge
+  // Update badge — use assignment counts not control category counts
   const done=allAssignments.filter(a=>a.status==='implemented'||a.status==='verified').length;
-  const total=allControls.length;
+  const total=allAssignments.length;
   if(total){document.getElementById('ctrl-count-badge').textContent=done+'/'+total;document.getElementById('ctrl-count-badge').style.display='inline-flex'}
+  else{document.getElementById('ctrl-count-badge').style.display='none'}
 }
  
 function getGovScore(){
@@ -2056,8 +2058,8 @@ async function renderNextSteps(){
     });
   }
 
-  // 3. Pending policies
-  if(!allPolicies.length&&currentOrg){
+  // 3. Pending policies — always reload fresh data
+  if(currentOrg){
     var polLoad=await sb.from('policy_documents').select('*').eq('org_id',currentOrg.id).eq('is_active',true);
     allPolicies=polLoad.data||[];
     var ackLoad=await sb.from('policy_acknowledgments').select('*').eq('org_id',currentOrg.id).eq('user_id',currentUser.id);
@@ -2159,13 +2161,21 @@ async function startSubscription(priceId){
  
 async function activateCertificate(){
   if(!currentOrg)return;
-  if(!isPaidTier()){navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();return}
-  var gov=allControls.length?getGovScore():{score:0};
-
-  if(gov.score<70){alert('Governance score must be 70% or above.');return}
-  if(allSystems.length<1){alert('At least one AI system is required.');return}
   var plan=currentOrg.plan||'free';
-  if(plan!=='essentials'&&plan!=='professional'){alert('An active subscription is required.');return}
+  var hasPlan=plan==='essentials'||plan==='professional';
+  if(!hasPlan){navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();return}
+  var gov=allControls.length?getGovScore():{score:0};
+  var missing=[];
+  if(gov.score<70)missing.push('Governance score must reach 70% (currently '+gov.score+'%)');
+  if(allSystems.length<1)missing.push('At least 1 AI system required');
+  var assessResult2=await sb.from('registry_assessments').select('id').eq('org_id',currentOrg.id).limit(1);
+  if(!assessResult2.data||!assessResult2.data.length)missing.push('At least 1 completed assessment required');
+  var polLoad2=await sb.from('policy_documents').select('id,requires_acknowledgment,published_at,version').eq('org_id',currentOrg.id).eq('is_active',true);
+  var ackLoad2=await sb.from('policy_acknowledgments').select('policy_id,version_acknowledged').eq('org_id',currentOrg.id).eq('user_id',currentUser.id);
+  var pols2=polLoad2.data||[];var acks2=ackLoad2.data||[];
+  var pendCount=0;pols2.forEach(function(p){if(!p.requires_acknowledgment||!p.published_at)return;var a=acks2.find(function(ak){return ak.policy_id===p.id&&ak.version_acknowledged===p.version});if(!a)pendCount++});
+  if(pendCount>0)missing.push(pendCount+' polic'+(pendCount!==1?'ies':'y')+' pending acknowledgment');
+  if(missing.length){alert('Cannot activate certificate: '+missing.join(' | '));return}
   var score=gov.score;
   var level=score>=85?'advanced':score>=70?'structured':'emerging';
   var systemsCovered=allSystems.map(function(s){return{id:s.id,name:s.name}});
@@ -2245,14 +2255,12 @@ async function renderCertificateCard(){
   // Check assessment count
   var assessResult=await sb.from('registry_assessments').select('id').eq('org_id',currentOrg.id).limit(1);
   var hasAssessment=assessResult.data&&assessResult.data.length>0;
-  // Check pending policies
+  // Check pending policies — always reload fresh data
   var pendingPols=0;
-  if(!allPolicies.length&&currentOrg){
-    var polLoad=await sb.from('policy_documents').select('*').eq('org_id',currentOrg.id).eq('is_active',true);
-    allPolicies=polLoad.data||[];
-    var ackLoad=await sb.from('policy_acknowledgments').select('*').eq('org_id',currentOrg.id).eq('user_id',currentUser.id);
-    allAcknowledgments=ackLoad.data||[];
-  }
+  var polLoad=await sb.from('policy_documents').select('*').eq('org_id',currentOrg.id).eq('is_active',true);
+  allPolicies=polLoad.data||[];
+  var ackLoad=await sb.from('policy_acknowledgments').select('*').eq('org_id',currentOrg.id).eq('user_id',currentUser.id);
+  allAcknowledgments=ackLoad.data||[];
   allPolicies.forEach(function(p){
     if(!p.requires_acknowledgment||!p.published_at)return;
     var acked=allAcknowledgments.find(function(a){return a.policy_id===p.id&&a.version_acknowledged===p.version});
