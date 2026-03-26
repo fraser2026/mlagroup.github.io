@@ -81,6 +81,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="nav-item" onclick="showView('clients',this)"><svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/></svg>All Clients</div>
 <div class="nav-label">Tools</div>
 <div class="nav-item" onclick="window.location.href='portal.html'"><svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg>Client Portal</div>
+<div class="nav-item" id="nav-devtools" style="display:none;" onclick="showView('devtools',this)"><svg viewBox="0 0 16 16"><path d="M5.5 2.5l-3 3 3 3M10.5 2.5l3 3-3 3"/><path d="M9 1L7 11"/></svg>Dev Tools</div>
 </nav>
 <div class="sidebar-footer"><div class="user-tile"><div class="user-avatar">ML</div><div><div class="user-name">MLA Group</div><div class="user-role">Administrator</div></div></div></div>
 </aside>
@@ -145,10 +146,59 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div id="policy-admin-detail-content"><div class="loading">Loading…</div></div>
 </div>
  
+<div id="view-devtools" class="view">
+<div class="page-header"><h2>Dev Tools</h2><p>Test tier views and subscription states without running SQL.</p></div>
+<div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#f87171" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1L1 14h14L8 1z"/><path d="M8 6v3M8 11.5v.01"/></svg>
+<span style="font-size:.78rem;color:#fca5a5;">Changes affect live data — for testing only</span>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+<div class="panel" style="margin-bottom:0;">
+<div class="panel-header"><div class="panel-title">Organisation &amp; Tier</div></div>
+<div style="padding:18px 20px;">
+<label class="field-label">Organisation</label>
+<select class="field-input" id="dt-org" onchange="loadOrgSummary()"><option value="">Select organisation</option></select>
+<label class="field-label">Plan Tier</label>
+<div style="display:flex;gap:6px;margin-bottom:14px;">
+<button class="btn btn-ghost" id="dt-tier-free" onclick="selectDevTier('free')" style="flex:1;justify-content:center;font-size:.72rem;">Free</button>
+<button class="btn btn-ghost" id="dt-tier-essentials" onclick="selectDevTier('essentials')" style="flex:1;justify-content:center;font-size:.72rem;">Essentials</button>
+<button class="btn btn-ghost" id="dt-tier-professional" onclick="selectDevTier('professional')" style="flex:1;justify-content:center;font-size:.72rem;">Professional</button>
+<button class="btn btn-ghost" id="dt-tier-enterprise" onclick="selectDevTier('enterprise')" style="flex:1;justify-content:center;font-size:.72rem;">Enterprise</button>
+</div>
+<label class="field-label">Subscription Status</label>
+<div style="display:flex;gap:6px;margin-bottom:14px;">
+<button class="btn btn-ghost" id="dt-ss-active" onclick="selectDevStatus('active')" style="flex:1;justify-content:center;font-size:.72rem;">Active</button>
+<button class="btn btn-ghost" id="dt-ss-cancelled" onclick="selectDevStatus('cancelled')" style="flex:1;justify-content:center;font-size:.72rem;">Cancelled</button>
+<button class="btn btn-ghost" id="dt-ss-expired" onclick="selectDevStatus('expired')" style="flex:1;justify-content:center;font-size:.72rem;">Expired</button>
+<button class="btn btn-ghost" id="dt-ss-trialing" onclick="selectDevStatus('trialing')" style="flex:1;justify-content:center;font-size:.72rem;">Trialing</button>
+<button class="btn btn-ghost" id="dt-ss-null" onclick="selectDevStatus('null')" style="flex:1;justify-content:center;font-size:.72rem;">Null</button>
+</div>
+<label class="field-label">Diagnostic Report Access</label>
+<div style="display:flex;gap:6px;margin-bottom:18px;">
+<button class="btn btn-ghost" id="dt-diag-ent" onclick="selectDevDiag('entitlement')" style="flex:1;justify-content:center;font-size:.72rem;">Via Entitlement</button>
+<button class="btn btn-ghost" id="dt-diag-paid" onclick="selectDevDiag('profile')" style="flex:1;justify-content:center;font-size:.72rem;">Via profiles.paid</button>
+<button class="btn btn-ghost" id="dt-diag-none" onclick="selectDevDiag('none')" style="flex:1;justify-content:center;font-size:.72rem;">No Access</button>
+</div>
+<div style="display:flex;gap:10px;">
+<button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="applyDevChanges()">Apply Changes</button>
+<button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="viewAsClient()">View as Client</button>
+</div>
+<div id="dt-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div>
+</div>
+</div>
+<div class="panel" style="margin-bottom:0;">
+<div class="panel-header"><div class="panel-title">Current State</div></div>
+<div style="padding:18px 20px;" id="dt-summary">
+<div class="empty" style="padding:24px;">Select an organisation to view current state</div>
 </div>
 </div>
 </div>
- 
+</div>
+
+</div>
+</div>
+</div>
+
 <!-- Deploy Template Modal -->
 <div style="position:fixed;inset:0;z-index:999;background:rgba(2,6,23,0.8);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;" id="deploy-modal">
 <div style="background:var(--sidebar);border:1px solid var(--border);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;">
@@ -272,7 +322,7 @@ function showView(id,navEl){
   if(navEl)navEl.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+id).classList.add('active');
-  var titles={dashboard:'Admin Dashboard',queue:'Assessment Queue',clients:'All Clients','assessment-detail':'Assessment Detail',support:'Support Requests','support-detail':'Support Detail','policies-admin':'Client Policies','policy-admin-detail':'Policy Detail'};
+  var titles={dashboard:'Admin Dashboard',queue:'Assessment Queue',clients:'All Clients','assessment-detail':'Assessment Detail',support:'Support Requests','support-detail':'Support Detail','policies-admin':'Client Policies','policy-admin-detail':'Policy Detail',devtools:'Dev Tools'};
   document.getElementById('topbar-title').textContent=titles[id]||'Admin';
 }
  
@@ -288,6 +338,7 @@ async function init(){
     return;
   }
   await loadData();
+  initDevTools();
 }
  
 async function loadData(){
@@ -970,6 +1021,187 @@ async function saveEditedPolicy(){
   },1500);
 }
  
+// === Dev Tools ===
+var ADMIN_UUID='07f6a44a-cd17-4db0-b303-94d3d5d9a4ab';
+var dtSelectedTier=null;
+var dtSelectedStatus=null;
+var dtSelectedDiag=null;
+
+function initDevTools(){
+  if(!currentUser)return;
+  if(currentUser.id!==ADMIN_UUID)return;
+  var navEl=document.getElementById('nav-devtools');
+  if(navEl)navEl.style.display='flex';
+  loadDevToolsOrgs();
+}
+
+function loadDevToolsOrgs(){
+  var sel=document.getElementById('dt-org');
+  if(!sel)return;
+  sel.innerHTML='<option value="">Select organisation</option>';
+  allOrgs.forEach(function(o){
+    var opt=document.createElement('option');
+    opt.value=o.id;
+    opt.textContent=esc(o.name)+' ('+esc(o.plan||'free')+')';
+    sel.appendChild(opt);
+  });
+}
+
+function selectDevTier(tier){
+  dtSelectedTier=tier;
+  var tiers=['free','essentials','professional','enterprise'];
+  tiers.forEach(function(t){
+    var btn=document.getElementById('dt-tier-'+t);
+    if(t===tier){btn.style.background='rgba(239,68,68,0.15)';btn.style.borderColor='rgba(239,68,68,0.4)';btn.style.color='#f87171';}
+    else{btn.style.background='transparent';btn.style.borderColor='';btn.style.color='';}
+  });
+}
+
+function selectDevStatus(status){
+  dtSelectedStatus=status;
+  var statuses=['active','cancelled','expired','trialing','null'];
+  statuses.forEach(function(s){
+    var btn=document.getElementById('dt-ss-'+s);
+    if(s===status){btn.style.background='rgba(239,68,68,0.15)';btn.style.borderColor='rgba(239,68,68,0.4)';btn.style.color='#f87171';}
+    else{btn.style.background='transparent';btn.style.borderColor='';btn.style.color='';}
+  });
+}
+
+function selectDevDiag(diag){
+  dtSelectedDiag=diag;
+  var opts=['ent','paid','none'];
+  var vals=['entitlement','profile','none'];
+  opts.forEach(function(o,i){
+    var btn=document.getElementById('dt-diag-'+o);
+    if(vals[i]===diag){btn.style.background='rgba(239,68,68,0.15)';btn.style.borderColor='rgba(239,68,68,0.4)';btn.style.color='#f87171';}
+    else{btn.style.background='transparent';btn.style.borderColor='';btn.style.color='';}
+  });
+}
+
+async function applyDevChanges(){
+  var orgId=document.getElementById('dt-org').value;
+  var msgEl=document.getElementById('dt-msg');
+  if(!orgId){msgEl.style.display='block';msgEl.style.color='var(--red)';msgEl.textContent='Select an organisation first.';return;}
+
+  var updates={};
+  if(dtSelectedTier!==null)updates.plan=dtSelectedTier;
+  if(dtSelectedStatus!==null)updates.subscription_status=dtSelectedStatus==='null'?null:dtSelectedStatus;
+
+  if(Object.keys(updates).length===0 && dtSelectedDiag===null){
+    msgEl.style.display='block';msgEl.style.color='var(--red)';msgEl.textContent='Select at least one change to apply.';return;
+  }
+
+  var errors=[];
+
+  if(Object.keys(updates).length>0){
+    var res=await sb.from('organisations').update(updates).eq('id',orgId);
+    if(res.error)errors.push('Org update: '+res.error.message);
+  }
+
+  if(dtSelectedDiag!==null){
+    var org=allOrgs.find(function(o){return o.id===orgId;});
+    if(org){
+      if(dtSelectedDiag==='entitlement'){
+        var existing=await sb.from('entitlements').select('id').eq('user_id',org.owner_id).eq('status','active');
+        if(!existing.data||existing.data.length===0){
+          await sb.from('entitlements').insert({user_id:org.owner_id,diagnostic_id:'dev-tools-grant',status:'active'});
+        }
+        await sb.from('profiles').update({paid:false}).eq('id',org.owner_id);
+      }else if(dtSelectedDiag==='profile'){
+        await sb.from('entitlements').delete().eq('user_id',org.owner_id).eq('status','active');
+        await sb.from('profiles').update({paid:true}).eq('id',org.owner_id);
+      }else{
+        await sb.from('entitlements').delete().eq('user_id',org.owner_id).eq('status','active');
+        await sb.from('profiles').update({paid:false}).eq('id',org.owner_id);
+      }
+    }
+  }
+
+  if(errors.length>0){
+    msgEl.style.display='block';msgEl.style.color='var(--red)';msgEl.textContent=errors.join('; ');
+  }else{
+    msgEl.style.display='block';msgEl.style.color='#4ade80';msgEl.textContent='Changes applied successfully.';
+    var refreshRes=await sb.from('organisations').select('*').order('created_at',{ascending:false});
+    allOrgs=refreshRes.data||[];
+    loadDevToolsOrgs();
+    document.getElementById('dt-org').value=orgId;
+    loadOrgSummary();
+    setTimeout(function(){msgEl.style.display='none';},3000);
+  }
+}
+
+function viewAsClient(){
+  var orgId=document.getElementById('dt-org').value;
+  if(!orgId){
+    var msgEl=document.getElementById('dt-msg');
+    msgEl.style.display='block';msgEl.style.color='var(--red)';msgEl.textContent='Select an organisation first.';
+    return;
+  }
+  window.open('portal.html','_blank');
+}
+
+async function loadOrgSummary(){
+  var orgId=document.getElementById('dt-org').value;
+  var container=document.getElementById('dt-summary');
+  if(!orgId){container.innerHTML='<div class="empty" style="padding:24px;">Select an organisation to view current state</div>';return;}
+
+  container.innerHTML='<div class="loading">Loading…</div>';
+
+  var org=allOrgs.find(function(o){return o.id===orgId;});
+  if(!org){container.innerHTML='<div class="empty">Organisation not found</div>';return;}
+
+  var systems=allSystems.filter(function(s){return s.org_id===orgId;});
+  var assessments=allAssessments.filter(function(a){
+    var sysIds=systems.map(function(s){return s.id;});
+    return sysIds.indexOf(a.system_id)!==-1;
+  });
+
+  var entRes=await sb.from('entitlements').select('id,status').eq('user_id',org.owner_id||'').eq('status','active');
+  var profRes=await sb.from('profiles').select('paid').eq('id',org.owner_id||'').single();
+  var certRes=await sb.from('governance_certificates').select('id,status,issued_at').eq('org_id',orgId).order('issued_at',{ascending:false}).limit(1);
+  var scoreRes=await sb.from('governance_score_history').select('overall_score').eq('org_id',orgId).order('recorded_at',{ascending:false}).limit(1);
+
+  var hasEnt=(entRes.data&&entRes.data.length>0);
+  var hasPaid=(profRes.data&&profRes.data.paid===true);
+  var cert=(certRes.data&&certRes.data.length>0)?certRes.data[0]:null;
+  var score=(scoreRes.data&&scoreRes.data.length>0)?scoreRes.data[0].overall_score:null;
+
+  var planColor='var(--muted)';
+  if(org.plan==='essentials')planColor='#60a5fa';
+  if(org.plan==='professional')planColor='#a78bfa';
+  if(org.plan==='enterprise')planColor='#fbbf24';
+
+  var statusColor='var(--muted)';
+  if(org.subscription_status==='active')statusColor='#4ade80';
+  if(org.subscription_status==='cancelled')statusColor='#f87171';
+  if(org.subscription_status==='trialing')statusColor='#fbbf24';
+  if(org.subscription_status==='expired')statusColor='#f87171';
+
+  var diagAccess=hasEnt?'Entitlement (active)':(hasPaid?'profiles.paid = true':'No access');
+  var diagColor=hasEnt||hasPaid?'#4ade80':'var(--muted)';
+
+  var rows='';
+  rows+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;">';
+  rows+='<div><div class="detail-label">Plan</div><div class="detail-val" style="color:'+planColor+';font-weight:600;">'+esc(org.plan||'free').toUpperCase()+'</div></div>';
+  rows+='<div><div class="detail-label">Subscription Status</div><div class="detail-val" style="color:'+statusColor+';font-weight:600;">'+esc(org.subscription_status||'null')+'</div></div>';
+  rows+='<div><div class="detail-label">AI Systems</div><div class="detail-val">'+systems.length+'</div></div>';
+  rows+='<div><div class="detail-label">Assessments</div><div class="detail-val">'+assessments.length+'</div></div>';
+  rows+='<div><div class="detail-label">Governance Score</div><div class="detail-val">'+(score!==null?score+'%':'—')+'</div></div>';
+  rows+='<div><div class="detail-label">Certificate</div><div class="detail-val">'+(cert?esc(cert.status)+' ('+fmtDate(cert.issued_at)+')':'None')+'</div></div>';
+  rows+='<div style="grid-column:1/-1;"><div class="detail-label">Diagnostic Access</div><div class="detail-val" style="color:'+diagColor+';">'+diagAccess+'</div></div>';
+  rows+='</div>';
+
+  container.innerHTML=rows;
+
+  // Highlight current state in buttons
+  if(org.plan)selectDevTier(org.plan);
+  if(org.subscription_status)selectDevStatus(org.subscription_status);
+  else selectDevStatus('null');
+  if(hasEnt)selectDevDiag('entitlement');
+  else if(hasPaid)selectDevDiag('profile');
+  else selectDevDiag('none');
+}
+
 init();
 </script>
 </body>
