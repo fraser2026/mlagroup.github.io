@@ -142,6 +142,11 @@ textarea.field-input{resize:vertical;min-height:80px}
 [data-theme="light"] .role-admin{color:#15803d;background:rgba(34,197,94,0.08)}
 [data-theme="light"] .role-editor{color:#1d4ed8;background:rgba(37,99,235,0.08)}
 
+[data-theme="light"] body {
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+}
+
 /* Theme toggle pill button */
 .btn-theme-pill{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;gap:7px;padding:8px 16px 8px 12px;border-radius:100px;background:var(--surface2);border:1px solid var(--border2);color:var(--sub);font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;backdrop-filter:blur(12px);box-shadow:0 2px 16px rgba(0,0,0,0.25);user-select:none}
 .btn-theme-pill:hover{border-color:var(--accent);color:var(--main);box-shadow:0 4px 20px rgba(37,99,235,0.2)}
