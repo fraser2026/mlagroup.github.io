@@ -264,196 +264,153 @@
     }
   })();
 
-  /* === Circuit / Data Flow Signal ===
-     Orthogonal (right-angle) pathways simulating a PCB trace, network topology,
-     or AI data pipeline. Pulses of light travel along these defined routes 
-     with a decaying trail, creating an engineered, persistent flow. */
+    /* === RegAnchor System Flow ===
+     A premium, margin-focused data visualization. 
+     Paths are invisible until 'scanned' by a pulse.
+     Coordinates are tuned to frame the central text. */
   (function initSignal() {
     const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) return;
 
     const canvas = document.getElementById('signal');
     const ctx = canvas.getContext('2d');
+    let w, h, dpr, lastTime = performance.now();
 
-    let w = 0, h = 0, dpr = 1;
-    let lastTime = performance.now();
-
-    // Define the raw relative paths (x, y as percentages of the screen)
-    // Points outside 0-1 allow pulses to originate from off-screen
+    // Paths carefully placed in margins to avoid cutting through central text
     const pathBlueprints = [
-      [{x: -0.1, y: 0.15}, {x: 0.25, y: 0.15}, {x: 0.25, y: 0.75}, {x: 0.85, y: 0.75}, {x: 0.85, y: 1.1}],
-      [{x: 1.1, y: 0.3}, {x: 0.65, y: 0.3}, {x: 0.65, y: 0.85}, {x: -0.1, y: 0.85}],
-      [{x: 0.15, y: 1.1}, {x: 0.15, y: 0.45}, {x: 0.9, y: 0.45}, {x: 0.9, y: -0.1}],
-      [{x: 0.45, y: -0.1}, {x: 0.45, y: 0.55}, {x: 0.75, y: 0.55}, {x: 0.75, y: 0.9}, {x: 1.1, y: 0.9}]
+      // Top & Right Frame
+      [{x: 0.05, y: -0.1}, {x: 0.05, y: 0.08}, {x: 0.95, y: 0.08}, {x: 0.95, y: 0.4}],
+      // Bottom Left "L"
+      [{x: -0.1, y: 0.92}, {x: 0.4, y: 0.92}, {x: 0.4, y: 1.1}],
+      // Side Gutter "Pipeline"
+      [{x: 0.9, y: 1.1}, {x: 0.9, y: 0.6}, {x: 1.1, y: 0.6}],
+      // Top Left Corner
+      [{x: -0.1, y: 0.4}, {x: 0.12, y: 0.4}, {x: 0.12, y: -0.1}]
     ];
 
-    let paths = [];
-    let pulses = [];
+    let paths = [], pulses = [];
 
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = window.innerWidth;
-      h = window.innerHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
       ctx.scale(dpr, dpr);
-      
       buildPaths();
     }
 
-    // Translates blueprints into absolute pixel coordinates and calculates segment lengths
     function buildPaths() {
       paths = pathBlueprints.map(bp => {
         const points = bp.map(pt => ({ x: pt.x * w, y: pt.y * h }));
         const segments = [];
         let totalLen = 0;
-
         for (let i = 0; i < points.length - 1; i++) {
-          const p1 = points[i];
-          const p2 = points[i+1];
-          const len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-          segments.push({ p1, p2, len });
+          const len = Math.hypot(points[i+1].x - points[i].x, points[i+1].y - points[i].y);
+          segments.push({ p1: points[i], p2: points[i+1], len });
           totalLen += len;
         }
         return { points, segments, totalLen };
       });
 
-      // Initialize pulses if not already done
       if (pulses.length === 0) {
-        paths.forEach((path, index) => {
-          pulses.push({
-            pathIndex: index,
-            distance: Math.random() * path.totalLen, // Start at random positions
-            speed: 60 + Math.random() * 40,          // Pixels per second
-            tailLength: 300 + Math.random() * 200,   // Length of the fading tail
-            delay: 0                                 // Pause before restarting
-          });
-        });
+        paths.forEach((_, i) => spawnPulse(i, true));
       }
     }
 
-        function getRGB() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      // Dark: Pure White | Light: A sophisticated Slate (Navy-Grey)
-      return isDark ? '255, 255, 255' : '71, 85, 105'; 
+    function spawnPulse(index, randomStart = false) {
+      const path = paths[index];
+      pulses[index] = {
+        pathIndex: index,
+        distance: randomStart ? Math.random() * path.totalLen : 0,
+        speed: 40 + Math.random() * 30,
+        tailLength: 250 + Math.random() * 150,
+        delay: randomStart ? 0 : Math.random() * 4 
+      };
     }
 
-
-    // Helper: Finds the exact X/Y coordinate at a specific distance along a path
     function getPointAt(path, d) {
       if (d <= 0) return path.points[0];
       if (d >= path.totalLen) return path.points[path.points.length - 1];
-
       let traversed = 0;
-      for (let i = 0; i < path.segments.length; i++) {
-        let seg = path.segments[i];
+      for (let seg of path.segments) {
         if (d <= traversed + seg.len) {
-          let ratio = (d - traversed) / seg.len;
-          return {
-            x: seg.p1.x + (seg.p2.x - seg.p1.x) * ratio,
-            y: seg.p1.y + (seg.p2.y - seg.p1.y) * ratio
-          };
+          let r = (d - traversed) / seg.len;
+          return { x: seg.p1.x + (seg.p2.x - seg.p1.x) * r, y: seg.p1.y + (seg.p2.y - seg.p1.y) * r };
         }
         traversed += seg.len;
       }
-      return path.points[path.points.length - 1];
     }
 
-        
-          function draw(now) {
+    function draw(now) {
       const dt = (now - lastTime) / 1000;
       lastTime = now;
-
-      const rgb = getRGB();
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      
+      // COLORS: Soft Indigo/Slate for Light, Pure White for Dark
+      const baseRGB = isDark ? '255, 255, 255' : '99, 102, 241'; 
+      
       ctx.clearRect(0, 0, w, h);
 
-      // 1. Draw the Background Traces
-      ctx.lineWidth = 1;
-      ctx.lineCap = 'round';
-      
-      paths.forEach(path => {
-        // STYLE: Dotted lines for Light Mode, Solid for Dark Mode
-        if (!isDark) {
-          ctx.setLineDash([2, 4]); // Creates a fine dotted look
-          ctx.strokeStyle = `rgba(${rgb}, 0.15)`;
-        } else {
-          ctx.setLineDash([]); // Solid lines for dark mode
-          ctx.strokeStyle = `rgba(${rgb}, 0.06)`;
-        }
-
-        ctx.beginPath();
-        ctx.moveTo(path.points[0].x, path.points[0].y);
-        for (let i = 1; i < path.points.length; i++) {
-          ctx.lineTo(path.points[i].x, path.points[i].y);
-        }
-        ctx.stroke();
-
-        // 2. Draw "Nodes" (Tiny dots at the corners)
-        // This is the secret to the "Network Topology" look
-        ctx.setLineDash([]); 
-        ctx.fillStyle = isDark ? `rgba(${rgb}, 0.1)` : `rgba(${rgb}, 0.2)`;
-        path.points.forEach(pt => {
-          ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
-          ctx.fill();
-        });
-      });
-
-      // 3. Draw the Pulses
-      pulses.forEach(pulse => {
-        const path = paths[pulse.pathIndex];
+      pulses.forEach((pulse, i) => {
         if (pulse.delay > 0) { pulse.delay -= dt; return; }
-
+        
         pulse.distance += pulse.speed * dt;
+        const path = paths[pulse.pathIndex];
+
         if (pulse.distance - pulse.tailLength > path.totalLen) {
-          pulse.distance = 0;
-          pulse.delay = Math.random() * 3;
-          pulse.speed = 50 + Math.random() * 40;
+          spawnPulse(i);
+          return;
         }
 
-        const currentD = pulse.distance;
-        const endD = Math.max(0, pulse.distance - pulse.tailLength);
-        const step = 4;
-        let prevPoint = getPointAt(path, currentD);
+        const headD = pulse.distance;
+        const tailD = Math.max(0, headD - pulse.tailLength);
+        
+        // DRAW THE "SCANNED" PATH (The Tail)
+        const steps = 30;
+        for (let j = 0; j < steps; j++) {
+          const d1 = tailD + (j / steps) * (headD - tailD);
+          const d2 = tailD + ((j + 1) / steps) * (headD - tailD);
+          const p1 = getPointAt(path, d1);
+          const p2 = getPointAt(path, d2);
 
-        ctx.lineWidth = 1.5;
-        for (let d = currentD - step; d >= endD; d -= step) {
-          let pt = getPointAt(path, d);
-          if (!pt) continue;
-          let opacity = Math.pow((d - endD) / pulse.tailLength, 2); 
-          ctx.strokeStyle = `rgba(${rgb}, ${opacity * (isDark ? 0.6 : 0.4)})`;
-          ctx.beginPath();
-          ctx.moveTo(prevPoint.x, prevPoint.y);
-          ctx.lineTo(pt.x, pt.y);
-          ctx.stroke();
-          prevPoint = pt;
-        }
-
-        // 4. Pulse Head
-        let headPt = getPointAt(path, currentD);
-        if (headPt && currentD > 0 && currentD < path.totalLen) {
-          if (isDark) {
-            ctx.fillStyle = `rgba(${rgb}, 0.9)`;
-            ctx.beginPath(); ctx.arc(headPt.x, headPt.y, 2, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = `rgba(${rgb}, 0.2)`;
-            ctx.beginPath(); ctx.arc(headPt.x, headPt.y, 8, 0, Math.PI * 2); ctx.fill();
-          } else {
-            // Light Mode: Sharp "Compass/Target" Head
-            ctx.strokeStyle = `rgba(${rgb}, 0.8)`;
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.arc(headPt.x, headPt.y, 4, 0, Math.PI * 2); ctx.stroke();
-            ctx.fillStyle = `rgba(${rgb}, 0.6)`;
-            ctx.beginPath(); ctx.arc(headPt.x, headPt.y, 1.5, 0, Math.PI * 2); ctx.fill();
+          if (p1 && p2) {
+            const opacity = Math.pow(j / steps, 3); // Exponential fade
+            ctx.strokeStyle = `rgba(${baseRGB}, ${opacity * (isDark ? 0.4 : 0.25)})`;
+            ctx.lineWidth = isDark ? 1.2 : 1.5;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
           }
+        }
+
+        // DRAW THE "PACKET" HEAD
+        const headPt = getPointAt(path, headD);
+        if (headPt && headD < path.totalLen) {
+          ctx.fillStyle = `rgba(${baseRGB}, ${isDark ? 0.9 : 0.7})`;
+          // Main Dot
+          ctx.beginPath();
+          ctx.arc(headPt.x, headPt.y, 2, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Subtle soft glow around head
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = `rgba(${baseRGB}, 0.5)`;
+          ctx.beginPath();
+          ctx.arc(headPt.x, headPt.y, 1, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0; // Reset for next items
         }
       });
 
       requestAnimationFrame(draw);
     }
+
+    window.addEventListener('resize', resize);
+    resize();
+    requestAnimationFrame(draw);
+  })();
+
 
 
 
