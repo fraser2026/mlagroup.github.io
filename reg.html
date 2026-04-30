@@ -335,11 +335,12 @@
       }
     }
 
-    function getRGB() {
+        function getRGB() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      // Return raw RGB values so we can inject dynamic opacities for the trails
-      return isDark ? '255, 255, 255' : '10, 14, 20';
+      // Dark: Pure White | Light: A sophisticated Slate (Navy-Grey)
+      return isDark ? '255, 255, 255' : '71, 85, 105'; 
     }
+
 
     // Helper: Finds the exact X/Y coordinate at a specific distance along a path
     function getPointAt(path, d) {
@@ -361,7 +362,8 @@
       return path.points[path.points.length - 1];
     }
 
-        function draw(now) {
+        
+          function draw(now) {
       const dt = (now - lastTime) / 1000;
       lastTime = now;
 
@@ -369,90 +371,90 @@
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       ctx.clearRect(0, 0, w, h);
 
-      ctx.lineCap = 'square';
-      ctx.lineJoin = 'miter';
-
-      // 1. Draw the dim background circuits
+      // 1. Draw the Background Traces
       ctx.lineWidth = 1;
-      ctx.strokeStyle = isDark ? `rgba(${rgb}, 0.06)` : `rgba(${rgb}, 0.03)`;
+      ctx.lineCap = 'round';
+      
       paths.forEach(path => {
+        // STYLE: Dotted lines for Light Mode, Solid for Dark Mode
+        if (!isDark) {
+          ctx.setLineDash([2, 4]); // Creates a fine dotted look
+          ctx.strokeStyle = `rgba(${rgb}, 0.15)`;
+        } else {
+          ctx.setLineDash([]); // Solid lines for dark mode
+          ctx.strokeStyle = `rgba(${rgb}, 0.06)`;
+        }
+
         ctx.beginPath();
         ctx.moveTo(path.points[0].x, path.points[0].y);
         for (let i = 1; i < path.points.length; i++) {
           ctx.lineTo(path.points[i].x, path.points[i].y);
         }
         ctx.stroke();
+
+        // 2. Draw "Nodes" (Tiny dots at the corners)
+        // This is the secret to the "Network Topology" look
+        ctx.setLineDash([]); 
+        ctx.fillStyle = isDark ? `rgba(${rgb}, 0.1)` : `rgba(${rgb}, 0.2)`;
+        path.points.forEach(pt => {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        });
       });
 
-      // 2. Update and draw pulses
+      // 3. Draw the Pulses
       pulses.forEach(pulse => {
         const path = paths[pulse.pathIndex];
-        
-        if (pulse.delay > 0) {
-          pulse.delay -= dt;
-          return;
-        }
+        if (pulse.delay > 0) { pulse.delay -= dt; return; }
 
         pulse.distance += pulse.speed * dt;
-
         if (pulse.distance - pulse.tailLength > path.totalLen) {
           pulse.distance = 0;
-          pulse.delay = Math.random() * 2;
-          pulse.speed = 60 + Math.random() * 40;
+          pulse.delay = Math.random() * 3;
+          pulse.speed = 50 + Math.random() * 40;
         }
 
         const currentD = pulse.distance;
         const endD = Math.max(0, pulse.distance - pulse.tailLength);
         const step = 4;
-        
         let prevPoint = getPointAt(path, currentD);
 
         ctx.lineWidth = 1.5;
         for (let d = currentD - step; d >= endD; d -= step) {
           let pt = getPointAt(path, d);
           if (!pt) continue;
-
-          let opacity = Math.pow((d - endD) / pulse.tailLength, 1.5); 
-          ctx.strokeStyle = `rgba(${rgb}, ${opacity * 0.6})`;
-          
+          let opacity = Math.pow((d - endD) / pulse.tailLength, 2); 
+          ctx.strokeStyle = `rgba(${rgb}, ${opacity * (isDark ? 0.6 : 0.4)})`;
           ctx.beginPath();
           ctx.moveTo(prevPoint.x, prevPoint.y);
           ctx.lineTo(pt.x, pt.y);
           ctx.stroke();
-
           prevPoint = pt;
         }
 
-        // Draw the bright head of the pulse
+        // 4. Pulse Head
         let headPt = getPointAt(path, currentD);
         if (headPt && currentD > 0 && currentD < path.totalLen) {
           if (isDark) {
-            // Dark mode: Glowing dot
             ctx.fillStyle = `rgba(${rgb}, 0.9)`;
-            ctx.beginPath();
-            ctx.arc(headPt.x, headPt.y, 2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = `rgba(${rgb}, 0.3)`;
-            ctx.beginPath();
-            ctx.arc(headPt.x, headPt.y, 6, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(headPt.x, headPt.y, 2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = `rgba(${rgb}, 0.2)`;
+            ctx.beginPath(); ctx.arc(headPt.x, headPt.y, 8, 0, Math.PI * 2); ctx.fill();
           } else {
-            // Light mode: High-precision "Instrument" ring
-            ctx.strokeStyle = `rgba(${rgb}, 0.7)`;
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.arc(headPt.x, headPt.y, 3, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.fillStyle = `rgba(${rgb}, 0.4)`;
-            ctx.beginPath();
-            ctx.arc(headPt.x, headPt.y, 1, 0, Math.PI * 2);
-            ctx.fill();
+            // Light Mode: Sharp "Compass/Target" Head
+            ctx.strokeStyle = `rgba(${rgb}, 0.8)`;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(headPt.x, headPt.y, 4, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = `rgba(${rgb}, 0.6)`;
+            ctx.beginPath(); ctx.arc(headPt.x, headPt.y, 1.5, 0, Math.PI * 2); ctx.fill();
           }
         }
       });
 
       requestAnimationFrame(draw);
     }
+
 
 
     window.addEventListener('resize', resize);
