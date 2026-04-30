@@ -372,8 +372,12 @@
       ctx.lineJoin = 'miter';
 
       // 1. Draw the dim background circuits
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark'; // We need this line first!
       ctx.lineWidth = 1;
-      ctx.strokeStyle = `rgba(${rgb}, 0.06)`;
+      
+      // If it's dark, use 0.06 opacity. If light, use a very faint 0.03.
+      ctx.strokeStyle = isDark ? `rgba(${rgb}, 0.06)` : `rgba(${rgb}, 0.03)`;
+      
       paths.forEach(path => {
         ctx.beginPath();
         ctx.moveTo(path.points[0].x, path.points[0].y);
@@ -382,6 +386,7 @@
         }
         ctx.stroke();
       });
+
 
       // 2. Update and draw pulses
       pulses.forEach(pulse => {
@@ -426,14 +431,38 @@
           prevPoint = pt;
         }
 
-        // Draw the bright head of the pulse
+                // Draw the bright head of the pulse
         let headPt = getPointAt(path, currentD);
         if (headPt && currentD > 0 && currentD < path.totalLen) {
-          // Inner core
-          ctx.fillStyle = `rgba(${rgb}, 0.9)`;
-          ctx.beginPath();
-          ctx.arc(headPt.x, headPt.y, 2, 0, Math.PI * 2);
-          ctx.fill();
+          if (isDark) {
+            // Dark mode: Glowing dot
+            ctx.fillStyle = `rgba(${rgb}, 0.9)`;
+            ctx.beginPath();
+            ctx.arc(headPt.x, headPt.y, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = `rgba(${rgb}, 0.3)`;
+            ctx.beginPath();
+            ctx.arc(headPt.x, headPt.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Light mode: High-precision "Instrument" ring
+            // Using a ring instead of a solid dot feels much cleaner on white
+            ctx.strokeStyle = `rgba(${rgb}, 0.7)`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(headPt.x, headPt.y, 3, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Tiny center "needle" point
+            ctx.fillStyle = `rgba(${rgb}, 0.4)`;
+            ctx.beginPath();
+            ctx.arc(headPt.x, headPt.y, 1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }); // This closes the pulses.forEach loop
+
 
           // Outer glow
           ctx.fillStyle = `rgba(${rgb}, 0.3)`;
