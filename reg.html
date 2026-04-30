@@ -361,23 +361,20 @@
       return path.points[path.points.length - 1];
     }
 
-    function draw(now) {
+        function draw(now) {
       const dt = (now - lastTime) / 1000;
       lastTime = now;
 
       const rgb = getRGB();
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       ctx.clearRect(0, 0, w, h);
 
       ctx.lineCap = 'square';
       ctx.lineJoin = 'miter';
 
       // 1. Draw the dim background circuits
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark'; // We need this line first!
       ctx.lineWidth = 1;
-      
-      // If it's dark, use 0.06 opacity. If light, use a very faint 0.03.
       ctx.strokeStyle = isDark ? `rgba(${rgb}, 0.06)` : `rgba(${rgb}, 0.03)`;
-      
       paths.forEach(path => {
         ctx.beginPath();
         ctx.moveTo(path.points[0].x, path.points[0].y);
@@ -386,7 +383,6 @@
         }
         ctx.stroke();
       });
-
 
       // 2. Update and draw pulses
       pulses.forEach(pulse => {
@@ -399,17 +395,15 @@
 
         pulse.distance += pulse.speed * dt;
 
-        // Reset pulse when tail completely leaves the path
         if (pulse.distance - pulse.tailLength > path.totalLen) {
           pulse.distance = 0;
-          pulse.delay = Math.random() * 2; // Wait 0-2 seconds before firing again
+          pulse.delay = Math.random() * 2;
           pulse.speed = 60 + Math.random() * 40;
         }
 
-        // Draw the tail by stepping backwards from the head
         const currentD = pulse.distance;
         const endD = Math.max(0, pulse.distance - pulse.tailLength);
-        const step = 4; // Detail level of the gradient curve
+        const step = 4;
         
         let prevPoint = getPointAt(path, currentD);
 
@@ -418,9 +412,7 @@
           let pt = getPointAt(path, d);
           if (!pt) continue;
 
-          // Fade out based on distance from the head
           let opacity = Math.pow((d - endD) / pulse.tailLength, 1.5); 
-          // Max opacity for the body is 0.6 to allow the head to pop
           ctx.strokeStyle = `rgba(${rgb}, ${opacity * 0.6})`;
           
           ctx.beginPath();
@@ -431,7 +423,7 @@
           prevPoint = pt;
         }
 
-                // Draw the bright head of the pulse
+        // Draw the bright head of the pulse
         let headPt = getPointAt(path, currentD);
         if (headPt && currentD > 0 && currentD < path.totalLen) {
           if (isDark) {
@@ -440,40 +432,28 @@
             ctx.beginPath();
             ctx.arc(headPt.x, headPt.y, 2, 0, Math.PI * 2);
             ctx.fill();
-
             ctx.fillStyle = `rgba(${rgb}, 0.3)`;
             ctx.beginPath();
             ctx.arc(headPt.x, headPt.y, 6, 0, Math.PI * 2);
             ctx.fill();
           } else {
             // Light mode: High-precision "Instrument" ring
-            // Using a ring instead of a solid dot feels much cleaner on white
             ctx.strokeStyle = `rgba(${rgb}, 0.7)`;
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.arc(headPt.x, headPt.y, 3, 0, Math.PI * 2);
             ctx.stroke();
-            
-            // Tiny center "needle" point
             ctx.fillStyle = `rgba(${rgb}, 0.4)`;
             ctx.beginPath();
             ctx.arc(headPt.x, headPt.y, 1, 0, Math.PI * 2);
             ctx.fill();
           }
         }
-      }); // This closes the pulses.forEach loop
-
-
-          // Outer glow
-          ctx.fillStyle = `rgba(${rgb}, 0.3)`;
-          ctx.beginPath();
-          ctx.arc(headPt.x, headPt.y, 6, 0, Math.PI * 2);
-          ctx.fill();
-        }
       });
 
       requestAnimationFrame(draw);
     }
+
 
     window.addEventListener('resize', resize);
     resize();
