@@ -317,14 +317,23 @@
       }
     }
 
-    function spawnPulse(index, randomStart = false) {
+        function spawnPulse(index, randomStart = false) {
       const path = paths[index];
+      // Premium Technical Palette: Indigo, Teal, Amber, Rose
+      const premiumColors = [
+        '99, 102, 241', // Indigo
+        '20, 184, 166', // Teal
+        '245, 158, 11', // Amber
+        '225, 29, 72'   // Rose
+      ];
+
       pulses[index] = {
         pathIndex: index,
+        color: premiumColors[index % premiumColors.length],
         distance: randomStart ? Math.random() * path.totalLen : 0,
-        speed: 40 + Math.random() * 30,
-        tailLength: 250 + Math.random() * 150,
-        delay: randomStart ? 0 : Math.random() * 4 
+        speed: 45 + Math.random() * 25,
+        tailLength: 220 + Math.random() * 100,
+        delay: randomStart ? 0 : Math.random() * 3
       };
     }
 
@@ -345,10 +354,6 @@
       const dt = (now - lastTime) / 1000;
       lastTime = now;
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      
-      // COLORS: Soft Indigo/Slate for Light, Pure White for Dark
-      const baseRGB = isDark ? '255, 255, 255' : '99, 102, 241'; 
-      
       ctx.clearRect(0, 0, w, h);
 
       pulses.forEach((pulse, i) => {
@@ -362,11 +367,13 @@
           return;
         }
 
+        // Use white for dark mode, but the premium colors for light mode
+        const streamColor = isDark ? '255, 255, 255' : pulse.color;
+
         const headD = pulse.distance;
         const tailD = Math.max(0, headD - pulse.tailLength);
         
-        // DRAW THE "SCANNED" PATH (The Tail)
-        const steps = 30;
+        const steps = 25;
         for (let j = 0; j < steps; j++) {
           const d1 = tailD + (j / steps) * (headD - tailD);
           const d2 = tailD + ((j + 1) / steps) * (headD - tailD);
@@ -374,9 +381,9 @@
           const p2 = getPointAt(path, d2);
 
           if (p1 && p2) {
-            const opacity = Math.pow(j / steps, 3); // Exponential fade
-            ctx.strokeStyle = `rgba(${baseRGB}, ${opacity * (isDark ? 0.4 : 0.25)})`;
-            ctx.lineWidth = isDark ? 1.2 : 1.5;
+            const opacity = Math.pow(j / steps, 3); 
+            ctx.strokeStyle = `rgba(${streamColor}, ${opacity * (isDark ? 0.35 : 0.4)})`;
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
@@ -384,34 +391,24 @@
           }
         }
 
-        // DRAW THE "PACKET" HEAD
         const headPt = getPointAt(path, headD);
         if (headPt && headD < path.totalLen) {
-          ctx.fillStyle = `rgba(${baseRGB}, ${isDark ? 0.9 : 0.7})`;
-          // Main Dot
+          ctx.fillStyle = `rgba(${streamColor}, ${isDark ? 0.9 : 0.8})`;
           ctx.beginPath();
           ctx.arc(headPt.x, headPt.y, 2, 0, Math.PI * 2);
           ctx.fill();
-          
-          // Subtle soft glow around head
-          ctx.shadowBlur = 15;
-          ctx.shadowColor = `rgba(${baseRGB}, 0.5)`;
-          ctx.beginPath();
-          ctx.arc(headPt.x, headPt.y, 1, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0; // Reset for next items
         }
       });
 
       requestAnimationFrame(draw);
     }
 
-  
     window.addEventListener('resize', resize);
     resize();
     requestAnimationFrame(draw);
   })();
 </script>
+
 
 
 </body>
