@@ -3,413 +3,214 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RegAnchor</title>
-<meta name="description" content="RegAnchor. Intelligence for AI governance.">
-
-<meta property="og:title" content="RegAnchor">
-<meta property="og:description" content="Intelligence for AI governance.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://reganchor.com">
-
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-
+<title>RegAnchor | In Development</title>
 <style>
   :root {
-    --bg: #FFFFFF;
-    --fg: #0A0E14;
-    --fg-2: #374151;
-    --fg-3: #6B7280;
-    --fg-4: #9CA3AF;
-    --border: #E4E7EC;
-    --border-strong: #1F2937;
-    --font-brand: 'IBM Plex Sans', -apple-system, 'Helvetica Neue', sans-serif;
+    --bg-slate: #0b0f19;
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+    --accent: #e2e8f0;
   }
 
-  html[data-theme="dark"] {
-    --bg: #06080E;
-    --fg: #FFFFFF;
-    --fg-2: #D8DAE0;
-    --fg-3: #A0A6B0;
-    --fg-4: #6F7890;
-    --border: #1F2530;
-    --border-strong: #D8DAE0;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body {
-    height: 100%;
-    overflow: hidden;
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
 
   body {
-    font-family: var(--font-brand);
-    background: var(--bg);
-    color: var(--fg);
-    font-size: 15px;
-    line-height: 1.55;
+    background-color: var(--bg-slate);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background 0.5s ease, color 0.5s ease;
+  }
+
+  /* --- 1. THE MACRO LAYOUT --- */
+  .hero-section {
     position: relative;
-  }
-
-  /* === The signal canvas. One curve, one travelling point, nothing else. === */
-  .signal {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* === LAYOUT === */
-  .page {
-    position: relative;
-    z-index: 1;
-    height: 100vh;
-    height: 100dvh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    padding: 28px 40px;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-
-  /* === TOP === */
-  .top {
-    border-top: 1px solid var(--border-strong);
-    padding-top: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .top-left {
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--fg-3);
-  }
-
-  .theme-toggle {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--fg);
-    padding: 7px 14px;
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.25s ease;
-  }
-
-  .theme-toggle:hover {
-    background: var(--fg);
-    color: var(--bg);
-    border-color: var(--fg);
-  }
-
-  /* === CENTRE === */
-  .centre {
+    width: 100vw;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px 0;
   }
 
-  .wordmark {
-    font-family: var(--font-brand);
-    font-weight: 500;
-    font-size: clamp(60px, 11vw, 168px);
-    line-height: 0.9;
-    letter-spacing: -0.045em;
-    color: var(--fg);
-    margin-bottom: 32px;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+  /* --- 2. THE RIVER GEOMETRY & RENDERING --- */
+  .flow-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60vh;
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+    overflow: hidden;
+    /* Base gradient so color-dodge has a luminous floor to burn against */
+    background: linear-gradient(135deg, #1e1b4b 0%, #0b0f19 100%);
+    isolation: isolate; /* Crucial: traps the mix-blend-mode inside this container */
   }
 
-  .statement {
-    font-family: var(--font-brand);
-    font-weight: 400;
-    font-size: clamp(20px, 2.4vw, 30px);
-    line-height: 1.35;
-    letter-spacing: -0.015em;
-    color: var(--fg-2);
-    max-width: 740px;
-    margin-bottom: 36px;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+  /* Embedded SVG Noise for texture (prevents banding) */
+  .noise-overlay {
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: 10;
+    mix-blend-mode: overlay;
+    opacity: 0.15;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    pointer-events: none;
   }
 
-  .statement strong { color: var(--fg); font-weight: 500; }
-
-  .attribution {
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--fg-3);
-    opacity: 0;
-    animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
+  /* --- 3. THE LIGHT STREAK CANVAS --- */
+  .canvas-rotated {
+    position: absolute;
+    top: -30%;
+    left: -20%;
+    width: 140%;
+    height: 160%;
+    transform: rotate(-15deg);
+    pointer-events: none;
   }
 
-  @keyframes rise {
-    to { opacity: 1; transform: translateY(0); }
+  /* Ribbon Geometry & GPU Acceleration */
+  .ribbon {
+    position: absolute;
+    width: 250vw;
+    height: 12vh;
+    filter: blur(80px);
+    mix-blend-mode: color-dodge;
+    will-change: transform;
+    backface-visibility: hidden;
+    animation: treadmill linear infinite;
+    border-radius: 100px; /* Softens the extreme edges slightly before the blur */
   }
 
-  /* === BOTTOM === */
-  .bottom {
-    border-bottom: 1px solid var(--border-strong);
-    padding-bottom: 18px;
+  /* --- 4. TREADMILL PHYSICS & COLOR TENSION --- */
+  /* Colors map to the Stripe deep indigo, vivid pink, and hot orange */
+  .r1 { top: 15%; background: #6366f1; animation-duration: 8s; animation-delay: -2s; opacity: 0.9; }
+  .r2 { top: 35%; background: #ec4899; animation-duration: 11s; animation-delay: -5s; opacity: 0.8; }
+  .r3 { top: 55%; background: #f59e0b; animation-duration: 14s; animation-delay: -1s; opacity: 0.85; }
+  .r4 { top: 25%; background: #8b5cf6; animation-duration: 9s; animation-delay: -7s; opacity: 0.9; }
+  .r5 { top: 65%; background: #f43f5e; animation-duration: 12s; animation-delay: -3s; opacity: 0.7; }
+  .r6 { top: 45%; background: #eab308; animation-duration: 16s; animation-delay: -8s; opacity: 0.75; }
+  .r7 { top: 5%;  background: #3b82f6; animation-duration: 10s; animation-delay: -4s; opacity: 0.8; }
+
+  /* SkewX creates the 'brushed silk' anisotropic blur effect */
+  @keyframes treadmill {
+    0% { transform: translateX(-60vw) skewX(-25deg); }
+    100% { transform: translateX(120vw) skewX(-25deg); }
+  }
+
+  /* --- 5. CONTENT OVERLAY --- */
+  .content-wrapper {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    padding: 2rem 3rem;
+    pointer-events: none; /* Let clicks pass through to background if needed */
+  }
+
+  header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 1rem;
     text-transform: uppercase;
-    color: var(--fg-3);
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    color: var(--text-muted);
   }
 
-  /* === RESPONSIVE === */
-  @media (max-width: 760px) {
-    .page { padding: 22px 24px; }
-    .top, .bottom { font-size: 10px; }
-    .centre { padding: 16px 0; }
-    .wordmark { margin-bottom: 24px; }
-    .statement { margin-bottom: 28px; }
+  .main-copy {
+    margin-top: 15vh;
+    max-width: 650px;
   }
 
-  @media (max-height: 600px) and (orientation: landscape) {
-    .wordmark { font-size: clamp(48px, 8vw, 96px); margin-bottom: 16px; }
-    .statement { font-size: 16px; margin-bottom: 16px; }
+  h1 {
+    font-size: 4.5rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .wordmark, .statement, .attribution {
-      opacity: 1;
-      transform: none;
-      animation: none;
-    }
+  p.description {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--accent);
+    margin-bottom: 2rem;
+    font-weight: 400;
+  }
+
+  .powered-by {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: auto;
+  }
+
+  @media (max-width: 768px) {
+    h1 { font-size: 3rem; }
+    p.description { font-size: 1.1rem; }
+    .content-wrapper { padding: 1.5rem; }
   }
 </style>
 </head>
 <body>
 
-<canvas class="signal" id="signal"></canvas>
+<div class="hero-section">
+  <!-- The River -->
+  <div class="flow-container">
+    <div class="noise-overlay"></div>
+    <div class="canvas-rotated">
+      <div class="ribbon r1"></div>
+      <div class="ribbon r2"></div>
+      <div class="ribbon r3"></div>
+      <div class="ribbon r4"></div>
+      <div class="ribbon r5"></div>
+      <div class="ribbon r6"></div>
+      <div class="ribbon r7"></div>
+    </div>
+  </div>
 
-<div class="page">
+  <!-- The Content -->
+  <div class="content-wrapper">
+    <header>
+      <span>In Development</span>
+    </header>
 
-  <header class="top">
-    <div class="top-left">RegAnchor</div>
-    <button class="theme-toggle" onclick="toggleTheme()">
-      <span id="theme-label">Dark</span>
-    </button>
-  </header>
+    <div class="main-copy">
+      <h1>RegAnchor</h1>
+      <p class="description">
+        Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.
+      </p>
+      <div class="powered-by">Powered by MLA Group Ltd</div>
+    </div>
 
-  <main class="centre">
-    <h1 class="wordmark">RegAnchor</h1>
-    <p class="statement">Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.</p>
-    <div class="attribution">Powered by MLA Group Ltd</div>
-  </main>
-
-  <footer class="bottom">
-    <div>Coming 2026</div>
-    <div>reganchor.com</div>
-  </footer>
-
+    <footer>
+      <span>Coming 2026</span>
+      <span>Reganchor.com</span>
+    </footer>
+  </div>
 </div>
-
-<script>
-  /* === Theme === */
-  function toggleTheme() {
-    const root = document.documentElement;
-    const label = document.getElementById('theme-label');
-    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    label.textContent = next === 'dark' ? 'Light' : 'Dark';
-    try { localStorage.setItem('ra-theme', next); } catch (e) {}
-  }
-
-  (function initTheme() {
-    let saved = null;
-    try { saved = localStorage.getItem('ra-theme'); } catch (e) {}
-    const root = document.documentElement;
-    const label = document.getElementById('theme-label');
-    if (saved === 'dark' || saved === 'light') {
-      root.setAttribute('data-theme', saved);
-      if (label) label.textContent = saved === 'dark' ? 'Light' : 'Dark';
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      root.setAttribute('data-theme', 'dark');
-      if (label) label.textContent = 'Light';
-    } else {
-      root.setAttribute('data-theme', 'light');
-      if (label) label.textContent = 'Dark';
-    }
-  })();
-
-    /* === RegAnchor System Flow ===
-     A premium, margin-focused data visualization. 
-     Paths are invisible until 'scanned' by a pulse.
-     Coordinates are tuned to frame the central text. */
-  (function initSignal() {
-    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) return;
-
-    const canvas = document.getElementById('signal');
-    const ctx = canvas.getContext('2d');
-    let w, h, dpr, lastTime = performance.now();
-
-    // Paths carefully placed in margins to avoid cutting through central text
-    const pathBlueprints = [
-      // Top & Right Frame
-      [{x: 0.05, y: -0.1}, {x: 0.05, y: 0.08}, {x: 0.95, y: 0.08}, {x: 0.95, y: 0.4}],
-      // Bottom Left "L"
-      [{x: -0.1, y: 0.92}, {x: 0.4, y: 0.92}, {x: 0.4, y: 1.1}],
-      // Side Gutter "Pipeline"
-      [{x: 0.9, y: 1.1}, {x: 0.9, y: 0.6}, {x: 1.1, y: 0.6}],
-      // Top Left Corner
-      [{x: -0.1, y: 0.4}, {x: 0.12, y: 0.4}, {x: 0.12, y: -0.1}]
-    ];
-
-    let paths = [], pulses = [];
-
-    function resize() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = window.innerWidth; h = window.innerHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-      ctx.scale(dpr, dpr);
-      buildPaths();
-    }
-
-    function buildPaths() {
-      paths = pathBlueprints.map(bp => {
-        const points = bp.map(pt => ({ x: pt.x * w, y: pt.y * h }));
-        const segments = [];
-        let totalLen = 0;
-        for (let i = 0; i < points.length - 1; i++) {
-          const len = Math.hypot(points[i+1].x - points[i].x, points[i+1].y - points[i].y);
-          segments.push({ p1: points[i], p2: points[i+1], len });
-          totalLen += len;
-        }
-        return { points, segments, totalLen };
-      });
-
-      if (pulses.length === 0) {
-        paths.forEach((_, i) => spawnPulse(i, true));
-      }
-    }
-
-        function spawnPulse(index, randomStart = false) {
-      const path = paths[index];
-      // Premium Technical Palette: Indigo, Teal, Amber, Rose
-      const premiumColors = [
-        '99, 102, 241', // Indigo
-        '20, 184, 166', // Teal
-        '245, 158, 11', // Amber
-        '225, 29, 72'   // Rose
-      ];
-
-      pulses[index] = {
-        pathIndex: index,
-        color: premiumColors[index % premiumColors.length],
-        distance: randomStart ? Math.random() * path.totalLen : 0,
-        speed: 45 + Math.random() * 25,
-        tailLength: 220 + Math.random() * 100,
-        delay: randomStart ? 0 : Math.random() * 3
-      };
-    }
-
-    function getPointAt(path, d) {
-      if (d <= 0) return path.points[0];
-      if (d >= path.totalLen) return path.points[path.points.length - 1];
-      let traversed = 0;
-      for (let seg of path.segments) {
-        if (d <= traversed + seg.len) {
-          let r = (d - traversed) / seg.len;
-          return { x: seg.p1.x + (seg.p2.x - seg.p1.x) * r, y: seg.p1.y + (seg.p2.y - seg.p1.y) * r };
-        }
-        traversed += seg.len;
-      }
-    }
-
-    function draw(now) {
-      const dt = (now - lastTime) / 1000;
-      lastTime = now;
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      ctx.clearRect(0, 0, w, h);
-
-      pulses.forEach((pulse, i) => {
-        if (pulse.delay > 0) { pulse.delay -= dt; return; }
-        
-        pulse.distance += pulse.speed * dt;
-        const path = paths[pulse.pathIndex];
-
-        if (pulse.distance - pulse.tailLength > path.totalLen) {
-          spawnPulse(i);
-          return;
-        }
-
-        // Use white for dark mode, but the premium colors for light mode
-        const streamColor = isDark ? '255, 255, 255' : pulse.color;
-
-        const headD = pulse.distance;
-        const tailD = Math.max(0, headD - pulse.tailLength);
-        
-        const steps = 25;
-        for (let j = 0; j < steps; j++) {
-          const d1 = tailD + (j / steps) * (headD - tailD);
-          const d2 = tailD + ((j + 1) / steps) * (headD - tailD);
-          const p1 = getPointAt(path, d1);
-          const p2 = getPointAt(path, d2);
-
-          if (p1 && p2) {
-            const opacity = Math.pow(j / steps, 3); 
-            ctx.strokeStyle = `rgba(${streamColor}, ${opacity * (isDark ? 0.35 : 0.4)})`;
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        }
-
-        const headPt = getPointAt(path, headD);
-        if (headPt && headD < path.totalLen) {
-          ctx.fillStyle = `rgba(${streamColor}, ${isDark ? 0.9 : 0.8})`;
-          ctx.beginPath();
-          ctx.arc(headPt.x, headPt.y, 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      });
-
-      requestAnimationFrame(draw);
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-    requestAnimationFrame(draw);
-  })();
-</script>
-
-
 
 </body>
 </html>
