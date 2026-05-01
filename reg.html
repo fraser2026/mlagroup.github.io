@@ -13,30 +13,28 @@
     --bg: #FFFFFF;
     --fg: #0A0E14;
     --fg-2: #374151;
-    --fg-3: #6B7280;
-    --fg-4: #9CA3AF;
-    --border: #E4E7EC;
+    --fg-3: #4B5563; /* Slightly darker for better legibility */
     --border-strong: #1F2937;
     --font-brand: 'IBM Plex Sans', -apple-system, 'Helvetica Neue', sans-serif;
 
-    /* High-Intelligence Palette */
+    /* Neural Trace Palette */
     --blob-1: #4F46E5;
     --blob-2: #7C3AED;
-    --blob-3: #06B6D4; /* Tech Cyan */
+    --blob-3: #06B6D4; 
     
-    --mesh-base: #FFFFFF;
-    --grid-color: rgba(0, 0, 0, 0.05);
-    --scan-opacity: 0.03;
+    --grid-color: rgba(0, 0, 0, 0.07);
+    --scan-opacity: 0.04;
+    --text-glow: rgba(255, 255, 255, 0.8);
   }
 
   html[data-theme="dark"] {
     --bg: #0B0F1A;
     --fg: #FFFFFF;
     --fg-2: #CBD5E1;
-    --fg-3: #64748B;
-    --mesh-base: #0B0F1A;
-    --grid-color: rgba(255, 255, 255, 0.04);
-    --scan-opacity: 0.08;
+    --fg-3: #94A3B8;
+    --grid-color: rgba(255, 255, 255, 0.05);
+    --scan-opacity: 0.1;
+    --text-glow: rgba(0, 0, 0, 0.5);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -46,21 +44,12 @@
     font-family: var(--font-brand);
     background: var(--bg);
     color: var(--fg);
-    font-size: 15px;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ================================================================
-     THE NEURAL TRACE ENGINE
-     ================================================================ */
-  .mesh-stage {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background: var(--mesh-base);
-  }
-
-  /* Coordinate Grid Layer */
+  /* --- NEURAL TRACE BACKGROUND --- */
+  .mesh-stage { position: fixed; inset: 0; z-index: 0; background: var(--bg); }
+  
   .grid-overlay {
     position: absolute;
     inset: 0;
@@ -68,56 +57,32 @@
     background-image: 
       linear-gradient(var(--grid-color) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-    background-size: 60px 60px;
-    mask-image: radial-gradient(circle at 50% 50%, black 20%, transparent 90%);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 95%);
   }
 
-  /* Scanning Audit Line */
   .scan-line {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 15vh;
-    background: linear-gradient(to bottom, 
-      transparent, 
-      rgba(99, 102, 241, var(--scan-opacity)), 
-      transparent);
+    height: 10vh;
+    background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, var(--scan-opacity)), transparent);
     z-index: 3;
-    animation: scan 10s linear infinite;
+    animation: scan 12s linear infinite;
   }
 
-  @keyframes scan {
-    0% { transform: translateY(-20vh); }
-    100% { transform: translateY(110vh); }
-  }
+  @keyframes scan { from { transform: translateY(-15vh); } to { transform: translateY(110vh); } }
 
-  /* Core Blobs */
-  .blob-container {
-    position: absolute;
-    inset: 0;
-    filter: blur(100px);
-    opacity: 0.6;
-  }
+  .blob-container { position: absolute; inset: 0; filter: blur(120px); opacity: 0.5; }
+  .blob { position: absolute; border-radius: 50%; animation: drift 25s ease-in-out infinite alternate; }
+  .b1 { width: 60vw; height: 60vw; background: var(--blob-1); top: -10%; left: -10%; }
+  .b2 { width: 50vw; height: 50vw; background: var(--blob-2); bottom: -10%; right: -10%; animation-delay: -5s; }
+  .b3 { width: 40vw; height: 40vw; background: var(--blob-3); top: 30%; right: 15%; animation-delay: -12s; }
 
-  .blob {
-    position: absolute;
-    border-radius: 50%;
-    animation: drift 20s ease-in-out infinite alternate;
-  }
+  @keyframes drift { from { transform: translate(0,0); } to { transform: translate(8%, 5%); } }
 
-  .b1 { width: 50vw; height: 50vw; background: var(--blob-1); top: -10%; left: -10%; }
-  .b2 { width: 40vw; height: 40vw; background: var(--blob-2); bottom: -5%; right: -5%; animation-delay: -5s; }
-  .b3 { width: 35vw; height: 35vw; background: var(--blob-3); top: 30%; right: 20%; animation-delay: -10s; }
-
-  @keyframes drift {
-    from { transform: translate(0,0) scale(1); }
-    to { transform: translate(10%, 10%) scale(1.1); }
-  }
-
-  /* ================================================================
-     LAYOUT
-     ================================================================ */
+  /* --- LAYOUT & VISIBILITY FIXES --- */
   .page {
     position: relative;
     z-index: 10;
@@ -129,24 +94,31 @@
     margin: 0 auto;
   }
 
+  /* These utility classes solve the "getting lost" issue */
+  .legible-label {
+    font-size: 11px;
+    font-weight: 600; /* Heavier weight for PC screens */
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+    text-shadow: 0 0 10px var(--text-glow), 0 0 20px var(--text-glow); /* Protective glow */
+  }
+
   .top { border-top: 1px solid var(--border-strong); padding-top: 18px; display: flex; justify-content: space-between; align-items: center; }
-  .top-left { font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-3); }
   
   .theme-toggle { 
-    background: transparent; 
-    border: 1px solid var(--border); 
+    background: rgba(255,255,255,0.1); 
+    border: 1px solid var(--fg-3); 
     color: var(--fg); 
     padding: 7px 14px; 
     font-size: 11px; 
-    font-weight: 500; 
-    text-transform: uppercase; 
+    font-weight: 600; 
     cursor: pointer; 
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
   }
 
   .centre { display: flex; flex-direction: column; justify-content: center; }
   
-  /* Retaining your exact Typography from images */
   .wordmark { 
     font-weight: 500; 
     font-size: clamp(60px, 11vw, 168px); 
@@ -164,14 +136,11 @@
     margin-bottom: 36px; 
   }
   
-  .statement strong { color: var(--fg); font-weight: 500; }
-  .attribution { font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-3); }
+  .statement strong { color: var(--fg); font-weight: 600; }
 
-  .bottom { border-bottom: 1px solid var(--border-strong); padding-bottom: 18px; display: flex; justify-content: space-between; font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-3); }
+  .bottom { border-bottom: 1px solid var(--border-strong); padding-bottom: 18px; display: flex; justify-content: space-between; }
 
-  @media (max-width: 600px) {
-    .page { padding: 20px; }
-  }
+  @media (max-width: 600px) { .page { padding: 20px; } }
 </style>
 </head>
 <body>
@@ -188,19 +157,19 @@
 
 <div class="page">
   <header class="top">
-    <div class="top-left">In development</div>
+    <div class="legible-label">In development</div>
     <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-label">Dark</span></button>
   </header>
 
   <main class="centre">
     <h1 class="wordmark">RegAnchor</h1>
     <p class="statement">Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.</p>
-    <div class="attribution">Powered by MLA Group Ltd</div>
+    <div class="legible-label" style="opacity: 0.8;">Powered by MLA Group Ltd</div>
   </main>
 
   <footer class="bottom">
-    <div>Coming 2026</div>
-    <div>reganchor.com</div>
+    <div class="legible-label">Coming 2026</div>
+    <div class="legible-label">reganchor.com</div>
   </footer>
 </div>
 
