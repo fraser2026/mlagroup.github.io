@@ -1,186 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RegAnchor | AI Governance</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-       :root {
-    --bg: #FFFFFF; 
-    --fg: #0A0E14; 
-    --fg-m: #4B5563;
-    --c1: #FFFFFF; 
-    --c2: #6366f1; 
-    --c3: #a855f7; 
-    --c4: #FFFFFF; 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RegAnchor | AI Governance</title>
+
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #0a0e14;
+  --muted: #6b7280;
 }
 
 html[data-theme="dark"] {
-    --bg: #030712; 
-    --fg: #FFFFFF; 
-    --fg-m: #9CA3AF;
-    --c1: #030712; 
-    --c2: #4c1d95; 
-    --c3: #1e1b4b; 
-    --c4: #030712;
+  --bg: #030712;
+  --fg: #ffffff;
+  --muted: #9ca3af;
 }
 
-        body, html { height: 100%; overflow: hidden; background: var(--bg); font-family: 'IBM Plex Sans', sans-serif; color: var(--fg); transition: background 0.5s ease; }
-        
-        #canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
-        
-        /* The Satin Grain Texture */
-        .grain {
-            position: fixed; inset: 0; z-index: 1; opacity: 0.04; pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
+* { box-sizing: border-box; }
 
-        .page { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 30px 40px; max-width: 1400px; margin: 0 auto; pointer-events: none; }
-        header, footer { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fg-m); pointer-events: auto; }
-        header { border-top: 1px solid var(--fg); padding-top: 20px; }
-        footer { border-bottom: 1px solid var(--fg); padding-bottom: 20px; }
-        main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .wordmark { font-size: clamp(50px, 10vw, 150px); font-weight: 500; letter-spacing: -0.04em; line-height: 0.85; margin-bottom: 25px; }
-        .statement { font-size: clamp(18px, 2.2vw, 30px); line-height: 1.35; color: var(--fg-m); max-width: 750px; }
-        .statement strong { color: var(--fg); font-weight: 600; }
-        .theme-btn { background: var(--fg); color: var(--bg); border: none; padding: 8px 14px; font-size: 10px; font-weight: 700; cursor: pointer; }
-    </style>
+body {
+  margin: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  overflow: hidden;
+}
+
+/* === BACKGROUND === /
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(60% 40% at 20% 30%, rgba(99,102,241,0.25), transparent 60%),
+    radial-gradient(50% 40% at 80% 70%, rgba(168,85,247,0.25), transparent 60%),
+    radial-gradient(40% 30% at 50% 50%, rgba(236,72,153,0.2), transparent 70%);
+  filter: blur(80px);
+  opacity: 0.7;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  0%   { transform: translateY(-3%) translateX(-2%); }
+  100% { transform: translateY(3%) translateX(2%); }
+}
+
+/ === LAYOUT === /
+.page {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/ === HEADER / FOOTER === /
+header, footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/ === TYPOGRAPHY === /
+.wordmark {
+  font-size: clamp(56px, 9vw, 120px);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  margin-bottom: 24px;
+}
+
+.statement {
+  font-size: clamp(18px, 2vw, 26px);
+  line-height: 1.4;
+  max-width: 640px;
+  color: var(--muted);
+}
+
+.statement strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/ === BUTTON === */
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--muted);
+  color: var(--muted);
+  padding: 6px 10px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.theme-btn:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+</style>
 </head>
+
 <body>
-    <canvas id="canvas"></canvas>
-    <div class="grain"></div>
-    <div class="page">
-        <header><div>In Development</div><button class="theme-btn" onclick="toggleTheme()">Toggle Theme</button></header>
-        <main>
-            <h1 class="wordmark">RegAnchor</h1>
-            <p class="statement">Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.</p>
-        </main>
-        <footer><div>Coming 2026</div><div>reganchor.com</div></footer>
+
+<div class="bg"></div>
+
+<div class="page">
+  <header>
+    <div>In Development</div>
+    <button class="theme-btn" onclick="toggleTheme()">Theme</button>
+  </header>
+
+  <main>
+    <div>
+      <h1 class="wordmark">RegAnchor</h1>
+      <p class="statement">
+        Intelligence for AI governance.
+        <strong>A continuous, evidential layer beneath every AI system you operate</strong>
+        — registered, scored, and held to account in real time.
+      </p>
     </div>
+  </main>
+
+  <footer>
+    <div>Coming 2026</div>
+    <div>reganchor.com</div>
+  </footer>
+</div>
 
 <script>
-    const V_SRC = `attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
-    const F_SRC = `
-        precision highp float;
-        uniform float t;
-        uniform vec2 r;
-        uniform vec3 c1, c2, c3, c4;
-
-        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-
-        void main() {
-            // 1. UNIVERSAL COORDINATES
-            // This normalizes the screen so 1.0 is ALWAYS the far edge, 
-            // regardless of whether it's a phone or a giant monitor.
-            vec2 uv = gl_FragCoord.xy / r;
-            
-            // 2. THE SLOPE (Stripe Style)
-            // By adding uv.x and uv.y, we create a diagonal that 
-            // is guaranteed to touch every corner of the rectangle.
-            float slope = uv.x + uv.y;
-            
-            // 3. THE MOVEMENT
-            // A slow, fluid sway that doesn't break the edges.
-            float wave = sin(slope * 1.5 - t * 0.4) * 0.1;
-            float p = slope + wave;
-
-            // 4. THE BACKGROUND FLOOD (Fixes the Black Void)
-            // We start with c1 (your CSS Background). 
-            // Now, if the math "ends," the screen just shows White or Dark.
-            vec3 color = c1;
-
-            // 5. THE ARCHITECTURAL LAYERS
-            // These are normalized (0.0 to 2.0). 
-            // 0.8 to 1.6 ensures the colors stay centered as a "sweep."
-            float m1 = smoothstep(0.7, 0.72, p);
-            float m2 = smoothstep(1.0, 1.02, p);
-            float m3 = smoothstep(1.3, 1.32, p);
-            
-            // Layering like the Stripe Data Pipeline image
-            color = mix(color, c2, m1);
-            color = mix(color, c3, m2);
-            color = mix(color, c4, m3);
-            
-            // 6. THE FINISH (Satin & Grain)
-            float sheen = pow(1.0 - abs(p - 1.0), 15.0) * 0.1;
-            float grain = hash(uv + t * 0.01) * 0.012;
-
-            gl_FragColor = vec4(color + (sheen * m1) + grain, 1.0);
-        }
-    `;
-
-
-
-
-    const canvas = document.getElementById('canvas');
-    const gl = canvas.getContext('webgl');
-
-    function createShader(gl, type, src) {
-        const s = gl.createShader(type);
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        return s;
-    }
-
-    const program = gl.createProgram();
-    gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, V_SRC));
-    gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, F_SRC));
-    gl.linkProgram(program);
-    gl.useProgram(program);
-
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1,-1,-1,1,1,1,-1]), gl.STATIC_DRAW);
-
-    const pLoc = gl.getAttribLocation(program, 'p');
-    gl.enableVertexAttribArray(pLoc);
-    gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
-
-    const tLoc = gl.getUniformLocation(program, 't');
-    const rLoc = gl.getUniformLocation(program, 'r');
-    const cLocs = [gl.getUniformLocation(program, 'c1'), gl.getUniformLocation(program, 'c2'), gl.getUniformLocation(program, 'c3'), gl.getUniformLocation(program, 'c4')];
-
-    function hexToRgb(hex) {
-        const i = parseInt(hex.trim().slice(1), 16);
-        return [(i >> 16 & 255) / 255, (i >> 8 & 255) / 255, (i & 255) / 255];
-    }
-
-    function render(time) {
-        // High-DPI support
-        const dpr = window.devicePixelRatio || 1;
-        if (canvas.width !== window.innerWidth * dpr) {
-            canvas.width = window.innerWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
-        }
-        
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        const style = getComputedStyle(document.documentElement);
-        
-        gl.uniform1f(tLoc, time * 0.001);
-        gl.uniform2f(rLoc, canvas.width, canvas.height);
-        
-        cLocs.forEach((loc, i) => {
-            const val = style.getPropertyValue(`--c${i+1}`).trim();
-            gl.uniform3fv(loc, hexToRgb(val));
-        });
-
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        requestAnimationFrame(render);
-    }
-    requestAnimationFrame(render);
-
-    function toggleTheme() {
-        const h = document.documentElement;
-        h.setAttribute('data-theme', h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    }
+function toggleTheme() {
+  const root = document.documentElement;
+  root.setAttribute(
+    'data-theme',
+    root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+  );
+}
 </script>
-
-
-
-
 
 </body>
 </html>
