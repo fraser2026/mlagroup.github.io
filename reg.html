@@ -50,114 +50,109 @@
         <footer><div>Coming 2026</div><div>reganchor.com</div></footer>
     </div>
 
-    <script>
-        // SHADER SOURCE CODE
-        const V_SRC = `precision mediump float; attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
-        const F_SRC = `
-            precision mediump float;
-            uniform float t;
-            uniform vec2 r;
-            uniform vec3 c1, c2, c3, c4;
+  <script>
+    const V_SRC = `attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
+    const F_SRC = `
+        precision highp float;
+        uniform float t;
+        uniform vec2 r;
+        uniform vec3 c1, c2, c3, c4;
 
-            // Simplex-like noise for fluid motion
-            vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
-            float snoise(vec2 v){
-              const vec4 C = vec4(0.21, 0.36, -0.57, 0.02);
-              vec2 i  = floor(v + dot(v, C.yy) );
-              vec2 x0 = v -   i + dot(i, C.xx);
-              vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-              vec4 x12 = x0.xyxy + C.xxzz;
-              x12.xy -= i1;
-              i = mod(i, 289.0);
-              vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
-              vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-              m = m*m ; m = m*m ;
-              vec3 x = 2.0 * fract(p * C.www) - 1.0;
-              vec3 h = abs(x) - 0.5;
-              vec3 ox = floor(x + 0.5);
-              vec3 a0 = x - ox;
-              m *= 1.79 - 0.85 * ( a0*a0 + h*h );
-              vec3 g;
-              g.x  = a0.x  * x0.x  + h.x  * x0.y;
-              g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-              return 130.0 * dot(m, g);
-            }
-
-            void main() {
-                vec2 uv = gl_FragCoord.xy / r;
-                float n = snoise(uv * 1.5 + t * 0.2);
-                
-                // Create the diagonal satin flow
-                float mask = smoothstep(0.1, 0.9, uv.x + uv.y + n * 0.5);
-                vec3 color = mix(mix(c1, c2, uv.x), mix(c3, c4, uv.y), n);
-                
-                gl_FragColor = vec4(color, 1.0);
-            }
-        `;
-
-        const canvas = document.getElementById('canvas');
-        const gl = canvas.getContext('webgl');
-        
-        function createShader(gl, type, src) {
-            const s = gl.createShader(type);
-            gl.shaderSource(s, src);
-            gl.compileShader(s);
-            return s;
+        vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+        float snoise(vec2 v){
+          const vec4 C = vec4(0.21, 0.36, -0.57, 0.02);
+          vec2 i  = floor(v + dot(v, C.yy) );
+          vec2 x0 = v -   i + dot(i, C.xx);
+          vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+          vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
+          i = mod(i, 289.0);
+          vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+          vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+          m = m*m; m = m*m;
+          vec3 x = 2.0 * fract(p * C.www) - 1.0;
+          vec3 h = abs(x) - 0.5;
+          vec3 ox = floor(x + 0.5);
+          vec3 a0 = x - ox;
+          m *= 1.79 - 0.85 * ( a0*a0 + h*h );
+          vec3 g; g.x = a0.x * x0.x + h.x * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+          return 130.0 * dot(m, g);
         }
 
-        const program = gl.createProgram();
-        gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, V_SRC));
-        gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, F_SRC));
-        gl.linkProgram(program);
-        gl.useProgram(program);
-
-        const buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1,-1,-1,1,1,1,-1]), gl.STATIC_DRAW);
-
-        const pLoc = gl.getAttribLocation(program, 'p');
-        gl.enableVertexAttribArray(pLoc);
-        gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
-
-        const tLoc = gl.getUniformLocation(program, 't');
-        const rLoc = gl.getUniformLocation(program, 'r');
-        const cLocs = [
-            gl.getUniformLocation(program, 'c1'),
-            gl.getUniformLocation(program, 'c2'),
-            gl.getUniformLocation(program, 'c3'),
-            gl.getUniformLocation(program, 'c4')
-        ];
-
-        function hexToRgb(hex) {
-            const BigInt = window.BigInt || function(s){return parseInt(s,16)};
-            const i = parseInt(hex.slice(1), 16);
-            return [(i >> 16 & 255) / 255, (i >> 8 & 255) / 255, (i & 255) / 255];
-        }
-
-        function render(time) {
-            const style = getComputedStyle(document.documentElement);
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            gl.viewport(0, 0, canvas.width, canvas.height);
-
-            gl.uniform1f(tLoc, time * 0.001);
-            gl.uniform2f(rLoc, canvas.width, canvas.height);
+        void main() {
+            vec2 uv = gl_FragCoord.xy / r;
+            // SLOWED DOWN and SCALE REDUCED for "Satin" look
+            float noise = snoise(uv * 0.8 + t * 0.1) * 0.5 + 0.5;
             
-            cLocs.forEach((loc, i) => {
-                const color = hexToRgb(style.getPropertyValue(`--c${i+1}`).trim());
-                gl.uniform3fv(loc, color);
-            });
-
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-            requestAnimationFrame(render);
+            // Softer color mixing
+            vec3 top = mix(c1, c2, uv.x + noise * 0.2);
+            vec3 bottom = mix(c3, c4, uv.y - noise * 0.2);
+            vec3 final = mix(top, bottom, noise);
+            
+            gl_FragColor = vec4(final, 1.0);
         }
+    `;
 
+    const canvas = document.getElementById('canvas');
+    const gl = canvas.getContext('webgl', { antialias: true }); // Enabled Antialiasing
+    
+    function createShader(gl, type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+    }
+
+    const program = gl.createProgram();
+    gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, V_SRC));
+    gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, F_SRC));
+    gl.linkProgram(program);
+    gl.useProgram(program);
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1,-1,-1,1,1,1,-1]), gl.STATIC_DRAW);
+
+    const pLoc = gl.getAttribLocation(program, 'p');
+    gl.enableVertexAttribArray(pLoc);
+    gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
+
+    const tLoc = gl.getUniformLocation(program, 't');
+    const rLoc = gl.getUniformLocation(program, 'r');
+    const cLocs = [gl.getUniformLocation(program, 'c1'), gl.getUniformLocation(program, 'c2'), gl.getUniformLocation(program, 'c3'), gl.getUniformLocation(program, 'c4')];
+
+    function hexToRgb(hex) {
+        const i = parseInt(hex.trim().slice(1), 16);
+        return [(i >> 16 & 255) / 255, (i >> 8 & 255) / 255, (i & 255) / 255];
+    }
+
+    function render(time) {
+        // High-DPI Resolution handling
+        const dpr = window.devicePixelRatio || 1;
+        if (canvas.width !== window.innerWidth * dpr || canvas.height !== window.innerHeight * dpr) {
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+        }
+        
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        const style = getComputedStyle(document.documentElement);
+
+        gl.uniform1f(tLoc, time * 0.001);
+        gl.uniform2f(rLoc, canvas.width, canvas.height);
+        
+        cLocs.forEach((loc, i) => {
+            gl.uniform3fv(loc, hexToRgb(style.getPropertyValue(`--c${i+1}`)));
+        });
+
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
 
-        function toggleTheme() {
-            const h = document.documentElement;
-            h.setAttribute('data-theme', h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-        }
-    </script>
+    function toggleTheme() {
+        const h = document.documentElement;
+        h.setAttribute('data-theme', h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+</script>
+
 </body>
 </html>
