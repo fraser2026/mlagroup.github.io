@@ -72,48 +72,47 @@ html[data-theme="dark"] {
         float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
         void main() {
-            // 1. DYNAMIC ASPECT RATIO FIX
-            // This ensures the "rope" has the same thickness on PC and iPhone
+            // 1. COORDINATES: Map 0.0 to 1.0 across the screen
             vec2 uv = gl_FragCoord.xy / r;
             float ratio = r.x / r.y;
-            vec2 uv2 = uv;
-            uv2.x *= ratio;
-
-            // 2. THE REACH
-            // We use a wider coordinate system so the color reaches the top-right corner
-            float curve = sin(uv2.x * 0.8 + t * 0.2) * 0.15;
-            float twist = (uv2.x * 0.4 + uv2.y * 0.8) + curve;
-
-            // 3. COLOR MIXING (Fixed for Light Mode)
-            // We force the shader to stay on 'c1' (background) if it goes out of bounds
-            float m1 = smoothstep(0.1, 0.11, twist);
-            float m2 = smoothstep(0.35, 0.36, twist);
-            float m3 = smoothstep(0.6, 0.61, twist);
-            float m4 = smoothstep(0.85, 0.86, twist); // THE "EXIT" STEP
             
-            vec3 color = c1; // Start with background
+            // 2. THE STRIPE SWEEP:
+            // We use (1.0 - uv.y) to flip the math so it anchors to the bottom
+            // We add (uv.x * 0.5) to create that signature Stripe diagonal tilt
+            float slope = (uv.x * 0.6) + (1.0 - uv.y) * 1.2;
+            
+            // 3. ORGANIC MOVEMENT:
+            // Subtle wave that pushes the colors back and forth
+            float wave = sin(uv.x * 1.5 + t * 0.25) * 0.08;
+            float p = slope + wave;
+
+            // 4. COLOR LAYERING:
+            // We start with the background color (c1) as the base for the WHOLE screen.
+            // This makes it impossible for "black" to appear.
+            vec3 color = c1;
+
+            // These steps create the overlapping "mountains" of color
+            // Using wide ranges (0.6, 1.0, 1.4) to ensure they fill the corner
+            float m1 = smoothstep(0.5, 0.9, p);
+            float m2 = smoothstep(0.8, 1.2, p);
+            float m3 = smoothstep(1.1, 1.5, p);
+            
             color = mix(color, c2, m1);
             color = mix(color, c3, m2);
             color = mix(color, c4, m3);
-            color = mix(color, c1, m4); // FORCE return to background color at the top corner
             
-            // 4. TOY STORY SPECULAR
-            // Sharp 3D light reflection
-            float spec = pow(1.0 - abs(twist - 0.45) * 2.0, 25.0) * 0.15;
-            spec *= m1 * (1.0 - m4); // Light only exists on the "rope"
+            // 5. SATIN SHEEN:
+            // A soft highlight along the curve to give it that "rendered" look
+            float sheen = pow(1.0 - abs(p - 1.0), 12.0) * 0.08;
 
-            // 5. SATIN GRAIN
+            // 6. NOISE & FINAL OUTPUT
             float grain = hash(uv + t * 0.01) * 0.015;
-
-            gl_FragColor = vec4(color + spec + grain, 1.0);
+            gl_FragColor = vec4(color + (sheen * m1) + grain, 1.0);
         }
     `;
 
-
-
-
     const canvas = document.getElementById('canvas');
-    const gl = canvas.getContext('webgl', { antialias: true, stencil: true });
+    const gl = canvas.getContext('webgl');
 
     function createShader(gl, type, src) {
         const s = gl.createShader(type);
@@ -146,8 +145,8 @@ html[data-theme="dark"] {
     }
 
     function render(time) {
+        // High-DPI support
         const dpr = window.devicePixelRatio || 1;
-        // CRITICAL: Sharp resolution fix
         if (canvas.width !== window.innerWidth * dpr) {
             canvas.width = window.innerWidth * dpr;
             canvas.height = window.innerHeight * dpr;
@@ -160,7 +159,8 @@ html[data-theme="dark"] {
         gl.uniform2f(rLoc, canvas.width, canvas.height);
         
         cLocs.forEach((loc, i) => {
-            gl.uniform3fv(loc, hexToRgb(style.getPropertyValue(`--c${i+1}`)));
+            const val = style.getPropertyValue(`--c${i+1}`).trim();
+            gl.uniform3fv(loc, hexToRgb(val));
         });
 
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -173,6 +173,7 @@ html[data-theme="dark"] {
         h.setAttribute('data-theme', h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     }
 </script>
+
 
 
 
