@@ -63,7 +63,7 @@ html[data-theme="dark"] {
 
 <script>
     const V_SRC = `attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
-            const F_SRC = `
+    const F_SRC = `
         precision highp float;
         uniform float t;
         uniform vec2 r;
@@ -72,45 +72,46 @@ html[data-theme="dark"] {
         float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
         void main() {
-            // 1. THE COORDINATE FIX
-            // We force the screen to be a square grid so wide laptops don't break the math.
+            // 1. UNIVERSAL COORDINATES
+            // This normalizes the screen so 1.0 is ALWAYS the far edge, 
+            // regardless of whether it's a phone or a giant monitor.
             vec2 uv = gl_FragCoord.xy / r;
-            float ratio = r.x / r.y;
-            vec2 p_uv = uv;
-            p_uv.x *= ratio;
-
-            // 2. THE STRIPE ANGLE
-            // This anchors the "wave" to the bottom-left corner.
-            // Because it's a sum of x and y, it will always reach the top-right corner.
-            float val = p_uv.x + (1.0 - p_uv.y) * 1.8;
+            
+            // 2. THE SLOPE (Stripe Style)
+            // By adding uv.x and uv.y, we create a diagonal that 
+            // is guaranteed to touch every corner of the rectangle.
+            float slope = uv.x + uv.y;
             
             // 3. THE MOVEMENT
-            float wave = sin(val * 0.5 - t * 0.3) * 0.1;
-            float p = val + wave;
+            // A slow, fluid sway that doesn't break the edges.
+            float wave = sin(slope * 1.5 - t * 0.4) * 0.1;
+            float p = slope + wave;
 
-            // 4. THE VOID KILLER
-            // We start with c1. Every pixel on the screen is now White (Light) or Dark (Dark).
+            // 4. THE BACKGROUND FLOOD (Fixes the Black Void)
+            // We start with c1 (your CSS Background). 
+            // Now, if the math "ends," the screen just shows White or Dark.
             vec3 color = c1;
 
-            // 5. ARCHITECTURAL LAYERS (The Stripe Look)
-            // We use 'p' to determine where the colored bands start.
-            // These numbers (1.2, 1.5, 1.8) ensure the bands stay in the middle-bottom.
-            float m1 = smoothstep(1.0, 1.02, p); 
-            float m2 = smoothstep(1.3, 1.32, p);
-            float m3 = smoothstep(1.6, 1.62, p);
+            // 5. THE ARCHITECTURAL LAYERS
+            // These are normalized (0.0 to 2.0). 
+            // 0.8 to 1.6 ensures the colors stay centered as a "sweep."
+            float m1 = smoothstep(0.7, 0.72, p);
+            float m2 = smoothstep(1.0, 1.02, p);
+            float m3 = smoothstep(1.3, 1.32, p);
             
-            // This creates the "stacking" effect seen in the Stripe images
+            // Layering like the Stripe Data Pipeline image
             color = mix(color, c2, m1);
             color = mix(color, c3, m2);
             color = mix(color, c4, m3);
             
-            // 6. SATIN FINISH
-            float sheen = pow(1.0 - abs(p - 1.4) * 0.5, 20.0) * 0.1;
+            // 6. THE FINISH (Satin & Grain)
+            float sheen = pow(1.0 - abs(p - 1.0), 15.0) * 0.1;
             float grain = hash(uv + t * 0.01) * 0.012;
 
             gl_FragColor = vec4(color + (sheen * m1) + grain, 1.0);
         }
     `;
+
 
 
 
