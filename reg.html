@@ -63,7 +63,7 @@ html[data-theme="dark"] {
 
 <script>
     const V_SRC = `attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
-        const F_SRC = `
+    const F_SRC = `
         precision highp float;
         uniform float t;
         uniform vec2 r;
@@ -102,9 +102,6 @@ html[data-theme="dark"] {
             gl_FragColor = vec4(color + spec + grain, 1.0);
         }
     `;
-
-
-
 
     const canvas = document.getElementById('canvas');
     const gl = canvas.getContext('webgl', { antialias: true, stencil: true });
