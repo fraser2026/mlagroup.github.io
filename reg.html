@@ -63,7 +63,7 @@ html[data-theme="dark"] {
 
 <script>
     const V_SRC = `attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
-        const F_SRC = `
+    const F_SRC = `
         precision highp float;
         uniform float t;
         uniform vec2 r;
@@ -72,38 +72,43 @@ html[data-theme="dark"] {
         float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
         void main() {
+            // 1. DYNAMIC ASPECT RATIO FIX
+            // This ensures the "rope" has the same thickness on PC and iPhone
             vec2 uv = gl_FragCoord.xy / r;
-            
-            // 1. SIMPLE REACH: We multiply by 1.5 to ensure the diagonal 
-            // reaches the corners of a wide laptop screen.
-            float x = uv.x * 1.5; 
+            float ratio = r.x / r.y;
+            vec2 uv2 = uv;
+            uv2.x *= ratio;
 
-            // 2. THE ORIGINAL NARROW MATH: This is what you liked.
-            // Gentle curves, narrow bands.
-            float curve = sin(x * 0.7 + t * 0.2) * 0.15;
-            float twist = (x * 0.5 + uv.y * 1.2) + curve;
+            // 2. THE REACH
+            // We use a wider coordinate system so the color reaches the top-right corner
+            float curve = sin(uv2.x * 0.8 + t * 0.2) * 0.15;
+            float twist = (uv2.x * 0.4 + uv2.y * 0.8) + curve;
 
-            // 3. TIGHT HD BANDS: 0.01 precision for that Toy Story edge.
-            // These ranges (0.4 to 1.1) keep the rope narrow and centered.
-            float m1 = smoothstep(0.45, 0.46, twist);
-            float m2 = smoothstep(0.70, 0.71, twist);
-            float m3 = smoothstep(0.95, 0.96, twist);
+            // 3. COLOR MIXING (Fixed for Light Mode)
+            // We force the shader to stay on 'c1' (background) if it goes out of bounds
+            float m1 = smoothstep(0.1, 0.11, twist);
+            float m2 = smoothstep(0.35, 0.36, twist);
+            float m3 = smoothstep(0.6, 0.61, twist);
+            float m4 = smoothstep(0.85, 0.86, twist); // THE "EXIT" STEP
             
-            vec3 color = c1;
+            vec3 color = c1; // Start with background
             color = mix(color, c2, m1);
             color = mix(color, c3, m2);
             color = mix(color, c4, m3);
+            color = mix(color, c1, m4); // FORCE return to background color at the top corner
             
-            // 4. SHARP 3D SHEEN: Thin, expensive-looking light reflection.
-            float spec = pow(1.0 - abs(twist - 0.7) * 2.5, 25.0) * 0.2;
-            spec *= m1;
+            // 4. TOY STORY SPECULAR
+            // Sharp 3D light reflection
+            float spec = pow(1.0 - abs(twist - 0.45) * 2.0, 25.0) * 0.15;
+            spec *= m1 * (1.0 - m4); // Light only exists on the "rope"
 
-            // 5. TEXTURE
-            float grain = hash(uv + t * 0.01) * 0.02;
+            // 5. SATIN GRAIN
+            float grain = hash(uv + t * 0.01) * 0.015;
 
             gl_FragColor = vec4(color + spec + grain, 1.0);
         }
     `;
+
 
 
 
