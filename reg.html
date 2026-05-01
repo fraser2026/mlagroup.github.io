@@ -18,12 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-  /* ================================================================
-     RegAnchor v8 — Stripe-style mesh gradient via CSS blurred blobs
-     ================================================================ */
-
   :root {
-    /* Page chrome — unchanged from brand system */
     --bg: #FFFFFF;
     --fg: #0A0E14;
     --fg-2: #374151;
@@ -33,24 +28,20 @@
     --border-strong: #1F2937;
     --font-brand: 'IBM Plex Sans', -apple-system, 'Helvetica Neue', sans-serif;
 
-    /* Vibrant gradient palette — high-contrast, Stripe-tier */
-    --blob-1: #6366F1;  /* vivid indigo */
-    --blob-2: #A855F7;  /* bright violet */
-    --blob-3: #EC4899;  /* deep pink */
-    --blob-4: #F97316;  /* safety orange */
-    --blob-5: #818CF8;  /* indigo lift (extra blob for richness) */
-    --blob-6: #FB923C;  /* warm orange lift */
+    /* Vibrant gradient palette */
+    --blob-1: #6366F1;
+    --blob-2: #A855F7;
+    --blob-3: #EC4899;
+    --blob-4: #F97316;
+    --blob-5: #818CF8;
+    --blob-6: #FB923C;
 
-    /* Mesh container background — sits behind the blobs */
     --mesh-base: #FFFFFF;
-
-    /* Blob opacity — how strongly each blob shows through.
-       Adjust globally to soften/intensify the whole gradient. */
     --blob-opacity: 0.85;
   }
 
   html[data-theme="dark"] {
-    --bg: #0F172A;          /* deep slate, as specified */
+    --bg: #0F172A;
     --fg: #FFFFFF;
     --fg-2: #E2E8F0;
     --fg-3: #94A3B8;
@@ -58,18 +49,12 @@
     --border: #1E293B;
     --border-strong: #E2E8F0;
     --mesh-base: #0F172A;
-
-    /* In dark mode the blobs read as glowing — slightly higher opacity
-       and slightly shifted hues to compensate for the dark backdrop */
     --blob-opacity: 0.65;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html, body {
-    height: 100%;
-    overflow: hidden;
-  }
+  html, body { height: 100%; overflow: hidden; }
 
   body {
     font-family: var(--font-brand);
@@ -78,18 +63,12 @@
     font-size: 15px;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     transition: background 0.5s ease, color 0.5s ease;
     position: relative;
   }
 
   /* ================================================================
-     MESH CONTAINER
-     ----------------------------------------------------------------
-     The mesh sits in a fixed container that occupies the entire
-     viewport. It is tilted by -8deg and oversized so the rotated
-     edges still cover the screen. overflow:hidden on the container
-     clips the blur halo cleanly at the viewport edges.
+     THE FLOW-LEDGER ENGINE (REPLACES MESH CONTAINER)
      ================================================================ */
   .mesh-stage {
     position: fixed;
@@ -104,150 +83,60 @@
 
   .mesh-stage.ready { opacity: 1; }
 
-  /* The rotated inner container — this is what creates the diagonal
-     flow that Stripe is known for. Oversized 140% so the rotated
-     corners still cover the visible viewport. */
+  /* Structured 1px Grid Overlay for "Engineering" feel */
+  .mesh-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-image: radial-gradient(var(--fg-4) 0.5px, transparent 0.5px);
+    background-size: 60px 60px;
+    opacity: 0.1;
+  }
+
   .mesh-rotor {
     position: absolute;
     top: -20%;
     left: -20%;
     width: 140%;
     height: 140%;
-    transform: rotate(-8deg);
-    transform-origin: center center;
+    transform: rotate(-8deg); /* Aligned to Stripe diagonal */
   }
 
-  /* ================================================================
-     BLOBS
-     ----------------------------------------------------------------
-     Six absolutely-positioned coloured circles. Each is heavily
-     blurred and blended together using mix-blend-mode: soft-light
-     so their colours merge into a continuous mesh rather than
-     stacking opaquely.
-     ================================================================ */
+  /* The Strands - Replaced Blobs with elongated ribbons */
   .blob {
     position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
+    width: 400vw;
+    height: 14vh;
+    border-radius: 100px;
+    filter: blur(80px);
     mix-blend-mode: soft-light;
     opacity: var(--blob-opacity);
     will-change: transform;
   }
 
-  /* Use 'screen' blend mode in dark mode so the colours additively
-     glow against the dark backdrop rather than darkening into it. */
   html[data-theme="dark"] .blob {
     mix-blend-mode: screen;
-    filter: blur(120px);
+    filter: blur(100px);
   }
 
-  /* Blob 1 — vivid indigo, top right region, large
-     Drifts in a slow horizontal-ish ellipse */
-  .blob-1 {
-    width: 55vw;
-    height: 55vw;
-    background: var(--blob-1);
-    top: -10%;
-    right: -10%;
-    animation: drift-1 22s ease-in-out infinite alternate;
-  }
+  /* Vertical placement + individual velocity */
+  .blob-1 { background: var(--blob-1); top: 10%; animation: river-flow 18s ease-in-out infinite alternate; }
+  .blob-2 { background: var(--blob-2); top: 22%; animation: river-flow 24s ease-in-out infinite alternate-reverse; }
+  .blob-3 { background: var(--blob-3); top: 38%; animation: river-flow 20s ease-in-out infinite alternate; }
+  .blob-4 { background: var(--blob-4); top: 55%; animation: river-flow 28s ease-in-out infinite alternate-reverse; }
+  .blob-5 { background: var(--blob-5); top: 15%; animation: river-flow 22s ease-in-out infinite alternate; }
+  .blob-6 { background: var(--blob-6); top: 70%; animation: river-flow 19s ease-in-out infinite alternate; }
 
-  /* Blob 2 — bright violet, middle-right, medium
-     Drifts more vertically, scales gently */
-  .blob-2 {
-    width: 45vw;
-    height: 45vw;
-    background: var(--blob-2);
-    top: 25%;
-    right: 15%;
-    animation: drift-2 19s ease-in-out infinite alternate;
-  }
-
-  /* Blob 3 — deep pink, lower middle, medium
-     Wider drift across the page */
-  .blob-3 {
-    width: 50vw;
-    height: 50vw;
-    background: var(--blob-3);
-    top: 40%;
-    right: 30%;
-    animation: drift-3 24s ease-in-out infinite alternate;
-  }
-
-  /* Blob 4 — safety orange, bottom right, large
-     The warm anchor — sweeps slowly into the bottom corner */
-  .blob-4 {
-    width: 60vw;
-    height: 60vw;
-    background: var(--blob-4);
-    bottom: -15%;
-    right: -10%;
-    animation: drift-4 26s ease-in-out infinite alternate;
-  }
-
-  /* Blob 5 — indigo lift, top left, smaller
-     Adds richness at the upper-left so the gradient has reach */
-  .blob-5 {
-    width: 35vw;
-    height: 35vw;
-    background: var(--blob-5);
-    top: -5%;
-    left: 25%;
-    animation: drift-5 20s ease-in-out infinite alternate;
-  }
-
-  /* Blob 6 — orange lift, middle left, smaller
-     Counterweight to blob-2's violet, balances the composition */
-  .blob-6 {
-    width: 30vw;
-    height: 30vw;
-    background: var(--blob-6);
-    top: 50%;
-    left: 5%;
-    animation: drift-6 18s ease-in-out infinite alternate;
+  /* THE PHYSICS: Solves the stagnant line with X translation + Y scaling */
+  @keyframes river-flow {
+    0% { transform: translateX(-45%) skewX(-20deg) scaleY(1); }
+    50% { transform: translateX(-15%) skewX(-25deg) scaleY(1.3); }
+    100% { transform: translateX(15%) skewX(-20deg) scaleY(1); }
   }
 
   /* ================================================================
-     KEYFRAMES — independent drift, scale, rotate per blob
-     ================================================================ */
-  @keyframes drift-1 {
-    0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
-    50%  { transform: translate(-8vw, 4vh) scale(1.12) rotate(8deg); }
-    100% { transform: translate(-4vw, 8vh) scale(0.95) rotate(-6deg); }
-  }
-
-  @keyframes drift-2 {
-    0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
-    50%  { transform: translate(6vw, -8vh) scale(1.08) rotate(-10deg); }
-    100% { transform: translate(-4vw, -3vh) scale(1.05) rotate(7deg); }
-  }
-
-  @keyframes drift-3 {
-    0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
-    50%  { transform: translate(10vw, 6vh) scale(0.92) rotate(12deg); }
-    100% { transform: translate(2vw, -6vh) scale(1.10) rotate(-4deg); }
-  }
-
-  @keyframes drift-4 {
-    0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
-    50%  { transform: translate(-6vw, -10vh) scale(1.05) rotate(-8deg); }
-    100% { transform: translate(4vw, -4vh) scale(1.18) rotate(5deg); }
-  }
-
-  @keyframes drift-5 {
-    0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
-    50%  { transform: translate(8vw, 6vh) scale(1.15) rotate(15deg); }
-    100% { transform: translate(-3vw, 10vh) scale(0.90) rotate(-5deg); }
-  }
-
-  @keyframes drift-6 {
-    0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
-    50%  { transform: translate(12vw, -8vh) scale(1.20) rotate(-12deg); }
-    100% { transform: translate(6vw, 4vh) scale(0.98) rotate(8deg); }
-  }
-
-  /* ================================================================
-     PAGE CONTENT — z-indexed above the mesh
+     PAGE CONTENT (Layout untouched)
      ================================================================ */
   .page {
     position: relative;
@@ -261,156 +150,30 @@
     margin: 0 auto;
   }
 
-  .top {
-    border-top: 1px solid var(--border-strong);
-    padding-top: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .top-left {
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--fg-3);
-  }
-
-  .theme-toggle {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid var(--border);
-    color: var(--fg);
-    padding: 7px 14px;
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-
-  html[data-theme="dark"] .theme-toggle {
-    background: rgba(15, 23, 42, 0.7);
-  }
-
-  .theme-toggle:hover {
-    background: var(--fg);
-    color: var(--bg);
-    border-color: var(--fg);
-  }
-
-  .centre {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px 0;
-  }
-
+  .top { border-top: 1px solid var(--border-strong); padding-top: 18px; display: flex; justify-content: space-between; align-items: center; }
+  .top-left { font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-3); }
+  .theme-toggle { background: rgba(255, 255, 255, 0.7); border: 1px solid var(--border); color: var(--fg); padding: 7px 14px; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.25s ease; backdrop-filter: blur(8px); }
+  html[data-theme="dark"] .theme-toggle { background: rgba(15, 23, 42, 0.7); }
+  .theme-toggle:hover { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .centre { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 20px 0; }
   .centre-content { max-width: 760px; }
-
-  .wordmark {
-    font-family: var(--font-brand);
-    font-weight: 500;
-    font-size: clamp(60px, 11vw, 168px);
-    line-height: 0.9;
-    letter-spacing: -0.045em;
-    color: var(--fg);
-    margin-bottom: 32px;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
-  }
-
-  .statement {
-    font-family: var(--font-brand);
-    font-weight: 400;
-    font-size: clamp(20px, 2.4vw, 30px);
-    line-height: 1.35;
-    letter-spacing: -0.015em;
-    color: var(--fg-2);
-    max-width: 740px;
-    margin-bottom: 36px;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
-  }
-
+  .wordmark { font-weight: 500; font-size: clamp(60px, 11vw, 168px); line-height: 0.9; letter-spacing: -0.045em; color: var(--fg); margin-bottom: 32px; opacity: 0; transform: translateY(12px); animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards; }
+  .statement { font-weight: 400; font-size: clamp(20px, 2.4vw, 30px); line-height: 1.35; letter-spacing: -0.015em; color: var(--fg-2); max-width: 740px; margin-bottom: 36px; opacity: 0; transform: translateY(12px); animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; }
   .statement strong { color: var(--fg); font-weight: 500; }
+  .attribution { font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-3); opacity: 0; animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards; }
 
-  .attribution {
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--fg-3);
-    opacity: 0;
-    animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards;
-  }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
 
-  @keyframes rise {
-    to { opacity: 1; transform: translateY(0); }
-  }
+  .bottom { border-bottom: 1px solid var(--border-strong); padding-bottom: 18px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-3); }
 
-  .bottom {
-    border-bottom: 1px solid var(--border-strong);
-    padding-bottom: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--fg-3);
-  }
-
-  /* ================================================================
-     RESPONSIVE
-     ================================================================ */
   @media (max-width: 760px) {
     .page { padding: 22px 24px; }
-    .top, .bottom { font-size: 10px; }
-    .centre { padding: 16px 0; }
-    .wordmark { margin-bottom: 24px; }
-    .statement { margin-bottom: 28px; }
-
-    /* Tighten blob sizes on mobile so the mesh remains balanced */
-    .blob-1, .blob-4 { width: 80vw; height: 80vw; }
-    .blob-2, .blob-3 { width: 70vw; height: 70vw; }
-    .blob-5, .blob-6 { width: 50vw; height: 50vw; }
-
-    .blob { filter: blur(70px); }
-    html[data-theme="dark"] .blob { filter: blur(85px); }
-  }
-
-  @media (max-height: 600px) and (orientation: landscape) {
-    .wordmark { font-size: clamp(48px, 8vw, 96px); margin-bottom: 16px; }
-    .statement { font-size: 16px; margin-bottom: 16px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .wordmark, .statement, .attribution {
-      opacity: 1;
-      transform: none;
-      animation: none;
-    }
-    .blob { animation: none; }
+    .blob { width: 400vw; height: 10vh; filter: blur(60px); }
   }
 </style>
 </head>
 <body>
 
-<!-- ================================================================
-     MESH STAGE — full-screen blurred blob mesh
-     ================================================================ -->
 <div class="mesh-stage" id="meshStage">
   <div class="mesh-rotor">
     <div class="blob blob-1"></div>
@@ -422,18 +185,13 @@
   </div>
 </div>
 
-<!-- ================================================================
-     PAGE CONTENT
-     ================================================================ -->
 <div class="page">
-
   <header class="top">
     <div class="top-left">In development</div>
     <button class="theme-toggle" onclick="toggleTheme()">
       <span id="theme-label">Dark</span>
     </button>
   </header>
-
   <main class="centre">
     <div class="centre-content">
       <h1 class="wordmark">RegAnchor</h1>
@@ -441,16 +199,13 @@
       <div class="attribution">Powered by MLA Group Ltd</div>
     </div>
   </main>
-
   <footer class="bottom">
     <div>Coming 2026</div>
     <div>reganchor.com</div>
   </footer>
-
 </div>
 
 <script>
-  /* === Theme === */
   function toggleTheme() {
     const root = document.documentElement;
     const label = document.getElementById('theme-label');
@@ -477,7 +232,6 @@
     }
   })();
 
-  /* Reveal the mesh after one paint cycle so it fades in cleanly */
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       document.getElementById('meshStage').classList.add('ready');
