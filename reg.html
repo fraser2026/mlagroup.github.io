@@ -64,7 +64,7 @@ html[data-theme="dark"] {
 <script>
     const V_SRC = `attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
     const F_SRC = `
-                precision highp float;
+        precision highp float;
         uniform float t;
         uniform vec2 r;
         uniform vec3 c1, c2, c3, c4;
@@ -74,30 +74,30 @@ html[data-theme="dark"] {
         void main() {
             vec2 uv = gl_FragCoord.xy / r;
             
-            // 1. DEEP CURVATURE: Sweeping, breathable folds
-            float skew = uv.x * 1.5 + uv.y * 1.0; 
-            float mainFold = sin(skew * 2.0 - t * 0.15) * 0.35;
-            float subFold  = cos(skew * 4.2 - uv.x * 2.0 + t * 0.20) * 0.12;
-            float twist = skew + mainFold + subFold;
+            // 1. DYNAMIC WARP: This creates the "Stripe-style" changing curves
+            // We mix two different sine waves at different speeds for organic motion
+            float curve = sin(uv.x * 2.0 + t * 0.2) * 0.5 + cos(uv.y * 1.5 + t * 0.3) * 0.5;
+            float twist = uv.x * 0.8 + uv.y * 1.2 + curve * 0.4;
 
-            // 2. TRANSLUCENT BLENDING: Silk-like light transmission
-            float m1 = smoothstep(0.1, 0.40, twist);
-            float m2 = smoothstep(0.40, 0.65, twist);
-            float m3 = smoothstep(0.65, 0.95, twist);
+            // 2. 3D PRECISION MAPPING: Tight buffers for HD clarity
+            // These 0.01 gaps give that sharp, "Toy Story" rendered edge
+            float m1 = smoothstep(0.15, 0.16, twist);
+            float m2 = smoothstep(0.45, 0.46, twist);
+            float m3 = smoothstep(0.75, 0.76, twist);
             
             vec3 color = c1;
             color = mix(color, c2, m1);
             color = mix(color, c3, m2);
             color = mix(color, c4, m3);
             
-            // 3. SILK SHEEN: Soft rolling highlights
-            float mask = m1 * (1.0 - m3);
-            float sheen = pow(abs(sin(twist * 3.1415)), 5.0) * 0.15 * mask;
+            // 3. THE "SPECULAR" 3D EFFECT: Creates the cylindrical "cable" look
+            // This adds a bright highlight in the center of the color bands
+            float spec = pow(1.0 - abs(twist - 0.45) * 2.5, 12.0) * 0.2;
+            
+            // 4. MICRO-GRAIN: Maintains that tactile, "real" surface feel
+            float grain = hash(uv + t * 0.01) * 0.02;
 
-            // 4. MICRO-GRAIN: Tactile texture
-            float grain = hash(uv + t * 0.01) * 0.03;
-
-            gl_FragColor = vec4(color + grain + sheen, 1.0);
+            gl_FragColor = vec4(color + spec + grain, 1.0);
         }
     `;
 
