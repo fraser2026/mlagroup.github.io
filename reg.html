@@ -4,15 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RegAnchor</title>
-<meta name="description" content="RegAnchor. Intelligence for AI governance.">
-
-<meta property="og:title" content="RegAnchor">
-<meta property="og:description" content="Intelligence for AI governance.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://reganchor.com">
-
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -23,10 +14,14 @@
     --fg: #0A0E14;
     --fg-2: #374151;
     --fg-3: #6B7280;
-    --fg-4: #9CA3AF;
-    --border: #E4E7EC;
     --border-strong: #1F2937;
-    --font-brand: 'IBM Plex Sans', -apple-system, 'Helvetica Neue', sans-serif;
+    --font-brand: 'IBM Plex Sans', sans-serif;
+    
+    /* Fixed Palette: Increased saturation so they don't wash out */
+    --ribbon-1: rgba(99, 102, 241, 0.15);
+    --ribbon-2: rgba(168, 85, 247, 0.15);
+    --ribbon-3: rgba(236, 72, 153, 0.12);
+    --ribbon-4: rgba(249, 115, 22, 0.12);
   }
 
   html[data-theme="dark"] {
@@ -34,673 +29,150 @@
     --fg: #FFFFFF;
     --fg-2: #D8DAE0;
     --fg-3: #A0A6B0;
-    --fg-4: #6F7890;
-    --border: #1F2530;
-    --border-strong: #D8DAE0;
+    --border-strong: #FFFFFF;
+    --ribbon-1: rgba(99, 102, 241, 0.25);
+    --ribbon-2: rgba(168, 85, 247, 0.25);
+    --ribbon-3: rgba(236, 72, 153, 0.2);
+    --ribbon-4: rgba(249, 115, 22, 0.2);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body, html { height: 100%; overflow: hidden; background: var(--bg); font-family: var(--font-brand); color: var(--fg); }
 
-  html, body {
-    height: 100%;
-    overflow: hidden;
-  }
-
-  body {
-    font-family: var(--font-brand);
-    background: var(--bg);
-    color: var(--fg);
-    font-size: 15px;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    transition: background 0.5s ease, color 0.5s ease;
-    position: relative;
-  }
-
-  /* === The signal canvas — sits behind everything, no interaction === */
-  .signal {
+  /* === FIXED STAGE === */
+  .stage {
     position: fixed;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
     z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
   }
 
-  /* === LAYOUT === */
+  .rotor {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    transform: rotate(-22deg); /* The diagonal angle */
+  }
+
+  .ribbon {
+    position: absolute;
+    width: 200%;
+    height: 25vh;
+    left: -50%;
+    filter: blur(80px); /* Soften the edges */
+    will-change: transform;
+  }
+
+  /* Striation effect using a repeating gradient */
+  .ribbon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, transparent 2px, transparent 20px);
+  }
+
+  .ribbon-1 { top: 10%; background: var(--ribbon-1); animation: flow 40s linear infinite; }
+  .ribbon-2 { top: 35%; background: var(--ribbon-2); animation: flow 55s linear infinite reverse; }
+  .ribbon-3 { top: 60%; background: var(--ribbon-3); animation: flow 45s linear infinite; }
+  .ribbon-4 { top: 85%; background: var(--ribbon-4); animation: flow 60s linear infinite reverse; }
+
+  @keyframes flow {
+    from { transform: translateX(-10%); }
+    to { transform: translateX(10%); }
+  }
+
+  /* === UI CONTENT === */
   .page {
     position: relative;
-    z-index: 1;
+    z-index: 10;
     height: 100vh;
-    height: 100dvh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    padding: 28px 40px;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 40px;
     max-width: 1400px;
     margin: 0 auto;
   }
 
-  .top {
-    border-top: 1px solid var(--border-strong);
-    padding-top: 18px;
+  .top, .bottom {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-  }
-
-  .top-left {
-    font-family: var(--font-brand);
     font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
+    font-weight: 600;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--fg-3);
   }
 
-  .theme-toggle {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--fg);
-    padding: 7px 14px;
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.25s ease;
-  }
+  .top { border-top: 1px solid var(--border-strong); padding-top: 20px; }
+  .bottom { border-bottom: 1px solid var(--border-strong); padding-bottom: 20px; }
 
-  .theme-toggle:hover {
-    background: var(--fg);
-    color: var(--bg);
-    border-color: var(--fg);
-  }
-
-  /* === CENTRE === */
-  .centre {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px 0;
-  }
-
-  /* The text container — measured by JS to create exclusion zones */
-  .centre-content {
-    max-width: 760px;
-  }
+  .main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
   .wordmark {
-    font-family: var(--font-brand);
+    font-size: clamp(60px, 11vw, 160px);
     font-weight: 500;
-    font-size: clamp(60px, 11vw, 168px);
+    letter-spacing: -0.04em;
     line-height: 0.9;
-    letter-spacing: -0.045em;
-    color: var(--fg);
-    margin-bottom: 32px;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+    margin-bottom: 30px;
   }
 
   .statement {
-    font-family: var(--font-brand);
-    font-weight: 400;
     font-size: clamp(20px, 2.4vw, 30px);
     line-height: 1.35;
-    letter-spacing: -0.015em;
     color: var(--fg-2);
-    max-width: 740px;
-    margin-bottom: 36px;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+    max-width: 750px;
   }
 
-  .statement strong { color: var(--fg); font-weight: 500; }
+  .statement strong { color: var(--fg); font-weight: 600; }
 
-  .attribution {
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--fg-3);
-    opacity: 0;
-    animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
-  }
-
-  @keyframes rise {
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* === BOTTOM === */
-  .bottom {
-    border-bottom: 1px solid var(--border-strong);
-    padding-bottom: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-brand);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--fg-3);
-  }
-
-  /* === RESPONSIVE === */
-  @media (max-width: 760px) {
-    .page { padding: 22px 24px; }
-    .top, .bottom { font-size: 10px; }
-    .centre { padding: 16px 0; }
-    .wordmark { margin-bottom: 24px; }
-    .statement { margin-bottom: 28px; }
-  }
-
-  @media (max-height: 600px) and (orientation: landscape) {
-    .wordmark { font-size: clamp(48px, 8vw, 96px); margin-bottom: 16px; }
-    .statement { font-size: 16px; margin-bottom: 16px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .wordmark, .statement, .attribution {
-      opacity: 1;
-      transform: none;
-      animation: none;
-    }
+  .theme-toggle {
+    background: var(--fg);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
   }
 </style>
 </head>
 <body>
 
-<canvas class="signal" id="signal"></canvas>
+<div class="stage">
+  <div class="rotor">
+    <div class="ribbon ribbon-1"></div>
+    <div class="ribbon ribbon-2"></div>
+    <div class="ribbon ribbon-3"></div>
+    <div class="ribbon ribbon-4"></div>
+  </div>
+</div>
 
 <div class="page">
-
   <header class="top">
-    <div class="top-left" id="topLeft">In development</div>
-    <button class="theme-toggle" onclick="toggleTheme()">
-      <span id="theme-label">Dark</span>
-    </button>
+    <div>In Development</div>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
   </header>
 
-  <main class="centre">
-    <div class="centre-content" id="centreContent">
-      <h1 class="wordmark">RegAnchor</h1>
-      <p class="statement">Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.</p>
-      <div class="attribution">Powered by MLA Group Ltd</div>
-    </div>
+  <main class="main">
+    <h1 class="wordmark">RegAnchor</h1>
+    <p class="statement">Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.</p>
   </main>
 
-  <footer class="bottom" id="bottomBar">
+  <footer class="bottom">
     <div>Coming 2026</div>
     <div>reganchor.com</div>
   </footer>
-
 </div>
 
 <script>
-  /* ============================================================
-     THEME
-     ============================================================ */
   function toggleTheme() {
-    const root = document.documentElement;
-    const label = document.getElementById('theme-label');
-    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    label.textContent = next === 'dark' ? 'Light' : 'Dark';
-    try { localStorage.setItem('ra-theme', next); } catch (e) {}
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
   }
-
-  (function initTheme() {
-    let saved = null;
-    try { saved = localStorage.getItem('ra-theme'); } catch (e) {}
-    const root = document.documentElement;
-    const label = document.getElementById('theme-label');
-    if (saved === 'dark' || saved === 'light') {
-      root.setAttribute('data-theme', saved);
-      if (label) label.textContent = saved === 'dark' ? 'Light' : 'Dark';
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      root.setAttribute('data-theme', 'dark');
-      if (label) label.textContent = 'Light';
-    } else {
-      root.setAttribute('data-theme', 'light');
-      if (label) label.textContent = 'Dark';
-    }
-  })();
-
-  /* ============================================================
-     SIGNAL ENGINE
-     ------------------------------------------------------------
-     Three independent traversals running on procedurally-generated
-     orthogonal routes. Routes avoid all text bounding boxes. Each
-     traversal has its own:
-       — generated path (sequence of waypoints with rounded corners)
-       — head position (current location along the path)
-       — trail buffer (history of positions for rendering)
-       — speed and pause cycle
-
-     Routes are regenerated when each pulse completes its journey,
-     so no two passes are identical.
-
-     Light mode uses ink at varying opacity (sharp, no glow).
-     Dark mode uses paper with luminous glow (radial gradient halo).
-     ============================================================ */
-  (function initSignal() {
-    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) return;
-
-    const canvas = document.getElementById('signal');
-    const ctx = canvas.getContext('2d');
-
-    /* Tuning constants — adjust these to change feel */
-    const GRID = 8;                 /* path snaps to this pixel grid */
-    const CORNER_RADIUS = 12;       /* radius of right-angle corner arcs */
-    const TRAIL_LENGTH = 220;       /* pixels of fading trail behind the head */
-    const PULSE_PAUSE_MIN = 600;    /* ms between pulses */
-    const PULSE_PAUSE_MAX = 1800;   /* ms between pulses (random within range) */
-    const SIGNAL_COUNT = 3;         /* concurrent traversals */
-    const MARGIN_PX = 60;           /* viewport edge margin */
-
-    let w = 0, h = 0, dpr = 1;
-    let exclusionZones = [];
-    let lastFrame = performance.now();
-
-    /* ------------------------------------------------------------
-       Resize and exclusion-zone measurement
-       ------------------------------------------------------------ */
-    function resize() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = window.innerWidth;
-      h = window.innerHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.scale(dpr, dpr);
-
-      measureExclusionZones();
-
-      /* Regenerate any signals whose paths now cross exclusion zones */
-      signals.forEach(s => { s.path = null; s.state = 'await'; s.nextStart = lastFrame + 100; });
-    }
-
-    function measureExclusionZones() {
-      exclusionZones = [];
-      const padding = 32;
-
-      /* Centre text block — wordmark and statement get a generous padding
-         since they are the focal point. The signal must navigate around. */
-      const centre = document.getElementById('centreContent');
-      if (centre) {
-        const r = centre.getBoundingClientRect();
-        exclusionZones.push({
-          x: r.left - padding,
-          y: r.top - padding,
-          w: r.width + padding * 2,
-          h: r.height + padding * 2
-        });
-      }
-
-      /* Top bar */
-      const topLeft = document.getElementById('topLeft');
-      if (topLeft) {
-        const r = topLeft.getBoundingClientRect();
-        exclusionZones.push({
-          x: 0,
-          y: 0,
-          w: w,
-          h: r.bottom + 16
-        });
-      }
-
-      /* Bottom bar */
-      const bottom = document.getElementById('bottomBar');
-      if (bottom) {
-        const r = bottom.getBoundingClientRect();
-        exclusionZones.push({
-          x: 0,
-          y: r.top - 16,
-          w: w,
-          h: h - r.top + 16
-        });
-      }
-    }
-
-    function pointInExclusion(x, y, pad = 0) {
-      for (const z of exclusionZones) {
-        if (x >= z.x - pad && x <= z.x + z.w + pad &&
-            y >= z.y - pad && y <= z.y + z.h + pad) return true;
-      }
-      return false;
-    }
-
-    /* Test whether a horizontal or vertical segment crosses any exclusion zone */
-    function segmentClear(x1, y1, x2, y2, pad = 0) {
-      /* Sample along the segment — works fine for orthogonal segments */
-      const len = Math.hypot(x2 - x1, y2 - y1);
-      const steps = Math.max(2, Math.ceil(len / 8));
-      for (let i = 0; i <= steps; i++) {
-        const t = i / steps;
-        const x = x1 + (x2 - x1) * t;
-        const y = y1 + (y2 - y1) * t;
-        if (pointInExclusion(x, y, pad)) return false;
-      }
-      return true;
-    }
-
-    /* ------------------------------------------------------------
-       Path generation
-       ------------------------------------------------------------
-       Generates a sequence of waypoints (orthogonal segments only)
-       from the left edge to the right edge, randomly turning vertically
-       in clear space, never crossing the exclusion zones.
-
-       Strategy:
-         1. Pick a starting Y on the left edge that is not inside an exclusion zone.
-         2. Run rightward in fixed-length horizontal segments.
-         3. At each segment's end, randomly decide whether to vertically jog
-            up or down by some amount, but only if the jog and the next
-            horizontal segment remain clear of all exclusions.
-         4. End at the right edge.
-
-       Returns an array of waypoints: [{x, y}, {x, y}, ...]
-       ------------------------------------------------------------ */
-    function snap(v) { return Math.round(v / GRID) * GRID; }
-
-    function findClearY(x, preferredY) {
-      /* Starting from preferredY, expand outward until we find a Y where
-         the point (x, y) is not in any exclusion zone */
-      const candidates = [];
-      for (let off = 0; off < h; off += GRID) {
-        for (const sign of [1, -1]) {
-          const y = preferredY + off * sign;
-          if (y > MARGIN_PX && y < h - MARGIN_PX && !pointInExclusion(x, y, 8)) {
-            candidates.push(y);
-            if (candidates.length >= 3) break;
-          }
-        }
-        if (candidates.length >= 3) break;
-      }
-      if (candidates.length === 0) return preferredY;
-      return candidates[Math.floor(Math.random() * candidates.length)];
-    }
-
-    function generatePath() {
-      const startX = -40;
-      const endX = w + 40;
-
-      /* Pick a starting band — top quarter, bottom quarter, or anywhere clear.
-         We bias toward the lower half (below the text) but allow upper routes
-         occasionally for variety. */
-      const band = Math.random();
-      let preferredY;
-      if (band < 0.55) {
-        /* Lower band: between centre text and bottom bar */
-        preferredY = h * (0.72 + Math.random() * 0.15);
-      } else if (band < 0.8) {
-        /* Upper band: between top bar and centre text */
-        preferredY = h * (0.10 + Math.random() * 0.10);
-      } else {
-        /* Far edges */
-        preferredY = h * (0.08 + Math.random() * 0.05);
-      }
-
-      let y = snap(findClearY(startX + 100, preferredY));
-      const points = [{ x: snap(startX), y }];
-
-      let x = snap(startX);
-      let attempts = 0;
-      const maxAttempts = 200;
-
-      while (x < endX && attempts < maxAttempts) {
-        attempts++;
-
-        /* Horizontal segment length: 80–280px, snapped to grid */
-        const segLen = snap(80 + Math.random() * 200);
-        const nextX = Math.min(x + segLen, endX);
-
-        /* Test if this horizontal run is clear */
-        if (segmentClear(x, y, nextX, y, 16)) {
-          x = nextX;
-          points.push({ x, y });
-
-          /* At the end of this segment, maybe jog vertically */
-          if (x < endX - 100 && Math.random() < 0.55) {
-            /* Try a vertical jog. Pick a target Y that is clear and within
-               a reasonable distance from current Y. */
-            const jogDist = snap(40 + Math.random() * 120);
-            const direction = Math.random() < 0.5 ? -1 : 1;
-            const targetY = y + jogDist * direction;
-            if (targetY > MARGIN_PX && targetY < h - MARGIN_PX &&
-                segmentClear(x, y, x, targetY, 12) &&
-                !pointInExclusion(x, targetY, 16)) {
-              y = snap(targetY);
-              points.push({ x, y });
-            }
-          }
-        } else {
-          /* Path is blocked — try jogging vertically to find clear space */
-          const jogOptions = [-160, -120, -80, 80, 120, 160].map(v => snap(v));
-          let jogged = false;
-          for (const jog of jogOptions.sort(() => Math.random() - 0.5)) {
-            const targetY = y + jog;
-            if (targetY > MARGIN_PX && targetY < h - MARGIN_PX &&
-                segmentClear(x, y, x, targetY, 12) &&
-                !pointInExclusion(x, targetY, 16)) {
-              y = snap(targetY);
-              points.push({ x, y });
-              jogged = true;
-              break;
-            }
-          }
-          if (!jogged) {
-            /* Couldn't find a way around — abort this path, caller will retry */
-            return null;
-          }
-        }
-      }
-
-      /* Ensure we end at the right edge */
-      if (points[points.length - 1].x < endX) {
-        points.push({ x: snap(endX), y });
-      }
-
-      return points;
-    }
-
-    /* Compute total length of a path in pixels */
-    function pathLength(points) {
-      let len = 0;
-      for (let i = 1; i < points.length; i++) {
-        len += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
-      }
-      return len;
-    }
-
-    /* Find position along a path at distance d from the start.
-       Returns {x, y} or null if d exceeds path length. */
-    function pointAtDistance(points, d) {
-      if (d < 0) return null;
-      let acc = 0;
-      for (let i = 1; i < points.length; i++) {
-        const sx = points[i - 1].x, sy = points[i - 1].y;
-        const ex = points[i].x, ey = points[i].y;
-        const segLen = Math.hypot(ex - sx, ey - sy);
-        if (acc + segLen >= d) {
-          const t = (d - acc) / segLen;
-          return { x: sx + (ex - sx) * t, y: sy + (ey - sy) * t };
-        }
-        acc += segLen;
-      }
-      return null;
-    }
-
-    /* ------------------------------------------------------------
-       Signal state machines
-       ------------------------------------------------------------ */
-    const signals = [];
-    for (let i = 0; i < SIGNAL_COUNT; i++) {
-      signals.push({
-        path: null,
-        state: 'await',           /* 'await' | 'travel' */
-        nextStart: lastFrame + i * 600,  /* stagger initial starts */
-        progress: 0,              /* distance along path */
-        speed: 280 + Math.random() * 160,  /* pixels per second */
-        len: 0
-      });
-    }
-
-    /* ------------------------------------------------------------
-       Render
-       ------------------------------------------------------------ */
-    function getColours() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      if (isDark) {
-        return {
-          mode: 'dark',
-          head: 'rgba(255, 255, 255, 1)',
-          headGlow: [
-            { stop: 0,    color: 'rgba(255, 255, 255, 0.35)' },
-            { stop: 0.4,  color: 'rgba(255, 255, 255, 0.10)' },
-            { stop: 1,    color: 'rgba(255, 255, 255, 0)' }
-          ],
-          trail: 'rgba(255, 255, 255, ',  /* alpha appended per pixel */
-          trailMaxAlpha: 0.55
-        };
-      } else {
-        return {
-          mode: 'light',
-          head: 'rgba(10, 14, 20, 1)',
-          headGlow: null,  /* no glow in light mode — would muddy the page */
-          trail: 'rgba(10, 14, 20, ',
-          trailMaxAlpha: 0.45
-        };
-      }
-    }
-
-    function drawTrailSegment(points, headDist, trailLen, c) {
-      /* Walk backwards from head along the path, drawing tiny line
-         segments with decreasing alpha. This produces a trail that
-         genuinely follows the path geometry through every corner. */
-
-      const samples = 80;  /* number of steps along trail */
-      const stepDist = trailLen / samples;
-
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-
-      for (let i = 0; i < samples; i++) {
-        const d1 = headDist - i * stepDist;
-        const d2 = headDist - (i + 1) * stepDist;
-        if (d2 < 0) break;
-
-        const p1 = pointAtDistance(points, d1);
-        const p2 = pointAtDistance(points, d2);
-        if (!p1 || !p2) continue;
-
-        /* Alpha falls off as i grows. Use a curved falloff so the
-           transition feels exponential rather than linear. */
-        const t = i / samples;
-        const alpha = c.trailMaxAlpha * Math.pow(1 - t, 2.2);
-
-        /* Stroke width tapers slightly along the trail for elegance */
-        const width = 1.4 - t * 0.6;
-
-        ctx.strokeStyle = c.trail + alpha + ')';
-        ctx.lineWidth = width;
-        ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.lineTo(p2.x, p2.y);
-        ctx.stroke();
-      }
-    }
-
-    function drawHead(p, c) {
-      /* Soft halo, dark mode only */
-      if (c.headGlow) {
-        const r = 28;
-        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-        for (const s of c.headGlow) grad.addColorStop(s.stop, s.color);
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      /* The head — single sharp dot */
-      ctx.fillStyle = c.head;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, c.mode === 'dark' ? 2.5 : 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    /* ------------------------------------------------------------
-       Frame loop
-       ------------------------------------------------------------ */
-    function frame(now) {
-      const dt = Math.min(50, now - lastFrame);
-      lastFrame = now;
-
-      ctx.clearRect(0, 0, w, h);
-      const c = getColours();
-
-      for (const s of signals) {
-        if (s.state === 'await') {
-          if (now >= s.nextStart) {
-            /* Generate a fresh path. Retry up to 3 times if the
-               first attempts produce a null path (very rare). */
-            let attempts = 0;
-            while (!s.path && attempts < 3) {
-              s.path = generatePath();
-              attempts++;
-            }
-            if (s.path) {
-              s.len = pathLength(s.path);
-              s.progress = -TRAIL_LENGTH * 0.3;  /* start with trail off-screen */
-              s.speed = 240 + Math.random() * 200;
-              s.state = 'travel';
-            } else {
-              s.nextStart = now + 500;  /* retry shortly */
-            }
-          }
-        } else if (s.state === 'travel') {
-          s.progress += s.speed * (dt / 1000);
-
-          /* Draw trail */
-          drawTrailSegment(s.path, s.progress, TRAIL_LENGTH, c);
-
-          /* Draw head if it is still on the path */
-          const head = pointAtDistance(s.path, s.progress);
-          if (head) drawHead(head, c);
-
-          /* Once head and tail have both passed the end, reset */
-          if (s.progress > s.len + TRAIL_LENGTH) {
-            s.path = null;
-            s.state = 'await';
-            s.nextStart = now + PULSE_PAUSE_MIN + Math.random() * (PULSE_PAUSE_MAX - PULSE_PAUSE_MIN);
-          }
-        }
-      }
-
-      requestAnimationFrame(frame);
-    }
-
-    window.addEventListener('resize', () => {
-      /* Debounce resize so we don't thrash regeneration */
-      clearTimeout(window._raResize);
-      window._raResize = setTimeout(resize, 120);
-    });
-
-    resize();
-    /* Re-measure exclusion zones once after fonts load and animations settle */
-    setTimeout(measureExclusionZones, 1500);
-    requestAnimationFrame(frame);
-  })();
 </script>
 
 </body>
