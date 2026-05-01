@@ -13,15 +13,16 @@
     --bg: #FFFFFF;
     --fg: #000000;
     --fg-muted: #666666;
-    --accent: #4F46E5;
-    --line-weight: 1px;
+    --glass: rgba(79, 70, 229, 0.08);
+    --border: rgba(0, 0, 0, 0.1);
   }
 
   html[data-theme="dark"] {
     --bg: #0A0A0B;
     --fg: #FFFFFF;
-    --fg-muted: #888888;
-    --accent: #818CF8;
+    --fg-muted: #94A3B8;
+    --glass: rgba(99, 102, 241, 0.12);
+    --border: rgba(255, 255, 255, 0.1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,68 +31,56 @@
     background-color: var(--bg); 
     color: var(--fg);
     overflow: hidden;
-    height: 100vh;
   }
 
-  /* --- THE ABSTRACT OBJECT (The "Anchor") --- */
+  /* --- THE ROTATING OBJECT --- */
   .stage {
     position: fixed;
     inset: 0;
     z-index: 1;
     display: flex;
-    align-items: center;
     justify-content: center;
-    pointer-events: none;
+    align-items: center;
+    perspective: 1200px; /* Gives the 3D depth */
   }
 
-  .wireframe-container {
-    width: 60vh;
-    height: 60vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.8;
+  .anchor-object {
+    width: 30vw;
+    height: 80vh;
+    background: var(--glass);
+    backdrop-filter: blur(60px);
+    border: 1px solid var(--border);
+    
+    /* This is the magic part: it rotates the whole object */
+    animation: rotateObject 15s ease-in-out infinite alternate;
+    transform-style: preserve-3d;
   }
 
-  svg {
-    width: 100%;
+  /* Subtle inner detail line that moves with the rotation */
+  .anchor-object::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 1px;
     height: 100%;
-    overflow: visible;
+    background: linear-gradient(to bottom, transparent, var(--fg), transparent);
+    opacity: 0.2;
   }
 
-  /* Rotating Group */
-  .rotator {
-    transform-origin: center;
-    animation: rotate3d 20s linear infinite;
-    stroke: var(--accent);
-    fill: none;
-    stroke-width: var(--line-weight);
+  @keyframes rotateObject {
+    0% { transform: rotateY(-20deg) rotateX(10deg) rotateZ(-5deg); }
+    100% { transform: rotateY(20deg) rotateX(-10deg) rotateZ(5deg); }
   }
 
-  .core-orbit {
-    stroke: var(--fg);
-    stroke-dasharray: 4 4;
-    animation: counter-rotate 30s linear infinite;
-  }
-
-  @keyframes rotate3d {
-    0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-    100% { transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg); }
-  }
-
-  @keyframes counter-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(-360deg); }
-  }
-
-  /* --- UI LAYOUT --- */
+  /* --- LAYOUT --- */
   .page {
     position: relative;
     z-index: 10;
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    padding: 35px 50px;
+    padding: 30px 50px;
     max-width: 1500px;
     margin: 0 auto;
   }
@@ -101,12 +90,11 @@
     justify-content: space-between;
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.25em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--fg-muted);
   }
 
-  /* Strong Industrial Borders */
   .header { border-top: 2px solid var(--fg); padding-top: 20px; }
   .footer { border-bottom: 2px solid var(--fg); padding-bottom: 20px; }
 
@@ -115,7 +103,6 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    pointer-events: none;
   }
 
   .wordmark {
@@ -124,15 +111,13 @@
     letter-spacing: -0.05em;
     line-height: 0.9;
     margin-bottom: 30px;
-    pointer-events: auto;
   }
 
   .statement {
     font-size: clamp(20px, 2.5vw, 30px);
-    line-height: 1.3;
+    line-height: 1.35;
     color: var(--fg-muted);
-    max-width: 780px;
-    pointer-events: auto;
+    max-width: 800px;
   }
 
   .statement strong { color: var(--fg); font-weight: 600; }
@@ -144,41 +129,19 @@
     padding: 6px 14px;
     cursor: pointer;
     font-size: 10px;
-    letter-spacing: 0.1em;
-    pointer-events: auto;
-  }
-
-  @media (max-width: 768px) {
-    .page { padding: 25px; }
-    .wireframe-container { width: 40vh; height: 40vh; }
   }
 </style>
 </head>
 <body>
 
 <div class="stage">
-  <div class="wireframe-container">
-    <svg viewBox="0 0 200 200">
-      <!-- Outer technical rings -->
-      <circle cx="100" cy="100" r="95" class="core-orbit" opacity="0.2"/>
-      <circle cx="100" cy="100" r="70" class="core-orbit" opacity="0.4" style="animation-duration: 15s"/>
-      
-      <!-- The Rotating Abstract "Anchor" -->
-      <g class="rotator">
-        <!-- Octahedron-style geometry -->
-        <path d="M100 20 L160 100 L100 180 L40 100 Z" />
-        <path d="M100 20 L40 100 L100 100 Z" opacity="0.5"/>
-        <path d="M100 180 L160 100 L100 100 Z" opacity="0.5"/>
-        <line x1="40" y1="100" x2="160" y2="100" />
-        <line x1="100" y1="20" x2="100" y2="180" />
-      </g>
-    </svg>
-  </div>
+  <!-- The single vertical pillar, now rotating as one piece -->
+  <div class="anchor-object"></div>
 </div>
 
 <div class="page">
   <div class="header">
-    <div>Status: Alpha v.1</div>
+    <div>In Development</div>
     <button class="theme-btn" onclick="toggleTheme()">THEME</button>
   </div>
 
