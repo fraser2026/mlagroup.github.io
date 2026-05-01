@@ -3,175 +3,166 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RegAnchor</title>
+<title>RegAnchor | AI Governance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --bg: #FFFFFF;
+    --bg: #f9fafb;
     --fg: #0A0E14;
-    --fg-2: #374151;
-    --fg-3: #6B7280;
-    --border-strong: #1F2937;
+    --fg-muted: #4b5563;
+    --border: #1F2937;
     --font-brand: 'IBM Plex Sans', sans-serif;
     
-    /* Fixed Palette: Increased saturation so they don't wash out */
-    --ribbon-1: rgba(99, 102, 241, 0.15);
-    --ribbon-2: rgba(168, 85, 247, 0.15);
-    --ribbon-3: rgba(236, 72, 153, 0.12);
-    --ribbon-4: rgba(249, 115, 22, 0.12);
+    /* Vibrant, distinct colors */
+    --c1: #6366f1; /* Indigo */
+    --c2: #a855f7; /* Violet */
+    --c3: #ec4899; /* Pink */
+    --c4: #f97316; /* Orange */
   }
 
   html[data-theme="dark"] {
-    --bg: #06080E;
-    --fg: #FFFFFF;
-    --fg-2: #D8DAE0;
-    --fg-3: #A0A6B0;
-    --border-strong: #FFFFFF;
-    --ribbon-1: rgba(99, 102, 241, 0.25);
-    --ribbon-2: rgba(168, 85, 247, 0.25);
-    --ribbon-3: rgba(236, 72, 153, 0.2);
-    --ribbon-4: rgba(249, 115, 22, 0.2);
+    --bg: #030712;
+    --fg: #ffffff;
+    --fg-muted: #9ca3af;
+    --border: #ffffff;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body, html { height: 100%; overflow: hidden; background: var(--bg); font-family: var(--font-brand); color: var(--fg); }
+  body, html { height: 100%; overflow: hidden; background: var(--bg); font-family: var(--font-brand); color: var(--fg); transition: background 0.4s ease; }
 
-  /* === FIXED STAGE === */
+  /* === THE ENGINE === */
   .stage {
     position: fixed;
     inset: 0;
     z-index: 0;
     overflow: hidden;
-    pointer-events: none;
+    filter: saturate(1.4);
   }
 
-  .rotor {
+  /* Noise Overlay to fix the "muddy" gradient look */
+  .stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  .canvas {
     position: absolute;
     width: 200%;
     height: 200%;
     top: -50%;
     left: -50%;
-    transform: rotate(-22deg); /* The diagonal angle */
+    transform: rotate(-12deg) skewX(-15deg); /* Creates the sharp diagonal "streak" */
   }
 
   .ribbon {
     position: absolute;
-    width: 200%;
-    height: 25vh;
-    left: -50%;
-    filter: blur(80px); /* Soften the edges */
+    width: 100%;
+    height: 12vh;
+    left: 0;
     will-change: transform;
+    opacity: 0.15;
+    /* The "Striation" - using a fine linear gradient to simulate silk texture */
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(255,255,255,0.4) 20%, 
+      rgba(255,255,255,0.8) 50%, 
+      rgba(255,255,255,0.4) 80%, 
+      transparent 100%
+    );
+    filter: blur(40px); /* Lower blur = sharper streaks */
   }
 
-  /* Striation effect using a repeating gradient */
-  .ribbon::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, transparent 2px, transparent 20px);
-  }
+  html[data-theme="dark"] .ribbon { opacity: 0.25; }
 
-  .ribbon-1 { top: 10%; background: var(--ribbon-1); animation: flow 40s linear infinite; }
-  .ribbon-2 { top: 35%; background: var(--ribbon-2); animation: flow 55s linear infinite reverse; }
-  .ribbon-3 { top: 60%; background: var(--ribbon-3); animation: flow 45s linear infinite; }
-  .ribbon-4 { top: 85%; background: var(--ribbon-4); animation: flow 60s linear infinite reverse; }
+  .r1 { top: 10%; background-color: var(--c1); animation: flow 25s linear infinite; }
+  .r2 { top: 30%; background-color: var(--c2); animation: flow 35s linear infinite reverse; }
+  .r3 { top: 55%; background-color: var(--c3); animation: flow 30s linear infinite; }
+  .r4 { top: 80%; background-color: var(--c4); animation: flow 40s linear infinite reverse; }
 
   @keyframes flow {
-    from { transform: translateX(-10%); }
-    to { transform: translateX(10%); }
+    from { transform: translateX(-30%); }
+    to { transform: translateX(30%); }
   }
 
-  /* === UI CONTENT === */
+  /* === UI LAYOUT === */
   .page {
     position: relative;
     z-index: 10;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 30px 40px;
-    max-width: 1400px;
+    padding: 40px;
+    max-width: 1200px;
     margin: 0 auto;
   }
 
-  .top, .bottom {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--fg-3);
-  }
+  .nav { border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .tag { font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fg-muted); }
 
-  .top { border-top: 1px solid var(--border-strong); padding-top: 20px; }
-  .bottom { border-bottom: 1px solid var(--border-strong); padding-bottom: 20px; }
-
-  .main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-
-  .wordmark {
-    font-size: clamp(60px, 11vw, 160px);
-    font-weight: 500;
-    letter-spacing: -0.04em;
-    line-height: 0.9;
-    margin-bottom: 30px;
-  }
-
-  .statement {
-    font-size: clamp(20px, 2.4vw, 30px);
-    line-height: 1.35;
-    color: var(--fg-2);
-    max-width: 750px;
-  }
-
+  .main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-bottom: 10vh; }
+  .wordmark { font-size: clamp(60px, 12vw, 160px); font-weight: 500; letter-spacing: -0.04em; line-height: 0.85; margin-bottom: 30px; }
+  .statement { font-size: clamp(20px, 2.5vw, 32px); line-height: 1.3; color: var(--fg-muted); max-width: 800px; }
   .statement strong { color: var(--fg); font-weight: 600; }
 
-  .theme-toggle {
+  .footer { border-bottom: 1px solid var(--border); padding-bottom: 20px; display: flex; justify-content: space-between; }
+
+  .btn-theme {
     background: var(--fg);
     color: var(--bg);
     border: none;
     padding: 8px 16px;
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
     cursor: pointer;
+    letter-spacing: 0.05em;
   }
 </style>
 </head>
 <body>
 
 <div class="stage">
-  <div class="rotor">
-    <div class="ribbon ribbon-1"></div>
-    <div class="ribbon ribbon-2"></div>
-    <div class="ribbon ribbon-3"></div>
-    <div class="ribbon ribbon-4"></div>
+  <div class="canvas">
+    <div class="ribbon r1"></div>
+    <div class="ribbon r2"></div>
+    <div class="ribbon r3"></div>
+    <div class="ribbon r4"></div>
   </div>
 </div>
 
 <div class="page">
-  <header class="top">
-    <div>In Development</div>
-    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
-  </header>
+  <nav class="nav">
+    <div class="tag">In Development</div>
+    <button class="btn-theme" onclick="toggleTheme()">Toggle Theme</button>
+  </nav>
 
   <main class="main">
     <h1 class="wordmark">RegAnchor</h1>
     <p class="statement">Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.</p>
   </main>
 
-  <footer class="bottom">
-    <div>Coming 2026</div>
-    <div>reganchor.com</div>
+  <footer class="footer">
+    <div class="tag">Coming 2026</div>
+    <div class="tag">reganchor.com</div>
   </footer>
 </div>
 
 <script>
   function toggleTheme() {
     const html = document.documentElement;
-    const isDark = html.getAttribute('data-theme') === 'dark';
-    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    const current = html.getAttribute('data-theme');
+    html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  }
+  // Detect system preference
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
   }
 </script>
 
