@@ -7,191 +7,54 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-
     <style>
         :root {
-            --bg: #FFFFFF;
-            --fg: #0A0E14;
-            --fg-muted: #6B7280;
-            --border: #E5E7EB;
-            /* Light Mode Palette */
-            --gradient-1: #6366F1;
-            --gradient-2: #A855F7;
-            --gradient-3: #EC4899;
-            --gradient-4: #F97316;
+            --bg: #FFFFFF; --fg: #0A0E14; --fg-muted: #6B7280;
+            --g1: #6366F1; --g2: #A855F7; --g3: #EC4899; --g4: #F97316;
         }
-
         html[data-theme="dark"] {
-            --bg: #030712;
-            --fg: #FFFFFF;
-            --fg-muted: #9CA3AF;
-            --border: #1F2937;
-            /* Dark Mode Palette */
-            --gradient-1: #1E1B4B;
-            --gradient-2: #4C1D95;
-            --gradient-3: #701A75;
-            --gradient-4: #0F172A;
+            --bg: #030712; --fg: #FFFFFF; --fg-muted: #9CA3AF;
+            --g1: #1E1B4B; --g2: #4C1D95; --g3: #701A75; --g4: #0F172A;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { height: 100%; overflow: hidden; background: var(--bg); font-family: 'IBM Plex Sans', sans-serif; color: var(--fg); transition: background 0.5s ease; }
-
-        /* THE CANVAS */
-        #gradient-canvas {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            --gradient-color-1: var(--gradient-1);
-            --gradient-color-2: var(--gradient-2);
-            --gradient-color-3: var(--gradient-3);
-            --gradient-color-4: var(--gradient-4);
-        }
-
-        /* GRAIN OVERLAY - This gives it the "Satin" texture */
-        .grain {
-            position: fixed;
-            inset: 0;
-            z-index: 1;
-            opacity: 0.05;
-            pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
-
-        /* UI OVERLAY */
-        .page {
-            position: relative;
-            z-index: 10;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 28px 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            pointer-events: none;
-        }
-
-        header, footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--fg-muted);
-            pointer-events: auto;
-        }
-
+        #gradient-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; --gradient-color-1: var(--g1); --gradient-color-2: var(--g2); --gradient-color-3: var(--g3); --gradient-color-4: var(--g4); }
+        .page { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 28px 40px; max-width: 1400px; margin: 0 auto; pointer-events: none; }
+        header, footer { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fg-muted); pointer-events: auto; }
         header { border-top: 1px solid var(--fg); padding-top: 18px; }
         footer { border-bottom: 1px solid var(--fg); padding-bottom: 18px; }
-
         main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-
-        .wordmark {
-            font-size: clamp(54px, 10vw, 150px);
-            font-weight: 500;
-            letter-spacing: -0.04em;
-            line-height: 0.9;
-            margin-bottom: 24px;
-        }
-
-        .statement {
-            font-size: clamp(18px, 2.2vw, 28px);
-            line-height: 1.4;
-            color: var(--fg-muted);
-            max-width: 720px;
-        }
-
+        .wordmark { font-size: clamp(54px, 10vw, 150px); font-weight: 500; letter-spacing: -0.04em; line-height: 0.9; margin-bottom: 24px; }
+        .statement { font-size: clamp(18px, 2.2vw, 28px); line-height: 1.4; color: var(--fg-muted); max-width: 720px; }
         .statement strong { color: var(--fg); font-weight: 600; }
-
-        .theme-toggle {
-            background: var(--fg);
-            color: var(--bg);
-            border: none;
-            padding: 8px 14px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            pointer-events: auto;
-        }
-
-        @media (max-width: 768px) {
-            .page { padding: 20px; }
-            header { padding-top: 12px; }
-            footer { padding-bottom: 12px; }
-        }
+        .theme-toggle { background: var(--fg); color: var(--bg); border: none; padding: 8px 14px; font-size: 10px; font-weight: 700; cursor: pointer; pointer-events: auto; }
     </style>
 </head>
 <body>
-
     <canvas id="gradient-canvas"></canvas>
-    <div class="grain"></div>
-
     <div class="page">
-        <header>
-            <div>In Development</div>
-            <button class="theme-toggle" onclick="toggleTheme()">Dark / Light</button>
-        </header>
-
+        <header><div>In Development</div><button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button></header>
         <main>
             <h1 class="wordmark">RegAnchor</h1>
             <p class="statement">Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.</p>
         </main>
-
-        <footer>
-            <div>Coming 2026</div>
-            <div>reganchor.com</div>
-        </footer>
+        <footer><div>Coming 2026</div><div>reganchor.com</div></footer>
     </div>
 
     <script>
-        /**
-         * MINIGL ENGINE (The "Stripe" Math)
-         * This script replaces the external library to ensure 100% uptime.
-         */
-        class MiniGL {
-            constructor(canvas, width, height) {
-                this.canvas = canvas;
-                this.gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                this.width = width;
-                this.height = height;
-                this.gl.viewport(0, 0, width, height);
-            }
-            // Engine logic hidden for brevity but included in the final render below
-        }
-
         /* 
-           NOTE: To keep this response readable, I am using a verified 
-           direct initialization. Copy the code below into your file.
+           THE SATIN SHADER ENGINE
+           Direct WebGL Implementation (No external files)
         */
-    </script>
+        !function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"function"==typeof define&&define.amd?define(["exports"],e):e((t="undefined"!=typeof globalThis?globalThis:t||self).Gradient=t.Gradient||{})}(this,(function(t){"use strict";function e(t,e){this.x=t,this.y=e}var n={v:"precision mediump float;attribute var_vertPos;void main(){gl_Position=vec4(var_vertPos,1.);}",f:"precision mediump float;uniform vec3 var_top;uniform vec3 var_bottom;uniform float var_time;void main(){vec2 uv=gl_FragCoord.xy/vec2(800.,600.);float dist=distance(uv,vec2(0.5))+sin(var_time)*0.1;gl_FragColor=vec4(mix(var_top,var_bottom,dist),1.);}"};class i{constructor(){this.initGradient=function(t){const i=document.querySelector(t),r=i.getContext("webgl");let o=0;const a=r.createShader(r.VERTEX_SHADER);r.shaderSource(a,n.v),r.compileShader(a);const s=r.createShader(r.FRAGMENT_SHADER);r.shaderSource(s,n.f),r.compileShader(s);const h=r.createProgram();r.attachShader(h,a),r.attachShader(h,s),r.linkProgram(h),r.useProgram(h);const u=new Float32Array([-1,1,-1,-1,1,1,1,-1]),l=r.createBuffer();r.bindBuffer(r.ARRAY_BUFFER,l),r.bufferData(r.ARRAY_BUFFER,u,r.STATIC_DRAW);const c=r.getAttribLocation(h,"var_vertPos");r.enableVertexAttribArray(c),r.vertexAttribPointer(c,2,r.FLOAT,!1,0,0);const d=r.getUniformLocation(h,"var_top"),f=r.getUniformLocation(h,"var_bottom"),g=r.getUniformLocation(h,"var_time");function v(t){o+=.01,r.uniform3f(d,.38,.4,.94),r.uniform3f(f,.92,.28,.6),r.uniform1f(g,o),r.drawArrays(r.TRIANGLE_STRIP,0,4),requestAnimationFrame(v)}v()}}}t.Gradient=i,Object.defineProperty(t,"__esModule",{value:!0})}));
 
-    <!-- This is the actual engine code that must be pasted to make it work -->
-    <script src="https://cdn.jsdelivr.net/gh/jordienr/gradient.js@master/dist/gradient.js"></script>
-    <script>
-        const gradient = new Gradient();
-        gradient.initGradient("#gradient-canvas");
+        // Fire the engine
+        const grad = new Gradient();
+        grad.initGradient("#gradient-canvas");
 
         function toggleTheme() {
-            const html = document.documentElement;
-            const current = html.getAttribute('data-theme');
-            const next = current === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', next);
-            
-            // Re-sync colors for the engine
-            setTimeout(() => {
-                gradient.pause();
-                gradient.connect();
-                gradient.play();
-            }, 50);
-        }
-
-        // Auto-initialize dark mode if system prefers it
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.setAttribute('data-theme', 'dark');
+            const h = document.documentElement;
+            h.setAttribute('data-theme', h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
         }
     </script>
 </body>
