@@ -64,45 +64,40 @@ html[data-theme="dark"] {
 <script>
     const V_SRC = `attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
     const F_SRC = `
-        precision highp float;
+                precision highp float;
         uniform float t;
         uniform vec2 r;
         uniform vec3 c1, c2, c3, c4;
 
-        // Optimized Noise for Fiber Texture
         float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
         void main() {
             vec2 uv = gl_FragCoord.xy / r;
             
-            // 1. COORDINATE WARP: Creating the "twisted cable" path
-            float skew = uv.x * 1.2 + uv.y * 0.8;
-            float movement = sin(skew * 3.0 - t * 0.3) * 0.25;
-            float twist = skew + movement;
-            
-            // 2. FIBER GRAIN: Micro-shimmer effect
-            float grain = hash(uv + t * 0.01) * 0.03;
+            // 1. DEEP CURVATURE: Sweeping, breathable folds
+            float skew = uv.x * 1.5 + uv.y * 1.0; 
+            float mainFold = sin(skew * 2.0 - t * 0.15) * 0.35;
+            float subFold  = cos(skew * 4.2 - uv.x * 2.0 + t * 0.20) * 0.12;
+            float twist = skew + mainFold + subFold;
 
-                       // 3. ANTI-ALIASED MAPPING
-            // We use 'm1' to start the rope and 'm3' to end it.
-            float m1 = smoothstep(0.1, 0.12, twist);
-            float m2 = smoothstep(0.4, 0.42, twist);
-            float m3 = smoothstep(0.7, 0.72, twist);
+            // 2. TRANSLUCENT BLENDING: Silk-like light transmission
+            float m1 = smoothstep(0.1, 0.40, twist);
+            float m2 = smoothstep(0.40, 0.65, twist);
+            float m3 = smoothstep(0.65, 0.95, twist);
             
-            // Start with the background color (c1)
             vec3 color = c1;
-            // Mix in the first rope color
             color = mix(color, c2, m1);
-            // Mix in the second rope color
             color = mix(color, c3, m2);
-            // Fade back to the background color (c4)
             color = mix(color, c4, m3);
             
-            // Final Satin Sheen (only visible on the rope)
+            // 3. SILK SHEEN: Soft rolling highlights
             float mask = m1 * (1.0 - m3);
-            float sheen = pow(1.0 - abs(twist - 0.5), 8.0) * 0.1 * mask;
-            gl_FragColor = vec4(color + grain + sheen, 1.0);
+            float sheen = pow(abs(sin(twist * 3.1415)), 5.0) * 0.15 * mask;
 
+            // 4. MICRO-GRAIN: Tactile texture
+            float grain = hash(uv + t * 0.01) * 0.03;
+
+            gl_FragColor = vec4(color + grain + sheen, 1.0);
         }
     `;
 
