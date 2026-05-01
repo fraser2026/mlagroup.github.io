@@ -3,24 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RegAnchor | Linear Flow</title>
+    <title>RegAnchor | Unified Flow</title>
     <style>
         :root {
             --bg: #ffffff;
             --text: #0b0f19;
-            --subtext: #475569;
-            --river-bg: #f8fafc;
-            --blend: screen;
-            --opacity: 0.8;
+            --river-speed: 20s;
         }
 
         [data-theme='dark'] {
             --bg: #0b0f19;
             --text: #ffffff;
-            --subtext: #94a3b8;
-            --river-bg: #0f172a;
-            --blend: color-dodge;
-            --opacity: 0.6;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,144 +22,131 @@
             background-color: var(--bg);
             color: var(--text);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-            transition: background 0.5s ease;
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-x: hidden;
         }
 
-        /* --- 1. THE RIVER GEOMETRY --- */
-        .hero-header {
+        /* --- THE DYNAMIC RIVER ENGINE --- */
+        .river-viewport {
             position: relative;
             width: 100%;
-            height: 65vh;
-            background: var(--river-bg);
-            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            height: 70vh;
+            /* The 'Cut' is now slightly animated via a subtle scale transform */
+            clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
             overflow: hidden;
+            background: var(--bg);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* --- 2. THE LIGHT STREAK CANVAS --- */
-        .river-canvas {
+        .river-mesh {
             position: absolute;
-            width: 150%;
-            height: 150%;
-            transform: rotate(-15deg); /* Parallel to the clip-path cut */
+            inset: -10% -20%;
+            width: 140%;
+            height: 140%;
+            transform: rotate(-12deg);
+            filter: blur(60px);
             display: flex;
             flex-direction: column;
-            justify-content: space-around;
+            gap: 0;
+            mix-blend-mode: normal;
         }
 
-        .streak {
-            width: 300vw;
-            height: 120px;
-            filter: blur(100px);
-            mix-blend-mode: var(--blend);
-            opacity: var(--opacity);
-            will-change: transform;
-            animation: flow linear infinite;
-        }
-
-        /* Stripe Color Palette */
-        .s1 { background: linear-gradient(90deg, #6366f1, #a855f7); animation-duration: 12s; }
-        .s2 { background: linear-gradient(90deg, #f43f5e, #fb923c); animation-duration: 18s; animation-delay: -4s; }
-        .s3 { background: linear-gradient(90deg, #3b82f6, #2dd4bf); animation-duration: 15s; animation-delay: -2s; }
-        .s4 { background: linear-gradient(90deg, #8b5cf6, #ec4899); animation-duration: 20s; animation-delay: -10s; }
-
-        @keyframes flow {
-            from { transform: translateX(-50%); }
-            to { transform: translateX(0%); }
-        }
-
-        /* Noise Texture for Premium Finish */
-        .hero-header::after {
-            content: "";
+        /* The 'Flower Rope' logic: Each strand has its own unique path */
+        .strand {
             position: absolute;
-            inset: 0;
-            opacity: 0.03;
-            pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            width: 300vw;
+            height: 25vh;
+            border-radius: 50%;
+            opacity: 0.7;
+            will-change: transform;
+            animation: flow var(--river-speed) infinite linear;
         }
 
-        /* --- 3. CONTENT --- */
+        /* Multi-chromatic layering to prevent '1-dimension' color feel */
+        .s1 { background: radial-gradient(circle, #6366f1 0%, transparent 70%); top: 0%; animation-duration: 25s; }
+        .s2 { background: radial-gradient(circle, #f43f5e 0%, transparent 70%); top: 20%; animation-duration: 30s; animation-delay: -5s; }
+        .s3 { background: radial-gradient(circle, #3b82f6 0%, transparent 70%); top: 40%; animation-duration: 22s; animation-delay: -10s; }
+        .s4 { background: radial-gradient(circle, #fb923c 0%, transparent 70%); top: 10%; left: 20%; animation-duration: 35s; }
+        .s5 { background: radial-gradient(circle, #a855f7 0%, transparent 70%); top: 60%; animation-duration: 28s; animation-delay: -15s; }
+
+        /* The physics: Rotation + Horizontal Translation = Liquid rope feel */
+        @keyframes flow {
+            0% { transform: translateX(-50%) translateY(0) rotate(0deg); }
+            50% { transform: translateX(-25%) translateY(20px) rotate(2deg); }
+            100% { transform: translateX(0%) translateY(0) rotate(0deg); }
+        }
+
+        /* --- THE CRITICAL FIX: THE EDGE GLOW --- */
+        /* This moves WITH the river, breaking the 'stagnant line' effect */
+        .edge-shimmer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: rotate(-12deg);
+            filter: blur(20px);
+            animation: shimmer 10s infinite linear;
+        }
+
+        @keyframes shimmer {
+            from { transform: translateX(-100%) rotate(-12deg); }
+            to { transform: translateX(100%) rotate(-12deg); }
+        }
+
+        /* --- CONTENT --- */
         .content {
             position: relative;
-            z-index: 10;
+            z-index: 100;
             text-align: center;
-            padding: 0 20px;
+            mix-blend-mode: difference; /* Ensures text is always readable over flowing colors */
+            color: white; 
         }
 
-        h1 {
-            font-size: 5rem;
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            margin-bottom: 1rem;
-        }
-
-        .sub-copy {
-            max-width: 600px;
-            margin: 0 auto;
-            font-size: 1.25rem;
-            color: var(--subtext);
-            line-height: 1.5;
-        }
+        h1 { font-size: clamp(3rem, 10vw, 6rem); font-weight: 800; letter-spacing: -0.05em; }
 
         .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 100;
-            background: rgba(128, 128, 128, 0.1);
-            border: 1px solid rgba(128, 128, 128, 0.2);
+            z-index: 1000;
+            background: rgba(128, 128, 128, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text);
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 30px;
             cursor: pointer;
-            font-size: 0.8rem;
             font-weight: 600;
-        }
-
-        footer {
-            padding: 4rem 3rem;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--subtext);
         }
     </style>
 </head>
-<body data-theme="light">
+<body data-theme="dark">
 
-    <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark/Light</button>
+    <button class="theme-toggle" onclick="toggleTheme()">Switch Mode</button>
 
-    <div class="hero-header">
-        <div class="river-canvas">
-            <div class="streak s1"></div>
-            <div class="streak s2"></div>
-            <div class="streak s3"></div>
-            <div class="streak s4"></div>
-            <div class="streak s1"></div>
-            <div class="streak s3"></div>
+    <div class="river-viewport">
+        <div class="river-mesh">
+            <div class="strand s1"></div>
+            <div class="strand s2"></div>
+            <div class="strand s3"></div>
+            <div class="strand s4"></div>
+            <div class="strand s5"></div>
+            <div class="edge-shimmer"></div>
         </div>
         
         <div class="content">
             <h1>RegAnchor</h1>
-            <p class="sub-copy">Intelligence for AI governance. A continuous, evidential layer beneath every AI system you operate.</p>
         </div>
     </div>
-
-    <footer>
-        <div>Coming 2026</div>
-        <div>Powered by MLA Group Ltd</div>
-    </footer>
 
     <script>
         function toggleTheme() {
             const body = document.body;
-            const current = body.getAttribute('data-theme');
-            body.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
+            body.setAttribute('data-theme', body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
         }
     </script>
 </body>
