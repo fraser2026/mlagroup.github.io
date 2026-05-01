@@ -13,16 +13,16 @@
     --bg: #FFFFFF;
     --fg: #000000;
     --fg-muted: #666666;
-    --glass: rgba(79, 70, 229, 0.06);
-    --border: rgba(0, 0, 0, 0.1);
+    --glass: rgba(79, 70, 229, 0.08);
+    --accent: #4F46E5;
   }
 
   html[data-theme="dark"] {
     --bg: #0A0A0B;
     --fg: #FFFFFF;
     --fg-muted: #94A3B8;
-    --glass: rgba(99, 102, 241, 0.08);
-    --border: rgba(255, 255, 255, 0.1);
+    --glass: rgba(99, 102, 241, 0.12);
+    --accent: #818CF8;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,7 +33,7 @@
     overflow: hidden;
   }
 
-  /* --- THE ROTATING PILLAR --- */
+  /* --- THE UI FEATURE --- */
   .stage {
     position: fixed;
     inset: 0;
@@ -41,47 +41,55 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    perspective: 1200px; /* Essential for the 3D look */
   }
 
-  .pillar {
-    /* The exact shape from your photos */
+  /* A sharp, vertical structural element—the "Anchor" */
+  .anchor-pillar {
     width: 35vw;
-    height: 100vh;
-    background: var(--glass);
-    backdrop-filter: blur(40px);
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    
-    /* Instead of a pulse, the whole object rotates */
-    animation: rotatePillar 20s ease-in-out infinite alternate;
-    transform-style: preserve-3d;
+    height: 120vh;
+    background: linear-gradient(180deg, 
+      transparent 0%, 
+      var(--glass) 30%, 
+      var(--glass) 70%, 
+      transparent 100%
+    );
+    transform: rotate(-15deg);
+    backdrop-filter: blur(80px);
+    border-left: 1px solid rgba(128, 128, 128, 0.1);
+    border-right: 1px solid rgba(128, 128, 128, 0.1);
+    position: relative;
+    overflow: hidden;
   }
 
-  /* A single static line inside to emphasize the depth when it turns */
-  .pillar::after {
+  /* The "Scanning" Detail—high-end, thin, fast */
+  .anchor-pillar::before {
     content: "";
     position: absolute;
-    left: 50%;
-    top: 0;
-    width: 1px;
-    height: 100%;
-    background: var(--border);
+    top: -20%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 20px var(--accent);
+    opacity: 0.5;
+    animation: scan 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
-  @keyframes rotatePillar {
-    0% { transform: rotateY(-30deg) rotateX(5deg); }
-    100% { transform: rotateY(30deg) rotateX(-5deg); }
+  @keyframes scan {
+    0% { top: -10%; opacity: 0; }
+    10% { opacity: 0.5; }
+    90% { opacity: 0.5; }
+    100% { top: 110%; opacity: 0; }
   }
 
-  /* --- UI ELEMENTS --- */
+  /* --- CONTENT LAYOUT --- */
   .page {
     position: relative;
     z-index: 10;
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    padding: 30px 40px;
+    padding: 30px 60px;
     max-width: 1600px;
     margin: 0 auto;
   }
@@ -91,13 +99,13 @@
     justify-content: space-between;
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
     color: var(--fg-muted);
   }
 
-  .header { border-top: 2px solid var(--fg); padding-top: 20px; }
-  .footer { border-bottom: 2px solid var(--fg); padding-bottom: 20px; }
+  .header { border-top: 2px solid var(--fg); padding-top: 25px; }
+  .footer { border-bottom: 2px solid var(--fg); padding-bottom: 25px; }
 
   .main {
     flex: 1;
@@ -107,18 +115,18 @@
   }
 
   .wordmark {
-    font-size: clamp(60px, 12vw, 170px);
+    font-size: clamp(64px, 12vw, 180px);
     font-weight: 500;
     letter-spacing: -0.05em;
     line-height: 0.85;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
   }
 
   .statement {
-    font-size: clamp(20px, 2.4vw, 30px);
+    font-size: clamp(20px, 2.4vw, 32px);
     line-height: 1.35;
     color: var(--fg-muted);
-    max-width: 800px;
+    max-width: 850px;
   }
 
   .statement strong { color: var(--fg); font-weight: 600; }
@@ -131,19 +139,20 @@
     cursor: pointer;
     font-size: 10px;
     font-weight: 600;
+    letter-spacing: 0.1em;
   }
 </style>
 </head>
 <body>
 
 <div class="stage">
-  <div class="pillar"></div>
+  <div class="anchor-pillar"></div>
 </div>
 
 <div class="page">
   <div class="header">
-    <div>In Development</div>
-    <button class="theme-btn" onclick="toggleTheme()">THEME</button>
+    <div>System Status: Development</div>
+    <button class="theme-btn" onclick="toggleTheme()">SWITCH MODE</button>
   </div>
 
   <div class="main">
@@ -152,7 +161,7 @@
   </div>
 
   <div class="footer">
-    <div>Coming 2026</div>
+    <div>Access Coming 2026</div>
     <div>reganchor.com</div>
   </div>
 </div>
