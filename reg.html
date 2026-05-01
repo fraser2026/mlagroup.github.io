@@ -6,13 +6,6 @@
 <title>RegAnchor</title>
 <meta name="description" content="RegAnchor. Intelligence for AI governance.">
 
-<meta property="og:title" content="RegAnchor">
-<meta property="og:description" content="Intelligence for AI governance.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://reganchor.com">
-
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -28,7 +21,6 @@
     --border-strong: #1F2937;
     --font-brand: 'IBM Plex Sans', -apple-system, 'Helvetica Neue', sans-serif;
 
-    /* Vibrant gradient palette */
     --blob-1: #6366F1;
     --blob-2: #A855F7;
     --blob-3: #EC4899;
@@ -37,7 +29,7 @@
     --blob-6: #FB923C;
 
     --mesh-base: #FFFFFF;
-    --blob-opacity: 0.85;
+    --blob-opacity: 0.8;
   }
 
   html[data-theme="dark"] {
@@ -49,11 +41,10 @@
     --border: #1E293B;
     --border-strong: #E2E8F0;
     --mesh-base: #0F172A;
-    --blob-opacity: 0.65;
+    --blob-opacity: 0.6;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   html, body { height: 100%; overflow: hidden; }
 
   body {
@@ -68,7 +59,7 @@
   }
 
   /* ================================================================
-     THE FLOW-LEDGER ENGINE (REPLACES MESH CONTAINER)
+     THE PRISMATIC ENGINE
      ================================================================ */
   .mesh-stage {
     position: fixed;
@@ -77,62 +68,70 @@
     pointer-events: none;
     background: var(--mesh-base);
     overflow: hidden;
-    transition: background 0.5s ease, opacity 1s ease;
     opacity: 0;
+    transition: opacity 1s ease;
   }
 
   .mesh-stage.ready { opacity: 1; }
 
-  /* Structured 1px Grid Overlay for "Engineering" feel */
-  .mesh-stage::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background-image: radial-gradient(var(--fg-4) 0.5px, transparent 0.5px);
-    background-size: 60px 60px;
-    opacity: 0.1;
-  }
-
+  /* Moving Background Blobs */
   .mesh-rotor {
     position: absolute;
-    top: -20%;
-    left: -20%;
-    width: 140%;
-    height: 140%;
-    transform: rotate(-8deg); /* Aligned to Stripe diagonal */
+    inset: -20%;
+    transform: rotate(-10deg);
   }
 
-  /* The Strands - Replaced Blobs with elongated ribbons */
   .blob {
     position: absolute;
-    width: 400vw;
-    height: 14vh;
-    border-radius: 100px;
-    filter: blur(80px);
+    border-radius: 50%;
+    filter: blur(120px);
     mix-blend-mode: soft-light;
     opacity: var(--blob-opacity);
     will-change: transform;
+    animation: drift 20s ease-in-out infinite alternate;
   }
 
-  html[data-theme="dark"] .blob {
-    mix-blend-mode: screen;
-    filter: blur(100px);
+  html[data-theme="dark"] .blob { mix-blend-mode: screen; }
+
+  .blob-1 { width: 60vw; height: 60vw; background: var(--blob-1); top: 0; left: 0; }
+  .blob-2 { width: 50vw; height: 50vw; background: var(--blob-2); top: 20%; right: 0; animation-delay: -5s; }
+  .blob-3 { width: 55vw; height: 55vw; background: var(--blob-3); bottom: 0; left: 10%; animation-delay: -2s; }
+  .blob-4 { width: 45vw; height: 45vw; background: var(--blob-4); bottom: 10%; right: 10%; animation-delay: -8s; }
+
+  @keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(10%, 10%) scale(1.1); }
   }
 
-  /* Vertical placement + individual velocity */
-  .blob-1 { background: var(--blob-1); top: 10%; animation: river-flow 18s ease-in-out infinite alternate; }
-  .blob-2 { background: var(--blob-2); top: 22%; animation: river-flow 24s ease-in-out infinite alternate-reverse; }
-  .blob-3 { background: var(--blob-3); top: 38%; animation: river-flow 20s ease-in-out infinite alternate; }
-  .blob-4 { background: var(--blob-4); top: 55%; animation: river-flow 28s ease-in-out infinite alternate-reverse; }
-  .blob-5 { background: var(--blob-5); top: 15%; animation: river-flow 22s ease-in-out infinite alternate; }
-  .blob-6 { background: var(--blob-6); top: 70%; animation: river-flow 19s ease-in-out infinite alternate; }
+  /* The Prism Shards - This creates the "Engineered" look */
+  .prism-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    gap: 2px;
+    z-index: 2;
+  }
 
-  /* THE PHYSICS: Solves the stagnant line with X translation + Y scaling */
-  @keyframes river-flow {
-    0% { transform: translateX(-45%) skewX(-20deg) scaleY(1); }
-    50% { transform: translateX(-15%) skewX(-25deg) scaleY(1.3); }
-    100% { transform: translateX(15%) skewX(-20deg) scaleY(1); }
+  .shard {
+    flex: 1;
+    height: 200%;
+    margin-top: -50%;
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    transform: rotate(15deg);
+    animation: shard-move 12s ease-in-out infinite alternate;
+  }
+
+  html[data-theme="dark"] .shard {
+    background: rgba(255, 255, 255, 0.01);
+    border-left: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  @keyframes shard-move {
+    from { transform: rotate(15deg) translateY(-2%); }
+    to { transform: rotate(15deg) translateY(2%); }
   }
 
   /* ================================================================
@@ -140,7 +139,7 @@
      ================================================================ */
   .page {
     position: relative;
-    z-index: 2;
+    z-index: 10;
     height: 100vh;
     height: 100dvh;
     display: grid;
@@ -154,22 +153,13 @@
   .top-left { font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-3); }
   .theme-toggle { background: rgba(255, 255, 255, 0.7); border: 1px solid var(--border); color: var(--fg); padding: 7px 14px; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.25s ease; backdrop-filter: blur(8px); }
   html[data-theme="dark"] .theme-toggle { background: rgba(15, 23, 42, 0.7); }
-  .theme-toggle:hover { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-  .centre { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 20px 0; }
-  .centre-content { max-width: 760px; }
-  .wordmark { font-weight: 500; font-size: clamp(60px, 11vw, 168px); line-height: 0.9; letter-spacing: -0.045em; color: var(--fg); margin-bottom: 32px; opacity: 0; transform: translateY(12px); animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards; }
-  .statement { font-weight: 400; font-size: clamp(20px, 2.4vw, 30px); line-height: 1.35; letter-spacing: -0.015em; color: var(--fg-2); max-width: 740px; margin-bottom: 36px; opacity: 0; transform: translateY(12px); animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; }
+  .centre { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+  .wordmark { font-weight: 500; font-size: clamp(60px, 11vw, 168px); line-height: 0.9; letter-spacing: -0.045em; margin-bottom: 32px; opacity: 0; animation: rise 1.2s ease forwards 0.4s; }
+  .statement { font-weight: 400; font-size: clamp(20px, 2.4vw, 30px); line-height: 1.35; color: var(--fg-2); max-width: 740px; margin-bottom: 36px; opacity: 0; animation: rise 1.2s ease forwards 0.7s; }
   .statement strong { color: var(--fg); font-weight: 500; }
-  .attribution { font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-3); opacity: 0; animation: rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards; }
-
+  .attribution { font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-3); opacity: 0; animation: rise 1.2s ease forwards 1s; }
   @keyframes rise { to { opacity: 1; transform: translateY(0); } }
-
-  .bottom { border-bottom: 1px solid var(--border-strong); padding-bottom: 18px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-3); }
-
-  @media (max-width: 760px) {
-    .page { padding: 22px 24px; }
-    .blob { width: 400vw; height: 10vh; filter: blur(60px); }
-  }
+  .bottom { border-bottom: 1px solid var(--border-strong); padding-bottom: 18px; display: flex; justify-content: space-between; font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-3); }
 </style>
 </head>
 <body>
@@ -180,17 +170,21 @@
     <div class="blob blob-2"></div>
     <div class="blob blob-3"></div>
     <div class="blob blob-4"></div>
-    <div class="blob blob-5"></div>
-    <div class="blob blob-6"></div>
+  </div>
+  <!-- Prismatic Shards -->
+  <div class="prism-container">
+    <div class="shard"></div>
+    <div class="shard" style="animation-delay: -2s;"></div>
+    <div class="shard" style="animation-delay: -4s;"></div>
+    <div class="shard" style="animation-delay: -1s;"></div>
+    <div class="shard" style="animation-delay: -5s;"></div>
   </div>
 </div>
 
 <div class="page">
   <header class="top">
     <div class="top-left">In development</div>
-    <button class="theme-toggle" onclick="toggleTheme()">
-      <span id="theme-label">Dark</span>
-    </button>
+    <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-label">Dark</span></button>
   </header>
   <main class="centre">
     <div class="centre-content">
@@ -212,30 +206,20 @@
     const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     root.setAttribute('data-theme', next);
     label.textContent = next === 'dark' ? 'Light' : 'Dark';
-    try { localStorage.setItem('ra-theme', next); } catch (e) {}
+    localStorage.setItem('ra-theme', next);
   }
 
   (function initTheme() {
-    let saved = null;
-    try { saved = localStorage.getItem('ra-theme'); } catch (e) {}
+    const saved = localStorage.getItem('ra-theme');
     const root = document.documentElement;
     const label = document.getElementById('theme-label');
-    if (saved === 'dark' || saved === 'light') {
-      root.setAttribute('data-theme', saved);
-      if (label) label.textContent = saved === 'dark' ? 'Light' : 'Dark';
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      root.setAttribute('data-theme', 'dark');
-      if (label) label.textContent = 'Light';
-    } else {
-      root.setAttribute('data-theme', 'light');
-      if (label) label.textContent = 'Dark';
-    }
+    const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.setAttribute('data-theme', theme);
+    if (label) label.textContent = theme === 'dark' ? 'Light' : 'Dark';
   })();
 
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      document.getElementById('meshStage').classList.add('ready');
-    });
+    document.getElementById('meshStage').classList.add('ready');
   });
 </script>
 
