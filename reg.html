@@ -74,32 +74,40 @@ html[data-theme="dark"] {
         void main() {
             vec2 uv = gl_FragCoord.xy / r;
             
-            // 1. DYNAMIC WARP: This creates the "Stripe-style" changing curves
-            // We mix two different sine waves at different speeds for organic motion
-            float curve = sin(uv.x * 2.0 + t * 0.2) * 0.5 + cos(uv.y * 1.5 + t * 0.3) * 0.5;
-            float twist = uv.x * 0.8 + uv.y * 1.2 + curve * 0.4;
+            // 1. STRIPE-STYLE ENGINEERED CURVES
+            // We use multiple sine layers to create that shifting, organic "ribbon"
+            float curve1 = sin(uv.x * 1.5 + t * 0.4) * 0.12;
+            float curve2 = cos(uv.y * 2.0 + t * 0.2) * 0.10;
+            float twist = uv.x * 0.6 + uv.y * 0.9 + curve1 + curve2;
 
-            // 2. 3D PRECISION MAPPING: Tight buffers for HD clarity
-            // These 0.01 gaps give that sharp, "Toy Story" rendered edge
-            float m1 = smoothstep(0.15, 0.16, twist);
-            float m2 = smoothstep(0.45, 0.46, twist);
-            float m3 = smoothstep(0.75, 0.76, twist);
+            // 2. HIGH-DEFINITION PRECISION (Toy Story / Specular look)
+            // Narrow smoothsteps (0.01 gap) keep it crisp and HD
+            // We've adjusted the ranges to ensure they don't clip to black
+            float m1 = smoothstep(0.05, 0.06, twist);
+            float m2 = smoothstep(0.35, 0.36, twist);
+            float m3 = smoothstep(0.65, 0.66, twist);
+            float m4 = smoothstep(0.94, 0.95, twist); // Fades back to BG
             
+            // 3. COLOR MIXING (Safe Layering)
+            // Start with BG color, mix through ribbons, end with BG color
             vec3 color = c1;
             color = mix(color, c2, m1);
             color = mix(color, c3, m2);
             color = mix(color, c4, m3);
+            color = mix(color, c1, m4); // Ensures the very top/edge is the BG color
             
-            // 3. THE "SPECULAR" 3D EFFECT: Creates the cylindrical "cable" look
-            // This adds a bright highlight in the center of the color bands
-            float spec = pow(1.0 - abs(twist - 0.45) * 2.5, 12.0) * 0.2;
-            
-            // 4. MICRO-GRAIN: Maintains that tactile, "real" surface feel
+            // 4. 3D CYLINDRICAL SHEEN
+            // This creates the "tubular" light reflection of a real fiber cable
+            float spec = pow(1.0 - abs(twist - 0.5) * 2.0, 15.0) * 0.25;
+            spec *= m1 * (1.0 - m4); // Only show sheen on the actual rope
+
+            // 5. TEXTURE
             float grain = hash(uv + t * 0.01) * 0.02;
 
             gl_FragColor = vec4(color + spec + grain, 1.0);
         }
     `;
+
 
     const canvas = document.getElementById('canvas');
     const gl = canvas.getContext('webgl', { antialias: true, stencil: true });
