@@ -13,7 +13,7 @@
     --bg: #FFFFFF;
     --fg: #000000;
     --fg-muted: #666666;
-    --glass: rgba(79, 70, 229, 0.08);
+    --glass: rgba(79, 70, 229, 0.06);
     --border: rgba(0, 0, 0, 0.1);
   }
 
@@ -21,7 +21,7 @@
     --bg: #0A0A0B;
     --fg: #FFFFFF;
     --fg-muted: #94A3B8;
-    --glass: rgba(99, 102, 241, 0.12);
+    --glass: rgba(99, 102, 241, 0.08);
     --border: rgba(255, 255, 255, 0.1);
   }
 
@@ -33,7 +33,7 @@
     overflow: hidden;
   }
 
-  /* --- THE ROTATING OBJECT --- */
+  /* --- THE ROTATING PILLAR --- */
   .stage {
     position: fixed;
     inset: 0;
@@ -41,47 +41,48 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    perspective: 1200px; /* Gives the 3D depth */
+    perspective: 1200px; /* Essential for the 3D look */
   }
 
-  .anchor-object {
-    width: 30vw;
-    height: 80vh;
+  .pillar {
+    /* The exact shape from your photos */
+    width: 35vw;
+    height: 100vh;
     background: var(--glass);
-    backdrop-filter: blur(60px);
-    border: 1px solid var(--border);
+    backdrop-filter: blur(40px);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
     
-    /* This is the magic part: it rotates the whole object */
-    animation: rotateObject 15s ease-in-out infinite alternate;
+    /* Instead of a pulse, the whole object rotates */
+    animation: rotatePillar 20s ease-in-out infinite alternate;
     transform-style: preserve-3d;
   }
 
-  /* Subtle inner detail line that moves with the rotation */
-  .anchor-object::before {
+  /* A single static line inside to emphasize the depth when it turns */
+  .pillar::after {
     content: "";
     position: absolute;
-    top: 0;
     left: 50%;
+    top: 0;
     width: 1px;
     height: 100%;
-    background: linear-gradient(to bottom, transparent, var(--fg), transparent);
-    opacity: 0.2;
+    background: var(--border);
   }
 
-  @keyframes rotateObject {
-    0% { transform: rotateY(-20deg) rotateX(10deg) rotateZ(-5deg); }
-    100% { transform: rotateY(20deg) rotateX(-10deg) rotateZ(5deg); }
+  @keyframes rotatePillar {
+    0% { transform: rotateY(-30deg) rotateX(5deg); }
+    100% { transform: rotateY(30deg) rotateX(-5deg); }
   }
 
-  /* --- LAYOUT --- */
+  /* --- UI ELEMENTS --- */
   .page {
     position: relative;
     z-index: 10;
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    padding: 30px 50px;
-    max-width: 1500px;
+    padding: 30px 40px;
+    max-width: 1600px;
     margin: 0 auto;
   }
 
@@ -109,12 +110,12 @@
     font-size: clamp(60px, 12vw, 170px);
     font-weight: 500;
     letter-spacing: -0.05em;
-    line-height: 0.9;
+    line-height: 0.85;
     margin-bottom: 30px;
   }
 
   .statement {
-    font-size: clamp(20px, 2.5vw, 30px);
+    font-size: clamp(20px, 2.4vw, 30px);
     line-height: 1.35;
     color: var(--fg-muted);
     max-width: 800px;
@@ -123,20 +124,20 @@
   .statement strong { color: var(--fg); font-weight: 600; }
 
   .theme-btn {
-    background: none;
-    border: 1px solid var(--fg-muted);
-    color: var(--fg);
+    background: var(--fg);
+    color: var(--bg);
+    border: none;
     padding: 6px 14px;
     cursor: pointer;
     font-size: 10px;
+    font-weight: 600;
   }
 </style>
 </head>
 <body>
 
 <div class="stage">
-  <!-- The single vertical pillar, now rotating as one piece -->
-  <div class="anchor-object"></div>
+  <div class="pillar"></div>
 </div>
 
 <div class="page">
