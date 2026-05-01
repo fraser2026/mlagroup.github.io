@@ -63,7 +63,7 @@ html[data-theme="dark"] {
 
 <script>
     const V_SRC = `attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
-    const F_SRC = `
+        const F_SRC = `
         precision highp float;
         uniform float t;
         uniform vec2 r;
@@ -72,41 +72,37 @@ html[data-theme="dark"] {
         float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
         void main() {
-            // Normalize UV so the animation looks the same on PC and Mobile
             vec2 uv = gl_FragCoord.xy / r;
+            
+            // This is the fix: It ensures the rope stays thin and curved on wide screens
             float ratio = r.x / r.y;
-            vec2 uv2 = uv;
-            uv2.x *= ratio; 
+            float x = uv.x * ratio; 
 
-            // 1. ENGINEERED CURVATURE (Stripe-Style)
-            // We use 'uv2' to ensure the curves don't stretch flat on wide PC screens
-            float curve = sin(uv2.x * 1.2 + t * 0.3) * 0.15 + cos(uv2.y * 1.8 + t * 0.2) * 0.1;
-            float twist = (uv2.x * 0.5 + uv2.y * 0.8) + curve;
+            // 1. CALM CURVATURE: Back to the gentle movement you liked
+            float curve = sin(x * 0.8 + t * 0.2) * 0.2;
+            float twist = (x * 0.4 + uv.y * 1.0) + curve;
 
-            // 2. THE COLOR MAPPING (Fixed for PC)
-            // We shift the ranges (0.1 to 1.1) to ensure the colors cover the whole screen
-            float m1 = smoothstep(0.1, 0.12, twist);
-            float m2 = smoothstep(0.4, 0.42, twist);
-            float m3 = smoothstep(0.7, 0.72, twist);
-            float m4 = smoothstep(1.0, 1.02, twist); // Fades back to background
+            // 2. NARROW BANDING: Keeping that sharp, expensive HD look
+            // We use wider ranges here (0.0 to 1.5) so it never hits "Black"
+            float m1 = smoothstep(0.2, 0.21, twist);
+            float m2 = smoothstep(0.45, 0.46, twist);
+            float m3 = smoothstep(0.7, 0.71, twist);
             
             vec3 color = c1;
             color = mix(color, c2, m1);
             color = mix(color, c3, m2);
             color = mix(color, c4, m3);
-            color = mix(color, c1, m4); // This kills the black corner on PC
             
-            // 3. TOY STORY SPECULAR (3D Sheen)
-            // A sharp, high-powered highlight for that rendered plastic/fiber look
-            float spec = pow(1.0 - abs(twist - 0.55) * 1.8, 20.0) * 0.3;
-            spec *= m1 * (1.0 - m4); // Only keep sheen on the "rope"
+            // 3. TOY STORY SHEEN: The 3D "Fiber" reflection
+            float spec = pow(1.0 - abs(twist - 0.5) * 2.0, 15.0) * 0.15;
 
-            // 4. SATIN TEXTURE
+            // 4. MICRO-GRAIN
             float grain = hash(uv + t * 0.01) * 0.02;
 
             gl_FragColor = vec4(color + spec + grain, 1.0);
         }
     `;
+
 
 
 
