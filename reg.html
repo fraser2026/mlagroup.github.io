@@ -10,188 +10,157 @@
 
 <style>
   :root {
-    --bg: #FFFFFF;
-    --fg: #0A0E14;
-    --fg-2: #374151;
-    --fg-3: #4B5563; /* Slightly darker for better legibility */
-    --border-strong: #1F2937;
-    --font-brand: 'IBM Plex Sans', -apple-system, 'Helvetica Neue', sans-serif;
-
-    /* Neural Trace Palette */
-    --blob-1: #4F46E5;
-    --blob-2: #7C3AED;
-    --blob-3: #06B6D4; 
-    
-    --grid-color: rgba(0, 0, 0, 0.07);
-    --scan-opacity: 0.04;
-    --text-glow: rgba(255, 255, 255, 0.8);
+    --bg: #F2F2F2;
+    --fg: #1A1A1A;
+    --fg-muted: #666666;
+    --accent-glow: rgba(0, 71, 255, 0.15);
+    --grain-opacity: 0.04;
   }
 
   html[data-theme="dark"] {
-    --bg: #0B0F1A;
+    --bg: #0A0A0B;
     --fg: #FFFFFF;
-    --fg-2: #CBD5E1;
-    --fg-3: #94A3B8;
-    --grid-color: rgba(255, 255, 255, 0.05);
-    --scan-opacity: 0.1;
-    --text-glow: rgba(0, 0, 0, 0.5);
+    --fg-muted: #888888;
+    --accent-glow: rgba(79, 70, 229, 0.2);
+    --grain-opacity: 0.07;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; }
-
-  body {
-    font-family: var(--font-brand);
-    background: var(--bg);
+  body { 
+    font-family: 'IBM Plex Sans', sans-serif; 
+    background-color: var(--bg); 
     color: var(--fg);
-    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    transition: background-color 0.5s ease;
   }
 
-  /* --- NEURAL TRACE BACKGROUND --- */
-  .mesh-stage { position: fixed; inset: 0; z-index: 0; background: var(--bg); }
-  
-  .grid-overlay {
-    position: absolute;
+  /* --- TEXTURED DEPTH LAYER --- */
+  .canvas {
+    position: fixed;
     inset: 0;
-    z-index: 2;
-    background-image: 
-      linear-gradient(var(--grid-color) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-    background-size: 80px 80px;
-    mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 95%);
+    z-index: 1;
   }
 
-  .scan-line {
+  /* The Grain: This makes the "cheap" digital look go away */
+  .canvas::before {
+    content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 10vh;
-    background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, var(--scan-opacity)), transparent);
-    z-index: 3;
-    animation: scan 12s linear infinite;
+    inset: -100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: var(--grain-opacity);
+    pointer-events: none;
   }
 
-  @keyframes scan { from { transform: translateY(-15vh); } to { transform: translateY(110vh); } }
+  /* The Single Light Source (Dramatic Top-Down) */
+  .spotlight {
+    position: absolute;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 80vh;
+    background: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
 
-  .blob-container { position: absolute; inset: 0; filter: blur(120px); opacity: 0.5; }
-  .blob { position: absolute; border-radius: 50%; animation: drift 25s ease-in-out infinite alternate; }
-  .b1 { width: 60vw; height: 60vw; background: var(--blob-1); top: -10%; left: -10%; }
-  .b2 { width: 50vw; height: 50vw; background: var(--blob-2); bottom: -10%; right: -10%; animation-delay: -5s; }
-  .b3 { width: 40vw; height: 40vw; background: var(--blob-3); top: 30%; right: 15%; animation-delay: -12s; }
-
-  @keyframes drift { from { transform: translate(0,0); } to { transform: translate(8%, 5%); } }
-
-  /* --- LAYOUT & VISIBILITY FIXES --- */
+  /* --- LAYOUT --- */
   .page {
     position: relative;
     z-index: 10;
     height: 100dvh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    padding: 28px 40px;
-    max-width: 1400px;
-    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
   }
 
-  /* These utility classes solve the "getting lost" issue */
-  .legible-label {
+  .header, .footer {
+    display: flex;
+    justify-content: space-between;
     font-size: 11px;
-    font-weight: 600; /* Heavier weight for PC screens */
-    letter-spacing: 0.16em;
+    font-weight: 600;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: var(--fg-3);
-    text-shadow: 0 0 10px var(--text-glow), 0 0 20px var(--text-glow); /* Protective glow */
+    color: var(--fg-muted);
   }
 
-  .top { border-top: 1px solid var(--border-strong); padding-top: 18px; display: flex; justify-content: space-between; align-items: center; }
-  
-  .theme-toggle { 
-    background: rgba(255,255,255,0.1); 
-    border: 1px solid var(--fg-3); 
-    color: var(--fg); 
-    padding: 7px 14px; 
-    font-size: 11px; 
-    font-weight: 600; 
-    cursor: pointer; 
-    backdrop-filter: blur(12px);
+  /* Subtle Hairline Dividers */
+  .header { border-bottom: 1px solid rgba(128,128,128,0.2); padding-bottom: 20px; }
+  .footer { border-top: 1px solid rgba(128,128,128,0.2); padding-top: 20px; }
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
   }
 
-  .centre { display: flex; flex-direction: column; justify-content: center; }
-  
-  .wordmark { 
-    font-weight: 500; 
-    font-size: clamp(60px, 11vw, 168px); 
-    line-height: 0.9; 
-    letter-spacing: -0.045em; 
-    margin-bottom: 32px; 
+  .wordmark {
+    font-size: clamp(60px, 12vw, 160px);
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 0.2em;
+    /* Subtle gradient on text for a "metallic" sheen */
+    background: linear-gradient(to bottom, var(--fg) 60%, var(--fg-muted));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-  
-  .statement { 
-    font-weight: 400; 
-    font-size: clamp(20px, 2.4vw, 30px); 
-    line-height: 1.35; 
-    color: var(--fg-2); 
-    max-width: 740px; 
-    margin-bottom: 36px; 
+
+  .statement {
+    font-size: clamp(20px, 2.2vw, 28px);
+    line-height: 1.4;
+    color: var(--fg-muted);
+    max-width: 750px;
+    font-weight: 400;
   }
-  
-  .statement strong { color: var(--fg); font-weight: 600; }
 
-  .bottom { border-bottom: 1px solid var(--border-strong); padding-bottom: 18px; display: flex; justify-content: space-between; }
+  .statement strong { color: var(--fg); font-weight: 600; -webkit-text-fill-color: var(--fg); }
 
-  @media (max-width: 600px) { .page { padding: 20px; } }
+  .theme-btn {
+    background: var(--fg);
+    color: var(--bg);
+    border: none;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 2px;
+  }
 </style>
 </head>
 <body>
 
-<div class="mesh-stage">
-  <div class="blob-container">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
-  </div>
-  <div class="grid-overlay"></div>
-  <div class="scan-line"></div>
+<div class="canvas">
+  <div class="spotlight"></div>
 </div>
 
 <div class="page">
-  <header class="top">
-    <div class="legible-label">In development</div>
-    <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-label">Dark</span></button>
-  </header>
+  <div class="header">
+    <div>In Development</div>
+    <button class="theme-btn" onclick="toggleTheme()">DARK</button>
+  </div>
 
-  <main class="centre">
+  <div class="main">
     <h1 class="wordmark">RegAnchor</h1>
     <p class="statement">Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.</p>
-    <div class="legible-label" style="opacity: 0.8;">Powered by MLA Group Ltd</div>
-  </main>
+  </div>
 
-  <footer class="bottom">
-    <div class="legible-label">Coming 2026</div>
-    <div class="legible-label">reganchor.com</div>
-  </footer>
+  <div class="footer">
+    <div>Coming 2026</div>
+    <div>reganchor.com</div>
+  </div>
 </div>
 
 <script>
   function toggleTheme() {
-    const root = document.documentElement;
-    const label = document.getElementById('theme-label');
-    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    label.textContent = next === 'dark' ? 'Light' : 'Dark';
-    localStorage.setItem('ra-theme', next);
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.querySelector('.theme-btn').textContent = isDark ? 'DARK' : 'LIGHT';
   }
-
-  (function initTheme() {
-    const saved = localStorage.getItem('ra-theme');
-    const root = document.documentElement;
-    const label = document.getElementById('theme-label');
-    const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    root.setAttribute('data-theme', theme);
-    if (label) label.textContent = theme === 'dark' ? 'Light' : 'Dark';
-  })();
 </script>
-
 </body>
 </html>
