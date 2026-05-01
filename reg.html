@@ -63,7 +63,7 @@ html[data-theme="dark"] {
 
 <script>
     const V_SRC = `attribute vec2 p; void main(){ gl_Position=vec4(p,0,1); }`;
-    const F_SRC = `
+        const F_SRC = `
         precision highp float;
         uniform float t;
         uniform vec2 r;
@@ -72,29 +72,31 @@ html[data-theme="dark"] {
         float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
         void main() {
-            // 1. THE PC-FIX: Center the coordinates (-0.5 to 0.5)
-            // This ensures the rope starts from the center-out, so corners never go black.
-            vec2 uv = (gl_FragCoord.xy - 0.5 * r.xy) / min(r.y, r.x);
+            vec2 uv = gl_FragCoord.xy / r;
             
-            // 2. ENGINEERED CALM: Small multipliers = smooth, expensive curves
-            // 'uv.x + uv.y' creates the 45-degree angle you liked.
-            float movement = sin(uv.x * 1.0 + t * 0.2) * 0.15;
-            float twist = (uv.x + uv.y) + movement;
+            // 1. SIMPLE REACH: We multiply by 1.5 to ensure the diagonal 
+            // reaches the corners of a wide laptop screen.
+            float x = uv.x * 1.5; 
 
-            // 3. PRECISION HD BANDS: Tight 0.01 gaps for that "Toy Story" render
-            // We use offsets from 0.0 so the rope stays centered on screen.
-            float m1 = smoothstep(-0.2, -0.19, twist);
-            float m2 = smoothstep(0.0, 0.01, twist);
-            float m3 = smoothstep(0.2, 0.21, twist);
+            // 2. THE ORIGINAL NARROW MATH: This is what you liked.
+            // Gentle curves, narrow bands.
+            float curve = sin(x * 0.7 + t * 0.2) * 0.15;
+            float twist = (x * 0.5 + uv.y * 1.2) + curve;
+
+            // 3. TIGHT HD BANDS: 0.01 precision for that Toy Story edge.
+            // These ranges (0.4 to 1.1) keep the rope narrow and centered.
+            float m1 = smoothstep(0.45, 0.46, twist);
+            float m2 = smoothstep(0.70, 0.71, twist);
+            float m3 = smoothstep(0.95, 0.96, twist);
             
             vec3 color = c1;
             color = mix(color, c2, m1);
             color = mix(color, c3, m2);
             color = mix(color, c4, m3);
             
-            // 4. 3D SPECULAR: A very thin, high-gloss sheen
-            float spec = pow(1.0 - abs(twist - 0.0) * 3.0, 30.0) * 0.2;
-            spec *= m1; // Only light up the rope, not the background
+            // 4. SHARP 3D SHEEN: Thin, expensive-looking light reflection.
+            float spec = pow(1.0 - abs(twist - 0.7) * 2.5, 25.0) * 0.2;
+            spec *= m1;
 
             // 5. TEXTURE
             float grain = hash(uv + t * 0.01) * 0.02;
@@ -102,6 +104,7 @@ html[data-theme="dark"] {
             gl_FragColor = vec4(color + spec + grain, 1.0);
         }
     `;
+
 
 
     const canvas = document.getElementById('canvas');
