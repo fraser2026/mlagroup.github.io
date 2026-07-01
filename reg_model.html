@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reganchor Revenue Model</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 460px;
+        }
+        h2 {
+            font-weight: 600;
+            font-size: 20px;
+            margin-bottom: 24px;
+            letter-spacing: -0.3px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #4b5563;
+        }
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 15px;
+            box-sizing: border-box;
+            background: #fcfcfc;
+        }
+        input:focus {
+            outline: none;
+            border-color: #111827;
+            background: #fff;
+        }
+        .divider {
+            border-top: 1px solid #e5e7eb;
+            margin: 28px 0;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+            color: #374151;
+        }
+        .total-row {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin-top: 16px;
+            border-top: 1px solid #111827;
+            padding-top: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Reganchor Revenue Model</h2>
+    
+    <div class="input-group">
+        <label>Diagnostic Reports Issued (£85 one-time)</label>
+        <input type="number" id="diagnostics" value="50" oninput="calculate()">
+    </div>
+    
+    <div class="input-group">
+        <label>Essentials Tier Clients (£129/mo)</label>
+        <input type="number" id="essentials" value="12" oninput="calculate()">
+    </div>
+    
+    <div class="input-group">
+        <label>Professional Tier Clients (£249/mo)</label>
+        <input type="number" id="professional" value="8" oninput="calculate()">
+    </div>
+    
+    <div class="input-group">
+        <label>Enterprise Clients (Bespoke)</label>
+        <input type="number" id="enterpriseCount" value="1" oninput="calculate()">
+    </div>
+
+    <div class="input-group">
+        <label>Average Enterprise Value (£/month)</label>
+        <input type="number" id="enterprisePrice" value="1000" oninput="calculate()">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="result-row">
+        <span>One-time Diagnostic Fees:</span>
+        <span id="diagOut">£0</span>
+    </div>
+    <div class="result-row">
+        <span>Monthly Recurring Revenue (MRR):</span>
+        <span id="mrrOut">£0</span>
+    </div>
+    <div class="result-row total-row">
+        <span>Total ARR Run-Rate:</span>
+        <span id="arrOut">£0</span>
+    </div>
+</div>
+
+<script>
+function calculate() {
+    const diagnostics = parseFloat(document.getElementById('diagnostics').value) || 0;
+    const essentials = parseFloat(document.getElementById('essentials').value) || 0;
+    const professional = parseFloat(document.getElementById('professional').value) || 0;
+    const enterpriseCount = parseFloat(document.getElementById('enterpriseCount').value) || 0;
+    const enterprisePrice = parseFloat(document.getElementById('enterprisePrice').value) || 0;
+
+    const diagRev = diagnostics * 85;
+    const mrr = (essentials * 129) + (professional * 249) + (enterpriseCount * enterprisePrice);
+    const arr = (mrr * 12) + diagRev;
+
+    document.getElementById('diagOut').innerText = '£' + diagRev.toLocaleString();
+    document.getElementById('mrrOut').innerText = '£' + mrr.toLocaleString();
+    document.getElementById('arrOut').innerText = '£' + arr.toLocaleString();
+}
+calculate();
+</script>
+
+</body>
+</html>
