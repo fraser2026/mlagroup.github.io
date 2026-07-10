@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RegAnchor — Strata</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FFFFFF;
+    --surface: #F7F8FA;
+    --surface-2: #EEF0F4;
+    --line: #E4E7EC;
+    --ink: #0A0E14;
+    --slate-90: #1F2937;
+    --slate-70: #374151;
+    --slate-50: #6B7280;
+    --slate-30: #9CA3AF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 880px; margin: 0 auto; padding: 56px 32px 140px; }
+
+  .cover { border-top: 1px solid var(--ink); padding-top: 24px; margin-bottom: 64px;
+    display: flex; justify-content: space-between; align-items: baseline; }
+  .cover-id, .cover-meta { font-size: 11px; font-weight: 500; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--slate-50); }
+  .cover-id strong { color: var(--ink); margin-right: 12px; font-weight: 600; }
+
+  .title { font-weight: 500; font-size: 56px; line-height: 1.02; letter-spacing: -0.03em;
+    margin-bottom: 20px; margin-top: 48px; }
+  .subtitle { font-weight: 400; font-size: 17px; line-height: 1.6; color: var(--slate-70);
+    max-width: 560px; margin-bottom: 72px; }
+
+  section { border-top: 1px solid var(--ink); padding-top: 24px; margin-bottom: 72px; }
+  .section-num { font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--slate-50); margin-bottom: 12px; }
+  .section-num strong { color: var(--ink); margin-right: 8px; font-weight: 600; }
+  h2 { font-weight: 500; font-size: 30px; line-height: 1.12; letter-spacing: -0.025em; margin-bottom: 18px; }
+  .lede { font-weight: 400; font-size: 16px; line-height: 1.6; color: var(--slate-70);
+    margin-bottom: 32px; max-width: 600px; }
+
+  /* ---- hero stage ---- */
+  .hero-stage {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 60px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1400px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hero-breathe { animation: breathe 7s ease-in-out infinite; }
+  @keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.012); } }
+  .hero-stage.is-active .hero-breathe { animation-play-state: paused; }
+  .hero-object {
+    --rx: 0deg; --ry: 0deg;
+    width: 260px;
+    transition: transform 0.6s cubic-bezier(.16,1,.3,1), filter 0.6s ease;
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+    filter: drop-shadow(0 30px 40px rgba(10,14,20,0.16));
+  }
+  .hero-stage.is-active .hero-object { transition: transform 0.12s ease-out, filter 0.12s ease-out; }
+  .hero-stage:hover .hero-object,
+  .hero-stage.is-active .hero-object {
+    filter: drop-shadow(0 46px 54px rgba(10,14,20,0.22));
+  }
+  .hero-object svg { display: block; width: 100%; height: auto; }
+  .grain-overlay { mix-blend-mode: overlay; pointer-events: none; }
+
+  .hero-caption { display: flex; justify-content: space-between; align-items: baseline;
+    padding: 14px 2px 0; font-size: 11px; font-weight: 500; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--slate-50); }
+
+  /* dark stage variant */
+  .hero-stage.dark { background: var(--ink); border-color: var(--ink); }
+  .hero-stage.dark .hero-object { filter: drop-shadow(0 30px 46px rgba(0,0,0,0.55)); }
+
+  /* ---- spec list, reused pattern from brand doc ---- */
+  dl.spec { display: grid; grid-template-columns: 200px 1fr; gap: 16px 32px; padding: 24px 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  dl.spec dt { font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--slate-50); padding-top: 3px; }
+  dl.spec dd { font-size: 14px; line-height: 1.55; color: var(--slate-90); color:#1F2937; }
+
+  /* ---- scatter grid ---- */
+  .scatter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line);
+    border: 1px solid var(--line); }
+  @media (max-width: 720px) { .scatter-grid { grid-template-columns: 1fr; } }
+  .scatter-cell { background: var(--paper); padding: 24px; display: flex; flex-direction: column; }
+  .scatter-label { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--slate-50); margin-bottom: 16px; }
+
+  /* footer-strip mock */
+  .mock-footer { background: var(--surface); border: 1px solid var(--line); height: 140px; position: relative;
+    overflow: hidden; }
+  .mock-footer .mock-text { position: absolute; top: 14px; left: 14px; font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--slate-30); }
+  .mock-footer svg { position: absolute; bottom: -46px; right: -30px; width: 150px; opacity: 0.92; }
+
+  /* card-corner mock */
+  .mock-card { background: var(--paper); border: 1px solid var(--line); height: 140px; position: relative;
+    box-shadow: 0 1px 2px rgba(10,14,20,0.04); overflow: hidden; padding: 16px; }
+  .mock-card .bar { height: 7px; background: var(--surface-2); border-radius: 1px; margin-bottom: 8px; }
+  .mock-card .bar.short { width: 55%; }
+  .mock-card svg { position: absolute; bottom: -20px; right: -18px; width: 70px; opacity: 0.85; }
+
+  /* certificate mock */
+  .mock-cert { background: var(--paper); border: 1px solid var(--slate-90); height: 140px; position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .mock-cert .cert-id { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--slate-50);
+    margin-bottom: 6px; }
+  .mock-cert .cert-title { font-size: 13px; font-weight: 500; letter-spacing: -0.01em; margin-bottom: 10px; }
+  .mock-cert svg { width: 34px; opacity: 0.9; }
+
+  /* deck cover mock (dark) */
+  .mock-deck { background: var(--ink); height: 140px; position: relative; overflow: hidden; }
+  .mock-deck .deck-text { position: absolute; top: 14px; left: 14px; font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--slate-50); }
+  .mock-deck svg { position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%); width: 84px; }
+
+  /* ---- zoom detail ---- */
+  .zoom-panel { background: var(--surface); border: 1px solid var(--line); padding: 40px; display: flex;
+    justify-content: center; }
+  .zoom-panel svg { width: 100%; max-width: 420px; height: auto; }
+
+  .footer { border-top: 1px solid var(--ink); padding-top: 24px; margin-top: 80px; display: flex;
+    justify-content: space-between; align-items: baseline; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--slate-50); }
+  .footer strong { color: var(--ink); margin-right: 12px; font-weight: 600; }
+
+  ::selection { background: var(--slate-90); color: var(--paper); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="strata-form" viewBox="0 0 480 640">
+      <clipPath id="strataClip">
+        <polygon points="93.0,560.0 118.5,471.0 266.4,482.0 261.2,560.0"/>
+        <polygon points="261.2,560.0 266.4,482.0 373.5,467.0 383.0,560.0"/>
+        <polygon points="118.5,496.0 119.0,408.0 238.9,390.0 256.2,496.0"/>
+        <polygon points="256.2,496.0 238.9,390.0 341.0,405.0 373.5,496.0"/>
+        <polygon points="119.0,420.0 152.0,321.0 269.1,333.0 254.4,420.0"/>
+        <polygon points="254.4,420.0 269.1,333.0 344.0,324.0 341.0,420.0"/>
+        <polygon points="152.0,348.0 149.5,266.0 233.7,254.0 249.9,348.0"/>
+        <polygon points="249.9,348.0 233.7,254.0 314.5,271.0 344.0,348.0"/>
+        <polygon points="149.5,280.0 180.0,191.0 261.2,187.0 245.2,280.0"/>
+        <polygon points="245.2,280.0 261.2,187.0 320.0,194.0 314.5,280.0"/>
+        <polygon points="180.0,215.0 178.5,140.0 239.4,122.0 254.2,215.0"/>
+        <polygon points="254.2,215.0 239.4,122.0 293.5,141.0 320.0,215.0"/>
+        <polygon points="178.5,153.0 208.0,51.0 242.0,17.0 236.0,153.0"/>
+        <polygon points="236.0,153.0 242.0,17.0 276.0,65.0 293.5,153.0"/>
+      </clipPath>
+      <filter id="strataGrain" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="11" stitchTiles="stitch" result="n"/>
+< truncated lines 170-200 >
+        <polygon fill="#F7F8FA" points="236.0,153.0 242.0,17.0 276.0,65.0 293.5,153.0"/>
+      </g>
+
+      <rect x="80" y="0" width="320" height="580" clip-path="url(#strataClip)" filter="url(#strataGrain)"
+        opacity="0.4" class="grain-overlay"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="container">
+
+  <header class="cover">
+    <div class="cover-id"><strong>RGA-004</strong>Object Study — draft</div>
+    <div class="cover-meta">10 July 2026</div>
+  </header>
+
+  <h1 class="title">Strata.</h1>
+  <p class="subtitle">RegAnchor's premium object. Built from the same six tones as the wordmark — nothing added, nothing borrowed from Vanta, Swan, or Stripe except the standard of craft.</p>
+
+  <!-- 01: THE OBJECT -->
+  <section>
+    <div class="section-num"><strong>01</strong>The object</div>
+    <h2>Move your cursor over it. Scroll the page.</h2>
+    <p class="lede">A tapering stack of seven cut facets, base to summit. Tilts toward the cursor, drifts slightly as you scroll, settles when you stop. Every tone is lifted directly from the palette in RGA-001 — the object is the palette, just given form.</p>
+
+    <div class="hero-stage" id="heroStage">
+      <div class="hero-breathe">
+        <div class="hero-object" id="heroObject">
+          <svg viewBox="0 0 480 640"><use href="#strata-form"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="hero-caption">
+      <span>Strata · Paper</span>
+      <span>7 courses · SVG</span>
+    </div>
+  </section>
+
+  <!-- dark placement -->
+  <div class="hero-stage dark" style="margin-top: -48px; margin-bottom: 72px;">
+    <div class="hero-object" style="width:180px;">
+      <svg viewBox="0 0 480 640"><use href="#strata-form"/></svg>
+    </div>
+  </div>
+
+  <!-- 02: WHY THIS FORM -->
+  <section>
+    <div class="section-num"><strong>02</strong>Why this form</div>
+    <h2>Seven courses. Not decoration — a count that means something.</h2>
+    <p class="lede">Grok's version was a faceted crystal: well-made, but arbitrary — nothing in its shape referred back to RegAnchor specifically. It could sit on any SaaS homepage in the world. Strata is built from decisions that only make sense here.</p>
+
+    <dl class="spec">
+      <dt>Seven courses</dt>
+      <dd>Matches the Compliance Bar's seven levels exactly. Not a metaphor — the same number, reused on purpose, so the object and the product UI are counting the same thing.</dd>
+      <dt>Base → summit</dt>
+      <dd>The bottom course is Ink, the top is Paper — the object travels through all six brand tones in order. Bedrock at the base, clarity at the top: the read is "grounded, then resolved," which is the whole pitch of an assurance product.</dd>
+      <dt>No accent colour</dt>
+      <dd>Zero hex values outside the palette in RGA-001. I didn't extend the Anchor Line gradient onto it — that gradient is scoped to two named primitives in your own rules, and quietly adding a third felt like the kind of drift that erodes a restrained system. If you want Strata to carry the gradient as a hover state, that's worth deciding on deliberately rather than me assuming it.</dd>
+      <dt>No mark, still true to rule 4</dt>
+      <dd>It's not standing in for a logo and never appears beside the wordmark the way an icon would — it's closer to a material finish than a symbol, the way Vanta's rock is texture, not their logo. Worth codifying in RGA-001 once you're happy with it, so it's an intentional exception rather than an unofficial one.</dd>
+    </dl>
+  </section>
+
+  <!-- 03: SCATTERED -->
+  <section>
+    <div class="section-num"><strong>03</strong>Scattered</div>
+    <h2>One object, cropped and scaled — not four different graphics.</h2>
+    <p class="lede">Everything below reuses the exact same SVG. That's the point of building it as one asset: it stays recognisably the same object no matter where it lands, the way Vanta's rock is legible whether it's 40px or 400px.</p>
+
+    <div class="scatter-grid">
+      <div class="scatter-cell">
+        <div class="scatter-label">Footer strip</div>
+        <div class="mock-footer">
+          <div class="mock-text">reganchor.com</div>
+          <svg viewBox="60 380 360 260"><use href="#strata-form"/></svg>
+        </div>
+      </div>
+      <div class="scatter-cell">
+        <div class="scatter-label">Card corner</div>
+        <div class="mock-card">
+          <div class="bar"></div>
+          <div class="bar short"></div>
+          <svg viewBox="140 260 340 300"><use href="#strata-form"/></svg>
+        </div>
+      </div>
+      <div class="scatter-cell">
+        <div class="scatter-label">Certificate mark</div>
+        <div class="mock-cert">
+          <div class="cert-id">MLA-GOV-2026-0043</div>
+          <div class="cert-title">Advanced</div>
+          <svg viewBox="130 0 220 220"><use href="#strata-form"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="mock-deck" style="margin-top:1px;">
+      <div class="deck-text">RegAnchor — Series draft</div>
+      <svg viewBox="0 0 480 640"><use href="#strata-form"/></svg>
+    </div>
+  </section>
+
+  <!-- 04: DETAIL -->
+  <section>
+    <div class="section-num"><strong>04</strong>Detail</div>
+    <h2>The summit, at 3×.</h2>
+    <p class="lede">Vector facets and a procedural grain filter — not a raster texture — so this holds up at any zoom, print size, or Retina density without a second asset.</p>
+    <div class="zoom-panel">
+      <svg viewBox="150 0 200 220"><use href="#strata-form"/></svg>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div><strong>RegAnchor</strong>Object Study — Strata</div>
+    <div>Draft for review · not yet in RGA-001</div>
+  </footer>
+
+</div>
+
+<script>
+  const stage = document.getElementById('heroStage');
+  const obj = document.getElementById('heroObject');
+
+  let mouseRy = 0, mouseRx = 0, scrollRy = 0;
+  function applyTransform() {
+    obj.style.setProperty('--rx', (mouseRx).toFixed(2) + 'deg');
+    obj.style.setProperty('--ry', (mouseRy + scrollRy).toFixed(2) + 'deg');
+  }
+
+  stage.addEventListener('mousemove', (e) => {
+    const rect = stage.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseRy = px * 18;
+    mouseRx = -py * 12;
+    stage.classList.add('is-active');
+    applyTransform();
+  });
+  stage.addEventListener('mouseleave', () => {
+    mouseRy = 0; mouseRx = 0;
+    stage.classList.remove('is-active');
+    applyTransform();
+  });
+  stage.addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    const rect = stage.getBoundingClientRect();
+    const px = (t.clientX - rect.left) / rect.width - 0.5;
+    mouseRy = px * 14;
+    stage.classList.add('is-active');
+    applyTransform();
+  }, {passive: true});
+  stage.addEventListener('touchend', () => {
+    mouseRy = 0; mouseRx = 0;
+    stage.classList.remove('is-active');
+    applyTransform();
+  });
+
+  let lastScroll = window.scrollY;
+  window.addEventListener('scroll', () => {
+    const rect = stage.getBoundingClientRect();
+    const center = rect.top + rect.height / 2 - window.innerHeight / 2;
+    scrollRy = Math.max(-10, Math.min(10, center * -0.02));
+    applyTransform();
+    lastScroll = window.scrollY;
+  }, {passive: true});
+</script>
+
+</body>
+</html>
