@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RegAnchor — Shape Study 02</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FFFFFF; --surface: #F7F8FA; --surface-2: #EEF0F4; --line: #E4E7EC;
+    --ink: #0A0E14; --slate-90: #1F2937; --slate-70: #374151; --slate-50: #6B7280; --slate-30: #9CA3AF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'IBM Plex Sans', -apple-system, sans-serif; background: var(--paper); color: var(--ink);
+    font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 960px; margin: 0 auto; padding: 56px 32px 140px; }
+
+  .cover { border-top: 1px solid var(--ink); padding-top: 24px; margin-bottom: 56px;
+    display: flex; justify-content: space-between; align-items: baseline; }
+  .cover-id, .cover-meta { font-size: 11px; font-weight: 500; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--slate-50); }
+  .cover-id strong { color: var(--ink); margin-right: 12px; font-weight: 600; }
+
+  .title { font-weight: 500; font-size: 52px; line-height: 1.03; letter-spacing: -0.03em; margin-bottom: 20px; margin-top: 40px; }
+  .subtitle { font-weight: 400; font-size: 17px; line-height: 1.6; color: var(--slate-70); max-width: 620px; margin-bottom: 64px; }
+
+  section { border-top: 1px solid var(--ink); padding-top: 24px; margin-bottom: 72px; }
+  .section-num { font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--slate-50); margin-bottom: 12px; }
+  .section-num strong { color: var(--ink); margin-right: 8px; font-weight: 600; }
+  h2 { font-weight: 500; font-size: 28px; line-height: 1.12; letter-spacing: -0.025em; margin-bottom: 16px; }
+  .lede { font-weight: 400; font-size: 16px; line-height: 1.6; color: var(--slate-70); margin-bottom: 32px; max-width: 620px; }
+
+  /* ---- family grid ---- */
+  .family-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line);
+    border: 1px solid var(--line); }
+  @media (max-width: 860px) { .family-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .tilt-stage { background: var(--surface); padding: 28px 16px; display: flex; align-items: center;
+    justify-content: center; height: 260px; perspective: 1200px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .tilt-breathe { animation: breathe 7s ease-in-out infinite; }
+  @keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.015); } }
+  .tilt-stage.is-active .tilt-breathe { animation-play-state: paused; }
+  .tilt-object { --rx: 0deg; --ry: 0deg; transition: transform 0.6s cubic-bezier(.16,1,.3,1), filter 0.6s ease;
+    transform: rotateX(var(--rx)) rotateY(var(--ry)); filter: drop-shadow(0 20px 26px rgba(10,14,20,0.16)); }
+  .tilt-stage.is-active .tilt-object { transition: transform 0.12s ease-out, filter 0.12s ease-out;
+    filter: drop-shadow(0 30px 34px rgba(10,14,20,0.22)); }
+  .tilt-object svg { display: block; }
+  .grain-overlay { mix-blend-mode: overlay; pointer-events: none; }
+
+  .family-cell-label { padding: 16px 4px 0; }
+  .family-cell-label .name { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .family-cell-label .desc { font-size: 12.5px; color: var(--slate-50); line-height: 1.5; }
+
+  /* ---- spec list ---- */
+  dl.spec { display: grid; grid-template-columns: 160px 1fr; gap: 16px 32px; padding: 24px 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  dl.spec dt { font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--slate-50); padding-top: 3px; }
+  dl.spec dd { font-size: 14px; line-height: 1.55; color: #1F2937; margin-bottom: 4px; }
+
+  /* ---- placement grid ---- */
+  .place-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 860px) { .place-grid { grid-template-columns: repeat(2, 1fr); } }
+  .place-cell { background: var(--paper); padding: 20px; display: flex; flex-direction: column; }
+  .place-label { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--slate-50); margin-bottom: 14px; }
+
+  .mock-cert { background: var(--paper); border: 1px solid var(--slate-90); height: 168px; position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .mock-cert .cert-id { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--slate-50); margin-bottom: 8px; }
+  .mock-cert .cert-title { font-size: 13px; font-weight: 500; margin-bottom: 12px; }
+  .mock-cert svg { width: 60px; }
+
+  .mock-card { background: var(--paper); border: 1px solid var(--line); height: 168px; position: relative;
+    box-shadow: 0 1px 2px rgba(10,14,20,0.04); overflow: hidden; padding: 16px; }
+  .mock-card .bar { height: 7px; background: var(--surface-2); border-radius: 1px; margin-bottom: 8px; }
+  .mock-card .bar.short { width: 55%; }
+  .mock-card svg { position: absolute; bottom: -6px; right: 14px; width: 56px; }
+
+  .mock-deck { background: var(--ink); height: 168px; position: relative; overflow: hidden;
+    display: flex; align-items: flex-end; justify-content: center; }
+  .mock-deck .deck-text { position: absolute; top: 14px; left: 14px; font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--slate-50); }
+  .mock-deck svg { width: 44px; margin-bottom: -6px; }
+
+  .mock-footer { background: var(--surface); border: 1px solid var(--line); height: 168px; position: relative; overflow: hidden; }
+  .mock-footer .mock-text { position: absolute; top: 14px; left: 14px; font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--slate-30); }
+  .mock-footer svg { position: absolute; bottom: -60px; right: -34px; width: 190px; opacity: 0.94; }
+
+  .footer { border-top: 1px solid var(--ink); padding-top: 24px; margin-top: 80px; display: flex;
+    justify-content: space-between; align-items: baseline; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--slate-50); }
+  .footer strong { color: var(--ink); margin-right: 12px; font-weight: 600; }
+  ::selection { background: var(--slate-90); color: var(--paper); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+<defs>
+
+  <!-- STRATA -->
+  <symbol id="strata-form" viewBox="0 0 480 640">
+    <clipPath id="strataClip">
+      <polygon points="93.0,560.0 118.5,471.0 266.4,482.0 261.2,560.0"/>
+      <polygon points="261.2,560.0 266.4,482.0 373.5,467.0 383.0,560.0"/>
+      <polygon points="118.5,496.0 119.0,408.0 238.9,390.0 256.2,496.0"/>
+      <polygon points="256.2,496.0 238.9,390.0 341.0,405.0 373.5,496.0"/>
+      <polygon points="119.0,420.0 152.0,321.0 269.1,333.0 254.4,420.0"/>
+      <polygon points="254.4,420.0 269.1,333.0 344.0,324.0 341.0,420.0"/>
+      <polygon points="152.0,348.0 149.5,266.0 233.7,254.0 249.9,348.0"/>
+      <polygon points="249.9,348.0 233.7,254.0 314.5,271.0 344.0,348.0"/>
+      <polygon points="149.5,280.0 180.0,191.0 261.2,187.0 245.2,280.0"/>
+      <polygon points="245.2,280.0 261.2,187.0 320.0,194.0 314.5,280.0"/>
+      <polygon points="180.0,215.0 178.5,140.0 239.4,122.0 254.2,215.0"/>
+      <polygon points="254.2,215.0 239.4,122.0 293.5,141.0 320.0,215.0"/>
+      <polygon points="178.5,153.0 208.0,51.0 242.0,17.0 236.0,153.0"/>
+      <polygon points="236.0,153.0 242.0,17.0 276.0,65.0 293.5,153.0"/>
+    </clipPath>
+    <filter id="strataGrain" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="11" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+    </filter>
+    <ellipse cx="240" cy="572" rx="150" ry="14" fill="#0A0E14" opacity="0.10"/>
+    <g><polygon fill="#1F2937" points="93.0,560.0 118.5,471.0 266.4,482.0 261.2,560.0"/><polygon fill="#0A0E14" points="261.2,560.0 266.4,482.0 373.5,467.0 383.0,560.0"/></g>
+    <g><polygon fill="#374151" points="118.5,496.0 119.0,408.0 238.9,390.0 256.2,496.0"/><polygon fill="#1F2937" points="256.2,496.0 238.9,390.0 341.0,405.0 373.5,496.0"/></g>
+    <g><polygon fill="#6B7280" points="119.0,420.0 152.0,321.0 269.1,333.0 254.4,420.0"/><polygon fill="#374151" points="254.4,420.0 269.1,333.0 344.0,324.0 341.0,420.0"/></g>
+    <g><polygon fill="#9CA3AF" points="152.0,348.0 149.5,266.0 233.7,254.0 249.9,348.0"/><polygon fill="#6B7280" points="249.9,348.0 233.7,254.0 314.5,271.0 344.0,348.0"/></g>
+    <g><polygon fill="#E4E7EC" points="149.5,280.0 180.0,191.0 261.2,187.0 245.2,280.0"/><polygon fill="#9CA3AF" points="245.2,280.0 261.2,187.0 320.0,194.0 314.5,280.0"/></g>
+    <g><polygon fill="#F7F8FA" points="180.0,215.0 178.5,140.0 239.4,122.0 254.2,215.0"/><polygon fill="#E4E7EC" points="254.2,215.0 239.4,122.0 293.5,141.0 320.0,215.0"/></g>
+    <g><polygon fill="#FFFFFF" points="178.5,153.0 208.0,51.0 242.0,17.0 236.0,153.0"/><polygon fill="#F7F8FA" points="236.0,153.0 242.0,17.0 276.0,65.0 293.5,153.0"/></g>
+    <rect x="80" y="0" width="320" height="580" clip-path="url(#strataClip)" filter="url(#strataGrain)" opacity="0.4" class="grain-overlay"/>
+  </symbol>
+
+  <!-- KEYSTONE -->
+  <symbol id="keystone-form" viewBox="0 0 420 380">
+    <clipPath id="keystoneClip">
+      <polygon points="145.0,340.0 111.0,246.0 211.0,249.0 210.0,340.0"/>
+      <polygon points="210.0,340.0 211.0,249.0 311.0,246.0 275.0,340.0"/>
+      <polygon points="111.0,262.0 74.0,160.0 209.0,156.0 211.0,262.0"/>
+      <polygon points="211.0,262.0 209.0,156.0 344.0,159.0 311.0,262.0"/>
+      <polygon points="74.0,172.0 37.5,69.0 210.0,72.0 209.0,172.0"/>
+      <polygon points="209.0,172.0 210.0,72.0 382.5,67.0 344.0,172.0"/>
+    </clipPath>
+    <filter id="keystoneGrain" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+    </filter>
+    <ellipse cx="210" cy="352" rx="130" ry="12" fill="#0A0E14" opacity="0.09"/>
+    <g><polygon fill="#374151" points="145.0,340.0 111.0,246.0 211.0,249.0 210.0,340.0"/><polygon fill="#1F2937" points="210.0,340.0 211.0,249.0 311.0,246.0 275.0,340.0"/></g>
+    <g><polygon fill="#6B7280" points="111.0,262.0 74.0,160.0 209.0,156.0 211.0,262.0"/><polygon fill="#374151" points="211.0,262.0 209.0,156.0 344.0,159.0 311.0,262.0"/></g>
+    <g><polygon fill="#9CA3AF" points="74.0,172.0 37.5,69.0 210.0,72.0 209.0,172.0"/><polygon fill="#6B7280" points="209.0,172.0 210.0,72.0 382.5,67.0 344.0,172.0"/></g>
+    <rect x="30" y="60" width="360" height="290" clip-path="url(#keystoneClip)" filter="url(#keystoneGrain)" opacity="0.4" class="grain-overlay"/>
+  </symbol>
+
+  <!-- CORE -->
+  <symbol id="core-form" viewBox="0 0 200 660">
+    <clipPath id="coreClip">
+      <polygon points="56.0,600.0 57.0,542.0 100.0,545.0 100.0,600.0"/>
+      <polygon points="100.0,600.0 100.0,545.0 143.0,541.0 144.0,600.0"/>
+      <polygon points="57.0,554.0 58.0,491.0 100.0,486.0 100.0,554.0"/>
+      <polygon points="100.0,554.0 100.0,486.0 142.0,489.0 143.0,554.0"/>
+      <polygon points="58.0,498.0 59.0,429.0 100.0,434.0 100.0,498.0"/>
+      <polygon points="100.0,498.0 100.0,434.0 141.0,430.0 142.0,498.0"/>
+      <polygon points="59.0,442.0 60.0,378.0 100.0,373.0 100.0,442.0"/>
+      <polygon points="100.0,442.0 100.0,373.0 140.0,377.0 141.0,442.0"/>
+      <polygon points="60.0,386.0 61.0,318.0 100.0,321.0 100.0,386.0"/>
+      <polygon points="100.0,386.0 100.0,321.0 139.0,317.0 140.0,386.0"/>
+      <polygon points="61.0,330.0 62.0,267.0 100.0,262.0 100.0,330.0"/>
+      <polygon points="100.0,330.0 100.0,262.0 138.0,266.0 139.0,330.0"/>
+      <polygon points="62.0,274.0 63.0,206.0 100.0,211.0 100.0,274.0"/>
+      <polygon points="100.0,274.0 100.0,211.0 137.0,207.0 138.0,274.0"/>
+      <polygon points="63.0,218.0 64.0,154.0 100.0,150.0 100.0,218.0"/>
+      <polygon points="100.0,218.0 100.0,150.0 136.0,155.0 137.0,218.0"/>
+      <polygon points="64.0,162.0 65.0,42.0 100.0,63.0 100.0,162.0"/>
+      <polygon points="100.0,162.0 100.0,63.0 135.0,86.0 136.0,162.0"/>
+    </clipPath>
+    <filter id="coreGrain" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="19" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+    </filter>
+    <ellipse cx="100" cy="612" rx="62" ry="10" fill="#0A0E14" opacity="0.09"/>
+    <g><polygon fill="#1F2937" points="56.0,600.0 57.0,542.0 100.0,545.0 100.0,600.0"/><polygon fill="#0A0E14" points="100.0,600.0 100.0,545.0 143.0,541.0 144.0,600.0"/></g>
+    <g><polygon fill="#6B7280" points="57.0,554.0 58.0,491.0 100.0,486.0 100.0,554.0"/><polygon fill="#374151" points="100.0,554.0 100.0,486.0 142.0,489.0 143.0,554.0"/></g>
+    <g><polygon fill="#374151" points="58.0,498.0 59.0,429.0 100.0,434.0 100.0,498.0"/><polygon fill="#1F2937" points="100.0,498.0 100.0,434.0 141.0,430.0 142.0,498.0"/></g>
+    <g><polygon fill="#9CA3AF" points="59.0,442.0 60.0,378.0 100.0,373.0 100.0,442.0"/><polygon fill="#6B7280" points="100.0,442.0 100.0,373.0 140.0,377.0 141.0,442.0"/></g>
+    <g><polygon fill="#6B7280" points="60.0,386.0 61.0,318.0 100.0,321.0 100.0,386.0"/><polygon fill="#374151" points="100.0,386.0 100.0,321.0 139.0,317.0 140.0,386.0"/></g>
+    <g><polygon fill="#E4E7EC" points="61.0,330.0 62.0,267.0 100.0,262.0 100.0,330.0"/><polygon fill="#9CA3AF" points="100.0,330.0 100.0,262.0 138.0,266.0 139.0,330.0"/></g>
+    <g><polygon fill="#9CA3AF" points="62.0,274.0 63.0,206.0 100.0,211.0 100.0,274.0"/><polygon fill="#6B7280" points="100.0,274.0 100.0,211.0 137.0,207.0 138.0,274.0"/></g>
+    <g><polygon fill="#F7F8FA" points="63.0,218.0 64.0,154.0 100.0,150.0 100.0,218.0"/><polygon fill="#E4E7EC" points="100.0,218.0 100.0,150.0 136.0,155.0 137.0,218.0"/></g>
+    <g><polygon fill="#E4E7EC" points="64.0,162.0 65.0,42.0 100.0,63.0 100.0,162.0"/><polygon fill="#9CA3AF" points="100.0,162.0 100.0,63.0 135.0,86.0 136.0,162.0"/></g>
+    <rect x="30" y="30" width="140" height="600" clip-path="url(#coreClip)" filter="url(#coreGrain)" opacity="0.4" class="grain-overlay"/>
+  </symbol>
+
+  <!-- DATUM -->
+  <symbol id="datum-form" viewBox="0 0 400 320">
+    <clipPath id="datumClip">
+      <polygon points="352.0,190.0 307.5,235.3 307.5,297.3 352.0,252.0"/>
+      <polygon points="307.5,235.3 200.0,254.0 200.0,316.0 307.5,297.3"/>
+      <polygon points="200.0,254.0 92.5,235.3 92.5,297.3 200.0,316.0"/>
+      <polygon points="92.5,235.3 48.0,190.0 48.0,252.0 92.5,297.3"/>
+      <polygon points="48.0,190.0 92.5,144.7 92.5,206.7 48.0,252.0"/>
+      <polygon points="92.5,144.7 200.0,126.0 200.0,188.0 92.5,206.7"/>
+      <polygon points="200.0,126.0 307.5,144.7 307.5,206.7 200.0,188.0"/>
+      <polygon points="307.5,144.7 352.0,190.0 352.0,252.0 307.5,206.7"/>
+      <polygon points="200.0,190.0 352.0,190.0 276.0,245.4"/>
+      <polygon points="200.0,190.0 276.0,245.4 124.0,245.4"/>
+      <polygon points="200.0,190.0 124.0,245.4 48.0,190.0"/>
+      <polygon points="200.0,190.0 48.0,190.0 124.0,134.6"/>
+      <polygon points="200.0,190.0 124.0,134.6 276.0,134.6"/>
+      <polygon points="200.0,190.0 276.0,134.6 352.0,190.0"/>
+    </clipPath>
+    <filter id="datumGrain" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" seed="27" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+    </filter>
+    <ellipse cx="200" cy="300" rx="150" ry="14" fill="#0A0E14" opacity="0.08"/>
+    <polygon fill="#0A0E14" points="352.0,190.0 307.5,235.3 307.5,297.3 352.0,252.0"/>
+    <polygon fill="#0A0E14" points="307.5,235.3 200.0,254.0 200.0,316.0 307.5,297.3"/>
+    <polygon fill="#374151" points="200.0,254.0 92.5,235.3 92.5,297.3 200.0,316.0"/>
+    <polygon fill="#9CA3AF" points="92.5,235.3 48.0,190.0 48.0,252.0 92.5,297.3"/>
+    <polygon fill="#F7F8FA" points="48.0,190.0 92.5,144.7 92.5,206.7 48.0,252.0"/>
+    <polygon fill="#F7F8FA" points="92.5,144.7 200.0,126.0 200.0,188.0 92.5,206.7"/>
+    <polygon fill="#9CA3AF" points="200.0,126.0 307.5,144.7 307.5,206.7 200.0,188.0"/>
+    <polygon fill="#374151" points="307.5,144.7 352.0,190.0 352.0,252.0 307.5,206.7"/>
+    <polygon fill="#E4E7EC" points="200.0,190.0 352.0,190.0 276.0,245.4"/>
+    <polygon fill="#E4E7EC" points="200.0,190.0 276.0,245.4 124.0,245.4"/>
+    <polygon fill="#F7F8FA" points="200.0,190.0 124.0,245.4 48.0,190.0"/>
+    <polygon fill="#FFFFFF" points="200.0,190.0 48.0,190.0 124.0,134.6"/>
+    <polygon fill="#FFFFFF" points="200.0,190.0 124.0,134.6 276.0,134.6"/>
+    <polygon fill="#F7F8FA" points="200.0,190.0 276.0,134.6 352.0,190.0"/>
+    <rect x="48" y="126" width="304" height="190" clip-path="url(#datumClip)" filter="url(#datumGrain)" opacity="0.4" class="grain-overlay"/>
+  </symbol>
+
+</defs>
+</svg>
+
+<div class="container">
+
+  <header class="cover">
+    <div class="cover-id"><strong>RGA-004</strong>Shape Study — 02</div>
+    <div class="cover-meta">10 July 2026</div>
+  </header>
+
+  <h1 class="title">Four ways to anchor.</h1>
+  <p class="subtitle">The first pass was a mountain — well-made, but that's Vanta's silhouette, not RegAnchor's. These four come from what "anchor" actually means outside a ship: the piece that locks a structure, the sample that proves what's inside, the fixed point everything else is measured against. Same facet-and-grain system throughout. Same six tones. Different problems, different shapes.</p>
+
+  <!-- 01: THE FAMILY -->
+  <section>
+    <div class="section-num"><strong>01</strong>The family</div>
+    <h2>Hover each. On a phone, touch and drag.</h2>
+    <p class="lede">All four are built the same way — cut facets, procedural grain, tonal steps pulled straight from RGA-001. Nothing here is a stock "low-poly" shape; every vertex is placed on purpose.</p>
+
+    <div class="family-grid">
+      <div>
+        <div class="tilt-stage" data-name="strata"><div class="tilt-breathe"><div class="tilt-object" style="width:150px;"><svg viewBox="0 0 480 640"><use href="#strata-form"/></svg></div></div></div>
+        <div class="family-cell-label"><div class="name">Strata</div><div class="desc">Bedrock to summit. The hero piece.</div></div>
+      </div>
+      <div>
+        <div class="tilt-stage" data-name="keystone"><div class="tilt-breathe"><div class="tilt-object" style="width:190px;"><svg viewBox="0 0 420 380"><use href="#keystone-form"/></svg></div></div></div>
+        <div class="family-cell-label"><div class="name">Keystone</div><div class="desc">The wedge that locks an arch.</div></div>
+      </div>
+      <div>
+        <div class="tilt-stage" data-name="core"><div class="tilt-breathe"><div class="tilt-object" style="width:78px;"><svg viewBox="0 0 200 660"><use href="#core-form"/></svg></div></div></div>
+        <div class="family-cell-label"><div class="name">Core</div><div class="desc">A sample, drilled and cut to inspect.</div></div>
+      </div>
+      <div>
+        <div class="tilt-stage" data-name="datum"><div class="tilt-breathe"><div class="tilt-object" style="width:190px;"><svg viewBox="0 0 400 320"><use href="#datum-form"/></svg></div></div></div>
+        <div class="family-cell-label"><div class="name">Datum</div><div class="desc">The fixed point everything is measured from.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02: VOCABULARY -->
+  <section>
+    <div class="section-num"><strong>02</strong>The vocabulary</div>
+    <h2>None of these are a ship's anchor. All of them are what "anchor" means.</h2>
+    <p class="lede">Rule 4 in RGA-001 rules out the literal icon. That still leaves the entire engineering and surveying vocabulary of the word — arguably a better fit for a governance product than a nautical symbol would ever have been.</p>
+
+    <dl class="spec">
+      <dt>Keystone</dt>
+      <dd>Architecture. The one stone in an arch that carries load from both sides — pull it and everything else fails. Best where you need to say "this is the piece that makes the rest hold."</dd>
+      <dt>Core</dt>
+      <dd>Geology / engineering. A cylindrical sample drilled out to show exactly what's inside, layer by layer — the diagonal top is the cut face. This is what an assessment does to a governance programme. Best for tall, narrow placements.</dd>
+      <dt>Datum</dt>
+      <dd>Surveying. The fixed reference point every other measurement is taken from — the actual technical term for "anchor point" in the sense you mean it. Best for seals, marks, anywhere small and singular.</dd>
+      <dt>Strata</dt>
+      <dd>Geology. Layered rock, base to summit — kept from the first pass because the seven-course count still ties directly to the Compliance Bar's seven levels. Best as the large, quiet hero moment.</dd>
+    </dl>
+  </section>
+
+  <!-- 03: PLACEMENT -->
+  <section>
+    <div class="section-num"><strong>03</strong>Where each one lives</div>
+    <h2>Matched to the surface, not just scattered at random.</h2>
+    <p class="lede">This is the "real effort across the platform" version — each shape sitting in the context it actually suits, not four copies of one graphic dropped in different corners.</p>
+
+    <div class="place-grid">
+      <div class="place-cell">
+        <div class="place-label">Certificate — Datum</div>
+        <div class="mock-cert">
+          <div class="cert-id">MLA-GOV-2026-0043</div>
+          <div class="cert-title">Advanced</div>
+          <svg viewBox="0 190 400 130" style="width:70px;"><use href="#datum-form"/></svg>
+        </div>
+      </div>
+      <div class="place-cell">
+        <div class="place-label">Portal card — Keystone</div>
+        <div class="mock-card">
+          <div class="bar"></div><div class="bar short"></div>
+          <svg viewBox="140 150 280 230"><use href="#keystone-form"/></svg>
+        </div>
+      </div>
+      <div class="place-cell">
+        <div class="place-label">Deck cover spine — Core</div>
+        <div class="mock-deck">
+          <div class="deck-text">RegAnchor — Series draft</div>
+          <svg viewBox="20 380 160 280"><use href="#core-form"/></svg>
+        </div>
+      </div>
+      <div class="place-cell">
+        <div class="place-label">Homepage footer — Strata</div>
+        <div class="mock-footer">
+          <div class="mock-text">reganchor.com</div>
+          <svg viewBox="60 380 360 260"><use href="#strata-form"/></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div><strong>RegAnchor</strong>Shape Study — 02</div>
+    <div>Draft for review · not yet in RGA-001</div>
+  </footer>
+
+</div>
+
+<script>
+  function wireTilt(stage) {
+    const obj = stage.querySelector('.tilt-object');
+    let mRy = 0, mRx = 0;
+    function apply() {
+      obj.style.setProperty('--rx', mRx.toFixed(2) + 'deg');
+      obj.style.setProperty('--ry', mRy.toFixed(2) + 'deg');
+    }
+    stage.addEventListener('mousemove', (e) => {
+      const r = stage.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      mRy = px * 20; mRx = -py * 14;
+      stage.classList.add('is-active');
+      apply();
+    });
+    stage.addEventListener('mouseleave', () => {
+      mRy = 0; mRx = 0; stage.classList.remove('is-active'); apply();
+    });
+    stage.addEventListener('touchmove', (e) => {
+      const t = e.touches[0]; const r = stage.getBoundingClientRect();
+      const px = (t.clientX - r.left) / r.width - 0.5;
+      mRy = px * 16;
+      stage.classList.add('is-active');
+      apply();
+    }, {passive: true});
+    stage.addEventListener('touchend', () => {
+      mRy = 0; mRx = 0; stage.classList.remove('is-active'); apply();
+    });
+  }
+  document.querySelectorAll('.tilt-stage').forEach(wireTilt);
+</script>
+
+</body>
+</html>
