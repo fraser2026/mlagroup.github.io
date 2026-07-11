@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RegAnchor — Coming Soon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Light Mode */
+      --bg: #FFFFFF;
+      --surface: #F7F8FA;
+      --line: #E4E7EC;
+      --steel: #6B7280;
+      --slate: #1F2937;
+      --ink: #0A0E14;
+      --text-primary: #0A0E14;
+      --text-secondary: #374151;
+      --text-muted: #6B7280;
+      --card-bg: rgba(247, 248, 250, 0.85);
+      --card-border: rgba(228, 231, 236, 0.8);
+    }
+
+    body.dark {
+      /* Dark Mode */
+      --bg: #0A0E14;
+      --surface: #0F172A;
+      --line: #1F2937;
+      --steel: #9CA3AF;
+      --slate: #D1D5DB;
+      --ink: #FFFFFF;
+      --text-primary: #FFFFFF;
+      --text-secondary: #D1D5DB;
+      --text-muted: #9CA3AF;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --card-border: rgba(55, 65, 81, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans', system_ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* Top bar */
+    .topbar {
+      border-bottom: 1px solid var(--line);
+      padding: 18px 0;
+    }
+
+    .topbar-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .wordmark {
+      font-weight: 500;
+      font-size: 20px;
+      letter-spacing: -0.025em;
+    }
+
+    .theme-toggle {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--steel);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      color: var(--ink);
+      border-color: var(--ink);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 96px 0 56px;
+      text-align: center;
+    }
+
+    .hero-wordmark {
+      font-weight: 500;
+      font-size: 68px;
+      letter-spacing: -0.045em;
+      line-height: 1;
+      margin-bottom: 28px;
+    }
+
+    .hero-headline {
+      font-weight: 500;
+      font-size: 30px;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      max-width: 580px;
+      margin: 0 auto 20px;
+    }
+
+    .hero-subhead {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Content section */
+    .content-section {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 32px 36px;
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.035);
+    }
+
+    .content-text {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 620px;
+    }
+
+    /* Form section */
+    .form-section {
+      max-width: 780px;
+      margin: 0 auto 48px;
+    }
+
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 28px 32px;
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.035);
+    }
+
+    .form-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-primary);
+      margin-bottom: 22px;
+    }
+
+    .form {
+      display: flex;
+      gap: 12px;
+    }
+
+    .form input[type="email"] {
+      flex: 1;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 15px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text-primary);
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form input[type="email"]:focus {
+      border-color: var(--ink);
+      background: var(--bg);
+    }
+
+    .form button {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 0 26px;
+      background: var(--ink);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .form button:hover {
+      opacity: 0.9;
+    }
+
+    .form-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 16px;
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--line);
+      padding: 32px 0 28px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+    }
+
+    @media (max-width: 640px) {
+      .hero-wordmark {
+        font-size: 52px;
+      }
+      .hero-headline {
+        font-size: 24px;
+      }
+      .form {
+        flex-direction: column;
+      }
+      .form button {
+        padding: 14px;
+      }
+      .content-card, .form-card {
+        padding: 28px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="wordmark">RegAnchor</div>
+      <button id="theme-toggle" class="theme-toggle">Dark</button>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="container">
+      <div class="hero-wordmark">RegAnchor</div>
+      <h1 class="hero-headline">A more powerful platform is coming.</h1>
+      <p class="hero-subhead">
+        We're replacing the current experience with a significantly stronger foundation 
+        for AI governance.
+      </p>
+    </div>
+  </div>
+
+  <!-- What's changing -->
+  <div class="content-section">
+    <div class="container">
+      <div class="content-card">
+        <div class="section-label">What’s changing</div>
+        <p class="content-text">
+          The new RegAnchor will deliver deeper system coverage, stronger assurance capabilities, 
+          and a substantially improved experience for compliance, legal, and governance teams 
+          at regulated organizations. This is a complete platform replacement — not an incremental update.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email signup -->
+  <div class="form-section">
+    <div class="container">
+      <div class="form-card">
+        <div class="form-title">Be the first to know when we launch</div>
+        
+        <form class="form" id="notify-form">
+          <input 
+            type="email" 
+            id="email" 
+            placeholder="you@company.com" 
+            required
+          >
+          <button type="submit">Notify me</button>
+        </form>
+        
+        <p class="form-note">
+          We’ll only email you once when the new platform is ready. No marketing.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div>Infrastructure for AI Governance</div>
+      <div>Operated by MLA Group Ltd · reganchor.com</div>
+    </div>
+  </footer>
+
+  <script>
+    const form = document.getElementById('notify-form');
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    // Theme handling
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      body.classList.add('dark');
+      themeToggle.textContent = 'Light';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      if (body.classList.contains('dark')) {
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Dark';
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.classList.add('dark');
+        themeToggle.textContent = 'Light';
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    // Form handling
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const button = form.querySelector('button');
+      const originalText = button.textContent;
+      
+      button.textContent = 'Thank you';
+      button.disabled = true;
+      
+      setTimeout(() => {
+        form.reset();
+        button.textContent = originalText;
+        button.disabled = false;
+        
+        const note = form.parentElement.querySelector('.form-note');
+        const originalNote = note.textContent;
+        note.textContent = 'You’re on the list. We’ll be in touch.';
+        
+        setTimeout(() => {
+          note.textContent = originalNote;
+        }, 2600);
+      }, 2400);
+    });
+  </script>
+</body>
+</html>
