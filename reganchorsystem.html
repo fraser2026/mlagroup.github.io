@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RegAnchor — System Specification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* RGA-001 neutrals */
+    --paper: #FFFFFF;
+    --surface: #F7F8FA;
+    --surface-2: #EEF0F4;
+    --line: #E4E7EC;
+    --steel: #6B7280;
+    --slate: #1F2937;
+    --slate-70: #374151;
+    --slate-30: #9CA3AF;
+    --ink: #0A0E14;
+ 
+    /* RGA-001 EXTENSION — Accent System (gradient only, no flat use) */
+    --accent-a: #3730A3;
+    --accent-b: #7C3AED;
+    --accent-c: #F97316;
+    --accent-grad: linear-gradient(90deg, var(--accent-a) 0%, var(--accent-b) 50%, var(--accent-c) 100%);
+  }
+ 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+  body {
+    font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+ 
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 32px 120px;
+  }
+ 
+  /* ============================================
+     COVER
+     ============================================ */
+  .cover {
+    border-top: 1px solid var(--ink);
+    padding-top: 24px;
+    margin-bottom: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .cover-id, .cover-meta {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--steel);
+  }
+  .cover-id strong { color: var(--ink); margin-right: 12px; font-weight: 600; }
+ 
+  .doc-title {
+    font-weight: 500;
+    font-size: 56px;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin: 80px 0 24px;
+  }
+  .doc-subtitle {
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--slate-70);
+    max-width: 600px;
+    margin-bottom: 32px;
+  }
+ 
+  /* ============================================
+     SECTION FRAMING
+     ============================================ */
+  section {
+    border-top: 1px solid var(--ink);
+    padding-top: 24px;
+    margin-bottom: 96px;
+  }
+  .section-num {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--steel); margin-bottom: 12px;
+  }
+  .section-num strong { color: var(--ink); margin-right: 8px; font-weight: 600; }
+  h2 {
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    margin-bottom: 20px;
+  }
+  .lede {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--slate-70);
+    margin-bottom: 32px;
+    max-width: 640px;
+  }
+ 
+  /* ============================================
+     SPEC TABLE
+     ============================================ */
+  dl.spec {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 14px 32px;
+    padding: 24px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  dl.spec dt {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel); padding-top: 3px;
+  }
+  dl.spec dd { font-size: 14px; line-height: 1.55; color: var(--slate); }
+  dl.spec dd code {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--surface);
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink);
+  }
+ 
+  /* ============================================
+     SCREEN MOCKUP FRAME
+     ============================================ */
+  .screen-wrap { margin: 32px 0 16px; }
+  .screen-label {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .screen-label strong { color: var(--ink); margin-right: 12px; font-weight: 600; }
+  .screen {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    overflow: hidden;
+    position: relative;
+  }
+  .screen.dark {
+    background: var(--ink);
+    border-color: var(--slate);
+  }
+ 
+  /* ============================================
+     PRIMITIVE — ANCHOR LINE
+     ============================================
+     The 1px ink line is the structural baseline of
+     every surface. An 80px segment at 61.8% (golden
+     ratio) is replaced by a 2px accent gradient.
+     This is the ONLY accent surface in the brand.
+  */
+  .anchor-line {
+    position: relative;
+    height: 2px;
+    width: 100%;
+  }
+  .anchor-line::before {
+    content: '';
+    position: absolute;
+    top: 0.5px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--ink);
+  }
+  .anchor-line.dark::before { background: var(--paper); }
+  .anchor-line.subtle::before { background: var(--line); }
+ 
+  .anchor-line__seg {
+    position: absolute;
+    top: 0;
+    height: 2px;
+    width: 80px;
+    left: 61.8%;
+    transform: translateX(-50%);
+    background: var(--accent-grad);
+    background-size: 200% 100%;
+    background-position: 50% 0;
+  }
+ 
+  /* Animated entrance variant — used ONCE per page on first paint */
+  .anchor-line--entrance .anchor-line__seg {
+    animation: segReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes segReveal {
+    0%   { width: 0; opacity: 0; }
+    60%  { opacity: 1; }
+    100% { width: 80px; opacity: 1; }
+  }
+ 
+  /* ============================================
+     PRIMITIVE — COMPLIANCE BAR
+     ============================================
+     7 horizontal bars representing maturity levels.
+     One bar = the gradient (current state).
+     Below it = ink at high opacity (achieved).
+     Above it = ink at low opacity (unachieved).
+  */
+  .cbar {
+    display: flex;
+    flex-direction: column-reverse;  /* level 1 at bottom */
+    gap: 3px;
+    width: 120px;
+  }
+  .cbar__row {
+    height: 4px;
+    background: var(--ink);
+  }
+  .cbar__row--lvl-achieved-1 { opacity: 0.88; }
+  .cbar__row--lvl-achieved-2 { opacity: 0.64; }
+  .cbar__row--lvl-achieved-3 { opacity: 0.44; }
+  .cbar__row--lvl-current {
+    background: var(--accent-grad);
+    opacity: 1;
+    height: 5px;
+    width: 130px;  /* current bar reads slightly longer */
+    margin-left: -5px;
+  }
+  .cbar__row--lvl-pending-1 { opacity: 0.20; }
+  .cbar__row--lvl-pending-2 { opacity: 0.10; }
+  .cbar__row--lvl-pending-3 { opacity: 0.05; }
+ 
+  /* Mini variant for inline / table use */
+  .cbar--mini { width: 60px; gap: 2px; }
+  .cbar--mini .cbar__row { height: 2px; }
+  .cbar--mini .cbar__row--lvl-current { height: 3px; width: 64px; margin-left: -2px; }
+ 
+  /* Dark variant (for dossier seal / dark surfaces) */
+  .cbar.dark .cbar__row { background: var(--paper); }
+  .cbar.dark .cbar__row--lvl-current { background: var(--accent-grad); }
+ 
+  /* ============================================
+     SURFACE 01 — COMING SOON
+     ============================================ */
+  .soon {
+    padding: 32px 32px 28px;
+    min-height: 540px;
+    display: flex;
+    flex-direction: column;
+  }
+  .soon__head {
+    display: flex; justify-content: space-between;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--steel);
+    border-top: 1px solid var(--ink);
+    padding-top: 16px;
+  }
+  .soon__head strong { color: var(--ink); margin-right: 10px; font-weight: 600; }
+  .soon__hero { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 64px 0 40px; }
+  .soon__wm {
+    font-weight: 500;
+    font-size: clamp(56px, 9vw, 124px);
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+    margin-bottom: 28px;
+  }
+  .soon__statement {
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--slate-70);
+    max-width: 560px;
+    margin-bottom: 40px;
+  }
+  .soon__statement strong { color: var(--ink); font-weight: 500; }
+  .soon__caption {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--steel);
+    margin-top: 14px;
+  }
+  .soon__foot {
+    display: flex; justify-content: space-between;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--steel);
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 16px;
+  }
+ 
+  /* ============================================
+     PRODUCT SURFACES — Inter typography
+     ============================================ */
+  .product { font-family: 'Inter', sans-serif; }
+  .product * { font-family: inherit; }
+ 
+  /* ============================================
+     SURFACE 02 — POST-DIAGNOSTIC
+     ============================================ */
+  .diag { padding: 28px 32px 32px; }
+  .diag__head {
+    display: flex; justify-content: space-between;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel);
+    border-top: 1px solid var(--ink);
+    padding-top: 14px;
+    margin-bottom: 56px;
+  }
+  .diag__head strong { color: var(--ink); margin-right: 10px; font-weight: 600; }
+ 
+  .diag__grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 64px;
+    margin-bottom: 48px;
+  }
+  .diag__label {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--steel); margin-bottom: 10px;
+  }
+  .diag__score {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 6px;
+  }
+  .diag__score-num {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    font-size: 92px;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-feature-settings: 'tnum';
+  }
+  .diag__score-of { color: var(--steel); font-size: 22px; font-weight: 400; letter-spacing: -0.01em; }
+  .diag__tier { font-size: 13px; color: var(--slate-70); margin-bottom: 24px; }
+  .diag__tier strong { color: var(--ink); font-weight: 500; }
+  .diag__copy { font-size: 14px; color: var(--slate-70); line-height: 1.6; max-width: 380px; }
+ 
+  .diag__cbar-wrap { padding-top: 32px; display: flex; flex-direction: column; align-items: flex-start; }
+  .diag__cbar-scale {
+    margin-top: 12px;
+    display: flex; flex-direction: column; gap: 1px;
+    font-size: 9px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel);
+  }
+  .diag__cbar-scale span { line-height: 1.4; }
+  .diag__cbar-scale .now { color: var(--ink); font-weight: 600; }
+ 
+  .diag__priorities {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    padding-top: 32px;
+  }
+  .diag__priority {
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+  }
+  .diag__pri-num {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--steel); margin-bottom: 10px;
+  }
+  .diag__pri-title {
+    font-size: 15px; font-weight: 500;
+    color: var(--ink); margin-bottom: 6px;
+    letter-spacing: -0.005em;
+  }
+  .diag__pri-body { font-size: 13px; color: var(--slate-70); line-height: 1.55; }
+ 
+  .diag__cta {
+    display: flex; gap: 10px; margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .btn {
+    font-family: inherit;
+    font-size: 13px; font-weight: 500;
+    padding: 9px 16px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+    letter-spacing: -0.005em;
+  }
+  .btn--ghost {
+    background: var(--paper); color: var(--ink);
+  }
+ 
+  /* ============================================
+     SURFACE 03 — DASHBOARD
+     ============================================ */
+  .dash { padding: 0; }
+  .dash__topbar {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .dash__brand {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500; font-size: 17px;
+    letter-spacing: -0.025em;
+  }
+  .dash__nav { display: flex; gap: 24px; font-size: 13px; }
+  .dash__nav a {
+    color: var(--steel); text-decoration: none;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+  .dash__nav a.active { color: var(--ink); font-weight: 500; }
+  .dash__user {
+    font-size: 12px; color: var(--steel);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .dash__avatar {
+    width: 24px; height: 24px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; color: var(--slate);
+  }
+ 
+  .dash__body { padding: 28px 32px 32px; }
+  .dash__header {
+    display: flex; justify-content: space-between;
+    align-items: baseline; margin-bottom: 4px;
+  }
+  .dash__title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500; font-size: 26px;
+    letter-spacing: -0.025em;
+  }
+  .dash__date {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel);
+  }
+  .dash__sub {
+    font-size: 13px; color: var(--slate-70);
+    margin-bottom: 24px;
+  }
+ 
+  .dash__grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr;
+    gap: 48px;
+    padding-top: 28px;
+  }
+  .dash__col-label {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--steel); margin-bottom: 14px;
+  }
+  .dash__metric {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .dash__metric-num {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500; font-size: 38px;
+    letter-spacing: -0.03em;
+    font-feature-settings: 'tnum';
+  }
+  .dash__metric-label {
+    font-size: 13px; color: var(--slate-70);
+  }
+  .dash__metric-label strong { color: var(--ink); font-weight: 500; }
+ 
+  .dash__list { list-style: none; }
+  .dash__list li {
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+    font-size: 13px;
+  }
+  .dash__list li:last-child { border-bottom: 1px solid var(--line); }
+  .dash__list .item-title { color: var(--ink); }
+  .dash__list .item-meta {
+    font-size: 11px; color: var(--steel);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+ 
+  /* ============================================
+     SURFACE 04 — AI REGISTRY
+     ============================================ */
+  .reg { padding: 0; }
+  .reg__body { padding: 28px 32px 32px; }
+  .reg__title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500; font-size: 26px;
+    letter-spacing: -0.025em;
+    margin-bottom: 4px;
+  }
+  .reg__sub {
+    font-size: 13px; color: var(--slate-70);
+    margin-bottom: 24px;
+  }
+ 
+  .reg__filters {
+    display: flex; gap: 18px; align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0;
+    font-size: 12px;
+  }
+  .reg__filter {
+    color: var(--steel); cursor: pointer;
+    letter-spacing: -0.005em;
+  }
+  .reg__filter.active {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .reg__filter::after { content: ''; }
+  .reg__filter-divider {
+    width: 1px; height: 14px; background: var(--line);
+  }
+  .reg__search {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--steel);
+  }
+ 
+  .reg__table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px;
+  }
+  .reg__table thead th {
+    text-align: left;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel);
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .reg__table tbody td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--slate);
+    vertical-align: middle;
+  }
+  .reg__table tbody tr:hover { background: var(--surface); }
+  .reg__table .col-name { font-weight: 500; color: var(--ink); }
+  .reg__table .col-cbar { width: 72px; padding-right: 16px; }
+  .reg__table .col-risk {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel);
+  }
+  .reg__table .col-risk.high { color: var(--ink); }
+  .reg__table .col-meta {
+    font-size: 11px; color: var(--steel);
+    text-align: right; white-space: nowrap;
+  }
+ 
+  /* ============================================
+     SURFACE 05 — COMPLIANCE DOSSIER
+     ============================================ */
+  .dossier {
+    padding: 56px 64px;
+    background: var(--paper);
+  }
+  .dossier__head {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .dossier__brand {
+    font-weight: 500; font-size: 22px;
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
+  }
+  .dossier__brand-tag {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--steel);
+  }
+ 
+  .dossier__meta {
+    display: flex; justify-content: space-between;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--steel);
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 48px;
+  }
+  .dossier__meta strong { color: var(--ink); margin-right: 10px; font-weight: 600; }
+ 
+  .dossier__title-block {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .dossier__doc-label {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--steel); margin-bottom: 16px;
+  }
+  .dossier__title {
+    font-weight: 500; font-size: 36px;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .dossier__subject {
+    font-size: 14px; color: var(--slate);
+  }
+  .dossier__subject strong { color: var(--ink); font-weight: 500; }
+ 
+  .dossier__seal {
+    display: flex; flex-direction: column; align-items: center;
+    margin: 40px auto;
+    padding: 32px;
+    border: 1px solid var(--line);
+    width: fit-content;
+    min-width: 320px;
+  }
+  .dossier__seal-label {
+    font-size: 9px; font-weight: 500;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: var(--steel); margin-bottom: 18px;
+  }
+  .dossier__seal-num {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500; font-size: 56px;
+    letter-spacing: -0.03em;
+    line-height: 1; margin-bottom: 14px;
+    font-feature-settings: 'tnum';
+  }
+  .dossier__seal-tier {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink); margin-bottom: 22px;
+  }
+ 
+  .dossier__sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px 64px;
+    margin-bottom: 56px;
+  }
+  .dossier__sec-label {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--steel); margin-bottom: 8px;
+  }
+  .dossier__sec-text {
+    font-size: 13px; color: var(--slate);
+    line-height: 1.6;
+  }
+  .dossier__sec-text strong { color: var(--ink); font-weight: 500; }
+ 
+  .dossier__sign {
+    display: flex; justify-content: space-between;
+    padding-top: 32px;
+    margin-top: 24px;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--steel);
+  }
+  .dossier__sign-block {
+    display: flex; flex-direction: column;
+    min-width: 200px;
+  }
+  .dossier__sign-line {
+    height: 1px; background: var(--ink);
+    margin-bottom: 8px;
+  }
+  .dossier__sign-name {
+    color: var(--ink); font-weight: 600; margin-bottom: 4px;
+  }
+ 
+  /* ============================================
+     FOOTER
+     ============================================ */
+  .doc-footer {
+    border-top: 1px solid var(--ink);
+    padding-top: 24px;
+    margin-top: 56px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--steel);
+  }
+  .doc-footer strong { color: var(--ink); margin-right: 10px; font-weight: 600; }
+ 
+  @media (max-width: 720px) {
+    .container { padding: 32px 18px 64px; }
+    .doc-title { font-size: 38px; }
+    .diag__grid { grid-template-columns: 1fr; gap: 32px; }
+    .diag__priorities { grid-template-columns: 1fr; }
+    .dash__grid { grid-template-columns: 1fr; gap: 28px; }
+    .dossier { padding: 32px 22px; }
+    .dossier__sections { grid-template-columns: 1fr; }
+    .dash__nav { display: none; }
+    .reg__table .col-meta { display: none; }
+  }
+</style>
+</head>
+<body>
+ 
+<div class="container">
+ 
+  <!-- COVER -->
+  <header class="cover">
+    <div class="cover-id"><strong>RGA-002</strong>System Specification</div>
+    <div class="cover-meta">v1.0 · Draft · 2026</div>
+  </header>
+ 
+  <h1 class="doc-title">The system, applied.</h1>
+  <p class="doc-subtitle">Two primitives — the Anchor Line and the Compliance Bar — extend RGA-001 across every product surface. The first is structural. The second is functional. Together they carry the brand from the front door of the website to the seal of every certificate. Nothing else is needed.</p>
+ 
+  <!-- =========================================
+       00 — PRIMITIVES
+       ========================================= -->
+  <section>
+    <div class="section-num"><strong>00</strong>Primitives</div>
+    <h2>Two elements. One accent.</h2>
+    <p class="lede">Every surface in the RegAnchor system is built from two primitives and the six neutrals defined in RGA-001. A single accent gradient — used only inside these two primitives — is the only colour that ever appears in the brand.</p>
+ 
+    <!-- Anchor Line in isolation -->
+    <div class="screen-wrap">
+      <div class="screen-label"><span><strong>00.1</strong>Anchor Line · 1px ink with 80px gradient segment at 61.8%</span><span>structural</span></div>
+      <div class="screen" style="padding: 80px 32px;">
+        <div class="anchor-line"><div class="anchor-line__seg"></div></div>
+      </div>
+    </div>
+ 
+    <dl class="spec">
+      <dt>Geometry</dt><dd>1px ink hairline, full width of parent surface. Replaced by a 2px gradient segment, 80px wide, centred at 61.8% (golden ratio) from the left edge.</dd>
+      <dt>Accent gradient</dt><dd><code>linear-gradient(90deg, #3730A3, #7C3AED 50%, #F97316)</code></dd>
+      <dt>Animation</dt><dd>Once per page on first paint. Segment fades in horizontally over 1200ms with <code>cubic-bezier(.22, 1, .36, 1)</code>. No looping.</dd>
+      <dt>Function</dt><dd>Structural baseline. Section divider. Header / footer rule. Form underline.</dd>
+      <dt>Placement</dt><dd>Beneath header on every page. Between sections of long-form documents. Beneath certificate IDs.</dd>
+    </dl>
+ 
+    <!-- Compliance Bar in isolation -->
+    <div class="screen-wrap">
+      <div class="screen-label"><span><strong>00.2</strong>Compliance Bar · 7 levels, current state at gradient</span><span>functional</span></div>
+      <div class="screen" style="padding: 64px 32px; display: flex; gap: 80px; justify-content: center;">
+ 
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+          <div style="font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--steel);">Standard · 120px</div>
+          <div class="cbar">
+            <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+            <div class="cbar__row cbar__row--lvl-achieved-2"></div>
+            <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+            <div class="cbar__row cbar__row--lvl-current"></div>
+            <div class="cbar__row cbar__row--lvl-pending-1"></div>
+            <div class="cbar__row cbar__row--lvl-pending-2"></div>
+            <div class="cbar__row cbar__row--lvl-pending-3"></div>
+          </div>
+        </div>
+ 
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+          <div style="font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--steel);">Mini · 60px</div>
+          <div class="cbar cbar--mini">
+            <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+            <div class="cbar__row cbar__row--lvl-achieved-2"></div>
+            <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+            <div class="cbar__row cbar__row--lvl-current"></div>
+            <div class="cbar__row cbar__row--lvl-pending-1"></div>
+            <div class="cbar__row cbar__row--lvl-pending-2"></div>
+            <div class="cbar__row cbar__row--lvl-pending-3"></div>
+          </div>
+        </div>
+ 
+      </div>
+    </div>
+ 
+    <dl class="spec">
+      <dt>Geometry</dt><dd>7 horizontal bars, 4px tall, 3px gap, stacked column-reverse (lowest level at bottom). Standard width 120px, mini width 60px (for table rows, navbar).</dd>
+      <dt>Encoding</dt><dd>Bottom rows = ink at 88%, 64%, 44% opacity (achieved levels). Current row = accent gradient, 5px tall, 130px wide (visually punches out). Top rows = ink at 20%, 10%, 5% (pending).</dd>
+      <dt>Levels</dt><dd>L1 Initial · L2 Aware · L3 Defined · L4 Structured · L5 Managed · L6 Optimised · L7 Authoritative. Maps to score bands of ~14 points each (0–100 scale).</dd>
+      <dt>Function</dt><dd>Single-glance read of governance maturity. Used wherever a system, organisation, or assessment has a level. Never decorative.</dd>
+      <dt>Pairing</dt><dd>Always sits adjacent to the numeric score and tier label. Bar carries the visual; text carries the precision.</dd>
+    </dl>
+ 
+    <p style="font-size: 13px; color: var(--slate-70); line-height: 1.6; margin-top: 16px;">The gradient appears only inside these two primitives. It does not appear in body copy, headings, buttons, badges, charts, or as a decorative accent anywhere else. This is the discipline that earns it weight.</p>
+  </section>
+ 
+  <!-- =========================================
+       01 — COMING SOON
+       ========================================= -->
+  <section>
+    <div class="section-num"><strong>01</strong>Surface · Coming Soon</div>
+    <h2>The front door.</h2>
+    <p class="lede">A single page. A single rule. The wordmark, the statement, and one anchor line beneath. The gradient segment is the entire brand promise — that the discipline of restraint applied to AI governance is itself the product.</p>
+ 
+    <div class="screen-wrap">
+      <div class="screen-label"><span><strong>01.1</strong>reganchor.com · /</span><span>1440 × 720</span></div>
+      <div class="screen">
+        <div class="soon">
+          <div class="soon__head">
+            <div><strong>RegAnchor</strong>In Development</div>
+            <div>v1.0 · 2026</div>
+          </div>
+          <div class="soon__hero">
+            <div class="soon__wm">RegAnchor</div>
+            <p class="soon__statement">Intelligence for AI governance. <strong>A continuous, evidential layer beneath every AI system you operate</strong> — registered, scored, and held to account in real time.</p>
+            <div class="anchor-line anchor-line--entrance"><div class="anchor-line__seg"></div></div>
+            <div class="soon__caption">Anchored to record · Bound to evidence</div>
+          </div>
+          <div class="soon__foot">
+            <div>Coming 2026</div>
+            <div>reganchor.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <p style="font-size: 13px; color: var(--slate-70); line-height: 1.6;">The line sits below the statement, not above it — the statement is the claim, the line is the underwriting of that claim. The gradient segment is the only object on the page that is not pure ink-on-paper.</p>
+  </section>
+ 
+  <!-- =========================================
+       02 — POST-DIAGNOSTIC
+       ========================================= -->
+  <section>
+    <div class="section-num"><strong>02</strong>Surface · Post-Diagnostic Result</div>
+    <h2>The first reading.</h2>
+    <p class="lede">After a buyer completes the 35-question diagnostic, this is the screen they land on. The number, the bar, the tier — together they convert an abstract assessment into a visible position on a maturity ladder. The Compliance Bar earns its place here.</p>
+ 
+    <div class="screen-wrap">
+      <div class="screen-label"><span><strong>02.1</strong>portal.reganchor.com · /diagnostic/results</span><span>signed-in</span></div>
+      <div class="screen product">
+        <div class="diag">
+          <div class="diag__head">
+            <div><strong>RegAnchor</strong>Diagnostic Result · 29 April 2026</div>
+            <div>Acme Corp · MLA-GOV-2026-0042</div>
+          </div>
+ 
+          <div class="diag__grid">
+            <div>
+              <div class="diag__label">Your governance maturity</div>
+              <div class="diag__score">
+                <div class="diag__score-num">73</div>
+                <div class="diag__score-of">/ 100</div>
+              </div>
+              <div class="diag__tier"><strong>Level 4 · Structured</strong> — Practices are documented, owned, and reviewed. Coverage is approaching authoritative.</div>
+              <div class="diag__copy">You are eligible to issue a Structured-tier certificate against this assessment. Three items below are blocking advancement to Managed (Level 5).</div>
+            </div>
+ 
+            <div class="diag__cbar-wrap">
+              <div class="diag__label">Position on ladder</div>
+              <div class="cbar" style="margin-top: 6px;">
+                <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+                <div class="cbar__row cbar__row--lvl-achieved-2"></div>
+                <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+                <div class="cbar__row cbar__row--lvl-current"></div>
+                <div class="cbar__row cbar__row--lvl-pending-1"></div>
+                <div class="cbar__row cbar__row--lvl-pending-2"></div>
+                <div class="cbar__row cbar__row--lvl-pending-3"></div>
+              </div>
+              <div class="diag__cbar-scale">
+                <span>L7 Authoritative</span>
+                <span>L6 Optimised</span>
+                <span>L5 Managed</span>
+                <span class="now">L4 Structured · current</span>
+                <span>L3 Defined</span>
+                <span>L2 Aware</span>
+                <span>L1 Initial</span>
+              </div>
+            </div>
+          </div>
+ 
+          <div class="anchor-line subtle"></div>
+ 
+          <div class="diag__priorities">
+            <div class="diag__priority">
+              <div class="diag__pri-num">Priority 01</div>
+              <div class="diag__pri-title">Formalise model-risk register</div>
+              <div class="diag__pri-body">Move tracked risks from internal spreadsheet into the registry under each system's risk class.</div>
+            </div>
+            <div class="diag__priority">
+              <div class="diag__pri-num">Priority 02</div>
+              <div class="diag__pri-title">Assign accountable owner per system</div>
+              <div class="diag__pri-body">Six of twelve registered systems have no named accountable owner. Required for L5.</div>
+            </div>
+            <div class="diag__priority">
+              <div class="diag__pri-num">Priority 03</div>
+              <div class="diag__pri-title">Schedule recurring review cadence</div>
+              <div class="diag__pri-body">Quarterly review documented at policy level but absent from system records.</div>
+            </div>
+          </div>
+ 
+          <div class="diag__cta">
+            <button class="btn">Continue to dashboard</button>
+            <button class="btn btn--ghost">Download report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+ 
+  <!-- =========================================
+       03 — DASHBOARD
+       ========================================= -->
+  <section>
+    <div class="section-num"><strong>03</strong>Surface · Dashboard</div>
+    <h2>The operational view.</h2>
+    <p class="lede">The dashboard is the day-to-day surface. The Compliance Bar appears once — for the organisation as a whole — and the rest is text and counts. Density without colour. The anchor line frames the page.</p>
+ 
+    <div class="screen-wrap">
+      <div class="screen-label"><span><strong>03.1</strong>portal.reganchor.com · /dashboard</span><span>operational</span></div>
+      <div class="screen product">
+        <div class="dash">
+          <div class="dash__topbar">
+            <div class="dash__brand">RegAnchor</div>
+            <nav class="dash__nav">
+              <a href="#" class="active">Dashboard</a>
+              <a href="#">Registry</a>
+              <a href="#">Assessments</a>
+              <a href="#">Controls</a>
+              <a href="#">Dossiers</a>
+            </nav>
+            <div class="dash__user"><span class="dash__avatar">AC</span>Acme Corp</div>
+          </div>
+ 
+          <div class="anchor-line"><div class="anchor-line__seg"></div></div>
+ 
+          <div class="dash__body">
+            <div class="dash__header">
+              <div class="dash__title">Governance overview</div>
+              <div class="dash__date">Wed 29 April 2026</div>
+            </div>
+            <div class="dash__sub">12 systems · 47 controls · 3 assessments in flight · last evidential snapshot 2 hours ago</div>
+ 
+            <div class="anchor-line subtle" style="margin-top: 8px;"></div>
+ 
+            <div class="dash__grid">
+              <div>
+                <div class="dash__col-label">Organisational maturity</div>
+                <div class="dash__metric">
+                  <div class="dash__metric-num">73</div>
+                  <div class="dash__metric-label"><strong>L4 Structured</strong><br><span style="font-size: 12px;">+4 since last quarter</span></div>
+                </div>
+                <div class="cbar" style="margin-top: 12px;">
+                  <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+                  <div class="cbar__row cbar__row--lvl-achieved-2"></div>
+                  <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+                  <div class="cbar__row cbar__row--lvl-current"></div>
+                  <div class="cbar__row cbar__row--lvl-pending-1"></div>
+                  <div class="cbar__row cbar__row--lvl-pending-2"></div>
+                  <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                </div>
+              </div>
+ 
+              <div>
+                <div class="dash__col-label">Recent activity</div>
+                <ul class="dash__list">
+                  <li><span class="item-title">Quarterly review · Customer Support AI</span><span class="item-meta">2h ago</span></li>
+                  <li><span class="item-title">Assessment completed · Pricing Engine</span><span class="item-meta">Yesterday</span></li>
+                  <li><span class="item-title">Risk class updated · Fraud Detection</span><span class="item-meta">2d ago</span></li>
+                  <li><span class="item-title">New control added · Model bias review</span><span class="item-meta">3d ago</span></li>
+                </ul>
+              </div>
+ 
+              <div>
+                <div class="dash__col-label">Open obligations</div>
+                <ul class="dash__list">
+                  <li><span class="item-title">Assign owner · Recommendation Engine</span><span class="item-meta">High</span></li>
+                  <li><span class="item-title">Annual review · Onboarding KYC</span><span class="item-meta">Due 14 days</span></li>
+                  <li><span class="item-title">Document training data lineage</span><span class="item-meta">Due 28 days</span></li>
+                  <li><span class="item-title">Refresh impact assessment · Pricing</span><span class="item-meta">Due 42 days</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <p style="font-size: 13px; color: var(--slate-70); line-height: 1.6;">The Compliance Bar appears once and only once — for the organisation as a whole. Per-system bars belong on the registry page, where they are the *unit of comparison*.</p>
+  </section>
+ 
+  <!-- =========================================
+       04 — AI REGISTRY
+       ========================================= -->
+  <section>
+    <div class="section-num"><strong>04</strong>Surface · AI System Registry</div>
+    <h2>The ledger.</h2>
+    <p class="lede">Every governed AI system, one row each. The mini Compliance Bar carries the maturity reading; the rest of the row carries identity, risk class, and cadence. The bars create a vertical rhythm — the eye scans the column of bars before reading any text — making the maturity distribution of the entire estate readable at a glance.</p>
+ 
+    <div class="screen-wrap">
+      <div class="screen-label"><span><strong>04.1</strong>portal.reganchor.com · /registry</span><span>12 systems</span></div>
+      <div class="screen product">
+        <div class="dash">
+          <div class="dash__topbar">
+            <div class="dash__brand">RegAnchor</div>
+            <nav class="dash__nav">
+              <a href="#">Dashboard</a>
+              <a href="#" class="active">Registry</a>
+              <a href="#">Assessments</a>
+              <a href="#">Controls</a>
+              <a href="#">Dossiers</a>
+            </nav>
+            <div class="dash__user"><span class="dash__avatar">AC</span>Acme Corp</div>
+          </div>
+ 
+          <div class="anchor-line"><div class="anchor-line__seg"></div></div>
+ 
+          <div class="reg__body">
+            <div class="reg__title">AI System Registry</div>
+            <div class="reg__sub">12 registered systems · last evidential snapshot 2 hours ago</div>
+ 
+            <div class="reg__filters">
+              <span class="reg__filter active">All · 12</span>
+              <span class="reg__filter-divider"></span>
+              <span class="reg__filter">High risk · 3</span>
+              <span class="reg__filter">Limited risk · 6</span>
+              <span class="reg__filter">Minimal risk · 3</span>
+              <span class="reg__filter-divider"></span>
+              <span class="reg__filter">Owners assigned · 6</span>
+              <span class="reg__filter">Pending · 6</span>
+              <span class="reg__search">⌘K Search systems</span>
+            </div>
+ 
+            <table class="reg__table">
+              <thead>
+                <tr>
+                  <th class="col-cbar">Maturity</th>
+                  <th>System</th>
+                  <th>Risk class</th>
+                  <th>Owner</th>
+                  <th class="col-meta">Last assessed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="col-cbar">
+                    <div class="cbar cbar--mini">
+                      <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+                      <div class="cbar__row cbar__row--lvl-achieved-2"></div>
+                      <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-1"></div>
+                      <div class="cbar__row cbar__row--lvl-current"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-2"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                    </div>
+                  </td>
+                  <td class="col-name">Fraud Detection v3.2</td>
+                  <td class="col-risk high">High</td>
+                  <td>S. Patel</td>
+                  <td class="col-meta">3 days ago</td>
+                </tr>
+                <tr>
+                  <td class="col-cbar">
+                    <div class="cbar cbar--mini">
+                      <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+                      <div class="cbar__row cbar__row--lvl-achieved-2"></div>
+                      <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+                      <div class="cbar__row cbar__row--lvl-current"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-1"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-2"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                    </div>
+                  </td>
+                  <td class="col-name">Pricing Engine</td>
+                  <td class="col-risk high">High</td>
+                  <td>M. Chen</td>
+                  <td class="col-meta">Yesterday</td>
+                </tr>
+                <tr>
+                  <td class="col-cbar">
+                    <div class="cbar cbar--mini">
+                      <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+                      <div class="cbar__row cbar__row--lvl-current"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-1"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-2"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                    </div>
+                  </td>
+                  <td class="col-name">Onboarding KYC</td>
+                  <td class="col-risk high">High</td>
+                  <td><span style="color: var(--steel);">Unassigned</span></td>
+                  <td class="col-meta">14 days ago</td>
+                </tr>
+                <tr>
+                  <td class="col-cbar">
+                    <div class="cbar cbar--mini">
+                      <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+                      <div class="cbar__row cbar__row--lvl-achieved-2"></div>
+                      <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+                      <div class="cbar__row cbar__row--lvl-current"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-1"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-2"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                    </div>
+                  </td>
+                  <td class="col-name">Customer Support AI</td>
+                  <td class="col-risk">Limited</td>
+                  <td>R. Okonkwo</td>
+                  <td class="col-meta">2 hours ago</td>
+                </tr>
+                <tr>
+                  <td class="col-cbar">
+                    <div class="cbar cbar--mini">
+                      <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+                      <div class="cbar__row cbar__row--lvl-achieved-2"></div>
+                      <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+                      <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+                      <div class="cbar__row cbar__row--lvl-current"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-1"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-2"></div>
+                    </div>
+                  </td>
+                  <td class="col-name">Recommendation Engine</td>
+                  <td class="col-risk">Limited</td>
+                  <td>L. Hayes</td>
+                  <td class="col-meta">1 week ago</td>
+                </tr>
+                <tr>
+                  <td class="col-cbar">
+                    <div class="cbar cbar--mini">
+                      <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+                      <div class="cbar__row cbar__row--lvl-current"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-1"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-2"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                      <div class="cbar__row cbar__row--lvl-pending-3"></div>
+                    </div>
+                  </td>
+                  <td class="col-name">Email Categorisation</td>
+                  <td class="col-risk">Minimal</td>
+                  <td><span style="color: var(--steel);">Unassigned</span></td>
+                  <td class="col-meta">Never</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <p style="font-size: 13px; color: var(--slate-70); line-height: 1.6;">The vertical column of mini bars is the page's signature. A regulator walking past your screen reads the maturity profile of the whole estate before anyone reads a word.</p>
+  </section>
+ 
+  <!-- =========================================
+       05 — COMPLIANCE DOSSIER
+       ========================================= -->
+  <section>
+    <div class="section-num"><strong>05</strong>Surface · Compliance Dossier</div>
+    <h2>The seal.</h2>
+    <p class="lede">The dossier is what your customers send to their regulator. It is signed, dated, hashed, and printable. The Compliance Bar appears once — at the seal — as the visual record of the level being attested. Everything else is editorial and structural.</p>
+ 
+    <div class="screen-wrap">
+      <div class="screen-label"><span><strong>05.1</strong>Compliance Dossier · MLA-GOV-2026-0042</span><span>print-ready · A4</span></div>
+      <div class="screen">
+        <div class="dossier">
+          <div class="dossier__head">
+            <div class="dossier__brand">RegAnchor.</div>
+            <div class="dossier__brand-tag">Infrastructure for AI Governance</div>
+          </div>
+ 
+          <div class="anchor-line subtle"></div>
+ 
+          <div class="dossier__meta">
+            <div><strong>MLA-GOV-2026-0042</strong>Issued 29 April 2026</div>
+            <div>Valid through 28 April 2027</div>
+          </div>
+ 
+          <div class="dossier__title-block">
+            <div class="dossier__doc-label">Compliance Dossier</div>
+            <h1 class="dossier__title">Continuous AI assurance,<br>attested at point in time.</h1>
+            <p class="dossier__subject">Issued to <strong>Acme Corporation Ltd</strong> · Companies House 09384721</p>
+          </div>
+ 
+          <div class="dossier__seal">
+            <div class="dossier__seal-label">Attested governance maturity</div>
+            <div class="dossier__seal-num">73</div>
+            <div class="dossier__seal-tier">L4 · Structured</div>
+            <div class="cbar">
+              <div class="cbar__row cbar__row--lvl-achieved-1"></div>
+              <div class="cbar__row cbar__row--lvl-achieved-2"></div>
+              <div class="cbar__row cbar__row--lvl-achieved-3"></div>
+              <div class="cbar__row cbar__row--lvl-current"></div>
+              <div class="cbar__row cbar__row--lvl-pending-1"></div>
+              <div class="cbar__row cbar__row--lvl-pending-2"></div>
+              <div class="cbar__row cbar__row--lvl-pending-3"></div>
+            </div>
+          </div>
+ 
+          <div class="anchor-line subtle"></div>
+ 
+          <div class="dossier__sections" style="padding-top: 40px;">
+            <div>
+              <div class="dossier__sec-label">01 · Scope</div>
+              <p class="dossier__sec-text">This dossier attests to the governance maturity of <strong>twelve registered AI systems</strong> operated by Acme Corporation Ltd as of the date of issue. Three systems are classified High risk under the EU AI Act; six Limited; three Minimal.</p>
+            </div>
+            <div>
+              <div class="dossier__sec-label">02 · Frameworks</div>
+              <p class="dossier__sec-text">Assessment performed against <strong>EU AI Act, UK GDPR, and FCA AI guidance</strong>. Eighteen obligations evaluated. Coverage report and obligation-level evidence available on request via verification URL.</p>
+            </div>
+            <div>
+              <div class="dossier__sec-label">03 · Methodology</div>
+              <p class="dossier__sec-text">Maturity computed via the RegAnchor weighted score: <strong>50% assessment evidence, 35% control coverage, 15% policy posture</strong>. Threshold for L4 attestation: ≥70 with all L3 obligations met.</p>
+            </div>
+            <div>
+              <div class="dossier__sec-label">04 · Provenance</div>
+              <p class="dossier__sec-text">Underlying evidence snapshot is content-addressed (SHA-256) and immutable. Verify integrity at <strong>reganchor.com/verify/MLA-GOV-2026-0042</strong>. Hash and Merkle root reproduced on request.</p>
+            </div>
+          </div>
+ 
+          <div class="dossier__sign">
+            <div class="dossier__sign-block">
+              <div class="dossier__sign-line"></div>
+              <div class="dossier__sign-name">Fraser MacIntyre</div>
+              <div>Director · MLA Group Ltd</div>
+            </div>
+            <div class="dossier__sign-block" style="text-align: right;">
+              <div class="dossier__sign-line"></div>
+              <div class="dossier__sign-name">29 April 2026</div>
+              <div>Date of attestation</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <p style="font-size: 13px; color: var(--slate-70); line-height: 1.6;">The seal earns its prominence by being the only object on the page that breaks the editorial column. The Compliance Bar inside the seal is the only colour the regulator's lawyer ever sees.</p>
+  </section>
+ 
+  <!-- =========================================
+       APPENDIX — SYSTEM RULES
+       ========================================= -->
+  <section>
+    <div class="section-num"><strong>A</strong>System rules</div>
+    <h2>Six constraints. Absolute.</h2>
+    <p class="lede">Restraint compounds. These rules govern when and where the gradient appears anywhere in the brand and product.</p>
+ 
+    <dl class="spec">
+      <dt>01 · Two surfaces only</dt><dd>The gradient appears inside the Anchor Line and the Compliance Bar. Nowhere else. Not in buttons, badges, charts, illustrations, headings, or icons.</dd>
+      <dt>02 · One Anchor Line per page</dt><dd>The gradient segment fades in once on first paint. After that it is static. No looping, no breathing, no hover state.</dd>
+      <dt>03 · One Compliance Bar per context</dt><dd>The dashboard shows the organisational bar once. The registry shows one bar per row. The dossier shows one bar at the seal. The diagnostic result shows one bar beside the score.</dd>
+      <dt>04 · Always paired with text</dt><dd>The Compliance Bar is never deployed alone. It is always adjacent to the numeric score and the named tier. The bar carries the visual; the text carries the precision.</dd>
+      <dt>05 · No flat accent</dt><dd>The accent gradient is never flattened to a single colour for any use. No solid indigo button. No solid coral badge. The three-stop gradient is the system primitive — its constituent colours are not.</dd>
+      <dt>06 · Ink-on-paper everywhere else</dt><dd>Every other surface element follows RGA-001 strictly. Six neutrals. No exceptions.</dd>
+    </dl>
+  </section>
+ 
+  <footer class="doc-footer">
+    <div><strong>RegAnchor</strong>System Specification RGA-002 · v1.0</div>
+    <div>Operated by MLA Group Ltd · reganchor.com</div>
+  </footer>
+ 
+</div>
+</body>
+</html>
