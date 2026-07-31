@@ -619,6 +619,39 @@ body {
 .sys-table tbody tr { cursor: pointer; transition: background .1s }
 .sys-table tbody tr:hover { background: var(--ra-bg-raised) }
 
+.table-scroll { overflow-x: auto }
+.col-date { font-size: 12px; color: var(--ra-text-3); white-space: nowrap }
+
+/* ───────────────────────────────────────────────────────────────
+   REGISTRY MATURITY COLUMN
+
+   The page's signature. Read down the column, the bars compare
+   themselves before a single number is read, which is what makes the
+   one lagging system findable in a registry of forty. Rule 04 still
+   holds, so the level travels beside the bar.
+   ─────────────────────────────────────────────────────────────── */
+.col-maturity { min-width: 132px }
+.reg-maturity { display: flex; align-items: flex-end; gap: 10px }
+.reg-maturity__score {
+  font-family: var(--ra-font-brand);
+  font-size: 17px; font-weight: 500;
+  letter-spacing: -0.02em; line-height: 1;
+  color: var(--ra-text);
+}
+.reg-maturity__level {
+  font-size: 9px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--ra-text-3);
+  margin-top: 4px; white-space: nowrap;
+}
+.reg-maturity__none {
+  font-size: 11px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--ra-text-4);
+  margin-left: 10px;
+}
+.col-maturity .ra-cbar { display: inline-flex; vertical-align: bottom }
+
 .sys-name { font-weight: 500; color: var(--ra-text); margin-bottom: 2px }
 .sys-desc {
   font-size: 11px; color: var(--ra-text-3);
@@ -888,6 +921,104 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
 
 .cprogress-bar { height: 2px; background: var(--ra-border) }
 .cprogress-fill { height: 100%; background: var(--ra-text); transition: width .4s ease }
+
+/* ───────────────────────────────────────────────────────────────
+   SYSTEM DETAIL
+   ─────────────────────────────────────────────────────────────── */
+.det-subtitle {
+  display: flex; align-items: center; gap: 28px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--ra-text);
+}
+.det-subtitle label {
+  display: block;
+  font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--ra-text-3);
+  margin-bottom: 3px;
+}
+
+/* Facts about a system, not states, so no colour and no fill. */
+.tag {
+  font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--ra-text-3);
+  border: 1px solid var(--ra-border);
+  padding: 3px 9px;
+}
+
+.detail-desc { margin-bottom: 24px }
+.detail-desc .stat-label { margin-bottom: 8px }
+.detail-desc p { font-size: 13px; color: var(--ra-text-2); line-height: 1.7 }
+
+.ctrl-summary { margin-bottom: 24px }
+.ctrl-summary__head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px }
+.ctrl-summary__pct {
+  font-family: var(--ra-font-brand);
+  font-size: 26px; font-weight: 500;
+  letter-spacing: -0.03em; line-height: 1;
+  color: var(--ra-text);
+}
+.ctrl-summary__note { font-size: 12px; color: var(--ra-text-3) }
+
+/* ───────────────────────────────────────────────────────────────
+   ASSESSMENT RECORD
+   ─────────────────────────────────────────────────────────────── */
+.assess-card {
+  border: 1px solid var(--ra-border);
+  padding: 22px 24px;
+  margin-bottom: 16px;
+}
+.assess-card__head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  flex-wrap: wrap; gap: 14px;
+  margin-bottom: 20px;
+}
+.assess-card__reading { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap }
+.assess-card__status { display: flex; flex-direction: column; align-items: flex-end; gap: 5px }
+.assess-card__date { font-size: 12px; color: var(--ra-text-3) }
+.assess-card__by { font-size: 12px; color: var(--ra-text-3); margin-top: 14px }
+.assess-card__actions { margin-top: 16px; display: flex; gap: 10px }
+
+/* Domain scores. A rule whose length is the score, with the figure
+   set beside it — no fill, no colour, nothing to decode. */
+.dom-list { margin-bottom: 18px }
+.dom-row { display: flex; align-items: center; gap: 14px; padding: 5px 0 }
+.dom-row__label {
+  font-size: 12px; color: var(--ra-text-3);
+  width: 180px; text-align: right; flex-shrink: 0;
+}
+.dom-row__track { flex: 1; height: 1px; background: var(--ra-border) }
+.dom-row__fill { height: 100%; background: var(--ra-text) }
+.dom-row__pct {
+  font-size: 12px; color: var(--ra-text);
+  width: 36px; text-align: right; flex-shrink: 0;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   NOTICE
+
+   Replaces the tinted callout boxes. A left rule and paper carry the
+   same emphasis without inventing a fill colour for every meaning.
+   ─────────────────────────────────────────────────────────────── */
+.notice {
+  border-left: 2px solid var(--ra-text);
+  padding: 12px 0 12px 16px;
+  margin-top: 16px;
+}
+.notice--warn { border-left-color: var(--ra-warn) }
+.notice--quiet { border-left-color: var(--ra-border) }
+.notice__label {
+  font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--ra-text-3);
+  margin-bottom: 7px;
+}
+.notice__body { font-size: 13px; color: var(--ra-text-2); line-height: 1.65 }
+.notice__meta { font-size: 11px; color: var(--ra-text-3); margin-top: 7px }
+.notice--warn, .notice--quiet { font-size: 13px; color: var(--ra-text-2); line-height: 1.65 }
 
 /* ───────────────────────────────────────────────────────────────
    OBLIGATIONS, FRAMEWORKS, AUDIT
