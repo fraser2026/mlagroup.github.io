@@ -45,6 +45,9 @@
 </aside>
 <div class="main">
 <div class="topbar"><button class="mobile-toggle" onclick="openSidebar()"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button><div class="topbar-title" id="topbar-title"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div><div id="topbar-bell" class="icon-btn" onclick="navigateAlerts()"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg><span id="bell-badge" class="bell-badge" style="display:none;">0</span></div><div class="topbar-right" id="topbar-right"><button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button></div></div>
+<!-- The rule beneath the header. One per page, animated once on first
+     paint. This is the portal's only accent surface. -->
+<div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
 <div class="content-scroll">
  
 <div id="view-dashboard" class="view active">

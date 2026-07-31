@@ -14,11 +14,23 @@
 
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import puppeteer from 'puppeteer';
 
+/* Puppeteer's bundled Chromium is a large download and npm's
+   allow-scripts policy blocks its postinstall anyway. Any locally
+   installed Chromium renders this identically, so prefer one. */
+const LOCAL_BROWSERS = [
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+];
+const executablePath = LOCAL_BROWSERS.find(p => existsSync(p));
+
 const ROOT = process.cwd();
-const [, , pagePath = 'portal.html', outFile = 'shot.png', w = '1440', h = '900'] = process.argv;
+const [, , pagePath = 'portal.html', outFile = 'shot.png', w = '1440', h = '900', clip] = process.argv;
 
 const TYPES = {
   '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript',
@@ -39,7 +51,10 @@ const server = createServer(async (req, res) => {
 await new Promise(r => server.listen(0, r));
 const port = server.address().port;
 
-const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+const browser = await puppeteer.launch({
+  args: ['--no-sandbox'],
+  ...(executablePath ? { executablePath } : {})
+});
 const page = await browser.newPage();
 await page.setViewport({ width: +w, height: +h, deviceScaleFactor: 2 });
 
@@ -58,7 +73,13 @@ page.on('pageerror', e => errors.push(e.message));
 await page.goto(`http://localhost:${port}/${pagePath}`, { waitUntil: 'networkidle2' });
 await page.evaluate(() => document.fonts.ready);
 await new Promise(r => setTimeout(r, 400));
-await page.screenshot({ path: outFile, fullPage: false });
+// Optional 6th arg "x,y,w,h" crops the shot, for inspecting a rule or
+// a single component at a legible scale.
+const clipRect = clip
+  ? (([x, y, cw, ch]) => ({ x, y, width: cw, height: ch }))(clip.split(',').map(Number))
+  : undefined;
+
+await page.screenshot({ path: outFile, fullPage: false, ...(clipRect ? { clip: clipRect } : {}) });
 
 if (errors.length) {
   console.log('page errors (expected where auth was blocked):');

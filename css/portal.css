@@ -289,9 +289,13 @@ body {
   align-items: center;
   padding: 0 32px;
   gap: 16px;
-  border-bottom: 1px solid var(--ra-border);
   background: var(--ra-bg);
 }
+
+/* No border here. The Anchor Line immediately below is the rule
+   beneath the header, and two stacked hairlines would read as a
+   mistake. The sidebar keeps its own so the two meet at the corner. */
+.main > .ra-anchor-line { flex-shrink: 0 }
 
 .topbar-title {
   font-size: 13px;
