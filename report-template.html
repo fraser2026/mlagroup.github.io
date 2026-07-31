@@ -257,6 +257,10 @@ body {
 <script>
 /*__REPORT_DATA__*/
 
+// Rendered off-site by Puppeteer via setContent, so relative URLs resolve against
+// about:blank. This must stay absolute; change it at the reganchor.com cutover.
+const SITE_DOMAIN='mlagroup.co.uk';
+
 // ════ FRAMEWORK DATA ════
 const W={s1:.14,s2:.20,s3:.10,s4:.16,s5:.16,s6:.18,s7:.06};
 const SN={s1:'AI Inventory & Classification',s2:'Governance & Accountability',s3:'Data Quality & Lineage',s4:'Human Oversight & Controls',s5:'Explainability & Transparency',s6:'Compliance & Legal Alignment',s7:'Operational Controls & Resilience'};
@@ -416,7 +420,7 @@ function render(raw){
   // ═ COVER ═
   o+=`<div class="cover">
     <div class="cov-top">
-      <div style="margin-bottom:18px"><div style="font-size:12pt">${logo(true)}</div><div class="cov-logo-sub">AI Governance Risk Advisory &nbsp;·&nbsp; mlagroup.co.uk</div></div>
+      <div style="margin-bottom:18px"><div style="font-size:12pt">${logo(true)}</div><div class="cov-logo-sub">AI Governance Risk Advisory &nbsp;·&nbsp; ${SITE_DOMAIN}</div></div>
       <div class="cov-doctype">AI Governance Risk Assessment</div>
       <div class="cov-rule"></div>
       <div class="cov-org">${x(org)}</div>
@@ -568,7 +572,7 @@ function render(raw){
     ${OUTLOOK.map(ol=>`<div class="outlook-item"><div class="outlook-title">${x(ol.t)}</div><div class="outlook-txt">${x(ol.p)}</div></div>`).join('')}
     <div class="notice" style="margin-top:14px"><div class="notice-title">Important Notice</div><div class="notice-txt">This diagnostic provides governance maturity assessment and does not constitute legal advice. MLA Group Ltd is not a law firm. Outputs should not be relied upon as legal opinion or as confirmation of regulatory compliance. Organisations are advised to engage qualified legal and regulatory compliance professionals when implementing governance changes. Framework version ${x(R.fv)}.</div></div>
     <div class="signoff">
-      <div><div style="font-size:10pt">${logo(false)}</div><div class="signoff-sub">AI Governance Risk Advisory &nbsp;·&nbsp; mlagroup.co.uk</div></div>
+      <div><div style="font-size:10pt">${logo(false)}</div><div class="signoff-sub">AI Governance Risk Advisory &nbsp;·&nbsp; ${SITE_DOMAIN}</div></div>
       <div class="signoff-r"><div>Report generated ${date}</div><div>Framework v${x(R.fv)}</div>${rpt.id?`<div style="margin-top:2px">Report ID: ${x(rpt.id)}</div>`:''}</div>
     </div>
   </div>`;

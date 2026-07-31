@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
-<title>MLA Admin | MLA Group</title>
+<title>Admin | RegAnchor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
@@ -65,12 +65,14 @@ textarea.field-input{resize:vertical;min-height:80px}
 .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px}
 @media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}.meta-grid{grid-template-columns:1fr}.sidebar{display:none}.content{padding:20px 16px}}
 </style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <body>
 <div class="bg-ambient"></div>
 <div class="app">
 <aside class="sidebar">
-<div class="sidebar-logo"><a href="index.html" class="logo-mark">mla<em>group.</em></a><span class="logo-badge">Admin</span></div>
+<div class="sidebar-logo"><a href="index.html" class="logo-mark ra-wordmark">RegAnchor</a><span class="logo-badge">Admin</span></div>
 <nav class="sidebar-nav">
 <div class="nav-label">Overview</div>
 <div class="nav-item active" onclick="showView('dashboard',this)"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>
@@ -83,30 +85,30 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="nav-item" onclick="window.location.href='portal.html'"><svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg>Client Portal</div>
 <div class="nav-item" id="nav-devtools" style="display:none;" onclick="showView('devtools',this)"><svg viewBox="0 0 16 16"><path d="M5.5 2.5l-3 3 3 3M10.5 2.5l3 3-3 3"/><path d="M9 1L7 11"/></svg>Dev Tools</div>
 </nav>
-<div class="sidebar-footer"><div class="user-tile"><div class="user-avatar">ML</div><div><div class="user-name">MLA Group</div><div class="user-role">Administrator</div></div></div></div>
+<div class="sidebar-footer"><div class="user-tile"><div class="user-avatar">RA</div><div><div class="user-name">RegAnchor</div><div class="user-role">Administrator</div></div></div></div>
 </aside>
 <div class="main">
 <div class="topbar"><div class="topbar-title" id="topbar-title">Admin Dashboard</div><div class="topbar-right"><button class="btn btn-ghost" onclick="signOut()">Sign out</button></div></div>
 <div class="content">
  
 <div id="view-dashboard" class="view active">
-<div class="page-header"><h2>MLA Admin Dashboard</h2><p>Cross-client overview of all organisations and assessments.</p></div>
+<div class="page-header"><h2>RegAnchor Admin Dashboard</h2><p>Cross-client overview of all organisations and assessments.</p></div>
 <div class="stats-grid">
 <div class="stat-card"><div class="stat-label">Organisations</div><div class="stat-value" id="s-orgs">—</div><div class="stat-sub">Registered</div></div>
 <div class="stat-card"><div class="stat-label">AI Systems</div><div class="stat-value" id="s-systems">—</div><div class="stat-sub">Across all clients</div></div>
 <div class="stat-card"><div class="stat-label">Assessments</div><div class="stat-value" id="s-assessments">—</div><div class="stat-sub">Total submitted</div></div>
-<div class="stat-card"><div class="stat-label">Awaiting Review</div><div class="stat-value" style="color:#fbbf24;" id="s-pending">—</div><div class="stat-sub">Need MLA action</div></div>
+<div class="stat-card"><div class="stat-label">Awaiting Review</div><div class="stat-value" style="color:#fbbf24;" id="s-pending">—</div><div class="stat-sub">Need RegAnchor action</div></div>
 </div>
 <div class="panel"><div class="panel-header"><div class="panel-title">Recent Assessments</div></div><div id="dash-recent"><div class="loading">Loading…</div></div></div>
 </div>
  
 <div id="view-queue" class="view">
-<div class="page-header"><h2>Assessment Queue</h2><p>Submitted assessments awaiting MLA review and control delivery.</p></div>
+<div class="page-header"><h2>Assessment Queue</h2><p>Submitted assessments awaiting RegAnchor review and control delivery.</p></div>
 <div id="queue-list"><div class="loading">Loading…</div></div>
 </div>
  
 <div id="view-clients" class="view">
-<div class="page-header"><h2>All Clients</h2><p>Organisations registered on the MLA platform.</p></div>
+<div class="page-header"><h2>All Clients</h2><p>Organisations registered on the RegAnchor platform.</p></div>
 <div id="client-list"><div class="loading">Loading…</div></div>
 </div>
  
@@ -334,7 +336,7 @@ async function init(){
   var profileResult=await sb.from('profiles').select('role,full_name').eq('id',currentUser.id).single();
   var profile=profileResult.data;
   if(!profile||profile.role!=='mla_admin'){
-    document.querySelector('.content').innerHTML='<div class="empty" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;"><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Access Denied</h2><p>This page is restricted to MLA Group administrators.</p><a href="portal.html" class="btn btn-primary" style="margin-top:16px;">Go to Portal</a></div>';
+    document.querySelector('.content').innerHTML='<div class="empty" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;"><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Access Denied</h2><p>This page is restricted to RegAnchor administrators.</p><a href="portal.html" class="btn btn-primary" style="margin-top:16px;">Go to Portal</a></div>';
     return;
   }
   await loadData();
@@ -437,7 +439,7 @@ async function openAssessmentDetail(assessId){
     (tv&&tv.mismatch?'<div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:10px;padding:14px 18px;margin-bottom:14px;"><div style="font-size:.78rem;font-weight:600;color:var(--amber);margin-bottom:4px;">Risk Tier Mismatch</div><div style="font-size:.76rem;color:var(--muted2);line-height:1.6;">'+esc(tv.message||'Risk tier mismatch detected.')+'</div></div>':'')+
     '<div class="detail-card"><div class="meta-grid"><div><div class="detail-label">System Owner</div><div class="detail-val">'+esc(sys.system_owner||'—')+'</div></div><div><div class="detail-label">Vendor</div><div class="detail-val">'+esc(sys.vendor||'—')+'</div></div><div><div class="detail-label">Risk Tier</div><div class="detail-val">'+(sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified')+'</div></div><div><div class="detail-label">Deployment</div><div class="detail-val">'+esc(sys.deployment_status||'—')+'</div></div></div></div>'+
     (a.client_notes?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Client Notes</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;">'+esc(a.client_notes)+'</div></div>':'')+
-    '<div class="panel" style="margin-top:20px;"><div class="panel-header"><div class="panel-title">MLA Review</div></div><div style="padding:20px;"><label class="field-label">Status</label><select class="field-input" id="ad-status"><option value="submitted" '+(a.status==='submitted'?'selected':'')+'>Submitted — Awaiting Review</option><option value="in_review" '+(a.status==='in_review'?'selected':'')+'>Under Review</option><option value="controls_issued" '+(a.status==='controls_issued'?'selected':'')+'>Controls Issued</option></select><label class="field-label">MLA Notes for Client</label><textarea class="field-input" id="ad-notes" placeholder="Notes visible to the client — findings, recommendations, next steps…">'+esc(a.mla_notes||'')+'</textarea><div style="display:flex;gap:10px;"><button class="btn btn-primary" onclick="saveReview(\''+a.id+'\')">Save &amp; Update Client</button><a href="system-report.html?aid='+a.id+'" target="_blank" class="btn btn-ghost">View Report</a></div><div id="ad-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div></div></div>';
+    '<div class="panel" style="margin-top:20px;"><div class="panel-header"><div class="panel-title">RegAnchor Review</div></div><div style="padding:20px;"><label class="field-label">Status</label><select class="field-input" id="ad-status"><option value="submitted" '+(a.status==='submitted'?'selected':'')+'>Submitted — Awaiting Review</option><option value="in_review" '+(a.status==='in_review'?'selected':'')+'>Under Review</option><option value="controls_issued" '+(a.status==='controls_issued'?'selected':'')+'>Controls Issued</option></select><label class="field-label">RegAnchor Notes for Client</label><textarea class="field-input" id="ad-notes" placeholder="Notes visible to the client — findings, recommendations, next steps…">'+esc(a.mla_notes||'')+'</textarea><div style="display:flex;gap:10px;"><button class="btn btn-primary" onclick="saveReview(\''+a.id+'\')">Save &amp; Update Client</button><a href="system-report.html?aid='+a.id+'" target="_blank" class="btn btn-ghost">View Report</a></div><div id="ad-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div></div></div>';
   
   showView('assessment-detail',null);
 }
@@ -461,7 +463,7 @@ async function saveReview(assessId){
   if(a){
     await sb.from('registry_audit_log').insert({
       org_id:a.org_id,user_id:currentUser.id,action:'mla_review_updated',entity_type:'ai_system',entity_id:a.system_id,
-      changes:{status:status,assessment_id:assessId,_actor_name:'MLA Group',_is_mla:true}
+      changes:{status:status,assessment_id:assessId,_actor_name:'RegAnchor',_is_mla:true}
     });
     a.status=status;a.mla_notes=notes;
   }
@@ -513,11 +515,11 @@ async function openSupportDetail(reqId){
   
   var threadHtml='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:var(--sky);font-weight:600;margin-bottom:4px;">'+esc(nm[r.requested_by]||'Client')+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(r.requested_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(37,99,235,0.03);border-left:2px solid #2563eb;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.client_message)+'</div></div>';
   if(r.mla_response&&!allMsgs.some(function(m){return m.sender_type==='mla'})){
-    threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:#4ade80;font-weight:600;margin-bottom:4px;">MLA Group <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(r.responded_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(34,197,94,0.03);border-left:2px solid #22c55e;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.mla_response)+'</div></div>';
+    threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:#4ade80;font-weight:600;margin-bottom:4px;">RegAnchor <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(r.responded_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:rgba(34,197,94,0.03);border-left:2px solid #22c55e;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(r.mla_response)+'</div></div>';
   }
   allMsgs.forEach(function(m){
     var isMLA=m.sender_type==='mla';
-    threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:'+(isMLA?'#4ade80':'var(--sky)')+';font-weight:600;margin-bottom:4px;">'+(isMLA?'MLA Group':esc(nm[m.sender_id]||'Client'))+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(m.created_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:'+(isMLA?'rgba(34,197,94,0.03)':'rgba(37,99,235,0.03)')+';border-left:2px solid '+(isMLA?'#22c55e':'#2563eb')+';padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(m.message)+'</div>';
+    threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:'+(isMLA?'#4ade80':'var(--sky)')+';font-weight:600;margin-bottom:4px;">'+(isMLA?'RegAnchor':esc(nm[m.sender_id]||'Client'))+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(m.created_at)+'</span></div><div style="font-size:.82rem;color:var(--sub);line-height:1.75;background:'+(isMLA?'rgba(34,197,94,0.03)':'rgba(37,99,235,0.03)')+';border-left:2px solid '+(isMLA?'#22c55e':'#2563eb')+';padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(m.message)+'</div>';
     if(m.file_name)threadHtml+='<div style="margin-top:4px;"><a href="#" onclick="viewAdminFile(\''+esc(m.file_path)+'\');return false;" style="font-size:.72rem;color:var(--sky);text-decoration:none;">&#128206; '+esc(m.file_name)+'</a></div>';
     threadHtml+='</div>';
   });
@@ -584,10 +586,10 @@ async function submitSupportResponse(reqId){
   var r=allSupport.find(function(x){return x.id===reqId});
   await sb.from('support_requests').update({status:'responded',responded_by:currentUser.id,responded_at:new Date().toISOString(),mla_response:response}).eq('id',reqId);
   if(r){
-    await sb.from('registry_audit_log').insert({org_id:r.org_id,user_id:currentUser.id,action:'support_responded',entity_type:'governance_control',entity_id:r.system_id||r.control_id,changes:{_actor_name:'MLA Group',_is_mla:true,control:getCtrlName(r.control_id)}});
+    await sb.from('registry_audit_log').insert({org_id:r.org_id,user_id:currentUser.id,action:'support_responded',entity_type:'governance_control',entity_id:r.system_id||r.control_id,changes:{_actor_name:'RegAnchor',_is_mla:true,control:getCtrlName(r.control_id)}});
     r.status='responded';r.mla_response=response;
     var ctrlNameForAlert=getCtrlName(r.control_id);
-    await sb.from('governance_alerts').insert({org_id:r.org_id,alert_type:'support_response',severity:'info',title:'MLA Group responded to your support request',body:'You have a new response regarding "'+ctrlNameForAlert+'". Open the control in your portal to view the full conversation and reply.',ref_id:r.control_assignment_id||null,ref_type:'support_request'});
+    await sb.from('governance_alerts').insert({org_id:r.org_id,alert_type:'support_response',severity:'info',title:'RegAnchor responded to your support request',body:'You have a new response regarding "'+ctrlNameForAlert+'". Open the control in your portal to view the full conversation and reply.',ref_id:r.control_assignment_id||null,ref_type:'support_request'});
     var clientProfileResult=await sb.from('profiles').select('full_name,email').eq('id',r.requested_by).single();
     var clientProfile=clientProfileResult.data;
     if(clientProfile?.email){
@@ -595,8 +597,8 @@ async function submitSupportResponse(reqId){
       await sendClientEmail(
         clientProfile.email,
         clientProfile.full_name?.split(' ')[0]||'there',
-        'MLA Group has responded to your support request',
-        'You have a new response from MLA Group regarding your support request on "'+ctrlName+'".\n\n'+response+'\n\nLog in to your portal to view the full conversation and reply.'
+        'RegAnchor has responded to your support request',
+        'You have a new response from RegAnchor regarding your support request on "'+ctrlName+'".\n\n'+response+'\n\nLog in to your portal to view the full conversation and reply.'
       );
     }
   }
@@ -795,7 +797,7 @@ async function submitDeployTemplate(){
   // Audit
   await sb.from('registry_audit_log').insert({
     org_id:orgId,user_id:currentUser.id,action:'policy_adopted',entity_type:'policy',entity_id:result.data?result.data.id:null,
-    changes:{_actor_name:'MLA Group',_is_mla:true,policy:tpl.title}
+    changes:{_actor_name:'RegAnchor',_is_mla:true,policy:tpl.title}
   });
   
   // Refresh
@@ -1007,7 +1009,7 @@ async function saveEditedPolicy(){
     org_id:pol.org_id,user_id:currentUser.id,
     action:shouldBump?'policy_updated_version':'policy_updated',
     entity_type:'policy',entity_id:policyId,
-    changes:{_actor_name:'MLA Group',_is_mla:true,policy:title,version:newVersion,previous_version:pol.version}
+    changes:{_actor_name:'RegAnchor',_is_mla:true,policy:title,version:newVersion,previous_version:pol.version}
   });
   
   msgEl.style.display='block';msgEl.style.color='#4ade80';

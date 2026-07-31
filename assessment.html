@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
-<title>AI System Assessment | MLA Group</title>
+<title>AI System Assessment | RegAnchor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#020617;--card:rgba(8,15,35,0.85);--border:rgba(255,255,255,0.07);--borm:rgba(255,255,255,0.13);--accent:#2563eb;--accent-h:#1d4ed8;--sky:#60a5fa;--main:#f1f5f9;--sub:#cbd5e1;--muted:#64748b;--muted2:#94a3b8;--err:#f87171}
@@ -81,6 +81,8 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:0 48px
  
 @media(max-width:768px){nav{padding:0 20px}.progress-wrap{padding:12px 20px}.wrapper{padding:28px 20px 60px}.card{padding:22px 18px}}
 </style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <body>
 <div class="bg-glow"></div>
@@ -94,7 +96,7 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:0 48px
  
 <div class="page">
 <nav>
-  <a href="index.html" class="nav-logo">mla<em>group.</em></a>
+  <a href="index.html" class="nav-logo ra-wordmark">RegAnchor</a>
   <a href="portal.html" class="nav-back">&#8592; Back to Portal</a>
 </nav>
  
@@ -327,7 +329,7 @@ function buildScreens(){
       <select class="form-select" id="pre-sector"><option value="">Select sector</option>${SECTOR_OPTIONS.map(s=>`<option>${s}</option>`).join('')}</select>
     </div>
     <div class="form-group"><label class="form-label">Any additional context for the assessor? <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
-      <textarea class="form-input" id="pre-notes" rows="3" placeholder="Anything MLA Group should know about this system…" style="resize:vertical;min-height:70px;"></textarea>
+      <textarea class="form-input" id="pre-notes" rows="3" placeholder="Anything RegAnchor should know about this system…" style="resize:vertical;min-height:70px;"></textarea>
     </div>
     <div id="pre-error" class="error-msg"></div>
     <button class="btn-primary" onclick="startAssessment()">Begin Assessment &#8594;</button>

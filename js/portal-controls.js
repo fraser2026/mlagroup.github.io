@@ -338,7 +338,7 @@ async function loadSupportForControl(assignId){
   if(!requests||!requests.length){
     // No requests — show new request form
     histEl.innerHTML='';
-    formEl.innerHTML='<p style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:12px;">If you need help implementing this control, request guidance from an MLA governance expert.</p><textarea class="field-input" id="cd-support-msg" rows="3" placeholder="Describe what you need help with…" style="margin-bottom:8px;"></textarea><button class="btn-topbar btn-topbar-primary" onclick="submitSupportRequest()" style="padding:6px 14px;font-size:.75rem;">Request MLA Expert</button><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div>';
+    formEl.innerHTML='<p style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:12px;">If you need help implementing this control, request guidance from a RegAnchor governance expert.</p><textarea class="field-input" id="cd-support-msg" rows="3" placeholder="Describe what you need help with…" style="margin-bottom:8px;"></textarea><button class="btn-topbar btn-topbar-primary" onclick="submitSupportRequest()" style="padding:6px 14px;font-size:.75rem;">Request RegAnchor Expert</button><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div>';
     return;
   }
   
@@ -352,14 +352,14 @@ async function loadSupportForControl(assignId){
     const isOpen=req.status==='open';
     
     threadHtml+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;">';
-    threadHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span style="font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+(isOpen?'#fbbf24':req.status==='responded'?'#4ade80':'var(--muted)')+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+(isOpen?'Awaiting MLA Response':req.status==='responded'?'MLA Responded':'Closed')+'</span><span style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(req.requested_at)+'</span></div>';
+    threadHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span style="font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+(isOpen?'#fbbf24':req.status==='responded'?'#4ade80':'var(--muted)')+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+(isOpen?'Awaiting RegAnchor Response':req.status==='responded'?'RegAnchor Responded':'Closed')+'</span><span style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(req.requested_at)+'</span></div>';
     
     // Original message
     threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:var(--sky);font-weight:600;margin-bottom:4px;">'+esc(nm[req.requested_by]||'You')+'</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:rgba(37,99,235,0.03);border-left:2px solid var(--accent);padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(req.client_message)+'</div></div>';
     
-    // Legacy MLA response (from old support_requests.mla_response)
+    // Legacy RegAnchor-side response (from old support_requests.mla_response)
     if(req.mla_response&&!allMsgs.some(m=>m.sender_type==='mla')){
-      threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:#4ade80;font-weight:600;margin-bottom:4px;">MLA Group</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:rgba(34,197,94,0.03);border-left:2px solid #22c55e;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(req.mla_response)+'</div><div style="font-size:.68rem;color:var(--muted);margin-top:4px;">'+fmtDateLong(req.responded_at)+'</div></div>';
+      threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:#4ade80;font-weight:600;margin-bottom:4px;">RegAnchor</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:rgba(34,197,94,0.03);border-left:2px solid #22c55e;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(req.mla_response)+'</div><div style="font-size:.68rem;color:var(--muted);margin-top:4px;">'+fmtDateLong(req.responded_at)+'</div></div>';
     }
     
     // Thread messages
@@ -368,7 +368,7 @@ async function loadSupportForControl(assignId){
       const col=isMLA?'#4ade80':'var(--sky)';
       const bgCol=isMLA?'rgba(34,197,94,0.03)':'rgba(37,99,235,0.03)';
       const borderCol=isMLA?'#22c55e':'var(--accent)';
-      const name=isMLA?'MLA Group':esc(nm[m.sender_id]||'You');
+      const name=isMLA?'RegAnchor':esc(nm[m.sender_id]||'You');
       threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:'+col+';font-weight:600;margin-bottom:4px;">'+name+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(m.created_at)+'</span></div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:'+bgCol+';border-left:2px solid '+borderCol+';padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(m.message)+'</div>';
       if(m.file_name)threadHtml+='<div style="margin-top:6px;font-size:.72rem;color:var(--sky);cursor:pointer;" onclick="viewSupportFile(\''+esc(m.file_path)+'\')">📎 '+esc(m.file_name)+'</div>';
       threadHtml+='</div>';
@@ -380,7 +380,7 @@ async function loadSupportForControl(assignId){
   
   // Reply form — if there's an active request, show reply box
   if(openReq){
-    formEl.innerHTML='<div style="border-top:1px solid var(--border);padding-top:12px;"><textarea class="field-input" id="cd-support-msg" rows="2" placeholder="Reply to MLA Group…" style="margin-bottom:8px;"></textarea><div style="display:flex;gap:8px;align-items:center;"><input type="file" id="support-file" style="display:none;" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg" /><button class="btn-topbar btn-topbar-ghost" onclick="document.getElementById(\'support-file\').click()" style="padding:5px 10px;font-size:.72rem;">Attach File</button><span id="support-file-name" style="font-size:.7rem;color:var(--muted);"></span><button class="btn-topbar btn-topbar-primary" onclick="sendSupportReply(\''+openReq.id+'\')" style="margin-left:auto;padding:6px 14px;font-size:.75rem;">Send Reply</button></div><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div></div>';
+    formEl.innerHTML='<div style="border-top:1px solid var(--border);padding-top:12px;"><textarea class="field-input" id="cd-support-msg" rows="2" placeholder="Reply to RegAnchor…" style="margin-bottom:8px;"></textarea><div style="display:flex;gap:8px;align-items:center;"><input type="file" id="support-file" style="display:none;" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg" /><button class="btn-topbar btn-topbar-ghost" onclick="document.getElementById(\'support-file\').click()" style="padding:5px 10px;font-size:.72rem;">Attach File</button><span id="support-file-name" style="font-size:.7rem;color:var(--muted);"></span><button class="btn-topbar btn-topbar-primary" onclick="sendSupportReply(\''+openReq.id+'\')" style="margin-left:auto;padding:6px 14px;font-size:.75rem;">Send Reply</button></div><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div></div>';
     const fileInput=document.getElementById('support-file');
     if(fileInput)fileInput.onchange=function(){document.getElementById('support-file-name').textContent=this.files[0]?.name||''};
   }else{

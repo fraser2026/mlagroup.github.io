@@ -33,6 +33,8 @@ const __dirname = dirname(__filename);
 const CONFIG = {
   templatePath: join(__dirname, 'report-template.html'),
   outputDir: join(__dirname, 'output'),
+  // Printed into the PDF footer. No request origin exists here, so it must be absolute.
+  siteDomain: process.env.SITE_DOMAIN || 'mlagroup.co.uk',
   pdf: {
     format: 'A4',
     marginTop: '28mm',      // space for running header
@@ -158,7 +160,7 @@ function buildFooterTemplate(orgName, dateStr) {
         Confidential — ${orgName} — ${dateStr}
       </span>
       <span style="color: #94a3b8; font-size: 6pt; letter-spacing: 0.04em;">
-        mlagroup.co.uk
+        ${CONFIG.siteDomain}
       </span>
     </div>
   `;

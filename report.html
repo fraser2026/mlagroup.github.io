@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>AI Governance Risk Report | MLA Group</title>
+<title>AI Governance Risk Report | RegAnchor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #070b18;
@@ -486,12 +486,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
   .hero-scroll{display:none}
 }
 </style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <body>
 
 <!-- LOADING -->
 <div id="ls">
-  <div class="ls-logo">mla<em>group.</em></div>
+  <div class="ls-logo ra-wordmark">RegAnchor</div>
   <div class="ls-track"><div class="ls-fill"></div></div>
   <div class="ls-msg" id="ls-msg">Verifying access...</div>
 </div>
@@ -509,7 +511,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
 
   <!-- STICKY NAV -->
   <nav class="rnav">
-    <a href="portal.html" class="rnav-logo">mla<em>group.</em></a>
+    <a href="portal.html" class="rnav-logo ra-wordmark">RegAnchor</a>
     <ul class="rnav-links">
       <li><a href="#executive-brief">Executive Brief</a></li>
       <li><a href="#dashboard">Dashboard</a></li>
@@ -628,7 +630,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
     </div>
     <div class="acc-gap">
       <div class="acc-lbl">Accountability Gap &mdash; Regulatory Blindspot</div>
-      <div class="acc-txt">Under FCA PS7/21 and EU AI Act Art. 27, accountability for AI systems cannot be distributed across functions. The absence of a named individual responsible for AI governance creates a Regulatory Blindspot that prevents effective human oversight. In any supervisory inquiry, enforcement investigation, or litigation, regulators will identify a specific person to question. &ldquo;Shared responsibility&rdquo; is not a legally defensible position under either framework. MLA Group recommends the immediate appointment of a named AI Oversight Lead with documented mandate and veto authority over model deployment.</div>
+      <div class="acc-txt">Under FCA PS7/21 and EU AI Act Art. 27, accountability for AI systems cannot be distributed across functions. The absence of a named individual responsible for AI governance creates a Regulatory Blindspot that prevents effective human oversight. In any supervisory inquiry, enforcement investigation, or litigation, regulators will identify a specific person to question. &ldquo;Shared responsibility&rdquo; is not a legally defensible position under either framework. RegAnchor recommends the immediate appointment of a named AI Oversight Lead with documented mandate and veto authority over model deployment.</div>
     </div>
     <div class="tbl-scroll" style="margin-bottom:0">
       <table class="reg-tbl" id="reg-tbl">
@@ -675,15 +677,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
       <div class="fwd-p">ISO/IEC 42001, published in December 2023, is moving rapidly from a governance benchmark to a procurement requirement. Enterprise clients, public sector buyers, and regulated counterparties are increasingly requesting evidence of ISO 42001 compliance as part of supplier qualification and due diligence. For organisations at this governance maturity level, a certification-ready programme is a 12&ndash;18 month undertaking that must begin before it becomes an urgent commercial necessity. The organisations that begin now will hold a competitive governance advantage by 2027 that latecomers will find difficult and expensive to close.</div>
     </div>
     <div class="mla-note">
-      <div class="mn-lbl">MLA Group Advisory Note</div>
+      <div class="mn-lbl">RegAnchor Advisory Note</div>
       <div class="mn-txt" id="mla-note-txt"></div>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer class="rfooter">
-    <a href="portal.html" class="rf-logo">mla<em>group.</em></a>
-    <div class="rf-notice">This report is produced for informational purposes based on self-reported responses. It does not constitute legal or regulatory advice. MLA Group is not a certified audit regulator. Organisations should engage qualified legal and compliance counsel when implementing governance changes.</div>
+    <a href="portal.html" class="rf-logo ra-wordmark">RegAnchor</a>
+    <div class="rf-notice">This report is produced for informational purposes based on self-reported responses. It does not constitute legal or regulatory advice. RegAnchor is not a certified audit regulator. Organisations should engage qualified legal and compliance counsel when implementing governance changes. RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562).</div>
     <div class="rf-ver" id="rf-ver"></div>
   </footer>
 
@@ -744,7 +746,7 @@ const RF_TEMPLATE = {section:'Regulatory Compliance',severity:'info',impact:'You
 const PREMIUM = {
   s1:{concept:'The Invisible Fleet',
     high:{
-      assessment:'This organisation has not established a complete AI inventory. MLA Group classifies this condition as <strong>The Invisible Fleet</strong> — AI systems are in active operation, but the organisation cannot demonstrate what they are, what data they process, or what decisions they influence. This is not a documentation gap. It is a governance blindspot with direct regulatory consequence.',
+      assessment:'This organisation has not established a complete AI inventory. RegAnchor classifies this condition as <strong>The Invisible Fleet</strong> — AI systems are in active operation, but the organisation cannot demonstrate what they are, what data they process, or what decisions they influence. This is not a documentation gap. It is a governance blindspot with direct regulatory consequence.',
       exposure:'Under EU AI Act Art. 6 and the Commission\'s classification guidance (February 2026), operators must categorise every in-scope AI system before determining applicable obligations. Without an inventory, this categorisation cannot be performed. Annex III obligations — mandatory conformity assessments, human oversight under Art. 14, and logging under Art. 12 — become enforceable from August 2026. Organisations that cannot identify which systems are in scope cannot begin compliance.',
       consequence:'If a regulator or enforcement body asks to see every AI system that touches decisions about individuals, this organisation\'s current answer is: we do not know. That answer is not defensible in any supervisory inquiry, subject access request, or legal discovery process.',
       technicalNote:'EU AI Act Art. 27 requires providers and deployers of high-risk AI systems to maintain current and accurate technical documentation. The absence of an AI inventory makes compliance with Art. 27 structurally impossible. FCA SM&CR Prescribed Responsibility 24 similarly requires named accountability for systems that materially affect customers — accountability that cannot be assigned to systems that are not catalogued.'
@@ -754,7 +756,7 @@ const PREMIUM = {
   },
   s2:{concept:'The Governance Vacuum',
     high:{
-      assessment:'This organisation is operating without a named individual accountable for AI governance. MLA Group classifies this as <strong>The Governance Vacuum</strong> — responsibility is distributed across functions without any single point of oversight, escalation, or accountability. Under intensifying regulatory scrutiny, this is not a management preference. It is a legal liability.',
+      assessment:'This organisation is operating without a named individual accountable for AI governance. RegAnchor classifies this as <strong>The Governance Vacuum</strong> — responsibility is distributed across functions without any single point of oversight, escalation, or accountability. Under intensifying regulatory scrutiny, this is not a management preference. It is a legal liability.',
       exposure:'EU AI Act Art. 27 and FCA SM&CR PS7/21 both require deployers to designate a responsible person with documented authority. The FCA\'s AI Update (2025) explicitly states that firms must identify a named individual accountable for AI-driven outcomes affecting customers. SM&CR Prescribed Responsibility 24 requires a named Senior Manager to hold accountability for operational resilience — a category that now encompasses AI-dependent processes.',
       consequence:'In any regulatory inquiry, enforcement investigation, or litigation, the first question will be: who is accountable for this AI system? The current answer — that responsibility is shared — is not a legally defensible position. Distributed accountability is, in regulatory terms, no accountability. Senior managers cannot be held collectively responsible; individual accountability is the entire architecture of SM&CR.',
       technicalNote:'FCA Dear CEO Letter (February 2025) on AI governance explicitly states that firms must identify a named individual accountable for AI-driven outcomes. The ICO Accountability Framework (2024) applies the same principle to data controllers using AI. The EU AI Act creates direct personal liability for the designated responsible person — making the absence of that designation a gap that cannot be filled retrospectively once enforcement action has commenced.'
@@ -764,7 +766,7 @@ const PREMIUM = {
   },
   s3:{concept:'The Untraceable Decision',
     high:{
-      assessment:'When an AI model produces an output that affects an individual — a credit assessment, a hiring recommendation, a clinical pathway flag — regulators and courts increasingly ask one question: show us the data that produced this outcome. This organisation cannot currently answer that question. MLA Group classifies this as <strong>The Untraceable Decision</strong> — the provenance of AI outputs is opaque even to the organisation itself.',
+      assessment:'When an AI model produces an output that affects an individual — a credit assessment, a hiring recommendation, a clinical pathway flag — regulators and courts increasingly ask one question: show us the data that produced this outcome. This organisation cannot currently answer that question. RegAnchor classifies this as <strong>The Untraceable Decision</strong> — the provenance of AI outputs is opaque even to the organisation itself.',
       exposure:'UK GDPR Art. 22 grants individuals the right to obtain an explanation of automated decisions with legal or significant effects. To honour that right, the organisation must be able to trace data inputs, model version, and decision logic behind any output. Without documented data lineage, these rights cannot be fulfilled. Under Art. 5(2), the burden of proof rests with the controller.',
       consequence:'A single subject access request targeting an AI-driven decision has the potential to expose the full extent of this gap. The ICO has been explicit: the inability to provide a meaningful explanation of an automated decision is a compliance failure, regardless of whether the decision itself was correct.',
       technicalNote:'ICO Data Protection by Design Guidance (2024) and EU AI Act Art. 12 both mandate records sufficient to enable post-hoc auditability. The absence of data lineage documentation places this organisation in potential breach of both frameworks for any system qualifying as high-risk. UK GDPR Art. 5(2) accountability principle means the controller must demonstrate compliance — not wait to be challenged.'
@@ -774,7 +776,7 @@ const PREMIUM = {
   },
   s4:{concept:'The Absent Brake',
     high:{
-      assessment:'AI systems operating without documented human override protocols are, in regulatory terms, uncontrolled. This organisation has not established the escalation pathways, intervention triggers, or review protocols required to ensure that humans — not models — hold final decision authority over outcomes affecting individuals. MLA Group classifies this as <strong>The Absent Brake</strong>.',
+      assessment:'AI systems operating without documented human override protocols are, in regulatory terms, uncontrolled. This organisation has not established the escalation pathways, intervention triggers, or review protocols required to ensure that humans — not models — hold final decision authority over outcomes affecting individuals. RegAnchor classifies this as <strong>The Absent Brake</strong>.',
       exposure:'EU AI Act Art. 14 makes human oversight a mandatory technical and organisational requirement for high-risk AI systems. The obligation is not satisfied by a general commitment to human review — it requires documented protocols, named roles, defined intervention triggers, and operational testing records. FCA Consumer Duty (PS22/9) further requires that firms demonstrate fair outcomes, an obligation that cannot be met without human accountability for AI-driven decisions.',
       consequence:'An AI system that produces a harmful outcome in the absence of human override capability creates direct regulatory exposure. The question will not be whether the model erred — it will be whether the organisation had controls in place to prevent or detect the error. Under SM&CR, named Senior Managers bear personal accountability for operational failures in systems under their oversight.',
       technicalNote:'EU AI Act Art. 14(4) specifies that human oversight measures must be able to understand the AI system\'s capabilities and limitations, monitor its operation, intervene or interrupt at any point, and not over-rely on outputs. These are technical and procedural requirements, not statements of intent. Conformity assessment for Annex III systems will require documented evidence that each of these capabilities is operational.'
@@ -784,7 +786,7 @@ const PREMIUM = {
   },
   s5:{concept:'The Black Box Problem',
     high:{
-      assessment:'The most legally exposed position in modern AI governance is not producing a wrong outcome — it is being unable to explain a correct one. This organisation\'s AI systems operate without documented explainability mechanisms. When an individual asks why a decision affected them, the organisation cannot provide a meaningful answer. MLA Group classifies this as <strong>The Black Box Problem</strong> — an active legal liability, not a future risk.',
+      assessment:'The most legally exposed position in modern AI governance is not producing a wrong outcome — it is being unable to explain a correct one. This organisation\'s AI systems operate without documented explainability mechanisms. When an individual asks why a decision affected them, the organisation cannot provide a meaningful answer. RegAnchor classifies this as <strong>The Black Box Problem</strong> — an active legal liability, not a future risk.',
       exposure:'UK GDPR Art. 13 and 14 require individuals to be informed when automated processes materially affect them. Art. 22 grants the right to a meaningful explanation of purely automated decisions. ICO\'s AI Transparency Framework (2024) is explicit: generic references to AI in privacy policies are insufficient. Transparency must be layered, timely, and decision-specific.',
       consequence:'A single regulatory complaint from an individual who received an adverse AI-driven decision and was unable to obtain an explanation is sufficient to trigger an ICO investigation. At that point, the absence of explainability mechanisms is not a gap to be addressed going forward — it is evidence of a past compliance failure, potentially affecting all decisions made since the system was deployed.',
       technicalNote:'EU AI Act Art. 13 requires high-risk AI systems to be sufficiently transparent to allow deployers to interpret outputs and use them appropriately. Art. 12 additionally requires logging that enables reconstruction of circumstances surrounding any significant output. These are conformity requirements enforceable from August 2026 for Annex III systems — but UK GDPR explainability obligations apply now, to systems already in operation.'
@@ -794,7 +796,7 @@ const PREMIUM = {
   },
   s6:{concept:'The Obligations Gap',
     high:{
-      assessment:'Regulatory compliance in AI governance is not a point-in-time exercise. The EU AI Act, UK GDPR, FCA Consumer Duty, and sector-specific obligations create overlapping, evolving requirements demanding active monitoring. This organisation\'s current compliance posture is reactive — gaps are addressed when identified, not before. MLA Group classifies this as <strong>The Obligations Gap</strong>: the distance between regulatory expectation and current documented practice.',
+      assessment:'Regulatory compliance in AI governance is not a point-in-time exercise. The EU AI Act, UK GDPR, FCA Consumer Duty, and sector-specific obligations create overlapping, evolving requirements demanding active monitoring. This organisation\'s current compliance posture is reactive — gaps are addressed when identified, not before. RegAnchor classifies this as <strong>The Obligations Gap</strong>: the distance between regulatory expectation and current documented practice.',
       exposure:'The EU AI Act creates a phased compliance timeline already in motion. General obligations have applied since August 2024. High-risk system obligations apply from August 2026. Organisations beginning compliance work in 2026 face a compressed timeline with no contingency. The EU AI Office has confirmed it will not defer enforcement for organisations that failed to prepare.',
       consequence:'Regulatory enforcement in AI governance is accelerating. The ICO published its first AI enforcement actions in 2024. Organisations that cannot demonstrate documented compliance programmes are increasingly subject to regulatory attention, regardless of whether they have caused demonstrable harm. The FCA has explicitly stated that good intent does not substitute for documented compliance evidence.',
       technicalNote:'FCA PS22/9 Consumer Duty and SM&CR Prescribed Responsibility 24 create personal accountability at Senior Manager level for ensuring AI-driven processes produce fair outcomes. Under the ICO Accountability Framework (Art. 5(2) UK GDPR), the burden of proof rests with the controller to demonstrate compliance — the regulator does not need to prove a failure before requiring evidence of compliance.'
@@ -804,7 +806,7 @@ const PREMIUM = {
   },
   s7:{concept:'The Silent Failure Risk',
     high:{
-      assessment:'AI systems in production without documented incident response pathways, performance monitoring, and drift detection create what MLA Group terms <strong>The Silent Failure Risk</strong> — degraded model performance that goes undetected until it produces a material adverse outcome. By that point, reputational, legal, and regulatory damage is already in progress.',
+      assessment:'AI systems in production without documented incident response pathways, performance monitoring, and drift detection create what RegAnchor terms <strong>The Silent Failure Risk</strong> — degraded model performance that goes undetected until it produces a material adverse outcome. By that point, reputational, legal, and regulatory damage is already in progress.',
       exposure:'FCA SS1/21 Operational Resilience rules require firms to demonstrate they can detect, respond to, and recover from disruption to important business services — a category that now encompasses AI-dependent processes. The FCA\'s 2024 operational resilience review confirmed that AI system failures are within scope.',
       consequence:'Model drift — the gradual degradation of AI performance as real-world data diverges from training data — is invisible to users, undetectable without monitoring, and can affect thousands of individual outcomes before it is identified. Without drift detection protocols, this organisation has no mechanism to identify, escalate, or respond to this risk.',
       technicalNote:'ISO/IEC 42001 Section 9 mandates scheduled performance evaluation as a core component of AI management system governance. EU AI Act Art. 72 requires post-market monitoring for high-risk AI systems, including logging of system performance over time. These are not aspirational standards — they form part of the conformity assessment for Annex III systems and will be audited accordingly.'
@@ -1046,7 +1048,7 @@ function renderHero(R,org,today,name,role,sector,size){
 function renderExecutiveBrief(R,findings,org,today){
   const bc=R.band.id,col=BAND_COLORS[bc]||'#2563eb';
   const intro=document.getElementById('brief-intro');
-  intro.textContent=`On ${today}, MLA Group completed an AI Governance Risk Diagnostic for ${org}. This brief is designed for board-level review. It summarises the risk position, principal obligations, and three priorities requiring immediate board attention.`;
+  intro.textContent=`On ${today}, RegAnchor completed an AI Governance Risk Diagnostic for ${org}. This brief is designed for board-level review. It summarises the risk position, principal obligations, and three priorities requiring immediate board attention.`;
   
   const v=document.getElementById('brief-verdict');
   v.style.borderLeftColor=col;
@@ -1277,8 +1279,8 @@ function renderRoadmap(R){
 }
 
 function renderForwardRisk(R){
-  document.getElementById('mla-note-txt').textContent=`MLA Group monitors regulatory developments across the EU AI Act, UK GDPR, FCA, ICO, and ISO/IEC frameworks continuously. Framework v${R.frameworkVersion} will be updated in line with regulatory developments. Clients who have completed a diagnostic assessment receive notification of material regulatory changes affecting their risk band and sector. Next scheduled framework review: August 2026.`;
-  document.getElementById('rf-ver').innerHTML=`Framework v${R.frameworkVersion}<br>mlagroup.co.uk`;
+  document.getElementById('mla-note-txt').textContent=`RegAnchor monitors regulatory developments across the EU AI Act, UK GDPR, FCA, ICO, and ISO/IEC frameworks continuously. Framework v${R.frameworkVersion} will be updated in line with regulatory developments. Clients who have completed a diagnostic assessment receive notification of material regulatory changes affecting their risk band and sector. Next scheduled framework review: August 2026.`;
+  document.getElementById('rf-ver').innerHTML=`Framework v${R.frameworkVersion}<br>${location.host}`;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1294,7 +1296,7 @@ function renderReport(row){
   const today=new Date(row.created_at||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   const findings=buildFindings(R);
   
-  document.title=`${org} — AI Governance Risk Report | MLA Group`;
+  document.title=`${org} — AI Governance Risk Report | RegAnchor`;
   renderHero(R,org,today,name,role,sector,size);
   renderExecutiveBrief(R,findings,org,today);
   renderDashboard(R);

@@ -1,0 +1,199 @@
+/* ═══════════════════════════════════════════════════════════════
+   RegAnchor brand layer — RGA-001 tokens + RGA-002 primitives
+
+   Extracted from reganchorsystem.html so there is one source of
+   truth instead of a design document nothing links to.
+
+   Everything here is namespaced `ra-` / `--ra-` so this file can be
+   loaded alongside the legacy MLA page styles without colliding with
+   their --accent, --bg, --slate, --surface or .logo declarations.
+
+   Load this LAST in <head>, after any inline <style> block, so the
+   wordmark rule wins over the page's own .logo font-family.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Neutrals (RGA-001). Six colours, no decorative accent. ── */
+  --ra-paper: #FFFFFF;      /* primary background, light surfaces      */
+  --ra-surface: #F7F8FA;    /* cards, recessed panels, section breaks  */
+  --ra-surface-2: #EEF0F4;  /* deeper recess                           */
+  --ra-line: #E4E7EC;       /* borders, dividers, table separators     */
+  --ra-steel: #6B7280;      /* labels, eyebrows, captions              */
+  --ra-slate: #1F2937;      /* body text on light, strong borders      */
+  --ra-slate-70: #374151;   /* secondary body                          */
+  --ra-slate-30: #9CA3AF;   /* tertiary text                           */
+  --ra-ink: #0A0E14;        /* primary text, wordmark, primary CTA     */
+
+  /* ── Accent. Gradient only — never flattened to a single colour.
+     Permitted inside the Anchor Line and the Compliance Bar and
+     nowhere else. See the usage rules at the end of this file.   ── */
+  --ra-accent-a: #3730A3;
+  --ra-accent-b: #7C3AED;
+  --ra-accent-c: #F97316;
+  --ra-accent-grad: linear-gradient(
+    90deg,
+    var(--ra-accent-a) 0%,
+    var(--ra-accent-b) 50%,
+    var(--ra-accent-c) 100%
+  );
+
+  /* ── Type. Plex owns brand surfaces, Inter owns dense product UI. ── */
+  --ra-font-brand: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ra-font-product: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WORDMARK
+   The wordmark is the brand: IBM Plex Sans Medium, CamelCase, no
+   mark, no icon, no italic. Two configurations only — ink on paper
+   and paper on ink.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ra-wordmark {
+  font-family: var(--ra-font-brand);
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: -0.025em;
+  text-transform: none;
+}
+
+/* Display sizes tighten the tracking; small sizes loosen it. */
+.ra-wordmark--display { letter-spacing: -0.045em; }
+.ra-wordmark--small { letter-spacing: -0.01em; }
+
+/* Where space requires, a single capital R replaces the wordmark. */
+.ra-wordmark--r::after { content: 'R'; }
+
+/* ═══════════════════════════════════════════════════════════════
+   PRIMITIVE — ANCHOR LINE
+
+   A 1px ink hairline is the structural baseline of every surface.
+   An 80px segment at 61.8% (the golden ratio) is replaced by a 2px
+   accent gradient. Structural: header rule, section divider, form
+   underline.
+
+   Markup:
+     <div class="ra-anchor-line"><div class="ra-anchor-line__seg"></div></div>
+   ═══════════════════════════════════════════════════════════════ */
+
+.ra-anchor-line {
+  position: relative;
+  height: 2px;
+  width: 100%;
+}
+
+.ra-anchor-line::before {
+  content: '';
+  position: absolute;
+  top: 0.5px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--ra-ink);
+}
+
+.ra-anchor-line--dark::before { background: var(--ra-paper); }
+.ra-anchor-line--subtle::before { background: var(--ra-line); }
+
+.ra-anchor-line__seg {
+  position: absolute;
+  top: 0;
+  height: 2px;
+  width: 80px;
+  left: 61.8%;
+  transform: translateX(-50%);
+  background: var(--ra-accent-grad);
+  background-size: 200% 100%;
+  background-position: 50% 0;
+}
+
+/* Entrance variant — once per page on first paint. Never loops. */
+.ra-anchor-line--entrance .ra-anchor-line__seg {
+  animation: raSegReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes raSegReveal {
+  0%   { width: 0; opacity: 0; }
+  60%  { opacity: 1; }
+  100% { width: 80px; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ra-anchor-line--entrance .ra-anchor-line__seg { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRIMITIVE — COMPLIANCE BAR
+
+   Seven horizontal bars, one per maturity level, stacked so L1 sits
+   at the bottom. The current level is the gradient and reads
+   slightly longer so it punches out of the stack. Levels below are
+   ink at high opacity (achieved); levels above are ink at low
+   opacity (pending).
+
+   L1 Initial · L2 Aware · L3 Defined · L4 Structured
+   L5 Managed · L6 Optimised · L7 Authoritative
+
+   Bands are roughly 14 points each on the 0–100 scale.
+
+   Markup: seven .ra-cbar__row children, exactly one of which
+   carries --current.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ra-cbar {
+  display: flex;
+  flex-direction: column-reverse; /* level 1 at the bottom */
+  gap: 3px;
+  width: 120px;
+}
+
+.ra-cbar__row {
+  height: 4px;
+  background: var(--ra-ink);
+}
+
+.ra-cbar__row--achieved-1 { opacity: 0.88; }
+.ra-cbar__row--achieved-2 { opacity: 0.64; }
+.ra-cbar__row--achieved-3 { opacity: 0.44; }
+
+.ra-cbar__row--current {
+  background: var(--ra-accent-grad);
+  opacity: 1;
+  height: 5px;
+  width: 130px;
+  margin-left: -5px;
+}
+
+.ra-cbar__row--pending-1 { opacity: 0.20; }
+.ra-cbar__row--pending-2 { opacity: 0.10; }
+.ra-cbar__row--pending-3 { opacity: 0.05; }
+
+/* Mini variant for table rows and navbars. */
+.ra-cbar--mini { width: 60px; gap: 2px; }
+.ra-cbar--mini .ra-cbar__row { height: 2px; }
+.ra-cbar--mini .ra-cbar__row--current {
+  height: 3px;
+  width: 64px;
+  margin-left: -2px;
+}
+
+/* Dark variant for the dossier seal and other ink surfaces. */
+.ra-cbar--dark .ra-cbar__row { background: var(--ra-paper); }
+.ra-cbar--dark .ra-cbar__row--current { background: var(--ra-accent-grad); }
+
+/* ═══════════════════════════════════════════════════════════════
+   USAGE RULES (RGA-002 appendix A)
+
+   01  The gradient appears inside the Anchor Line and the Compliance
+       Bar only. Never in buttons, badges, charts, icons or headings.
+   02  One Anchor Line entrance animation per page, on first paint.
+   03  One Compliance Bar per context. The dashboard shows the
+       organisation once; the registry shows one per row; the dossier
+       shows one at the seal.
+   04  The Compliance Bar is never deployed alone. It always sits
+       beside the numeric score and the named tier — the bar carries
+       the visual, the text carries the precision.
+   05  The accent is never flattened to a single colour. No solid
+       indigo button, no solid coral badge.
+   06  Everything else is ink on paper, using the six neutrals above.
+   ═══════════════════════════════════════════════════════════════ */

@@ -4,12 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
-<title>Portal | MLA Group</title>
+<title>Portal | RegAnchor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <script src="https://js.stripe.com/v3/"></script>
  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link rel="stylesheet" href="css/portal.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <button id="theme-toggle-btn" class="btn-theme-pill" title="Toggle theme">
   <span id="theme-toggle-icon"></span>
@@ -46,7 +48,7 @@
 </body>
 <div class="bg-ambient"></div><div class="bg-grid"></div><div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 <div class="app">
-<aside class="sidebar" id="sidebar"><div class="sidebar-logo"><a href="#" onclick="navigate('dashboard',document.querySelector('.nav-item'));return false;" class="logo-mark">mla<em>group.</em></a><span class="logo-badge">Portal</span></div>
+<aside class="sidebar" id="sidebar"><div class="sidebar-logo"><a href="#" onclick="navigate('dashboard',document.querySelector('.nav-item'));return false;" class="logo-mark ra-wordmark">RegAnchor</a><span class="logo-badge">Portal</span></div>
 <nav class="sidebar-nav">
 <div class="nav-section-label">Workspace</div>
 <div class="nav-item active" onclick="navigate('dashboard',this)"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>
@@ -87,7 +89,7 @@
  
 <div id="view-settings" class="view"><div class="page-header"><h2>Account Settings</h2><p>Manage your profile, credentials and preferences.</p></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Profile Information</div></div><div class="panel-body"><div class="settings-grid"><div><label class="field-label">First name</label><input type="text" class="field-input" id="set-first" placeholder="—"></div><div><label class="field-label">Last name</label><input type="text" class="field-input" id="set-last" placeholder="—"></div></div><label class="field-label">Organisation</label><input type="text" class="field-input" id="set-org" placeholder="—"><label class="field-label">Email address</label><input type="email" class="field-input" id="set-email" disabled><div style="font-size:.7rem;color:var(--muted);margin-top:-6px;margin-bottom:12px;">Contact support to change your email.</div><button onclick="saveProfile()" class="btn-topbar btn-topbar-primary" style="margin-top:4px;">Save changes</button></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Password</div></div><div class="panel-body"><label class="field-label">New password</label><input type="password" class="field-input" id="set-pw" placeholder="Min. 8 characters"><label class="field-label">Confirm password</label><input type="password" class="field-input" id="set-pw2" placeholder="Repeat password"><div id="set-pw-msg" style="font-size:.75rem;margin-bottom:12px;display:none;"></div><button onclick="changePassword()" class="btn-topbar btn-topbar-ghost">Update password</button></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Session</div></div><div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;"><div><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:3px;">Sign out</div><div style="font-size:.75rem;color:var(--muted);">End your current session.</div></div><button onclick="signOut()" class="btn-topbar btn-topbar-ghost">Sign out</button></div></div></div>
  
-<div id="view-referral" class="view"><div class="page-header"><h2>Referral Programme</h2><p>Refer colleagues and earn credit.</p></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;"><div class="stat-card"><div class="stat-label">Referrals Sent</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Converted</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Credit Earned</div><div class="stat-value">£0</div></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Your Referral Link</div></div><div class="panel-body"><p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Share this link with colleagues. When they purchase a report you'll both receive credit.</p><div class="invite-box"><div class="invite-url" id="referral-link">mlagroup.co.uk/ref/loading…</div><button class="invite-copy" onclick="copyReferral()">Copy link</button></div></div></div></div>
+<div id="view-referral" class="view"><div class="page-header"><h2>Referral Programme</h2><p>Refer colleagues and earn credit.</p></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;"><div class="stat-card"><div class="stat-label">Referrals Sent</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Converted</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Credit Earned</div><div class="stat-value">£0</div></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Your Referral Link</div></div><div class="panel-body"><p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Share this link with colleagues. When they purchase a report you'll both receive credit.</p><div class="invite-box"><div class="invite-url" id="referral-link">Loading…</div><button class="invite-copy" onclick="copyReferral()">Copy link</button></div></div></div></div>
  
 <div id="view-analytics" class="view"><div class="locked-view"><div class="locked-icon" style="background:rgba(37,99,235,0.06);"><svg viewBox="0 0 22 22" stroke="var(--sky)"><path d="M1 16l5-6 4 4 5-7 6 6"/></svg></div><div class="locked-title">Analytics & Usage</div><div class="locked-desc">Track report views, downloads, risk trends, and team activity.</div><a href="mailto:fraser@mlagroup.co.uk" class="btn-upgrade">Request early access <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2l4 4-4 4"/></svg></a></div></div>  <div id="view-plans" class="view"><div class="page-header"><h2>Subscription Plans</h2><p>Choose the right governance tier for your organisation.</p></div><div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:32px;"><span style="font-size:.84rem;font-weight:500;color:var(--muted);cursor:pointer;transition:color .2s;" id="portal-lbl-m" onclick="setPortalPeriod('monthly')" style="color:var(--main);">Monthly</span><div style="position:relative;width:48px;height:26px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:13px;cursor:pointer;transition:background .2s,border-color .2s;" id="portal-tog" onclick="togglePortalPeriod()"><div style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 1px 4px rgba(0,0,0,0.3);" id="portal-tog-dot"></div></div><span style="font-size:.84rem;font-weight:500;color:var(--muted);cursor:pointer;transition:color .2s;" id="portal-lbl-a" onclick="setPortalPeriod('annual')">Annual</span><span style="font-size:.64rem;font-weight:700;color:var(--green);background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.12);padding:3px 10px;border-radius:100px;">Save 17%</span></div><div id="portal-pricing-cards"></div><div id="portal-checkout-loading" style="display:none;padding:24px;text-align:center;font-size:.82rem;color:var(--muted);border:1px solid var(--border);border-radius:10px;margin-top:20px;">Loading secure checkout...</div><div id="portal-checkout-container" style="display:none;margin-top:20px;border-radius:10px;overflow:hidden;border:1px solid var(--border);max-width:480px;margin-left:auto;margin-right:auto;"></div></div>
  
@@ -157,7 +159,7 @@
   <div id="pol-list-body"><div class="loading-state">Loading policies…</div></div>
 </div>
 <div class="panel">
-  <div class="panel-header"><div class="panel-title">Available Templates</div><div class="panel-sub">MLA governance policy templates</div></div>
+  <div class="panel-header"><div class="panel-title">Available Templates</div><div class="panel-sub">RegAnchor governance policy templates</div></div>
   <div id="pol-templates-body"><div class="loading-state">Loading templates…</div></div>
 </div>
 </div>
@@ -245,9 +247,9 @@
   <div class="panel-body" id="cd-support">
     <div id="cd-support-history"></div>
     <div id="cd-support-form">
-      <p style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:12px;">If you're unsure how to implement this control, request help from an MLA governance expert. Describe what you need and we'll respond with tailored guidance.</p>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:12px;">If you're unsure how to implement this control, request help from a RegAnchor governance expert. Describe what you need and we'll respond with tailored guidance.</p>
       <textarea class="field-input" id="cd-support-msg" rows="3" placeholder="Describe what you need help with…" style="margin-bottom:8px;"></textarea>
-      <button class="btn-topbar btn-topbar-primary" id="cd-support-btn" onclick="submitSupportRequest()" style="padding:6px 14px;font-size:.75rem;">Request MLA Expert</button>
+      <button class="btn-topbar btn-topbar-primary" id="cd-support-btn" onclick="submitSupportRequest()" style="padding:6px 14px;font-size:.75rem;">Request RegAnchor Expert</button>
       <div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div>
     </div>
   </div>

@@ -1,0 +1,26 @@
+User-agent: *
+
+# Internal tooling. GitHub Pages serves every file in the repo, so this is
+# publicly reachable and must be kept out of search results.
+Disallow: /reg_model.html
+
+# Brand and design prototypes, not customer-facing.
+Disallow: /reg.html
+Disallow: /reganchor.html
+Disallow: /reganchorsystem.html
+Disallow: /reganchor-shapestudy.html
+Disallow: /premium-object.html
+
+# Render templates. These are populated by Puppeteer, not browsed directly.
+Disallow: /certificate-template.html
+Disallow: /report-template.html
+
+# Authenticated surfaces. Nothing useful to index and no public content.
+Disallow: /admin.html
+Disallow: /portal.html
+Disallow: /report.html
+Disallow: /system-report.html
+Disallow: /generate-pdf.html
+Disallow: /payment-success.html
+
+Allow: /

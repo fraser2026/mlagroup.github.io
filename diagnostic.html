@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="dark">
-  <title>AI Governance Risk Diagnostic | MLA Group</title>
+  <title>AI Governance Risk Diagnostic | RegAnchor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script>emailjs.init('vxitc5LFJHMfNcmUL');</script>
@@ -288,6 +288,8 @@
       .form-row { grid-template-columns: 1fr; }
     }
   </style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <body>
 <div class="bg-glow"></div>
@@ -303,7 +305,7 @@
 <div class="page">
 
   <nav>
-    <a href="index.html" class="nav-logo">mla<em>group.</em></a>
+    <a href="index.html" class="nav-logo ra-wordmark">RegAnchor</a>
     <a href="index.html" class="nav-back">&#8592; Homepage</a>
   </nav>
 
@@ -784,7 +786,7 @@ const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ═══════════════════════════════════════════════════════════════════
-//  MLA AI GOVERNANCE RISK DIAGNOSTIC — SCORING ENGINE v2.0.0
+//  RegAnchor AI GOVERNANCE RISK DIAGNOSTIC — SCORING ENGINE v2.0.0
 // ═══════════════════════════════════════════════════════════════════
 
 const FRAMEWORK = {
@@ -1149,7 +1151,7 @@ function sendEmails() {
   const fields = {
     '_subject':   'New AI Diagnostic - ' + band + ' - ' + org,
     '_captcha':   'false',
-    '_next':      'https://mlagroup.co.uk/results.html',
+    '_next':      location.origin + '/results.html',
     'Full Name':  name, 'Email': email, 'Organisation': org, 'Role': role,
     'Sector':     sector, 'Org Size': size, 'Risk Band': band,
     'Adjusted Score': score,

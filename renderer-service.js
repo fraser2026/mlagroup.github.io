@@ -27,6 +27,10 @@ app.use(express.json({ limit: '5mb' }));  app.use((req, res, next) => {   res.he
 const PORT = process.env.PORT || 3001;
 const TEMPLATE_PATH = join(__dirname, 'report-template.html');
 
+// PDFs render off-site, so there is no request origin to derive the public domain from.
+// Override via env at the reganchor.com cutover rather than editing this file.
+const SITE_DOMAIN = process.env.SITE_DOMAIN || 'mlagroup.co.uk';
+
 // Pre-load template
 const TEMPLATE_HTML = readFileSync(TEMPLATE_PATH, 'utf-8');   const CERT_TEMPLATE_PATH = join(__dirname, 'certificate-template.html'); const CERT_TEMPLATE_HTML = readFileSync(CERT_TEMPLATE_PATH, 'utf-8');
 
@@ -90,7 +94,7 @@ app.post('/render', async (req, res) => {
     const footerTemplate = `
       <div style="width:100%;padding:0 18mm;display:flex;align-items:center;justify-content:space-between;height:18mm;box-sizing:border-box;border-top:1px solid #e2e8f0;font-family:sans-serif;">
         <span style="color:#94a3b8;font-size:6pt;">Confidential — ${orgName} — ${dateStr}</span>
-        <span style="color:#94a3b8;font-size:6pt;">mlagroup.co.uk</span>
+        <span style="color:#94a3b8;font-size:6pt;">${SITE_DOMAIN}</span>
       </div>`;
 
     // Generate PDF
