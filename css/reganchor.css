@@ -43,6 +43,74 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   SEMANTIC LAYER
+
+   The palette above is fixed: --ra-paper is always white, --ra-ink
+   is always near-black. Those names describe pigment, so they can
+   never be reassigned per theme without lying.
+
+   This layer describes *role* instead — background, text, border,
+   rule — which means it can be reassigned. Component CSS must use
+   only these tokens and never reach past them to the palette, so
+   that flipping the theme is a change to this block alone.
+
+   Dark values are the canonical set already shipping on
+   reganchor.com. The block is written but dormant: nothing sets
+   data-theme="dark" yet.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --ra-bg: var(--ra-paper);            /* page background              */
+  --ra-bg-raised: var(--ra-surface);   /* cards, panels, recesses      */
+  --ra-bg-sunken: var(--ra-surface-2); /* deeper recess, row hover     */
+  --ra-border: var(--ra-line);         /* hairlines, dividers          */
+  --ra-border-strong: var(--ra-slate); /* emphasis rules               */
+  --ra-text: var(--ra-ink);            /* primary text, wordmark       */
+  --ra-text-2: var(--ra-slate-70);     /* body, secondary              */
+  --ra-text-3: var(--ra-steel);        /* labels, eyebrows, captions   */
+  --ra-text-4: var(--ra-slate-30);     /* disabled, tertiary           */
+  --ra-cta-bg: var(--ra-ink);          /* primary button fill          */
+  --ra-cta-fg: var(--ra-paper);        /* primary button text          */
+  --ra-rule: var(--ra-ink);            /* Anchor Line hairline         */
+  --ra-bar-ink: var(--ra-ink);         /* Compliance Bar rows          */
+
+  /* ── Functional state. RGA-001 permits colour inside the product
+     for success / warning / error / info, and nowhere else. These
+     are the only non-neutral values allowed outside the two
+     primitives, and they may never touch a brand surface.
+
+     Light values carry enough contrast to sit on white paper. The
+     dark values below are the ones the portal already used — which
+     is precisely why they had to move: they were only ever legible
+     on a near-black background.                                 ── */
+  --ra-ok: #15803D;
+  --ra-warn: #92400E;
+  --ra-risk: #B91C1C;
+  --ra-info: #1D4ED8;
+}
+
+[data-theme="dark"] {
+  --ra-bg: #0A0E14;
+  --ra-bg-raised: #0F172A;
+  --ra-bg-sunken: #131C2E;
+  --ra-border: #1F2937;
+  --ra-border-strong: #374151;
+  --ra-text: #FFFFFF;
+  --ra-text-2: #D1D5DB;
+  --ra-text-3: #9CA3AF;
+  --ra-text-4: #6B7280;
+  --ra-cta-bg: #FFFFFF;
+  --ra-cta-fg: #0A0E14;
+  --ra-rule: #FFFFFF;
+  --ra-bar-ink: #FFFFFF;
+
+  --ra-ok: #4ADE80;
+  --ra-warn: #FBBF24;
+  --ra-risk: #F87171;
+  --ra-info: #60A5FA;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    WORDMARK
    The wordmark is the brand: IBM Plex Sans Medium, CamelCase, no
    mark, no icon, no italic. Two configurations only — ink on paper
@@ -89,11 +157,13 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--ra-ink);
+  background: var(--ra-rule);
 }
 
+/* Modifiers for a surface that opposes the current theme — a dark
+   panel on a light page. Theme-following behaviour is the default. */
 .ra-anchor-line--dark::before { background: var(--ra-paper); }
-.ra-anchor-line--subtle::before { background: var(--ra-line); }
+.ra-anchor-line--subtle::before { background: var(--ra-border); }
 
 .ra-anchor-line__seg {
   position: absolute;
@@ -149,7 +219,7 @@
 
 .ra-cbar__row {
   height: 4px;
-  background: var(--ra-ink);
+  background: var(--ra-bar-ink);
 }
 
 .ra-cbar__row--achieved-1 { opacity: 0.88; }
@@ -180,6 +250,76 @@
 /* Dark variant for the dossier seal and other ink surfaces. */
 .ra-cbar--dark .ra-cbar__row { background: var(--ra-paper); }
 .ra-cbar--dark .ra-cbar__row--current { background: var(--ra-accent-grad); }
+
+/* No reading yet — a system registered but never assessed. Every row
+   sits at the pending opacity and no row carries the gradient, so the
+   registry keeps its vertical rhythm without asserting a level the
+   assessment has not earned. */
+.ra-cbar--empty .ra-cbar__row { opacity: 0.05; }
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPLIANCE BAR + READING
+
+   Rule 04 says the bar never appears alone. This is the pairing:
+   bar, numeral, tier. raMaturityBlock() in js/ra-maturity.js emits
+   exactly this markup.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ra-maturity {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+}
+
+.ra-maturity__score {
+  font-family: var(--ra-font-brand);
+  font-weight: 500;
+  font-size: 38px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ra-text);
+  font-feature-settings: 'tnum';
+}
+
+.ra-maturity__of {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+  margin-left: 6px;
+}
+
+.ra-maturity__tier {
+  font-family: var(--ra-font-brand);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ra-text-3);
+  margin-top: 8px;
+}
+
+.ra-maturity--mini { gap: 12px; }
+.ra-maturity--mini .ra-maturity__score { font-size: 22px; }
+.ra-maturity--mini .ra-maturity__of { font-size: 12px; }
+.ra-maturity--mini .ra-maturity__tier { font-size: 10px; margin-top: 5px; }
+
+/* The named ladder, highest rung first. Shown where the reader is
+   seeing their position for the first time. */
+.ra-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-family: var(--ra-font-brand);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ra-text-3);
+}
+
+.ra-ladder__step { line-height: 1.4; }
+.ra-ladder__step--now { color: var(--ra-text); font-weight: 600; }
 
 /* ═══════════════════════════════════════════════════════════════
    USAGE RULES (RGA-002 appendix A)
