@@ -1,15 +1,16 @@
 /* Screenshot a page from this repo, for eyeballing the rebrand.
 
    The portal needs a signed-in Supabase session to populate itself,
-   which a screenshot cannot have. So the third-party SDKs are
-   blocked at the network layer and the page renders its static
-   shell: chrome, typography, spacing, rules, empty states. That is
-   exactly the layer the redesign changes, so it is the layer worth
-   looking at.
+   which a screenshot cannot have. So the third-party SDKs are blocked
+   at the network layer and the page renders its static shell. Pass
+   --stub to run a script in the page afterwards, which is how the
+   data-driven surfaces get something to draw.
 
    Usage:
      node tools/shot.mjs portal.html out.png
-     node tools/shot.mjs portal.html out.png 1440 900
+     node tools/shot.mjs portal.html out.png --w=1440 --h=900
+     node tools/shot.mjs portal.html out.png --clip=0,0,800,300
+     node tools/shot.mjs portal.html out.png --stub=tools/stub-dashboard.js
 */
 
 import { createServer } from 'node:http';
@@ -30,7 +31,20 @@ const LOCAL_BROWSERS = [
 const executablePath = LOCAL_BROWSERS.find(p => existsSync(p));
 
 const ROOT = process.cwd();
-const [, , pagePath = 'portal.html', outFile = 'shot.png', w = '1440', h = '900', clip] = process.argv;
+const args = process.argv.slice(2);
+const positional = args.filter(a => !a.startsWith('--'));
+const flag = name => {
+  const hit = args.find(a => a.startsWith(`--${name}=`));
+  return hit ? hit.slice(name.length + 3) : undefined;
+};
+
+const pagePath = positional[0] ?? 'portal.html';
+const outFile = positional[1] ?? 'shot.png';
+const width = Number(flag('w') ?? 1440);
+const height = Number(flag('h') ?? 900);
+const clip = flag('clip');
+const stubFile = flag('stub');
+const fullPage = args.includes('--full');
 
 const TYPES = {
   '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript',
@@ -56,14 +70,13 @@ const browser = await puppeteer.launch({
   ...(executablePath ? { executablePath } : {})
 });
 const page = await browser.newPage();
-await page.setViewport({ width: +w, height: +h, deviceScaleFactor: 2 });
+await page.setViewport({ width, height, deviceScaleFactor: 2 });
 
 // Block the SDKs that need credentials. Fonts must still load or the
 // whole point of the exercise is lost.
 await page.setRequestInterception(true);
 page.on('request', r => {
-  const u = r.url();
-  if (/supabase|stripe|emailjs/i.test(u)) return r.abort();
+  if (/supabase|stripe|emailjs/i.test(r.url())) return r.abort();
   r.continue();
 });
 
@@ -71,15 +84,19 @@ const errors = [];
 page.on('pageerror', e => errors.push(e.message));
 
 await page.goto(`http://localhost:${port}/${pagePath}`, { waitUntil: 'networkidle2' });
+
+if (stubFile) {
+  await page.evaluate(await readFile(join(ROOT, stubFile), 'utf8'));
+}
+
 await page.evaluate(() => document.fonts.ready);
 await new Promise(r => setTimeout(r, 400));
-// Optional 6th arg "x,y,w,h" crops the shot, for inspecting a rule or
-// a single component at a legible scale.
+
 const clipRect = clip
-  ? (([x, y, cw, ch]) => ({ x, y, width: cw, height: ch }))(clip.split(',').map(Number))
+  ? (([x, y, w, h]) => ({ x, y, width: w, height: h }))(clip.split(',').map(Number))
   : undefined;
 
-await page.screenshot({ path: outFile, fullPage: false, ...(clipRect ? { clip: clipRect } : {}) });
+await page.screenshot({ path: outFile, fullPage, ...(clipRect ? { clip: clipRect } : {}) });
 
 if (errors.length) {
   console.log('page errors (expected where auth was blocked):');

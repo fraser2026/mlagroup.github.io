@@ -163,23 +163,41 @@ async function renderOrgPage(){
 }
  
 // ═══ DASHBOARD ════════════════════════════════════════════════
+
+/* The organisation's Compliance Bar, shown once. RGA-002 rule 04
+   forbids deploying it alone, so raMaturityBlock pairs it with the
+   numeral and the named tier — the bar carries the visual, the text
+   carries the precision. */
+function renderOrgMaturity(gov){
+  var el=document.getElementById('dash-maturity');
+  if(!el)return;
+  var done=allAssignments.filter(function(a){return a.status==='implemented'||a.status==='verified'}).length;
+  var total=allAssignments.length;
+  el.style.display='block';
+  el.innerHTML='<div class="maturity-panel__label">Organisational maturity</div>'+
+    raMaturityBlock(gov.score)+
+    (total?'<div class="maturity-panel__note">'+done+' of '+total+' assigned controls implemented</div>':'');
+}
+
 async function renderDashboard(paidIds){
   document.getElementById('dash-count').textContent=currentResults.length||'0';
   document.getElementById('dash-score').textContent=currentResults.length>0?(currentResults[0].adjusted_score||0)+'%':'—';
   document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
-  if(allControls.length){const g=getGovScore();document.getElementById('dash-compliance').textContent=g.score+'%';document.getElementById('dash-compliance').style.color=g.score>=70?'#4ade80':g.score>=40?'#fbbf24':'#f87171';document.getElementById('dash-gov-maturity').textContent=getMaturity(g.score)}
+  if(allControls.length){const g=getGovScore();document.getElementById('dash-compliance').textContent=g.score+'%';document.getElementById('dash-gov-maturity').textContent='Control coverage';renderOrgMaturity(g)}
   else{document.getElementById('dash-compliance').textContent='—'}
   var tierEl=document.getElementById('dash-tier-badge');
-  if(tierEl){var orgPlan=currentOrg?currentOrg.plan:'free';var planLabel='Free Plan';var planBg='rgba(148,163,184,0.15)';var planColor='#94a3b8';if(orgPlan==='essentials'){planLabel='Essentials';planBg='rgba(56,189,248,0.15)';planColor='#38bdf8'}else if(orgPlan==='professional'){planLabel='Professional';planBg='rgba(56,189,248,0.25)';planColor='#38bdf8'}tierEl.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:0.8rem;font-weight:600;font-family:DM Sans,sans-serif;background:'+planBg+';color:'+planColor+';">'+planLabel+'</span>'+(orgPlan!=='professional'?'<span onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();" style="margin-left:8px;color:#64748b;font-size:0.75rem;cursor:pointer;text-decoration:underline;">Upgrade</span>':'')}
-  const feed=[];const bandColors={low:'#4ade80',lowmod:'#86efac',moderate:'#fde047',high:'#fca5a5',critical:'#f87171'};
-  currentResults.forEach(r=>{const band=r.risk_band||'moderate';feed.push({time:new Date(r.created_at),color:bandColors[band]||'#60a5fa',html:'Diagnostic completed — <strong>'+esc(r.organisation||'Assessment')+'</strong><br>'+(BAND_LABELS[band]||band)+' · '+(r.adjusted_score||0)+'%',date:fmtDate(r.created_at),click:"navigate('reports',document.querySelectorAll('.nav-item')[1])"})});
+  if(tierEl){var orgPlan=currentOrg?currentOrg.plan:'free';var planLabel='Free Plan';
+    if(orgPlan==='essentials')planLabel='Essentials';else if(orgPlan==='professional')planLabel='Professional';
+    tierEl.innerHTML='<span class="plan-label">'+planLabel+'</span>'+(orgPlan!=='professional'?'<button class="btn-inline" onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();">Upgrade</button>':'')}
+  const feed=[];
+  currentResults.forEach(r=>{const band=r.risk_band||'moderate';feed.push({time:new Date(r.created_at),html:'Diagnostic completed — <strong>'+esc(r.organisation||'Assessment')+'</strong><br>'+(BAND_LABELS[band]||band)+' · '+(r.adjusted_score||0)+'%',date:fmtDate(r.created_at),click:"navigate('reports',document.querySelectorAll('.nav-item')[1])"})});
   if(currentOrg){const{data:auditEntries}=await sb.from('registry_audit_log').select('*').eq('org_id',currentOrg.id).order('created_at',{ascending:false}).limit(20);
     if(auditEntries&&auditEntries.length){const nm=await loadNames(auditEntries.map(e=>e.user_id));
-      auditEntries.forEach(entry=>{const a=fmtAudit(entry,nm);var clickAction=getActivityClick(entry);feed.push({time:new Date(entry.created_at),color:'#60a5fa',html:a.text+'<br><span style="font-size:.68rem;color:var(--muted);">'+esc(a.who)+'</span>',date:fmtDate(entry.created_at),click:clickAction})})}}
+      auditEntries.forEach(entry=>{const a=fmtAudit(entry,nm);var clickAction=getActivityClick(entry);feed.push({time:new Date(entry.created_at),html:a.text+'<br><span class="activity-who">'+esc(a.who)+'</span>',date:fmtDate(entry.created_at),click:clickAction})})}}
   feed.sort((a,b)=>b.time-a.time);
   const actEl=document.getElementById('dash-activity');
-  if(!feed.length)actEl.innerHTML='<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No activity yet. Run your first diagnostic to get started.</div>';
-  else actEl.innerHTML=feed.slice(0,8).map(f=>'<div class="activity-item" style="'+(f.click?'cursor:pointer;':'')+'border-radius:8px;padding:10px 8px;margin:0 -8px;transition:background .1s;" '+(f.click?'onclick="'+f.click+'" onmouseover="this.style.background=\'rgba(255,255,255,0.03)\'" onmouseout="this.style.background=\'none\'"':'')+'><div class="activity-dot" style="background:'+f.color+';"></div><div class="activity-body">'+f.html+'</div><div class="activity-time">'+f.date+'</div></div>').join('');
+  if(!feed.length)actEl.innerHTML='<div class="empty-inline">No activity yet. Run your first diagnostic to get started.</div>';
+  else actEl.innerHTML=feed.slice(0,8).map(f=>'<div class="activity-item'+(f.click?' is-clickable':'')+'"'+(f.click?' onclick="'+f.click+'"':'')+'><div class="activity-dot"></div><div class="activity-body">'+f.html+'</div><div class="activity-time">'+f.date+'</div></div>').join('');
   renderMyTasks();
   renderNextSteps();
   renderCertificateCard();

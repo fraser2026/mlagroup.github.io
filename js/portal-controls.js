@@ -1,10 +1,13 @@
 // ═══ GOVERNANCE CONTROLS ══════════════════════════════════════
-const TYPE_COLORS={organisation:'#60a5fa',system:'#f87171',assurance:'#fbbf24'};
-const TYPE_BG={organisation:'rgba(96,165,250,0.08)',system:'rgba(248,113,113,0.08)',assurance:'rgba(251,191,36,0.08)'};
-const TYPE_BORDER={organisation:'rgba(96,165,250,0.2)',system:'rgba(248,113,113,0.2)',assurance:'rgba(251,191,36,0.2)'};
-const PILLAR_COLORS={visibility:'#60a5fa',accountability:'#c4b5fd',control:'#4ade80',assurance:'#fbbf24'};
+/* Control type and pillar are categories, not states, so RGA-001
+   gives them no colour — they are told apart by their label. Status
+   is a state, so it keeps functional colour. */
+const TYPE_COLORS={organisation:'var(--ra-text)',system:'var(--ra-text)',assurance:'var(--ra-text)'};
+const TYPE_BG={organisation:'none',system:'none',assurance:'none'};
+const TYPE_BORDER={organisation:'var(--ra-border)',system:'var(--ra-border)',assurance:'var(--ra-border)'};
+const PILLAR_COLORS={visibility:'var(--ra-text-3)',accountability:'var(--ra-text-3)',control:'var(--ra-text-3)',assurance:'var(--ra-text-3)'};
 const CTRL_STATUS_L={not_started:'Not Started',in_progress:'In Progress',implemented:'Implemented',verified:'Verified'};
-const CTRL_STATUS_C={not_started:'var(--muted)',in_progress:'#93c5fd',implemented:'#4ade80',verified:'#4ade80'};
+const CTRL_STATUS_C={not_started:'var(--ra-text-3)',in_progress:'var(--ra-text-2)',implemented:'var(--ra-ok)',verified:'var(--ra-ok)'};
 const MATURITY_BANDS=[{max:30,label:'Initial'},{max:50,label:'Developing'},{max:70,label:'Structured'},{max:85,label:'Managed'},{max:100,label:'Governance Ready'}];
 let allControls=[],allTasks=[],allAssignments=[],currentControlId=null; let allComplianceRules=[];
  

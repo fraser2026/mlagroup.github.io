@@ -52,6 +52,10 @@
  
 <div id="view-dashboard" class="view active">
 <div class="welcome-bar"><div class="welcome-avatar" id="dash-avatar">?</div><div class="welcome-text"><h3>Good to see you<span id="dash-name"></span></h3><p id="dash-subtext">Your AI governance portal</p></div><div class="welcome-actions" id="dash-tier-badge"></div></div>
+<!-- The organisation's Compliance Bar. RGA-002 rule 03 allows exactly
+     one per context, and this is the dashboard's. Per-system bars
+     belong on the registry, where they are the unit of comparison. -->
+<div id="dash-maturity" class="maturity-panel" style="display:none;"></div>
 <div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Diagnostics</div><div class="stat-value" id="dash-count">—</div><div class="stat-sub">Assessments</div></div><div class="stat-card"><div class="stat-label">AI Systems</div><div class="stat-value" id="dash-sys-count">—</div><div class="stat-sub">In registry</div></div><div class="stat-card"><div class="stat-label">Governance</div><div class="stat-value" id="dash-compliance">—</div><div class="stat-sub" id="dash-gov-maturity">Score</div></div><div class="stat-card"><div class="stat-label">Latest Score</div><div class="stat-value" id="dash-score">—</div><div class="stat-sub">Diagnostic</div></div></div>
 <div id="cert-card-panel" style="display:none;"></div> <div id="next-steps-panel" style="display:none;"></div> <div class="panel" id="my-tasks-panel" style="display:none;"><div class="panel-header"><div class="panel-title">My Tasks</div><div class="panel-sub" id="my-tasks-count"></div></div><div class="panel-body" id="my-tasks-body"></div></div> <div class="panel"><div class="panel-header"><div class="panel-title">Recent Activity</div></div><div class="panel-body" id="dash-activity"><div class="loading-state" style="padding:20px 0;">Loading…</div></div></div>
 <div class="panel"><div class="panel-header"><div class="panel-title">Quick Actions</div></div><div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
