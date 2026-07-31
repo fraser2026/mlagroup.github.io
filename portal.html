@@ -3,50 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light">
 <title>Portal | RegAnchor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Two typefaces, one job each: Plex for the wordmark and numerals,
+     Inter for dense product UI. DM Sans, Instrument Serif and
+     Cormorant Garamond were dropped — RGA-001 permits no third. -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <script src="https://js.stripe.com/v3/"></script>
  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<!-- Brand layer first: portal.css styles against its semantic tokens
+     and its reset has to be able to outrank the primitives. Pages
+     that still carry an inline <style> block load these the other way
+     round, which is why the note in reganchor.css says "last". -->
+<link rel="stylesheet" href="css/reganchor.css">
 <link rel="stylesheet" href="css/portal.css">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/reganchor.css">
 </head>
-<button id="theme-toggle-btn" class="btn-theme-pill" title="Toggle theme">
-  <span id="theme-toggle-icon"></span>
-  <span id="theme-toggle-label">Light mode</span>
-</button>
-<script>
-(function(){
-  var KEY = 'mla-theme';
-  var btn = document.getElementById('theme-toggle-btn');
-  var labelEl = document.getElementById('theme-toggle-label');
-  var iconEl = document.getElementById('theme-toggle-icon');
-  var MOON = '<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" width="14" height="14"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
-  var SUN = '<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" width="14" height="14"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
-  function apply(theme){
-    if(theme === 'light'){
-      document.documentElement.setAttribute('data-theme','light');
-      iconEl.innerHTML = SUN;
-      labelEl.textContent = 'Dark mode';
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-      iconEl.innerHTML = MOON;
-      labelEl.textContent = 'Light mode';
-    }
-  }
-  var saved = localStorage.getItem(KEY) || 'dark';
-  apply(saved);
-  btn.addEventListener('click',function(){
-    var next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    localStorage.setItem(KEY,next);
-    apply(next);
-  });
-})();
-</script>
-</body>
-<div class="bg-ambient"></div><div class="bg-grid"></div><div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<body class="ra-portal">
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 <div class="app">
 <aside class="sidebar" id="sidebar"><div class="sidebar-logo"><a href="#" onclick="navigate('dashboard',document.querySelector('.nav-item'));return false;" class="logo-mark ra-wordmark">RegAnchor</a><span class="logo-badge">Portal</span></div>
 <nav class="sidebar-nav">
@@ -68,7 +44,7 @@
 <div class="sidebar-footer"><div class="user-tile" onclick="navigate('settings',document.querySelector('[onclick*=settings]'))"><div class="user-avatar" id="sidebar-avatar">?</div><div class="user-info"><div class="user-name" id="sidebar-name">Loading…</div><div class="user-role">Governance User</div></div><svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg></div></div>
 </aside>
 <div class="main">
-<div class="topbar"><button class="mobile-toggle" onclick="openSidebar()"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button><div class="topbar-title" id="topbar-title"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div><div id="topbar-bell" onclick="navigateAlerts()" style="position:relative;cursor:pointer;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='none'"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg><span id="bell-badge" style="display:none;position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#ef4444;border-radius:50%;font-size:.55rem;font-weight:700;color:white;align-items:center;justify-content:center;border:2px solid var(--bg);">0</span></div><div class="topbar-right" id="topbar-right"><button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button></div></div>
+<div class="topbar"><button class="mobile-toggle" onclick="openSidebar()"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button><div class="topbar-title" id="topbar-title"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div><div id="topbar-bell" class="icon-btn" onclick="navigateAlerts()"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg><span id="bell-badge" class="bell-badge" style="display:none;">0</span></div><div class="topbar-right" id="topbar-right"><button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button></div></div>
 <div class="content-scroll">
  
 <div id="view-dashboard" class="view active">
@@ -76,9 +52,9 @@
 <div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Diagnostics</div><div class="stat-value" id="dash-count">—</div><div class="stat-sub">Assessments</div></div><div class="stat-card"><div class="stat-label">AI Systems</div><div class="stat-value" id="dash-sys-count">—</div><div class="stat-sub">In registry</div></div><div class="stat-card"><div class="stat-label">Governance</div><div class="stat-value" id="dash-compliance">—</div><div class="stat-sub" id="dash-gov-maturity">Score</div></div><div class="stat-card"><div class="stat-label">Latest Score</div><div class="stat-value" id="dash-score">—</div><div class="stat-sub">Diagnostic</div></div></div>
 <div id="cert-card-panel" style="display:none;"></div> <div id="next-steps-panel" style="display:none;"></div> <div class="panel" id="my-tasks-panel" style="display:none;"><div class="panel-header"><div class="panel-title">My Tasks</div><div class="panel-sub" id="my-tasks-count"></div></div><div class="panel-body" id="my-tasks-body"></div></div> <div class="panel"><div class="panel-header"><div class="panel-title">Recent Activity</div></div><div class="panel-body" id="dash-activity"><div class="loading-state" style="padding:20px 0;">Loading…</div></div></div>
 <div class="panel"><div class="panel-header"><div class="panel-title">Quick Actions</div></div><div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-<div onclick="navigate('reports',document.querySelectorAll('.nav-item')[1])" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">View Reports</div><div style="font-size:.7rem;color:var(--muted);">Download your PDFs</div></div>
-<div onclick="navigateRegistry(document.getElementById('nav-registry'))" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">AI Registry</div><div style="font-size:.7rem;color:var(--muted);">Document AI systems</div></div>
-<a href="diagnostic.html" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:9px;padding:14px 16px;cursor:pointer;text-decoration:none;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px;"><path d="M8 1v14M1 8h14"/></svg><div style="font-size:.8rem;font-weight:600;color:var(--main);margin-bottom:2px;">New Diagnostic</div><div style="font-size:.7rem;color:var(--muted);">Run fresh assessment</div></a>
+<div class="quick-action" onclick="navigate('reports',document.querySelectorAll('.nav-item')[1])"><svg viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div class="quick-action-title">View Reports</div><div class="quick-action-desc">Download your PDFs</div></div>
+<div class="quick-action" onclick="navigateRegistry(document.getElementById('nav-registry'))"><svg viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/></svg><div class="quick-action-title">AI Registry</div><div class="quick-action-desc">Document AI systems</div></div>
+<a href="diagnostic.html" class="quick-action"><svg viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1v14M1 8h14"/></svg><div class="quick-action-title">New Diagnostic</div><div class="quick-action-desc">Run fresh assessment</div></a>
 </div></div></div>
  
 <div id="view-reports" class="view"><div class="page-header"><h2>Reports & Documents</h2><p>Diagnostic exposure reports, system governance assessments, and compliance documentation.</p></div><div id="paywall-banner" style="display:none;" class="paywall-banner"><div><h4>Unlock your full AI Governance Risk Report</h4><p>Complete board-ready PDF with findings, regulatory mapping, and remediation roadmap.</p></div><a href="pricing.html">Get Full Report — £295</a></div> <div id="tier-banner" style="display:none;" class="paywall-banner"><div><h4>Unlock assessment reports and governance certification</h4><p>Subscribe to access PDF reports, public verification, and your governance certificate.</p></div><a href="#" onclick="navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();return false;">View Plans</a></div>
@@ -93,9 +69,9 @@
  
 <div id="view-analytics" class="view"><div class="locked-view"><div class="locked-icon" style="background:rgba(37,99,235,0.06);"><svg viewBox="0 0 22 22" stroke="var(--sky)"><path d="M1 16l5-6 4 4 5-7 6 6"/></svg></div><div class="locked-title">Analytics & Usage</div><div class="locked-desc">Track report views, downloads, risk trends, and team activity.</div><a href="mailto:fraser@mlagroup.co.uk" class="btn-upgrade">Request early access <svg viewBox="0 0 12 12"><path d="M2 6h8M6 2l4 4-4 4"/></svg></a></div></div>  <div id="view-plans" class="view"><div class="page-header"><h2>Subscription Plans</h2><p>Choose the right governance tier for your organisation.</p></div><div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:32px;"><span style="font-size:.84rem;font-weight:500;color:var(--muted);cursor:pointer;transition:color .2s;" id="portal-lbl-m" onclick="setPortalPeriod('monthly')" style="color:var(--main);">Monthly</span><div style="position:relative;width:48px;height:26px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:13px;cursor:pointer;transition:background .2s,border-color .2s;" id="portal-tog" onclick="togglePortalPeriod()"><div style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 1px 4px rgba(0,0,0,0.3);" id="portal-tog-dot"></div></div><span style="font-size:.84rem;font-weight:500;color:var(--muted);cursor:pointer;transition:color .2s;" id="portal-lbl-a" onclick="setPortalPeriod('annual')">Annual</span><span style="font-size:.64rem;font-weight:700;color:var(--green);background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.12);padding:3px 10px;border-radius:100px;">Save 17%</span></div><div id="portal-pricing-cards"></div><div id="portal-checkout-loading" style="display:none;padding:24px;text-align:center;font-size:.82rem;color:var(--muted);border:1px solid var(--border);border-radius:10px;margin-top:20px;">Loading secure checkout...</div><div id="portal-checkout-container" style="display:none;margin-top:20px;border-radius:10px;overflow:hidden;border:1px solid var(--border);max-width:480px;margin-left:auto;margin-right:auto;"></div></div>
  
-<div id="view-registry" class="view"><div class="page-header"><h2>AI Systems Registry</h2><p id="reg-subtext">Document and classify your organisation's AI systems.</p></div><div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Total Systems</div><div class="stat-value" id="reg-total">—</div><div class="stat-sub">Registered</div></div><div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value" style="color:#fca5a5;" id="reg-high">—</div><div class="stat-sub">EU AI Act tier</div></div><div class="stat-card"><div class="stat-label">In Production</div><div class="stat-value" style="color:#4ade80;" id="reg-prod">—</div><div class="stat-sub">Live systems</div></div><div class="stat-card"><div class="stat-label">Maturity</div><div class="stat-value" id="reg-compliance">—</div><div class="stat-sub" id="reg-compliance-sub">Overall progress</div></div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;"><span style="font-size:.72rem;color:var(--muted);">Filter:</span><button class="filter-btn active" onclick="setRegFilter('all',this)">All</button><button class="filter-btn" onclick="setRegFilter('production',this)">Production</button><button class="filter-btn" onclick="setRegFilter('pilot',this)">Pilot</button><button class="filter-btn" onclick="setRegFilter('development',this)">Development</button><button class="filter-btn" onclick="setRegFilter('planned',this)">Planned</button></div><div class="panel"><div class="panel-header"><div class="panel-title">Systems</div><div class="panel-sub" id="reg-table-count"></div></div><div id="reg-table-wrap"><div class="loading-state">Loading registry…</div></div></div></div>
+<div id="view-registry" class="view"><div class="page-header"><h2>AI Systems Registry</h2><p id="reg-subtext">Document and classify your organisation's AI systems.</p></div><div class="stats-grid stats-grid-4"><div class="stat-card"><div class="stat-label">Total Systems</div><div class="stat-value" id="reg-total">—</div><div class="stat-sub">Registered</div></div><div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value" id="reg-high">—</div><div class="stat-sub">EU AI Act tier</div></div><div class="stat-card"><div class="stat-label">In Production</div><div class="stat-value" id="reg-prod">—</div><div class="stat-sub">Live systems</div></div><div class="stat-card"><div class="stat-label">Maturity</div><div class="stat-value" id="reg-compliance">—</div><div class="stat-sub" id="reg-compliance-sub">Overall progress</div></div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;"><span style="font-size:.72rem;color:var(--muted);">Filter:</span><button class="filter-btn active" onclick="setRegFilter('all',this)">All</button><button class="filter-btn" onclick="setRegFilter('production',this)">Production</button><button class="filter-btn" onclick="setRegFilter('pilot',this)">Pilot</button><button class="filter-btn" onclick="setRegFilter('development',this)">Development</button><button class="filter-btn" onclick="setRegFilter('planned',this)">Planned</button></div><div class="panel"><div class="panel-header"><div class="panel-title">Systems</div><div class="panel-sub" id="reg-table-count"></div></div><div id="reg-table-wrap"><div class="loading-state">Loading registry…</div></div></div></div>
  
-<div id="view-registry-detail" class="view"><button class="breadcrumb" onclick="navigate('registry',document.getElementById('nav-registry'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Registry</button><div style="margin-bottom:16px;"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;"><div style="display:flex;align-items:center;gap:12px;"><h2 style="font-family:'DM Sans',sans-serif;font-size:1.4rem;font-weight:600;color:var(--main);letter-spacing:-.02em;" id="det-name">—</h2></div><div style="display:flex;align-items:center;gap:8px;"><span id="det-tier-badge"></span><button class="btn-topbar btn-topbar-primary" onclick="openAssessmentModal()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button><button class="btn-topbar btn-topbar-ghost" onclick="openEditSystem()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button></div></div><div style="display:flex;align-items:center;gap:24px;margin-top:6px;flex-wrap:wrap;" id="det-subtitle"></div><div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;" id="det-tags"></div></div><div class="panel" style="overflow:visible;"><div class="tab-bar"><button class="tab-btn active" onclick="switchDetailTab('overview',this)">Overview</button><button class="tab-btn" onclick="switchDetailTab('assessment',this)">Assessment</button><button class="tab-btn" onclick="switchDetailTab('sys-controls',this)">Controls</button><button class="tab-btn" onclick="switchDetailTab('audit',this)">Audit Log</button></div><div class="tab-panel active" id="tab-overview"></div><div class="tab-panel" id="tab-assessment"></div><div class="tab-panel" id="tab-sys-controls"></div><div class="tab-panel" id="tab-audit"></div></div></div>
+<div id="view-registry-detail" class="view"><button class="breadcrumb" onclick="navigate('registry',document.getElementById('nav-registry'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Registry</button><div style="margin-bottom:16px;"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;"><div style="display:flex;align-items:center;gap:12px;"><h2 class="detail-title" id="det-name">—</h2></div><div style="display:flex;align-items:center;gap:8px;"><span id="det-tier-badge"></span><button class="btn-topbar btn-topbar-primary" onclick="openAssessmentModal()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button><button class="btn-topbar btn-topbar-ghost" onclick="openEditSystem()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button></div></div><div style="display:flex;align-items:center;gap:24px;margin-top:6px;flex-wrap:wrap;" id="det-subtitle"></div><div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;" id="det-tags"></div></div><div class="panel" style="overflow:visible;"><div class="tab-bar"><button class="tab-btn active" onclick="switchDetailTab('overview',this)">Overview</button><button class="tab-btn" onclick="switchDetailTab('assessment',this)">Assessment</button><button class="tab-btn" onclick="switchDetailTab('sys-controls',this)">Controls</button><button class="tab-btn" onclick="switchDetailTab('audit',this)">Audit Log</button></div><div class="tab-panel active" id="tab-overview"></div><div class="tab-panel" id="tab-assessment"></div><div class="tab-panel" id="tab-sys-controls"></div><div class="tab-panel" id="tab-audit"></div></div></div>
  
 <div id="view-org" class="view"><div class="page-header"><h2>Organisation</h2><p>Entity profile, membership and access management.</p></div><div class="two-col"><div class="panel"><div class="panel-header"><div class="panel-title">Organisation Profile</div></div><div class="panel-body"><div class="meta-grid" id="org-profile-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Subscription</div></div><div class="panel-body"><div class="meta-grid" id="org-sub-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Members</div><div class="panel-sub" id="org-member-count"></div></div><div id="org-members-wrap"><div class="loading-state">Loading members…</div></div></div></div>
 
@@ -103,14 +79,14 @@
 <div id="view-alerts" class="view">
 <div class="page-header"><h2>Alerts</h2><p>Governance alerts, score changes, and action items requiring your attention.</p></div>
 <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
-  <div class="stat-card"><div class="stat-label">Unread</div><div class="stat-value" id="alert-stat-unread" style="color:#f87171;">—</div><div class="stat-sub">Require attention</div></div>
+  <div class="stat-card"><div class="stat-label">Unread</div><div class="stat-value" id="alert-stat-unread" style="color:var(--ra-risk);">—</div><div class="stat-sub">Require attention</div></div>
   <div class="stat-card"><div class="stat-label">Active</div><div class="stat-value" id="alert-stat-active">—</div><div class="stat-sub">Open alerts</div></div>
-  <div class="stat-card"><div class="stat-label">Resolved</div><div class="stat-value" style="color:#4ade80;" id="alert-stat-resolved">—</div><div class="stat-sub">This session</div></div>
+  <div class="stat-card"><div class="stat-label">Resolved</div><div class="stat-value" style="color:var(--ra-ok);" id="alert-stat-resolved">—</div><div class="stat-sub">This session</div></div>
 </div>
 <div class="panel">
   <div class="panel-header">
     <div class="panel-title">Active Alerts</div>
-    <button onclick="checkAndCreateAlerts()" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;" onmouseover="this.style.color='var(--main)'" onmouseout="this.style.color='var(--muted)'">Check Now</button>
+    <button class="btn-inline" onclick="checkAndCreateAlerts()">Check Now</button>
   </div>
   <div class="panel-body" id="alerts-list"><div class="loading-state">Loading alerts…</div></div>
 </div>
@@ -130,7 +106,7 @@
   <div class="panel-header">
     <div class="panel-title">Score Trend</div>
     <div class="panel-sub" id="score-history-sub">Governance score over time</div>
-    <button onclick="snapshotGovernanceScore('manual_recalculate')" style="margin-left:12px;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;" onmouseover="this.style.color='var(--main)'" onmouseout="this.style.color='var(--muted)'">Recalculate</button>
+    <button class="btn-inline" onclick="snapshotGovernanceScore('manual_recalculate')">Recalculate</button>
   </div>
   <div class="panel-body" style="padding:16px 20px 8px;">
     <div id="score-history-chart"><div style="text-align:center;padding:32px 0;font-size:.78rem;color:var(--muted);">Loading score history…</div></div>
@@ -151,8 +127,8 @@
 <div class="page-header"><h2>Governance Policies</h2><p>Organisation policies requiring acknowledgment. Review, adopt templates, and track compliance.</p></div>
 <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
   <div class="stat-card"><div class="stat-label">Active Policies</div><div class="stat-value" id="pol-stat-total">—</div><div class="stat-sub">Published</div></div>
-  <div class="stat-card"><div class="stat-label">Your Acknowledgments</div><div class="stat-value" style="color:#4ade80;" id="pol-stat-acked">—</div><div class="stat-sub">Completed</div></div>
-  <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value" style="color:#fbbf24;" id="pol-stat-pending">—</div><div class="stat-sub">Require your action</div></div>
+  <div class="stat-card"><div class="stat-label">Your Acknowledgments</div><div class="stat-value" style="color:var(--ra-ok);" id="pol-stat-acked">—</div><div class="stat-sub">Completed</div></div>
+  <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value" style="color:var(--ra-warn);" id="pol-stat-pending">—</div><div class="stat-sub">Require your action</div></div>
 </div>
 <div class="panel" style="margin-bottom:16px;">
   <div class="panel-header"><div class="panel-title">Your Policies</div><div class="panel-sub" id="pol-list-count"></div></div>
@@ -173,7 +149,7 @@
     <span id="pd-version-badge" style="font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);"></span>
     <span id="pd-ack-status-badge" style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;"></span>
   </div>
-  <h2 style="font-family:'DM Sans',sans-serif;font-size:1.5rem;font-weight:600;color:var(--main);letter-spacing:-.02em;" id="pd-title">—</h2>
+  <h2 class="detail-title" id="pd-title">—</h2>
   <p style="font-size:.82rem;color:var(--muted);line-height:1.7;margin-top:6px;" id="pd-desc">—</p>
 </div>
 <div class="panel" style="margin-bottom:16px;">
@@ -196,7 +172,7 @@
     <span id="cd-pillar-badge" style="font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;"></span>
     <span id="cd-status-badge" style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;"></span>
   </div>
-  <h2 style="font-family:'DM Sans',sans-serif;font-size:1.5rem;font-weight:600;color:var(--main);letter-spacing:-.02em;" id="cd-title">—</h2>
+  <h2 class="detail-title" id="cd-title">—</h2>
   <p style="font-size:.82rem;color:var(--muted);line-height:1.7;margin-top:6px;" id="cd-desc">—</p>
   <p style="font-size:.78rem;color:var(--muted2);line-height:1.6;margin-top:8px;font-style:italic;" id="cd-purpose"></p>
 </div>
