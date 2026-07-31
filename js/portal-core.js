@@ -27,16 +27,16 @@ function fmtAudit(entry,namesMap){
     case 'risk_tier_set':text=`Classified as <strong>${TIER_LABELS[c.risk_tier?.new]||c.risk_tier?.new||''}</strong> under EU AI Act`;break;
     case 'risk_tier_changed':text=`Reclassified from ${TIER_LABELS[c.risk_tier?.old]||'Unclassified'} to <strong>${TIER_LABELS[c.risk_tier?.new]||''}</strong>`;break;
     case 'compliance_status_updated':text=`Updated compliance status across ${c.obligation_count||c.updated_count||'multiple'} obligations`;break;
-    case 'assessment_submitted':text='Submitted an assessment for review by MLA Group';break;
+    case 'assessment_submitted':text='Submitted an assessment for review by RegAnchor';break;
     case 'control_updated':text='Updated progress on <strong>'+esc(c.control||'')+'</strong>';break;
     case 'control_implemented':text='Marked <strong>'+esc(c.control||'')+'</strong> as implemented';break;
-    case 'mla_review_updated':text='MLA Group updated assessment status to <strong>'+(c.status==='controls_issued'?'Controls Issued':c.status==='in_review'?'Under Review':c.status||'')+'</strong>';break;
-    case 'control_assigned':text='Assigned <strong>'+esc(c.control||'')+'</strong> to <strong>'+esc(c.assigned_to_name||'a team member')+'</strong>'+(c.due_date?' — due '+c.due_date:'');break;     case 'policy_adopted':text='Adopted policy <strong>'+esc(c.policy||'')+'</strong>';break;     case 'policy_acknowledged':text='Acknowledged policy <strong>'+esc(c.policy||'')+'</strong> (v'+esc(c.version||'')+')';break;     case 'policy_esigned':text='E-signed policy <strong>'+esc(c.policy||'')+'</strong> (v'+esc(c.version||'')+')';break;     case 'support_requested':text='Requested MLA expert help on <strong>'+esc(c.control||'')+'</strong>';break;
-    case 'support_responded':text='MLA Group responded to support request on <strong>'+esc(c.control||'')+'</strong>';break;
+    case 'mla_review_updated':text='RegAnchor updated assessment status to <strong>'+(c.status==='controls_issued'?'Controls Issued':c.status==='in_review'?'Under Review':c.status||'')+'</strong>';break;
+    case 'control_assigned':text='Assigned <strong>'+esc(c.control||'')+'</strong> to <strong>'+esc(c.assigned_to_name||'a team member')+'</strong>'+(c.due_date?' — due '+c.due_date:'');break;     case 'policy_adopted':text='Adopted policy <strong>'+esc(c.policy||'')+'</strong>';break;     case 'policy_acknowledged':text='Acknowledged policy <strong>'+esc(c.policy||'')+'</strong> (v'+esc(c.version||'')+')';break;     case 'policy_esigned':text='E-signed policy <strong>'+esc(c.policy||'')+'</strong> (v'+esc(c.version||'')+')';break;     case 'support_requested':text='Requested RegAnchor expert help on <strong>'+esc(c.control||'')+'</strong>';break;
+    case 'support_responded':text='RegAnchor responded to support request on <strong>'+esc(c.control||'')+'</strong>';break;
     default:text=entry.action.replace(/_/g,' ');
   }
-  // Override actor name for MLA actions
-  if(c._is_mla)return{who:'MLA Group',text,time:fmtDateLong(entry.created_at)};
+  // Override actor name for RegAnchor-side actions
+  if(c._is_mla)return{who:'RegAnchor',text,time:fmtDateLong(entry.created_at)};
   return {who,text,time:fmtDateLong(entry.created_at)};
 }
 async function loadNames(userIds){
@@ -91,7 +91,7 @@ async function init(){
   if(profile?.organisation)document.getElementById('dash-subtext').textContent=profile.organisation+' · AI Governance Portal';
   if(profile?.full_name){const p=profile.full_name.split(' ');document.getElementById('set-first').value=p[0]||'';document.getElementById('set-last').value=p.slice(1).join(' ')||''}
   document.getElementById('set-org').value=profile?.organisation||'';document.getElementById('set-email').value=currentUser.email;
-  document.getElementById('referral-link').textContent='mlagroup.co.uk/ref/'+currentUser.id.substring(0,8);
+  document.getElementById('referral-link').textContent=location.host+'/ref/'+currentUser.id.substring(0,8);
   const{data:results}=await sb.from('diagnostic_results').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
   currentResults=results||[];
   if(currentResults.length>0){const b=document.getElementById('report-count-badge');b.textContent=currentResults.length;b.style.display='inline-flex'}

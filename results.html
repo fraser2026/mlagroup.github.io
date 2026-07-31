@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Your Results | MLA Group AI Governance Diagnostic</title>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <title>Your Results | RegAnchor AI Governance Diagnostic</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
   <style>
@@ -160,12 +160,14 @@
     @media(max-width:1024px){.hero-grid{grid-template-columns:1fr;gap:40px;}.pw-grid{grid-template-columns:1fr;gap:48px;}.ent-box{grid-template-columns:1fr;gap:24px;}}
     @media(max-width:768px){:root{--ph:24px;}nav{padding:0 24px;}.sec{padding:52px 0;}.hero-sec{padding:40px 0 52px;}.paywall-sec{padding:60px 0;}.report-preview{height:320px;}.ft-row{flex-direction:column;text-align:center;padding:20px 24px;}}
   </style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <body>
 <div class="bg-field"></div>
 
 <nav>
-  <a href="index.html" class="logo">mla<em>group.</em></a>
+  <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
   <div class="nav-right">
     <a href="login.html" class="nav-signin">Sign in</a>
     <a href="#paywall" class="nav-cta">Get Full Report</a>
@@ -328,7 +330,7 @@
       </div>
       <div style="text-align:center;">
         <a href="mailto:governance@mlagroup.co.uk?subject=Bespoke%20Consultancy%20Enquiry" class="btn-consult">Book a Specialist Consultation →</a>
-        <p class="ent-sub">1-hour session with an MLA governance specialist</p>
+        <p class="ent-sub">1-hour session with a RegAnchor governance specialist</p>
       </div>
     </div>
   </div>
@@ -338,7 +340,7 @@
 
 <footer>
   <div class="ft-row">
-    <span>&copy; 2026 MLA Group Ltd. Registered in England &amp; Wales. This assessment does not constitute legal advice.</span>
+    <span>RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562). This assessment does not constitute legal advice.</span>
     <div class="ft-links">
       <a href="methodology.html">Methodology</a>
       <a href="index.html#pricing">Pricing</a>
@@ -418,10 +420,10 @@ function renderRecs(bandId) {
 }
 
 const PAGES = [
-  d => `<div class="rp-header"><div><div class="rp-logo">mla<em>group.</em></div><div style="font-size:.62rem;color:var(--muted);margin-top:4px;letter-spacing:.06em;">AI GOVERNANCE RISK ASSESSMENT</div></div><div class="rp-meta">Confidential<br>${d.org}<br>Page 1 of 12</div></div><div class="rp-band-bar"><div class="rp-band-dot" style="background:${d.color}"></div><div class="rp-band-text" style="color:${d.color}">${d.band}</div></div><div class="rp-score-lg" style="color:${d.color}">${d.score}%</div><div class="rp-score-label">Adjusted Exposure Score</div><div style="font-size:.7rem;color:var(--muted2);margin-top:12px;line-height:1.5;">Executive Summary · AI Governance Risk Assessment<br>${d.org} · ${d.sector}</div>`,
-  d => `<div class="rp-header"><div><div class="rp-logo">mla<em>group.</em></div></div><div class="rp-meta">Domain Findings<br>Page 4 of 12</div></div><div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px;">Domain-by-Domain Breakdown</div><div class="rp-domain-rows">${['Governance','Compliance','Human Oversight','Explainability','AI Inventory','Data Quality','Operational'].map((n,i)=>{const w=[76,42,58,81,33,67,89][i];const c=w>=65?'#22c55e':w>=40?'#f59e0b':'#ef4444';return`<div class="rp-domain-row"><div class="rp-dn">${n}</div><div class="rp-dp"><div class="rp-dp-fill" style="width:${w}%;background:${c}"></div></div><div class="rp-dr" style="color:${c}">${w>=65?'Low':w>=40?'Mod':'High'}</div></div>`;}).join('')}</div>`,
-  d => `<div class="rp-header"><div><div class="rp-logo">mla<em>group.</em></div></div><div class="rp-meta">Priority Findings<br>Page 5 of 12</div></div><div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;">Detailed Findings</div>${['F1 · Critical','F2 · High','F3 · Moderate'].map((f,i)=>`<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-left:3px solid ${['#ef4444','#f97316','#f59e0b'][i]};border-radius:4px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:.7rem;font-weight:700;color:var(--muted2)">${f}</div><div style="font-size:.65rem;color:var(--muted);margin-top:3px;">${['Governance accountability gap identified','Human oversight controls require formalisation','DPIA requirements — UK GDPR Art.35'][i]}</div></div>`).join('')}`,
-  d => `<div class="rp-header"><div><div class="rp-logo">mla<em>group.</em></div></div><div class="rp-meta">Recommendations<br>Page 7 of 12</div></div><div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;">Priority Roadmap</div>${[1,2,3,4].map(n=>`<div style="display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:flex-start;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.04);padding-bottom:10px;"><div style="font-family:'Instrument Serif',serif;font-size:1.1rem;color:rgba(96,165,250,.25);">${n}</div><div style="font-size:.67rem;color:var(--muted2);line-height:1.5;">${['Appoint named AI governance lead with board reporting line','Conduct DPIAs for all AI systems processing personal data','Implement decision logging for all high-impact AI outputs','Review third-party AI provider contracts for transparency'][n-1]}</div></div>`).join('')}<div class="rp-pages-label">12 pages total</div>`
+  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div><div style="font-size:.62rem;color:var(--muted);margin-top:4px;letter-spacing:.06em;">AI GOVERNANCE RISK ASSESSMENT</div></div><div class="rp-meta">Confidential<br>${d.org}<br>Page 1 of 12</div></div><div class="rp-band-bar"><div class="rp-band-dot" style="background:${d.color}"></div><div class="rp-band-text" style="color:${d.color}">${d.band}</div></div><div class="rp-score-lg" style="color:${d.color}">${d.score}%</div><div class="rp-score-label">Adjusted Exposure Score</div><div style="font-size:.7rem;color:var(--muted2);margin-top:12px;line-height:1.5;">Executive Summary · AI Governance Risk Assessment<br>${d.org} · ${d.sector}</div>`,
+  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div></div><div class="rp-meta">Domain Findings<br>Page 4 of 12</div></div><div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px;">Domain-by-Domain Breakdown</div><div class="rp-domain-rows">${['Governance','Compliance','Human Oversight','Explainability','AI Inventory','Data Quality','Operational'].map((n,i)=>{const w=[76,42,58,81,33,67,89][i];const c=w>=65?'#22c55e':w>=40?'#f59e0b':'#ef4444';return`<div class="rp-domain-row"><div class="rp-dn">${n}</div><div class="rp-dp"><div class="rp-dp-fill" style="width:${w}%;background:${c}"></div></div><div class="rp-dr" style="color:${c}">${w>=65?'Low':w>=40?'Mod':'High'}</div></div>`;}).join('')}</div>`,
+  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div></div><div class="rp-meta">Priority Findings<br>Page 5 of 12</div></div><div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;">Detailed Findings</div>${['F1 · Critical','F2 · High','F3 · Moderate'].map((f,i)=>`<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-left:3px solid ${['#ef4444','#f97316','#f59e0b'][i]};border-radius:4px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:.7rem;font-weight:700;color:var(--muted2)">${f}</div><div style="font-size:.65rem;color:var(--muted);margin-top:3px;">${['Governance accountability gap identified','Human oversight controls require formalisation','DPIA requirements — UK GDPR Art.35'][i]}</div></div>`).join('')}`,
+  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div></div><div class="rp-meta">Recommendations<br>Page 7 of 12</div></div><div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;">Priority Roadmap</div>${[1,2,3,4].map(n=>`<div style="display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:flex-start;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.04);padding-bottom:10px;"><div style="font-family:'Instrument Serif',serif;font-size:1.1rem;color:rgba(96,165,250,.25);">${n}</div><div style="font-size:.67rem;color:var(--muted2);line-height:1.5;">${['Appoint named AI governance lead with board reporting line','Conduct DPIAs for all AI systems processing personal data','Implement decision logging for all high-impact AI outputs','Review third-party AI provider contracts for transparency'][n-1]}</div></div>`).join('')}<div class="rp-pages-label">12 pages total</div>`
 ];
 
 let currentPage = 0;

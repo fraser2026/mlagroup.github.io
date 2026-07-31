@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookie Policy | RegAnchor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b18;--surface-0:#090e1c;--surface-1:#0d1426;--surface-2:#111827;
+  --border:rgba(255,255,255,0.07);--border-md:rgba(255,255,255,0.12);
+  --text-1:#e2e8f4;--text-2:#8899b4;--text-3:#4a5773;
+  --blue:#2563eb;--blue-lt:#60a5fa;--nav-h:60px;--r:8px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-webkit-font-smoothing:antialiased;line-height:1.6}
+
+/* NAV */
+.rnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(7,11,24,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:100}
+.rnav-logo{font-size:.92rem;font-weight:600;letter-spacing:-.02em;color:var(--text-1);text-decoration:none}
+.nav-back{font-size:.75rem;font-weight:500;color:var(--text-3);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color .2s}
+.nav-back:hover{color:var(--text-2)}
+.nav-back::before{content:'←'}
+
+/* HERO */
+.hero{padding:calc(var(--nav-h) + 80px) 60px 80px;max-width:900px;margin:0 auto}
+.hero-eyebrow{font-size:.65rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.hero-eyebrow::before{content:'';display:block;width:28px;height:1px;background:var(--blue)}
+.hero-title{font-family:'Instrument Serif',serif;font-size:3rem;font-weight:400;line-height:1.1;letter-spacing:-.02em;color:var(--text-1);margin-bottom:20px}
+.hero-meta{font-size:.8rem;color:var(--text-3);display:flex;gap:24px;flex-wrap:wrap}
+.hero-meta span{display:flex;align-items:center;gap:6px}
+
+/* CONTENT */
+.content{max-width:900px;margin:0 auto;padding:0 60px 100px}
+.section{margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--border)}
+.section:last-child{border-bottom:none}
+.section-num{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:14px}
+.section-num::after{content:'';display:block;width:60px;height:1px;background:var(--border)}
+.section-title{font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:400;color:var(--text-1);margin-bottom:20px;letter-spacing:-.02em}
+.body-text{font-size:.9rem;color:var(--text-2);line-height:1.85;margin-bottom:16px}
+.body-text:last-child{margin-bottom:0}
+.body-text strong{color:var(--text-1);font-weight:600}
+.body-text a{color:var(--blue-lt);text-decoration:none}
+.body-text a:hover{text-decoration:underline}
+
+/* INFO BLOCK */
+.info-block{background:var(--surface-1);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--r);padding:24px 28px;margin-bottom:24px}
+.info-block-lbl{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-lt);font-weight:700;margin-bottom:10px}
+.info-block p{font-size:.88rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
+.info-block p:last-child{margin-bottom:0}
+.info-block strong{color:var(--text-1)}
+
+/* DATA TABLE */
+.data-tbl{width:100%;border-collapse:collapse;margin:20px 0}
+.data-tbl th{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+.data-tbl td{font-size:.83rem;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top;color:var(--text-2);line-height:1.55}
+.data-tbl tr:last-child td{border-bottom:none}
+.data-tbl td:first-child{color:var(--text-1);font-weight:500;white-space:nowrap}
+
+/* FOOTER */
+.rfooter{max-width:900px;margin:0 auto;padding:40px 60px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.rf-logo{font-size:.88rem;font-weight:600;color:var(--text-3);text-decoration:none;letter-spacing:-.02em}
+.rf-links{display:flex;gap:20px}
+.rf-links a{font-size:.75rem;color:var(--text-3);text-decoration:none;transition:color .2s}
+.rf-links a:hover{color:var(--text-2)}
+
+@media(max-width:768px){
+  .rnav{padding:0 20px}
+  .hero{padding:calc(var(--nav-h) + 48px) 24px 48px}
+  .content{padding:0 24px 80px}
+  .rfooter{padding:32px 24px;flex-direction:column;text-align:center}
+  .rf-links{justify-content:center}
+  .data-tbl{display:block;overflow-x:auto}
+}
+</style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
+</head>
+<body>
+
+<nav class="rnav">
+  <a href="index.html" class="rnav-logo ra-wordmark">RegAnchor</a>
+  <a href="index.html" class="nav-back">Back to site</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">Legal Documentation</div>
+  <h1 class="hero-title">Cookie Policy</h1>
+  <div class="hero-meta">
+    <span>Effective date: 1 March 2026</span>
+    <span>Last reviewed: 1 March 2026</span>
+    <span>ICO Reg: ZB826186</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="info-block">
+    <div class="info-block-lbl">Summary</div>
+    <p>We do not use advertising cookies, tracking pixels, or third-party analytics.</p>
+    <p>The only client-side storage we rely on is what is strictly necessary to keep you signed in, to carry your diagnostic results between pages, and to let our payment provider process a transaction securely.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 01</div>
+    <h2 class="section-title">Who We Are</h2>
+    <p class="body-text"><strong>MLA Group Ltd</strong> (trading as RegAnchor) is the data controller responsible for this website. We are registered in England and Wales under company number 16117562, and with the Information Commissioner's Office under registration number ZB826186.</p>
+    <p class="body-text">This policy should be read alongside our <a href="privacy.html">Privacy Policy</a>, which explains how we handle personal data more generally, and our <a href="terms.html">Terms &amp; Conditions</a>.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 02</div>
+    <h2 class="section-title">What Cookies Are</h2>
+    <p class="body-text">A cookie is a small text file placed on your device by a website. Related technologies — including <strong>local storage</strong> and <strong>session storage</strong> — store data in your browser in a similar way. This policy covers all of them, because the law treats them the same way regardless of the technical mechanism.</p>
+    <p class="body-text">Storage is described as <strong>strictly necessary</strong> when the service you have asked for cannot function without it. Strictly necessary storage does not require your consent. Everything else does.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 03</div>
+    <h2 class="section-title">What We Use</h2>
+    <p class="body-text">All of the storage set by this website falls into the strictly necessary category.</p>
+    <table class="data-tbl">
+      <thead>
+        <tr><th>Purpose</th><th>Mechanism</th><th>Set by</th><th>Retention</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Authentication</td>
+          <td>Local storage</td>
+          <td>Supabase, our database and authentication provider</td>
+          <td>Until you sign out or the session expires</td>
+        </tr>
+        <tr>
+          <td>Diagnostic results</td>
+          <td>Local storage</td>
+          <td>This website</td>
+          <td>Until you clear your browser storage</td>
+        </tr>
+        <tr>
+          <td>Payment and fraud prevention</td>
+          <td>Cookies</td>
+          <td>Stripe, our payment processor</td>
+          <td>Set and controlled by Stripe</td>
+        </tr>
+        <tr>
+          <td>Web fonts</td>
+          <td>No storage</td>
+          <td>Google Fonts</td>
+          <td>Not applicable</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="body-text">The diagnostic results entry holds your questionnaire answers and score so that they can be carried from the diagnostic to your results page and, if you choose to buy a report, associated with your account after payment. It stays on your device and is not a tracking mechanism.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 04</div>
+    <h2 class="section-title">What We Do Not Use</h2>
+    <p class="body-text">We do not operate Google Analytics or any equivalent analytics platform. We do not use advertising or retargeting cookies. We do not use social media tracking pixels. We do not sell or share browsing data with third parties for marketing purposes.</p>
+    <p class="body-text">Because we set no non-essential storage, this site does not present a cookie consent banner. If that changes, we will introduce a consent mechanism before setting any such cookie, and we will update this policy first.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 05</div>
+    <h2 class="section-title">Third Parties</h2>
+    <p class="body-text"><strong>Stripe</strong> processes payments on our behalf and sets its own cookies for fraud prevention and to complete a checkout. These are governed by Stripe's own privacy and cookie policies.</p>
+    <p class="body-text"><strong>Supabase</strong> provides our database and authentication. Session data is held in your browser's local storage rather than in cookies.</p>
+    <p class="body-text"><strong>Google Fonts</strong> serves the typefaces used on this site. Requesting a font discloses your IP address to Google but sets no cookie.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 06</div>
+    <h2 class="section-title">Managing Storage</h2>
+    <p class="body-text">You can delete or block cookies and local storage through your browser settings. Every major browser allows this, usually under privacy or site data settings.</p>
+    <p class="body-text">Because the storage described above is strictly necessary, blocking it will prevent parts of the service from working. In particular, you will not be able to stay signed in to the portal, your diagnostic answers will be lost between pages, and payments may not complete.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">Section 07</div>
+    <h2 class="section-title">Changes and Contact</h2>
+    <p class="body-text">We review this policy when our technology changes and at least annually. Material changes will be reflected in the effective date at the top of this page.</p>
+    <div class="info-block">
+      <div class="info-block-lbl">Contact</div>
+      <p><strong>MLA Group Ltd</strong></p>
+      <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
+      <p>Email: <a href="mailto:info@mlagroup.co.uk">info@mlagroup.co.uk</a></p>
+      <p>Tel: 0151 558 0162</p>
+    </div>
+    <p class="body-text">If you are unhappy with how we handle your data, you may complain to the Information Commissioner's Office at <a href="https://ico.org.uk" target="_blank" rel="noopener">ico.org.uk</a>.</p>
+  </div>
+
+</div>
+
+<footer class="rfooter">
+  <a href="index.html" class="rf-logo ra-wordmark">RegAnchor</a>
+  <div class="rf-links">
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="cookies.html">Cookie Policy</a>
+    <a href="terms.html">Terms &amp; Conditions</a>
+    <a href="index.html">Home</a>
+  </div>
+  <div style="flex:1 0 100%;font-size:.72rem;color:inherit;opacity:.7;">RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562).</div>
+</footer>
+
+</body>
+</html>

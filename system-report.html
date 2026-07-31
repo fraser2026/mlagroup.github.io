@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
-<title>AI System Governance Report | MLA Group</title>
+<title>AI System Governance Report | RegAnchor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#020617;--card:#070f24;--card2:#0a1628;--border:rgba(255,255,255,0.07);--accent:#2563eb;--sky:#60a5fa;--main:#f1f5f9;--sub:#cbd5e1;--muted:#64748b;--muted2:#94a3b8;--green:#4ade80;--amber:#fbbf24;--red:#f87171}
@@ -111,11 +111,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--sub);-web
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:.85rem;color:var(--muted)}
 </style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <body>
 
 <div class="report-nav">
-  <a href="portal.html" class="nav-logo">mla<em>group.</em></a>
+  <a href="portal.html" class="nav-logo ra-wordmark">RegAnchor</a>
   <div class="nav-actions">
     <a href="portal.html" class="nav-btn nav-btn-ghost">&#8592; Portal</a>
     <button class="nav-btn nav-btn-primary" onclick="window.print()"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Print / Save PDF</button>
@@ -211,7 +213,7 @@ function renderReport(a,sys,org,profile){
   c.innerHTML=`
     <div class="report-hero">
       <div class="report-badge badge-${band}"><span class="badge-dot"></span>${BAND_L[band]} — System Governance Assessment</div>
-      <div class="report-sublabel">AI System Governance Report — Prepared by MLA Group</div>
+      <div class="report-sublabel">AI System Governance Report — Prepared by RegAnchor</div>
       <div class="report-sys-name">${esc(sys.name||'AI System')}</div>
       <div class="report-desc">${esc(sys.description||'This report presents findings of the AI system governance assessment, evaluating maturity across 7 governance domains and mapping regulatory exposure.')}</div>
       <div class="report-meta">
@@ -240,7 +242,7 @@ function renderReport(a,sys,org,profile){
       </div>
     </div>
 
-    ${tv&&tv.mismatch?`<div class="tier-alert"><div class="tier-alert-title">Risk Tier Mismatch Detected</div><div class="tier-alert-body">${esc(tv.message||'Assessment responses suggest this system may require a higher risk classification than currently assigned. MLA Group recommends reviewing the classification against EU AI Act Annex III criteria.')}</div></div>`:''}
+    ${tv&&tv.mismatch?`<div class="tier-alert"><div class="tier-alert-title">Risk Tier Mismatch Detected</div><div class="tier-alert-body">${esc(tv.message||'Assessment responses suggest this system may require a higher risk classification than currently assigned. RegAnchor recommends reviewing the classification against EU AI Act Annex III criteria.')}</div></div>`:''}
 
     <!-- Section Scores -->
     <div class="rpt-card">

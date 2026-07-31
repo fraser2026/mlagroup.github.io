@@ -35,7 +35,7 @@ function renderSystemTable(){
 function setRegFilter(s,btn){regFilter=s;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSystemTable()}
  
 // ═══ SYSTEM DETAIL ════════════════════════════════════════════
-const ASSESS_STATUS_LABELS={submitted:'Awaiting MLA Review',in_review:'Under Review',controls_issued:'Controls Issued'};
+const ASSESS_STATUS_LABELS={submitted:'Awaiting RegAnchor Review',in_review:'Under Review',controls_issued:'Controls Issued'};
 const ASSESS_STATUS_COLORS={submitted:'#fde047',in_review:'#93c5fd',controls_issued:'#4ade80'};
 const Q_LABELS={yes:'Yes',no:'No',unsure:'Unsure'};
  
@@ -80,7 +80,7 @@ async function openSystemDetail(sysId){
 async function renderAssessmentTab(assessments){
   const el=document.getElementById('tab-assessment');
   if(!assessments.length){
-    el.innerHTML='<div class="empty-state" style="padding:36px 0;"><h4>No assessments yet</h4><p style="max-width:360px;margin:0 auto 20px;">Run an assessment to have MLA Group review this AI system and provide tailored compliance controls.</p><button class="btn-dl" onclick="openAssessmentModal()" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button></div>';
+    el.innerHTML='<div class="empty-state" style="padding:36px 0;"><h4>No assessments yet</h4><p style="max-width:360px;margin:0 auto 20px;">Run an assessment to have RegAnchor review this AI system and provide tailored compliance controls.</p><button class="btn-dl" onclick="openAssessmentModal()" style="display:inline-flex;"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button></div>';
     return;
   }
   const nm=await loadNames(assessments.map(a=>a.requested_by).concat(assessments.map(a=>a.completed_by).filter(Boolean)));
@@ -104,8 +104,8 @@ async function renderAssessmentTab(assessments){
       '</div>'+
       (a.client_notes?'<div style="font-size:.76rem;color:var(--muted);line-height:1.65;background:rgba(255,255,255,0.02);border-left:2px solid var(--border);padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:12px;">'+esc(a.client_notes)+'</div>':'')+
       '<div style="font-size:.7rem;color:var(--muted);">Submitted by '+esc(nm[a.requested_by]||'Unknown')+'</div>'+
-      (a.status==='controls_issued'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;"><div style="font-size:.72rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">MLA Controls Issued</div>'+(a.mla_notes?'<div style="font-size:.78rem;color:var(--sub);line-height:1.65;">'+esc(a.mla_notes)+'</div>':'')+'<div style="font-size:.68rem;color:var(--muted);margin-top:6px;">Completed by '+(nm[a.completed_by]||'MLA Group')+' · '+fmtDateLong(a.completed_at)+'</div></div>':'')+
-      (a.status==='submitted'||a.status==='in_review'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.12);border-radius:8px;"><div style="font-size:.78rem;color:var(--sub);line-height:1.65;">Your assessment has been submitted. MLA Group will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
+      (a.status==='controls_issued'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;"><div style="font-size:.72rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">RegAnchor Controls Issued</div>'+(a.mla_notes?'<div style="font-size:.78rem;color:var(--sub);line-height:1.65;">'+esc(a.mla_notes)+'</div>':'')+'<div style="font-size:.68rem;color:var(--muted);margin-top:6px;">Completed by '+(nm[a.completed_by]||'RegAnchor')+' · '+fmtDateLong(a.completed_at)+'</div></div>':'')+
+      (a.status==='submitted'||a.status==='in_review'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.12);border-radius:8px;"><div style="font-size:.78rem;color:var(--sub);line-height:1.65;">Your assessment has been submitted. RegAnchor will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
     '</div>'}).join('');
 }
  
@@ -204,11 +204,11 @@ async function renderAssessmentTab(assessments){
         '</div>'+
       '</div>'+
       (Object.keys(ss).length?'<div style="margin-bottom:14px;">'+secBars+'</div>':'')+
-      (tv&&tv.mismatch?'<div style="font-size:.76rem;color:var(--amber);background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;">'+esc(tv.message||'Risk tier mismatch detected. MLA Group recommends reviewing the classification.')+'</div>':'')+
+      (tv&&tv.mismatch?'<div style="font-size:.76rem;color:var(--amber);background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;">'+esc(tv.message||'Risk tier mismatch detected. RegAnchor recommends reviewing the classification.')+'</div>':'')+
       (a.client_notes?'<div style="font-size:.76rem;color:var(--muted);line-height:1.65;background:rgba(255,255,255,0.02);border-left:2px solid var(--border);padding:8px 12px;border-radius:0 6px 6px 0;margin-bottom:12px;">'+esc(a.client_notes)+'</div>':'')+
       '<div style="font-size:.7rem;color:var(--muted);">Submitted by '+esc(nm[a.requested_by]||'Unknown')+(a.sector?' · '+esc(a.sector):'')+'</div>'+
-      (a.status==='controls_issued'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;"><div style="font-size:.72rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">MLA Controls Issued</div>'+(a.mla_notes?'<div style="font-size:.78rem;color:var(--sub);line-height:1.65;">'+esc(a.mla_notes)+'</div>':'')+'<div style="font-size:.68rem;color:var(--muted);margin-top:6px;">Completed by '+(nm[a.completed_by]||'MLA Group')+' · '+fmtDateLong(a.completed_at)+'</div></div>':'')+
-      (a.status==='submitted'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.12);border-radius:8px;"><div style="font-size:.78rem;color:var(--sub);line-height:1.65;">Your assessment has been submitted. MLA Group will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
+      (a.status==='controls_issued'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;"><div style="font-size:.72rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">RegAnchor Controls Issued</div>'+(a.mla_notes?'<div style="font-size:.78rem;color:var(--sub);line-height:1.65;">'+esc(a.mla_notes)+'</div>':'')+'<div style="font-size:.68rem;color:var(--muted);margin-top:6px;">Completed by '+(nm[a.completed_by]||'RegAnchor')+' · '+fmtDateLong(a.completed_at)+'</div></div>':'')+
+      (a.status==='submitted'?'<div style="margin-top:14px;padding:14px 16px;background:rgba(37,99,235,0.04);border:1px solid rgba(37,99,235,0.12);border-radius:8px;"><div style="font-size:.78rem;color:var(--sub);line-height:1.65;">Your assessment has been submitted. RegAnchor will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
       '<div style="margin-top:12px;display:flex;gap:8px;">'+(isPaidTier()?'<a href="system-report.html?aid='+a.id+'" class="btn-dl" style="text-decoration:none;display:inline-flex;" target="_blank"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</a>':'<button onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;color:var(--sky);background:transparent;border:1px solid rgba(96,165,250,0.25);white-space:nowrap;"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>Upgrade to View Report</button>')+'</div>'+
     '</div>'}).join('');
 }

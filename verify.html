@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
-<title>Verify Certificate | MLA Group</title>
-<meta name="description" content="Verify an MLA Group AI Governance Certificate. Enter a certificate ID to confirm its authenticity and validity.">
+<title>Verify Certificate | RegAnchor</title>
+<meta name="description" content="Verify a RegAnchor AI Governance Certificate. Enter a certificate ID to confirm its authenticity and validity.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#020617;--surface:rgba(8,15,35,0.7);--surface2:rgba(10,18,42,0.9);--border:rgba(255,255,255,0.055);--border2:rgba(255,255,255,0.10);--accent:#2563eb;--sky:#60a5fa;--main:#f1f5f9;--sub:#94a3b8;--muted:#475569;--muted2:#334155;--green:#22c55e;--red:#ef4444;--gold:#ba9b5f}
@@ -110,13 +110,15 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:0 48px
   .cp-meta-divider{display:none}
 }
 </style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <body>
 <div class="bg-ambient"></div>
  
 <nav>
-  <a href="index.html" class="nav-logo">mla<em>group.</em></a>
-  <a href="index.html" class="nav-link">Back to MLA Group</a>
+  <a href="index.html" class="nav-logo ra-wordmark">RegAnchor</a>
+  <a href="index.html" class="nav-link">Back to RegAnchor</a>
 </nav>
  
 <div class="page">
@@ -126,7 +128,7 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:0 48px
       Certificate Verification
     </div>
     <h1 class="verify-title">Verify a Governance Certificate</h1>
-    <p class="verify-desc">Enter an MLA Group certificate ID to confirm its authenticity, current status, and validity period.</p>
+    <p class="verify-desc">Enter a RegAnchor certificate ID to confirm its authenticity, current status, and validity period.</p>
   </div>
  
   <div class="search-box">
@@ -141,7 +143,7 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:0 48px
  
   <div class="page-footer">
     <p><strong style="color:var(--main);">MLA Group Ltd</strong><br>AI Governance &amp; Risk Consultancy<br><br>
-    Certificates are issued to organisations that demonstrate governance maturity through MLA Group's assessment framework. Verification data is served directly from our governance database.</p>
+    Certificates are issued to organisations that demonstrate governance maturity through RegAnchor's assessment framework. Verification data is served directly from our governance database.</p>
   </div>
 </div>
  
@@ -260,7 +262,7 @@ function renderExpired(d){
           '<div class="cert-detail-item"><label>Issued</label><span>'+fmtDate(d.issued_at)+'</span></div>'+
           '<div class="cert-detail-item"><label>Expired</label><span style="color:#fbbf24;">'+fmtDate(d.expires_at)+'</span></div>'+
         '</div>'+
-        '<div style="margin-top:16px;padding:12px 16px;background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.12);border-radius:8px;font-size:.78rem;color:var(--muted);line-height:1.7;">The organisation may renew this certificate by maintaining an active MLA Group subscription and meeting governance requirements.</div>'+
+        '<div style="margin-top:16px;padding:12px 16px;background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.12);border-radius:8px;font-size:.78rem;color:var(--muted);line-height:1.7;">The organisation may renew this certificate by maintaining an active RegAnchor subscription and meeting governance requirements.</div>'+
       '</div>'+
       '<div class="cert-id-row">'+
         '<div class="cert-id-lines"></div>'+
@@ -276,7 +278,7 @@ function renderRevoked(d){
       '<div class="cert-invalid-body">'+
         '<div class="cert-invalid-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M13 7l-6 6M7 7l6 6"/></svg></div>'+
         '<div class="cert-invalid-title">Certificate Revoked</div>'+
-        '<div class="cert-invalid-desc">This certificate has been revoked and is no longer valid. Contact MLA Group for further information.</div>'+
+        '<div class="cert-invalid-desc">This certificate has been revoked and is no longer valid. Contact RegAnchor for further information.</div>'+
       '</div>'+
     '</div>';
 }

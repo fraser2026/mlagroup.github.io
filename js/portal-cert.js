@@ -207,7 +207,7 @@ async function renderCertificateCard(){
       '</div>' +
 
       // Footer
-      '<div style="font-size:.68rem;color:#475569;line-height:1.5;padding-top:12px;border-top:1px solid rgba(148,163,184,0.06);font-family:\'DM Sans\',sans-serif;">Certificate ID: ' + esc(cId) + ' &middot; Publicly verifiable at mlagroup.co.uk/verify/' + esc(cId) + '</div>' +
+      '<div style="font-size:.68rem;color:#475569;line-height:1.5;padding-top:12px;border-top:1px solid rgba(148,163,184,0.06);font-family:\'DM Sans\',sans-serif;">Certificate ID: ' + esc(cId) + ' &middot; Publicly verifiable at ' + location.host + '/verify/' + esc(cId) + '</div>' +
 
       '</div></div>';
   }
@@ -249,7 +249,7 @@ async function renderCertificateCard(){
       '</div>' +
 
       // Footer
-      '<div style="font-size:.68rem;color:#475569;line-height:1.5;padding-top:12px;border-top:1px solid rgba(148,163,184,0.06);font-family:\'DM Sans\',sans-serif;">Activate to enable PDF download and public verification at mlagroup.co.uk/verify</div>' +
+      '<div style="font-size:.68rem;color:#475569;line-height:1.5;padding-top:12px;border-top:1px solid rgba(148,163,184,0.06);font-family:\'DM Sans\',sans-serif;">Activate to enable PDF download and public verification at ' + location.host + '/verify</div>' +
 
       '</div></div>';
   }

@@ -343,6 +343,8 @@ html, body { height: 100%; background: #fefdfb; display: flex; align-items: cent
     </div>
     <div class="cert-footer">
       <div class="cert-footer-left">
+        <!-- Absolute by necessity: Puppeteer renders this template via setContent, and the
+             image must be fetched before the PDF is captured. Update at the domain cutover. -->
         <img src="https://mlagroup.co.uk/advisory-signature.png" class="cert-sig-img" crossorigin="anonymous" onerror="this.style.display='none'">
         <div class="cert-sig-line"></div>
         <div class="cert-sig-label">Authorised Signatory</div>
@@ -372,6 +374,11 @@ html, body { height: 100%; background: #fefdfb; display: flex; align-items: cent
 <script>
 /*__CERT_DATA__*/
 
+// Rendered off-site by Puppeteer via setContent, so relative URLs resolve against
+// about:blank. Both this and the signature <img> above must stay absolute.
+// Change both at the reganchor.com cutover.
+var SITE_DOMAIN = 'mlagroup.co.uk';
+
 (function(){
   if(typeof CERT_DATA === 'undefined') return;
   var d = CERT_DATA;
@@ -394,7 +401,7 @@ html, body { height: 100%; background: #fefdfb; display: flex; align-items: cent
   document.getElementById('cert-org').textContent = d.organisation || '';
   document.getElementById('cert-statement').textContent = levelDesc;
   document.getElementById('cert-id').textContent = d.certificate_id || '';
-  document.getElementById('cert-verify-url').textContent = 'mlagroup.co.uk/verify/' + (d.certificate_id || '');
+  document.getElementById('cert-verify-url').textContent = SITE_DOMAIN + '/verify/' + (d.certificate_id || '');
 
   document.getElementById('cert-data').innerHTML =
     '<div class="cert-data-item"><div class="cert-data-label">Governance Score</div><div class="cert-data-value score">' + (d.governance_score || 0) + '%</div></div>' +
