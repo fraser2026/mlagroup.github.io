@@ -246,8 +246,9 @@ function renderMaturity(score) {
   animateScore(document.getElementById('diagScore'), score);
   document.getElementById('diagTier').innerHTML =
     '<strong>' + raLevelText(score) + '</strong>';
-  document.getElementById('maturityMount').innerHTML =
-    raComplianceBar(score) + raLadderScale(score);
+  const mount = document.getElementById('maturityMount');
+  mount.innerHTML = raComplianceBar(score, { animate: true }) + raLadderScale(score);
+  requestAnimationFrame(() => animateMaturity(mount));
 }
 
 function renderDomains(ss) {
