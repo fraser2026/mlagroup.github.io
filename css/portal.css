@@ -256,7 +256,7 @@ body {
 /* ───────────────────────────────────────────────────────────────
    SHELL
    ─────────────────────────────────────────────────────────────── */
-.app { display: flex; height: 100vh; position: relative; z-index: 1 }
+.app { display: flex; height: 100vh; position: relative }
 
 .sidebar {
   width: var(--sidebar-w);
@@ -267,7 +267,7 @@ body {
   flex-direction: column;
   height: 100vh;
   position: relative;
-  z-index: 10;
+  z-index: 2;
 }
 
 .sidebar-logo {
@@ -2251,17 +2251,35 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
 
 @media (max-width: 768px) {
   .sidebar {
-    position: fixed; left: -100%; top: 0; bottom: 0; z-index: 200;
-    transition: left .25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: fixed; left: 0; top: 0; bottom: 0;
+    width: min(var(--sidebar-w), 86vw);
+    z-index: 300;
+    transform: translateX(-105%);
+    transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  .sidebar.open { left: 0 }
-  .sidebar-overlay { display: none; position: fixed; inset: 0; z-index: 199; background: rgba(10, 14, 20, 0.45) }
-  .sidebar-overlay.show { display: block }
+  .sidebar.open { transform: translateX(0) }
+  .sidebar-overlay {
+    display: block;
+    position: fixed; inset: 0;
+    z-index: 250;
+    background: rgba(10, 14, 20, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  .sidebar-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
   .mobile-toggle {
     display: flex; align-items: center; justify-content: center;
     width: 32px; height: 32px;
     background: none; border: 1px solid var(--ra-border);
     cursor: pointer; color: var(--ra-text);
+    position: relative;
+    z-index: 2;
   }
   .mobile-toggle svg {
     width: 15px; height: 15px; stroke: currentColor; fill: none;

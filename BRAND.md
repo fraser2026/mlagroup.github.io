@@ -14,8 +14,8 @@ or stays as it is.
 | ICO registration | ZB826186 |
 | Registered address | Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB |
 | Telephone | 0151 558 0162 |
-| Current domain | mlagroup.co.uk |
-| Target domain | reganchor.com (at cutover) |
+| Primary domain | reganchor.com |
+| Legacy domain | mlagroup.co.uk (redirects during transition) |
 
 The standing formula, already used in `privacy.html` and `terms.html`, becomes:
 
@@ -108,8 +108,8 @@ This matches the pattern already used in your own design work: `reganchorsystem.
 
 | Item | Current | Reason for deferral |
 |------|---------|---------------------|
-| Email addresses | `@mlagroup.co.uk` | Mailboxes still live; move at cutover |
-| `CNAME` | `mlagroup.co.uk` | Flipped in one deliberate cutover step |
+| Email addresses | Public pages use `@reganchor.com`; legacy `@mlagroup.co.uk` may still receive | Mailbox / DNS cutover still in progress |
+| `CNAME` | Moving to `reganchor.com` | Confirm GitHub Pages custom domain in one step |
 | Certificate ID prefix | `MLA-GOV-` | Generated in Supabase; new issues become `RGA-GOV-` at cutover, old IDs stay valid |
 | Stripe product names | MLA Group | Cosmetic, dashboard-side |
 | Render service hostname | `mla-pdf-service.onrender.com` | Internal, not user-visible |

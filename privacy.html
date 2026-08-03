@@ -54,6 +54,11 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 .info-block p{font-size:.88rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
 .info-block p:last-child{margin-bottom:0}
 .info-block strong{color:var(--text-1)}
+.quiet-details{margin-top:12px}
+.quiet-details summary{cursor:pointer;font-size:.8rem;color:var(--text-3);list-style:none}
+.quiet-details summary::-webkit-details-marker{display:none}
+.quiet-details[open] summary{margin-bottom:10px;color:var(--text-2)}
+.quiet-details p{margin-bottom:6px}
 
 /* DATA TABLE */
 .data-tbl{width:100%;border-collapse:collapse;margin:20px 0;border:1px solid var(--border)}
@@ -109,16 +114,20 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
   <div class="info-block">
     <div class="info-block-lbl">Data Controller</div>
     <p><strong>MLA Group Ltd</strong> (trading as RegAnchor)</p>
-    <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
-    <p>Tel: 0151 558 0162 &nbsp;·&nbsp; <a href="mailto:info@mlagroup.co.uk">info@mlagroup.co.uk</a></p>
-    <p>Company Registration No: 16117562 &nbsp;·&nbsp; ICO Registration No: ZB826186</p>
+    <p>Company Registration No: 16117562 · ICO Registration No: ZB826186</p>
+    <p>Privacy enquiries: <a href="mailto:info@reganchor.com">info@reganchor.com</a></p>
+    <details class="quiet-details">
+      <summary>Registered office and telephone</summary>
+      <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
+      <p>Tel: 0151 558 0162</p>
+    </details>
   </div>
 
   <div class="section">
     <div class="section-num">Section 01</div>
     <h2 class="section-title">Who We Are</h2>
     <p class="body-text">MLA Group Ltd (trading as RegAnchor) is an AI governance advisory firm registered in England and Wales. We provide AI governance risk assessments, compliance advisory services, and board-level reporting tools to organisations operating across regulated and professional sectors.</p>
-    <p class="body-text">This Privacy Policy explains how we collect, use, store, and protect your personal data when you use our website at <strong>www.mlagroup.co.uk</strong>, complete an AI Governance Risk Diagnostic, access your client portal, or otherwise interact with our services.</p>
+    <p class="body-text">This Privacy Policy explains how we collect, use, store, and protect your personal data when you use our website at <strong>www.reganchor.com</strong>, complete an AI Governance Risk Diagnostic, access your client portal, or otherwise interact with our services.</p>
     <p class="body-text">We are registered with the Information Commissioner's Office (ICO) as a data controller under registration number <strong>ZB826186</strong>.</p>
     <p class="body-text"><strong>RegAnchor</strong> is the trading name of MLA Group Ltd. The change of trading name does not affect the identity of the data controller, our ICO registration, the lawful bases on which we process your data, or any of your rights under this policy.</p>
   </div>
@@ -235,7 +244,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
         <div class="right-desc">Where processing is based on consent, you may withdraw that consent at any time without affecting the lawfulness of prior processing.</div>
       </div>
     </div>
-    <p class="body-text">To exercise any of these rights, contact us at <a href="mailto:info@mlagroup.co.uk">info@mlagroup.co.uk</a>. We will respond within one calendar month. We may need to verify your identity before processing your request.</p>
+    <p class="body-text">To exercise any of these rights, contact us at <a href="mailto:info@reganchor.com">info@reganchor.com</a>. We will respond within one calendar month. We may need to verify your identity before processing your request.</p>
     <p class="body-text">If you are dissatisfied with our response, you have the right to lodge a complaint with the Information Commissioner's Office at <a href="https://ico.org.uk" target="_blank">ico.org.uk</a> or by calling 0303 123 1113.</p>
   </div>
 
@@ -267,10 +276,13 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
     <h2 class="section-title">Contact Us</h2>
     <div class="info-block">
       <div class="info-block-lbl">Privacy Enquiries</div>
-      <p><strong>MLA Group Ltd</strong></p>
-      <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
-      <p>Tel: 0151 558 0162</p>
-      <p>Email: <a href="mailto:info@mlagroup.co.uk">info@mlagroup.co.uk</a></p>
+      <p>Email: <a href="mailto:info@reganchor.com">info@reganchor.com</a></p>
+      <details class="quiet-details">
+        <summary>Registered office and telephone</summary>
+        <p><strong>MLA Group Ltd</strong></p>
+        <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
+        <p>Tel: 0151 558 0162</p>
+      </details>
     </div>
   </div>
 

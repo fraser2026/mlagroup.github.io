@@ -28,28 +28,23 @@ nav{position:sticky;top:0;z-index:100;height:var(--nav-h);display:flex;align-ite
 .nav-back svg{transition:transform 0.18s}
 .nav-back:hover svg{transform:translateX(-3px)}
 
-/* LAYOUT */
-.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:72px 48px 100px;display:grid;grid-template-columns:1fr 1fr;gap:88px;align-items:start}
+/* LAYOUT — form leads; company details stay quiet */
+.page{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:72px 48px 100px}
 
-/* LEFT — INFO */
-.info-side{position:sticky;top:calc(var(--nav-h) + 40px)}
 .eyebrow{font-family:var(--font-brand);font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:0.16em;color:var(--muted);display:flex;align-items:center;gap:10px;margin-bottom:22px}
 .eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--border-h)}
-h1{font-family:var(--font-brand);font-size:clamp(2.1rem,3.6vw,3rem);font-weight:500;line-height:1.12;letter-spacing:-0.03em;color:var(--main);margin-bottom:22px}
+h1{font-family:var(--font-brand);font-size:clamp(2.1rem,3.6vw,3rem);font-weight:500;line-height:1.12;letter-spacing:-0.03em;color:var(--main);margin-bottom:16px}
 h1 em{font-style:normal;font-weight:400;color:var(--muted)}
-.info-sub{font-size:0.95rem;font-weight:400;color:var(--sub);line-height:1.75;margin-bottom:44px;max-width:380px}
+.info-sub{font-size:0.95rem;font-weight:400;color:var(--sub);line-height:1.75;margin-bottom:36px;max-width:520px}
 
-.contact-details{display:flex;flex-direction:column;gap:0}
-.detail-row{display:flex;gap:16px;align-items:flex-start;padding:20px 0;border-bottom:1px solid var(--border)}
-.detail-row:first-child{border-top:1px solid var(--border)}
-.detail-icon{width:36px;height:36px;min-width:36px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-top:2px}
-.detail-icon svg{width:15px;height:15px;stroke:var(--main);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.detail-label{font-family:var(--font-brand);font-size:0.65rem;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px}
-.detail-val{font-size:0.88rem;color:var(--sub);line-height:1.5}
-
-/* FORM SIDE */
-.form-side{}
 .form-card{background:var(--bg);border:1px solid var(--border);padding:36px}
+
+.quiet-org{margin-top:40px;padding-top:28px;border-top:1px solid var(--border)}
+.quiet-org details summary{cursor:pointer;font-size:0.8rem;color:var(--muted);list-style:none}
+.quiet-org details summary::-webkit-details-marker{display:none}
+.quiet-org details[open] summary{margin-bottom:14px;color:var(--sub)}
+.quiet-org-meta{font-size:0.82rem;color:var(--muted);line-height:1.7}
+.quiet-org-meta a{color:var(--main);text-decoration:underline;text-underline-offset:2px}
 
 .form-group{margin-bottom:22px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
@@ -114,8 +109,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--main);background:v
 
 @media(max-width:900px){
   nav{padding:0 20px}
-  .page{grid-template-columns:1fr;gap:48px;padding:44px 20px 72px}
-  .info-side{position:static}
+  .page{padding:44px 20px 72px}
   .form-card{padding:24px 20px}
   .form-row{grid-template-columns:1fr}
   .footer-bottom{flex-direction:column;text-align:center;padding:20px 20px}
@@ -136,53 +130,10 @@ footer{position:relative;z-index:1;border-top:1px solid var(--main);background:v
 
 <div class="page">
 
-  <!-- LEFT -->
-  <div class="info-side">
-    <div class="eyebrow fade">Get in touch</div>
-    <h1 class="fade">Let's talk<br><em>governance.</em></h1>
-    <p class="info-sub fade">Whether you're exploring the diagnostic, have a question about your sector's obligations, or want to discuss an enterprise engagement — we're here.</p>
+  <div class="eyebrow fade">Get in touch</div>
+  <h1 class="fade">Let's talk<br><em>governance.</em></h1>
+  <p class="info-sub fade">Whether you're exploring the diagnostic, have a question about your sector's obligations, or want to discuss an enterprise engagement, use the form below. We aim to respond within one business day.</p>
 
-    <div class="contact-details">
-      <div class="detail-row fade">
-        <div class="detail-icon">
-          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        </div>
-        <div>
-          <div class="detail-label">Office</div>
-          <div class="detail-val">Unit 1 (Suite 121), Imperial Court<br>Exchange Street East, Liverpool, L2 3AB</div>
-        </div>
-      </div>
-      <div class="detail-row fade">
-        <div class="detail-icon">
-          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.12 2.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.46-.46a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
-        </div>
-        <div>
-          <div class="detail-label">Telephone</div>
-          <div class="detail-val">0151 558 0162</div>
-        </div>
-      </div>
-      <div class="detail-row fade">
-        <div class="detail-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div>
-          <div class="detail-label">Response time</div>
-          <div class="detail-val">We aim to respond within one business day</div>
-        </div>
-      </div>
-      <div class="detail-row fade">
-        <div class="detail-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div>
-          <div class="detail-label">Registered</div>
-          <div class="detail-val">MLA Group Ltd · Co. No. 16117562<br>ICO Reg. ZB826186</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT — FORM -->
   <div class="form-side fade">
     <div class="form-card">
 
@@ -273,6 +224,18 @@ footer{position:relative;z-index:1;border-top:1px solid var(--main);background:v
       </div>
 
     </div>
+  </div>
+
+  <div class="quiet-org fade">
+    <details>
+      <summary>Company and registered office</summary>
+      <div class="quiet-org-meta">
+        MLA Group Ltd (trading as RegAnchor)<br>
+        Company No. 16117562 · ICO Reg. ZB826186<br>
+        Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB<br>
+        Tel: 0151 558 0162 · <a href="mailto:info@reganchor.com">info@reganchor.com</a>
+      </div>
+    </details>
   </div>
 
 </div>
