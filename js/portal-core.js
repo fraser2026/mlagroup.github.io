@@ -116,14 +116,30 @@ window.addEventListener('popstate',function(e){
 async function navigateRegistry(navEl){navigate('registry',navEl);if(!currentOrg)await ensureOrg();if(!allSystems.length)await loadSystems();if(!allControls.length)await loadControls()}
 async function navigateOrg(navEl){navigate('org',navEl);if(!currentOrg)await ensureOrg();await renderOrgPage()}
 function openSidebar(){
+  var overlay=document.getElementById('overlay');
   document.getElementById('sidebar').classList.add('open');
-  document.getElementById('overlay').classList.add('show');
-  document.body.style.overflow='hidden';
+  if(overlay){
+    overlay.hidden=false;
+    // Force a frame so opacity can transition after [hidden] is cleared
+    void overlay.offsetWidth;
+    overlay.classList.add('show');
+  }
+  document.documentElement.classList.add('sidebar-open');
 }
 function closeSidebar(){
+  var overlay=document.getElementById('overlay');
   document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay').classList.remove('show');
-  document.body.style.overflow='';
+  if(overlay){
+    overlay.classList.remove('show');
+    var hide=function(){
+      if(!overlay.classList.contains('show')) overlay.hidden=true;
+      overlay.removeEventListener('transitionend', hide);
+    };
+    overlay.addEventListener('transitionend', hide);
+    // Fallback if transitionend does not fire
+    setTimeout(hide, 250);
+  }
+  document.documentElement.classList.remove('sidebar-open');
 }
  
 // ═══ INIT ═════════════════════════════════════════════════════

@@ -256,7 +256,7 @@ body {
 /* ───────────────────────────────────────────────────────────────
    SHELL
    ─────────────────────────────────────────────────────────────── */
-.app { display: flex; height: 100vh; position: relative }
+.app { display: flex; height: 100vh; height: 100dvh; position: relative }
 
 .sidebar {
   width: var(--sidebar-w);
@@ -266,6 +266,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   position: relative;
   z-index: 2;
 }
@@ -408,7 +409,7 @@ body {
   stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
 }
 
-.main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; min-width: 0 }
+.main { flex: 1; display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; min-width: 0 }
 
 .topbar {
   height: var(--topbar-h);
@@ -2247,12 +2248,37 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
    RESPONSIVE
    ─────────────────────────────────────────────────────────────── */
 .mobile-toggle { display: none }
-.sidebar-overlay { display: none }
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  z-index: 250;
+  background: rgba(10, 14, 20, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .2s ease, visibility .2s ease;
+  /* Avoid iOS paint leftovers in the chrome gutters */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.sidebar-overlay.show {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
 
 @media (max-width: 768px) {
   .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0;
     width: min(var(--sidebar-w), 86vw);
+    height: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
     z-index: 300;
     transform: translateX(-105%);
     transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -2260,18 +2286,8 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
     -webkit-overflow-scrolling: touch;
   }
   .sidebar.open { transform: translateX(0) }
-  .sidebar-overlay {
-    display: block;
-    position: fixed; inset: 0;
-    z-index: 250;
-    background: rgba(10, 14, 20, 0.45);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .2s ease;
-  }
-  .sidebar-overlay.show {
-    opacity: 1;
-    pointer-events: auto;
+  .sidebar-overlay[hidden] {
+    display: none !important;
   }
   .mobile-toggle {
     display: flex; align-items: center; justify-content: center;
