@@ -29,7 +29,7 @@ const TEMPLATE_PATH = join(__dirname, 'report-template.html');
 
 // PDFs render off-site, so there is no request origin to derive the public domain from.
 // Override via env at the reganchor.com cutover rather than editing this file.
-const SITE_DOMAIN = process.env.SITE_DOMAIN || 'mlagroup.co.uk';
+const SITE_DOMAIN = process.env.SITE_DOMAIN || 'reganchor.com';
 
 // Pre-load template
 const TEMPLATE_HTML = readFileSync(TEMPLATE_PATH, 'utf-8');   const CERT_TEMPLATE_PATH = join(__dirname, 'certificate-template.html'); const CERT_TEMPLATE_HTML = readFileSync(CERT_TEMPLATE_PATH, 'utf-8');

@@ -268,8 +268,8 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
   <div class="cert-footer">
     <div class="cert-footer-left">
       <!-- Absolute by necessity: Puppeteer renders this template via setContent, and the
-           image must be fetched before the PDF is captured. Update at the domain cutover. -->
-      <img src="https://mlagroup.co.uk/advisory-signature.png" class="cert-sig-img" crossorigin="anonymous" onerror="this.style.display='none'">
+           image must be fetched before the PDF is captured, so it cannot be a relative URL. -->
+      <img src="https://reganchor.com/advisory-signature.png" class="cert-sig-img" crossorigin="anonymous" onerror="this.style.display='none'">
       <div class="cert-sig-line"></div>
       <div class="cert-sig-label">Authorised Signatory</div>
       <div class="cert-sig-org">MLA Group Ltd</div>
@@ -281,7 +281,7 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
         <div class="cert-id-line"></div>
       </div>
       <div class="cert-verify-label">This certificate may be verified at:</div>
-      <div class="cert-verify-url" id="cert-verify-url">mlagroup.co.uk/verify/MLA-GOV-2026-0003</div>
+      <div class="cert-verify-url" id="cert-verify-url">reganchor.com/verify/MLA-GOV-2026-0003</div>
     </div>
     <div class="cert-footer-right">
       <div class="cert-company">MLA Group Ltd</div>
@@ -299,8 +299,7 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
 
 // Rendered off-site by Puppeteer via setContent, so relative URLs resolve against
 // about:blank. Both this and the signature <img> above must stay absolute.
-// Change both at the reganchor.com cutover.
-var SITE_DOMAIN = 'mlagroup.co.uk';
+var SITE_DOMAIN = 'reganchor.com';
 
 // Inlined from js/ra-maturity.js — this template has no access to external
 // scripts under about:blank, so the L1-L7 derivation is duplicated here.

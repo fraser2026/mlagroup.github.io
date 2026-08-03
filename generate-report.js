@@ -34,7 +34,7 @@ const CONFIG = {
   templatePath: join(__dirname, 'report-template.html'),
   outputDir: join(__dirname, 'output'),
   // Printed into the PDF footer. No request origin exists here, so it must be absolute.
-  siteDomain: process.env.SITE_DOMAIN || 'mlagroup.co.uk',
+  siteDomain: process.env.SITE_DOMAIN || 'reganchor.com',
   pdf: {
     format: 'A4',
     marginTop: '28mm',      // space for running header
