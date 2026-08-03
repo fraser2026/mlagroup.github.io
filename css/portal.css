@@ -208,19 +208,61 @@ body {
   background: var(--ra-blurple) !important;
 }
 
-/* Registry assessment domain bars — thicker track, blurple fill. */
-.ra-portal .dom-list .dom-row__track {
-  height: 6px !important;
-  background: var(--ra-border) !important;
+/* Soft status chips on assessment records win over the global transparent reset. */
+.ra-portal .assess-card .band-pill,
+.ra-portal .assess-card .band-pill.band-high,
+.ra-portal .assess-card .band-pill.band-critical,
+.ra-portal .assess-card .band-pill.band-medium,
+.ra-portal .assess-card .band-pill.band-moderate,
+.ra-portal .assess-card .band-pill.band-low {
   border-radius: var(--ra-radius-control, 4px) !important;
+}
+
+/* Registry assessment domain bars — slim precision track, blurple fill. */
+.ra-portal .dom-list .dom-row__track {
+  height: 4px !important;
+  background: var(--ra-border) !important;
+  border-radius: 999px !important;
   overflow: hidden;
 }
 .ra-portal .dom-list .dom-row__fill {
   background: var(--ra-blurple) !important;
-  border-radius: var(--ra-radius-control, 4px) !important;
+  border-radius: 999px !important;
   height: 100%;
   width: 0%;
   will-change: width;
+}
+
+/* Assessment risk chips: soft tint + ink, 4px control geometry (not capsules). */
+.ra-portal .assess-card .band-pill {
+  background: var(--ra-mist) !important;
+  background-color: var(--ra-mist) !important;
+  border: 1px solid var(--ra-border) !important;
+  border-radius: var(--ra-radius-control, 4px) !important;
+  padding: 3px 8px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--ra-text) !important;
+}
+.ra-portal .assess-card .band-pill.band-high,
+.ra-portal .assess-card .band-pill.band-critical {
+  background: var(--ra-risk-bg) !important;
+  background-color: var(--ra-risk-bg) !important;
+  border-color: transparent !important;
+  color: var(--ra-risk) !important;
+}
+.ra-portal .assess-card .band-pill.band-medium,
+.ra-portal .assess-card .band-pill.band-moderate {
+  background: rgba(196, 92, 38, 0.1) !important;
+  background-color: rgba(196, 92, 38, 0.1) !important;
+  border-color: transparent !important;
+  color: var(--ra-warn) !important;
+}
+.ra-portal .assess-card .band-pill.band-low {
+  background: rgba(36, 180, 126, 0.12) !important;
+  background-color: rgba(36, 180, 126, 0.12) !important;
+  border-color: transparent !important;
+  color: var(--ra-ok) !important;
 }
 
 /* Plex speaks for the brand and for numerals. Two classes beat the
@@ -912,8 +954,8 @@ body {
 }
 .ra-cbar--animate .ra-cbar__row {
   transform-origin: left center;
-  animation: ra-cbar-grow 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--ra-cbar-i, 0) * 45ms);
+  animation: ra-cbar-grow 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ra-cbar-i, 0) * 95ms);
 }
 @media (prefers-reduced-motion: reduce) {
   .ra-cbar--animate .ra-cbar__row { animation: none }
@@ -1196,26 +1238,30 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
 /* ───────────────────────────────────────────────────────────────
    TABS, BREADCRUMB, PROGRESS
    ─────────────────────────────────────────────────────────────── */
-.tab-bar { display: flex; border-bottom: 1px solid var(--ra-border); padding: 0 20px }
+.tab-bar { display: flex; border-bottom: 1px solid var(--ra-border); padding: 0 24px }
 
 .tab-btn {
-  padding: 12px 0;
-  margin-right: 24px;
+  padding: 14px 0;
+  margin-right: 28px;
   background: none;
   border: none;
-  border-bottom: 1px solid transparent;
+  border-bottom: 2px solid transparent;
   color: var(--ra-text-3);
   font-family: var(--ra-font-product);
   font-size: 13px;
   font-weight: 400;
   cursor: pointer;
   margin-bottom: -1px;
-  transition: color .15s;
+  transition: color .15s, border-color .15s;
 }
 .tab-btn:hover { color: var(--ra-text) }
-.tab-btn.active { color: var(--ra-text); font-weight: 500; border-bottom-color: var(--ra-text) }
+.tab-btn.active {
+  color: var(--ra-text);
+  font-weight: 500;
+  border-bottom-color: var(--ra-blurple);
+}
 
-.tab-panel { display: none; padding: 20px }
+.tab-panel { display: none; padding: 24px }
 .tab-panel.active { display: block }
 
 .breadcrumb {
@@ -1319,6 +1365,7 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
    CONTROL / POLICY DETAIL
    ─────────────────────────────────────────────────────────────── */
 .detail-head { margin-bottom: 24px }
+.detail-head--system { margin-bottom: 20px; padding-bottom: 4px }
 .detail-head__meta {
   display: flex;
   align-items: center;
@@ -1559,27 +1606,56 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
    ─────────────────────────────────────────────────────────────── */
 .assess-card {
   border: 1px solid var(--ra-border);
-  padding: 22px 24px;
+  padding: 28px;
   margin-bottom: 16px;
+  background: var(--ra-bg);
 }
 .assess-card__head {
   display: flex; align-items: flex-start; justify-content: space-between;
-  flex-wrap: wrap; gap: 14px;
-  margin-bottom: 20px;
+  flex-wrap: wrap; gap: 16px 24px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--ra-border);
 }
 .assess-card__reading { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap }
-.assess-card__status { display: flex; flex-direction: column; align-items: flex-end; gap: 5px }
+.assess-card__status { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 140px }
 .assess-card__date { font-size: 12px; color: var(--ra-text-3) }
-.assess-card__by { font-size: 12px; color: var(--ra-text-3); margin-top: 14px }
-.assess-card__actions { margin-top: 16px; display: flex; gap: 10px }
+.assess-card__by { font-size: 12px; color: var(--ra-text-3); margin-top: 16px }
+.assess-card__actions { margin-top: 18px; display: flex; gap: 10px; padding-top: 16px; border-top: 1px solid var(--ra-border) }
+.assess-card__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid var(--ra-border);
+  margin-top: 16px;
+}
+.assess-card__meta-cell {
+  padding: 12px 14px;
+  border-right: 1px solid var(--ra-border);
+}
+.assess-card__meta-cell:last-child { border-right: none }
+.assess-card__meta-lbl {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ra-text-3);
+  margin-bottom: 3px;
+}
+.assess-card__meta-val {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ra-text);
+  line-height: 1.35;
+}
 
 /* Domain scores — animated blurple meters on the assessment tab. */
-.dom-list { margin-bottom: 18px }
+.dom-list { margin-bottom: 4px }
 .dom-row {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 7px 0;
+  padding: 8px 0;
+  min-height: 32px;
 }
 .dom-row__label {
   font-size: 12px;
@@ -1592,11 +1668,12 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
 .dom-row__track {
   flex: 1;
   min-width: 80px;
-  height: 6px;
+  height: 4px;
   background: var(--ra-border);
   overflow: hidden;
+  border-radius: 999px;
 }
-.dom-row__fill { height: 100%; width: 0; background: var(--ra-blurple) }
+.dom-row__fill { height: 100%; width: 0; background: var(--ra-blurple); border-radius: 999px }
 .dom-row__pct {
   font-size: 12px;
   font-weight: 500;
@@ -1606,12 +1683,27 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
+.dom-row__risk {
+  font-size: 11px;
+  font-weight: 600;
+  width: 72px;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--ra-text-3);
+}
+.dom-row__risk.is-risk { color: var(--ra-risk) }
+.dom-row__risk.is-warn { color: var(--ra-warn) }
+.dom-row__risk.is-ok { color: var(--ra-ok) }
 
 @media (max-width: 720px) {
   .dom-row { flex-wrap: wrap; gap: 8px 12px }
   .dom-row__label { width: 100%; text-align: left }
   .dom-row__track { order: 3; flex: 1 1 100% }
   .dom-row__pct { margin-left: auto }
+  .dom-row__risk { order: 4 }
+  .assess-card__meta { grid-template-columns: 1fr }
+  .assess-card__meta-cell { border-right: none; border-bottom: 1px solid var(--ra-border) }
+  .assess-card__meta-cell:last-child { border-bottom: none }
 }
 
 /* ───────────────────────────────────────────────────────────────

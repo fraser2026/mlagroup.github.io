@@ -460,8 +460,8 @@ h3 { font-size: 20px; font-weight: 400; color: var(--main); margin-bottom: 8px }
 @keyframes ra-cbar-grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
 .diag-maturity-row .ra-cbar--animate .ra-cbar__row {
   transform-origin: left center;
-  animation: ra-cbar-grow 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--ra-cbar-i, 0) * 45ms);
+  animation: ra-cbar-grow 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ra-cbar-i, 0) * 95ms);
 }
 @media (prefers-reduced-motion: reduce) {
   .diag-maturity-row .ra-cbar--animate .ra-cbar__row { animation: none }

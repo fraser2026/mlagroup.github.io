@@ -71,7 +71,7 @@ body{
 .rnav-links{display:flex;list-style:none;gap:2px}
 .rnav-links a{font-size:.78rem;font-weight:400;color:var(--text-3);text-decoration:none;padding:6px 10px;border-radius:var(--r)}
 .rnav-links a:hover{color:var(--text-1);background:rgba(6,27,49,.04)}
-.rnav-links a.act{color:var(--text-1);font-weight:500;box-shadow:inset 0 -1px 0 var(--text-1)}
+.rnav-links a.act{color:var(--text-1);font-weight:600;box-shadow:none;border-bottom:none}
 .rnav-r{display:flex;align-items:center;gap:10px}
 .conf-badge{font-size:.72rem;color:var(--text-3);border:1px solid var(--border);padding:4px 10px;border-radius:var(--r)}
 .pdf-btn{padding:8px 14px;background:var(--blue);color:#fff;border:1px solid var(--blue);border-radius:var(--r);font-family:var(--font-body);font-size:.78rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
@@ -80,7 +80,11 @@ body{
 
 .hero{padding:40px 0 36px;border-bottom:1px solid var(--border)}
 .hero-bg,.hero-grid,.hero-scroll{display:none!important}
-.hero-inner{max-width:920px;margin:0 auto;padding:0 28px;width:100%;display:grid;grid-template-columns:1fr 200px;gap:40px;align-items:center}
+.hero-inner{max-width:920px;margin:0 auto;padding:0 28px;width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:48px;align-items:center}
+.hero-reading{display:flex;flex-direction:column;align-items:flex-start;gap:16px;padding-left:5px}
+.hero-reading__label{font-size:.72rem;font-weight:500;color:var(--text-3)}
+.hero-reading__meta{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding-left:0;max-width:280px}
+.band-head{font-size:.78rem;color:var(--text-3);margin:0;line-height:1.45;text-align:left;max-width:260px}
 .hero-eyebrow{font-family:var(--font-brand);font-size:.72rem;font-weight:500;color:var(--text-3);margin-bottom:12px}
 .hero-org{font-family:var(--font-brand);font-size:clamp(1.7rem,3vw,2.25rem)!important;font-weight:500;letter-spacing:-.03em;color:var(--text-1);margin-bottom:12px}
 .hero-sub{font-size:.92rem;color:var(--text-2);line-height:1.7;margin-bottom:24px;max-width:520px}
@@ -89,20 +93,10 @@ body{
 .hero-meta-item:last-child{border-right:none}
 .hm-label{font-size:.68rem;color:var(--text-3);margin-bottom:3px;font-weight:500}
 .hm-val{font-size:.84rem;font-weight:500;color:var(--text-1)}
-.hero-right{display:flex;flex-direction:column;align-items:center}
-.score-wrap{position:relative;width:168px;height:168px}
-.score-svg{width:100%;height:100%;transform:rotate(-90deg)}
-.sc-track{fill:none;stroke:var(--border);stroke-width:8}
-.sc-arc{fill:none;stroke:var(--blue);stroke-width:8;stroke-linecap:round;stroke-dasharray:565.5;stroke-dashoffset:565.5;transition:stroke-dashoffset 1.6s ease}
-.sc-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.sc-pct{font-family:var(--font-brand);font-size:2.4rem;font-weight:500;line-height:1;letter-spacing:-.03em;color:var(--text-1);font-feature-settings:'tnum'}
-.sc-lbl{font-size:.72rem;color:var(--text-3);margin-top:4px}
-.band-pill{margin-top:14px;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text-1)!important}
-.band-dot{width:6px;height:6px;border-radius:50%;background:var(--blue)}
-.band-lbl{font-size:.8rem;font-weight:600;color:var(--text-1)}
-.band-lbl.is-risk{color:var(--critical)}
-.band-lbl.is-warn{color:var(--high)}
-.band-head{font-size:.72rem;color:var(--text-3);margin-top:6px;text-align:center;max-width:200px;line-height:1.4}
+.hero-right{display:flex;align-items:center;justify-content:flex-end}
+.band-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--r);font-size:.75rem;font-weight:600}
+.band-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.band-lbl{font-size:.75rem;font-weight:600}
 
 .rsec{max-width:920px;margin:0 auto;padding:44px 28px;border-bottom:1px solid var(--border)}
 .sec-hdr{margin-bottom:24px}
@@ -151,9 +145,11 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;co
 .radar-lbl{font-family:var(--font-brand);font-size:.72rem;font-weight:500;color:var(--text-3);margin-bottom:8px}
 #radar-svg{width:100%;height:auto;display:block}
 
-.find-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
-.ft{padding:7px 12px;border:1px solid var(--border);background:var(--bg);border-radius:var(--r);font-family:var(--font-body);font-size:.78rem;font-weight:500;color:var(--text-3);cursor:pointer}
-.ft.act,.ft.active{color:var(--text-1);border-color:var(--text-1);background:var(--surface-1)}
+.find-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.find-tabs-hint{font-size:.78rem;color:var(--text-3);margin:-8px 0 14px}
+.ft{padding:8px 12px;border:1px solid var(--border);background:var(--bg);border-radius:var(--r);font-family:var(--font-body);font-size:.78rem;font-weight:500;color:var(--text-3);cursor:pointer}
+.ft:hover{color:var(--text-1);border-color:var(--text-1)}
+.ft.act,.ft.active{color:#fff;background:var(--blue);border-color:var(--blue)}
 .fpanel{display:none}.fpanel.act,.fpanel.active,.fpanel.show{display:block}
 
 .pf-card{
@@ -247,13 +243,14 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;co
   .rfooter{flex-direction:column}
 }
 @media print{
-  .rnav,.pdf-btn,.find-tabs{display:none!important}
+  .rnav,.btn-topbar,.find-tabs{display:none!important}
   body{background:#fff}
 }
 </style>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/reganchor.css">
   <link rel="stylesheet" href="css/reganchor-report.css">
+  <script src="js/ra-maturity.js"></script>
 </head>
 <body class="ra-report">
 
@@ -276,7 +273,7 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;co
 <div id="rpt">
 
   <!-- STICKY NAV -->
-  <nav class="rnav">
+  <nav class="rnav" id="rnav">
     <a href="portal.html" class="rnav-logo ra-wordmark">RegAnchor</a>
     <ul class="rnav-links">
       <li><a href="#executive-brief">Executive Brief</a></li>
@@ -287,55 +284,39 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;co
       <li><a href="#forward-risk">Outlook</a></li>
     </ul>
     <div class="rnav-r">
-      <span class="conf-badge">Confidential</span>
-      <button class="pdf-btn" onclick="window.print()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-        Save as PDF
-      </button>
+      <a href="portal.html" class="btn-topbar btn-topbar-primary">Back to Portal</a>
     </div>
+    <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress__fill" id="scrollProgress"></div></div>
   </nav>
 
   <!-- HERO -->
   <section class="hero" id="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-grid"></div>
     <div class="hero-inner">
       <div class="hero-left">
-        <div class="hero-eyebrow">AI Governance Risk Assessment &mdash; Board Advisory Report</div>
+        <div class="hero-eyebrow">AI Governance Risk Assessment · Board Advisory Report</div>
         <h1 class="hero-org" id="hero-org">Organisation Name</h1>
         <p class="hero-sub" id="hero-sub">This report presents the findings of your AI Governance Risk Diagnostic, assessed against UK and EU regulatory expectations. It is prepared for board and senior executive review.</p>
         <div class="hero-meta" id="hero-meta"></div>
       </div>
       <div class="hero-right">
-        <div class="score-wrap">
-          <svg class="score-svg" viewBox="0 0 240 240">
-            <circle class="sc-track" cx="120" cy="120" r="90"/>
-            <circle class="sc-arc" id="sc-arc" cx="120" cy="120" r="90"/>
-          </svg>
-          <div class="sc-inner">
-            <div class="sc-pct" id="sc-pct">0%</div>
-            <div class="sc-lbl">Maturity Score</div>
+        <div class="hero-reading">
+          <div class="hero-reading__label">Governance maturity</div>
+          <div id="maturityMount"></div>
+          <div class="hero-reading__meta">
+            <div class="band-pill" id="band-pill">
+              <span class="band-dot" id="band-dot"></span>
+              <span class="band-lbl" id="band-lbl"></span>
+            </div>
+            <p class="band-head" id="band-head"></p>
           </div>
-        </div>
-        <div class="band-wrap">
-          <div class="band-pill" id="band-pill">
-            <span class="band-dot" id="band-dot"></span>
-            <span id="band-lbl">—</span>
-          </div>
-          <div class="band-head" id="band-head"></div>
         </div>
       </div>
-    </div>
-    <div class="hero-scroll">
-      <span class="scroll-txt">Scroll to report</span>
-      <div class="scroll-ln"></div>
     </div>
   </section>
 
   <!-- 1. EXECUTIVE BRIEF -->
   <section class="rsec fiu" id="executive-brief">
     <div class="sec-hdr">
-      <div class="sec-num">Section 01</div>
       <h2 class="sec-title">Executive Brief</h2>
       <p class="sec-intro" id="brief-intro"></p>
     </div>
@@ -363,7 +344,6 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;co
   <!-- 2. GOVERNANCE MATURITY DASHBOARD -->
   <section class="rsec fiu" id="dashboard">
     <div class="sec-hdr">
-      <div class="sec-num">Section 02</div>
       <h2 class="sec-title">Governance Maturity Dashboard</h2>
       <p class="sec-intro">Domain scores reflect the proportion of maximum available points achieved in each governance area. The radar chart visualises relative maturity across all seven domains simultaneously. Each domain is assessed independently and contributes to the overall weighted score according to its regulatory significance.</p>
     </div>
@@ -390,12 +370,11 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;co
   <!-- 3. REGULATORY OBLIGATION REGISTER -->
   <section class="rsec fiu" id="regulatory-register">
     <div class="sec-hdr">
-      <div class="sec-num">Section 03</div>
       <h2 class="sec-title">Regulatory Obligation Register</h2>
       <p class="sec-intro">The following register maps each applicable regulation to the current compliance status derived from assessment responses. It is designed for use in board reporting, legal review, and audit defence preparation. Mandatory obligations carry financial penalties; deadlines are binding, not advisory.</p>
     </div>
     <div class="acc-gap">
-      <div class="acc-lbl">Accountability Gap &mdash; Regulatory Blindspot</div>
+      <div class="acc-lbl">Accountability Gap: Regulatory Blindspot</div>
       <div class="acc-txt">Under FCA PS7/21 and EU AI Act Art. 27, accountability for AI systems cannot be distributed across functions. The absence of a named individual responsible for AI governance creates a Regulatory Blindspot that prevents effective human oversight. In any supervisory inquiry, enforcement investigation, or litigation, regulators will identify a specific person to question. &ldquo;Shared responsibility&rdquo; is not a legally defensible position under either framework. RegAnchor recommends the immediate appointment of a named AI Oversight Lead with documented mandate and veto authority over model deployment.</div>
     </div>
     <div class="tbl-scroll" style="margin-bottom:0">
@@ -412,10 +391,10 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;co
   <!-- 4. DETAILED FINDINGS -->
   <section class="rsec fiu" id="findings">
     <div class="sec-hdr">
-      <div class="sec-num">Section 04</div>
       <h2 class="sec-title">Detailed Findings &amp; Domain Analysis</h2>
       <p class="sec-intro">Findings are drawn from assessment responses and cross-referenced against current UK and EU regulatory obligations. Priority findings address governance flags raised by the diagnostic. Domain analysis provides advisory commentary for each of the seven governance areas, calibrated to your sector and risk profile.</p>
     </div>
+    <p class="find-tabs-hint">Select a tab to view priority findings or domain detail.</p>
     <div class="find-tabs" id="find-tabs"></div>
     <div id="find-panels"></div>
   </section>
@@ -423,9 +402,8 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;co
   <!-- 5. REMEDIATION ROADMAP -->
   <section class="rsec fiu" id="roadmap">
     <div class="sec-hdr">
-      <div class="sec-num">Section 05</div>
       <h2 class="sec-title">30/60/90&#8209;Day Remediation Roadmap</h2>
-      <p class="sec-intro" id="roadmap-intro">This roadmap converts assessment findings into a structured remediation programme. Phases are sequenced by risk contribution score — the product of domain governance gap and regulatory weighting — ensuring resources address the areas of greatest regulatory exposure first.</p>
+      <p class="sec-intro" id="roadmap-intro">This roadmap converts assessment findings into a structured remediation programme. Phases are sequenced by risk contribution score (domain governance gap multiplied by regulatory weighting), ensuring resources address the areas of greatest regulatory exposure first.</p>
     </div>
     <div class="rm-phases" id="rm-phases"></div>
   </section>
@@ -433,7 +411,6 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;co
   <!-- 6. FORWARD RISK LANDSCAPE -->
   <section class="rsec fiu" id="forward-risk">
     <div class="sec-hdr">
-      <div class="sec-num">Section 06</div>
       <h2 class="sec-title">Forward Risk Landscape</h2>
       <p class="sec-intro">The following section addresses the forward trajectory of AI regulation over the next 12&ndash;36 months. Understanding the direction of regulatory travel is essential for boards making investment decisions about governance infrastructure.</p>
     </div>
@@ -471,11 +448,11 @@ const W  = {s1:.14,s2:.20,s3:.10,s4:.16,s5:.16,s6:.18,s7:.06};
 const SN = {s1:'AI Inventory & Classification',s2:'Governance & Accountability',s3:'Data Quality & Lineage',s4:'Human Oversight & Controls',s5:'Explainability & Transparency',s6:'Compliance & Legal Alignment',s7:'Operational Controls & Resilience'};
 const SM = {'Financial Services':1.00,'Healthcare & Life Sciences':1.00,'Public Sector / Government':.95,'Legal & Professional Services':.92,'Technology & SaaS':.88,'Retail & E-commerce':.85,'Education':.82,'Manufacturing & Logistics':.80,'Other':.90};
 const RB = [
-  {min:80,max:100,id:'low',   label:'Low Risk',          heading:'Governance Established — Maintenance Mode',       summary:'Your organisation demonstrates strong AI governance maturity across the assessed areas. The priority is to sustain, evolve, and stress-test frameworks as AI deployments develop and regulatory obligations mature.'},
-  {min:65,max:79, id:'lowmod',label:'Low–Moderate Risk',  heading:'Foundations Present — Targeted Gaps Remain',      summary:'Meaningful governance foundations are established, but specific gaps create regulatory exposure. These are addressable with targeted action rather than a full rebuild.'},
-  {min:45,max:64, id:'moderate',label:'Moderate Risk',    heading:'Governance Gaps — Regulatory Exposure Likely',    summary:'Material governance gaps exist across multiple areas. Organisations at this maturity level face meaningful risk of enforcement attention, reputational exposure, or operational failure.'},
-  {min:25,max:44, id:'high',  label:'High Risk',          heading:'Significant Exposure — Intervention Required',    summary:'Significant and widespread governance deficiencies. This level of exposure represents current, active vulnerability to regulatory action, legal challenge, and operational harm.'},
-  {min:0, max:24, id:'critical',label:'Critical Risk',    heading:'Governance Absent — Urgent Escalation Needed',    summary:'AI governance is largely absent. This requires board-level escalation and specialist engagement now. Continued operation without governance controls creates severe regulatory and legal exposure.'}
+  {min:80,max:100,id:'low',   label:'Low Risk',          heading:'Governance Established: Maintenance Mode',       summary:'Your organisation demonstrates strong AI governance maturity across the assessed areas. The priority is to sustain, evolve, and stress-test frameworks as AI deployments develop and regulatory obligations mature.'},
+  {min:65,max:79, id:'lowmod',label:'Low to Moderate Risk', heading:'Foundations Present: Targeted Gaps Remain',      summary:'Meaningful governance foundations are established, but specific gaps create regulatory exposure. These are addressable with targeted action rather than a full rebuild.'},
+  {min:45,max:64, id:'moderate',label:'Moderate Risk',    heading:'Governance Gaps: Regulatory Exposure Likely',    summary:'Material governance gaps exist across multiple areas. Organisations at this maturity level face meaningful risk of enforcement attention, reputational exposure, or operational failure.'},
+  {min:25,max:44, id:'high',  label:'High Risk',          heading:'Significant Exposure: Intervention Required',    summary:'Significant and widespread governance deficiencies. This level of exposure represents current, active vulnerability to regulatory action, legal challenge, and operational harm.'},
+  {min:0, max:24, id:'critical',label:'Critical Risk',    heading:'Governance Absent: Urgent Escalation Needed',    summary:'AI governance is largely absent. This requires board-level escalation and specialist engagement now. Continued operation without governance controls creates severe regulatory and legal exposure.'}
 ];
 const BAND_COLORS = {critical:'#CD3D64',high:'#C45C26',moderate:'#92400e',lowmod:'#533AFD',low:'#24B47E'};
 const BAND_COLORS_BG = {critical:'rgba(205,61,100,.08)',high:'rgba(196,92,38,.08)',moderate:'rgba(146,64,14,.08)',lowmod:'rgba(83,58,253,.08)',low:'rgba(36,180,126,.08)'};
@@ -744,9 +721,9 @@ function drawRadar(svg, pcts, bandColor){
             bar.style.transition='none';
             bar.style.width='0%';
             setTimeout(()=>{
-              bar.style.transition='width 1.2s cubic-bezier(.4,0,.2,1)';
+              bar.style.transition='width 1.6s cubic-bezier(.22,1,.36,1)';
               bar.style.width=target+'%';
-            },300);
+            },120);
           });
         }
       });
@@ -784,31 +761,27 @@ function renderHero(R,org,today,name,role,sector,size){
   document.getElementById('hero-org').textContent=org||'Organisation';
   document.getElementById('hero-sub').textContent=`This report presents findings of the AI Governance Risk Diagnostic completed on ${today}, assessed against UK and EU regulatory expectations. Prepared for board and senior executive review. Framework v${R.frameworkVersion}.`;
   const meta=document.getElementById('hero-meta');
-  const items=[[name+(role?` — ${role}`:''),'Respondent'],[sector,'Sector'],[size?size+' employees':'Not specified','Organisation Size'],[today,'Assessment Date']];
+  const respondent=name?(role?`${name}, ${role}`:name):'';
+  const items=[[respondent,'Respondent'],[sector,'Sector'],[size?size+' employees':'Not specified','Organisation Size'],[today,'Assessment Date']];
   meta.innerHTML=items.filter(([v])=>v).map(([v,l])=>`<div class="hero-meta-item"><div class="hm-label">${l}</div><div class="hm-val">${esc(v)}</div></div>`).join('');
-  
-  // Score circle — Blurple meter; risk is typographic below
-  const arc=document.getElementById('sc-arc');
-  const pct=document.getElementById('sc-pct');
-  const bc=R.band.id;
-  arc.style.stroke='#533AFD';
-  const circ=565.5;
-  const offset=circ-(circ*R.adjustedScore/100);
-  setTimeout(()=>{arc.style.strokeDashoffset=offset;},300);
-  let cur=0;const target=R.adjustedScore;const dur=1800;const start=Date.now();
-  const tick=()=>{const el=Date.now()-start;const p=Math.min(el/dur,1);const ease=1-Math.pow(1-p,3);cur=Math.round(target*ease);pct.textContent=cur+'%';if(p<1)requestAnimationFrame(tick);};
-  setTimeout(tick,400);
 
+  const bc=R.band.id;
+  const mount=document.getElementById('maturityMount');
+  if(mount && typeof raMaturityBlock==='function'){
+    mount.innerHTML=raMaturityBlock(R.adjustedScore,{animate:true});
+    requestAnimationFrame(function(){ animateMaturity(mount); });
+  }
+
+  const riskCls=bc==='critical'||bc==='high'?' is-risk':bc==='moderate'?' is-warn':' is-ok';
   const pill=document.getElementById('band-pill');
-  const dot=document.getElementById('band-dot');
-  pill.style.background='';
-  pill.style.borderColor='';
-  pill.style.color='';
-  dot.style.background='#533AFD';
+  if(pill)pill.className='band-pill'+riskCls;
   const lbl=document.getElementById('band-lbl');
-  lbl.textContent=R.band.label;
-  lbl.className='band-lbl'+(bc==='critical'||bc==='high'?' is-risk':bc==='moderate'?' is-warn':'');
-  document.getElementById('band-head').textContent=R.band.heading;
+  if(lbl){
+    lbl.textContent=R.band.label;
+    lbl.className='band-lbl'+riskCls;
+  }
+  const head=document.getElementById('band-head');
+  if(head)head.textContent=R.band.heading;
 }
 
 function renderExecutiveBrief(R,findings,org,today){
@@ -818,7 +791,7 @@ function renderExecutiveBrief(R,findings,org,today){
   const v=document.getElementById('brief-verdict');
   v.style.borderLeftColor='';
   v.style.color='';
-  document.getElementById('bv-eyebrow').textContent=`${R.band.label} — ${R.band.heading}`;
+  document.getElementById('bv-eyebrow').textContent=`${R.band.label}: ${R.band.heading}`;
   document.getElementById('bv-text').textContent=R.band.summary;
   
   // Obligations table
@@ -828,11 +801,11 @@ function renderExecutiveBrief(R,findings,org,today){
   const hasInv=R.priorityFlags.some(f=>f.id==='pf_no_inventory');
   const hasCat=R.selectedCategories&&R.selectedCategories.length>0&&R.selectedCategories.indexOf('none')===-1;
   const rows=[
-    {reg:'EU AI Act — Annex III',art:'Art. 6',obl:'High-risk AI system classification',status:hasCat?'High-risk system detected':'Classification review required',statusCls:hasCat?'s-alert':'s-warn',dl:'August 2026',dlCls:'dl-aug'},
-    {reg:'UK GDPR — DPIA',art:'Art. 35',obl:'Data Protection Impact Assessment',status:hasDPIA?'DPIA not completed':'Assess scope and complete',statusCls:hasDPIA?'s-alert':'s-warn',dl:'Immediate',dlCls:'dl-now'},
-    {reg:'UK GDPR — Automated Decisions',art:'Art. 22',obl:'Human oversight of automated decisions',status:hasOversight?'Oversight controls absent':'Controls confirmed',statusCls:hasOversight?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
-    {reg:'FCA SM&CR — AI Accountability',art:'PS7/21',obl:'Named Senior Manager accountability',status:hasGov?'No named owner identified':'Owner confirmed',statusCls:hasGov?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
-    {reg:'EU AI Act — AI Inventory',art:'Art. 27',obl:'AI system inventory and documentation',status:hasInv?'Inventory incomplete':'Maintained and current',statusCls:hasInv?'s-alert':'s-ok',dl:'August 2026',dlCls:'dl-aug'}
+    {reg:'EU AI Act, Annex III',art:'Art. 6',obl:'High-risk AI system classification',status:hasCat?'High-risk system detected':'Classification review required',statusCls:hasCat?'s-alert':'s-warn',dl:'August 2026',dlCls:'dl-aug'},
+    {reg:'UK GDPR, DPIA',art:'Art. 35',obl:'Data Protection Impact Assessment',status:hasDPIA?'DPIA not completed':'Assess scope and complete',statusCls:hasDPIA?'s-alert':'s-warn',dl:'Immediate',dlCls:'dl-now'},
+    {reg:'UK GDPR, Automated Decisions',art:'Art. 22',obl:'Human oversight of automated decisions',status:hasOversight?'Oversight controls absent':'Controls confirmed',statusCls:hasOversight?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
+    {reg:'FCA SM&CR, AI Accountability',art:'PS7/21',obl:'Named Senior Manager accountability',status:hasGov?'No named owner identified':'Owner confirmed',statusCls:hasGov?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
+    {reg:'EU AI Act, AI Inventory',art:'Art. 27',obl:'AI system inventory and documentation',status:hasInv?'Inventory incomplete':'Maintained and current',statusCls:hasInv?'s-alert':'s-ok',dl:'August 2026',dlCls:'dl-aug'}
   ];
   document.getElementById('obl-tbody').innerHTML=rows.map(r=>`<tr><td><span class="obl-reg">${esc(r.reg)}</span><span class="obl-art">${esc(r.art)}</span></td><td style="color:var(--text-2);font-size:.82rem">${esc(r.obl)}</td><td class="${r.statusCls}">${esc(r.status)}</td><td class="${r.dlCls}">${esc(r.dl)}</td></tr>`).join('');
   
@@ -874,7 +847,7 @@ function renderRegulatoryRegister(R){
   </tr>`).join('');
   // Sector notice
   const sn=document.getElementById('sect-notice');
-  sn.innerHTML=`<div class="sect-notice"><div class="sn-lbl">Sector-Specific Regulatory Notice — ${esc(R.sector)}</div><div class="sn-txt">${esc(sr)}</div></div>`;
+  sn.innerHTML=`<div class="sect-notice"><div class="sn-lbl">Sector-Specific Regulatory Notice: ${esc(R.sector)}</div><div class="sn-txt">${esc(sr)}</div></div>`;
 }
 
 function renderFindings(R,findings){
@@ -884,7 +857,7 @@ function renderFindings(R,findings){
   ['s1','s2','s3','s4','s5','s6','s7'].forEach((s,i)=>{
     tabs.push({id:s,lbl:`S${i+1} · ${SN[s].split(' ')[0]}`});
   });
-  tabsEl.innerHTML=tabs.map((t,i)=>`<button class="ft${i===0?' act':''}" data-tab="${t.id}">${esc(t.lbl)}</button>`).join('');
+  tabsEl.innerHTML=tabs.map((t,i)=>`<button type="button" class="ft${i===0?' act':''}" data-tab="${t.id}">${esc(t.lbl)}</button>`).join('');
 
   // ── Priority findings panel ──
   let priorityHtml=`<div class="fpanel act" id="fpanel-priority">`;
@@ -1051,7 +1024,7 @@ function renderReport(row){
   const today=new Date(row.created_at||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   const findings=buildFindings(R);
   
-  document.title=`${org} — AI Governance Risk Report | RegAnchor`;
+  document.title=`${org} · AI Governance Risk Report | RegAnchor`;
   renderHero(R,org,today,name,role,sector,size);
   renderExecutiveBrief(R,findings,org,today);
   renderDashboard(R);
@@ -1069,11 +1042,23 @@ function renderReport(row){
   const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');observer.unobserve(e.target);}});},{threshold:.08});
   document.querySelectorAll('.fiu').forEach(el=>observer.observe(el));
   
-  // Active nav highlight
+  // Active nav highlight (weight only) + Blurple scroll progress
   const sections=['executive-brief','dashboard','regulatory-register','findings','roadmap','forward-risk'];
   const navLinks=document.querySelectorAll('.rnav-links a');
+  const nav=document.getElementById('rnav');
+  const fill=document.getElementById('scrollProgress');
   const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.remove('act'));const a=document.querySelector(`.rnav-links a[href="#${e.target.id}"]`);if(a)a.classList.add('act');}});},{threshold:.3});
   sections.forEach(id=>{const el=document.getElementById(id);if(el)io.observe(el);});
+  function updateScrollProgress(){
+    const doc=document.documentElement;
+    const max=Math.max(1,doc.scrollHeight-window.innerHeight);
+    const p=Math.min(1,Math.max(0,window.scrollY/max));
+    if(fill)fill.style.transform='scaleX('+p+')';
+    if(nav)nav.classList.toggle('is-scrolled',window.scrollY>8);
+  }
+  window.addEventListener('scroll',updateScrollProgress,{passive:true});
+  updateScrollProgress();
+
 }
 
 /* ══════════════════════════════════════════════════════════════════

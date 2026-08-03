@@ -98,7 +98,7 @@ function raComplianceBar(score, opts) {
 function raMaturityBlock(score, opts) {
   opts = opts || {};
   var lvl = raLevel(score);
-  var shown = lvl ? Math.round(Number(score)) : '\u2014';
+  var shown = lvl ? Math.round(Number(score)) : '';
 
   var animOpts = Object.assign({}, opts, { animate: opts.animate !== false });
   return '' +
@@ -106,7 +106,7 @@ function raMaturityBlock(score, opts) {
       raComplianceBar(score, animOpts) +
       '<div class="ra-maturity__text">' +
         '<div class="ra-maturity__score" data-count-to="' + (lvl ? Math.round(Number(score)) : '') + '">' +
-          (opts.animate === false ? shown : (lvl ? '0' : '\u2014')) +
+          (lvl ? (opts.animate === false ? shown : '0') : '') +
           (lvl ? '<span class="ra-maturity__of">/ 100</span>' : '') +
         '</div>' +
         '<div class="ra-maturity__tier">' + raLevelText(score) + '</div>' +
@@ -129,7 +129,7 @@ function animateMaturity(root) {
       return;
     }
     var start = performance.now();
-    var duration = 720;
+    var duration = 1600;
     function tick(now) {
       var t = Math.min(1, (now - start) / duration);
       var eased = 1 - Math.pow(1 - t, 3);

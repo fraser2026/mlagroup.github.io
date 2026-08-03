@@ -14,7 +14,7 @@ let currentMemberRole=null;
 let profilesCache={};
  
 function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}
-function fmtDateLong(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
+function fmtDateLong(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Not set'}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 async function signOut(){await sb.auth.signOut();window.location.href='login.html'}
 function actorName(){return currentProfile?.full_name||currentUser?.email?.split('@')[0]||'Unknown'} function isPaidTier(){return currentOrg&&(currentOrg.plan==='essentials'||currentOrg.plan==='professional')&&currentOrg.subscription_status==='active'}
@@ -231,8 +231,8 @@ async function ensureOrg(){
 async function renderOrgPage(){
   if(!currentOrg)return;
   const plan=PLAN_LABELS[currentOrg.plan]||currentOrg.plan||'Essentials';
-  const subSt=currentOrg.subscription_status==='active'?'Active':currentOrg.subscription_status==='trialing'?'Trial':currentOrg.subscription_status==='none'?'Not subscribed':currentOrg.subscription_status||'—';
-  document.getElementById('org-profile-grid').innerHTML='<div class="meta-item"><label>Organisation Name</label><span>'+esc(currentOrg.name)+'</span></div><div class="meta-item"><label>Sector</label><span>'+esc(currentOrg.sector||'—')+'</span></div><div class="meta-item"><label>Organisation Size</label><span>'+esc(currentOrg.org_size||'—')+'</span></div><div class="meta-item"><label>Organisation ID</label><span class="meta-id">'+esc(currentOrg.id)+'</span></div>';
+  const subSt=currentOrg.subscription_status==='active'?'Active':currentOrg.subscription_status==='trialing'?'Trial':currentOrg.subscription_status==='none'?'Not subscribed':currentOrg.subscription_status||'Not set';
+  document.getElementById('org-profile-grid').innerHTML='<div class="meta-item"><label>Organisation Name</label><span>'+esc(currentOrg.name)+'</span></div><div class="meta-item"><label>Sector</label><span>'+esc(currentOrg.sector||'Not set')+'</span></div><div class="meta-item"><label>Organisation Size</label><span>'+esc(currentOrg.org_size||'Not set')+'</span></div><div class="meta-item"><label>Organisation ID</label><span class="meta-id">'+esc(currentOrg.id)+'</span></div>';
   document.getElementById('org-sub-grid').innerHTML='<div class="meta-item"><label>Registry Phase</label><span>Phase 1</span></div><div class="meta-item"><label>Membership Tier</label><span>'+esc(plan)+'</span></div><div class="meta-item"><label>Subscription Status</label><span>'+esc(subSt)+'</span></div><div class="meta-item"><label>AI Systems Registered</label><span>'+allSystems.length+'</span></div>';
   const{data:members}=await sb.from('org_members').select('*').eq('org_id',currentOrg.id).order('created_at',{ascending:true});
   if(!members||!members.length){document.getElementById('org-members-wrap').innerHTML='<div class="empty-state" style="padding:24px 0;"><p>No members found.</p></div>';return}
@@ -240,7 +240,7 @@ async function renderOrgPage(){
   const{data:memberProfiles}=await sb.from('profiles').select('id,full_name,email').in('id',members.map(m=>m.user_id));
   const profMap={};(memberProfiles||[]).forEach(p=>{profMap[p.id]=p});
   const sysByUser={};allSystems.forEach(s=>{sysByUser[s.created_by]=(sysByUser[s.created_by]||0)+1});
-  document.getElementById('org-members-wrap').innerHTML=members.map(m=>{const p=profMap[m.user_id]||{};const name=p.full_name||'Unknown';const email=p.email||'—';const init=name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();const sc=sysByUser[m.user_id]||0;
+  document.getElementById('org-members-wrap').innerHTML=members.map(m=>{const p=profMap[m.user_id]||{};const name=p.full_name||'Unknown';const email=p.email||'Not set';const init=name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();const sc=sysByUser[m.user_id]||0;
     return '<div class="member-row"><div class="member-avatar">'+esc(init)+'</div><div class="member-info"><div class="member-name">'+esc(name)+'</div><div class="member-email">'+esc(email)+'</div></div><div style="font-size:.72rem;color:var(--muted);text-align:right;min-width:70px;">'+sc+' system'+(sc!==1?'s':'')+'</div><span class="role-chip role-'+(m.role||'viewer')+'">'+(m.role||'viewer')+'</span></div>'}).join('');
 }
  
@@ -264,10 +264,10 @@ function renderOrgMaturity(gov){
 
 async function renderDashboard(paidIds){
   document.getElementById('dash-count').textContent=currentResults.length||'0';
-  document.getElementById('dash-score').textContent=currentResults.length>0?(currentResults[0].adjusted_score||0)+'%':'—';
+  document.getElementById('dash-score').textContent=currentResults.length>0?(currentResults[0].adjusted_score||0)+'%':'Not set';
   document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
   if(allControls.length){const g=getGovScore();document.getElementById('dash-compliance').textContent=g.score+'%';document.getElementById('dash-gov-maturity').textContent='Control coverage';renderOrgMaturity(g)}
-  else{document.getElementById('dash-compliance').textContent='—'}
+  else{document.getElementById('dash-compliance').textContent='Not set'}
   var subEl=document.getElementById('dash-subtext');
   if(subEl&&currentOrg)subEl.textContent=currentOrg.name;
   var tierEl=document.getElementById('dash-tier-badge');
@@ -304,7 +304,7 @@ async function loadAssessmentReports(){
   const BAND_R={high:'High Risk',medium:'Medium Risk',moderate:'Moderate Risk',lowmod:'Low-Moderate',low:'Low Risk',critical:'Critical'};
   ac.innerHTML='<div class="result-list">'+assessments.map(a=>{
     const band=a.risk_band||'medium';const sn=sysNames[a.system_id]||'AI System';
-    var reportBtn=isPaidTier()?'<a href="system-report.html?aid='+a.id+'" target="_blank" class="btn-dl" style="text-decoration:none;"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</a>':'<button onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()" class="btn-unlock" style="border:none;cursor:pointer;">Upgrade to View</button>';return '<div class="result-card"><div><div class="result-org">'+esc(sn)+'</div><div class="result-meta"><span>'+fmtDate(a.requested_at)+'</span>'+(a.sector?'<span>'+esc(a.sector)+'</span>':'')+'<span>v'+(a.questionnaire_version||'1.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</div><div class="score-lbl">Governance</div></div><div class="band-pill band-'+band+'">'+(BAND_R[band]||band)+'</div>'+reportBtn+'</div></div>';
+    var reportBtn=isPaidTier()?'<a href="system-report.html?aid='+a.id+'" target="_blank" class="btn-dl" style="text-decoration:none;"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</a>':'<button onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()" class="btn-unlock" style="border:none;cursor:pointer;">Upgrade to View</button>';return '<div class="result-card"><div><div class="result-org">'+esc(sn)+'</div><div class="result-meta"><span>'+fmtDate(a.requested_at)+'</span>'+(a.sector?'<span>'+esc(a.sector)+'</span>':'')+'<span>v'+(a.questionnaire_version||'1.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(a.overall_score!==null?a.overall_score+'%':'Not set')+'</div><div class="score-lbl">Governance</div></div><div class="band-pill band-'+band+'">'+(BAND_R[band]||band)+'</div>'+reportBtn+'</div></div>';
   }).join('')+'</div>';
 }
  

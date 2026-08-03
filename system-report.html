@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,239 +7,47 @@
 <title>AI System Governance Report | RegAnchor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/reganchor.css">
+<link rel="stylesheet" href="css/reganchor-report.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root {
-  --bg: #FFFFFF;
-  --surface-0: #FFFFFF;
-  --surface-1: #F6F9FC;
-  --surface-2: #F6F9FC;
-  --surface-3: #EEF2F7;
-  --border: #E6EBF1;
-  --border-md: #D6DEE8;
-  --border-lg: #0A2540;
-  --text-1: #0A0E14;
-  --text-2: #425466;
-  --text-3: #697386;
-  --blue: #533AFD;
-  --blue-lt: #533AFD;
-  --blue-glow: rgba(83,58,253,0.08);
-  --critical: #CD3D64;
-  --high: #C45C26;
-  --moderate: #92400e;
-  --lowmod: #533AFD;
-  --low: #24B47E;
-  --gold: #0A2540;
-  --gold-bg: #F6F9FC;
-  --nav-h: 56px;
-  --pad: 48px;
-  --r: 4px;
-  --font-brand: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{
-  font-family:var(--font-body);
-  background:var(--bg);
-  color:var(--text-2);
-  -webkit-font-smoothing:antialiased;
-  line-height:1.6;
-  text-transform:none;
-}
-
-#ls{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .4s ease}
-#ls.out{opacity:0;pointer-events:none}
-.ls-logo{font-family:var(--font-brand);font-size:1.1rem;font-weight:500;letter-spacing:-.025em;color:var(--text-1);margin-bottom:28px}
-.ls-logo em{font-style:normal;font-weight:400;color:var(--text-3)}
-.ls-track{width:200px;height:2px;background:var(--border);overflow:hidden}
-.ls-fill{height:100%;width:0;background:var(--blue);animation:lp 2s ease forwards}
-@keyframes lp{to{width:88%}}
-.ls-msg{font-size:.75rem;color:var(--text-3);margin-top:14px;min-height:18px}
-
-#es{display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:12px}
-#es.show{display:flex}
-.es-ico{font-size:1.5rem;opacity:.4;margin-bottom:4px}
-.es-title{font-family:var(--font-brand);font-size:1.1rem;font-weight:500;color:var(--text-1)}
-.es-msg{font-size:.88rem;color:var(--text-2);max-width:360px;text-align:center;line-height:1.6}
-.es-btn{margin-top:12px;padding:10px 20px;background:var(--blue);color:#fff;border:1px solid var(--blue);border-radius:var(--r);font-family:var(--font-body);font-size:.85rem;font-weight:500;cursor:pointer;text-decoration:none;display:inline-block}
-
-#rpt{display:none}
-#rpt.show{display:block}
-
-.rnav{position:sticky;top:0;height:var(--nav-h);background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:100}
-.rnav-logo{font-family:var(--font-brand);font-size:.95rem;font-weight:500;letter-spacing:-.025em;color:var(--text-1);text-decoration:none}
-.rnav-logo em{font-style:normal;color:var(--text-3)}
-.rnav-links{display:flex;list-style:none;gap:2px}
-.rnav-links a{font-size:.78rem;font-weight:400;letter-spacing:.01em;color:var(--text-3);text-decoration:none;padding:6px 10px;border-radius:var(--r);transition:color .15s,background .15s}
-.rnav-links a:hover{color:var(--text-1);background:rgba(6,27,49,.04)}
-.rnav-links a.act{color:var(--text-1);font-weight:500;box-shadow:inset 0 -1px 0 var(--text-1)}
-.rnav-r{display:flex;align-items:center;gap:10px}
-.conf-badge{font-size:.72rem;letter-spacing:.02em;color:var(--text-3);border:1px solid var(--border);padding:4px 10px;border-radius:var(--r)}
-.pdf-btn{padding:8px 14px;background:var(--blue);color:#fff;border:1px solid var(--blue);border-radius:var(--r);font-family:var(--font-body);font-size:.78rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
-.pdf-btn:hover{filter:brightness(.95)}
-.pdf-btn svg{width:13px;height:13px}
-
-.hero{padding:48px 0 32px;position:relative;border-bottom:1px solid var(--border)}
-.hero-bg,.hero-grid{display:none!important}
-.hero-inner{max-width:920px;margin:0 auto;padding:0 28px;width:100%;display:grid;grid-template-columns:1fr 220px;gap:48px;align-items:center}
-.hero-eyebrow{font-family:var(--font-brand);font-size:.72rem;font-weight:500;letter-spacing:.03em;color:var(--text-3);margin-bottom:14px}
-.hero-eyebrow::before{content:'';display:inline-block;width:20px;height:1px;background:var(--text-1);margin-right:10px;vertical-align:middle}
-.hero-org{font-family:var(--font-brand);font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:500;line-height:1.1;letter-spacing:-.03em;color:var(--text-1);margin-bottom:14px}
-.hero-sub{font-size:.92rem;color:var(--text-2);line-height:1.7;margin-bottom:28px;max-width:520px}
-.hero-meta{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border)}
-.hero-meta-item{padding:12px 14px;border-right:1px solid var(--border)}
-.hero-meta-item:last-child{border-right:none}
-.hm-label{font-size:.68rem;letter-spacing:.02em;color:var(--text-3);margin-bottom:3px;font-weight:500}
-.hm-val{font-size:.84rem;font-weight:500;color:var(--text-1)}
-
-.hero-right{display:flex;flex-direction:column;align-items:center}
-.score-wrap{position:relative;width:180px;height:180px}
-.score-svg{width:100%;height:100%;transform:rotate(-90deg)}
-.sc-track{fill:none;stroke:var(--border);stroke-width:8}
-.sc-arc{fill:none;stroke:var(--blue);stroke-width:8;stroke-linecap:round;stroke-dasharray:565.5;stroke-dashoffset:565.5;transition:stroke-dashoffset 1.6s ease}
-.sc-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.sc-pct{font-family:var(--font-brand);font-size:2.6rem;font-weight:500;line-height:1;letter-spacing:-.03em;color:var(--text-1);font-feature-settings:'tnum'}
-.sc-of{font-size:.75rem;color:var(--text-3);margin-top:2px}
-.band-pill{margin-top:14px;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg)}
-.band-dot{width:6px;height:6px;border-radius:50%;background:var(--blue)}
-.band-lbl{font-size:.8rem;font-weight:600;color:var(--text-1)}
-.band-head{font-size:.72rem;color:var(--text-3);margin-top:6px;text-align:center;max-width:200px;line-height:1.4}
-
-.rsec{max-width:920px;margin:0 auto;padding:48px 28px;border-bottom:1px solid var(--border)}
-.rsec-eyebrow{font-family:var(--font-brand);font-size:.72rem;font-weight:500;letter-spacing:.03em;color:var(--text-3);margin-bottom:10px}
-.rsec-title{font-family:var(--font-brand);font-size:1.45rem;font-weight:500;letter-spacing:-.02em;color:var(--text-1);margin-bottom:10px}
-.rsec-intro{font-size:.9rem;color:var(--text-2);line-height:1.7;max-width:62ch;margin-bottom:24px}
-
-.verdict-box,.brief-verdict,.acc-gap,.tech-note,.mla-note,.sect-notice{
-  border:1px solid var(--border);border-left:2px solid var(--text-1);
-  padding:16px 18px;margin:16px 0;background:var(--bg);border-radius:0
-}
-.bv-eyebrow,.sn-lbl,.acc-lbl,.tn-lbl,.mn-lbl,.dr-lbl{
-  font-family:var(--font-brand);font-size:.72rem;font-weight:500;letter-spacing:.02em;color:var(--text-3);margin-bottom:6px
-}
-.bv-text,.sn-txt,.acc-txt,.tn-txt,.mn-txt,.dr-txt{font-size:.88rem;color:var(--text-2);line-height:1.7}
-
-.card,.pf-card,.dom-card,.bi,.rm-action,.rm-rationale{
-  background:var(--bg)!important;border:1px solid var(--border)!important;border-radius:var(--r)!important;
-  box-shadow:none!important
-}
-
-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:16px 0}
-th{text-align:left;font-family:var(--font-brand);font-weight:500;font-size:.72rem;color:var(--text-3);padding:10px 12px;border-bottom:1px solid var(--text-1);letter-spacing:.02em}
-td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-2);line-height:1.5}
-
-.dom-row,.domain-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.dom-fill,.domain-fill,.sc-fill{background:var(--blue)!important}
-.dom-track,.domain-bar{background:var(--border)!important;height:4px!important;border-radius:1px!important;overflow:hidden}
-
-.find-tabs,.ft{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px}
-.ft{padding:7px 12px;border:1px solid var(--border);background:var(--bg);border-radius:var(--r);font-size:.78rem;font-weight:500;color:var(--text-3);cursor:pointer}
-.ft.act,.ft.active{color:var(--text-1);border-color:var(--text-1)}
-.fpanel{display:none}.fpanel.act,.fpanel.active,.fpanel.show{display:block}
-
-.pill,.sev-pill,.badge-high,.badge-medium,.badge-low,.obl-reg,.report-badge{
-  text-transform:none!important;letter-spacing:.02em!important;border-radius:var(--r)!important;
-  background:transparent!important;border:none!important;padding:0!important;font-weight:600
-}
-
-.rfooter{max-width:920px;margin:0 auto;padding:28px;display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-top:1px solid var(--text-1)}
-.rf-logo{font-family:var(--font-brand);font-weight:500;color:var(--text-1);text-decoration:none}
-.rf-notice{font-size:.75rem;color:var(--text-3);line-height:1.6;max-width:520px}
-.rf-ver{font-size:.72rem;color:var(--text-3);text-align:right}
-
-.rm-phase::before{background:var(--border)!important}
-.rm-marker{background:var(--blue)!important;border-radius:50%}
-.rm-win,.rm-badge,.act-own{text-transform:none!important;letter-spacing:.02em!important;color:var(--text-3)!important;border:1px solid var(--border);padding:2px 8px;border-radius:var(--r);font-size:.68rem;font-weight:500}
-.rm-name,.rsec-title,.hero-org{font-family:var(--font-brand)!important;font-weight:500!important}
-.act-n{background:var(--surface-1);color:var(--text-1);border-radius:var(--r)!important}
-
-@media(max-width:900px){
-  .hero-inner{grid-template-columns:1fr;gap:28px}
-  .rnav-links{display:none}
-  .rsec{padding:36px 16px}
-  .rnav{padding:0 16px}
-  .hero-meta{grid-template-columns:1fr 1fr}
-  .hero-meta-item:nth-child(2n){border-right:none}
-  .rfooter{flex-direction:column}
-}
-@media print{
-  .rnav,.pdf-btn,.find-tabs{display:none!important}
-  body{background:#fff}
-}
-</style>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/reganchor.css">
-  <link rel="stylesheet" href="css/reganchor-report.css">
-<style>
-/* System assessment — class names unique to this page */
-.report-nav{display:flex;justify-content:space-between;align-items:center;padding:0 28px;height:56px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100}
-.nav-logo{font-family:var(--font-brand);font-size:.95rem;font-weight:500;letter-spacing:-.025em;color:var(--text-1);text-decoration:none}
-.nav-actions{display:flex;gap:8px}
-.nav-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:4px;font-family:var(--font-body);font-size:.78rem;font-weight:500;cursor:pointer;text-decoration:none;border:1px solid var(--border)}
-.nav-btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
-.nav-btn-ghost{background:var(--bg);color:var(--text-2)}
-.nav-btn-ghost:hover{border-color:var(--text-1);color:var(--text-1)}
-.report{max-width:920px;margin:0 auto;padding:0 28px 80px}
-.loading{padding:80px 0;text-align:center;color:var(--text-3);font-size:.88rem}
-.loading-spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
+body.ra-report{min-height:100%}
+.loading{padding:80px 0;text-align:center;color:var(--ra-muted,#697386);font-size:.88rem}
+.loading-spinner{width:28px;height:28px;border:2px solid var(--ra-border,#E6EBF1);border-top-color:var(--ra-blurple,#533AFD);border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.report-hero{padding:40px 0 28px}
-.report-badge{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;color:var(--text-1);margin-bottom:10px;letter-spacing:.02em}
-.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:none}
-.badge-high .badge-dot,.badge-high{color:var(--critical)}.badge-high .badge-dot{background:var(--critical)}
-.badge-medium .badge-dot,.badge-medium{color:var(--high)}.badge-medium .badge-dot{background:var(--high)}
-.badge-low .badge-dot,.badge-low{color:var(--low)}.badge-low .badge-dot{background:var(--low)}
-.report-sublabel{font-size:.75rem;color:var(--text-3);margin-bottom:14px}
-.report-sys-name{font-family:var(--font-brand);font-size:clamp(1.6rem,3vw,2.2rem);font-weight:500;color:var(--text-1);letter-spacing:-.03em;line-height:1.1;margin-bottom:10px}
-.report-desc{font-size:.9rem;color:var(--text-2);line-height:1.7;max-width:560px;margin-bottom:24px}
-.report-meta{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border)}
-.meta-cell{padding:12px 14px;border-right:1px solid var(--border)}
-.meta-cell:last-child{border-right:none}
-.meta-label{font-size:.68rem;color:var(--text-3);margin-bottom:3px;font-weight:500;letter-spacing:.02em}
-.meta-val{font-size:.84rem;color:var(--text-1);font-weight:500}
-.score-hero{display:flex;align-items:center;gap:28px;padding:28px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:28px}
-.score-ring{position:relative;width:120px;height:120px;flex-shrink:0}
-.score-ring svg{width:120px;height:120px;transform:rotate(-90deg)}
-.score-ring-bg{fill:none;stroke:var(--border);stroke-width:8}
-.score-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;stroke:var(--blue)}
-.score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.score-center-num{font-family:var(--font-brand);font-size:1.8rem;font-weight:500;line-height:1;color:var(--text-1);font-feature-settings:'tnum'}
-.score-center-label{font-size:.68rem;font-weight:500;color:var(--text-3);margin-top:2px;letter-spacing:.02em}
-.score-info h3{font-family:var(--font-brand);font-size:1.15rem;font-weight:500;color:var(--text-1);margin-bottom:6px}
-.score-info p{font-size:.85rem;color:var(--text-2);line-height:1.7;max-width:420px}
-.section-label{font-family:var(--font-brand);font-size:.72rem;font-weight:500;color:var(--text-3);margin-bottom:6px;letter-spacing:.03em}
-.section-title,.rpt-card-title{font-family:var(--font-brand);font-size:1.15rem;font-weight:500;color:var(--text-1);margin-bottom:14px;letter-spacing:-.02em}
-.rpt-card{background:var(--bg);border:1px solid var(--border);border-radius:0;padding:22px;margin-bottom:18px}
-.rpt-card::before{display:none}
-.domain-row{display:grid;grid-template-columns:180px 1fr 48px;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.domain-row:last-child{border-bottom:none}
-.domain-name{font-size:.82rem;color:var(--text-1);font-weight:500;text-align:left}
-.domain-bar{height:4px;background:var(--border);overflow:hidden}
-.domain-fill{height:100%;background:var(--blue)!important}
-.domain-pct{font-family:var(--font-brand);font-size:.85rem;font-weight:500;text-align:right;color:var(--text-1);font-feature-settings:'tnum'}
-.flag-item,.reg-item,.rec-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-.flag-item:last-child,.reg-item:last-child,.rec-item:last-child{border-bottom:none}
-.flag-icon{width:22px;height:22px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:var(--critical);flex-shrink:0}
-.flag-text,.reg-desc,.rec-text{font-size:.85rem;color:var(--text-2);line-height:1.6}
-.flag-reg,.reg-title{font-size:.78rem;font-weight:500;color:var(--text-1);margin-bottom:2px}
-.tier-alert{border:1px solid var(--border);border-left:2px solid var(--critical);padding:14px 16px;margin-bottom:18px}
-.tier-alert-title{font-size:.82rem;font-weight:600;color:var(--text-1);margin-bottom:4px}
-.tier-alert-body{font-size:.82rem;color:var(--text-2);line-height:1.6}
-.report-footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--text-1);font-size:.75rem;color:var(--text-3);line-height:1.6}
-@media(max-width:640px){.report-meta{grid-template-columns:1fr 1fr}.meta-cell:nth-child(2n){border-right:none}.domain-row{grid-template-columns:1fr 48px}.domain-bar{grid-column:1/-1;order:3}.report-nav{padding:0 16px}.report{padding:0 16px 64px}}
-@media print{.report-nav{display:none}}
+.report-nav{position:relative}
+.rpt-lede{font-size:.84rem;color:var(--ra-muted,#697386);line-height:1.65;margin:0 0 18px;max-width:62ch}
+.step-text,.flag-text,.reg-desc{font-size:.88rem;color:var(--ra-body,#425466);line-height:1.65}
+.flag-reg,.reg-title{font-size:.82rem;font-weight:500;color:var(--ra-ink,#061B31);margin-bottom:3px}
+.tier-alert-title{font-size:.82rem;font-weight:600;color:var(--ra-ink,#061B31);margin-bottom:4px}
+.tier-alert-body{font-size:.82rem;color:var(--ra-body,#425466);line-height:1.6}
+/* System report cards: quieter titles than diagnostic board sections */
+.ra-report.sys-report .rpt-card-title{
+  font-size:1.05rem!important;
+  margin-bottom:8px;
+}
+.ra-report.sys-report .rpt-card{padding:22px 24px;margin-bottom:16px}
+.ra-report.sys-report .report-hero{padding:32px 0 24px}
+.ra-report.sys-report .report-badge{margin-bottom:10px}
+.ra-report.sys-report .btn-topbar,
+.ra-report.sys-report .btn-topbar-primary{font-size:13px!important;line-height:1!important;padding:8px 16px!important}
+.ra-report.sys-report .report-footer,
+.ra-report.sys-report .report-footer p,
+.ra-report.sys-report .report-footer strong{font-size:12px!important;line-height:1.55!important}
 </style>
 </head>
-<body class="ra-report">
+<body class="ra-report sys-report">
 
-<div class="report-nav">
+<nav class="report-nav" id="rnav">
   <a href="portal.html" class="nav-logo ra-wordmark">RegAnchor</a>
   <div class="nav-actions">
-    <a href="portal.html" class="nav-btn nav-btn-ghost">&#8592; Portal</a>
-    <button class="nav-btn nav-btn-primary" onclick="window.print()"><svg viewBox="0 0 12 12"><path d="M2 3h8M2 6h8M2 9h4"/></svg>Print / Save PDF</button>
+    <a href="portal.html" class="btn-topbar btn-topbar-primary">Back to Portal</a>
   </div>
-</div>
+  <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress__fill" id="scrollProgress"></div></div>
+</nav>
 
 <div class="report" id="report-container">
   <div class="loading" id="loading"><div class="loading-spinner"></div><div class="loading-text">Loading assessment report…</div></div>
@@ -254,23 +62,22 @@ const params=new URLSearchParams(window.location.search);
 const ASSESS_ID=params.get('aid');
 
 const BAND_L={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};
-const BAND_C={high:'#CD3D64',medium:'#C45C26',low:'#24B47E'};
+const BAND_CLS={high:'is-risk',medium:'is-warn',low:'is-ok'};
 const BAND_DESC={
   high:'This AI system has significant governance gaps that create regulatory exposure and operational risk. Priority remediation is recommended before the system is expanded or placed into production.',
   medium:'This AI system has a functional governance foundation but material gaps remain. Targeted improvements are needed to meet regulatory expectations and reduce residual risk.',
   low:'This AI system demonstrates strong governance maturity. The priority is to maintain and evolve these controls as the system, regulations, and data landscape develop.'
 };
 const TIER_L={unacceptable:'Unacceptable',high:'High',limited:'Limited',minimal:'Minimal'};
-const STATUS_L={planned:'Planned',development:'Development',pilot:'Pilot',production:'Production',decommissioned:'Decommissioned'};
 
 const REG_MAP={
-  s1:{articles:['EU AI Act Annex III — Risk classification','EU AI Act Article 6 — Classification rules for high-risk systems'],desc:'This section establishes the system\u2019s risk tier and regulatory scope under the EU AI Act.'},
-  s2:{articles:['UK GDPR Article 5 — Data processing principles','UK GDPR Article 6 — Lawful basis','UK GDPR Article 35 — DPIA requirement','EU AI Act Article 10 — Data governance'],desc:'Data governance obligations apply to any AI system processing personal data.'},
-  s3:{articles:['EU AI Act Article 13 — Transparency obligations','EU AI Act Article 50 — AI interaction disclosure','UK GDPR Article 22 — Automated decision-making'],desc:'Transparency requirements ensure individuals understand when and how AI affects them.'},
-  s4:{articles:['EU AI Act Article 14 — Human oversight measures'],desc:'Human oversight is a core requirement for high-risk AI systems under the EU AI Act.'},
-  s5:{articles:['EU AI Act Article 15 — Accuracy, robustness, cybersecurity'],desc:'AI systems must be resilient against adversarial threats and perform reliably throughout their lifecycle.'},
-  s6:{articles:['EU AI Act Article 9 — Risk management system','EU AI Act Article 11 — Technical documentation','EU AI Act Article 17 — Quality management'],desc:'Accountability and documentation requirements form the basis of regulatory compliance evidence.'},
-  s7:{articles:['EU AI Act Article 26 — Obligations of deployers'],desc:'Deployers of third-party AI systems carry specific obligations for oversight, monitoring, and transparency.'}
+  s1:{articles:['EU AI Act Annex III: Risk classification','EU AI Act Article 6: Classification rules for high-risk systems'],desc:'This section establishes the system\u2019s risk tier and regulatory scope under the EU AI Act.'},
+  s2:{articles:['UK GDPR Article 5: Data processing principles','UK GDPR Article 6: Lawful basis','UK GDPR Article 35: DPIA requirement','EU AI Act Article 10: Data governance'],desc:'Data governance obligations apply to any AI system processing personal data.'},
+  s3:{articles:['EU AI Act Article 13: Transparency obligations','EU AI Act Article 50: AI interaction disclosure','UK GDPR Article 22: Automated decision-making'],desc:'Transparency requirements ensure individuals understand when and how AI affects them.'},
+  s4:{articles:['EU AI Act Article 14: Human oversight measures'],desc:'Human oversight is a core requirement for high-risk AI systems under the EU AI Act.'},
+  s5:{articles:['EU AI Act Article 15: Accuracy, robustness, cybersecurity'],desc:'AI systems must be resilient against adversarial threats and perform reliably throughout their lifecycle.'},
+  s6:{articles:['EU AI Act Article 9: Risk management system','EU AI Act Article 11: Technical documentation','EU AI Act Article 17: Quality management'],desc:'Accountability and documentation requirements form the basis of regulatory compliance evidence.'},
+  s7:{articles:['EU AI Act Article 26: Obligations of deployers'],desc:'Deployers of third-party AI systems carry specific obligations for oversight, monitoring, and transparency.'}
 };
 
 const RECS_BY_SECTION={
@@ -283,125 +90,233 @@ const RECS_BY_SECTION={
   s7:['Review vendor contracts for AI-specific governance, data handling, and liability provisions','Request model cards or transparency reports from the AI provider','Implement change management processes that cover third-party model updates']
 };
 
+function domainRisk(pct){
+  if(pct<40)return{lbl:'High',cls:'is-risk'};
+  if(pct<70)return{lbl:'Medium',cls:'is-warn'};
+  return{lbl:'Low',cls:'is-ok'};
+}
+
+function bindScrollProgress(){
+  const nav=document.getElementById('rnav');
+  const fill=document.getElementById('scrollProgress');
+  function update(){
+    const doc=document.documentElement;
+    const max=Math.max(1,doc.scrollHeight-window.innerHeight);
+    const p=Math.min(1,Math.max(0,window.scrollY/max));
+    if(fill)fill.style.transform='scaleX('+p+')';
+    if(nav)nav.classList.toggle('is-scrolled',window.scrollY>8);
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  update();
+}
+
+function animateScoreRing(root,score){
+  const fill=root.querySelector('.score-ring-fill');
+  const num=root.querySelector('.score-center-num');
+  if(!fill)return;
+  const circ=2*Math.PI*48;
+  const target=Math.max(0,Math.min(100,Number(score)||0));
+  const endOffset=circ-(circ*(target/100));
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  fill.style.strokeDasharray=String(circ);
+  fill.style.strokeDashoffset=String(circ);
+  if(num)num.textContent='0%';
+
+  if(reduce){
+    fill.style.strokeDashoffset=String(endOffset);
+    if(num)num.textContent=Math.round(target)+'%';
+    return;
+  }
+
+  requestAnimationFrame(function(){
+    fill.style.strokeDashoffset=String(endOffset);
+  });
+
+  const start=performance.now();
+  const duration=1400;
+  const ease=function(t){return 1-Math.pow(1-t,3)};
+  function tick(now){
+    const t=Math.min(1,(now-start)/duration);
+    if(num)num.textContent=Math.round(target*ease(t))+'%';
+    if(t<1)requestAnimationFrame(tick);
+    else if(num)num.textContent=Math.round(target)+'%';
+  }
+  requestAnimationFrame(tick);
+}
+
+function animateDomainRows(root){
+  if(!root)return;
+  const rows=root.querySelectorAll('.domain-row[data-pct]');
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  rows.forEach(function(row,i){
+    const target=parseFloat(row.getAttribute('data-pct'))||0;
+    const fill=row.querySelector('.domain-fill');
+    const pctEl=row.querySelector('.domain-pct');
+    if(!fill||!pctEl)return;
+    fill.style.width='0%';
+    pctEl.textContent='0%';
+    if(reduce){
+      fill.style.width=target+'%';
+      pctEl.textContent=Math.round(target)+'%';
+      return;
+    }
+    setTimeout(function(){
+      fill.style.transition='width 1.4s cubic-bezier(0.22, 1, 0.36, 1)';
+      fill.style.width=target+'%';
+      const start=performance.now();
+      const duration=1400;
+      const ease=function(t){return 1-Math.pow(1-t,3)};
+      function tick(now){
+        const t=Math.min(1,(now-start)/duration);
+        pctEl.textContent=Math.round(target*ease(t))+'%';
+        if(t<1)requestAnimationFrame(tick);
+        else pctEl.textContent=Math.round(target)+'%';
+      }
+      requestAnimationFrame(tick);
+    },120+i*90);
+  });
+}
+
 async function init(){
-  if(!ASSESS_ID){document.getElementById('loading').innerHTML='<div style="color:var(--red);font-size:.85rem;">No assessment ID provided.</div>';return}
+  if(!ASSESS_ID){
+    document.getElementById('loading').innerHTML='<div style="color:var(--ra-risk);font-size:.85rem;">No assessment ID provided.</div>';
+    return;
+  }
   const{data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='login.html';return}
 
   const{data:assess,error:aErr}=await sb.from('registry_assessments').select('*').eq('id',ASSESS_ID).single();
-  if(aErr||!assess){document.getElementById('loading').innerHTML='<div style="color:var(--red);font-size:.85rem;">Assessment not found.</div>';return}
+  if(aErr||!assess){
+    document.getElementById('loading').innerHTML='<div style="color:var(--ra-risk);font-size:.85rem;">Assessment not found.</div>';
+    return;
+  }
 
   const{data:sys}=await sb.from('ai_systems').select('*').eq('id',assess.system_id).single();
   const{data:org}=await sb.from('organisations').select('name').eq('id',assess.org_id).single();
   const{data:profile}=await sb.from('profiles').select('full_name').eq('id',assess.requested_by).single();
 
   renderReport(assess,sys||{},org||{},profile||{});
+  bindScrollProgress();
 }
 
 function renderReport(a,sys,org,profile){
   const band=a.risk_band||'medium';
-  const score=a.overall_score||0;
+  const score=Math.max(0,Math.min(100,Number(a.overall_score)||0));
   const ss=a.section_scores||{};
   const tv=a.tier_validation;
-  const col=BAND_C[band];
-  const circ=2*Math.PI*48;
-  const dashOffset=circ-(circ*(score/100));
   const today=new Date(a.requested_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const bandCls=BAND_CLS[band]||'is-warn';
+  const circ=2*Math.PI*48;
 
-  // Build priority flags from section scores
   const flags=[];
   Object.entries(ss).forEach(([id,d])=>{
-    if(d.score<40){const rm=REG_MAP[id];flags.push({section:d.title,score:d.score,regulatory:rm?rm.articles[0]:''})}
+    if(d.score<40){
+      const rm=REG_MAP[id];
+      flags.push({section:d.title,score:d.score,regulatory:rm?rm.articles[0]:''});
+    }
   });
 
-  // Build recommendations from low-scoring sections
   const recs=[];
   Object.entries(ss).forEach(([id,d])=>{
-    if(d.score<70&&RECS_BY_SECTION[id]){RECS_BY_SECTION[id].forEach(r=>{if(recs.length<8)recs.push(r)})}
+    if(d.score<70&&RECS_BY_SECTION[id]){
+      RECS_BY_SECTION[id].forEach(r=>{if(recs.length<8)recs.push(r)});
+    }
   });
 
-  // Build engaged regulations
   const engagedRegs=[];
   Object.entries(ss).forEach(([id,d])=>{
-    const rm=REG_MAP[id];if(rm)rm.articles.forEach(art=>{engagedRegs.push({title:art,desc:rm.desc,sectionScore:d.score})})
+    const rm=REG_MAP[id];
+    if(rm)rm.articles.forEach(art=>{engagedRegs.push({title:art,desc:rm.desc})});
   });
 
+  const domainRows=Object.entries(ss).map(([id,d])=>{
+    const pct=Math.max(0,Math.min(100,Number(d.score)||0));
+    const risk=domainRisk(pct);
+    return '<div class="domain-row" data-pct="'+pct+'">'+
+      '<span class="domain-name">'+esc(d.title||id)+'</span>'+
+      '<div class="domain-bar"><div class="domain-fill"></div></div>'+
+      '<span class="domain-pct">0%</span>'+
+      '<span class="rbadge '+risk.cls+'">'+risk.lbl+'</span>'+
+    '</div>';
+  }).join('');
+
   const c=document.getElementById('report-container');
-  c.innerHTML=`
-    <div class="report-hero">
-      <div class="report-badge badge-${band}"><span class="badge-dot"></span>${BAND_L[band]} — System Governance Assessment</div>
-      <div class="report-sublabel">AI System Governance Report — Prepared by RegAnchor</div>
-      <div class="report-sys-name">${esc(sys.name||'AI System')}</div>
-      <div class="report-desc">${esc(sys.description||'This report presents findings of the AI system governance assessment, evaluating maturity across 7 governance domains and mapping regulatory exposure.')}</div>
-      <div class="report-meta">
-        <div class="meta-cell"><div class="meta-label">Organisation</div><div class="meta-val">${esc(org.name||'—')}</div></div>
-        <div class="meta-cell"><div class="meta-label">System Owner</div><div class="meta-val">${esc(sys.system_owner||'—')}</div></div>
-        <div class="meta-cell"><div class="meta-label">Risk Tier</div><div class="meta-val">${sys.risk_tier?'<em style="opacity:.6;font-style:italic;">Suggested</em> '+esc(TIER_L[sys.risk_tier]||sys.risk_tier):'Unclassified'}</div></div>
-        <div class="meta-cell"><div class="meta-label">Assessment Date</div><div class="meta-val">${today}</div></div>
-      </div>
-    </div>
+  c.innerHTML=
+    '<div class="report-hero">'+
+      '<div class="report-badge badge-'+band+' '+bandCls+'"><span class="badge-dot"></span>'+esc(BAND_L[band]||band)+'</div>'+
+      '<div class="report-sublabel">AI System Governance Report · Prepared by RegAnchor</div>'+
+      '<div class="report-sys-name">'+esc(sys.name||'AI System')+'</div>'+
+      '<div class="report-desc">'+esc(sys.description||'This report presents findings of the AI system governance assessment, evaluating maturity across 7 governance domains and mapping regulatory exposure.')+'</div>'+
+      '<div class="report-meta">'+
+        '<div class="meta-cell"><div class="meta-label">Organisation</div><div class="meta-val">'+esc(org.name||'Not set')+'</div></div>'+
+        '<div class="meta-cell"><div class="meta-label">System Owner</div><div class="meta-val">'+esc(sys.system_owner||'Not set')+'</div></div>'+
+        '<div class="meta-cell"><div class="meta-label">Risk Tier</div><div class="meta-val">'+(sys.risk_tier?esc(TIER_L[sys.risk_tier]||sys.risk_tier):'Unclassified')+'</div></div>'+
+        '<div class="meta-cell"><div class="meta-label">Assessment Date</div><div class="meta-val">'+esc(today)+'</div></div>'+
+      '</div>'+
+    '</div>'+
 
-    <!-- Overall Score -->
-    <div class="score-hero">
-      <div class="score-ring">
-        <svg viewBox="0 0 120 120">
-          <circle class="score-ring-bg" cx="60" cy="60" r="48"/>
-          <circle class="score-ring-fill" cx="60" cy="60" r="48" stroke="#533AFD" stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}"/>
-        </svg>
-        <div class="score-center">
-          <div class="score-center-num">${score}%</div>
-          <div class="score-center-label">Score</div>
-        </div>
-      </div>
-      <div class="score-info">
-        <h3>${BAND_L[band]}</h3>
-        <p>${BAND_DESC[band]}</p>
-      </div>
-    </div>
+    '<div class="score-hero">'+
+      '<div class="score-ring">'+
+        '<svg viewBox="0 0 120 120" aria-hidden="true">'+
+          '<circle class="score-ring-bg" cx="60" cy="60" r="48"/>'+
+          '<circle class="score-ring-fill" cx="60" cy="60" r="48" stroke-dasharray="'+circ+'" stroke-dashoffset="'+circ+'"/>'+
+        '</svg>'+
+        '<div class="score-center">'+
+          '<div class="score-center-num">0%</div>'+
+          '<div class="score-center-label">Score</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="score-info">'+
+        '<h3>'+esc(BAND_L[band]||band)+'</h3>'+
+        '<p>'+esc(BAND_DESC[band]||'')+'</p>'+
+      '</div>'+
+    '</div>'+
 
-    ${tv&&tv.mismatch?`<div class="tier-alert"><div class="tier-alert-title">Risk Tier Mismatch Detected</div><div class="tier-alert-body">${esc(tv.message||'Assessment responses suggest this system may require a higher risk classification than currently assigned. RegAnchor recommends reviewing the classification against EU AI Act Annex III criteria.')}</div></div>`:''}
+    (tv&&tv.mismatch
+      ? '<div class="tier-alert"><div class="tier-alert-title">Risk Tier Mismatch Detected</div><div class="tier-alert-body">'+esc(tv.message||'Assessment responses suggest this system may require a higher risk classification than currently assigned. RegAnchor recommends reviewing the classification against EU AI Act Annex III criteria.')+'</div></div>'
+      : '')+
 
-    <!-- Section Scores -->
-    <div class="rpt-card">
-      <div class="section-label">Section 01</div>
-      <div class="rpt-card-title">Governance Maturity by Domain</div>
-      ${Object.entries(ss).map(([id,d])=>{
-        const pct=d.score||0;
-        const c2=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
-        return `<div class="domain-row"><span class="domain-name">${esc(d.title||id)}</span><div class="domain-bar"><div class="domain-fill" style="width:${pct}%;"></div></div><span class="domain-pct">${pct}%</span></div>`;
-      }).join('')}
-    </div>
+    '<div class="rpt-card">'+
+      '<div class="rpt-card-title">Governance Maturity by Domain</div>'+
+      '<p class="rpt-lede">Domain scores reflect governance maturity across the assessed areas.</p>'+
+      (domainRows||'<p class="rpt-lede">No domain scores available for this assessment.</p>')+
+    '</div>'+
 
-    ${flags.length?`<div class="rpt-card">
-      <div class="section-label">Section 02</div>
-      <div class="rpt-card-title">Priority Governance Gaps</div>
-      <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">The following domains scored below 40% and represent critical governance gaps requiring immediate attention.</p>
-      ${flags.map(f=>`<div class="flag-item"><div class="flag-icon flag-high">!</div><div><div class="flag-text"><strong>${esc(f.section)}</strong> scored ${f.score}% — significantly below the minimum governance threshold.</div><div class="flag-reg">${esc(f.regulatory)}</div></div></div>`).join('')}
-    </div>`:''}
+    (flags.length
+      ? '<div class="rpt-card">'+
+          '<div class="rpt-card-title">Priority Governance Gaps</div>'+
+          '<p class="rpt-lede">Domains scored below 40% that require immediate attention.</p>'+
+          flags.map(f=>'<div class="flag-item"><div class="flag-icon">!</div><div><div class="flag-text"><strong>'+esc(f.section)+'</strong> scored '+f.score+'%, significantly below the minimum governance threshold.</div><div class="flag-reg">'+esc(f.regulatory)+'</div></div></div>').join('')+
+        '</div>'
+      : '')+
 
-    <!-- Regulatory Mapping -->
-    <div class="rpt-card">
-      <div class="section-label">Section 0${flags.length?'3':'2'}</div>
-      <div class="rpt-card-title">Regulatory Obligations Engaged</div>
-      <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Based on the assessment responses, the following regulatory articles and obligations are engaged for this AI system.</p>
-      ${engagedRegs.slice(0,10).map(r=>`<div class="reg-item"><div class="reg-title">${esc(r.title)}</div><div class="reg-desc">${esc(r.desc)}</div></div>`).join('')}
-    </div>
+    '<div class="rpt-card">'+
+      '<div class="rpt-card-title">Regulatory Obligations Engaged</div>'+
+      '<p class="rpt-lede">Regulatory articles engaged by this AI system based on assessment responses.</p>'+
+      engagedRegs.slice(0,10).map(r=>'<div class="reg-item"><div><div class="reg-title">'+esc(r.title)+'</div><div class="reg-desc">'+esc(r.desc)+'</div></div></div>').join('')+
+    '</div>'+
 
-    ${recs.length?`<div class="rpt-card">
-      <div class="section-label">Section 0${flags.length?'4':'3'}</div>
-      <div class="rpt-card-title">Recommended Next Steps</div>
-      <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">The following actions address the governance gaps identified in this assessment, prioritised by regulatory significance.</p>
-      ${recs.map((r,i)=>`<div class="step-item"><div class="step-num">${i+1}</div><div class="step-text">${esc(r)}</div></div>`).join('')}
-    </div>`:''}
+    (recs.length
+      ? '<div class="rpt-card">'+
+          '<div class="rpt-card-title">Recommended Next Steps</div>'+
+          '<p class="rpt-lede">Actions prioritised by regulatory significance.</p>'+
+          recs.map((r,i)=>'<div class="step-item"><div class="step-num">'+(i+1)+'</div><div class="step-text">'+esc(r)+'</div></div>').join('')+
+        '</div>'
+      : '')+
 
-    <div class="report-footer">
-      <p><strong style="color:var(--main);">MLA Group Ltd</strong> — AI Governance & Risk Consultancy<br><br>
-      This report represents a structured assessment of the governance position of the named AI system at a single point in time. It does not constitute legal advice, regulatory certification, or audit opinion. Assessment version ${esc(a.questionnaire_version||'1.0.0')}. Report generated ${today}.</p>
-    </div>
-  `;
+    '<div class="report-footer">'+
+      '<p><strong>RegAnchor</strong> is the trading name of MLA Group Ltd<br>'+
+      'AI Governance and Risk Consultancy<br><br>'+
+      'This report represents a structured assessment of the governance position of the named AI system at a single point in time. It does not constitute legal advice, regulatory certification, or audit opinion. Assessment version '+esc(a.questionnaire_version||'1.0.0')+'. Report generated '+esc(today)+'. Submitted by '+esc(profile.full_name||'Unknown')+'.</p>'+
+    '</div>';
 
-  // Animate score ring
-  setTimeout(()=>{const fill=document.querySelector('.score-ring-fill');if(fill)fill.style.strokeDashoffset=dashOffset},100);
+  document.title=(sys.name||'AI System')+' · Governance Report | RegAnchor';
+
+  requestAnimationFrame(function(){
+    animateScoreRing(c,score);
+    animateDomainRows(c);
+  });
 }
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}

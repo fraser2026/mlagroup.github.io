@@ -87,7 +87,7 @@ async function openSystemDetail(sysId){
   var tagsEl=document.getElementById('det-tags');
   if(tagsEl)tagsEl.innerHTML=tagParts.map(function(t){return '<span class="tag">'+esc(t)+'</span>'}).join('');
   // Overview
-  document.getElementById('tab-overview').innerHTML='<div class="detail-desc"><div class="stat-label">Description</div><p>'+esc(sys.description||'No description provided.')+'</p></div><div class="meta-grid"><div class="meta-item"><label>System ID</label><span class="meta-id">'+esc(sys.id)+'</span></div><div class="meta-item"><label>System Type</label><span>'+esc(TYPE_LABELS[sys.system_type]||'—')+'</span></div><div class="meta-item"><label>Vendor</label><span>'+esc(sys.vendor||'—')+'</span></div><div class="meta-item"><label>Department</label><span>'+esc(sys.department||'—')+'</span></div><div class="meta-item"><label>System Owner</label><span>'+esc(sys.system_owner||'—')+'</span></div><div class="meta-item"><label>Deployment</label><span><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||'')+'</span></span></div><div class="meta-item"><label>Purpose Category</label><span>'+esc(sys.purpose_category?sys.purpose_category.replace(/_/g,' '):'—')+'</span></div><div class="meta-item"><label>Risk Tier</label><span><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></span></div>'+(sys.risk_tier_rationale?'<div class="meta-item" style="grid-column:1/-1;"><label>Classification Rationale</label><span>'+esc(sys.risk_tier_rationale)+'</span></div>':'')+'<div class="meta-item"><label>Registered</label><span>'+fmtDate(sys.created_at)+'</span></div><div class="meta-item"><label>Last Updated</label><span>'+fmtDate(sys.updated_at)+'</span></div></div>';
+  document.getElementById('tab-overview').innerHTML='<div class="detail-desc"><div class="stat-label">Description</div><p>'+esc(sys.description||'No description provided.')+'</p></div><div class="meta-grid"><div class="meta-item"><label>System ID</label><span class="meta-id">'+esc(sys.id)+'</span></div><div class="meta-item"><label>System Type</label><span>'+esc(TYPE_LABELS[sys.system_type]||'Not set')+'</span></div><div class="meta-item"><label>Vendor</label><span>'+esc(sys.vendor||'Not set')+'</span></div><div class="meta-item"><label>Department</label><span>'+esc(sys.department||'Not set')+'</span></div><div class="meta-item"><label>System Owner</label><span>'+esc(sys.system_owner||'Not set')+'</span></div><div class="meta-item"><label>Deployment</label><span><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||'Not set')+'</span></span></div><div class="meta-item"><label>Purpose Category</label><span>'+esc(sys.purpose_category?sys.purpose_category.replace(/_/g,' '):'Not set')+'</span></div><div class="meta-item"><label>Risk Tier</label><span><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></span></div>'+(sys.risk_tier_rationale?'<div class="meta-item" style="grid-column:1/-1;"><label>Classification Rationale</label><span>'+esc(sys.risk_tier_rationale)+'</span></div>':'')+'<div class="meta-item"><label>Registered</label><span>'+fmtDate(sys.created_at)+'</span></div><div class="meta-item"><label>Last Updated</label><span>'+fmtDate(sys.updated_at)+'</span></div></div>';
   // Assessment tab
   renderAssessmentTab(assessments||[]);
   // System controls tab
@@ -168,7 +168,7 @@ function animateDomainBars(root){
   if(!rows.length)return;
   var gen=++_domAnimGen;
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var duration=780;
+  var duration=1400;
   var ease=function(t){return 1-Math.pow(1-t,3)};
 
   rows.forEach(function(row,i){
@@ -187,7 +187,7 @@ function animateDomainBars(root){
       return;
     }
 
-    var delay=i*55;
+    var delay=i*90;
     setTimeout(function(){
       if(gen!==_domAnimGen)return;
       // Force layout so the 0% width registers before transitioning.
@@ -205,6 +205,12 @@ function animateDomainBars(root){
       requestAnimationFrame(tick);
     },delay);
   });
+}
+
+function domainRiskLabel(pct){
+  if(pct<40)return{lbl:'High',cls:'is-risk'};
+  if(pct<70)return{lbl:'Medium',cls:'is-warn'};
+  return{lbl:'Low',cls:'is-ok'};
 }
 
 async function renderAssessmentTab(assessments){
@@ -225,14 +231,16 @@ async function renderAssessmentTab(assessments){
     const tv=a.tier_validation;
     const secBars=Object.entries(ss).map(([k,v])=>{
       const pct=Math.max(0,Math.min(100,Number(v.score)||0));
+      const risk=domainRiskLabel(pct);
       return '<div class="dom-row" data-pct="'+pct+'"><span class="dom-row__label">'+esc(v.title||k)+'</span>'+
         '<div class="dom-row__track"><div class="dom-row__fill"></div></div>'+
-        '<span class="dom-row__pct ra-num">0%</span></div>';
+        '<span class="dom-row__pct ra-num">0%</span>'+
+        '<span class="dom-row__risk '+risk.cls+'">'+risk.lbl+'</span></div>';
     }).join('');
     return '<div class="assess-card">'+
       '<div class="assess-card__head">'+
         '<div class="assess-card__reading">'+
-          (score!==null&&score!==undefined?raMaturityBlock(score,{mini:true,animate:true}):'')+
+          (score!==null&&score!==undefined?raMaturityBlock(score,{mini:true,animate:true}):'<div class="ra-maturity ra-maturity--mini"><div class="ra-maturity__text"><div class="ra-maturity__tier">Not assessed</div></div></div>')+
           '<span class="band-pill band-'+band+'">'+(BAND_L[band]||band)+'</span>'+
           (isLatest?'<span class="state-label" style="color:var(--ra-text);">Latest</span>':'')+
         '</div>'+
@@ -242,9 +250,13 @@ async function renderAssessmentTab(assessments){
         '</div>'+
       '</div>'+
       (Object.keys(ss).length?'<div class="dom-list">'+secBars+'</div>':'')+
+      '<div class="assess-card__meta">'+
+        '<div class="assess-card__meta-cell"><span class="assess-card__meta-lbl">Submitted by</span><span class="assess-card__meta-val">'+esc(nm[a.requested_by]||'Unknown')+'</span></div>'+
+        '<div class="assess-card__meta-cell"><span class="assess-card__meta-lbl">Sector</span><span class="assess-card__meta-val">'+esc(a.sector||'Not set')+'</span></div>'+
+        '<div class="assess-card__meta-cell"><span class="assess-card__meta-lbl">Review state</span><span class="assess-card__meta-val" style="color:'+stCol+'">'+esc(stLabel)+'</span></div>'+
+      '</div>'+
       (tv&&tv.mismatch?'<div class="notice notice--warn">'+esc(tv.message||'Risk tier mismatch detected. RegAnchor recommends reviewing the classification.')+'</div>':'')+
       (a.client_notes?'<div class="notice notice--quiet">'+esc(a.client_notes)+'</div>':'')+
-      '<div class="assess-card__by">Submitted by '+esc(nm[a.requested_by]||'Unknown')+(a.sector?', '+esc(a.sector):'')+'</div>'+
       (a.status==='controls_issued'?'<div class="notice"><div class="notice__label">RegAnchor Controls Issued</div>'+(a.mla_notes?'<div class="notice__body">'+esc(a.mla_notes)+'</div>':'')+'<div class="notice__meta">Completed by '+(nm[a.completed_by]||'RegAnchor')+', '+fmtDateLong(a.completed_at)+'</div></div>':'')+
       (a.status==='submitted'?'<div class="notice"><div class="notice__body">Your assessment has been submitted. RegAnchor will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
       '<div class="assess-card__actions">'+(isPaidTier()?'<a href="system-report.html?aid='+a.id+'" class="btn-dl" target="_blank"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</a>':'<button class="btn-topbar btn-topbar-ghost" onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>Upgrade to View Report</button>')+'</div>'+
@@ -262,7 +274,10 @@ function switchDetailTab(id,btn){
   document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));
   var panel=document.getElementById('tab-'+id);
   if(panel)panel.classList.add('active');
-  if(id==='assessment')animateDomainBars(panel);
+  if(id==='assessment'){
+    animateDomainBars(panel);
+    animateMaturity(panel);
+  }
 }
  
 // ═══ ADD/EDIT SYSTEM ══════════════════════════════════════════
@@ -271,7 +286,7 @@ function openEditSystem(){const sys=allSystems.find(s=>s.id===currentSystemId);i
 function clearSystemForm(){['sysmod-name','sysmod-desc','sysmod-vendor','sysmod-rationale','sysmod-owner','sysmod-dept','sysmod-notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('sysmod-type').value='';document.getElementById('sysmod-purpose').value='';document.getElementById('sysmod-tier').value='';document.getElementById('sysmod-status').value='planned';document.getElementById('sysmod-tier-hint').style.display='none';document.getElementById('sysmod-rationale-wrap').style.display='none';document.getElementById('sysmod-error').style.display='none'}
 function closeSystemModal(){document.getElementById('system-modal').classList.remove('open')}
 function onPurposeChange(){const purpose=document.getElementById('sysmod-purpose').value;const suggested=PURPOSE_TIER_MAP[purpose];const hint=document.getElementById('sysmod-tier-hint');const tierSel=document.getElementById('sysmod-tier');const rw=document.getElementById('sysmod-rationale-wrap');
-  if(suggested){hint.innerHTML='Suggested tier: <strong>'+(TIER_LABELS[suggested])+'</strong> — based on EU AI Act Annex III.';hint.style.display='block';tierSel.value=suggested}else if(purpose==='other'){hint.innerHTML='Please classify manually.';hint.style.display='block'}else hint.style.display='none';
+  if(suggested){hint.innerHTML='Suggested tier: <strong>'+(TIER_LABELS[suggested])+'</strong>, based on EU AI Act Annex III.';hint.style.display='block';tierSel.value=suggested}else if(purpose==='other'){hint.innerHTML='Please classify manually.';hint.style.display='block'}else hint.style.display='none';
   rw.style.display=(tierSel.value&&tierSel.value!==suggested)?'block':'none';tierSel.onchange=()=>{rw.style.display=(tierSel.value&&tierSel.value!==suggested)?'block':'none'}}
 async function submitSystem(){
   const name=document.getElementById('sysmod-name').value.trim();const owner=document.getElementById('sysmod-owner').value.trim();const errEl=document.getElementById('sysmod-error');
