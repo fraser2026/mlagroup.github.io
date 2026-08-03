@@ -17,13 +17,11 @@
 :root {
   --ink: #0A0E14;
   --paper: #FFFFFF;
-  --steel: #6B7280;
-  --slate: #374151;
-  --line: #E4E7EC;
-  --accent-a: #3730A3;
-  --accent-b: #7C3AED;
-  --accent-c: #F97316;
-  --accent-grad: linear-gradient(90deg, var(--accent-a) 0%, var(--accent-b) 50%, var(--accent-c) 100%);
+  --steel: #697386;
+  --slate: #425466;
+  --line: #E6EBF1;
+  --blurple: #533AFD;
+  --accent-grad: #533AFD;
   --font-brand: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -60,20 +58,18 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
 
 .cert-brand-sub {
   font-family: var(--font-body);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--steel);
   margin-top: 4px;
 }
 
 .cert-doc-label {
   font-family: var(--font-body);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   color: var(--steel);
   text-align: right;
   padding-top: 4px;
@@ -95,9 +91,9 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
 }
 .cert-rule__seg {
   position: absolute;
-  top: 0; height: 2px; width: 80px;
+  top: 0; height: 2px; width: 64px;
   left: 61.8%; transform: translateX(-50%);
-  background: var(--accent-grad);
+  background: var(--blurple);
 }
 
 /* ── Body ── */
@@ -113,10 +109,9 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
 
 .cert-pretext {
   font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   color: var(--steel);
   margin-bottom: 16px;
 }
@@ -159,7 +154,7 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
 .ra-cbar__row--achieved-1 { opacity: 0.88; }
 .ra-cbar__row--achieved-2 { opacity: 0.64; }
 .ra-cbar__row--achieved-3 { opacity: 0.44; }
-.ra-cbar__row--current { background: var(--accent-grad); opacity: 1; height: 6px; width: 120px; margin-left: -5px; }
+.ra-cbar__row--current { background: var(--blurple); opacity: 1; height: 6px; width: 120px; margin-left: -5px; }
 .ra-cbar__row--pending-1 { opacity: 0.20; }
 .ra-cbar__row--pending-2 { opacity: 0.10; }
 .ra-cbar__row--pending-3 { opacity: 0.05; }
@@ -177,10 +172,9 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
 .cert-maturity__of { font-family: var(--font-body); font-size: 15px; color: var(--steel); margin-left: 4px; }
 .cert-maturity__tier {
   font-family: var(--font-brand);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--steel);
   margin-top: 6px;
 }
@@ -196,7 +190,7 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
 .cert-data-item:last-child { border-right: none; }
 .cert-data-label {
   font-family: var(--font-body);
-  font-size: 9px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.02em;
   color: var(--steel); margin-bottom: 8px;
 }
 .cert-data-value { font-family: var(--font-brand); font-size: 18px; font-weight: 500; color: var(--ink); font-feature-settings: 'tnum'; }
@@ -219,7 +213,7 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
 .cert-sig-img { height: 48px; width: auto; display: block; margin-bottom: 8px; opacity: 0.85; }
 .cert-sig-line { width: 150px; height: 1px; background: var(--line); margin-bottom: 6px; }
 .cert-sig-label { font-family: var(--font-body); font-size: 11px; color: var(--steel); margin-bottom: 2px; }
-.cert-sig-org { font-family: var(--font-body); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); }
+.cert-sig-org { font-family: var(--font-body); font-size: 10px; font-weight: 500; letter-spacing: 0.02em; color: var(--ink); }
 
 .cert-id-border { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 8px; }
 .cert-id-line { width: 40px; height: 1px; background: var(--line); }
@@ -227,7 +221,7 @@ html, body { height: 100%; background: var(--paper); display: flex; align-items:
 .cert-verify-label { font-family: var(--font-body); font-size: 10.5px; color: var(--steel); margin-bottom: 3px; }
 .cert-verify-url { font-family: var(--font-body); font-size: 10px; font-weight: 500; color: var(--ink); }
 
-.cert-company { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); margin-bottom: 8px; }
+.cert-company { font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--ink); margin-bottom: 8px; }
 .cert-disclaimer { font-family: var(--font-body); font-size: 9.5px; color: var(--steel); max-width: 220px; line-height: 1.6; margin-left: auto; }
 </style>
 </head>
