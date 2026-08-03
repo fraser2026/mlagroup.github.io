@@ -447,15 +447,24 @@ h3 { font-size: 20px; font-weight: 400; color: var(--main); margin-bottom: 8px }
   display: flex; align-items: stretch; gap: 32px;
 }
 .diag-maturity-row .ra-cbar { flex-shrink: 0; width: 156px }
-.diag-maturity-row .ra-cbar__row { height: 6px }
-/* Override the shared brand gradient here: at this size, blown up
-   next to a plain amber status dot two lines above it, the indigo-
-   violet-orange sweep reads as arbitrary decoration rather than a
-   signature. One colour, matching the status pill exactly, so the
-   whole card agrees with itself about what "moderate" looks like. */
+/* Match the portal dashboard's compliance bar: every row is the accent
+   colour, and the achieved/pending opacity steps carry the gradient. This
+   keeps the diagnostic result and the portal dashboard visually consistent. */
+.diag-maturity-row .ra-cbar__row { height: 6px; background: var(--ra-blurple) }
 .diag-maturity-row .ra-cbar__row--current {
   height: 7px; width: 169px; margin-left: -6.5px;
-  background: var(--accent);
+  background: var(--ra-blurple);
+}
+/* Grow-on-paint animation, mirroring the portal (portal.css). Staggered from
+   the bottom rung upward via the --ra-cbar-i index set in raComplianceBar. */
+@keyframes ra-cbar-grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.diag-maturity-row .ra-cbar--animate .ra-cbar__row {
+  transform-origin: left center;
+  animation: ra-cbar-grow 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ra-cbar-i, 0) * 45ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .diag-maturity-row .ra-cbar--animate .ra-cbar__row { animation: none }
 }
 .diag-maturity-row .ra-ladder {
   flex: 1; min-width: 0; font-size: 12px; gap: 4px;

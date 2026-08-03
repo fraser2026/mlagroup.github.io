@@ -240,8 +240,16 @@
   .fines-chart__stage {
     height: 210px;
   }
+  /* Reserve height for the tallest detail line (milestones wrap to ~3 lines on
+     a phone). Without this the chart below jumps as the scrubbed text changes
+     between one and three lines. */
   .fines-chart__detail {
-    min-height: 0;
+    min-height: 4.65em;
+  }
+  /* The number + its date/authority meta wrap onto separate lines on narrow
+     screens; reserve for that so the header height stays fixed while scrubbing. */
+  .fines-chart__value {
+    min-height: 3.1rem;
   }
   .fines-chart__legend {
     white-space: normal;
