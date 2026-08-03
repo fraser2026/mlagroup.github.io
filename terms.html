@@ -5,64 +5,64 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terms &amp; Conditions | RegAnchor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/reganchor.css">
 <style>
 :root{
-  --bg:#070b18;--surface-0:#090e1c;--surface-1:#0d1426;--surface-2:#111827;
-  --border:rgba(255,255,255,0.07);--border-md:rgba(255,255,255,0.12);
-  --text-1:#e2e8f4;--text-2:#8899b4;--text-3:#4a5773;
-  --blue:#2563eb;--blue-lt:#60a5fa;--gold:#c9a465;--nav-h:60px;--r:8px;
+  --bg:#FFFFFF;
+  --border:var(--ra-line,#E4E7EC);--border-md:var(--ra-ink,#0A0E14);
+  --hover:var(--ra-hover,rgba(17,17,17,0.028));
+  --text-1:var(--ra-ink,#0A0E14);--text-2:var(--ra-slate-70,#374151);--text-3:var(--ra-steel,#6B7280);
+  --warn:#92400E;
+  --font-brand:var(--ra-font-brand,'IBM Plex Sans',sans-serif);--font-body:var(--ra-font-product,'Inter',sans-serif);
+  --nav-h:60px;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-webkit-font-smoothing:antialiased;line-height:1.6}
-.rnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(7,11,24,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:100}
-.rnav-logo{font-size:.92rem;font-weight:600;letter-spacing:-.02em;color:var(--text-1);text-decoration:none}
-.rnav-logo em{font-family:'Instrument Serif',serif;font-style:italic;color:var(--blue-lt)}
-.nav-back{font-size:.75rem;font-weight:500;color:var(--text-3);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color .2s}
-.nav-back:hover{color:var(--text-2)}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webkit-font-smoothing:antialiased;line-height:1.6}
+.rnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:100}
+.rnav-logo{font-family:var(--font-brand);font-size:.95rem;font-weight:500;letter-spacing:-.025em;color:var(--text-1);text-decoration:none}
+.nav-back{font-size:.78rem;font-weight:500;color:var(--text-3);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color .2s}
+.nav-back:hover{color:var(--text-1)}
 .nav-back::before{content:'←'}
-.hero{padding:calc(var(--nav-h) + 80px) 60px 80px;max-width:900px;margin:0 auto}
-.hero-eyebrow{font-size:.65rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--blue-lt);margin-bottom:20px;display:flex;align-items:center;gap:12px}
-.hero-eyebrow::before{content:'';display:block;width:28px;height:1px;background:var(--blue)}
-.hero-title{font-family:'Instrument Serif',serif;font-size:3rem;font-weight:400;line-height:1.1;letter-spacing:-.02em;color:var(--text-1);margin-bottom:20px}
+.hero{padding:calc(var(--nav-h) + 64px) 60px 56px;max-width:900px;margin:0 auto}
+.hero-eyebrow{font-family:var(--font-brand);font-size:.68rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3);margin-bottom:18px;display:flex;align-items:center;gap:12px}
+.hero-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--border-md)}
+.hero-title{font-family:var(--font-brand);font-size:2.4rem;font-weight:500;line-height:1.15;letter-spacing:-.02em;color:var(--text-1);margin-bottom:18px}
 .hero-meta{font-size:.8rem;color:var(--text-3);display:flex;gap:24px;flex-wrap:wrap}
-.content{max-width:900px;margin:0 auto;padding:0 60px 100px}
-.section{margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--border)}
+.content{max-width:900px;margin:0 auto;padding:0 60px 88px}
+.section{margin-bottom:44px;padding-bottom:44px;border-bottom:1px solid var(--border)}
 .section:last-child{border-bottom:none}
-.section-num{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:14px}
+.section-num{font-family:var(--font-brand);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:14px}
 .section-num::after{content:'';display:block;width:60px;height:1px;background:var(--border)}
-.section-title{font-family:'Instrument Serif',serif;font-size:1.6rem;font-weight:400;color:var(--text-1);margin-bottom:20px;letter-spacing:-.02em}
-.body-text{font-size:.9rem;color:var(--text-2);line-height:1.85;margin-bottom:16px}
+.section-title{font-family:var(--font-brand);font-size:1.35rem;font-weight:500;color:var(--text-1);margin-bottom:18px;letter-spacing:-.02em}
+.body-text{font-size:.9rem;color:var(--text-2);line-height:1.8;margin-bottom:16px}
 .body-text:last-child{margin-bottom:0}
 .body-text strong{color:var(--text-1);font-weight:600}
-.body-text a{color:var(--blue-lt);text-decoration:none}
-.body-text a:hover{text-decoration:underline}
-.info-block{background:var(--surface-1);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--r);padding:24px 28px;margin-bottom:24px}
-.info-block-lbl{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-lt);font-weight:700;margin-bottom:10px}
+.body-text a{color:var(--text-1);text-decoration:underline;text-underline-offset:2px}
+.info-block{background:var(--bg);border:1px solid var(--border);border-left:2px solid var(--text-1);padding:22px 26px;margin-bottom:24px}
+.info-block-lbl{font-family:var(--font-brand);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:500;margin-bottom:10px}
 .info-block p{font-size:.88rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
 .info-block p:last-child{margin-bottom:0}
 .info-block strong{color:var(--text-1)}
-.warning-block{background:rgba(201,164,101,.06);border:1px solid rgba(201,164,101,.18);border-left:4px solid var(--gold);border-radius:var(--r);padding:24px 28px;margin-bottom:24px}
-.warning-block-lbl{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
+.warning-block{background:var(--bg);border:1px solid var(--border);border-left:2px solid var(--warn);padding:22px 26px;margin-bottom:24px}
+.warning-block-lbl{font-family:var(--font-brand);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);font-weight:600;margin-bottom:10px}
 .warning-block p{font-size:.88rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
 .warning-block p:last-child{margin-bottom:0}
-.rfooter{max-width:900px;margin:0 auto;padding:40px 60px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
-.rf-logo{font-size:.88rem;font-weight:600;color:var(--text-3);text-decoration:none;letter-spacing:-.02em}
-.rf-logo em{font-family:'Instrument Serif',serif;font-style:italic}
+.rfooter{max-width:900px;margin:0 auto;padding:36px 60px;border-top:1px solid var(--text-1);display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.rf-logo{font-family:var(--font-brand);font-size:.88rem;font-weight:500;color:var(--text-1);text-decoration:none;letter-spacing:-.02em}
 .rf-links{display:flex;gap:20px}
 .rf-links a{font-size:.75rem;color:var(--text-3);text-decoration:none;transition:color .2s}
-.rf-links a:hover{color:var(--text-2)}
+.rf-links a:hover{color:var(--text-1)}
 @media(max-width:768px){
   .rnav{padding:0 20px}
-  .hero{padding:calc(var(--nav-h) + 48px) 24px 48px}
-  .content{padding:0 24px 80px}
-  .rfooter{padding:32px 24px;flex-direction:column;text-align:center}
+  .hero{padding:calc(var(--nav-h) + 40px) 20px 40px}
+  .content{padding:0 20px 64px}
+  .rfooter{padding:28px 20px;flex-direction:column;text-align:center}
   .rf-links{justify-content:center;flex-wrap:wrap}
 }
 </style>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <body>
 
@@ -70,6 +70,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-1);-
   <a href="index.html" class="rnav-logo ra-wordmark">RegAnchor</a>
   <a href="index.html" class="nav-back">Back to site</a>
 </nav>
+<div class="ra-anchor-line ra-anchor-line--entrance" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:99;"><div class="ra-anchor-line__seg"></div></div>
 
 <div class="hero">
   <div class="hero-eyebrow">Legal Documentation</div>

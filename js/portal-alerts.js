@@ -141,8 +141,7 @@ const EMAILJS_TPL='template_o6h9et7';
 const EMAILJS_KEY='vxitc5LFJHMfNcmUL';
 
 async function navigateAlerts(){
-  navigate('alerts',null);
-  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  navigate('alerts',document.getElementById('nav-alerts'));
   if(!currentOrg)await ensureOrg();
   await renderAlertsView();
 }
@@ -241,28 +240,33 @@ async function renderAlertsView(){
     el.innerHTML='<div class="empty-state"><h4>No active alerts</h4><p>Your governance platform is monitoring for score drops, overdue controls, and assessments due for review.</p></div>';
     return;
   }
-  const SEV_C={info:'#60a5fa',warning:'#fbbf24',critical:'#f87171'};
-  const SEV_BG={info:'rgba(96,165,250,0.06)',warning:'rgba(251,191,36,0.06)',critical:'rgba(239,68,68,0.06)'};
-  const TYPE_L={score_drop:'Score Drop',control_overdue:'Control Overdue',assessment_due:'Assessment Due',control_regression:'Regression',compliance_rule_fired:'Automation'};
-  el.innerHTML=active.map(a=>{
-    const col=SEV_C[a.severity]||'var(--muted)';
-    const bg=SEV_BG[a.severity]||'rgba(255,255,255,0.02)';
-    return `<div style="background:${bg};border:1px solid rgba(255,255,255,0.06);border-left:3px solid ${col};border-radius:10px;padding:18px 20px;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${col};background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:2px 8px;border-radius:100px;">${esc(a.severity)}</span>
-          <span style="font-size:.68rem;color:var(--muted);">${TYPE_L[a.alert_type]||a.alert_type}</span>
-        </div>
-        <span style="font-size:.68rem;color:var(--muted);white-space:nowrap;">${fmtDate(a.created_at)}</span>
-      </div>
-      <div style="font-size:.88rem;font-weight:600;color:var(--main);margin-bottom:6px;">${esc(a.title)}</div>
-      <div style="font-size:.78rem;color:var(--sub);line-height:1.65;margin-bottom:14px;">${esc(a.body||'')}</div>
-      <div style="display:flex;gap:8px;">
-        ${(a.alert_type==='support_response'&&a.ref_id)?'<button onclick="viewAlertSource(\''+a.ref_id+'\',\''+a.ref_type+'\')" class="btn-topbar btn-topbar-ghost" style="padding:5px 12px;font-size:.72rem;">View Conversation</button>':''}
-        <button onclick="resolveAlert('${a.id}')" class="btn-topbar btn-topbar-primary" style="padding:5px 12px;font-size:.72rem;">Mark Resolved</button>
-        <button onclick="dismissAlert('${a.id}')" class="btn-topbar btn-topbar-ghost" style="padding:5px 12px;font-size:.72rem;">Dismiss</button>
-      </div>
-    </div>`;
+  /* Severity is a state, so it keeps functional colour as ink on a
+     hairline label — never a tinted capsule. The card itself is
+     paper with a left rule; the fill behind the old pills is gone. */
+  const SEV_C={info:'var(--ra-text-3)',warning:'var(--ra-warn)',critical:'var(--ra-risk)'};
+  const TYPE_L={score_drop:'Score Drop',control_overdue:'Control Overdue',assessment_due:'Assessment Due',control_regression:'Regression',compliance_rule_fired:'Automation',support_response:'Support'};
+  el.innerHTML=active.map(function(a){
+    var sev=a.severity||'info';
+    var col=SEV_C[sev]||'var(--ra-text-3)';
+    var conv=(a.alert_type==='support_response'&&a.ref_id)
+      ?'<button onclick="viewAlertSource(\''+a.ref_id+'\',\''+a.ref_type+'\')" class="btn-topbar btn-topbar-ghost btn-sm">View Conversation</button>'
+      :'';
+    return '<div class="alert-card alert-card--'+sev+'">'+
+      '<div class="alert-card__head">'+
+        '<div class="alert-card__meta">'+
+          '<span class="state-label" style="color:'+col+';">'+esc(sev)+'</span>'+
+          '<span class="alert-card__type">'+(TYPE_L[a.alert_type]||a.alert_type)+'</span>'+
+        '</div>'+
+        '<span class="alert-card__date">'+fmtDate(a.created_at)+'</span>'+
+      '</div>'+
+      '<div class="alert-card__title">'+esc(a.title)+'</div>'+
+      '<div class="alert-card__body">'+esc(a.body||'')+'</div>'+
+      '<div class="alert-card__actions">'+
+        conv+
+        '<button onclick="resolveAlert(\''+a.id+'\')" class="btn-topbar btn-topbar-primary btn-sm">Mark Resolved</button>'+
+        '<button onclick="dismissAlert(\''+a.id+'\')" class="btn-topbar btn-topbar-ghost btn-sm">Dismiss</button>'+
+      '</div>'+
+    '</div>';
   }).join('');
 }
 

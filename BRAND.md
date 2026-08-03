@@ -111,10 +111,23 @@ This matches the pattern already used in your own design work: `reganchorsystem.
 | Email addresses | `@mlagroup.co.uk` | Mailboxes still live; move at cutover |
 | `CNAME` | `mlagroup.co.uk` | Flipped in one deliberate cutover step |
 | Certificate ID prefix | `MLA-GOV-` | Generated in Supabase; new issues become `RGA-GOV-` at cutover, old IDs stay valid |
-| Visual theme | Dark navy, DM Sans | Full RGA-001 conversion is a later phase |
-| Report and certificate layouts | MLA styling | Explicitly last |
 | Stripe product names | MLA Group | Cosmetic, dashboard-side |
 | Render service hostname | `mla-pdf-service.onrender.com` | Internal, not user-visible |
+
+## Done ahead of the domain cutover (RGA-002 phase)
+
+The visual theme (dark navy → ink-on-paper) and the report/certificate layouts were originally
+scheduled for the cutover itself. They shipped earlier than planned, at the user's request, covering
+everything past login — the portal, the diagnostic/assessment/results flow, and the issued PDF
+templates (`certificate-template.html`, `report-template.html`, `generate-pdf.html`). The public
+marketing site (`index.html` and siblings) is explicitly **not** included in this pass and needs its
+own dedicated design effort before it ships.
+
+Certificates already issued (`governance_certificates.pdf_path` set) keep their stored MLA Group
+branding forever — the portal never regenerates a cached PDF, it only re-renders when no `pdf_path`
+exists yet. New reports and certificates issued after this change render on the RegAnchor template.
+The certificate issuer, signatory line, and footer legal entity remain **MLA Group Ltd** per the
+decision rule above — only the brand chrome (fonts, colours, wordmark, layout) changed.
 
 ---
 

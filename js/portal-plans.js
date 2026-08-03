@@ -1,5 +1,317 @@
-topbarTitles['policies']={label:'Policies',icon:'<path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/>'}; topbarTitles['plans']={label:'Subscription Plans',icon:'<path d="M2 4h12M2 8h8M2 12h10"/><circle cx="14" cy="8" r="1.5"/>'};  var portalAnnual=false; var PORTAL_PRICES={essentials:{monthly:'price_1TD37VRfSQTwpCt9fmlCcuQh',annual:'price_1TD37VRfSQTwpCt914LUfLrf'},professional:{monthly:'price_1TD392RfSQTwpCt9yaJicEiY',annual:'price_1TD3AbRfSQTwpCt969zGi3bD'}};  function togglePortalPeriod(){portalAnnual=!portalAnnual;closePortalCheckout();updatePortalPricing()} function closePortalCheckout(){var c=document.getElementById('portal-checkout-container');var l=document.getElementById('portal-checkout-loading');if(portalCheckoutInstance){portalCheckoutInstance.destroy();portalCheckoutInstance=null}if(c)c.style.display='none';if(l)l.style.display='none'} function setPortalPeriod(p){portalAnnual=(p==='annual');updatePortalPricing()}  function updatePortalPricing(){   var tog=document.getElementById('portal-tog');   var dot=document.getElementById('portal-tog-dot');   var lm=document.getElementById('portal-lbl-m');   var la=document.getElementById('portal-lbl-a');   if(portalAnnual){tog.style.background='rgba(37,99,235,0.12)';tog.style.borderColor='rgba(37,99,235,0.3)';dot.style.transform='translateX(22px)';lm.style.color='var(--muted)';la.style.color='var(--main)'}   else{tog.style.background='rgba(255,255,255,0.06)';tog.style.borderColor='var(--border)';dot.style.transform='translateX(0)';lm.style.color='var(--main)';la.style.color='var(--muted)'}   renderPortalPricingCards(); }  function renderPortalPricingCards(){   var el=document.getElementById('portal-pricing-cards');   if(!el)return;   var plan=currentOrg?currentOrg.plan:'free';   var isActive=currentOrg&&currentOrg.subscription_status==='active';   var ePrice=portalAnnual?'1,290':'129';   var ePer=portalAnnual?'/year':'/month';   var eSave=portalAnnual?'<div style="font-size:.72rem;color:var(--sky);margin-top:4px;">That is &pound;107.50/mo &mdash; save &pound;258/yr</div>':'';   var pPrice=portalAnnual?'2,490':'249';   var pPer=portalAnnual?'/year':'/month';   var pSave=portalAnnual?'<div style="font-size:.72rem;color:var(--sky);margin-top:4px;">That is &pound;207.50/mo &mdash; save &pound;498/yr</div>':'';   var essBtn=(plan==='essentials'&&isActive)?'<div style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px;border-radius:8px;font-size:.84rem;font-weight:600;color:var(--green);background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);">Current Plan</div>':'<button onclick="portalSubscribe(\'essentials\')" style="display:flex;align-items:center;justify-content:center;width:100%;padding:12px;border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:.84rem;font-weight:600;cursor:pointer;border:none;background:var(--accent);color:white;transition:background .15s;">Get Started</button>';   var proBtn=(plan==='professional'&&isActive)?'<div style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px;border-radius:8px;font-size:.84rem;font-weight:600;color:var(--green);background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);">Current Plan</div>':'<button onclick="portalSubscribe(\'professional\')" style="display:flex;align-items:center;justify-content:center;width:100%;padding:12px;border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:.84rem;font-weight:600;cursor:pointer;border:none;background:rgba(186,155,95,0.08);color:#ba9b5f;border:1px solid rgba(186,155,95,0.2);transition:background .15s;">Upgrade to Professional</button>';   el.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch;">'+     '<div style="border:1px solid '+(plan==='essentials'&&isActive?'rgba(37,99,235,0.4)':'rgba(37,99,235,0.2)')+';border-radius:14px;padding:32px 28px;background:'+(plan==='essentials'&&isActive?'rgba(37,99,235,0.06)':'var(--surface)')+';display:flex;flex-direction:column;position:relative;overflow:hidden;">'+(plan==='essentials'&&isActive?'':'<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);"></div>')+'<div style="position:absolute;top:12px;right:12px;font-size:.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:white;background:var(--accent);padding:3px 9px;border-radius:100px;">Recommended</div><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--sky);margin-bottom:12px;">Essentials</div><div style="font-size:1.2rem;font-weight:600;color:var(--main);margin-bottom:6px;">Governance</div><div style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:20px;min-height:40px;">Certified governance maturity with a publicly verifiable certificate.</div><div style="display:flex;align-items:baseline;gap:3px;margin-bottom:2px;"><span style="font-size:1rem;font-weight:600;color:var(--main);">&pound;</span><span style="font-size:2rem;font-weight:700;color:var(--main);">'+ePrice+'</span><span style="font-size:.78rem;color:var(--muted);">'+ePer+'</span></div>'+eSave+'<div style="height:1px;background:var(--border);margin:20px 0 18px;"></div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;flex:1;"><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--main);font-weight:600;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Governance certificate &amp; PDF</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--main);font-weight:600;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Public verification page</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--main);font-weight:600;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF assessment reports</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Full governance framework</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Email support</div></div>'+essBtn+'</div>'+     '<div style="border:1px solid '+(plan==='professional'&&isActive?'rgba(186,155,95,0.4)':'rgba(186,155,95,0.15)')+';border-radius:14px;padding:32px 28px;background:'+(plan==='professional'&&isActive?'rgba(186,155,95,0.04)':'var(--surface)')+';display:flex;flex-direction:column;position:relative;overflow:hidden;">'+(plan!=='professional'||!isActive?'<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#ba9b5f,transparent);"></div>':'')+'<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#ba9b5f;margin-bottom:12px;">Professional</div><div style="font-size:1.2rem;font-weight:600;color:var(--main);margin-bottom:6px;">Compliance</div><div style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:20px;min-height:40px;">Operational governance across every system. Audit-ready at scale.</div><div style="display:flex;align-items:baseline;gap:3px;margin-bottom:2px;"><span style="font-size:1rem;font-weight:600;color:var(--main);">&pound;</span><span style="font-size:2rem;font-weight:700;color:var(--main);">'+pPrice+'</span><span style="font-size:.78rem;color:var(--muted);">'+pPer+'</span></div>'+pSave+'<div style="height:1px;background:var(--border);margin:20px 0 18px;"></div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;flex:1;"><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--main);font-weight:600;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited AI systems</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--main);font-weight:600;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Multi-user access (5 seats)</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--main);font-weight:600;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Organisation-wide certification</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Compliance automation</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority support</div></div>'+proBtn+'</div>'+     '<div style="border:1px solid var(--border);border-radius:14px;padding:32px 28px;background:var(--surface);display:flex;flex-direction:column;"><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--sub);margin-bottom:12px;">Enterprise</div><div style="font-size:1.2rem;font-weight:600;color:var(--main);margin-bottom:6px;">Governance OS</div><div style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:20px;min-height:40px;">Bespoke governance infrastructure for multi-jurisdiction obligations.</div><div style="font-size:1.4rem;font-weight:700;color:var(--main);margin-bottom:2px;">Bespoke</div><div style="font-size:.72rem;color:var(--muted);margin-bottom:0;">Tailored to your organisation</div><div style="height:1px;background:var(--border);margin:20px 0 18px;"></div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;flex:1;"><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Professional</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited users</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated advisory lead</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>On-site sessions &amp; benchmarking</div><div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Custom SLA</div></div><a href="#" onclick="openEnterpriseModal();return false;" style="display:flex;align-items:center;justify-content:center;width:100%;padding:12px;border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:.84rem;font-weight:600;text-decoration:none;color:var(--sub);border:1px solid var(--border);transition:all .15s;">Design Your Governance Function</a></div>'+   '</div><div style="text-align:center;margin-top:28px;"><button onclick="togglePortalCompare()" id="portal-comp-btn" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:.82rem;font-weight:500;color:var(--sub);background:transparent;border:1px solid var(--border);cursor:pointer;transition:all .18s;">Compare all features <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="transition:transform .25s;"><path d="M3 4.5l3 3 3-3"/></svg></button></div><div id="portal-comp-table" style="max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(0.16,1,0.3,1),opacity .3s;opacity:0;margin-top:20px;"><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;font-size:.78rem;"><thead style="border-bottom:1px solid var(--border);"><tr><th style="padding:12px 16px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);text-align:left;width:32%;border-right:1px solid rgba(255,255,255,0.05);">Feature</th><th style="padding:12px 16px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);text-align:center;border-right:1px solid rgba(255,255,255,0.05);">Free</th><th style="padding:12px 16px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--sky);text-align:center;border-right:1px solid rgba(255,255,255,0.05);">Essentials</th><th style="padding:12px 16px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#ba9b5f;text-align:center;border-right:1px solid rgba(255,255,255,0.05);">Professional</th><th style="padding:12px 16px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);text-align:center;">Enterprise</th></tr></thead><tbody>'+portalCompRow('Diagnostics &amp; Assessment',true)+portalCompData('Governance diagnostic','y','y','y','y')+portalCompData('Maturity score &amp; risk band','y','y','y','y')+portalCompData('7-domain system assessment','y','y','y','y')+portalCompData('PDF assessment reports','n','y','y','y')+portalCompRow('Registry &amp; Systems',true)+portalCompData('AI systems in registry','1','1','Unlimited','Unlimited')+portalCompData('EU AI Act risk classification','y','y','y','y')+portalCompData('Compliance framework tracking','y','y','y','y')+portalCompRow('Governance Controls',true)+portalCompData('12 governance controls','y','y','y','y')+portalCompData('Task management &amp; evidence','y','y','y','y')+portalCompData('RegAnchor expert support','y','y','Priority','Dedicated')+portalCompData('Compliance automation engine','n','n','y','y')+portalCompRow('Certification',true)+portalCompData('Governance certificate','n','y','y','y')+portalCompData('Certificate PDF download','n','y','y','y')+portalCompData('Public verification page','n','y','y','y')+portalCompData('Governance dossier export','n','n','y','y')+portalCompRow('Team &amp; Organisation',true)+portalCompData('Users','1','1','Up to 5','Unlimited')+portalCompData('Policy management','y','y','y','y')+portalCompData('E-signatures','y','y','y','y')+portalCompData('Audit trail','y','y','Advanced','Advanced')+portalCompRow('Support',true)+portalCompData('Support channel','In-portal','Email','Priority','Dedicated lead')+portalCompData('On-site sessions','n','n','n','y')+portalCompData('Quarterly benchmarking','n','n','n','y')+'</tbody></table></div></div>';}  function togglePortalCompare(){var el=document.getElementById('portal-comp-table');var btn=document.getElementById('portal-comp-btn');if(!el||!btn)return;var isOpen=el.style.maxHeight!=='0px'&&el.style.maxHeight!=='';if(isOpen){el.style.maxHeight='0';el.style.opacity='0';btn.querySelector('svg').style.transform='rotate(0deg)'}else{el.style.maxHeight='2000px';el.style.opacity='1';btn.querySelector('svg').style.transform='rotate(180deg)'}} function portalCompRow(label){return '<tr><td colspan="5" style="background:rgba(96,165,250,0.04);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--sky);padding:10px 16px;">'+label+'</td></tr>'} function portalCompData(feat,f,e,p,en){function cell(v){if(v==='y')return '<td style="padding:10px 16px;text-align:center;color:var(--green);font-weight:700;border-right:1px solid rgba(255,255,255,0.05);">&#10003;</td>';if(v==='n')return '<td style="padding:10px 16px;text-align:center;color:var(--muted);border-right:1px solid rgba(255,255,255,0.05);">&mdash;</td>';var col=(v==='Priority'||v==='Dedicated'||v==='Dedicated lead'||v==='Advanced')?'color:#ba9b5f':'color:var(--sub)';return '<td style="padding:10px 16px;text-align:center;'+col+';font-size:.74rem;border-right:1px solid rgba(255,255,255,0.05);">'+v+'</td>'}return '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:10px 16px;color:var(--main);font-weight:500;border-right:1px solid rgba(255,255,255,0.05);">'+feat+'</td>'+cell(f)+cell(e)+cell(p)+cell(en).replace('border-right:1px solid rgba(255,255,255,0.05);','')+'</tr>'} var portalStripe=null; var portalCheckoutInstance=null;  function openUpgradeModal(contextMsg){var plan=currentOrg?currentOrg.plan:'free';var isActive=currentOrg&&currentOrg.subscription_status==='active';var heading='';var subtext='';var cardsHtml='';var cols=3;var maxW='720px';var essCard='<div style="border:1px solid rgba(37,99,235,0.25);border-radius:12px;padding:22px 18px;background:rgba(37,99,235,0.03);display:flex;flex-direction:column;"><div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#60a5fa;margin-bottom:8px;">Essentials</div><div style="font-size:1rem;font-weight:500;color:#ffffff;margin-bottom:4px;">Governance</div><div style="font-size:.75rem;color:#cbd5e1;line-height:1.6;margin-bottom:14px;flex:1;">Certified governance maturity with a publicly verifiable certificate.</div><div style="font-size:1.4rem;font-weight:700;color:#ffffff;margin-bottom:14px;">&pound;129<span style="font-size:.75rem;color:#94a3b8;font-weight:400;">/mo</span></div><div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;"><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#e2e8f0;"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Governance certificate</div><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#e2e8f0;"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF assessment reports</div><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#e2e8f0;"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>1 AI system</div></div><button onclick="closeUpgradeModal();portalAnnual=false;navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();setTimeout(function(){portalSubscribe(\'essentials\')},300)" style="width:100%;padding:10px;border-radius:8px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#2563eb;color:white;">Get Started</button></div>';var proCard='<div style="border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:22px 18px;background:rgba(255,255,255,0.02);display:flex;flex-direction:column;"><div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#94a3b8;margin-bottom:8px;">Professional</div><div style="font-size:1rem;font-weight:500;color:#ffffff;margin-bottom:4px;">Compliance</div><div style="font-size:.75rem;color:#cbd5e1;line-height:1.6;margin-bottom:14px;flex:1;">Unlimited systems, multi-user access, and audit-ready coverage.</div><div style="font-size:1.4rem;font-weight:700;color:#ffffff;margin-bottom:14px;">&pound;249<span style="font-size:.75rem;color:#94a3b8;font-weight:400;">/mo</span></div><div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;"><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#e2e8f0;"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited AI systems</div><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#e2e8f0;"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Multi-user (5 seats)</div><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#e2e8f0;"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Organisation-wide certification</div></div><button onclick="closeUpgradeModal();portalAnnual=false;navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();setTimeout(function(){portalSubscribe(\'professional\')},300)" style="width:100%;padding:10px;border-radius:8px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);">Upgrade to Professional</button></div>';var entCard='<div style="border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:22px 18px;background:rgba(255,255,255,0.01);display:flex;flex-direction:column;"><div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#94a3b8;margin-bottom:8px;">Enterprise</div><div style="font-size:1rem;font-weight:500;color:#ffffff;margin-bottom:4px;">Governance OS</div><div style="font-size:.75rem;color:#cbd5e1;line-height:1.6;margin-bottom:14px;flex:1;">Bespoke governance infrastructure for multi-jurisdiction obligations.</div><div style="font-size:1.1rem;font-weight:700;color:#ffffff;margin-bottom:14px;">Bespoke</div><div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;"><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#e2e8f0;"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Professional</div><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#e2e8f0;"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited users</div><div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#e2e8f0;"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated advisory lead</div></div><button onclick="closeUpgradeModal();openEnterpriseModal()" style="width:100%;padding:10px;border-radius:8px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;color:#cbd5e1;border:1px solid rgba(255,255,255,0.1);background:none;">Contact Us</button></div>';if(plan==='professional'&&isActive){heading='Scale your governance infrastructure';subtext=contextMsg||'Enterprise includes unlimited users, dedicated advisory, on-site sessions, custom SLA, and more.';cardsHtml=entCard;cols=1;maxW='360px'}else if(plan==='essentials'&&isActive){heading='Expand your governance coverage';subtext=contextMsg||'Unlock unlimited AI systems, multi-user access, compliance automation, and more.';cardsHtml=proCard+entCard;cols=2;maxW='520px'}else{heading='Unlock your full governance capability';subtext=contextMsg||'Upgrade to access governance certification, PDF reports, unlimited AI systems, and more.';cardsHtml=essCard+proCard+entCard;cols=3;maxW='720px'}document.getElementById('upgrade-modal-title').textContent=heading;document.getElementById('upgrade-modal-msg').textContent=subtext;document.getElementById('upgrade-modal-cards').innerHTML='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:14px;'+(cols===1?'max-width:280px;margin:0 auto;':'')+'">'+cardsHtml+'</div>';document.getElementById('upgrade-modal-inner').style.maxWidth=maxW;document.getElementById('upgrade-modal').classList.add('open')} function closeUpgradeModal(){document.getElementById('upgrade-modal').classList.remove('open')} function openEnterpriseModal(){   if(currentProfile){document.getElementById('ent-name').value=currentProfile.full_name||'';document.getElementById('ent-email').value=currentUser.email||'';document.getElementById('ent-org').value=currentOrg?currentOrg.name||'':''}   document.getElementById('ent-role').value='';   document.getElementById('ent-systems').value='';   document.getElementById('ent-message').value='';   document.querySelectorAll('#ent-reqs input[type=checkbox]').forEach(function(c){c.checked=false});   document.getElementById('ent-error').style.display='none';   document.getElementById('ent-submit-btn').textContent='Submit Inquiry';   document.getElementById('ent-submit-btn').disabled=false;   document.getElementById('enterprise-modal').classList.add('open'); } function closeEnterpriseModal(){document.getElementById('enterprise-modal').classList.remove('open')} async function submitEnterpriseInquiry(){   var name=document.getElementById('ent-name').value.trim();   var role=document.getElementById('ent-role').value.trim();   var systems=document.getElementById('ent-systems').value;   var message=document.getElementById('ent-message').value.trim();   var errEl=document.getElementById('ent-error');   var btn=document.getElementById('ent-submit-btn');   if(!name){errEl.textContent='Please enter your name.';errEl.style.display='block';return}   errEl.style.display='none';   btn.textContent='Submitting...';btn.disabled=true;   var reqs=[];document.querySelectorAll('#ent-reqs input[type=checkbox]:checked').forEach(function(c){reqs.push(c.value)});   var email=currentUser?currentUser.email:'';   var orgName=currentOrg?currentOrg.name:'';   try{     await sb.from('enterprise_inquiries').insert({org_id:currentOrg?currentOrg.id:null,user_id:currentUser?currentUser.id:null,full_name:name,email:email,organisation:orgName,role_title:role||null,system_count:systems||null,requirements:reqs.length?reqs:null,message:message||null});     try{if(typeof emailjs!=='undefined'){       emailjs.init('vxitc5LFJHMfNcmUL');       await emailjs.send('service_umdte26','template_o6h9et7',{to_name:'Fraser',to_email:'fraser@mlagroup.co.uk',alert_title:'Enterprise Inquiry: '+name,alert_body:'Name: '+name+' | Role: '+(role||'Not specified')+' | Email: '+email+' | Organisation: '+orgName+' | AI Systems: '+(systems||'Not specified')+' | Requirements: '+(reqs.length?reqs.join(', '):'None selected')+' | Message: '+(message||'No message')});
-     }     }catch(eml){console.log('Email notification skipped')}     if(currentOrg){await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'enterprise_inquiry',entity_type:'organisation',entity_id:currentOrg.id,changes:{_actor_name:actorName(),requirements:reqs}})}     btn.textContent='Inquiry Submitted';document.querySelector('#enterprise-modal .modal-header').innerHTML='<div></div><button class="modal-close" onclick="closeEnterpriseModal()">&#10005;</button>';document.querySelector('#enterprise-modal .modal-body').innerHTML='<div style="text-align:center;padding:40px 0 20px;"><div style="width:52px;height:52px;border-radius:14px;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"><path d="M5 11l4 4 8-8"/></svg></div><div style="font-size:1.1rem;font-weight:600;color:#ffffff;margin-bottom:10px;">Inquiry received</div><div style="font-size:.88rem;color:#e2e8f0;line-height:1.75;max-width:360px;margin:0 auto;">Thank you, '+esc(name.split(' ')[0])+'. A RegAnchor governance specialist will be in touch within 24 hours to discuss your requirements.</div></div>';document.querySelector('#enterprise-modal .modal-footer').innerHTML='<button class="btn-topbar btn-topbar-primary" onclick="closeEnterpriseModal()">Close</button>';  }catch(err){     errEl.textContent='Error: '+err.message;errEl.style.display='block';     btn.textContent='Submit Inquiry';btn.disabled=false;   } } function portalSubscribe(plan){   if(!currentOrg)return;   var priceId=PORTAL_PRICES[plan]?PORTAL_PRICES[plan][portalAnnual?'annual':'monthly']:null;   if(!priceId)return;   var loadEl=document.getElementById('portal-checkout-loading');   var contEl=document.getElementById('portal-checkout-container');   if(contEl.style.display==='block'){contEl.scrollIntoView({behavior:'smooth'});return}   loadEl.style.display='block';   if(!portalStripe)portalStripe=Stripe('pk_live_51SVuGRRfSQTwpCt9hCFdOOyVJBOLgV1Gss5CxMOry1T3kKW3cE7IF8OhQzvXjBd9IjOCp941p4uc9R8RPolEvRVV00fiMjUyXQ');   sb.auth.getSession().then(function(sd){     var session=sd.data.session;     if(!session){loadEl.style.display='none';alert('Please sign in first.');return}     return fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{       method:'POST',       headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},       body:JSON.stringify({price_id:priceId,org_id:currentOrg.id,embedded:true})     }).then(function(res){return res.json()});   }).then(function(data){     if(!data)return;     if(data.error){loadEl.style.display='none';if(data.existing){alert('Your organisation already has an active subscription.')}else{alert(data.error)}return}     if(!data.clientSecret){loadEl.style.display='none';alert('Could not load checkout.');return}     if(portalCheckoutInstance)portalCheckoutInstance.destroy();     return portalStripe.initEmbeddedCheckout({clientSecret:data.clientSecret}).then(function(checkout){       portalCheckoutInstance=checkout;       loadEl.style.display='none';       contEl.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);"><span style="font-size:.78rem;font-weight:600;color:var(--main);">Complete your subscription</span><button onclick="closePortalCheckout()" style="background:none;border:none;color:var(--muted);font-size:.78rem;font-weight:500;cursor:pointer;font-family:\'DM Sans\',sans-serif;padding:4px 8px;">Cancel</button></div><div id="portal-checkout-mount"></div>';       contEl.style.display='block';       checkout.mount('#portal-checkout-mount');       setTimeout(function(){contEl.scrollIntoView({behavior:'smooth',block:'start'})},100);     });   }).catch(function(err){     loadEl.style.display='none';     console.error('Checkout error:',err);     alert('Could not load checkout. Please try again.');   }); } 
+// ═══ SUBSCRIPTION PLANS ═══════════════════════════════════════
+/* Pricing surface — RGA-002. Paper cards, hairline borders, ink
+   CTAs. No gold Professional accent, no blue Recommended pill, no
+   gradient card tops. Stripe checkout behaviour is unchanged. */
+topbarTitles['policies']={label:'Policies',icon:'<path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/>'};
+topbarTitles['plans']={label:'Subscription Plans',icon:'<path d="M2 4h12M2 8h8M2 12h10"/><circle cx="14" cy="8" r="1.5"/>'};
+
+var portalAnnual=false;
+var PORTAL_PRICES={
+  essentials:{monthly:'price_1TD37VRfSQTwpCt9fmlCcuQh',annual:'price_1TD37VRfSQTwpCt914LUfLrf'},
+  professional:{monthly:'price_1TD392RfSQTwpCt9yaJicEiY',annual:'price_1TD3AbRfSQTwpCt969zGi3bD'}
+};
+var portalStripe=null;
+var portalCheckoutInstance=null;
+
+function togglePortalPeriod(){portalAnnual=!portalAnnual;closePortalCheckout();updatePortalPricing()}
+function setPortalPeriod(p){portalAnnual=(p==='annual');updatePortalPricing()}
+
+function closePortalCheckout(){
+  var c=document.getElementById('portal-checkout-container');
+  var l=document.getElementById('portal-checkout-loading');
+  if(portalCheckoutInstance){portalCheckoutInstance.destroy();portalCheckoutInstance=null}
+  if(c)c.style.display='none';
+  if(l)l.style.display='none';
+}
+
+function updatePortalPricing(){
+  var lm=document.getElementById('portal-lbl-m');
+  var la=document.getElementById('portal-lbl-a');
+  var tog=document.getElementById('portal-tog');
+  if(lm){lm.classList.toggle('is-active',!portalAnnual)}
+  if(la){la.classList.toggle('is-active',portalAnnual)}
+  if(tog){tog.classList.toggle('is-annual',portalAnnual)}
+  renderPortalPricingCards();
+}
+
+function planFeature(text, strong){
+  return '<div class="plan-feat'+(strong?' plan-feat--strong':'')+'"><span class="plan-feat__mark">✓</span>'+text+'</div>';
+}
+
+function planCta(planKey, label, current){
+  if(current)return '<div class="plan-card__current">Current plan</div>';
+  return '<button class="btn-topbar btn-topbar-primary plan-card__cta" onclick="portalSubscribe(\''+planKey+'\')">'+label+'</button>';
+}
+
+function renderPortalPricingCards(){
+  var el=document.getElementById('portal-pricing-cards');
+  if(!el)return;
+  var plan=currentOrg?currentOrg.plan:'free';
+  var isActive=currentOrg&&currentOrg.subscription_status==='active';
+  var ePrice=portalAnnual?'1,290':'129';
+  var pPrice=portalAnnual?'2,490':'249';
+  var per=portalAnnual?'/year':'/month';
+  var eSave=portalAnnual?'<div class="plan-card__save">£107.50/mo · save £258/yr</div>':'';
+  var pSave=portalAnnual?'<div class="plan-card__save">£207.50/mo · save £498/yr</div>':'';
+  var essCurrent=plan==='essentials'&&isActive;
+  var proCurrent=plan==='professional'&&isActive;
+
+  el.innerHTML='<div class="plan-grid">'+
+    '<div class="plan-card'+(essCurrent?' plan-card--current':'')+'">'+
+      (essCurrent?'':'<div class="plan-card__flag">Recommended</div>')+
+      '<div class="plan-card__tier">Essentials</div>'+
+      '<div class="plan-card__name">Governance</div>'+
+      '<div class="plan-card__desc">Certified governance maturity with a publicly verifiable certificate.</div>'+
+      '<div class="plan-card__price"><span class="plan-card__currency">£</span><span class="plan-card__num ra-num">'+ePrice+'</span><span class="plan-card__per">'+per+'</span></div>'+
+      eSave+
+      '<div class="plan-card__rule"></div>'+
+      '<div class="plan-card__feats">'+
+        planFeature('Governance certificate &amp; PDF',true)+
+        planFeature('Public verification page',true)+
+        planFeature('PDF assessment reports',true)+
+        planFeature('Full governance framework',false)+
+        planFeature('Email support',false)+
+      '</div>'+
+      planCta('essentials','Get started',essCurrent)+
+    '</div>'+
+
+    '<div class="plan-card'+(proCurrent?' plan-card--current':'')+'">'+
+      '<div class="plan-card__tier">Professional</div>'+
+      '<div class="plan-card__name">Compliance</div>'+
+      '<div class="plan-card__desc">Operational governance across every system. Audit-ready at scale.</div>'+
+      '<div class="plan-card__price"><span class="plan-card__currency">£</span><span class="plan-card__num ra-num">'+pPrice+'</span><span class="plan-card__per">'+per+'</span></div>'+
+      pSave+
+      '<div class="plan-card__rule"></div>'+
+      '<div class="plan-card__feats">'+
+        planFeature('Unlimited AI systems',true)+
+        planFeature('Multi-user access (5 seats)',true)+
+        planFeature('Organisation-wide certification',true)+
+        planFeature('Compliance automation',false)+
+        planFeature('Priority support',false)+
+      '</div>'+
+      planCta('professional','Upgrade to Professional',proCurrent)+
+    '</div>'+
+
+    '<div class="plan-card">'+
+      '<div class="plan-card__tier">Enterprise</div>'+
+      '<div class="plan-card__name">Governance OS</div>'+
+      '<div class="plan-card__desc">Bespoke governance infrastructure for multi-jurisdiction obligations.</div>'+
+      '<div class="plan-card__price"><span class="plan-card__num ra-num" style="font-size:28px;">Bespoke</span></div>'+
+      '<div class="plan-card__save">Tailored to your organisation</div>'+
+      '<div class="plan-card__rule"></div>'+
+      '<div class="plan-card__feats">'+
+        planFeature('Everything in Professional',false)+
+        planFeature('Unlimited users',false)+
+        planFeature('Dedicated advisory lead',false)+
+        planFeature('On-site sessions &amp; benchmarking',false)+
+        planFeature('Custom SLA',false)+
+      '</div>'+
+      '<a href="#" class="btn-topbar btn-topbar-ghost plan-card__cta" onclick="openEnterpriseModal();return false;" style="text-decoration:none;text-align:center;">Design your governance function</a>'+
+    '</div>'+
+  '</div>'+
+
+  '<div class="plan-compare-wrap">'+
+    '<button class="btn-topbar btn-topbar-ghost" onclick="togglePortalCompare()" id="portal-comp-btn">Compare all features</button>'+
+  '</div>'+
+  '<div id="portal-comp-table" class="plan-compare" hidden>'+
+    '<div class="table-scroll"><table class="sys-table plan-table">'+
+      '<thead><tr><th>Feature</th><th>Free</th><th>Essentials</th><th>Professional</th><th>Enterprise</th></tr></thead><tbody>'+
+      portalCompRow('Diagnostics &amp; Assessment')+
+      portalCompData('Governance diagnostic','y','y','y','y')+
+      portalCompData('Maturity score &amp; risk band','y','y','y','y')+
+      portalCompData('7-domain system assessment','y','y','y','y')+
+      portalCompData('PDF assessment reports','n','y','y','y')+
+      portalCompRow('Registry &amp; Systems')+
+      portalCompData('AI systems in registry','1','1','Unlimited','Unlimited')+
+      portalCompData('EU AI Act risk classification','y','y','y','y')+
+      portalCompData('Compliance framework tracking','y','y','y','y')+
+      portalCompRow('Governance Controls')+
+      portalCompData('12 governance controls','y','y','y','y')+
+      portalCompData('Task management &amp; evidence','y','y','y','y')+
+      portalCompData('RegAnchor expert support','y','y','Priority','Dedicated')+
+      portalCompData('Compliance automation engine','n','n','y','y')+
+      portalCompRow('Certification')+
+      portalCompData('Governance certificate','n','y','y','y')+
+      portalCompData('Certificate PDF download','n','y','y','y')+
+      portalCompData('Public verification page','n','y','y','y')+
+      portalCompData('Governance dossier export','n','n','y','y')+
+      portalCompRow('Team &amp; Organisation')+
+      portalCompData('Users','1','1','Up to 5','Unlimited')+
+      portalCompData('Policy management','y','y','y','y')+
+      portalCompData('E-signatures','y','y','y','y')+
+      portalCompData('Audit trail','y','y','Advanced','Advanced')+
+      portalCompRow('Support')+
+      portalCompData('Support channel','In-portal','Email','Priority','Dedicated lead')+
+      portalCompData('On-site sessions','n','n','n','y')+
+      portalCompData('Quarterly benchmarking','n','n','n','y')+
+      '</tbody></table></div>'+
+  '</div>';
+}
+
+function togglePortalCompare(){
+  var el=document.getElementById('portal-comp-table');
+  if(!el)return;
+  el.hidden=!el.hidden;
+}
+
+function portalCompRow(label){
+  return '<tr class="plan-table__section"><td colspan="5">'+label+'</td></tr>';
+}
+
+function portalCompData(feat,f,e,p,en){
+  function cell(v){
+    if(v==='y')return '<td class="plan-table__y">✓</td>';
+    if(v==='n')return '<td class="plan-table__n">—</td>';
+    return '<td>'+v+'</td>';
+  }
+  return '<tr><td>'+feat+'</td>'+cell(f)+cell(e)+cell(p)+cell(en)+'</tr>';
+}
+
+function openUpgradeModal(contextMsg){
+  var plan=currentOrg?currentOrg.plan:'free';
+  var isActive=currentOrg&&currentOrg.subscription_status==='active';
+  var heading,subtext,cardsHtml,cols=3,maxW='720px';
+
+  function miniCard(tier,name,desc,price,feats,btnHtml){
+    return '<div class="plan-card plan-card--modal">'+
+      '<div class="plan-card__tier">'+tier+'</div>'+
+      '<div class="plan-card__name">'+name+'</div>'+
+      '<div class="plan-card__desc">'+desc+'</div>'+
+      '<div class="plan-card__price"><span class="plan-card__currency">£</span><span class="plan-card__num ra-num">'+price+'</span><span class="plan-card__per">/mo</span></div>'+
+      '<div class="plan-card__feats">'+feats.map(function(f){return planFeature(f,true)}).join('')+'</div>'+
+      btnHtml+
+    '</div>';
+  }
+
+  var essCard=miniCard('Essentials','Governance','Certified governance maturity with a publicly verifiable certificate.','129',
+    ['Governance certificate','PDF assessment reports','1 AI system'],
+    '<button class="btn-topbar btn-topbar-primary plan-card__cta" onclick="closeUpgradeModal();portalAnnual=false;navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();setTimeout(function(){portalSubscribe(\'essentials\')},300)">Get started</button>');
+
+  var proCard=miniCard('Professional','Compliance','Unlimited systems, multi-user access, and audit-ready coverage.','249',
+    ['Unlimited AI systems','Multi-user (5 seats)','Organisation-wide certification'],
+    '<button class="btn-topbar btn-topbar-ghost plan-card__cta" onclick="closeUpgradeModal();portalAnnual=false;navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();setTimeout(function(){portalSubscribe(\'professional\')},300)">Upgrade to Professional</button>');
+
+  var entCard='<div class="plan-card plan-card--modal">'+
+    '<div class="plan-card__tier">Enterprise</div>'+
+    '<div class="plan-card__name">Governance OS</div>'+
+    '<div class="plan-card__desc">Bespoke governance infrastructure for multi-jurisdiction obligations.</div>'+
+    '<div class="plan-card__price"><span class="plan-card__num ra-num" style="font-size:22px;">Bespoke</span></div>'+
+    '<div class="plan-card__feats">'+
+      planFeature('Everything in Professional',false)+
+      planFeature('Unlimited users',false)+
+      planFeature('Dedicated advisory lead',false)+
+    '</div>'+
+    '<button class="btn-topbar btn-topbar-ghost plan-card__cta" onclick="closeUpgradeModal();openEnterpriseModal()">Contact us</button>'+
+  '</div>';
+
+  if(plan==='professional'&&isActive){
+    heading='Scale your governance infrastructure';
+    subtext=contextMsg||'Enterprise includes unlimited users, dedicated advisory, on-site sessions, custom SLA, and more.';
+    cardsHtml=entCard;cols=1;maxW='360px';
+  }else if(plan==='essentials'&&isActive){
+    heading='Expand your governance coverage';
+    subtext=contextMsg||'Unlock unlimited AI systems, multi-user access, compliance automation, and more.';
+    cardsHtml=proCard+entCard;cols=2;maxW='520px';
+  }else{
+    heading='Unlock your full governance capability';
+    subtext=contextMsg||'Upgrade to access governance certification, PDF reports, unlimited AI systems, and more.';
+    cardsHtml=essCard+proCard+entCard;cols=3;maxW='720px';
+  }
+
+  document.getElementById('upgrade-modal-title').textContent=heading;
+  document.getElementById('upgrade-modal-msg').textContent=subtext;
+  document.getElementById('upgrade-modal-cards').innerHTML='<div class="plan-grid plan-grid--'+cols+'">'+cardsHtml+'</div>';
+  document.getElementById('upgrade-modal-inner').style.maxWidth=maxW;
+  document.getElementById('upgrade-modal').classList.add('open');
+}
+
+function closeUpgradeModal(){document.getElementById('upgrade-modal').classList.remove('open')}
+
+function openEnterpriseModal(){
+  if(currentProfile){
+    document.getElementById('ent-name').value=currentProfile.full_name||'';
+    document.getElementById('ent-email').value=currentUser.email||'';
+    document.getElementById('ent-org').value=currentOrg?currentOrg.name||'':'';
+  }
+  document.getElementById('ent-role').value='';
+  document.getElementById('ent-systems').value='';
+  document.getElementById('ent-message').value='';
+  document.querySelectorAll('#ent-reqs input[type=checkbox]').forEach(function(c){c.checked=false});
+  document.getElementById('ent-error').style.display='none';
+  document.getElementById('ent-submit-btn').textContent='Submit Inquiry';
+  document.getElementById('ent-submit-btn').disabled=false;
+  document.getElementById('enterprise-modal').classList.add('open');
+}
+function closeEnterpriseModal(){document.getElementById('enterprise-modal').classList.remove('open')}
+
+async function submitEnterpriseInquiry(){
+  var name=document.getElementById('ent-name').value.trim();
+  var role=document.getElementById('ent-role').value.trim();
+  var systems=document.getElementById('ent-systems').value;
+  var message=document.getElementById('ent-message').value.trim();
+  var errEl=document.getElementById('ent-error');
+  var btn=document.getElementById('ent-submit-btn');
+  if(!name){errEl.textContent='Please enter your name.';errEl.style.display='block';return}
+  errEl.style.display='none';
+  btn.textContent='Submitting...';btn.disabled=true;
+  var reqs=[];document.querySelectorAll('#ent-reqs input[type=checkbox]:checked').forEach(function(c){reqs.push(c.value)});
+  var email=currentUser?currentUser.email:'';
+  var orgName=currentOrg?currentOrg.name:'';
+  try{
+    await sb.from('enterprise_inquiries').insert({org_id:currentOrg?currentOrg.id:null,user_id:currentUser?currentUser.id:null,full_name:name,email:email,organisation:orgName,role_title:role||null,system_count:systems||null,requirements:reqs.length?reqs:null,message:message||null});
+    try{
+      if(typeof emailjs!=='undefined'){
+        emailjs.init('vxitc5LFJHMfNcmUL');
+        await emailjs.send('service_umdte26','template_o6h9et7',{to_name:'Fraser',to_email:'fraser@mlagroup.co.uk',alert_title:'Enterprise Inquiry: '+name,alert_body:'Name: '+name+' | Role: '+(role||'Not specified')+' | Email: '+email+' | Organisation: '+orgName+' | AI Systems: '+(systems||'Not specified')+' | Requirements: '+(reqs.length?reqs.join(', '):'None selected')+' | Message: '+(message||'No message')});
+      }
+    }catch(eml){console.log('Email notification skipped')}
+    if(currentOrg){await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'enterprise_inquiry',entity_type:'organisation',entity_id:currentOrg.id,changes:{_actor_name:actorName(),requirements:reqs}})}
+    btn.textContent='Inquiry Submitted';
+    document.querySelector('#enterprise-modal .modal-header').innerHTML='<div></div><button class="modal-close" onclick="closeEnterpriseModal()">✕</button>';
+    document.querySelector('#enterprise-modal .modal-body').innerHTML='<div class="empty-state" style="padding:40px 0 20px;"><h4>Inquiry received</h4><p>Thank you, '+esc(name.split(' ')[0])+'. A RegAnchor governance specialist will be in touch within 24 hours.</p></div>';
+    document.querySelector('#enterprise-modal .modal-footer').innerHTML='<button class="btn-topbar btn-topbar-primary" onclick="closeEnterpriseModal()">Close</button>';
+  }catch(err){
+    errEl.textContent='Error: '+err.message;errEl.style.display='block';
+    btn.textContent='Submit Inquiry';btn.disabled=false;
+  }
+}
+
+function portalSubscribe(plan){
+  if(!currentOrg)return;
+  var priceId=PORTAL_PRICES[plan]?PORTAL_PRICES[plan][portalAnnual?'annual':'monthly']:null;
+  if(!priceId)return;
+  var loadEl=document.getElementById('portal-checkout-loading');
+  var contEl=document.getElementById('portal-checkout-container');
+  if(contEl.style.display==='block'){contEl.scrollIntoView({behavior:'smooth'});return}
+  loadEl.style.display='block';
+  if(!portalStripe)portalStripe=Stripe('pk_live_51SVuGRRfSQTwpCt9hCFdOOyVJBOLgV1Gss5CxMOry1T3kKW3cE7IF8OhQzvXjBd9IjOCp941p4uc9R8RPolEvRVV00fiMjUyXQ');
+  sb.auth.getSession().then(function(sd){
+    var session=sd.data.session;
+    if(!session){loadEl.style.display='none';alert('Please sign in first.');return}
+    return fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},
+      body:JSON.stringify({price_id:priceId,org_id:currentOrg.id,embedded:true})
+    }).then(function(res){return res.json()});
+  }).then(function(data){
+    if(!data)return;
+    if(data.error){loadEl.style.display='none';if(data.existing){alert('Your organisation already has an active subscription.')}else{alert(data.error)}return}
+    if(!data.clientSecret){loadEl.style.display='none';alert('Could not load checkout.');return}
+    if(portalCheckoutInstance)portalCheckoutInstance.destroy();
+    return portalStripe.initEmbeddedCheckout({clientSecret:data.clientSecret}).then(function(checkout){
+      portalCheckoutInstance=checkout;
+      loadEl.style.display='none';
+      contEl.innerHTML='<div class="plan-checkout__head"><span>Complete your subscription</span><button class="btn-topbar btn-topbar-ghost btn-sm" onclick="closePortalCheckout()">Cancel</button></div><div id="portal-checkout-mount"></div>';
+      contEl.style.display='block';
+      checkout.mount('#portal-checkout-mount');
+      setTimeout(function(){contEl.scrollIntoView({behavior:'smooth',block:'start'})},100);
+    });
+  }).catch(function(err){
+    loadEl.style.display='none';
+    console.error('Checkout error:',err);
+    alert('Could not load checkout. Please try again.');
+  });
+}
 
 async function startSubscription(priceId){
   if(!currentOrg)return;

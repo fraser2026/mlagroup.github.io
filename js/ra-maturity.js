@@ -40,10 +40,10 @@ function raLevel(score) {
   return RA_LEVELS[RA_LEVELS.length - 1];
 }
 
-/* "L4 · Structured", or "Not assessed" when there is no reading. */
+/* "L4 Structured", or "Not assessed" when there is no reading. */
 function raLevelText(score) {
   var lvl = raLevel(score);
-  return lvl ? lvl.code + ' \u00b7 ' + lvl.label : 'Not assessed';
+  return lvl ? lvl.code + ' ' + lvl.label : 'Not assessed';
 }
 
 /* The seven-row Compliance Bar.
@@ -63,6 +63,7 @@ function raComplianceBar(score, opts) {
   if (opts.mini) cls += ' ra-cbar--mini';
   if (opts.dark) cls += ' ra-cbar--dark';
   if (!lvl) cls += ' ra-cbar--empty';
+  if (opts.animate) cls += ' ra-cbar--animate';
 
   var current = lvl ? lvl.n - 1 : -1;
   var rows = '';
@@ -77,7 +78,8 @@ function raComplianceBar(score, opts) {
     } else {
       mod = ' ra-cbar__row--pending-' + Math.min(i - current, 3);
     }
-    rows += '<div class="ra-cbar__row' + mod + '"></div>';
+    // Stagger from the bottom tier upward (DOM order is L1→L7; CSS is column-reverse).
+    rows += '<div class="ra-cbar__row' + mod + '" style="--ra-cbar-i:' + i + '"></div>';
   }
 
   var label = lvl
@@ -98,16 +100,52 @@ function raMaturityBlock(score, opts) {
   var lvl = raLevel(score);
   var shown = lvl ? Math.round(Number(score)) : '\u2014';
 
+  var animOpts = Object.assign({}, opts, { animate: opts.animate !== false });
   return '' +
     '<div class="ra-maturity' + (opts.mini ? ' ra-maturity--mini' : '') + '">' +
-      raComplianceBar(score, opts) +
+      raComplianceBar(score, animOpts) +
       '<div class="ra-maturity__text">' +
-        '<div class="ra-maturity__score">' + shown +
+        '<div class="ra-maturity__score" data-count-to="' + (lvl ? Math.round(Number(score)) : '') + '">' +
+          (opts.animate === false ? shown : (lvl ? '0' : '\u2014')) +
           (lvl ? '<span class="ra-maturity__of">/ 100</span>' : '') +
         '</div>' +
         '<div class="ra-maturity__tier">' + raLevelText(score) + '</div>' +
       '</div>' +
     '</div>';
+}
+
+/* Replay maturity bar grow + score count-up inside a root (dashboard, registry). */
+function animateMaturity(root) {
+  if (!root) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var scores = root.querySelectorAll('.ra-maturity__score[data-count-to], .reg-maturity__score[data-count-to]');
+  scores.forEach(function (el) {
+    var target = parseFloat(el.getAttribute('data-count-to'));
+    if (isNaN(target)) return;
+    var of = el.querySelector('.ra-maturity__of');
+    var ofHtml = of ? of.outerHTML : '';
+    if (reduce) {
+      el.innerHTML = Math.round(target) + ofHtml;
+      return;
+    }
+    var start = performance.now();
+    var duration = 720;
+    function tick(now) {
+      var t = Math.min(1, (now - start) / duration);
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.innerHTML = Math.round(target * eased) + ofHtml;
+      if (t < 1) requestAnimationFrame(tick);
+      else el.innerHTML = Math.round(target) + ofHtml;
+    }
+    requestAnimationFrame(tick);
+  });
+
+  // Retrigger CSS bar animation when content is re-rendered.
+  root.querySelectorAll('.ra-cbar--animate').forEach(function (bar) {
+    bar.classList.remove('ra-cbar--animate');
+    void bar.offsetWidth;
+    if (!reduce) bar.classList.add('ra-cbar--animate');
+  });
 }
 
 /* The full ladder as a scale beside the bar, current level marked.
@@ -120,7 +158,7 @@ function raLadderScale(score) {
     var L = RA_LEVELS[i];
     var isNow = lvl && L.n === lvl.n;
     out += '<span class="ra-ladder__step' + (isNow ? ' ra-ladder__step--now' : '') + '">' +
-      L.code + ' ' + L.label + (isNow ? ' \u00b7 current' : '') +
+      L.code + ' ' + L.label + (isNow ? ' (current)' : '') +
       '</span>';
   }
   return out + '</div>';

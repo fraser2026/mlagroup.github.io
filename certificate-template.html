@@ -3,369 +3,292 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Certificate of AI Governance | MLA Group</title>
+<title>Certificate of AI Governance | RegAnchor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* ============================================================
+   REGANCHOR — CERTIFICATE OF AI GOVERNANCE (RGA-002 §05 seal)
+   Ink on paper. Hairline borders. Zero radius, zero shadow.
+   Gradient appears only inside the Compliance Bar.
+   Palette: paper #FFFFFF · ink #0A0E14 · steel #6B7280 · line #E4E7EC
+   IBM Plex Sans for brand + numerals. Inter for body.
+   ============================================================ */
+:root {
+  --ink: #0A0E14;
+  --paper: #FFFFFF;
+  --steel: #6B7280;
+  --slate: #374151;
+  --line: #E4E7EC;
+  --accent-a: #3730A3;
+  --accent-b: #7C3AED;
+  --accent-c: #F97316;
+  --accent-grad: linear-gradient(90deg, var(--accent-a) 0%, var(--accent-b) 50%, var(--accent-c) 100%);
+  --font-brand: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; background: #fefdfb; display: flex; align-items: center; justify-content: center; }
+html, body { height: 100%; background: var(--paper); display: flex; align-items: center; justify-content: center; }
 
 .certificate {
   width: 1122px;
   height: 794px;
-  background: #fefdfb;
+  background: var(--paper);
+  border: 1px solid var(--line);
   position: relative;
-  overflow: hidden;
+  padding: 44px 64px 36px;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Outer border - navy */
-.certificate::before {
+/* ── Head: wordmark left, document label right ── */
+.cert-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.cert-brand {
+  font-family: var(--font-brand);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
+.cert-brand-sub {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--steel);
+  margin-top: 4px;
+}
+
+.cert-doc-label {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--steel);
+  text-align: right;
+  padding-top: 4px;
+}
+
+/* ── Anchor Line: 1px ink hairline + 80px gradient segment ── */
+.cert-rule {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  margin: 18px 0 0;
+  flex-shrink: 0;
+}
+.cert-rule::before {
   content: '';
   position: absolute;
-  inset: 14px;
-  border: 1.5px solid #1a2740;
-  pointer-events: none;
+  top: 0.5px; left: 0; right: 0; height: 1px;
+  background: var(--ink);
+}
+.cert-rule__seg {
+  position: absolute;
+  top: 0; height: 2px; width: 80px;
+  left: 61.8%; transform: translateX(-50%);
+  background: var(--accent-grad);
 }
 
-/* Inner border - subtle */
-.certificate::after {
-  content: '';
-  position: absolute;
-  inset: 20px;
-  border: 0.5px solid rgba(26,39,64,0.15);
-  pointer-events: none;
-}
-
-/* Gold corner accents */
-.corner { position: absolute; width: 28px; height: 28px; }
-.corner svg { width: 100%; height: 100%; }
-.corner-tl { top: 10px; left: 10px; }
-.corner-tr { top: 10px; right: 10px; transform: rotate(90deg); }
-.corner-bl { bottom: 10px; left: 10px; transform: rotate(-90deg); }
-.corner-br { bottom: 10px; right: 10px; transform: rotate(180deg); }
-
-/* Top accent bar */
-.cert-accent-top {
-  position: absolute;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #ba9b5f, transparent);
-}
-
-.cert-accent-bottom {
-  position: absolute;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #ba9b5f, transparent);
-}
-
-/* Watermark */
-.cert-watermark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 260px;
-  font-weight: 300;
-  color: rgba(186,155,95,0.025);
-  letter-spacing: 0.1em;
-  pointer-events: none;
-  user-select: none;
-  white-space: nowrap;
-}
-
-/* Content container */
-.cert-inner {
-  position: absolute;
-  inset: 40px 64px;
+/* ── Body ── */
+.cert-body {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-/* Issuer */
-.cert-issuer {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: #1a2740;
-  margin-top: 6px;
-  margin-bottom: 20px;
-}
-
-/* Title */
-.cert-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 44px;
-  font-weight: 600;
-  font-style: italic;
-  letter-spacing: 0.01em;
-  color: #1a2740;
-  line-height: 1.1;
+  justify-content: center;
   text-align: center;
+  padding: 0 40px;
 }
 
-/* Verified by */
-.cert-verified {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 16px;
-  font-weight: 400;
-  font-style: italic;
-  color: #8b7d6b;
-  margin-top: 8px;
-}
-
-/* Gold divider */
-.cert-divider {
-  width: 80px;
-  height: 1.5px;
-  background: linear-gradient(90deg, transparent, #ba9b5f, transparent);
-  margin: 20px auto;
-}
-
-/* "This certifies that" */
 .cert-pretext {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 17px;
-  font-weight: 400;
-  font-style: italic;
-  color: #9ca3af;
-  margin-bottom: 4px;
-  text-align: center;
-}
-
-/* Organisation name */
-.cert-org {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 42px;
+  font-family: var(--font-body);
+  font-size: 11px;
   font-weight: 600;
-  color: #0f172a;
-  text-align: center;
-  letter-spacing: 0.01em;
-  line-height: 1.15;
-  margin-bottom: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--steel);
+  margin-bottom: 16px;
 }
 
-/* Statement body */
+.cert-org {
+  font-family: var(--font-brand);
+  font-weight: 500;
+  font-size: 42px;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 18px;
+}
+
 .cert-statement {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 16px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
   font-weight: 400;
-  font-style: italic;
-  color: #4b5563;
-  text-align: center;
-  line-height: 1.8;
+  color: var(--slate);
+  line-height: 1.75;
   max-width: 620px;
-  margin: 0 auto 28px;
+  margin-bottom: 36px;
 }
 
-/* Metrics row */
+/* ── Maturity: Compliance Bar + score + tier (RGA-002 rule 04, never bar alone) ── */
+.cert-maturity {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 36px;
+}
+
+.ra-cbar {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 3px;
+  width: 110px;
+}
+.ra-cbar__row { height: 5px; background: var(--ink); }
+.ra-cbar__row--achieved-1 { opacity: 0.88; }
+.ra-cbar__row--achieved-2 { opacity: 0.64; }
+.ra-cbar__row--achieved-3 { opacity: 0.44; }
+.ra-cbar__row--current { background: var(--accent-grad); opacity: 1; height: 6px; width: 120px; margin-left: -5px; }
+.ra-cbar__row--pending-1 { opacity: 0.20; }
+.ra-cbar__row--pending-2 { opacity: 0.10; }
+.ra-cbar__row--pending-3 { opacity: 0.05; }
+
+.cert-maturity__text { text-align: left; }
+.cert-maturity__score {
+  font-family: var(--font-brand);
+  font-weight: 500;
+  font-size: 44px;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1;
+  font-feature-settings: 'tnum';
+}
+.cert-maturity__of { font-family: var(--font-body); font-size: 15px; color: var(--steel); margin-left: 4px; }
+.cert-maturity__tier {
+  font-family: var(--font-brand);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--steel);
+  margin-top: 6px;
+}
+
+/* ── Metrics row ── */
 .cert-data {
   display: flex;
   align-items: stretch;
-  margin: 0 auto;
-  border-top: 1px solid rgba(26,39,64,0.12);
-  border-bottom: 1px solid rgba(26,39,64,0.12);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
-
-.cert-data-item {
-  padding: 16px 40px;
-  text-align: center;
-  border-right: 1px solid rgba(26,39,64,0.08);
-}
+.cert-data-item { padding: 14px 38px; text-align: center; border-right: 1px solid var(--line); }
 .cert-data-item:last-child { border-right: none; }
-
 .cert-data-label {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: #8b7d6b;
-  margin-bottom: 8px;
+  font-family: var(--font-body);
+  font-size: 9px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--steel); margin-bottom: 8px;
 }
+.cert-data-value { font-family: var(--font-brand); font-size: 18px; font-weight: 500; color: var(--ink); font-feature-settings: 'tnum'; }
 
-.cert-data-value {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: #1a2740;
-}
-
-.cert-data-value.score { color: #ba9b5f; font-size: 22px; }
-.cert-data-value.level { font-style: italic; font-size: 21px; }
-
-/* Footer */
+/* ── Footer ── */
 .cert-footer {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   width: 100%;
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  flex-shrink: 0;
 }
-
-.cert-footer-left { text-align: left; width: 240px; }
+.cert-footer-left { text-align: left; width: 260px; }
 .cert-footer-centre { text-align: center; flex: 1; }
-.cert-footer-right { text-align: right; width: 240px; }
+.cert-footer-right { text-align: right; width: 260px; }
 
-/* Signature */
-.cert-sig-img {
-  height: 56px;
-  width: auto;
-  display: block;
-  margin-bottom: 4px;
-  opacity: 0.85;
-}
+.cert-sig-img { height: 48px; width: auto; display: block; margin-bottom: 8px; opacity: 0.85; }
+.cert-sig-line { width: 150px; height: 1px; background: var(--line); margin-bottom: 6px; }
+.cert-sig-label { font-family: var(--font-body); font-size: 11px; color: var(--steel); margin-bottom: 2px; }
+.cert-sig-org { font-family: var(--font-body); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); }
 
-.cert-sig-line {
-  width: 160px;
-  height: 1px;
-  background: #c4b89a;
-  margin-bottom: 6px;
-}
+.cert-id-border { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 8px; }
+.cert-id-line { width: 40px; height: 1px; background: var(--line); }
+.cert-id { font-family: var(--font-brand); font-size: 12px; font-weight: 500; color: var(--ink); letter-spacing: 0.03em; font-feature-settings: 'tnum'; }
+.cert-verify-label { font-family: var(--font-body); font-size: 10.5px; color: var(--steel); margin-bottom: 3px; }
+.cert-verify-url { font-family: var(--font-body); font-size: 10px; font-weight: 500; color: var(--ink); }
 
-.cert-sig-label {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 13px;
-  font-weight: 400;
-  font-style: italic;
-  color: #6b7280;
-  margin-bottom: 2px;
-}
-
-.cert-sig-org {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #1a2740;
-}
-
-/* Certificate ID */
-.cert-id {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  font-weight: 500;
-  color: #1a2740;
-  letter-spacing: 0.04em;
-}
-
-.cert-id-border {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  justify-content: center;
-  margin-bottom: 10px;
-}
-
-.cert-id-line {
-  width: 44px;
-  height: 1px;
-  background: rgba(186,155,95,0.4);
-}
-
-.cert-verify-label {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 12.5px;
-  font-weight: 400;
-  font-style: italic;
-  color: #6b7280;
-  margin-bottom: 3px;
-}
-
-.cert-verify-url {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10.5px;
-  font-weight: 500;
-  color: #8b7d6b;
-  letter-spacing: 0.02em;
-}
-
-/* Right footer */
-.cert-company {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #1a2740;
-  margin-bottom: 8px;
-}
-
-.cert-disclaimer {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 11px;
-  font-weight: 400;
-  font-style: italic;
-  color: #9ca3af;
-  max-width: 210px;
-  line-height: 1.65;
-  margin-left: auto;
-}
+.cert-company { font-family: var(--font-body); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); margin-bottom: 8px; }
+.cert-disclaimer { font-family: var(--font-body); font-size: 9.5px; color: var(--steel); max-width: 220px; line-height: 1.6; margin-left: auto; }
 </style>
 </head>
 <body>
 
 <div class="certificate">
-  <div class="cert-watermark">MLA</div>
-  <div class="cert-accent-top"></div>
-  <div class="cert-accent-bottom"></div>
+  <div class="cert-head">
+    <div>
+      <div class="cert-brand">RegAnchor</div>
+      <div class="cert-brand-sub">Infrastructure for AI Governance</div>
+    </div>
+    <div class="cert-doc-label">Certificate of AI Governance</div>
+  </div>
 
-  <div class="corner corner-tl"><svg viewBox="0 0 28 28" fill="none"><path d="M0 0 L10 0 L10 1 L1 1 L1 10 L0 10 Z" fill="#ba9b5f"/></svg></div>
-  <div class="corner corner-tr"><svg viewBox="0 0 28 28" fill="none"><path d="M0 0 L10 0 L10 1 L1 1 L1 10 L0 10 Z" fill="#ba9b5f"/></svg></div>
-  <div class="corner corner-bl"><svg viewBox="0 0 28 28" fill="none"><path d="M0 0 L10 0 L10 1 L1 1 L1 10 L0 10 Z" fill="#ba9b5f"/></svg></div>
-  <div class="corner corner-br"><svg viewBox="0 0 28 28" fill="none"><path d="M0 0 L10 0 L10 1 L1 1 L1 10 L0 10 Z" fill="#ba9b5f"/></svg></div>
+  <div class="cert-rule"><div class="cert-rule__seg"></div></div>
 
-  <div class="cert-inner">
-    <div class="cert-issuer">MLA Group Ltd</div>
-    <div class="cert-title">Certificate of AI Governance</div>
-    <div class="cert-verified">Verified by MLA Group</div>
-    <div class="cert-divider"></div>
+  <div class="cert-body">
     <div class="cert-pretext">This certifies that</div>
     <div class="cert-org" id="cert-org">Acme Corporation</div>
-    <div class="cert-statement" id="cert-statement">is hereby recognised as having achieved an advanced level of AI governance maturity in accordance with MLA Group's governance framework, based on completed assessments, implemented controls, and acknowledged organisational policies.</div>
+    <div class="cert-statement" id="cert-statement">is hereby recognised as having achieved an advanced level of AI governance maturity in accordance with the RegAnchor governance framework, based on completed assessments, implemented controls, and acknowledged organisational policies.</div>
+
+    <div class="cert-maturity" id="cert-maturity">
+      <div class="ra-cbar" role="img" aria-label="Governance maturity"><div class="ra-cbar__row"></div><div class="ra-cbar__row"></div><div class="ra-cbar__row"></div><div class="ra-cbar__row"></div><div class="ra-cbar__row"></div><div class="ra-cbar__row"></div><div class="ra-cbar__row ra-cbar__row--current"></div></div>
+      <div class="cert-maturity__text">
+        <div class="cert-maturity__score">89<span class="cert-maturity__of">/ 100</span></div>
+        <div class="cert-maturity__tier" id="cert-maturity-tier">L5 · Managed</div>
+      </div>
+    </div>
+
     <div class="cert-data" id="cert-data">
-      <div class="cert-data-item"><div class="cert-data-label">Governance Score</div><div class="cert-data-value score">89%</div></div>
-      <div class="cert-data-item"><div class="cert-data-label">Certification Level</div><div class="cert-data-value level">Advanced</div></div>
+      <div class="cert-data-item"><div class="cert-data-label">Governance Score</div><div class="cert-data-value">89%</div></div>
+      <div class="cert-data-item"><div class="cert-data-label">Certification Level</div><div class="cert-data-value">Advanced</div></div>
       <div class="cert-data-item"><div class="cert-data-label">Date Issued</div><div class="cert-data-value">26 Mar 2026</div></div>
       <div class="cert-data-item"><div class="cert-data-label">Valid Until</div><div class="cert-data-value">26 Mar 2027</div></div>
     </div>
-    <div class="cert-footer">
-      <div class="cert-footer-left">
-        <!-- Absolute by necessity: Puppeteer renders this template via setContent, and the
-             image must be fetched before the PDF is captured. Update at the domain cutover. -->
-        <img src="https://mlagroup.co.uk/advisory-signature.png" class="cert-sig-img" crossorigin="anonymous" onerror="this.style.display='none'">
-        <div class="cert-sig-line"></div>
-        <div class="cert-sig-label">Authorised Signatory</div>
-        <div class="cert-sig-org">MLA Group Ltd</div>
+  </div>
+
+  <div class="cert-footer">
+    <div class="cert-footer-left">
+      <!-- Absolute by necessity: Puppeteer renders this template via setContent, and the
+           image must be fetched before the PDF is captured. Update at the domain cutover. -->
+      <img src="https://mlagroup.co.uk/advisory-signature.png" class="cert-sig-img" crossorigin="anonymous" onerror="this.style.display='none'">
+      <div class="cert-sig-line"></div>
+      <div class="cert-sig-label">Authorised Signatory</div>
+      <div class="cert-sig-org">MLA Group Ltd</div>
+    </div>
+    <div class="cert-footer-centre">
+      <div class="cert-id-border">
+        <div class="cert-id-line"></div>
+        <div class="cert-id" id="cert-id">MLA-GOV-2026-0003</div>
+        <div class="cert-id-line"></div>
       </div>
-      <div class="cert-footer-centre">
-        <div class="cert-id-border">
-          <div class="cert-id-line"></div>
-          <div class="cert-id" id="cert-id">MLA-GOV-2026-0003</div>
-          <div class="cert-id-line"></div>
-        </div>
-        <div class="cert-verify-label">This certificate may be verified at:</div>
-        <div class="cert-verify-url" id="cert-verify-url">mlagroup.co.uk/verify/MLA-GOV-2026-0003</div>
-      </div>
-      <div class="cert-footer-right">
-        <div class="cert-company">MLA Group Ltd</div>
-        <div class="cert-disclaimer">
-          Certification validity is contingent upon an
-          active MLA Group subscription and ongoing
-          governance maintenance.
-        </div>
+      <div class="cert-verify-label">This certificate may be verified at:</div>
+      <div class="cert-verify-url" id="cert-verify-url">mlagroup.co.uk/verify/MLA-GOV-2026-0003</div>
+    </div>
+    <div class="cert-footer-right">
+      <div class="cert-company">MLA Group Ltd</div>
+      <div class="cert-disclaimer">
+        Certification validity is contingent upon an
+        active RegAnchor subscription and ongoing
+        governance maintenance.
       </div>
     </div>
   </div>
@@ -379,6 +302,40 @@ html, body { height: 100%; background: #fefdfb; display: flex; align-items: cent
 // Change both at the reganchor.com cutover.
 var SITE_DOMAIN = 'mlagroup.co.uk';
 
+// Inlined from js/ra-maturity.js — this template has no access to external
+// scripts under about:blank, so the L1-L7 derivation is duplicated here.
+// Keep the two in sync; see js/ra-maturity.js for the authoritative comments.
+var RA_LEVELS = [
+  { n: 1, code: 'L1', label: 'Initial',       min: 0,  max: 34  },
+  { n: 2, code: 'L2', label: 'Aware',         min: 35, max: 54  },
+  { n: 3, code: 'L3', label: 'Defined',       min: 55, max: 69  },
+  { n: 4, code: 'L4', label: 'Structured',    min: 70, max: 79  },
+  { n: 5, code: 'L5', label: 'Managed',       min: 80, max: 87  },
+  { n: 6, code: 'L6', label: 'Optimised',     min: 88, max: 94  },
+  { n: 7, code: 'L7', label: 'Authoritative', min: 95, max: 100 }
+];
+function raLevel(score){
+  if(score===null||score===undefined||score==='')return null;
+  var s=Number(score);if(isNaN(s))return null;
+  s=Math.max(0,Math.min(100,s));
+  for(var i=0;i<RA_LEVELS.length;i++){if(s<=RA_LEVELS[i].max)return RA_LEVELS[i];}
+  return RA_LEVELS[RA_LEVELS.length-1];
+}
+function raComplianceBarHTML(score){
+  var lvl=raLevel(score);
+  var current=lvl?lvl.n-1:-1;
+  var rows='';
+  for(var i=0;i<7;i++){
+    var mod='';
+    if(i===current)mod=' ra-cbar__row--current';
+    else if(current===-1)mod='';
+    else if(i<current)mod=' ra-cbar__row--achieved-'+Math.min(i+1,3);
+    else mod=' ra-cbar__row--pending-'+Math.min(i-current,3);
+    rows+='<div class="ra-cbar__row'+mod+'"></div>';
+  }
+  return '<div class="ra-cbar" role="img" aria-label="Governance maturity">'+rows+'</div>';
+}
+
 (function(){
   if(typeof CERT_DATA === 'undefined') return;
   var d = CERT_DATA;
@@ -387,10 +344,10 @@ var SITE_DOMAIN = 'mlagroup.co.uk';
                    d.certification_level === 'structured' ? 'Structured' : 'Emerging';
 
   var levelDesc = d.certification_level === 'advanced'
-    ? 'is hereby recognised as having achieved an advanced level of AI governance maturity in accordance with MLA Group\u2019s governance framework, based on completed assessments, implemented controls, and acknowledged organisational policies.'
+    ? 'is hereby recognised as having achieved an advanced level of AI governance maturity in accordance with the RegAnchor governance framework, based on completed assessments, implemented controls, and acknowledged organisational policies.'
     : d.certification_level === 'structured'
-    ? 'is hereby recognised as having achieved a structured level of AI governance maturity in accordance with MLA Group\u2019s governance framework, based on completed assessments, implemented controls, and acknowledged organisational policies.'
-    : 'is hereby recognised as having achieved an emerging level of AI governance maturity in accordance with MLA Group\u2019s governance framework, based on completed assessments, implemented controls, and acknowledged organisational policies.';
+    ? 'is hereby recognised as having achieved a structured level of AI governance maturity in accordance with the RegAnchor governance framework, based on completed assessments, implemented controls, and acknowledged organisational policies.'
+    : 'is hereby recognised as having achieved an emerging level of AI governance maturity in accordance with the RegAnchor governance framework, based on completed assessments, implemented controls, and acknowledged organisational policies.';
 
   function fmtDate(iso){
     if(!iso) return '';
@@ -398,14 +355,24 @@ var SITE_DOMAIN = 'mlagroup.co.uk';
     return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
   }
 
+  var score = d.governance_score || 0;
+  var lvl = raLevel(score);
+
   document.getElementById('cert-org').textContent = d.organisation || '';
   document.getElementById('cert-statement').textContent = levelDesc;
   document.getElementById('cert-id').textContent = d.certificate_id || '';
   document.getElementById('cert-verify-url').textContent = SITE_DOMAIN + '/verify/' + (d.certificate_id || '');
 
+  var maturityEl = document.getElementById('cert-maturity');
+  maturityEl.innerHTML = raComplianceBarHTML(score) +
+    '<div class="cert-maturity__text">' +
+      '<div class="cert-maturity__score">' + score + '<span class="cert-maturity__of">/ 100</span></div>' +
+      '<div class="cert-maturity__tier">' + (lvl ? lvl.code + ' \u00b7 ' + lvl.label : 'Not assessed') + '</div>' +
+    '</div>';
+
   document.getElementById('cert-data').innerHTML =
-    '<div class="cert-data-item"><div class="cert-data-label">Governance Score</div><div class="cert-data-value score">' + (d.governance_score || 0) + '%</div></div>' +
-    '<div class="cert-data-item"><div class="cert-data-label">Certification Level</div><div class="cert-data-value level">' + levelLabel + '</div></div>' +
+    '<div class="cert-data-item"><div class="cert-data-label">Governance Score</div><div class="cert-data-value">' + score + '%</div></div>' +
+    '<div class="cert-data-item"><div class="cert-data-label">Certification Level</div><div class="cert-data-value">' + levelLabel + '</div></div>' +
     '<div class="cert-data-item"><div class="cert-data-label">Date Issued</div><div class="cert-data-value">' + fmtDate(d.issued_at) + '</div></div>' +
     '<div class="cert-data-item"><div class="cert-data-label">Valid Until</div><div class="cert-data-value">' + fmtDate(d.expires_at) + '</div></div>';
 })();

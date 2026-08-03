@@ -5,26 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Access Granted | RegAnchor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
   <style>
     :root {
-      --bg:      #020617;
-      --surface: rgba(6,12,30,0.96);
-      --border:  rgba(255,255,255,0.06);
-      --borm:    rgba(255,255,255,0.11);
-      --accent:  #2563eb;
-      --sky:     #60a5fa;
-      --main:    #f1f5f9;
-      --sub:     #94a3b8;
-      --muted:   #475569;
-      --green:   #22c55e;
-      --err:     #f87171;
+      --bg:       var(--ra-bg, #FFFFFF);
+      --border:   var(--ra-border, #E6EBF1);
+      --hover:    var(--ra-hover, rgba(17,17,17,0.028));
+      --main:     var(--ra-text, #0A2540);
+      --sub:      var(--ra-text-2, #425466);
+      --muted:    var(--ra-text-3, #697386);
+      --accent:   var(--ra-blurple, #533AFD);
+      --accent-h: var(--ra-blurple-hover, #4434E0);
+      --ok:       var(--ra-ok, #24B47E);
+      --err:      var(--ra-risk, #CD3D64);
+      --font-brand: var(--ra-font-brand, var(--ra-font), 'Inter', sans-serif);
+      --font-body:  var(--ra-font-product, var(--ra-font), 'Inter', sans-serif);
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: var(--bg);
-      font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--sub);
+      font-family: var(--font-body);
       min-height: 100vh;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
@@ -32,53 +35,33 @@
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
-    .bg-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-    .bg-glow-1 {
-      position: absolute; width: 600px; height: 600px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
-      top: -200px; left: 50%; transform: translateX(-50%);
-      animation: drift1 12s ease-in-out infinite alternate;
-    }
-    .bg-glow-2 {
-      position: absolute; width: 400px; height: 400px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(34,197,94,0.05) 0%, transparent 70%);
-      bottom: 10%; right: 10%;
-      animation: drift2 16s ease-in-out infinite alternate;
-    }
-    @keyframes drift1 { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(30px); } }
-    @keyframes drift2 { from { transform: translateY(0) scale(1); } to { transform: translateY(-20px) scale(1.05); } }
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       height: 60px; display: flex; align-items: center;
       padding: 0 40px; border-bottom: 1px solid var(--border);
-      background: rgba(2,6,23,0.8); backdrop-filter: blur(24px);
+      background: var(--bg);
     }
-    .nav-logo { font-size: 0.95rem; font-weight: 600; letter-spacing: -0.02em; color: var(--main); text-decoration: none; }
-    .nav-logo em { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--sky); }
+    .nav-logo { font-family: var(--font-brand); font-size: 0.95rem; font-weight: 500; letter-spacing: -0.025em; color: var(--main); text-decoration: none; }
     .nav-pill {
       margin-left: auto; display: flex; align-items: center; gap: 6px;
-      background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.18);
-      border-radius: 100px; padding: 4px 12px 4px 8px;
-      font-size: 0.68rem; font-weight: 600; color: #4ade80;
+      border: 1px solid var(--ok);
+      border-radius: var(--ra-radius-control, 4px);
+      padding: 4px 12px 4px 8px;
+      font-family: var(--font-brand); font-size: 0.68rem; font-weight: 600; color: var(--ok);
       letter-spacing: 0.06em; text-transform: uppercase;
     }
-    .nav-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: #4ade80; animation: blink 2s ease infinite; }
+    .nav-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ok); animation: blink 2s ease infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
     .wrapper { position: relative; z-index: 1; width: 100%; max-width: 480px; margin-top: 60px; }
     .card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--ra-radius, 6px);
       overflow: hidden;
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 32px 64px rgba(0,0,0,0.5), 0 0 80px rgba(37,99,235,0.04);
       animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
       opacity: 0; transform: translateY(20px);
     }
     @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
-    .card-shimmer {
-      height: 1px;
-      background: linear-gradient(90deg, transparent 0%, rgba(37,99,235,0.6) 30%, rgba(96,165,250,0.8) 50%, rgba(37,99,235,0.6) 70%, transparent 100%);
-      animation: shimmer 3s ease infinite; background-size: 200% 100%;
-    }
-    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .card-shimmer { height: 2px; background: var(--accent); }
     .card-body { padding: 44px 40px 40px; }
     .success-ring { position: relative; width: 68px; height: 68px; margin: 0 auto 32px; }
     .success-ring svg.ring { position: absolute; inset: 0; width: 68px; height: 68px; animation: ringIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
@@ -86,82 +69,73 @@
     .success-ring svg.check { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 26px; height: 26px; }
     .check-path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: drawCheck 0.4s ease 0.8s forwards; }
     @keyframes drawCheck { to { stroke-dashoffset: 0; } }
-    .eyebrow { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--sky); margin-bottom: 10px; opacity: 0; animation: fadeUp 0.5s ease 0.5s forwards; }
-    h1 { font-family: 'Instrument Serif', serif; font-size: 2rem; font-weight: 400; line-height: 1.08; letter-spacing: -0.025em; color: var(--main); margin-bottom: 12px; opacity: 0; animation: fadeUp 0.5s ease 0.6s forwards; }
-    h1 em { font-style: italic; color: var(--sky); }
-    .subtext { font-size: 0.85rem; color: var(--sub); line-height: 1.75; opacity: 0; animation: fadeUp 0.5s ease 0.7s forwards; }
+    .eyebrow { font-family: var(--font-brand); font-size: 0.68rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 10px; opacity: 0; animation: fadeUp 0.5s ease 0.5s forwards; }
+    h1 { font-family: var(--font-brand); font-size: 1.7rem; font-weight: 500; line-height: 1.15; letter-spacing: -0.025em; color: var(--main); margin-bottom: 12px; opacity: 0; animation: fadeUp 0.5s ease 0.6s forwards; }
+    h1 em { font-style: normal; font-weight: 400; color: var(--muted); }
+    .subtext { font-size: 0.85rem; color: var(--sub); line-height: 1.7; opacity: 0; animation: fadeUp 0.5s ease 0.7s forwards; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .includes { margin: 28px 0; opacity: 0; animation: fadeUp 0.5s ease 0.8s forwards; }
-    .includes-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); margin-bottom: 12px; }
-    .include-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; color: var(--sub); }
+    .includes { margin: 26px 0; opacity: 0; animation: fadeUp 0.5s ease 0.8s forwards; border: 1px solid var(--border); }
+    .includes-label { font-family: var(--font-brand); font-size: 0.64rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); padding: 12px 14px 0; }
+    .include-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 0.82rem; color: var(--sub); }
     .include-item:last-child { border-bottom: none; }
-    .inc-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .inc-icon svg { width: 13px; height: 13px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .inc-blue   { background: rgba(37,99,235,0.1);    border: 1px solid rgba(37,99,235,0.15); }
-    .inc-blue   svg { stroke: var(--sky); }
-    .inc-green  { background: rgba(34,197,94,0.08);   border: 1px solid rgba(34,197,94,0.12); }
-    .inc-green  svg { stroke: #4ade80; }
-    .inc-purple { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.12); }
-    .inc-purple svg { stroke: #c4b5fd; }
-    .inc-amber  { background: rgba(245,158,11,0.08);  border: 1px solid rgba(245,158,11,0.12); }
-    .inc-amber  svg { stroke: #fcd34d; }
+    .inc-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--ra-radius-control, 4px); background: var(--bg); }
+    .inc-icon svg { width: 13px; height: 13px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke: var(--main); }
     .inc-text { flex: 1; }
-    .inc-title { font-weight: 500; color: var(--main); font-size: 0.82rem; }
+    .inc-title { font-weight: 600; color: var(--main); font-size: 0.82rem; }
     .inc-sub   { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
-    .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; font-size: 0.7rem; color: var(--muted); }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; font-size: 0.7rem; color: var(--muted); }
     .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
     .form-section { opacity: 0; animation: fadeUp 0.5s ease 0.85s forwards; }
     .field { margin-bottom: 12px; }
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .field-label { display: block; font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.02em; }
+    .field-label { display: block; font-family: var(--font-brand); font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
     .field-input {
       width: 100%; padding: 11px 14px;
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      border-radius: 9px; color: var(--main);
-      font-family: 'DM Sans', sans-serif; font-size: 0.86rem; font-weight: 400;
-      outline: none; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--ra-radius-control, 4px);
+      color: var(--main);
+      font-family: var(--font-body); font-size: 0.86rem; font-weight: 400;
+      outline: none; transition: border-color 0.2s;
       -webkit-appearance: none;
     }
     .field-input::placeholder { color: var(--muted); }
-    .field-input:focus { border-color: rgba(37,99,235,0.5); background: rgba(37,99,235,0.03); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
-    .error-box { background: rgba(248,113,113,0.05); border: 1px solid rgba(248,113,113,0.15); border-radius: 8px; padding: 10px 14px; font-size: 0.78rem; color: var(--err); margin-top: 10px; display: none; line-height: 1.5; }
+    .field-input:focus { border-color: var(--accent); }
+    .error-box { background: var(--bg); border: 1px solid var(--err); border-left: 3px solid var(--err); border-radius: var(--ra-radius-control, 4px); padding: 10px 14px; font-size: 0.78rem; color: var(--err); font-weight: 500; margin-top: 10px; display: none; line-height: 1.5; }
     .btn-primary {
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      width: 100%; padding: 14px 24px;
-      background: var(--accent); color: #fff;
-      border: none; border-radius: 10px;
-      font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600;
+      width: 100%; padding: 12px 16px;
+      background: var(--accent) !important; color: #FFFFFF !important;
+      border: 1px solid transparent !important;
+      border-radius: var(--ra-radius-control, 4px) !important;
+      font-family: var(--font-body); font-size: 0.88rem; font-weight: 500;
+      letter-spacing: -0.01em;
       cursor: pointer; text-decoration: none;
-      transition: background 0.15s, transform 0.12s, box-shadow 0.2s;
+      transition: background 0.15s ease;
+      box-shadow: none !important;
       opacity: 0; animation: fadeUp 0.5s ease 0.9s forwards;
     }
-    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(37,99,235,0.3); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-primary:hover { background: var(--accent-h) !important; opacity: 1; }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
     .btn-ghost {
       display: flex; align-items: center; justify-content: center;
-      width: 100%; padding: 12px 24px;
-      background: transparent; color: var(--muted);
-      border: 1px solid var(--border); border-radius: 10px;
-      font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500;
+      width: 100%; padding: 12px 16px;
+      background: var(--bg); color: var(--main);
+      border: 1px solid var(--border);
+      border-radius: var(--ra-radius-control, 4px);
+      font-family: var(--font-body); font-size: 0.85rem; font-weight: 500;
       cursor: pointer; text-decoration: none;
-      transition: border-color 0.15s, color 0.15s; margin-top: 10px;
+      transition: border-color 0.12s ease, background 0.12s ease; margin-top: 10px;
+      box-shadow: none;
     }
-    .btn-ghost:hover { border-color: var(--borm); color: var(--main); }
-    .footer-note { margin-top: 20px; text-align: center; font-size: 0.69rem; color: var(--muted); line-height: 1.7; opacity: 0; animation: fadeUp 0.5s ease 1s forwards; }
-    .footer-note a { color: var(--sky); text-decoration: none; }
-    .footer-note a:hover { text-decoration: underline; }
-    .spin { width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(37,99,235,0.1); border-top-color: var(--sky); animation: rotate 0.8s linear infinite; margin: 0 auto 28px; }
+    .btn-ghost:hover { border-color: var(--ra-border-hover, var(--border)); background: var(--ra-mist, var(--hover)); }
+    .footer-note { margin-top: 20px; text-align: center; font-size: 0.7rem; color: var(--muted); line-height: 1.65; opacity: 0; animation: fadeUp 0.5s ease 1s forwards; }
+    .footer-note a { color: var(--main); text-decoration: underline; text-underline-offset: 2px; }
+    .spin { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: rotate 0.8s linear infinite; margin: 0 auto 28px; }
     @keyframes rotate { to { transform: rotate(360deg); } }
-    @media(max-width: 520px) { .card-body { padding: 36px 28px 32px; } .field-row { grid-template-columns: 1fr; } nav { padding: 0 20px; } h1 { font-size: 1.7rem; } }
+    @media(max-width: 520px) { .card-body { padding: 36px 28px 32px; } .field-row { grid-template-columns: 1fr; } nav { padding: 0 20px; } h1 { font-size: 1.5rem; } }
   </style>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/reganchor.css">
 </head>
 <body>
-<div class="bg-layer">
-  <div class="bg-glow-1"></div>
-  <div class="bg-glow-2"></div>
-</div>
 
 <nav>
   <a href="index.html" class="nav-logo ra-wordmark">RegAnchor</a>
@@ -178,17 +152,17 @@
       <!-- LOADING -->
       <div id="state-loading" style="text-align:center;padding:20px 0;">
         <div class="spin"></div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Confirming payment…</div>
+        <div style="font-family:var(--font-brand);font-weight:500;letter-spacing:-0.02em;font-size:1.3rem;color:var(--main);margin-bottom:8px;">Confirming payment…</div>
         <div style="font-size:0.82rem;color:var(--sub);">Activating your report access.</div>
       </div>
 
       <!-- ACTIVATING: polls until diagnostic linked to user in DB -->
       <div id="state-activating" style="display:none;text-align:center;padding:20px 0;">
         <div class="spin"></div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Activating your access…</div>
+        <div style="font-family:var(--font-brand);font-weight:500;letter-spacing:-0.02em;font-size:1.3rem;color:var(--main);margin-bottom:8px;">Activating your access…</div>
         <div style="font-size:0.82rem;color:var(--sub);margin-bottom:28px;">This usually takes a few seconds.</div>
-        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:100px;height:4px;overflow:hidden;max-width:280px;margin:0 auto 8px;">
-          <div id="progress-bar" style="height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:100px;width:5%;transition:width 0.6s ease;"></div>
+        <div style="background:var(--border);height:2px;overflow:hidden;max-width:280px;margin:0 auto 8px;">
+          <div id="progress-bar" style="height:100%;background:var(--accent);width:5%;transition:width 0.6s ease;"></div>
         </div>
         <div id="activating-sub" style="font-size:0.72rem;color:var(--muted);margin-top:10px;">Confirming with payment provider…</div>
       </div>
@@ -197,15 +171,14 @@
       <div id="state-success" style="display:none;">
         <div class="success-ring">
           <svg class="ring" viewBox="0 0 68 68" fill="none">
-            <circle cx="34" cy="34" r="32" stroke="rgba(34,197,94,0.15)" stroke-width="1.5"/>
-            <circle cx="34" cy="34" r="27" stroke="rgba(34,197,94,0.08)" stroke-width="1"/>
-            <circle cx="34" cy="34" r="32" stroke="rgba(34,197,94,0.5)" stroke-width="1.5"
+            <circle cx="34" cy="34" r="32" stroke="var(--border)" stroke-width="1.5"/>
+            <circle cx="34" cy="34" r="32" stroke="var(--ok)" stroke-width="1.5"
               stroke-dasharray="201" stroke-dashoffset="201"
               style="animation: ringDraw 1s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;"
               transform="rotate(-90 34 34)"/>
           </svg>
           <svg class="check" viewBox="0 0 26 26" fill="none">
-            <path class="check-path" d="M7 13.5l4.5 4.5 7.5-9" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path class="check-path" d="M7 13.5l4.5 4.5 7.5-9" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
         <div class="eyebrow">Report Unlocked</div>
@@ -232,7 +205,7 @@
         </div>
         <a href="portal.html" class="btn-primary">
           Open my portal
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
         </a>
         <div class="footer-note">Questions or issues? <a href="mailto:governance@mlagroup.co.uk">governance@mlagroup.co.uk</a></div>
       </div>
@@ -241,14 +214,14 @@
       <div id="state-signup" style="display:none;">
         <div class="success-ring">
           <svg class="ring" viewBox="0 0 68 68" fill="none">
-            <circle cx="34" cy="34" r="32" stroke="rgba(34,197,94,0.15)" stroke-width="1.5"/>
-            <circle cx="34" cy="34" r="32" stroke="rgba(34,197,94,0.5)" stroke-width="1.5"
+            <circle cx="34" cy="34" r="32" stroke="var(--border)" stroke-width="1.5"/>
+            <circle cx="34" cy="34" r="32" stroke="var(--ok)" stroke-width="1.5"
               stroke-dasharray="201" stroke-dashoffset="201"
               style="animation: ringDraw 1s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;"
               transform="rotate(-90 34 34)"/>
           </svg>
           <svg class="check" viewBox="0 0 26 26" fill="none">
-            <path class="check-path" d="M7 13.5l4.5 4.5 7.5-9" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path class="check-path" d="M7 13.5l4.5 4.5 7.5-9" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
         <div class="eyebrow">Payment Confirmed</div>
@@ -278,7 +251,7 @@
         </div>
         <button class="btn-primary" id="su-btn" onclick="doSignup()" style="margin-top:20px;">
           Create account &amp; access report
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
         </button>
         <div class="divider" style="margin-top:20px;">Already have an account?</div>
         <a href="login.html?after=payment" class="btn-ghost">Sign in instead</a>
@@ -288,7 +261,7 @@
       <!-- ERROR -->
       <div id="state-error" style="display:none;text-align:center;">
         <div style="font-size:2rem;margin-bottom:16px;">⚠</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:1.5rem;color:var(--main);margin-bottom:10px;">Something went wrong</div>
+        <div style="font-family:var(--font-brand);font-weight:500;letter-spacing:-0.02em;font-size:1.35rem;color:var(--main);margin-bottom:10px;">Something went wrong</div>
         <p style="font-size:0.83rem;color:var(--sub);margin-bottom:0;">We couldn't activate your access automatically. Contact us and we'll resolve it within the hour.</p>
         <a href="mailto:governance@mlagroup.co.uk?subject=Payment%20Issue" class="btn-primary" style="margin-top:24px;">Contact support</a>
         <a href="portal.html" class="btn-ghost">Try the portal anyway</a>
@@ -492,7 +465,7 @@
     } catch(e) {
       console.error(e);
       btn.disabled = false;
-      btn.innerHTML = 'Create account &amp; access report <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>';
+      btn.innerHTML = 'Create account &amp; access report <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>';
       let msg = e.message || 'Something went wrong.';
       if (msg.toLowerCase().includes('already')) msg = 'An account with this email already exists — use "Sign in instead" below.';
       errEl.textContent = msg; errEl.style.display = 'block';

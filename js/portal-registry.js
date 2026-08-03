@@ -15,7 +15,6 @@ async function loadSystems(){
   for(var c=0;c<assignments.length;c++){var ca=assignments[c];if(ca.system_id){if(!assignBySystem[ca.system_id])assignBySystem[ca.system_id]={total:0,done:0};assignBySystem[ca.system_id].total++;if(ca.status==='implemented'||ca.status==='verified')assignBySystem[ca.system_id].done++}}
   for(var s=0;s<allSystems.length;s++){allSystems[s]._assessScore=assessBySystem[allSystems[s].id]||null;var ca2=assignBySystem[allSystems[s].id];allSystems[s]._ctrlPct=(ca2&&ca2.total>0)?Math.round(ca2.done/ca2.total*100):null}
   renderRegistryStats();renderSystemTable();
-  if(allSystems.length>0){document.getElementById('sys-count-badge').textContent=allSystems.length;document.getElementById('sys-count-badge').style.display='inline-flex'}
   document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
 }
 function getCP(sys){var aScore=(sys._assessScore!==null&&sys._assessScore!==undefined)?sys._assessScore:null;var cPct=(sys._ctrlPct!==null&&sys._ctrlPct!==undefined)?sys._ctrlPct:null;var pPct=null;if(allPolicies.length){var pubPols=allPolicies.filter(function(p){return p.requires_acknowledgment&&p.published_at});if(pubPols.length){var acked=pubPols.filter(function(p){return allAcknowledgments.find(function(a){return a.policy_id===p.id&&a.version_acknowledged===p.version})}).length;pPct=Math.round(acked/pubPols.length*100)}}if(aScore===null&&cPct===null&&pPct===null){var sc=sys.system_compliance||[];if(sc.length)return Math.round(sc.filter(function(c){return c.status==='compliant'||c.status==='not_applicable'}).length/sc.length*100);return null}var blended=(aScore!==null?aScore*0.5:0)+(cPct!==null?cPct*0.35:0)+(pPct!==null?pPct*0.15:0);return Math.round(blended)}
@@ -30,7 +29,7 @@ function renderSystemTable(){
   const filtered=regFilter==='all'?allSystems:allSystems.filter(s=>s.deployment_status===regFilter);
   document.getElementById('reg-table-count').textContent=filtered.length+' system'+(filtered.length!==1?'s':'');
   if(!filtered.length){document.getElementById('reg-table-wrap').innerHTML='<div class="empty-state"><h4>'+(allSystems.length===0?'No systems registered yet':'No systems match this filter')+'</h4><p>'+(allSystems.length===0?'Register your first AI system.':'Try a different filter.')+'</p>'+(allSystems.length===0?'<button class="btn-dl" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register First System</button>':'')+'</div>';return}
-  document.getElementById('reg-table-wrap').innerHTML='<div class="table-scroll"><table class="sys-table"><thead><tr><th>System</th><th>Risk Class</th><th>Status</th><th class="col-maturity">Maturity</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{
+  document.getElementById('reg-table-wrap').innerHTML='<div class="table-scroll"><table class="sys-table"><thead><tr><th>System</th><th>Risk class</th><th>Status</th><th class="col-maturity">Maturity</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{
     const tier=sys.risk_tier||'none';
     const cp=getCP(sys);
     return '<tr onclick="openSystemDetail(\''+sys.id+'\')">'+
@@ -40,6 +39,7 @@ function renderSystemTable(){
       '<td class="col-maturity">'+regMaturityCell(cp)+'</td>'+
       '<td class="col-date">'+fmtDate(sys.updated_at)+'</td>'+
     '</tr>'}).join('')+'</tbody></table></div>';
+  requestAnimationFrame(function(){animateMaturity(document.getElementById('reg-table-wrap'))});
 }
 
 /* The registry's signature column. A row of these read down the page
@@ -49,10 +49,11 @@ function renderSystemTable(){
    the bar rather than the bar standing alone. */
 function regMaturityCell(score){
   var lvl=raLevel(score);
-  if(!lvl)return raComplianceBar(null,{mini:true})+'<span class="reg-maturity__none">Not assessed</span>';
+  if(!lvl)return raComplianceBar(null,{mini:true,animate:true})+'<span class="reg-maturity__none">Not assessed</span>';
+  var n=Math.round(Number(score));
   return '<div class="reg-maturity">'+
-    raComplianceBar(score,{mini:true})+
-    '<div><div class="reg-maturity__score ra-num">'+Math.round(Number(score))+'</div>'+
+    raComplianceBar(score,{mini:true,animate:true})+
+    '<div><div class="reg-maturity__score ra-num" data-count-to="'+n+'">0</div>'+
     '<div class="reg-maturity__level">'+lvl.code+' '+lvl.label+'</div></div>'+
   '</div>';
 }
@@ -98,7 +99,7 @@ async function openSystemDetail(sysId){
   // Reset tabs
   document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('#view-registry-detail .tab-btn')[0].classList.add('active');
   document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-overview').classList.add('active');
-  navigate('registry-detail',null);document.getElementById('nav-registry').classList.add('active');
+  navigate('registry-detail',null);
 }
  
 // System-level controls tab
@@ -159,6 +160,53 @@ function openAssessmentModal(){
 }
 function closeAssessmentModal(){}
  
+var _domAnimGen=0;
+
+function animateDomainBars(root){
+  if(!root)return;
+  var rows=root.querySelectorAll('.dom-row[data-pct]');
+  if(!rows.length)return;
+  var gen=++_domAnimGen;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var duration=780;
+  var ease=function(t){return 1-Math.pow(1-t,3)};
+
+  rows.forEach(function(row,i){
+    var target=parseFloat(row.getAttribute('data-pct'))||0;
+    var fill=row.querySelector('.dom-row__fill');
+    var pctEl=row.querySelector('.dom-row__pct');
+    if(!fill||!pctEl)return;
+
+    fill.style.transition='none';
+    fill.style.width='0%';
+    pctEl.textContent='0%';
+
+    if(reduce){
+      fill.style.width=target+'%';
+      pctEl.textContent=Math.round(target)+'%';
+      return;
+    }
+
+    var delay=i*55;
+    setTimeout(function(){
+      if(gen!==_domAnimGen)return;
+      // Force layout so the 0% width registers before transitioning.
+      void fill.offsetWidth;
+      fill.style.transition='width '+duration+'ms cubic-bezier(0.22, 1, 0.36, 1)';
+      fill.style.width=target+'%';
+      var start=performance.now();
+      function tick(now){
+        if(gen!==_domAnimGen)return;
+        var t=Math.min(1,(now-start)/duration);
+        pctEl.textContent=Math.round(target*ease(t))+'%';
+        if(t<1)requestAnimationFrame(tick);
+        else pctEl.textContent=Math.round(target)+'%';
+      }
+      requestAnimationFrame(tick);
+    },delay);
+  });
+}
+
 async function renderAssessmentTab(assessments){
   const el=document.getElementById('tab-assessment');
   if(!assessments.length){
@@ -175,18 +223,16 @@ async function renderAssessmentTab(assessments){
     const isLatest=i===0;
     const ss=a.section_scores||{};
     const tv=a.tier_validation;
-    // One domain per row: label, rule, figure. No fill, no colour —
-    // the length of the rule is the comparison.
     const secBars=Object.entries(ss).map(([k,v])=>{
-      const pct=v.score||0;
-      return '<div class="dom-row"><span class="dom-row__label">'+esc(v.title||k)+'</span>'+
-        '<div class="dom-row__track"><div class="dom-row__fill" style="width:'+pct+'%;"></div></div>'+
-        '<span class="dom-row__pct ra-num">'+pct+'%</span></div>';
+      const pct=Math.max(0,Math.min(100,Number(v.score)||0));
+      return '<div class="dom-row" data-pct="'+pct+'"><span class="dom-row__label">'+esc(v.title||k)+'</span>'+
+        '<div class="dom-row__track"><div class="dom-row__fill"></div></div>'+
+        '<span class="dom-row__pct ra-num">0%</span></div>';
     }).join('');
     return '<div class="assess-card">'+
       '<div class="assess-card__head">'+
         '<div class="assess-card__reading">'+
-          (score!==null&&score!==undefined?raMaturityBlock(score,{mini:true}):'')+
+          (score!==null&&score!==undefined?raMaturityBlock(score,{mini:true,animate:true}):'')+
           '<span class="band-pill band-'+band+'">'+(BAND_L[band]||band)+'</span>'+
           (isLatest?'<span class="state-label" style="color:var(--ra-text);">Latest</span>':'')+
         '</div>'+
@@ -198,13 +244,26 @@ async function renderAssessmentTab(assessments){
       (Object.keys(ss).length?'<div class="dom-list">'+secBars+'</div>':'')+
       (tv&&tv.mismatch?'<div class="notice notice--warn">'+esc(tv.message||'Risk tier mismatch detected. RegAnchor recommends reviewing the classification.')+'</div>':'')+
       (a.client_notes?'<div class="notice notice--quiet">'+esc(a.client_notes)+'</div>':'')+
-      '<div class="assess-card__by">Submitted by '+esc(nm[a.requested_by]||'Unknown')+(a.sector?' · '+esc(a.sector):'')+'</div>'+
-      (a.status==='controls_issued'?'<div class="notice"><div class="notice__label">RegAnchor Controls Issued</div>'+(a.mla_notes?'<div class="notice__body">'+esc(a.mla_notes)+'</div>':'')+'<div class="notice__meta">Completed by '+(nm[a.completed_by]||'RegAnchor')+' · '+fmtDateLong(a.completed_at)+'</div></div>':'')+
+      '<div class="assess-card__by">Submitted by '+esc(nm[a.requested_by]||'Unknown')+(a.sector?', '+esc(a.sector):'')+'</div>'+
+      (a.status==='controls_issued'?'<div class="notice"><div class="notice__label">RegAnchor Controls Issued</div>'+(a.mla_notes?'<div class="notice__body">'+esc(a.mla_notes)+'</div>':'')+'<div class="notice__meta">Completed by '+(nm[a.completed_by]||'RegAnchor')+', '+fmtDateLong(a.completed_at)+'</div></div>':'')+
       (a.status==='submitted'?'<div class="notice"><div class="notice__body">Your assessment has been submitted. RegAnchor will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
       '<div class="assess-card__actions">'+(isPaidTier()?'<a href="system-report.html?aid='+a.id+'" class="btn-dl" target="_blank"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</a>':'<button class="btn-topbar btn-topbar-ghost" onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>Upgrade to View Report</button>')+'</div>'+
     '</div>'}).join('');
+
+  requestAnimationFrame(function(){
+    animateDomainBars(el);
+    animateMaturity(el);
+  });
 }
-function switchDetailTab(id,btn){document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active')}
+
+function switchDetailTab(id,btn){
+  document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));
+  var panel=document.getElementById('tab-'+id);
+  if(panel)panel.classList.add('active');
+  if(id==='assessment')animateDomainBars(panel);
+}
  
 // ═══ ADD/EDIT SYSTEM ══════════════════════════════════════════
 function openAddSystem(){var orgPlan=currentOrg?currentOrg.plan:'free';var sysLimit=(orgPlan==='professional')?999:1;if(allSystems.length>=sysLimit){var sysMsg='';if(orgPlan==='essentials')sysMsg='You have reached your Essentials plan limit of 1 AI system. Upgrade for unlimited systems, multi-user access, and more.';else if(orgPlan==='professional')sysMsg='Need more from your governance platform? Enterprise includes unlimited users, dedicated advisory, and more.';else sysMsg='You have reached your free plan limit of 1 AI system. Subscribe to unlock more systems, governance certification, and more.';openUpgradeModal(sysMsg);return}document.getElementById('sysmod-id').value='';document.getElementById('sysmod-title').textContent='Register AI System';document.getElementById('sysmod-sub').textContent='Add a new system to the governance registry';document.getElementById('sysmod-submit').innerHTML='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg> Register System';clearSystemForm();document.getElementById('system-modal').classList.add('open')}

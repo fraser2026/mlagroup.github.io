@@ -1,218 +1,357 @@
 /* ═══════════════════════════════════════════════════════════════
-   RegAnchor brand layer — RGA-001 tokens + RGA-002 primitives
+   RegAnchor design engine — Stripe / Palantir crisp ledger
 
-   Extracted from reganchorsystem.html so there is one source of
-   truth instead of a design document nothing links to.
-
-   Everything here is namespaced `ra-` / `--ra-` so this file can be
-   loaded alongside the legacy MLA page styles without colliding with
-   their --accent, --bg, --slate, --surface or .logo declarations.
-
-   Load this LAST in <head>, after any inline <style> block, so the
-   wordmark rule wins over the page's own .logo font-family.
+   Macro rules (in priority order):
+   1. ONE type family, light display weights, tight tracking as size grows
+   2. ONE indigo for action — never washed, never decorative fills
+   3. Geometry: 4px radius on controls; never pills, never soft 12px+
+   4. Depth from hairlines + surface tint, not mushy shadows
+   5. Hierarchy from contrast (navy vs slate), not weight shouting
    ═══════════════════════════════════════════════════════════════ */
 
+@import url('https://rsms.me/inter/inter.css');
+
 :root {
-  /* ── Neutrals (RGA-001). Six colours, no decorative accent. ── */
-  --ra-paper: #FFFFFF;      /* primary background, light surfaces      */
-  --ra-surface: #F7F8FA;    /* cards, recessed panels, section breaks  */
-  --ra-surface-2: #EEF0F4;  /* deeper recess                           */
-  --ra-line: #E4E7EC;       /* borders, dividers, table separators     */
-  --ra-steel: #6B7280;      /* labels, eyebrows, captions              */
-  --ra-slate: #1F2937;      /* body text on light, strong borders      */
-  --ra-slate-70: #374151;   /* secondary body                          */
-  --ra-slate-30: #9CA3AF;   /* tertiary text                           */
-  --ra-ink: #0A0E14;        /* primary text, wordmark, primary CTA     */
+  /* ── Colour (live Stripe marketing indigo + ledger neutrals) ─ */
+  --ra-canvas: #FFFFFF;
+  --ra-mist: #F6F9FC;
+  --ra-surface: #FFFFFF;
+  --ra-border: #E6EBF1;
+  --ra-border-hover: #D6DEE8;
+  --ra-navy: #0A2540;
+  --ra-ink: #061B31;
+  --ra-body: #425466;
+  --ra-muted: #697386;
+  --ra-blurple: #533AFD;
+  --ra-blurple-hover: #4434E0;
+  --ra-blurple-light: #6C5FF5;
+  --ra-lavender: #B9B9F9;
+  --ra-white: #FFFFFF;
+  --ra-risk-bg: #FDE8EE;
+  --ra-risk-fg: #CD3D64;
+  --ra-ok: #24B47E;
+  --ra-warn: #C45C26;
+  --ra-info: #533AFD;
 
-  /* ── Accent. Gradient only — never flattened to a single colour.
-     Permitted inside the Anchor Line and the Compliance Bar and
-     nowhere else. See the usage rules at the end of this file.   ── */
-  --ra-accent-a: #3730A3;
-  --ra-accent-b: #7C3AED;
-  --ra-accent-c: #F97316;
-  --ra-accent-grad: linear-gradient(
-    90deg,
-    var(--ra-accent-a) 0%,
-    var(--ra-accent-b) 50%,
-    var(--ra-accent-c) 100%
-  );
+  /* Geometry — Stripe interactive = 4px; cards slightly softer */
+  --ra-radius-control: 4px;
+  --ra-radius: 6px;
+  --ra-radius-pill: 4px; /* retired: pill geometry is off-brand */
 
-  /* ── Type. Plex owns brand surfaces, Inter owns dense product UI. ── */
-  --ra-font-brand: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --ra-font-product: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Elevation — prefer hairline; shadow only when a surface must float */
+  --ra-shadow: 0 2px 5px -1px rgba(50, 50, 93, 0.1), 0 1px 3px -1px rgba(0, 0, 0, 0.06);
+  --ra-shadow-btn: none;
+  --ra-shadow-btn-hover: none;
+
+  /* Type — Inter substitutes for Söhne; light weights are the signature */
+  --ra-font: 'Inter', 'Inter var', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --ra-font-features: "ss01", "cv01", "cv02", "cv03", "cv04", "cv11";
+
+  /* ── Compatibility aliases ─────────────────────────────────── */
+  --ra-paper: var(--ra-surface);
+  --ra-surface-2: var(--ra-mist);
+  --ra-line: var(--ra-border);
+  --ra-steel: var(--ra-muted);
+  --ra-slate: var(--ra-navy);
+  --ra-slate-70: var(--ra-body);
+  --ra-slate-30: #A3ACB9;
+  --ra-accent-a: var(--ra-blurple);
+  --ra-accent-b: var(--ra-blurple);
+  --ra-accent-c: var(--ra-blurple);
+  --ra-accent-grad: var(--ra-blurple);
+  --ra-font-brand: var(--ra-font);
+  --ra-font-product: var(--ra-font);
+
+  --ra-bg: var(--ra-canvas);
+  --ra-bg-raised: var(--ra-surface);
+  --ra-bg-sunken: var(--ra-mist);
+  --ra-hover: rgba(6, 27, 49, 0.04);
+  --ra-border-strong: var(--ra-navy);
+  --ra-text: var(--ra-ink);
+  --ra-text-2: var(--ra-body);
+  --ra-text-3: var(--ra-muted);
+  --ra-text-4: var(--ra-slate-30);
+  --ra-cta-bg: var(--ra-blurple);
+  --ra-cta-fg: var(--ra-white);
+  --ra-rule: var(--ra-border);
+  --ra-bar-ink: var(--ra-navy);
+  --ra-risk: var(--ra-risk-fg);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SEMANTIC LAYER
-
-   The palette above is fixed: --ra-paper is always white, --ra-ink
-   is always near-black. Those names describe pigment, so they can
-   never be reassigned per theme without lying.
-
-   This layer describes *role* instead — background, text, border,
-   rule — which means it can be reassigned. Component CSS must use
-   only these tokens and never reach past them to the palette, so
-   that flipping the theme is a change to this block alone.
-
-   Dark values are the canonical set already shipping on
-   reganchor.com. The block is written but dormant: nothing sets
-   data-theme="dark" yet.
+   ENGINE — GLOBAL TYPE
+   Crispness comes from: one family, antialiasing, light display
+   weights, and navy/slate contrast — not boldness.
    ═══════════════════════════════════════════════════════════════ */
 
-:root {
-  --ra-bg: var(--ra-paper);            /* page background              */
-  --ra-bg-raised: var(--ra-surface);   /* cards, panels, recesses      */
-  --ra-bg-sunken: var(--ra-surface-2); /* deeper recess, row hover     */
-  --ra-border: var(--ra-line);         /* hairlines, dividers          */
-  --ra-border-strong: var(--ra-slate); /* emphasis rules               */
-  --ra-text: var(--ra-ink);            /* primary text, wordmark       */
-  --ra-text-2: var(--ra-slate-70);     /* body, secondary              */
-  --ra-text-3: var(--ra-steel);        /* labels, eyebrows, captions   */
-  --ra-text-4: var(--ra-slate-30);     /* disabled, tertiary           */
-  --ra-cta-bg: var(--ra-ink);          /* primary button fill          */
-  --ra-cta-fg: var(--ra-paper);        /* primary button text          */
-  --ra-rule: var(--ra-ink);            /* Anchor Line hairline         */
-  --ra-bar-ink: var(--ra-ink);         /* Compliance Bar rows          */
-
-  /* ── Functional state. RGA-001 permits colour inside the product
-     for success / warning / error / info, and nowhere else. These
-     are the only non-neutral values allowed outside the two
-     primitives, and they may never touch a brand surface.
-
-     Light values carry enough contrast to sit on white paper. The
-     dark values below are the ones the portal already used — which
-     is precisely why they had to move: they were only ever legible
-     on a near-black background.                                 ── */
-  --ra-ok: #15803D;
-  --ra-warn: #92400E;
-  --ra-risk: #B91C1C;
-  --ra-info: #1D4ED8;
+html {
+  background: var(--ra-canvas);
+  color-scheme: light;
 }
 
-[data-theme="dark"] {
-  --ra-bg: #0A0E14;
-  --ra-bg-raised: #0F172A;
-  --ra-bg-sunken: #131C2E;
-  --ra-border: #1F2937;
-  --ra-border-strong: #374151;
-  --ra-text: #FFFFFF;
-  --ra-text-2: #D1D5DB;
-  --ra-text-3: #9CA3AF;
-  --ra-text-4: #6B7280;
-  --ra-cta-bg: #FFFFFF;
-  --ra-cta-fg: #0A0E14;
-  --ra-rule: #FFFFFF;
-  --ra-bar-ink: #FFFFFF;
+body {
+  background: var(--ra-canvas);
+  color: var(--ra-body);
+  font-family: var(--ra-font);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.011em;
+  font-feature-settings: var(--ra-font-features);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
 
-  --ra-ok: #4ADE80;
-  --ra-warn: #FBBF24;
-  --ra-risk: #F87171;
-  --ra-info: #60A5FA;
+h1, h2, h3, h4,
+.section-title,
+.band-heading {
+  color: var(--ra-ink);
+  font-family: var(--ra-font);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  font-feature-settings: var(--ra-font-features);
+}
+
+h1 { font-size: clamp(36px, 5vw, 48px); letter-spacing: -0.025em; }
+h2, .section-title { font-size: clamp(26px, 3.5vw, 32px); letter-spacing: -0.02em; }
+h3 { font-size: 20px; letter-spacing: -0.015em; }
+h4 { font-size: 16px; letter-spacing: -0.011em; }
+
+p {
+  color: var(--ra-body);
+  font-size: 16px;
+  line-height: 1.55;
+  font-weight: 400;
+  letter-spacing: -0.011em;
+}
+
+strong, b { font-weight: 500; color: inherit; }
+
+/* Eyebrows — precise, not shouted */
+.label,
+.section-label,
+.eyebrow-label,
+.eyebrow {
+  color: var(--ra-muted);
+  font-family: var(--ra-font);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: block;
+  margin-bottom: 12px;
+}
+
+a { color: var(--ra-blurple); text-decoration: none; }
+a:hover { color: var(--ra-blurple-hover); }
+
+/* ═══════════════════════════════════════════════════════════════
+   SURFACES — hairline first; float only when needed
+   ═══════════════════════════════════════════════════════════════ */
+
+.card,
+.results-container,
+.preview-card,
+.score-card,
+.ctx-card,
+.ent-box,
+.recs-outer,
+.report-page,
+.domain-table,
+table.ra-table,
+#checkout-container {
+  background: var(--ra-surface);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius);
+  box-shadow: var(--ra-shadow);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTONS — rounded square 4px, flat fill, decisive indigo
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-primary,
+.btn-cta,
+.btn-start,
+.btn-get-report,
+.btn-unlock,
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--ra-blurple) !important;
+  color: var(--ra-white) !important;
+  font-family: var(--ra-font);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  border-radius: var(--ra-radius-control) !important;
+  border: 1px solid transparent !important;
+  padding: 11px 16px;
+  box-shadow: none !important;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn-primary:hover,
+.btn-cta:hover,
+.btn-start:hover,
+.btn-get-report:hover,
+.btn-unlock:hover,
+.nav-cta:hover {
+  background: var(--ra-blurple-hover) !important;
+  transform: none;
+  box-shadow: none !important;
+}
+
+.btn-primary:disabled,
+.btn-get-report:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-secondary,
+.btn-consult {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--ra-white) !important;
+  color: var(--ra-ink) !important;
+  border: 1px solid var(--ra-border) !important;
+  border-radius: var(--ra-radius-control) !important;
+  padding: 11px 16px;
+  font-family: var(--ra-font);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+  box-shadow: none !important;
+}
+
+.btn-secondary:hover,
+.btn-consult:hover {
+  background: var(--ra-mist) !important;
+  border-color: var(--ra-border-hover) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BADGES — tight radius, not capsules
+   ═══════════════════════════════════════════════════════════════ */
+
+.badge,
+.risk-pill,
+.band-pill-lg {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--ra-radius-control);
+  padding: 2px 8px;
+  font-family: var(--ra-font);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  line-height: 1.4;
+}
+
+.badge-high-risk,
+.risk-pill.lvl-high,
+.risk-pill.lvl-critical {
+  background: var(--ra-risk-bg);
+  color: var(--ra-risk-fg);
+}
+
+.risk-pill.lvl-moderate {
+  background: #FFF4EC;
+  color: var(--ra-warn);
+}
+
+.risk-pill.lvl-low,
+.risk-pill.lvl-lowmod {
+  background: #E6F9F1;
+  color: #0E6245;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROGRESS — thin, indigo fill, slight round (not capsule chrome)
+   ═══════════════════════════════════════════════════════════════ */
+
+.progress-bar-track,
+.progress-track,
+.domain-track {
+  height: 4px;
+  background: var(--ra-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill,
+.progress-fill,
+.domain-track__fill {
+  height: 100%;
+  background: var(--ra-blurple);
+  border-radius: 2px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
    WORDMARK
-   The wordmark is the brand: IBM Plex Sans Medium, CamelCase, no
-   mark, no icon, no italic. Two configurations only — ink on paper
-   and paper on ink.
    ═══════════════════════════════════════════════════════════════ */
 
 .ra-wordmark {
-  font-family: var(--ra-font-brand);
+  font-family: var(--ra-font);
   font-weight: 500;
   font-style: normal;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   text-transform: none;
+  color: var(--ra-ink);
+  font-feature-settings: var(--ra-font-features);
 }
 
-/* Display sizes tighten the tracking; small sizes loosen it. */
-.ra-wordmark--display { letter-spacing: -0.045em; }
+.ra-wordmark--display { letter-spacing: -0.03em; }
 .ra-wordmark--small { letter-spacing: -0.01em; }
-
-/* Where space requires, a single capital R replaces the wordmark. */
 .ra-wordmark--r::after { content: 'R'; }
 
 /* ═══════════════════════════════════════════════════════════════
    PRIMITIVE — ANCHOR LINE
-
-   A 1px ink hairline is the structural baseline of every surface.
-   An 80px segment at 61.8% (the golden ratio) is replaced by a 2px
-   accent gradient. Structural: header rule, section divider, form
-   underline.
-
-   Markup:
-     <div class="ra-anchor-line"><div class="ra-anchor-line__seg"></div></div>
    ═══════════════════════════════════════════════════════════════ */
 
 .ra-anchor-line {
   position: relative;
-  height: 2px;
+  height: 1px;
   width: 100%;
 }
 
 .ra-anchor-line::before {
   content: '';
   position: absolute;
-  top: 0.5px;
+  top: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--ra-rule);
+  background: var(--ra-border);
 }
 
-/* Modifiers for a surface that opposes the current theme — a dark
-   panel on a light page. Theme-following behaviour is the default. */
-.ra-anchor-line--dark::before { background: var(--ra-paper); }
+.ra-anchor-line--dark::before { background: var(--ra-navy); }
 .ra-anchor-line--subtle::before { background: var(--ra-border); }
-
-.ra-anchor-line__seg {
-  position: absolute;
-  top: 0;
-  height: 2px;
-  width: 80px;
-  left: 61.8%;
-  transform: translateX(-50%);
-  background: var(--ra-accent-grad);
-  background-size: 200% 100%;
-  background-position: 50% 0;
-}
-
-/* Entrance variant — once per page on first paint. Never loops. */
-.ra-anchor-line--entrance .ra-anchor-line__seg {
-  animation: raSegReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes raSegReveal {
-  0%   { width: 0; opacity: 0; }
-  60%  { opacity: 1; }
-  100% { width: 80px; opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ra-anchor-line--entrance .ra-anchor-line__seg { animation: none; }
-}
+.ra-anchor-line__seg { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════
    PRIMITIVE — COMPLIANCE BAR
-
-   Seven horizontal bars, one per maturity level, stacked so L1 sits
-   at the bottom. The current level is the gradient and reads
-   slightly longer so it punches out of the stack. Levels below are
-   ink at high opacity (achieved); levels above are ink at low
-   opacity (pending).
-
-   L1 Initial · L2 Aware · L3 Defined · L4 Structured
-   L5 Managed · L6 Optimised · L7 Authoritative
-
-   Bands are roughly 14 points each on the 0–100 scale.
-
-   Markup: seven .ra-cbar__row children, exactly one of which
-   carries --current.
    ═══════════════════════════════════════════════════════════════ */
 
 .ra-cbar {
   display: flex;
-  flex-direction: column-reverse; /* level 1 at the bottom */
+  flex-direction: column-reverse;
   gap: 3px;
   width: 120px;
 }
@@ -220,6 +359,7 @@
 .ra-cbar__row {
   height: 4px;
   background: var(--ra-bar-ink);
+  border-radius: 1px;
 }
 
 .ra-cbar__row--achieved-1 { opacity: 0.88; }
@@ -227,7 +367,7 @@
 .ra-cbar__row--achieved-3 { opacity: 0.44; }
 
 .ra-cbar__row--current {
-  background: var(--ra-accent-grad);
+  background: var(--ra-blurple);
   opacity: 1;
   height: 5px;
   width: 130px;
@@ -238,7 +378,6 @@
 .ra-cbar__row--pending-2 { opacity: 0.10; }
 .ra-cbar__row--pending-3 { opacity: 0.05; }
 
-/* Mini variant for table rows and navbars. */
 .ra-cbar--mini { width: 60px; gap: 2px; }
 .ra-cbar--mini .ra-cbar__row { height: 2px; }
 .ra-cbar--mini .ra-cbar__row--current {
@@ -247,23 +386,9 @@
   margin-left: -2px;
 }
 
-/* Dark variant for the dossier seal and other ink surfaces. */
-.ra-cbar--dark .ra-cbar__row { background: var(--ra-paper); }
-.ra-cbar--dark .ra-cbar__row--current { background: var(--ra-accent-grad); }
-
-/* No reading yet — a system registered but never assessed. Every row
-   sits at the pending opacity and no row carries the gradient, so the
-   registry keeps its vertical rhythm without asserting a level the
-   assessment has not earned. */
+.ra-cbar--dark .ra-cbar__row { background: var(--ra-white); }
+.ra-cbar--dark .ra-cbar__row--current { background: var(--ra-blurple); }
 .ra-cbar--empty .ra-cbar__row { opacity: 0.05; }
-
-/* ═══════════════════════════════════════════════════════════════
-   COMPLIANCE BAR + READING
-
-   Rule 04 says the bar never appears alone. This is the pairing:
-   bar, numeral, tier. raMaturityBlock() in js/ra-maturity.js emits
-   exactly this markup.
-   ═══════════════════════════════════════════════════════════════ */
 
 .ra-maturity {
   display: flex;
@@ -272,30 +397,30 @@
 }
 
 .ra-maturity__score {
-  font-family: var(--ra-font-brand);
-  font-weight: 500;
+  font-family: var(--ra-font);
+  font-weight: 400;
   font-size: 38px;
   letter-spacing: -0.03em;
   line-height: 1;
-  color: var(--ra-text);
-  font-feature-settings: 'tnum';
+  color: var(--ra-ink);
+  font-feature-settings: "tnum", var(--ra-font-features);
 }
 
 .ra-maturity__of {
   font-size: 15px;
   font-weight: 400;
   letter-spacing: -0.01em;
-  color: var(--ra-text-3);
+  color: var(--ra-muted);
   margin-left: 6px;
 }
 
 .ra-maturity__tier {
-  font-family: var(--ra-font-brand);
-  font-size: 11px;
+  font-family: var(--ra-font);
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ra-text-3);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--ra-muted);
   margin-top: 8px;
 }
 
@@ -304,36 +429,17 @@
 .ra-maturity--mini .ra-maturity__of { font-size: 12px; }
 .ra-maturity--mini .ra-maturity__tier { font-size: 10px; margin-top: 5px; }
 
-/* The named ladder, highest rung first. Shown where the reader is
-   seeing their position for the first time. */
 .ra-ladder {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  font-family: var(--ra-font-brand);
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ra-text-3);
+  gap: 2px;
+  font-family: var(--ra-font);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--ra-muted);
 }
 
-.ra-ladder__step { line-height: 1.4; }
-.ra-ladder__step--now { color: var(--ra-text); font-weight: 600; }
-
-/* ═══════════════════════════════════════════════════════════════
-   USAGE RULES (RGA-002 appendix A)
-
-   01  The gradient appears inside the Anchor Line and the Compliance
-       Bar only. Never in buttons, badges, charts, icons or headings.
-   02  One Anchor Line entrance animation per page, on first paint.
-   03  One Compliance Bar per context. The dashboard shows the
-       organisation once; the registry shows one per row; the dossier
-       shows one at the seal.
-   04  The Compliance Bar is never deployed alone. It always sits
-       beside the numeric score and the named tier — the bar carries
-       the visual, the text carries the precision.
-   05  The accent is never flattened to a single colour. No solid
-       indigo button, no solid coral badge.
-   06  Everything else is ink on paper, using the six neutrals above.
-   ═══════════════════════════════════════════════════════════════ */
+.ra-ladder__step { line-height: 1.45; }
+.ra-ladder__step--now { color: var(--ra-ink); font-weight: 500; }

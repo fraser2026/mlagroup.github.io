@@ -167,12 +167,16 @@ sitting with customers and their regulators.
 
 These are tracked but intentionally out of scope for both phase one and the cutover:
 
-- The full RGA-001 visual conversion from dark navy to ink-on-paper. The tokens and both
-  primitives are already extracted into `css/reganchor.css` and loaded on every page,
-  currently used only by the wordmark.
-- The report and certificate redesigns. Their body copy still says MLA Group by design,
-  so that printed output stays consistent with certificates already issued.
+- The public marketing site (`index.html`, `platform.html`, `pricing.html`, `methodology.html`,
+  `contact.html`, `login.html`, and the legal pages). It carries a shared override stylesheet
+  (`css/reganchor-site.css`) for basic token consistency, but a real ink-on-paper rebuild of the
+  landing page is its own project — this is a sales asset and needs more care than a token pass.
 - Renaming the Supabase columns `mla_notes`, `mla_response`, and the `sender_type` value
   `'mla'`. These are schema identifiers, invisible to users, and renaming them buys
   nothing while risking real breakage.
 - The Render service hostname `mla-pdf-service.onrender.com`, which is internal.
+
+**No longer deferred:** the full RGA-001 visual conversion (portal, diagnostic/assessment/results
+flow) and the report and certificate template redesigns shipped ahead of the domain cutover — see
+`BRAND.md` for what changed and what stayed as MLA Group Ltd. Certificates and reports already
+issued keep their stored PDF exactly as generated; only new issuances pick up the new template.

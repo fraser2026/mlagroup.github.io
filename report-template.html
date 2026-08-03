@@ -4,31 +4,35 @@
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   MLA GROUP — GOVERNANCE REPORT v4.0
-   High-density, high-contrast. Board-grade document design.
-   Restricted palette: Navy #0f172a · Blue #1d4ed8 · Charcoal #1e293b
-   Inter 400–800 for body. Instrument Serif italic for accent.
+   REGANCHOR — GOVERNANCE REPORT (RGA-002 Compliance Dossier)
+   Ink on paper. Hairline borders. Zero radius, zero shadow.
+   Gradient appears only inside the Anchor Line and Compliance Bar.
+   Palette: paper #FFFFFF · ink #0A0E14 · steel #6B7280 · line #E4E7EC
+   Inter for body. IBM Plex Sans for brand, headings, numerals.
+   Severity colours (critical/high/moderate/low) are the one
+   permitted functional exception — never brand chrome.
    ============================================================ */
 
 :root {
-  --navy:    #0f172a;
-  --blue:    #1d4ed8;
-  --blue-lt: #eff6ff;
-  --blue-bd: #93c5fd;
-  --char:    #1e293b;
-  --slate:   #334155;
-  --muted:   #64748b;
-  --rule:    #cbd5e1;
-  --rule-lt: #e2e8f0;
-  --card:    #f1f5f9;
-  --page:    #f8fafc;
+  --ink:     #0A0E14;
+  --paper:   #FFFFFF;
+  --steel:   #6B7280;
+  --slate:   #374151;
+  --line:    #E4E7EC;
+  --info:    #1D4ED8;
+  --info-lt: #EFF4FE;
+  --accent-a:#3730A3;
+  --accent-b:#7C3AED;
+  --accent-c:#F97316;
+  --accent-grad: linear-gradient(90deg, var(--accent-a) 0%, var(--accent-b) 50%, var(--accent-c) 100%);
   --sev-c:   #b91c1c;
   --sev-h:   #c2410c;
   --sev-m:   #92400e;
   --sev-l:   #166534;
+  --font-brand: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
@@ -42,214 +46,205 @@ html {
 body {
   font-family:'Inter',sans-serif;
   font-weight:400;
-  color:var(--char);
+  color:var(--slate);
   line-height:1.6;
-  background:white;
+  background:var(--paper);
   -webkit-font-smoothing:antialiased;
 }
 
 /* ── PAGE STRUCTURE ── */
 .section { page-break-before:always; }
 
-/* Full-bleed navy section header — heavy and official */
+/* Section header — paper, hairline beneath, no fill */
 .sec-bar {
-  background:var(--navy);
   margin:0 -18mm 0;
-  padding:10px 18mm;
+  padding:10px 18mm 9px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  margin-bottom:0;
 }
-.sec-bar-num   { font-size:5.5pt; font-weight:800; color:var(--blue-bd); text-transform:uppercase; letter-spacing:.22em; min-width:28px; }
-.sec-bar-title { font-size:8pt; font-weight:700; color:white; text-transform:uppercase; letter-spacing:.12em; }
-.sec-bar-org   { font-size:6pt; color:rgba(255,255,255,.28); font-weight:400; }
+.sec-bar-num   { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; color:var(--steel); text-transform:uppercase; letter-spacing:.22em; min-width:28px; }
+.sec-bar-title { font-family:var(--font-brand); font-size:8pt; font-weight:500; color:var(--ink); text-transform:uppercase; letter-spacing:.12em; }
+.sec-bar-org   { font-size:6pt; color:var(--steel); font-weight:400; }
 
-/* 4px blue rule immediately below the section bar */
-.sec-accent { display:block; height:4px; background:var(--blue); margin:0 -18mm 18px; }
+/* Anchor Line — 1px ink hairline + gradient segment at 61.8% */
+.sec-accent { position:relative; display:block; height:2px; margin:0 -18mm 18px; }
+.sec-accent::before { content:''; position:absolute; top:0.5px; left:0; right:0; height:1px; background:var(--ink); }
+.sec-accent::after  { content:''; position:absolute; top:0; height:2px; width:60px; left:61.8%; transform:translateX(-50%); background:var(--accent-grad); }
 
 .sec-title {
-  font-size:18pt; font-weight:800; color:var(--navy);
-  line-height:1.08; margin-bottom:5px; letter-spacing:-.03em;
+  font-family:var(--font-brand); font-size:17pt; font-weight:500; color:var(--ink);
+  line-height:1.15; margin-bottom:5px; letter-spacing:-.02em;
 }
-.sec-title em { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; letter-spacing:0; font-size:19pt; }
+.sec-title em { font-style:normal; font-weight:400; color:var(--steel); }
 
 .sec-intro { font-size:8pt; font-weight:400; color:var(--slate); line-height:1.65; max-width:64ch; margin-bottom:16px; }
 
 .sub-label {
-  display:block; font-size:5.5pt; font-weight:800; text-transform:uppercase;
-  letter-spacing:.18em; color:var(--navy); margin:14px 0 7px;
-  padding-bottom:4px; border-bottom:2px solid var(--navy);
+  display:block; font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase;
+  letter-spacing:.18em; color:var(--ink); margin:14px 0 7px;
+  padding-bottom:4px; border-bottom:1px solid var(--ink);
 }
 
-/* ── LOGO RENDERING ── */
-.logo-mla { font-weight:800; letter-spacing:-.02em; }
-.logo-grp { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--blue); }
+/* ── LOGO ── */
+.logo-mla { font-family:var(--font-brand); font-weight:500; letter-spacing:-.02em; }
 
 /* ── COVER ── */
 .cover { page-break-after:always; display:flex; flex-direction:column; }
 
-.cov-top { background:var(--navy); padding:16mm 18mm 14mm; flex-shrink:0; }
-.cov-logo-sub { font-size:5.5pt; color:rgba(255,255,255,.28); letter-spacing:.07em; margin-top:4px; margin-bottom:20px; }
-.cov-rule { width:36px; height:4px; background:var(--blue); margin:0 0 10px; }
-.cov-doctype { font-size:5.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.22em; color:rgba(255,255,255,.4); margin-bottom:12px; }
-.cov-org { font-size:26pt; font-weight:800; color:white; line-height:1.02; letter-spacing:-.03em; margin-bottom:8px; }
-.cov-desc { font-size:8pt; color:rgba(255,255,255,.4); line-height:1.55; max-width:56%; margin-bottom:22px; font-weight:400; }
+.cov-top { padding:16mm 18mm 14mm; flex-shrink:0; }
+.cov-logo-sub { font-size:6.5pt; font-weight:500; letter-spacing:.16em; text-transform:uppercase; color:var(--steel); margin-top:5px; margin-bottom:22px; }
+.cov-rule { position:relative; height:2px; margin:0 0 18px; }
+.cov-rule::before { content:''; position:absolute; top:0.5px; left:0; right:0; height:1px; background:var(--ink); }
+.cov-rule::after  { content:''; position:absolute; top:0; height:2px; width:70px; left:61.8%; transform:translateX(-50%); background:var(--accent-grad); }
+.cov-doctype { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.22em; color:var(--steel); margin-bottom:12px; }
+.cov-org { font-family:var(--font-brand); font-size:25pt; font-weight:500; color:var(--ink); line-height:1.05; letter-spacing:-.02em; margin-bottom:8px; }
+.cov-desc { font-size:8pt; color:var(--slate); line-height:1.6; max-width:60%; margin-bottom:24px; font-weight:400; }
 
-/* Score block on cover */
-.cov-score {
-  display:flex; align-items:center; gap:18px;
-  padding:14px 18px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  border-top:4px solid;
-  max-width:440px; margin-bottom:24px;
-}
-.ring { position:relative; width:76px; height:76px; flex-shrink:0; }
-.ring svg { width:76px; height:76px; transform:rotate(-90deg); }
-.ring-bg   { fill:none; stroke:rgba(255,255,255,.1); stroke-width:7; }
-.ring-fill { fill:none; stroke-width:7; stroke-linecap:butt; }
-.ring-num  { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19pt; font-weight:800; color:white; letter-spacing:-.04em; }
-.score-pill { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.14em; padding:3px 9px; color:white; display:inline-block; margin-bottom:5px; }
-.score-hdg { font-size:8pt; color:rgba(255,255,255,.5); line-height:1.4; font-weight:500; }
+/* Maturity block on cover — Compliance Bar beside score + tier (rule 04: never alone) */
+.cov-maturity { display:flex; align-items:center; gap:20px; padding:14px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); max-width:520px; margin-bottom:22px; }
+.ra-cbar { display:flex; flex-direction:column-reverse; gap:2px; width:64px; flex-shrink:0; }
+.ra-cbar__row { height:3px; background:var(--ink); }
+.ra-cbar__row--achieved-1 { opacity:.88; } .ra-cbar__row--achieved-2 { opacity:.64; } .ra-cbar__row--achieved-3 { opacity:.44; }
+.ra-cbar__row--current { background:var(--accent-grad); opacity:1; height:4px; width:70px; margin-left:-3px; }
+.ra-cbar__row--pending-1 { opacity:.2; } .ra-cbar__row--pending-2 { opacity:.1; } .ra-cbar__row--pending-3 { opacity:.05; }
+.cov-mat-num  { font-family:var(--font-brand); font-size:22pt; font-weight:500; color:var(--ink); letter-spacing:-.03em; line-height:1; }
+.cov-mat-of   { font-size:8pt; font-weight:400; color:var(--steel); margin-left:3px; }
+.cov-mat-band { font-size:9.5pt; font-weight:600; line-height:1.3; margin-top:3px; }
+.cov-mat-sub  { font-size:6.5pt; color:var(--steel); margin-top:2px; }
 
 /* Cover meta — strict table layout, no CSS grid */
-.cov-meta { width:100%; border-top:1px solid rgba(255,255,255,.08); padding-top:14px; }
+.cov-meta { width:100%; }
 .cov-meta table { width:100%; border-collapse:collapse; }
 .cov-meta td { width:25%; vertical-align:top; padding:0 16px 0 0; }
-.cov-meta-lbl { font-size:5pt; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:rgba(255,255,255,.25); display:block; margin-bottom:4px; }
-.cov-meta-val { font-size:7.5pt; font-weight:600; color:white; line-height:1.4; display:block; }
+.cov-meta-lbl { font-family:var(--font-brand); font-size:5pt; font-weight:600; text-transform:uppercase; letter-spacing:.14em; color:var(--steel); display:block; margin-bottom:4px; }
+.cov-meta-val { font-size:7.5pt; font-weight:600; color:var(--ink); line-height:1.4; display:block; }
 
-/* Cover bottom — white section */
-.cov-btm { background:white; padding:12mm 18mm 8mm; flex:1; display:flex; flex-direction:column; }
+/* Cover bottom */
+.cov-btm { padding:10mm 18mm 8mm; flex:1; display:flex; flex-direction:column; }
 
-.cov-verdict {
-  padding:12px 16px; border-left:5px solid;
-  background:var(--card); margin-bottom:16px;
-}
-.cov-verdict-lbl { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.16em; margin-bottom:5px; }
-.cov-verdict-txt { font-size:8pt; color:var(--char); line-height:1.65; font-weight:400; }
+.cov-verdict { padding:12px 16px; border-left:3px solid; border-top:1px solid var(--line); border-right:1px solid var(--line); border-bottom:1px solid var(--line); margin-bottom:16px; }
+.cov-verdict-lbl { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.16em; margin-bottom:5px; }
+.cov-verdict-txt { font-size:8pt; color:var(--slate); line-height:1.65; font-weight:400; }
 
 .toc { margin-top:auto; }
-.toc-rule { height:2px; background:var(--navy); margin-bottom:12px; }
-.toc-hdg { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.18em; color:var(--navy); margin-bottom:9px; }
+.toc-rule { height:1px; background:var(--line); margin-bottom:12px; }
+.toc-hdg { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.18em; color:var(--ink); margin-bottom:9px; }
 .toc-grid table { width:100%; border-collapse:collapse; }
-.toc-grid td { width:50%; padding:3px 0; font-size:7.5pt; color:var(--char); font-weight:500; vertical-align:top; }
-.toc-n { display:inline-block; width:22px; font-weight:800; color:var(--blue); font-size:7pt; }
+.toc-grid td { width:50%; padding:3px 0; font-size:7.5pt; color:var(--slate); font-weight:500; vertical-align:top; }
+.toc-n { display:inline-block; width:22px; font-family:var(--font-brand); font-weight:600; color:var(--steel); font-size:7pt; }
 
-.rpt-id { margin-top:12px; padding-top:8px; border-top:1px solid var(--rule-lt); font-size:5.5pt; color:var(--muted); letter-spacing:.04em; }
+.rpt-id { margin-top:12px; padding-top:8px; border-top:1px solid var(--line); font-size:5.5pt; color:var(--steel); letter-spacing:.04em; }
 
 /* ── TABLES ── */
 .tbl { width:100%; border-collapse:collapse; font-size:7.5pt; margin-bottom:14px; }
 .tbl thead th {
-  background:var(--navy); color:white; font-weight:700;
-  text-align:left; padding:8px 10px;
+  color:var(--ink); font-family:var(--font-brand); font-weight:600;
+  text-align:left; padding:8px 10px; border-bottom:1px solid var(--ink);
   font-size:5.5pt; text-transform:uppercase; letter-spacing:.1em;
 }
-.tbl tbody td { padding:7px 10px; border-bottom:1px solid var(--rule-lt); vertical-align:top; line-height:1.5; color:var(--char); }
-.tbl tbody tr:nth-child(even) td { background:var(--page); }
-.tbl tbody tr:last-child td { border-bottom:2px solid var(--rule); }
+.tbl tbody td { padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5; color:var(--slate); }
+.tbl tbody tr:last-child td { border-bottom:1px solid var(--ink); }
 .tbl tbody tr { page-break-inside:avoid; }
 
-.badge { display:inline-block; padding:2px 7px; font-size:5.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
-.b-mandatory { background:#fef2f2; color:#7f1d1d; border:1px solid #fca5a5; }
-.b-advisory  { background:#eff6ff; color:#1e3a8a; border:1px solid #93c5fd; }
+.badge { display:inline-block; font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.1em; white-space:nowrap; }
+.b-mandatory { color:var(--sev-c); }
+.b-advisory  { color:var(--info); }
 
 /* ── VERDICT ── */
-.verdict { padding:12px 16px; border-left:5px solid var(--navy); background:var(--card); margin-bottom:14px; page-break-inside:avoid; }
-.verdict-lbl { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.16em; margin-bottom:5px; }
-.verdict-txt { font-size:8pt; color:var(--char); line-height:1.65; }
+.verdict { padding:12px 16px; border-left:3px solid var(--ink); border-top:1px solid var(--line); border-right:1px solid var(--line); border-bottom:1px solid var(--line); margin-bottom:14px; page-break-inside:avoid; }
+.verdict-lbl { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.16em; margin-bottom:5px; }
+.verdict-txt { font-size:8pt; color:var(--slate); line-height:1.65; }
 
 /* ── BOARD ATTENTION ── */
-.attn { list-style:none; margin-bottom:14px; border:1px solid var(--rule); }
-.attn li { position:relative; padding:9px 10px 9px 32px; font-size:8pt; line-height:1.5; border-bottom:1px solid var(--rule-lt); page-break-inside:avoid; font-weight:500; background:white; }
-.attn li:nth-child(even) { background:var(--page); }
+.attn { list-style:none; margin-bottom:14px; border:1px solid var(--line); }
+.attn li { position:relative; padding:9px 10px 9px 30px; font-size:8pt; line-height:1.5; border-bottom:1px solid var(--line); page-break-inside:avoid; font-weight:500; }
 .attn li:last-child { border-bottom:none; }
-.attn li::before { content:attr(data-n); position:absolute; left:8px; top:10px; width:16px; height:16px; background:var(--navy); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:5.5pt; font-weight:800; }
-.attn-sub { display:block; font-size:6pt; color:var(--muted); margin-top:2px; font-weight:400; }
+.attn li::before { content:attr(data-n); position:absolute; left:9px; top:9px; font-family:var(--font-brand); color:var(--ink); font-size:6.5pt; font-weight:600; }
+.attn-sub { display:block; font-size:6pt; color:var(--steel); margin-top:2px; font-weight:400; }
 
 /* ── DASHBOARD ── */
 .dash-hdr {
-  background:var(--navy); padding:14px 18px;
-  display:flex; justify-content:space-between; align-items:center;
-  margin-bottom:0;
+  padding:14px 0; margin-bottom:14px;
+  display:flex; justify-content:space-between; align-items:flex-end;
+  border-top:1px solid var(--line); border-bottom:1px solid var(--line);
 }
-.dash-num { font-size:24pt; font-weight:800; color:white; line-height:1; letter-spacing:-.04em; }
-.dash-num-lbl { font-size:5pt; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:rgba(255,255,255,.35); margin-top:4px; }
+.dash-num { font-family:var(--font-brand); font-size:22pt; font-weight:500; color:var(--ink); line-height:1; letter-spacing:-.03em; }
+.dash-num-lbl { font-family:var(--font-brand); font-size:5pt; font-weight:600; text-transform:uppercase; letter-spacing:.14em; color:var(--steel); margin-top:4px; }
 .dash-band { font-size:11pt; font-weight:700; line-height:1.2; }
-.dash-band-sub { font-size:6.5pt; color:rgba(255,255,255,.4); margin-top:3px; }
+.dash-band-sub { font-size:6.5pt; color:var(--steel); margin-top:3px; }
 
-.dom-wrap { border:1px solid var(--rule); border-top:none; background:white; padding:8px 14px; margin-bottom:14px; }
-.dom-row { display:flex; align-items:center; padding:7px 0; border-bottom:1px solid var(--rule-lt); page-break-inside:avoid; }
+.dom-wrap { border:1px solid var(--line); background:var(--paper); padding:8px 14px; margin-bottom:14px; }
+.dom-row { display:flex; align-items:center; padding:7px 0; border-bottom:1px solid var(--line); page-break-inside:avoid; }
 .dom-row:last-child { border-bottom:none; }
-.dom-n    { font-size:6pt; font-weight:800; color:var(--blue); width:24px; flex-shrink:0; }
-.dom-name { font-size:7.5pt; font-weight:600; width:166px; flex-shrink:0; color:var(--char); }
-.dom-track{ flex:1; height:7px; background:var(--card); margin:0 12px; overflow:hidden; }
+.dom-n    { font-family:var(--font-brand); font-size:6pt; font-weight:600; color:var(--steel); width:24px; flex-shrink:0; }
+.dom-name { font-size:7.5pt; font-weight:600; width:166px; flex-shrink:0; color:var(--ink); }
+.dom-track{ flex:1; height:5px; background:var(--line); margin:0 12px; overflow:hidden; }
 .dom-fill { height:100%; }
-.dom-pct  { font-size:9pt; font-weight:800; width:38px; text-align:right; flex-shrink:0; letter-spacing:-.02em; }
-.dom-wt   { font-size:5.5pt; color:var(--muted); width:52px; text-align:right; flex-shrink:0; font-weight:500; }
+.dom-pct  { font-family:var(--font-brand); font-size:9pt; font-weight:600; width:38px; text-align:right; flex-shrink:0; letter-spacing:-.02em; }
+.dom-wt   { font-size:5.5pt; color:var(--steel); width:52px; text-align:right; flex-shrink:0; font-weight:500; }
 
 .sc-c{color:var(--sev-c);} .bc-c{background:var(--sev-c);}
 .sc-h{color:var(--sev-h);} .bc-h{background:var(--sev-h);}
 .sc-m{color:var(--sev-m);} .bc-m{background:var(--sev-m);}
 .sc-l{color:var(--sev-l);} .bc-l{background:var(--sev-l);}
 
-/* ── FINDING CARDS — high density, high contrast ── */
-.finding { border:1px solid var(--rule); border-left:5px solid; margin-bottom:12px; page-break-inside:avoid; overflow:hidden; }
-.find-hd { background:var(--navy); padding:7px 12px; display:flex; align-items:center; gap:9px; }
-.find-num { font-size:5.5pt; font-weight:800; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:.14em; min-width:58px; }
-.sev-pill { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.1em; padding:2px 8px; color:white; border:1px solid rgba(255,255,255,.2); }
-.find-sec { font-size:5.5pt; color:rgba(255,255,255,.4); font-weight:500; }
-.find-basis { font-size:5.5pt; color:var(--blue-bd); font-weight:700; margin-left:auto; text-align:right; }
-.find-body { padding:11px 13px; background:white; }
-.find-title { font-size:9.5pt; font-weight:700; color:var(--navy); line-height:1.3; margin-bottom:10px; }
+/* ── FINDING CARDS ── */
+.finding { border:1px solid var(--line); border-left:3px solid; margin-bottom:12px; page-break-inside:avoid; overflow:hidden; }
+.find-hd { padding:7px 12px; display:flex; align-items:center; gap:9px; border-bottom:1px solid var(--line); }
+.find-num { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; color:var(--steel); text-transform:uppercase; letter-spacing:.14em; min-width:58px; }
+.sev-pill { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.1em; }
+.find-sec { font-size:5.5pt; color:var(--steel); font-weight:500; }
+.find-basis { font-size:5.5pt; color:var(--info); font-weight:700; margin-left:auto; text-align:right; }
+.find-body { padding:11px 13px; }
+.find-title { font-family:var(--font-brand); font-size:9.5pt; font-weight:500; color:var(--ink); line-height:1.3; margin-bottom:10px; }
 .find-grid { display:table; width:100%; }
 .find-col  { display:table-cell; width:50%; vertical-align:top; padding-right:14px; }
-.find-col:last-child { padding-right:0; padding-left:14px; border-left:1px solid var(--rule-lt); }
-.fc-lbl { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.14em; color:var(--navy); margin-bottom:4px; border-bottom:1px solid var(--rule-lt); padding-bottom:3px; }
+.find-col:last-child { padding-right:0; padding-left:14px; border-left:1px solid var(--line); }
+.fc-lbl { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.14em; color:var(--ink); margin-bottom:4px; border-bottom:1px solid var(--line); padding-bottom:3px; }
 .fc-txt { font-size:7.5pt; color:var(--slate); line-height:1.6; margin-top:4px; }
 
 /* ── PHASE CARDS ── */
-.phase { border:1px solid var(--rule); margin-bottom:12px; page-break-inside:avoid; overflow:hidden; }
-.ph-hd { background:var(--navy); padding:10px 13px; display:flex; justify-content:space-between; align-items:center; }
-.ph-win  { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.18em; color:rgba(255,255,255,.35); }
-.ph-name { font-size:9pt; font-weight:700; color:white; margin-top:2px; }
-.ph-badge { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.1em; padding:3px 9px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.7); border:1px solid rgba(255,255,255,.15); }
-.ph-body { padding:11px 13px; background:white; }
+.phase { border:1px solid var(--line); margin-bottom:12px; page-break-inside:avoid; overflow:hidden; }
+.ph-hd { padding:10px 13px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); }
+.ph-win  { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.18em; color:var(--steel); }
+.ph-name { font-family:var(--font-brand); font-size:9pt; font-weight:500; color:var(--ink); margin-top:2px; }
+.ph-badge { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--steel); border:1px solid var(--line); padding:3px 8px; }
+.ph-body { padding:11px 13px; }
 .ph-rat { font-size:7.5pt; color:var(--slate); line-height:1.55; margin-bottom:10px; }
 .ph-acts { list-style:none; }
-.ph-acts li { display:flex; align-items:flex-start; gap:9px; padding:6px 0; border-bottom:1px solid var(--rule-lt); font-size:7.5pt; line-height:1.45; color:var(--char); page-break-inside:avoid; font-weight:500; }
+.ph-acts li { display:flex; align-items:flex-start; gap:9px; padding:6px 0; border-bottom:1px solid var(--line); font-size:7.5pt; line-height:1.45; color:var(--slate); page-break-inside:avoid; font-weight:500; }
 .ph-acts li:last-child { border-bottom:none; }
-.act-n { width:18px; height:18px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:6pt; font-weight:800; color:white; margin-top:1px; background:var(--blue); }
+.act-n { flex-shrink:0; font-family:var(--font-brand); font-size:7pt; font-weight:600; color:var(--ink); margin-top:1px; min-width:14px; }
 .act-txt { flex:1; }
-.act-own { font-size:5.5pt; color:var(--muted); font-weight:600; padding:2px 6px; background:var(--card); border:1px solid var(--rule); white-space:nowrap; flex-shrink:0; }
-.ph-del { background:var(--card); border-top:2px solid var(--navy); padding:8px 13px; display:flex; gap:10px; }
-.ph-del-lbl { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.12em; color:var(--navy); min-width:72px; flex-shrink:0; margin-top:1px; }
+.act-own { font-size:5.5pt; color:var(--steel); font-weight:600; padding:2px 6px; border:1px solid var(--line); white-space:nowrap; flex-shrink:0; }
+.ph-del { border-top:1px solid var(--line); padding:8px 13px; display:flex; gap:10px; }
+.ph-del-lbl { font-family:var(--font-brand); font-size:5.5pt; font-weight:600; text-transform:uppercase; letter-spacing:.12em; color:var(--ink); min-width:72px; flex-shrink:0; margin-top:1px; }
 .ph-del-txt { font-size:7pt; color:var(--slate); line-height:1.5; }
 
 /* ── DOMAIN CARDS ── */
-.domcard { border:1px solid var(--rule); margin-bottom:10px; page-break-inside:avoid; overflow:hidden; }
-.domcard-hd { background:var(--navy); padding:8px 13px; display:flex; align-items:center; gap:9px; }
-.dc-num  { font-size:6pt; font-weight:800; color:var(--blue-bd); min-width:22px; }
-.dc-name { font-size:5.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:rgba(255,255,255,.5); }
-.dc-score{ margin-left:auto; font-size:11pt; font-weight:800; color:white; letter-spacing:-.03em; }
-.domcard-body { padding:11px 13px; background:white; }
-.dc-band  { font-size:5.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.12em; margin-bottom:6px; }
-.dc-concept { font-family:'Instrument Serif',serif; font-style:italic; font-size:12pt; color:var(--navy); margin-bottom:7px; line-height:1.25; }
+.domcard { border:1px solid var(--line); margin-bottom:10px; page-break-inside:avoid; overflow:hidden; }
+.domcard-hd { padding:8px 13px; display:flex; align-items:center; gap:9px; border-bottom:1px solid var(--line); }
+.dc-num  { font-family:var(--font-brand); font-size:6pt; font-weight:600; color:var(--steel); min-width:22px; }
+.dc-name { font-size:5.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--steel); }
+.dc-score{ margin-left:auto; font-family:var(--font-brand); font-size:11pt; font-weight:500; color:var(--ink); letter-spacing:-.03em; }
+.domcard-body { padding:11px 13px; }
+.dc-band  { font-size:5.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.12em; margin-bottom:6px; }
+.dc-concept { font-family:var(--font-brand); font-weight:500; font-size:10.5pt; color:var(--ink); margin-bottom:7px; line-height:1.3; }
 .dc-text  { font-size:7.5pt; color:var(--slate); line-height:1.65; }
 
 /* ── OUTLOOK ── */
-.outlook-item { border:1px solid var(--rule); border-left:5px solid var(--blue); padding:11px 14px; margin-bottom:11px; page-break-inside:avoid; background:var(--card); }
-.outlook-title { font-size:8.5pt; font-weight:700; color:var(--navy); margin-bottom:5px; }
+.outlook-item { border:1px solid var(--line); border-left:3px solid var(--ink); padding:11px 14px; margin-bottom:11px; page-break-inside:avoid; }
+.outlook-title { font-family:var(--font-brand); font-size:8.5pt; font-weight:500; color:var(--ink); margin-bottom:5px; }
 .outlook-txt { font-size:8pt; color:var(--slate); line-height:1.65; }
 
-.notice { background:var(--card); border:1px solid var(--rule); border-top:3px solid var(--navy); padding:11px 14px; page-break-inside:avoid; }
-.notice-title { font-size:6pt; font-weight:800; text-transform:uppercase; letter-spacing:.14em; color:var(--navy); margin-bottom:5px; }
+.notice { border:1px solid var(--line); border-top:2px solid var(--ink); padding:11px 14px; page-break-inside:avoid; }
+.notice-title { font-family:var(--font-brand); font-size:6pt; font-weight:600; text-transform:uppercase; letter-spacing:.14em; color:var(--ink); margin-bottom:5px; }
 .notice-txt { font-size:7pt; color:var(--slate); line-height:1.65; }
 
-.signoff { margin-top:22px; padding-top:12px; border-top:3px solid var(--navy); display:flex; justify-content:space-between; align-items:flex-end; page-break-inside:avoid; }
-.signoff-sub { font-size:6pt; color:var(--muted); margin-top:3px; }
-.signoff-r { text-align:right; font-size:6.5pt; color:var(--muted); line-height:1.6; }
+.signoff { margin-top:22px; padding-top:12px; border-top:1px solid var(--ink); display:flex; justify-content:space-between; align-items:flex-end; page-break-inside:avoid; }
+.signoff-sub { font-size:6pt; color:var(--steel); margin-top:3px; }
+.signoff-r { text-align:right; font-size:6.5pt; color:var(--steel); line-height:1.6; }
 </style>
 </head>
 <body>
@@ -393,9 +388,33 @@ function buildRoadmap(R){
 
 function domAssessment(sk,bid){const p=PREMIUM[sk];if(!p)return'';const m={critical:'critical',high:'high',moderate:'moderate',lowmod:'moderate',low:'low'};return(p[m[bid]]||p.high||{}).assessment||'';}
 
-function logo(dark){
-  const c=dark?'color:white':'color:#0f172a';
-  return `<span style="display:inline-flex;align-items:baseline"><span class="logo-mla" style="${c}">mla</span><span class="logo-grp">group</span><span class="logo-dot" style="${c}">.</span></span>`;
+function logo(){
+  return `<span class="logo-mla">RegAnchor</span>`;
+}
+
+// Compliance Bar HTML — inlined from js/ra-maturity.js (see certificate-template.html
+// for the same duplication note; standalone templates have no access to external scripts).
+function raLevel(score){
+  const levels=[{n:1,code:'L1',label:'Initial',min:0,max:34},{n:2,code:'L2',label:'Aware',min:35,max:54},{n:3,code:'L3',label:'Defined',min:55,max:69},{n:4,code:'L4',label:'Structured',min:70,max:79},{n:5,code:'L5',label:'Managed',min:80,max:87},{n:6,code:'L6',label:'Optimised',min:88,max:94},{n:7,code:'L7',label:'Authoritative',min:95,max:100}];
+  if(score===null||score===undefined||score==='')return null;
+  let s=Number(score);if(isNaN(s))return null;
+  s=Math.max(0,Math.min(100,s));
+  for(const l of levels){if(s<=l.max)return l;}
+  return levels[levels.length-1];
+}
+function raCbarHTML(score){
+  const lvl=raLevel(score);
+  const current=lvl?lvl.n-1:-1;
+  let rows='';
+  for(let i=0;i<7;i++){
+    let mod='';
+    if(i===current)mod=' ra-cbar__row--current';
+    else if(current===-1)mod='';
+    else if(i<current)mod=' ra-cbar__row--achieved-'+Math.min(i+1,3);
+    else mod=' ra-cbar__row--pending-'+Math.min(i-current,3);
+    rows+=`<div class="ra-cbar__row${mod}"></div>`;
+  }
+  return `<div class="ra-cbar" role="img" aria-label="Governance maturity">${rows}</div>`;
 }
 
 function secBar(num,title,org){
@@ -412,22 +431,20 @@ function render(raw){
   const findings=buildFindings(R);
   const roadmap=buildRoadmap(R);
   const dk=['s1','s2','s3','s4','s5','s6','s7'];
-  const circ=2*Math.PI*32;
-  const off=circ-(R.score/100)*circ;
 
   let o='';
 
   // ═ COVER ═
   o+=`<div class="cover">
     <div class="cov-top">
-      <div style="margin-bottom:18px"><div style="font-size:12pt">${logo(true)}</div><div class="cov-logo-sub">AI Governance Risk Advisory &nbsp;·&nbsp; ${SITE_DOMAIN}</div></div>
+      <div style="margin-bottom:2px"><div style="font-size:15pt">${logo()}</div><div class="cov-logo-sub">Infrastructure for AI Governance &nbsp;·&nbsp; ${SITE_DOMAIN}</div></div>
       <div class="cov-doctype">AI Governance Risk Assessment</div>
       <div class="cov-rule"></div>
       <div class="cov-org">${x(org)}</div>
       <div class="cov-desc">A structured governance assessment against applicable UK and EU regulatory frameworks, producing board-grade risk classification, domain analysis, and sequenced remediation guidance.</div>
-      <div class="cov-score" style="border-top-color:${bc}">
-        <div class="ring"><svg viewBox="0 0 72 72"><circle class="ring-bg" cx="36" cy="36" r="32"/><circle class="ring-fill" cx="36" cy="36" r="32" stroke="${bc}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg><div class="ring-num">${R.score}</div></div>
-        <div><div class="score-pill" style="background:${bc}">${x(R.band.label)}</div><div class="score-hdg">${x(R.band.heading)}</div></div>
+      <div class="cov-maturity">
+        ${raCbarHTML(R.score)}
+        <div><div class="cov-mat-num">${R.score}<span class="cov-mat-of">/ 100</span></div><div class="cov-mat-band" style="color:${bc}">${x(R.band.label)}</div><div class="cov-mat-sub">${x(R.band.heading)}</div></div>
       </div>
       <div class="cov-meta"><table><tr>
         <td><span class="cov-meta-lbl">Prepared For</span><span class="cov-meta-val">${x(R.name)}${R.role?` — ${x(R.role)}`:''}<br>${x(org)}</span></td>
@@ -462,7 +479,7 @@ function render(raw){
   o+=`<div class="section">
     ${secBar('01','Executive Brief',org)}
     <div class="sec-title">Board-Level <em>Summary.</em></div>
-    <p class="sec-intro">On ${date}, MLA Group completed an AI Governance Risk Diagnostic for ${x(org)}. This brief is prepared for board-level review and summarises the risk position, principal regulatory obligations, and the priority actions requiring board attention.</p>
+    <p class="sec-intro">On ${date}, RegAnchor completed an AI Governance Risk Diagnostic for ${x(org)}. This brief is prepared for board-level review and summarises the risk position, principal regulatory obligations, and the priority actions requiring board attention.</p>
     <div class="verdict" style="border-left-color:${bc}"><div class="verdict-lbl" style="color:${bc}">${x(R.band.label)} — ${x(R.band.heading)}</div><div class="verdict-txt">${x(R.band.summary)}</div></div>
     <span class="sub-label">Board Attention Items</span>
     <ul class="attn">${findings.slice(0,3).map((f,i)=>`<li data-n="${i+1}"><strong>${x(f.label)}</strong><span class="attn-sub">${x(f.section)}${f.basis?` &nbsp;·&nbsp; ${x(f.basis)}`:''}</span></li>`).join('')}</ul>
@@ -476,7 +493,7 @@ function render(raw){
     ${secBar('02','Governance Maturity Dashboard',org)}
     <div class="sec-title">Domain Performance <em>Overview.</em></div>
     <p class="sec-intro">Domain scores reflect the proportion of maximum available points achieved in each governance area, weighted by regulatory enforcement priority.</p>
-    <div class="dash-hdr"><div><div class="dash-lbl">Adjusted Exposure Score</div><div class="dash-num">${R.score}%</div></div><div style="text-align:right"><div class="dash-band" style="color:${bc}">${x(R.band.label)}</div><div class="dash-band-sub">${x(R.band.heading)}</div></div></div>
+    <div class="dash-hdr"><div><div class="dash-num-lbl">Adjusted Exposure Score</div><div class="dash-num">${R.score}%</div></div><div style="text-align:right"><div class="dash-band" style="color:${bc}">${x(R.band.label)}</div><div class="dash-band-sub">${x(R.band.heading)}</div></div></div>
     <div class="dom-wrap">${dk.map((k,i)=>{const p=R.pcts[k]||0;const s=sc(p);return`<div class="dom-row"><span class="dom-n">S${i+1}</span><span class="dom-name">${x(SN[k])}</span><div class="dom-track"><div class="dom-fill bc-${s}" style="width:${p}%"></div></div><span class="dom-pct sc-${s}">${p}%</span><span class="dom-wt">${Math.round(W[k]*100)}% wt</span></div>`;}).join('')}</div>
     <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:13px">
       ${[['var(--sev-c)','0–29%','Critical'],['var(--sev-h)','30–44%','High'],['var(--sev-m)','45–64%','Moderate'],['var(--sev-l)','65%+','Low']].map(([col,range,lbl])=>`<div style="display:flex;align-items:center;gap:5px;font-size:7pt;color:var(--slate)"><span style="width:10px;height:10px;border-radius:1px;background:${col};display:inline-block;flex-shrink:0"></span><strong style="color:${col}">${range}</strong>&nbsp;${lbl}</div>`).join('')}
@@ -500,9 +517,9 @@ function render(raw){
   o+=`<div class="section">
     ${secBar('04','Risk Band Classification',org)}
     <div class="sec-title">Five-Band <em>Framework.</em></div>
-    <p class="sec-intro">The MLA diagnostic produces one of five risk band classifications. Each band represents a distinct governance position requiring a distinct response.</p>
+    <p class="sec-intro">The RegAnchor diagnostic produces one of five risk band classifications. Each band represents a distinct governance position requiring a distinct response.</p>
     <table class="tbl"><thead><tr><th style="width:18%">Band</th><th style="width:13%">Score Range</th><th>Classification</th><th>Heading</th></tr></thead>
-    <tbody>${RB.map(b=>{const cur=b.id===R.band.id;return`<tr style="${cur?'background:#fefce8;':''}"><td style="font-weight:700;color:${BC[b.id]}">${x(b.label)}</td><td style="color:var(--slate)">${b.min}–${b.max}%</td><td style="font-size:7.5pt">${x(b.summary).substring(0,110)}...</td><td style="font-size:7pt;color:var(--slate)">${x(b.heading)}${cur?` <strong style="color:${BC[b.id]}">← Current</strong>`:''}</td></tr>`;}).join('')}</tbody></table>
+    <tbody>${RB.map(b=>{const cur=b.id===R.band.id;return`<tr style="${cur?'background:var(--line);':''}"><td style="font-weight:700;color:${BC[b.id]}">${x(b.label)}</td><td style="color:var(--slate)">${b.min}–${b.max}%</td><td style="font-size:7.5pt">${x(b.summary).substring(0,110)}...</td><td style="font-size:7pt;color:var(--slate)">${x(b.heading)}${cur?` <strong style="color:${BC[b.id]}">← Current</strong>`:''}</td></tr>`;}).join('')}</tbody></table>
   </div>`;
 
   // ═ 05 FINDINGS ═
@@ -511,11 +528,11 @@ function render(raw){
     <div class="sec-title">Critical Governance <em>Findings.</em></div>
     <p class="sec-intro">Findings are drawn directly from assessment responses and ordered by severity. Each identifies a specific governance gap, its regulatory consequence, and the required action.</p>
     ${findings.map((f,i)=>{
-      const sc2=f.severity==='critical'?'#dc2626':f.severity==='high'?'#c2410c':f.severity==='regulatory'?'#2563eb':'#b45309';
+      const sc2=f.severity==='critical'?'#b91c1c':f.severity==='high'?'#c2410c':f.severity==='regulatory'?'#1D4ED8':'#92400e';
       return`<div class="finding" style="border-left-color:${sc2}">
         <div class="find-hd">
           <span class="find-num">Finding ${String(i+1).padStart(2,'0')}</span>
-          <span class="sev-pill" style="background:${sc2}">${f.severity==='regulatory'?'REGULATORY':f.severity.toUpperCase()}</span>
+          <span class="sev-pill" style="color:${sc2}">${f.severity==='regulatory'?'REGULATORY':f.severity.toUpperCase()}</span>
           <span class="find-sec">${x(f.section)}</span>
           ${f.basis?`<span class="find-basis">${x(f.basis)}</span>`:''}
         </div>
@@ -572,7 +589,7 @@ function render(raw){
     ${OUTLOOK.map(ol=>`<div class="outlook-item"><div class="outlook-title">${x(ol.t)}</div><div class="outlook-txt">${x(ol.p)}</div></div>`).join('')}
     <div class="notice" style="margin-top:14px"><div class="notice-title">Important Notice</div><div class="notice-txt">This diagnostic provides governance maturity assessment and does not constitute legal advice. MLA Group Ltd is not a law firm. Outputs should not be relied upon as legal opinion or as confirmation of regulatory compliance. Organisations are advised to engage qualified legal and regulatory compliance professionals when implementing governance changes. Framework version ${x(R.fv)}.</div></div>
     <div class="signoff">
-      <div><div style="font-size:10pt">${logo(false)}</div><div class="signoff-sub">AI Governance Risk Advisory &nbsp;·&nbsp; ${SITE_DOMAIN}</div></div>
+      <div><div style="font-size:10pt">${logo()}</div><div class="signoff-sub">Infrastructure for AI Governance &nbsp;·&nbsp; ${SITE_DOMAIN}</div></div>
       <div class="signoff-r"><div>Report generated ${date}</div><div>Framework v${x(R.fv)}</div>${rpt.id?`<div style="margin-top:2px">Report ID: ${x(rpt.id)}</div>`:''}</div>
     </div>
   </div>`;

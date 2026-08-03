@@ -6,9 +6,11 @@ const TIER_LABELS={unacceptable:'Unacceptable',high:'High Risk',limited:'Limited
 const STATUS_LABELS={planned:'Planned',development:'Development',pilot:'Pilot',production:'Production',decommissioned:'Decommissioned'};
 const PLAN_LABELS={essentials:'Essentials',professional:'Professional',enterprise:'Enterprise'};
 const TYPE_LABELS={third_party:'Third Party',in_house:'In-House',hybrid:'Hybrid'};
+const MEMBER_ROLE_LABELS={owner:'Owner',admin:'Admin',editor:'Editor',viewer:'Viewer',member:'Member'};
 const PURPOSE_TIER_MAP={biometric_identification:'high',critical_infrastructure:'high',education_access:'high',employment_management:'high',essential_services_access:'high',law_enforcement:'high',migration_border:'high',justice_administration:'high',customer_chatbot:'limited',content_generation:'limited',emotion_recognition:'limited',internal_automation:'minimal',data_analytics:'minimal'};
 let currentUser=null,currentProfile=null,currentResults=[],isPaid=false;
 let currentOrg=null,allSystems=[],currentSystemId=null,regFilter='all';
+let currentMemberRole=null;
 let profilesCache={};
  
 function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}
@@ -46,29 +48,69 @@ async function loadNames(userIds){
 }
  
 // ═══ NAVIGATION ═══════════════════════════════════════════════
-const topbarTitles={dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>'},reports:{label:'Reports',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>'},settings:{label:'Settings',icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>'},referral:{label:'Referral',icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>'},analytics:{label:'Analytics',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},registry:{label:'AI Systems Registry',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},'registry-detail':{label:'System Detail',icon:'<rect x="1" y="2" width="14" height="3" rx="1"/><rect x="1" y="7" width="14" height="3" rx="1"/><rect x="1" y="12" width="14" height="3" rx="1"/>'},org:{label:'Organisation',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/>'},controls:{label:'Governance Controls',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'},'control-detail':{label:'Control Detail',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'},'alerts':{label:'Alerts',icon:'<path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/>'}};
- 
+// Four stable domains: Overview, Governance, Intelligence, Administration.
+// Detail views highlight their parent nav item via NAV_PARENT.
+const NAV_PARENT={
+  'registry-detail':'registry',
+  'control-detail':'controls',
+  'policy-detail':'policies'
+};
+const topbarTitles={
+  dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>'},
+  reports:{label:'Reports',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/>'},
+  registry:{label:'Registry',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12M2 10h12"/>'},
+  'registry-detail':{label:'System Detail',icon:'<path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12M2 10h12"/>'},
+  org:{label:'Organisation',icon:'<path d="M2 14V4l6-2 6 2v10"/><path d="M6 14V8h4v6"/><path d="M2 7h12"/>'},
+  policies:{label:'Policies',icon:'<path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/>'},
+  'policy-detail':{label:'Policy Detail',icon:'<path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/>'},
+  controls:{label:'Controls',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'},
+  'control-detail':{label:'Control Detail',icon:'<path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/>'},
+  evidence:{label:'Evidence',icon:'<path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 9l2 2 4-4"/>'},
+  assessments:{label:'Assessments',icon:'<path d="M3 2h10v12H3z"/><path d="M6 5h4M6 8h4M6 11h2"/>'},
+  documents:{label:'Documents',icon:'<path d="M2 3h5l2 2h5v8H2z"/><path d="M5 9h6M5 12h4"/>'},
+  analytics:{label:'Analytics',icon:'<path d="M2 12V7M6 12V4M10 12V8M14 12V5"/>'},
+  insights:{label:'Insights',icon:'<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1"/>'},
+  'risk-trends':{label:'Risk Trends',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},
+  benchmarks:{label:'Benchmarks',icon:'<path d="M2 13h12"/><path d="M4 13V7M8 13V4M12 13V9"/>'},
+  'audit-log':{label:'Audit Log',icon:'<path d="M3 2h10v12H3z"/><path d="M6 5h4M6 8h4M6 11h2"/>'},
+  users:{label:'Users',icon:'<circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5"/>'},
+  settings:{label:'Settings',icon:'<circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/>'},
+  billing:{label:'Billing',icon:'<rect x="1" y="3" width="14" height="10" rx="1"/><path d="M1 7h14"/>'},
+  plans:{label:'Subscription',icon:'<path d="M2 4h12v9H2z"/><path d="M5 4V2h6v2"/><path d="M5 8h6"/>'},
+  integrations:{label:'Integrations',icon:'<path d="M6 2v3M10 2v3M4 5h8v3a4 4 0 01-8 0V5z"/><path d="M6 11v3M10 11v3"/>'},
+  'api-keys':{label:'API Keys',icon:'<circle cx="5" cy="8" r="2.5"/><path d="M7.2 8h7v2.5M11 8v2.5"/>'},
+  alerts:{label:'Notifications',icon:'<path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/>'},
+  referral:{label:'Referrals',icon:'<circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/>'}
+};
+
+function navElFor(viewId){
+  const key=NAV_PARENT[viewId]||viewId;
+  return document.querySelector('.nav-item[data-nav="'+key+'"]');
+}
+
 let navHistory=[];
 function navigate(viewId,navEl,skipHistory){
-  if(navEl&&navEl.classList.contains('locked'))return;
-  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));if(navEl)navEl.classList.add('active');
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+viewId).classList.add('active');
-  const t=topbarTitles[viewId];if(t)document.getElementById('topbar-title').innerHTML=`<svg viewBox="0 0 16 16" style="width:15px;height:15px;stroke:var(--sky);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;">${t.icon}</svg>${t.label}`;
+  const view=document.getElementById('view-'+viewId);
+  if(!view)return;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const activeEl=navEl||navElFor(viewId);
+  if(activeEl)activeEl.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  view.classList.add('active');
+  const t=topbarTitles[viewId];
+  if(t)document.getElementById('topbar-title').innerHTML=`<svg viewBox="0 0 16 16" style="width:15px;height:15px;stroke:var(--ra-text);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;">${t.icon}</svg>${t.label}`;
   const tr=document.getElementById('topbar-right');
   if(viewId==='registry')tr.innerHTML='<button class="btn-topbar btn-topbar-primary" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   else if(viewId==='registry-detail'||viewId==='org'||viewId==='controls'||viewId==='control-detail')tr.innerHTML='<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   else tr.innerHTML='<button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   closeSidebar();
   window.scrollTo(0,0);
-  // Browser history
   if(!skipHistory){history.pushState({view:viewId},'','#'+viewId);navHistory.push(viewId)}
 }
 window.addEventListener('popstate',function(e){
   if(e.state&&e.state.view){
     const viewId=e.state.view;
-    const navMap={dashboard:'.nav-item:first-child',reports:'[onclick*="reports"]',registry:'#nav-registry',org:'#nav-org',controls:'#nav-controls',settings:'[onclick*="settings"]',referral:'[onclick*="referral"]'};
-    const navEl=navMap[viewId]?document.querySelector(navMap[viewId]):null;
-    navigate(viewId,navEl,true);
+    navigate(viewId,navElFor(viewId),true);
   }
 });
 async function navigateRegistry(navEl){navigate('registry',navEl);if(!currentOrg)await ensureOrg();if(!allSystems.length)await loadSystems();if(!allControls.length)await loadControls()}
@@ -83,23 +125,39 @@ async function init(){
   const[{data:profile},{data:entitlements}]=await Promise.all([sb.from('profiles').select('full_name,organisation,paid,org_id').eq('id',currentUser.id).single(),sb.from('entitlements').select('id,diagnostic_id,status').eq('user_id',currentUser.id).eq('status','active')]);
   currentProfile=profile;isPaid=(entitlements&&entitlements.length>0)||profile?.paid===true;
   const paidIds=new Set((entitlements||[]).map(e=>e.diagnostic_id).filter(Boolean));
-  const fullName=profile?.full_name||currentUser.email.split('@')[0];const firstName=fullName.split(' ')[0];
+  const fullName=profile?.full_name||currentUser.email.split('@')[0];
   const initials=fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
   profilesCache[currentUser.id]=fullName;
-  document.getElementById('sidebar-name').textContent=fullName;document.getElementById('sidebar-avatar').textContent=initials;
-  document.getElementById('dash-avatar').textContent=initials;document.getElementById('dash-name').textContent=', '+firstName;
-  if(profile?.organisation)document.getElementById('dash-subtext').textContent=profile.organisation+' · AI Governance Portal';
+  document.getElementById('sidebar-name').textContent=fullName;
+  document.getElementById('sidebar-avatar').textContent=initials;
   if(profile?.full_name){const p=profile.full_name.split(' ');document.getElementById('set-first').value=p[0]||'';document.getElementById('set-last').value=p.slice(1).join(' ')||''}
   document.getElementById('set-org').value=profile?.organisation||'';document.getElementById('set-email').value=currentUser.email;
   document.getElementById('referral-link').textContent=location.host+'/ref/'+currentUser.id.substring(0,8);
   const{data:results}=await sb.from('diagnostic_results').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
   currentResults=results||[];
-  if(currentResults.length>0){const b=document.getElementById('report-count-badge');b.textContent=currentResults.length;b.style.display='inline-flex'}
   document.getElementById('paywall-banner').style.display=(isPaid||isPaidTier())?'none':'flex'; document.getElementById('tier-banner').style.display=isPaidTier()?'none':'flex'; document.getElementById('controls-tier-banner').style.display=isPaidTier()?'none':'flex';
   renderReports(paidIds);
   history.replaceState({view:'dashboard'},'','#dashboard');
-  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls()])).then(()=>{renderDashboard(paidIds);loadScoreHistory();loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
+  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls(),refreshSidebarContext()])).then(()=>{renderDashboard(paidIds);loadScoreHistory();loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
   else renderDashboard(paidIds);
+}
+
+async function refreshSidebarContext(){
+  var roleEl=document.getElementById('sidebar-role');
+  var subEl=document.getElementById('dash-subtext');
+  if(!currentOrg){
+    if(roleEl)roleEl.textContent='Member';
+    if(subEl)subEl.textContent='Organisation overview and recent activity';
+    return;
+  }
+  var role='member';
+  try{
+    var mem=await sb.from('org_members').select('role').eq('org_id',currentOrg.id).eq('user_id',currentUser.id).limit(1);
+    if(mem.data&&mem.data[0]&&mem.data[0].role)role=mem.data[0].role;
+  }catch(e){}
+  currentMemberRole=role;
+  if(roleEl)roleEl.textContent=MEMBER_ROLE_LABELS[role]||(role.charAt(0).toUpperCase()+role.slice(1));
+  if(subEl)subEl.textContent=currentOrg.name;
 }
 function handleDeepLink(){
   var urlParams=new URLSearchParams(window.location.search);
@@ -141,7 +199,7 @@ async function ensureOrg(){
   const{data:newOrg,error}=await sb.from('organisations').insert({name:orgName,created_by:currentUser.id,sector:orgSector,org_size:orgSize}).select().single();
   if(error){console.error('Org creation error:',error);return null}
   await sb.from('org_members').insert({org_id:newOrg.id,user_id:currentUser.id,role:'owner',accepted_at:new Date().toISOString()});
-  await sb.from('profiles').update({org_id:newOrg.id}).eq('id',currentUser.id);currentProfile.org_id=newOrg.id;currentOrg=newOrg;return newOrg;
+  await sb.from('profiles').update({org_id:newOrg.id}).eq('id',currentUser.id);currentProfile.org_id=newOrg.id;currentOrg=newOrg;currentMemberRole='owner';return newOrg;
 }
  
 
@@ -175,8 +233,9 @@ function renderOrgMaturity(gov){
   var total=allAssignments.length;
   el.style.display='block';
   el.innerHTML='<div class="maturity-panel__label">Organisational maturity</div>'+
-    raMaturityBlock(gov.score)+
+    raMaturityBlock(gov.score,{animate:true})+
     (total?'<div class="maturity-panel__note">'+done+' of '+total+' assigned controls implemented</div>':'');
+  requestAnimationFrame(function(){animateMaturity(el)});
 }
 
 async function renderDashboard(paidIds){
@@ -185,12 +244,14 @@ async function renderDashboard(paidIds){
   document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
   if(allControls.length){const g=getGovScore();document.getElementById('dash-compliance').textContent=g.score+'%';document.getElementById('dash-gov-maturity').textContent='Control coverage';renderOrgMaturity(g)}
   else{document.getElementById('dash-compliance').textContent='—'}
+  var subEl=document.getElementById('dash-subtext');
+  if(subEl&&currentOrg)subEl.textContent=currentOrg.name;
   var tierEl=document.getElementById('dash-tier-badge');
-  if(tierEl){var orgPlan=currentOrg?currentOrg.plan:'free';var planLabel='Free Plan';
+  if(tierEl){var orgPlan=currentOrg?currentOrg.plan:'free';var planLabel='Free';
     if(orgPlan==='essentials')planLabel='Essentials';else if(orgPlan==='professional')planLabel='Professional';
     tierEl.innerHTML='<span class="plan-label">'+planLabel+'</span>'+(orgPlan!=='professional'?'<button class="btn-inline" onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();">Upgrade</button>':'')}
   const feed=[];
-  currentResults.forEach(r=>{const band=r.risk_band||'moderate';feed.push({time:new Date(r.created_at),html:'Diagnostic completed — <strong>'+esc(r.organisation||'Assessment')+'</strong><br>'+(BAND_LABELS[band]||band)+' · '+(r.adjusted_score||0)+'%',date:fmtDate(r.created_at),click:"navigate('reports',document.querySelectorAll('.nav-item')[1])"})});
+  currentResults.forEach(r=>{const band=r.risk_band||'moderate';feed.push({time:new Date(r.created_at),html:'Diagnostic completed — <strong>'+esc(r.organisation||'Assessment')+'</strong><br>'+(BAND_LABELS[band]||band)+' · '+(r.adjusted_score||0)+'%',date:fmtDate(r.created_at),click:"navigate('reports',document.getElementById('nav-reports'))"})});
   if(currentOrg){const{data:auditEntries}=await sb.from('registry_audit_log').select('*').eq('org_id',currentOrg.id).order('created_at',{ascending:false}).limit(20);
     if(auditEntries&&auditEntries.length){const nm=await loadNames(auditEntries.map(e=>e.user_id));
       auditEntries.forEach(entry=>{const a=fmtAudit(entry,nm);var clickAction=getActivityClick(entry);feed.push({time:new Date(entry.created_at),html:a.text+'<br><span class="activity-who">'+esc(a.who)+'</span>',date:fmtDate(entry.created_at),click:clickAction})})}}
@@ -207,7 +268,7 @@ async function renderDashboard(paidIds){
 function renderReports(paidIds){
   // Diagnostic reports
   const dc=document.getElementById('reports-diagnostic');
-  if(!currentResults.length){dc.innerHTML='<div style="text-align:center;padding:20px 0;"><div style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">No diagnostic reports yet.</div><a href="diagnostic.html" class="btn-dl" style="display:inline-flex;text-decoration:none;">Run Diagnostic</a></div>'}
+  if(!currentResults.length){dc.innerHTML='<div style="text-align:center;padding:20px 0;"><div style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">No diagnostic reports yet.</div><a href="diagnostic.html" class="btn-topbar btn-topbar-primary" style="display:inline-flex;text-decoration:none;">Run Diagnostic</a></div>'}
   else{dc.innerHTML='<div class="result-list">'+currentResults.map(r=>{const band=r.risk_band||'moderate';const paid=isPaid||isPaidTier()||paidIds.has(r.id);const btn=paid?'<div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn-dl" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</button><button class="btn-pdf" id="pdf-btn-'+r.id+'" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download PDF</button></div>':'<a href="pricing.html" class="btn-unlock">Unlock — £295</a>';return '<div class="result-card"><div><div class="result-org">'+esc(r.organisation||'Diagnostic')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'</div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Exposure</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div></div>'}).join('')+'</div>'}
 }
 async function loadAssessmentReports(){
@@ -216,28 +277,28 @@ async function loadAssessmentReports(){
   const ac=document.getElementById('reports-assessments');
   if(!assessments||!assessments.length){ac.innerHTML='<div style="text-align:center;padding:20px 0;font-size:.82rem;color:var(--muted);">No system assessments yet. Run an assessment from the Registry.</div>';return}
   const sysNames={};allSystems.forEach(s=>{sysNames[s.id]=s.name});
-  const BAND_R={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};const BAND_CR={high:'#f87171',medium:'#fbbf24',low:'#4ade80'};
+  const BAND_R={high:'High Risk',medium:'Medium Risk',moderate:'Moderate Risk',lowmod:'Low-Moderate',low:'Low Risk',critical:'Critical'};
   ac.innerHTML='<div class="result-list">'+assessments.map(a=>{
     const band=a.risk_band||'medium';const sn=sysNames[a.system_id]||'AI System';
-    var reportBtn=isPaidTier()?'<a href="system-report.html?aid='+a.id+'" target="_blank" class="btn-dl" style="text-decoration:none;"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</a>':'<button onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()" class="btn-unlock" style="border:none;cursor:pointer;font-family:\'DM Sans\',sans-serif;">Upgrade to View</button>';return '<div class="result-card"><div><div class="result-org">'+esc(sn)+'</div><div class="result-meta"><span>'+fmtDate(a.requested_at)+'</span>'+(a.sector?'<span>'+esc(a.sector)+'</span>':'')+'<span>v'+(a.questionnaire_version||'1.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num" style="color:'+(BAND_CR[band]||'var(--muted)')+';">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</div><div class="score-lbl">Governance</div></div><div class="band-pill band-'+band+'">'+(BAND_R[band]||band)+'</div>'+reportBtn+'</div></div>';
+    var reportBtn=isPaidTier()?'<a href="system-report.html?aid='+a.id+'" target="_blank" class="btn-dl" style="text-decoration:none;"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</a>':'<button onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()" class="btn-unlock" style="border:none;cursor:pointer;">Upgrade to View</button>';return '<div class="result-card"><div><div class="result-org">'+esc(sn)+'</div><div class="result-meta"><span>'+fmtDate(a.requested_at)+'</span>'+(a.sector?'<span>'+esc(a.sector)+'</span>':'')+'<span>v'+(a.questionnaire_version||'1.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</div><div class="score-lbl">Governance</div></div><div class="band-pill band-'+band+'">'+(BAND_R[band]||band)+'</div>'+reportBtn+'</div></div>';
   }).join('')+'</div>';
 }
  
 // ═══ SETTINGS ═════════════════════════════════════════════════
-async function saveProfile(){const first=document.getElementById('set-first').value.trim();const last=document.getElementById('set-last').value.trim();const org=document.getElementById('set-org').value.trim();const full=(first+' '+last).trim();const{error}=await sb.from('profiles').upsert({id:currentUser.id,full_name:full,organisation:org},{onConflict:'id'});if(!error){document.getElementById('sidebar-name').textContent=full||currentUser.email.split('@')[0];const ini=full.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();document.getElementById('sidebar-avatar').textContent=ini;document.getElementById('dash-avatar').textContent=ini;alert('Profile saved.')}else alert('Error saving.')}
-async function changePassword(){const pw=document.getElementById('set-pw').value;const pw2=document.getElementById('set-pw2').value;const msg=document.getElementById('set-pw-msg');msg.style.display='block';if(pw.length<8){msg.style.color='var(--red)';msg.textContent='Min. 8 characters.';return}if(pw!==pw2){msg.style.color='var(--red)';msg.textContent='Passwords do not match.';return}const{error}=await sb.auth.updateUser({password:pw});if(error){msg.style.color='var(--red)';msg.textContent=error.message}else{msg.style.color='#4ade80';msg.textContent='Password updated.';document.getElementById('set-pw').value='';document.getElementById('set-pw2').value=''}}
+async function saveProfile(){const first=document.getElementById('set-first').value.trim();const last=document.getElementById('set-last').value.trim();const org=document.getElementById('set-org').value.trim();const full=(first+' '+last).trim();const{error}=await sb.from('profiles').upsert({id:currentUser.id,full_name:full,organisation:org},{onConflict:'id'});if(!error){document.getElementById('sidebar-name').textContent=full||currentUser.email.split('@')[0];const ini=full.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();document.getElementById('sidebar-avatar').textContent=ini;alert('Profile saved.')}else alert('Error saving.')}
+async function changePassword(){const pw=document.getElementById('set-pw').value;const pw2=document.getElementById('set-pw2').value;const msg=document.getElementById('set-pw-msg');msg.style.display='block';if(pw.length<8){msg.style.color='var(--ra-risk)';msg.textContent='Min. 8 characters.';return}if(pw!==pw2){msg.style.color='var(--ra-risk)';msg.textContent='Passwords do not match.';return}const{error}=await sb.auth.updateUser({password:pw});if(error){msg.style.color='var(--ra-risk)';msg.textContent=error.message}else{msg.style.color='var(--ra-ok)';msg.textContent='Password updated.';document.getElementById('set-pw').value='';document.getElementById('set-pw2').value=''}}
 function copyReferral(){const link=document.getElementById('referral-link').textContent;navigator.clipboard.writeText('https://'+link).then(()=>{const btn=document.querySelector('.invite-copy');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy link',2000)})}
 function downloadReport(id){window.open('report.html?rid='+id,'_blank')}
 async function savePDF(resultId){
   var btn=document.getElementById('pdf-btn-'+resultId);if(!btn)return;
   var orig=btn.innerHTML;btn.innerHTML='Generating...';btn.disabled=true;
   var overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(2,6,23,0.92);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;';
-  overlay.innerHTML='<div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(37,99,235,0.15);border-top-color:#60a5fa;animation:spin .8s linear infinite;"></div>'+
-    '<div style="text-align:center;"><div style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;font-weight:400;color:#f1f5f9;margin-bottom:8px;">Generating your report</div>'+
-    '<div style="font-size:.82rem;color:#475569;max-width:320px;line-height:1.7;" id="pdf-status-msg">Connecting to report server...</div></div>'+
-    '<div style="width:280px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;"><div id="pdf-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:2px;transition:width 1s ease;"></div></div>'+
-    '<div style="font-size:.72rem;color:#334155;text-align:center;line-height:1.7;">This can take up to 60 seconds on first generation.<br>Please keep this tab open.</div>';
+  overlay.className='pdf-overlay';
+  overlay.innerHTML='<div class="pdf-overlay__spinner"></div>'+
+    '<div class="pdf-overlay__copy"><div class="pdf-overlay__title">Generating your report</div>'+
+    '<div class="pdf-overlay__status" id="pdf-status-msg">Connecting to report server...</div></div>'+
+    '<div class="pdf-overlay__track"><div class="pdf-overlay__fill" id="pdf-progress-bar"></div></div>'+
+    '<div class="pdf-overlay__note">This can take up to 60 seconds on first generation.<br>Please keep this tab open.</div>';
   document.body.appendChild(overlay);
   var messages=[{t:0,msg:'Connecting to report server...',pct:5},{t:4000,msg:'Loading your governance data...',pct:20},{t:10000,msg:'Rendering report layout...',pct:38},{t:18000,msg:'Applying regulatory mappings...',pct:52},{t:26000,msg:'Compiling risk findings...',pct:65},{t:36000,msg:'Generating PDF document...',pct:78},{t:48000,msg:'Almost there, finalising...',pct:90}];
   var timers=messages.map(function(m){return setTimeout(function(){var el=document.getElementById('pdf-status-msg');var bar=document.getElementById('pdf-progress-bar');if(el)el.textContent=m.msg;if(bar)bar.style.width=m.pct+'%';},m.t);});

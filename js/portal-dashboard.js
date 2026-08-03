@@ -58,17 +58,19 @@ async function loadAssignmentUI(assign){
   var dateInput=document.getElementById('cd-due-date');
   var prioritySelect=document.getElementById('cd-priority');
   var infoEl=document.getElementById('cd-assign-info');
-  if(!assign){infoEl.style.display='none';return}
-  if(assign.assigned_to)select.value=assign.assigned_to;
-  if(assign.due_date)dateInput.value=assign.due_date;
-  if(assign.priority)prioritySelect.value=assign.priority;
-  // Show assignment info
+  var statusEl=document.getElementById('cd-assign-status');
+  if(statusEl){statusEl.hidden=true;statusEl.textContent=''}
+  if(!assign){if(infoEl)infoEl.hidden=true;return}
+  select.value=assign.assigned_to||'';
+  dateInput.value=assign.due_date||'';
+  prioritySelect.value=assign.priority||'medium';
   if(assign.assigned_at&&assign.assigned_by){
     var nm=await loadNames([assign.assigned_by]);
-    infoEl.innerHTML='Assigned by '+esc(nm[assign.assigned_by]||'Unknown')+' on '+fmtDateLong(assign.assigned_at);
-    infoEl.style.display='block';
+    infoEl.textContent='Assigned by '+(nm[assign.assigned_by]||'Unknown')+' on '+fmtDateLong(assign.assigned_at);
+    infoEl.hidden=false;
   }else{
-    infoEl.style.display='none';
+    infoEl.textContent='';
+    infoEl.hidden=true;
   }
 }
  
@@ -80,6 +82,7 @@ async function saveAssignment(){
   var dueDate=document.getElementById('cd-due-date').value||null;
   var priority=document.getElementById('cd-priority').value||'medium';
   var statusEl=document.getElementById('cd-assign-status');
+  var infoEl=document.getElementById('cd-assign-info');
   var update={assigned_to:assignTo,due_date:dueDate,priority:priority};
   // Only set assigned_by/at if newly assigning
   if(assignTo&&!assign.assigned_to){
@@ -91,14 +94,22 @@ async function saveAssignment(){
   }
   var result=await sb.from('control_assignments').update(update).eq('id',currentAssignId);
   if(result.error){
-    statusEl.style.display='block';statusEl.style.color='var(--ra-risk)';statusEl.textContent='Error saving: '+result.error.message;return;
+    statusEl.hidden=false;statusEl.style.color='var(--ra-risk)';statusEl.textContent='Error saving: '+result.error.message;return;
   }
   // Update local cache
   assign.assigned_to=assignTo;assign.due_date=dueDate;assign.priority=priority;
-  assign.assigned_by=update.assigned_by||assign.assigned_by;
-  assign.assigned_at=update.assigned_at||assign.assigned_at;
-  statusEl.style.display='block';statusEl.style.color='var(--ra-ok)';statusEl.textContent='Saved';
-  setTimeout(function(){statusEl.style.display='none'},2000);
+  assign.assigned_by=update.assigned_by!==undefined?update.assigned_by:assign.assigned_by;
+  assign.assigned_at=update.assigned_at!==undefined?update.assigned_at:assign.assigned_at;
+  if(assign.assigned_at&&assign.assigned_by){
+    var assigner=await loadNames([assign.assigned_by]);
+    infoEl.textContent='Assigned by '+(assigner[assign.assigned_by]||'Unknown')+' on '+fmtDateLong(assign.assigned_at);
+    infoEl.hidden=false;
+  }else{
+    infoEl.textContent='';
+    infoEl.hidden=true;
+  }
+  statusEl.hidden=false;statusEl.style.color='var(--ra-ok)';statusEl.textContent='Saved';
+  setTimeout(function(){statusEl.hidden=true},2000);
   // Audit log for assignment changes
   if(assignTo){
     var nm=await loadNames([assignTo]);

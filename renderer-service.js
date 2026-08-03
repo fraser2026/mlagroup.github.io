@@ -1,5 +1,5 @@
 /**
- * MLA Group — Puppeteer Renderer Service
+ * RegAnchor — Puppeteer Renderer Service
  * 
  * Lightweight Express server that accepts report data via POST
  * and returns a rendered PDF. Deploy on Render, Railway, Fly.io,
@@ -85,16 +85,16 @@ app.post('/render', async (req, res) => {
       .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
     const headerTemplate = `
-      <div style="width:100%;padding:0 18mm;background:#0f1f38;display:flex;align-items:center;justify-content:space-between;height:28mm;box-sizing:border-box;font-family:sans-serif;">
-        <span style="color:#c9a465;font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;">MLA GROUP</span>
-        <span style="color:rgba(255,255,255,0.6);font-size:7pt;">AI Governance Diagnostic — ${orgName}</span>
-        <span style="color:rgba(255,255,255,0.4);font-size:7pt;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+      <div style="width:100%;padding:0 18mm;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;height:28mm;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;border-bottom:1px solid #E4E7EC;">
+        <span style="color:#0A0E14;font-size:7pt;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;">RegAnchor</span>
+        <span style="color:#6B7280;font-size:7pt;">AI Governance Diagnostic — ${orgName}</span>
+        <span style="color:#6B7280;font-size:7pt;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
       </div>`;
 
     const footerTemplate = `
-      <div style="width:100%;padding:0 18mm;display:flex;align-items:center;justify-content:space-between;height:18mm;box-sizing:border-box;border-top:1px solid #e2e8f0;font-family:sans-serif;">
-        <span style="color:#94a3b8;font-size:6pt;">Confidential — ${orgName} — ${dateStr}</span>
-        <span style="color:#94a3b8;font-size:6pt;">${SITE_DOMAIN}</span>
+      <div style="width:100%;padding:0 18mm;display:flex;align-items:center;justify-content:space-between;height:18mm;box-sizing:border-box;border-top:1px solid #E4E7EC;font-family:'IBM Plex Sans',sans-serif;">
+        <span style="color:#6B7280;font-size:6pt;">Confidential — ${orgName} — ${dateStr}</span>
+        <span style="color:#6B7280;font-size:6pt;">${SITE_DOMAIN}</span>
       </div>`;
 
     // Generate PDF

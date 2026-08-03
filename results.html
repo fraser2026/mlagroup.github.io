@@ -3,269 +3,121 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Your Results | RegAnchor AI Governance Diagnostic</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <title>Your Results | RegAnchor</title>
+  <meta name="color-scheme" content="light">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
-  <style>
-    :root {
-      --bg:#020617; --bg2:#070f22; --card:rgba(10,18,40,0.85);
-      --border:rgba(255,255,255,0.08); --border-m:rgba(255,255,255,0.13);
-      --accent:#2563eb; --sky:#60a5fa; --main:#ffffff; --sub:#e2e8f0;
-      --muted:#94a3b8; --muted2:#cbd5e1; --page:1060px; --ph:48px;
-      --c-low:#22c55e; --c-lm:#84cc16; --c-mod:#f59e0b; --c-hi:#f97316; --c-crit:#ef4444;
-    }
-    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-    html{scroll-behavior:smooth;}
-    body{background:var(--bg);color:var(--sub);font-family:'DM Sans',sans-serif;font-weight:400;line-height:1.75;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
-    .bg-field{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 70% 40% at 50% -5%,rgba(37,99,235,0.12) 0%,transparent 65%);}
-    nav{position:sticky;top:0;z-index:100;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--ph);border-bottom:1px solid var(--border);background:rgba(2,6,23,0.94);backdrop-filter:blur(24px);}
-    .logo{font-size:1.05rem;font-weight:600;letter-spacing:-0.02em;text-decoration:none;color:var(--main);}
-    .logo em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;color:var(--sky);}
-    .nav-right{display:flex;align-items:center;gap:8px;}
-    .nav-signin{padding:7px 16px;border-radius:6px;font-size:0.84rem;font-weight:500;color:var(--sub);text-decoration:none;transition:color .15s;}
-    .nav-signin:hover{color:var(--main);}
-    .nav-cta{padding:8px 18px;border-radius:7px;font-size:0.84rem;font-weight:600;color:#fff;background:var(--accent);text-decoration:none;transition:background .15s;}
-    .nav-cta:hover{background:#1d4ed8;}
-    .progress-strip{position:relative;z-index:1;background:rgba(7,15,34,0.8);border-bottom:1px solid var(--border);padding:0 var(--ph);display:flex;align-items:center;height:44px;overflow-x:auto;}
-    .ps-step{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);white-space:nowrap;padding:0 16px;}
-    .ps-step.done{color:var(--sky);}
-    .ps-step.active{color:var(--main);}
-    .ps-arrow{font-size:0.7rem;color:rgba(255,255,255,0.2);flex-shrink:0;}
-    .pw{max-width:var(--page);margin:0 auto;padding:0 var(--ph);}
-    .sec{position:relative;z-index:1;padding:72px 0;border-top:1px solid var(--border);}
-    .label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:var(--sky);margin-bottom:14px;display:block;}
-    h2{font-family:'Instrument Serif',serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:400;line-height:1.1;letter-spacing:-0.02em;color:var(--main);margin-bottom:16px;}
-    h2 em{font-style:italic;color:var(--sky);}
-    h3{font-size:0.94rem;font-weight:600;color:var(--main);margin-bottom:8px;}
-    p{font-size:0.9rem;color:var(--muted2);line-height:1.85;margin-bottom:14px;}
-    p:last-child{margin-bottom:0;}
-    .hero-sec{position:relative;z-index:1;padding:60px 0 72px;}
-    .hero-grid{display:grid;grid-template-columns:1fr 360px;gap:64px;align-items:start;}
-    .gauge-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:24px;margin-bottom:28px;}
-    .gauge-svg{width:240px;height:134px;overflow:visible;}
-    .gauge-track{fill:none;stroke:rgba(255,255,255,0.07);stroke-width:10;stroke-linecap:round;}
-    .gauge-fill{fill:none;stroke-width:10;stroke-linecap:round;stroke-dasharray:0 235.6;transition:stroke-dasharray 1.6s cubic-bezier(0.16,1,0.3,1);}
-    .gauge-score{font-family:'Instrument Serif',serif;font-size:32px;fill:var(--main);font-weight:400;}
-    .gauge-sub{font-size:6.5px;fill:#64748b;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:0.12em;}
-    .band-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px;}
-    .band-pill-lg{display:inline-block;padding:5px 16px;border-radius:4px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;}
-    .band-heading{font-size:1.15rem;font-weight:600;color:var(--main);}
-    .band-desc{font-size:0.88rem;color:var(--muted2);line-height:1.8;max-width:560px;margin-top:8px;}
-    .ctx-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:28px 26px;}
-    .ctx-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.82rem;}
-    .ctx-row:last-of-type{border-bottom:none;padding-bottom:0;}
-    .ctx-k{color:var(--muted);}
-    .ctx-v{color:var(--sub);font-weight:600;text-align:right;}
-    .ctx-note{margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:0.77rem;color:var(--muted);line-height:1.6;}
-    .method-link{margin-top:14px;}
-    .method-link a{font-size:0.78rem;color:var(--sky);text-decoration:none;}
-    .method-link a:hover{text-decoration:underline;}
-    .sec-sub{font-size:0.88rem;color:var(--muted2);max-width:600px;margin-bottom:36px;}
-    .domain-list{display:flex;flex-direction:column;max-width:760px;}
-    .domain-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px;padding:16px 0;border-bottom:1px solid var(--border);}
-    .domain-item:first-child{border-top:1px solid var(--border);}
-    .domain-name{font-size:0.88rem;font-weight:600;color:var(--main);margin-bottom:2px;}
-    .domain-sub{font-size:0.76rem;color:var(--muted);}
-    .risk-pill{display:inline-block;padding:4px 12px;border-radius:4px;font-size:0.64rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;flex-shrink:0;}
-    .rp-low{background:rgba(34,197,94,.1);color:#86efac;border:1px solid rgba(34,197,94,.18);}
-    .rp-mod{background:rgba(245,158,11,.1);color:#fde68a;border:1px solid rgba(245,158,11,.18);}
-    .rp-high{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.18);}
-    .domain-note{margin-top:20px;padding:16px 20px;border-left:2px solid rgba(37,99,235,.3);background:rgba(37,99,235,.03);font-size:0.82rem;color:var(--muted2);max-width:760px;}
-    .flag-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:22px 24px;max-width:760px;margin-bottom:12px;border-left:3px solid var(--c-crit);}
-    .flag-card.severity-high{border-left-color:var(--c-hi);}
-    .flag-card.severity-moderate{border-left-color:var(--c-mod);}
-    .flag-card.severity-info{border-left-color:var(--sky);}
-    .flag-label{font-size:0.88rem;font-weight:600;color:var(--main);margin-bottom:6px;}
-    .flag-basis{font-size:0.76rem;color:var(--muted);}
-    .flags-locked{display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:8px;max-width:760px;background:rgba(255,255,255,0.02);border:1px dashed var(--border-m);font-size:0.82rem;color:var(--muted);}
-    .lock-icon-sm svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
-    .recs-outer{position:relative;max-width:760px;border-radius:12px;overflow:hidden;}
-    .recs-inner{display:flex;flex-direction:column;gap:10px;padding-bottom:4px;}
-    .rec-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 22px;border-left:3px solid var(--accent);display:grid;grid-template-columns:28px 1fr;gap:14px;align-items:flex-start;}
-    .rec-num{font-family:'Instrument Serif',serif;font-size:1.2rem;color:rgba(96,165,250,0.3);line-height:1.3;}
-    .rec-txt{font-size:0.86rem;color:var(--muted2);line-height:1.75;}
-    .recs-blur{filter:blur(5px);user-select:none;pointer-events:none;}
-    .recs-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 0%,rgba(2,6,23,0.65) 25%,rgba(2,6,23,0.97) 60%);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:32px 24px;}
-    .overlay-lock{width:40px;height:40px;border-radius:50%;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
-    .overlay-lock svg{width:18px;height:18px;stroke:var(--sky);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
-    .overlay-title{font-size:0.94rem;font-weight:600;color:var(--main);margin-bottom:6px;text-align:center;}
-    .overlay-sub{font-size:0.8rem;color:var(--muted2);margin-bottom:20px;text-align:center;max-width:380px;}
-    .btn-unlock{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:8px;background:var(--accent);color:#fff;font-size:0.88rem;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;}
-    .btn-unlock:hover{background:#1d4ed8;}
-    .paywall-sec{position:relative;z-index:1;padding:80px 0;border-top:1px solid var(--border);background:linear-gradient(to bottom,rgba(37,99,235,0.03) 0%,transparent 50%);}
-    .pw-grid{display:grid;grid-template-columns:1fr 420px;gap:72px;align-items:start;}
-    .pw-price{display:inline-flex;align-items:baseline;gap:6px;margin-bottom:20px;}
-    .pw-amount{font-family:'Instrument Serif',serif;font-size:3rem;font-weight:400;color:var(--main);line-height:1;}
-    .pw-currency{font-size:1.2rem;color:var(--muted2);font-weight:500;}
-    .pw-period{font-size:0.82rem;color:var(--muted);}
-    .includes-list{display:flex;flex-direction:column;gap:0;margin:24px 0;}
-    .inc-item{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:0.87rem;color:var(--muted2);}
-    .inc-item:first-child{border-top:1px solid var(--border);}
-    .inc-tick{color:var(--sky);font-weight:600;flex-shrink:0;margin-top:1px;}
-    .reg-strip{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0;}
-    .reg-badge{padding:4px 12px;border-radius:4px;font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);border:1px solid var(--border-m);background:rgba(255,255,255,0.03);}
-    .btn-get-report{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px 36px;border-radius:8px;background:var(--accent);color:#fff;font-size:0.92rem;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s,transform .15s,box-shadow .15s;margin-bottom:14px;}
-    .btn-get-report:hover{background:#1d4ed8;transform:translateY(-2px);box-shadow:0 8px 28px rgba(37,99,235,.35);}
-    .btn-get-report:disabled{opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none;}
-    .secure-note{font-size:0.76rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
-    .secure-note svg{width:12px;height:12px;stroke:var(--muted);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
-    /* Embedded checkout area */
-    #checkout-loading{display:none;padding:24px;text-align:center;font-size:0.82rem;color:var(--muted);border:1px solid var(--border);border-radius:10px;margin-top:20px;}
-    #checkout-container{display:none;margin-top:20px;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
-    /* Report preview */
-    .report-preview{position:relative;height:380px;perspective:1000px;}
-    .report-page{position:absolute;width:100%;left:0;background:rgba(10,18,40,0.9);border:1px solid rgba(37,99,235,0.2);border-radius:8px;padding:28px 26px;overflow:hidden;}
-    .rp-shadow{position:absolute;bottom:-8px;left:6px;right:6px;top:8px;background:rgba(37,99,235,0.05);border:1px solid rgba(37,99,235,0.08);border-radius:8px;z-index:-1;}
-    .rp-shadow-2{position:absolute;bottom:-16px;left:12px;right:12px;top:16px;background:rgba(37,99,235,0.03);border:1px solid rgba(37,99,235,0.05);border-radius:8px;z-index:-2;}
-    .rp-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.06);}
-    .rp-logo{font-size:0.78rem;font-weight:700;color:var(--sky);letter-spacing:-0.01em;}
-    .rp-logo em{font-family:'Instrument Serif',serif;font-style:italic;}
-    .rp-meta{font-size:0.62rem;color:var(--muted);text-align:right;line-height:1.5;}
-    .rp-band-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
-    .rp-band-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-    .rp-band-text{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;}
-    .rp-score-lg{font-family:'Instrument Serif',serif;font-size:2rem;font-weight:400;margin-bottom:4px;}
-    .rp-score-label{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
-    .rp-domain-rows{display:flex;flex-direction:column;gap:8px;margin-top:18px;}
-    .rp-domain-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
-    .rp-dn{font-size:0.72rem;color:var(--muted2);}
-    .rp-dp{width:70px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
-    .rp-dp-fill{height:100%;border-radius:2px;}
-    .rp-dr{font-size:0.68rem;font-weight:600;}
-    .rp-pages-label{position:absolute;bottom:18px;right:20px;font-size:0.65rem;color:var(--muted);letter-spacing:0.08em;}
-    @keyframes pageIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-    @keyframes pageOut{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(-6px);}}
-    .rp-face{animation:pageIn 0.6s ease forwards;}
-    .rp-face.out{animation:pageOut 0.5s ease forwards;}
-    .ent-sec{position:relative;z-index:1;padding:56px 0;border-top:1px solid var(--border);}
-    .ent-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:36px 40px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center;}
-    .ent-box h3{font-size:1rem;font-weight:600;color:var(--main);margin-bottom:8px;}
-    .ent-box p{font-size:0.85rem;color:var(--muted2);max-width:500px;}
-    .btn-consult{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;padding:11px 24px;border-radius:8px;border:1px solid var(--border-m);color:var(--sub);font-size:0.85rem;font-weight:500;text-decoration:none;transition:border-color .15s,color .15s;}
-    .btn-consult:hover{border-color:rgba(96,165,250,.3);color:var(--main);}
-    .ent-sub{font-size:0.76rem;color:var(--muted);margin-top:8px;}
-    footer{border-top:1px solid var(--border);background:rgba(2,6,23,.96);position:relative;z-index:1;}
-    .ft-row{max-width:var(--page);margin:0 auto;padding:24px var(--ph);display:flex;justify-content:space-between;align-items:center;gap:20px;}
-    .ft-row span{font-size:0.74rem;color:var(--muted);}
-    .ft-links{display:flex;gap:20px;}
-    .ft-links a{font-size:0.74rem;color:var(--muted);text-decoration:none;}
-    .ft-links a:hover{color:var(--muted2);}
-    .no-data{position:relative;z-index:1;min-height:60vh;display:flex;align-items:center;justify-content:center;}
-    .no-data-inner{text-align:center;padding:60px 24px;max-width:420px;}
-    .no-data-inner h2{margin-bottom:12px;}
-    .no-data-inner p{margin-bottom:28px;}
-    .btn-start{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:8px;background:var(--accent);color:#fff;font-size:0.9rem;font-weight:600;text-decoration:none;transition:background .15s;}
-    .btn-start:hover{background:#1d4ed8;}
-    @media(max-width:1024px){.hero-grid{grid-template-columns:1fr;gap:40px;}.pw-grid{grid-template-columns:1fr;gap:48px;}.ent-box{grid-template-columns:1fr;gap:24px;}}
-    @media(max-width:768px){:root{--ph:24px;}nav{padding:0 24px;}.sec{padding:52px 0;}.hero-sec{padding:40px 0 52px;}.paywall-sec{padding:60px 0;}.report-preview{height:320px;}.ft-row{flex-direction:column;text-align:center;padding:20px 24px;}}
-  </style>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/reganchor.css">
+  <link rel="stylesheet" href="css/reganchor-flow.css">
+  <script src="js/ra-maturity.js"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
-<body>
-<div class="bg-field"></div>
+<body class="results-page">
 
-<nav>
-  <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
-  <div class="nav-right">
-    <a href="login.html" class="nav-signin">Sign in</a>
-    <a href="#paywall" class="nav-cta">Get Full Report</a>
+<header class="site-chrome" id="siteChrome">
+  <nav class="site-nav">
+    <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
+    <div class="nav-right">
+      <a href="login.html" class="nav-signin">Sign in</a>
+      <a href="#paywall" class="nav-cta">Get Full Report</a>
+    </div>
+  </nav>
+  <div class="scroll-progress" aria-hidden="true">
+    <div class="scroll-progress__fill" id="scrollProgress"></div>
   </div>
-</nav>
+  <div class="site-chrome__fade" aria-hidden="true"></div>
+</header>
 
-<div class="progress-strip">
-  <div class="ps-step done">Diagnostic complete</div>
-  <div class="ps-arrow">›</div>
-  <div class="ps-step active">Your results</div>
-  <div class="ps-arrow">›</div>
-  <div class="ps-step">Full report</div>
-  <div class="ps-arrow">›</div>
-  <div class="ps-step">Secure portal</div>
-</div>
-
-<div class="no-data" id="noData" style="display:none;">
+<div class="no-data" id="noData" hidden>
   <div class="no-data-inner">
-    <span class="label">No Results Found</span>
-    <h2>Complete the <em>diagnostic</em> first.</h2>
-    <p>Your results appear here immediately after completing the 35-question assessment. The diagnostic takes under 20 minutes.</p>
-    <a href="diagnostic.html" class="btn-start">Start the Diagnostic
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2l4 4.5-4 4.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </a>
+    <span class="eyebrow-label">No results yet</span>
+    <h2>Complete the diagnostic to see your score.</h2>
+    <p>Results appear here as soon as you finish. Most organisations complete it in under 20 minutes.</p>
+    <a href="diagnostic.html" class="btn-primary">Start the Diagnostic</a>
   </div>
 </div>
 
-<div id="resultsContent" style="display:none;">
+<div id="resultsContent" hidden>
 
 <section class="hero-sec">
   <div class="pw">
     <div class="hero-grid">
-      <div>
-        <span class="label">Your AI Governance Results</span>
-        <div class="gauge-wrap">
-          <svg class="gauge-svg" viewBox="-92 -82 184 98">
-            <path class="gauge-track" d="M-75,0 A75,75 0 0,1 75,0"/>
-            <path class="gauge-fill" id="gaugeFill" d="M-75,0 A75,75 0 0,1 75,0"/>
-            <text class="gauge-score" id="gaugeScore" x="0" y="-12" text-anchor="middle">—</text>
-            <text class="gauge-sub" x="0" y="10" text-anchor="middle">ADJUSTED EXPOSURE SCORE</text>
-          </svg>
+      <div class="score-card results-container" id="scoreCard">
+        <span class="eyebrow-label">Exposure score</span>
+        <div class="diag-score">
+          <span class="diag-score__num" id="diagScore">0</span>
+          <span class="diag-score__of">/ 100</span>
         </div>
+        <p class="diag-tier" id="diagTier"></p>
         <div class="band-row">
-          <span class="band-pill-lg" id="bandPill">—</span>
-          <span class="band-heading" id="bandHeading">—</span>
+          <span class="band-pill-lg" id="bandPill"></span>
+          <span class="band-heading" id="bandHeading"></span>
         </div>
-        <p class="band-desc" id="bandDesc">—</p>
+        <p class="band-desc" id="bandDesc"></p>
+        <div class="diag-cbar-wrap">
+          <span class="eyebrow-label">Maturity level</span>
+          <div class="diag-maturity-row" id="maturityMount"></div>
+        </div>
       </div>
-      <div>
+      <aside class="ctx-col">
         <div class="ctx-card">
-          <span class="label">Assessment Context</span>
-          <div class="ctx-row"><span class="ctx-k">Organisation</span><span class="ctx-v" id="ctxOrg">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">Sector</span><span class="ctx-v" id="ctxSector">—</span></div>
-          <div class="ctx-row"><span class="ctx-k">Framework</span><span class="ctx-v">v2.0 · Feb 2026</span></div>
-          <div class="ctx-row"><span class="ctx-k">Sector calibration</span><span class="ctx-v">Applied</span></div>
-          <p class="ctx-note">A sector-specific calibration has been applied to your Adjusted Exposure Score to reflect the regulatory density of your industry.</p>
+          <span class="eyebrow-label">Assessment details</span>
+          <div class="ctx-row"><span class="ctx-k">Organisation</span><span class="ctx-v" id="ctxOrg"></span></div>
+          <div class="ctx-row"><span class="ctx-k">Sector</span><span class="ctx-v" id="ctxSector"></span></div>
+          <div class="ctx-row"><span class="ctx-k">Framework</span><span class="ctx-v">Version 2.0</span></div>
+          <div class="ctx-row"><span class="ctx-k">Calibration</span><span class="ctx-v">Sector applied</span></div>
         </div>
-        <div class="method-link"><a href="methodology.html">How this score is calculated →</a></div>
+        <div class="method-link"><a href="methodology.html">View methodology</a></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="domains">
+  <div class="pw results-split">
+    <div class="results-split__intro">
+      <span class="eyebrow-label">Control areas</span>
+      <h2>Scores by domain</h2>
+      <p class="sec-sub">Each domain is weighted by regulatory enforcement priority. Full article references are in the report.</p>
+    </div>
+    <div class="domain-panel results-container">
+      <div class="domain-list-head" aria-hidden="true">
+        <span>Domain</span>
+        <span></span>
+        <span>Score</span>
+        <span>Risk</span>
       </div>
+      <div class="domain-list" id="domainList"></div>
     </div>
   </div>
 </section>
 
-<section class="sec">
-  <div class="pw">
-    <span class="label">Domain Assessment</span>
-    <h2>Governance domain <em>overview.</em></h2>
-    <p class="sec-sub">Your score is assessed across seven governance domains. Domain weights are calibrated to regulatory enforcement priority and are not disclosed in full.</p>
-    <div class="domain-list" id="domainList"></div>
-    <div class="domain-note">Domain risk levels reflect your organisation's scored responses in each area. Full domain-by-domain findings, including specific article references and remediation actions, are included in the full report.</div>
-  </div>
-</section>
-
-<section class="sec">
-  <div class="pw">
-    <span class="label">Areas Requiring Attention</span>
-    <h2>Priority <em>findings.</em></h2>
-    <p class="sec-sub" style="max-width:600px;margin-bottom:28px;">The following flag was identified in your assessment. This represents a specific regulatory obligation or governance gap requiring attention.</p>
-    <div id="flagContainer"></div>
-    <div class="flags-locked" id="flagsLocked" style="display:none;">
-      <span class="lock-icon-sm"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
-      <span id="moreFlagsText">Additional findings are included in the full report.</span>
+<section class="sec sec--tint" id="insights">
+  <div class="pw results-split">
+    <div class="results-split__intro">
+      <span class="eyebrow-label">Findings</span>
+      <h2>Priority issues</h2>
+      <p class="sec-sub">A sample finding from your assessment. Remaining findings and the remediation plan are unlocked with the report.</p>
     </div>
-  </div>
-</section>
-
-<section class="sec">
-  <div class="pw">
-    <span class="label">Priority Recommendations</span>
-    <h2>Your <em>remediation roadmap.</em></h2>
-    <p class="sec-sub" style="max-width:600px;margin-bottom:28px;">Your full report includes a sequenced remediation roadmap referenced to specific regulatory articles. A preview is shown below.</p>
-    <div class="recs-outer">
-      <div class="recs-inner recs-blur" id="recsBlurred"></div>
-      <div class="recs-overlay">
-        <div class="overlay-lock"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-        <p class="overlay-title">Full remediation roadmap in the complete report</p>
-        <p class="overlay-sub">Prioritised recommendations with regulatory article mapping, sequenced by urgency and impact.</p>
-        <button class="btn-unlock" onclick="document.getElementById('paywall').scrollIntoView({behavior:'smooth'})">Get Full Report — £295</button>
+    <div class="insights-stack">
+      <div id="flagContainer"></div>
+      <div class="flags-locked" id="flagsLocked" hidden>
+        <span id="moreFlagsText">Additional findings in the full report</span>
+        <a href="#paywall" class="flags-locked__link">View report</a>
+      </div>
+      <div class="recs-outer">
+        <div class="recs-inner" id="recsBlurred"></div>
+        <div class="recs-mask" aria-hidden="true"></div>
+        <div class="recs-unlock">
+          <span class="recs-unlock__lock" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </span>
+          <div class="recs-unlock__copy">
+            <strong>3 more actions locked</strong>
+            <span>Included in the full report with article references</span>
+          </div>
+          <button type="button" class="btn-primary" onclick="document.getElementById('paywall').scrollIntoView({behavior:'smooth'})">Get Full Report</button>
+        </div>
       </div>
     </div>
   </div>
@@ -274,46 +126,35 @@
 <section class="paywall-sec" id="paywall">
   <div class="pw">
     <div class="pw-grid">
-      <div>
-        <span class="label">Full Report</span>
-        <h2>Your complete AI governance <em>report.</em></h2>
-        <div class="pw-price">
-          <span class="pw-currency">£</span>
-          <span class="pw-amount">295</span>
-          <span class="pw-period">· one-time · instant access</span>
-        </div>
-        <p>The full 12-page board-grade report provides domain-level findings with specific article references, a sequenced remediation roadmap, and a board-ready PDF structured for regulatory review or procurement submission.</p>
-        <div class="includes-list">
-          <div class="inc-item"><span class="inc-tick">✓</span> Executive summary with adjusted exposure score</div>
-          <div class="inc-item"><span class="inc-tick">✓</span> Full domain-by-domain findings (all 7 domains)</div>
-          <div class="inc-item"><span class="inc-tick">✓</span> Regulatory article mapping (EU AI Act, UK GDPR, FCA)</div>
-          <div class="inc-item"><span class="inc-tick">✓</span> Sequenced priority remediation roadmap</div>
-          <div class="inc-item"><span class="inc-tick">✓</span> Sector-specific regulatory guidance</div>
-          <div class="inc-item"><span class="inc-tick">✓</span> Board-ready PDF — download any time via secure portal</div>
-        </div>
-        <div class="reg-strip">
-          <div class="reg-badge">EU AI Act</div>
-          <div class="reg-badge">UK GDPR</div>
-          <div class="reg-badge">FCA SM&CR</div>
-          <div class="reg-badge">ICO</div>
-          <div class="reg-badge">ISO/IEC 42001</div>
-        </div>
-        <button class="btn-get-report" id="checkoutBtn" onclick="startCheckout()">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="6" width="9" height="6" rx="1" stroke="white" stroke-width="1.6"/><path d="M4 6V4a2.5 2.5 0 015 0v2" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
-          Get Full Report — £295
-        </button>
-        <div class="secure-note">
-          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-          Secure payment via Stripe &nbsp;·&nbsp; Instant access after payment &nbsp;·&nbsp; 30-day refund policy
+      <div class="pw-copy">
+        <span class="eyebrow-label">Full report</span>
+        <h2>Unlock the complete assessment</h2>
+        <div class="pw-offer">
+          <div class="pw-offer__price">
+            <div class="pw-price">
+              <span class="pw-currency">£</span>
+              <span class="pw-amount">295</span>
+            </div>
+            <p class="pw-offer__meta">One purchase. Instant access.</p>
+          </div>
+          <ul class="includes-list includes-list--compact">
+            <li class="inc-item"><span class="inc-tick">✓</span> Domain findings and exposure score</li>
+            <li class="inc-item"><span class="inc-tick">✓</span> Regulatory mapping and remediation plan</li>
+            <li class="inc-item"><span class="inc-tick">✓</span> Board-ready report for audits and procurement</li>
+          </ul>
+          <button type="button" class="btn-primary btn-get-report" id="checkoutBtn" onclick="startCheckout()">
+            Get Full Report
+          </button>
+          <p class="secure-note">Secure checkout. 30-day refund.</p>
         </div>
         <div id="checkout-loading">Loading secure checkout…</div>
         <div id="checkout-container"></div>
       </div>
-      <div>
+      <div class="pw-preview">
         <div class="report-preview">
           <div class="rp-shadow-2"></div>
           <div class="rp-shadow"></div>
-          <div class="report-page" id="reportPage"></div>
+          <div class="report-page preview-card" id="reportPage"></div>
         </div>
       </div>
     </div>
@@ -324,13 +165,12 @@
   <div class="pw">
     <div class="ent-box">
       <div>
-        <span class="label">Enterprise &amp; Bespoke</span>
-        <h3>Strategic Roadmap — Full Consultancy</h3>
-        <p>For organisations requiring board-level reporting, deeper analysis, or ongoing advisory engagement. Includes all Premium features plus heat maps, comparative benchmarking, and a dedicated governance specialist.</p>
+        <span class="eyebrow-label">Enterprise</span>
+        <h3>Need a custom engagement?</h3>
+        <p>Board workshops, peer benchmarking, and ongoing advisory beyond the standard report.</p>
       </div>
-      <div style="text-align:center;">
-        <a href="mailto:governance@mlagroup.co.uk?subject=Bespoke%20Consultancy%20Enquiry" class="btn-consult">Book a Specialist Consultation →</a>
-        <p class="ent-sub">1-hour session with a RegAnchor governance specialist</p>
+      <div class="ent-cta">
+        <a href="mailto:governance@mlagroup.co.uk?subject=Enterprise%20engagement" class="btn-secondary">Talk to sales</a>
       </div>
     </div>
   </div>
@@ -340,11 +180,10 @@
 
 <footer>
   <div class="ft-row">
-    <span>RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562). This assessment does not constitute legal advice.</span>
+    <span>RegAnchor is a trading name of MLA Group Ltd (No. 16117562). This assessment is not legal advice.</span>
     <div class="ft-links">
       <a href="methodology.html">Methodology</a>
-      <a href="index.html#pricing">Pricing</a>
-      <a href="#">Privacy</a>
+      <a href="privacy.html">Privacy</a>
     </div>
   </div>
 </footer>
@@ -355,80 +194,132 @@ const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const stripe = Stripe('pk_live_51SVuGRRfSQTwpCt9hCFdOOyVJBOLgV1Gss5CxMOry1T3kKW3cE7IF8OhQzvXjBd9IjOCp941p4uc9R8RPolEvRVV00fiMjUyXQ');
 
+const CTA_LABEL = 'Get Full Report';
+
+/* Same band IDs and scoring logic; enterprise-plain wording */
 const BANDS = {
-  low:      { label:'Low Risk',          color:'#22c55e', heading:'Governance Established',     desc:'Your AI governance framework demonstrates strong maturity across the assessed areas. The priority is to sustain and evolve these controls as regulatory obligations and AI deployments develop.' },
-  lowmod:   { label:'Low–Moderate Risk', color:'#84cc16', heading:'Foundations Present',        desc:'Core governance foundations are in place, but targeted gaps create regulatory exposure. These are addressable with focused remediation — the foundations do not require a full rebuild.' },
-  moderate: { label:'Moderate Risk',     color:'#f59e0b', heading:'Governance Gaps Identified', desc:'Material governance gaps exist across multiple areas. Regulatory scrutiny of AI is intensifying — organisations at this level face meaningful risk of enforcement attention, reputational exposure, or operational failure.' },
-  high:     { label:'High Risk',         color:'#f97316', heading:'Significant Exposure',       desc:'Multiple and widespread governance deficiencies have been identified. This represents current, active vulnerability to regulatory action, legal challenge, and operational harm — not future risk.' },
-  critical: { label:'Critical Risk',     color:'#ef4444', heading:'Governance Absent',          desc:'AI governance is largely absent. This requires board-level escalation and specialist engagement immediately. Continued operation without governance controls creates severe regulatory and legal exposure.' }
+  low:      { label:'Low Risk', heading:'Controls are in place', desc:'Governance maturity is strong across the areas assessed. Keep controls current as systems and obligations change.' },
+  lowmod:   { label:'Low to Moderate Risk', heading:'Foundations exist with gaps', desc:'Core controls are present, but specific weaknesses still create exposure. These can be closed without rebuilding the whole programme.' },
+  moderate: { label:'Moderate Risk', heading:'Material gaps require action', desc:'Several control areas fall short of what regulators expect. Treat this as practical exposure for the organisation, not a theoretical score.' },
+  high:     { label:'High Risk', heading:'Exposure is already material', desc:'Deficiencies are widespread. Regulatory, legal, and operational risk are active today and need board-level attention.' },
+  critical: { label:'Critical Risk', heading:'Governance is largely absent', desc:'Formal AI governance is missing. Escalate immediately and engage specialist support before further deployment.' }
 };
 
-const DOMAIN_NAMES = { s1:'AI Inventory & Classification', s2:'Governance & Accountability', s3:'Data Quality & Lineage', s4:'Human Oversight & Controls', s5:'Explainability & Transparency', s6:'Compliance & Legal Alignment', s7:'Operational Controls & Resilience' };
+const DOMAIN_NAMES = {
+  s1: 'AI inventory',
+  s2: 'Governance and accountability',
+  s3: 'Data quality and lineage',
+  s4: 'Human oversight',
+  s5: 'Explainability',
+  s6: 'Compliance and legal',
+  s7: 'Operational resilience'
+};
 
 const RECS = {
-  critical:['Urgently appoint a named AI governance lead with documented accountability and a board-level reporting line','Commission an immediate AI inventory audit to establish regulatory scope','Restrict high-impact automated decisions until human oversight controls are operational','Engage legal counsel to assess UK GDPR, EU AI Act, and sector-specific obligations immediately'],
-  high:    ['Formalise AI governance ownership with documented responsibilities across risk, compliance, and technical functions','Conduct Data Protection Impact Assessments for all AI systems processing personal data','Implement decision logging and audit trail capability for all high-impact AI outputs','Establish human-in-the-loop review protocols with documented override procedures'],
-  moderate:['Elevate informal governance arrangements into formally documented policies with named owners','Complete a full DPIA review and ensure individuals are proactively informed of automated decision-making','Strengthen data lineage documentation to support explainability, auditability, and model traceability','Develop escalation pathways and override protocols for AI-assisted decisions affecting individuals'],
-  lowmod:  ['Document any remaining informal governance arrangements — verbal accountability cannot be demonstrated to a regulator','Conduct an EU AI Act scope assessment to determine which obligations apply from August 2026','Close identified gaps in explainability and audit trail capability before regulatory obligations mature','Formalise training records for staff who review or rely on AI-generated outputs'],
-  low:     ['Maintain currency with EU AI Act implementation — high-risk obligations apply from August 2026','Ensure new AI deployments are automatically subject to your existing inventory and DPIA process','Continue scheduled bias and fairness testing as models evolve and data distributions shift','Consider ISO/IEC 42001 certification to formally evidence governance maturity']
+  critical:['Appoint a named AI governance lead with a board reporting line','Commission an immediate AI inventory audit','Restrict high-impact automated decisions until oversight is live','Engage counsel on UK GDPR, EU AI Act, and sector duties'],
+  high:    ['Formalise AI governance ownership across risk, compliance, and technology','Complete DPIAs for every AI system that processes personal data','Implement decision logging for high-impact AI outputs','Establish human review with documented override rights'],
+  moderate:['Convert informal arrangements into owned, written policies','Complete DPIA review and notify individuals about automated decisions','Strengthen data lineage for explainability and audit','Define escalation paths for AI-assisted decisions'],
+  lowmod:  ['Document remaining informal accountability so it can be shown to a regulator','Assess EU AI Act scope ahead of August 2026 obligations','Close explainability and audit-trail gaps early','Keep training records for staff who rely on AI outputs'],
+  low:     ['Track EU AI Act high-risk obligations through August 2026','Route new AI deployments through inventory and DPIA by default','Keep bias and fairness testing current as models change','Consider ISO/IEC 42001 to evidence maturity']
 };
 
 const RISK_LEVEL = p => p >= 65 ? 'low' : p >= 40 ? 'moderate' : 'high';
-const PATH_LEN = Math.PI * 75;
 
-function animateGauge(score, color) {
-  const fill = document.getElementById('gaugeFill');
-  const scoreEl = document.getElementById('gaugeScore');
-  fill.style.stroke = color;
-  const start = performance.now();
-  (function tick(now) {
-    const p = Math.min((now - start) / 1600, 1);
-    const e = 1 - Math.pow(1 - p, 4);
-    const cur = Math.round(e * score);
-    scoreEl.textContent = cur + '%';
-    fill.style.strokeDasharray = `${(cur/100)*PATH_LEN} ${PATH_LEN}`;
+function animateScore(el, target) {
+  const end = Math.round(Number(target) || 0);
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = end;
+    return;
+  }
+  const dur = 900;
+  const t0 = performance.now();
+  const tick = (now) => {
+    const p = Math.min(1, (now - t0) / dur);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(end * eased);
     if (p < 1) requestAnimationFrame(tick);
-  })(start);
+  };
+  requestAnimationFrame(tick);
+}
+
+function renderMaturity(score) {
+  animateScore(document.getElementById('diagScore'), score);
+  document.getElementById('diagTier').innerHTML =
+    '<strong>' + raLevelText(score) + '</strong>';
+  document.getElementById('maturityMount').innerHTML =
+    raComplianceBar(score) + raLadderScale(score);
 }
 
 function renderDomains(ss) {
   const order = ['s2','s6','s4','s5','s1','s3','s7'];
   document.getElementById('domainList').innerHTML = order.map(k => {
-    const pct = ss[k] || 0;
+    const pct = Math.round(ss[k] || 0);
     const lvl = RISK_LEVEL(pct);
     const lbl = lvl === 'low' ? 'Low' : lvl === 'moderate' ? 'Moderate' : 'High';
-    const cls = lvl === 'low' ? 'rp-low' : lvl === 'moderate' ? 'rp-mod' : 'rp-high';
-    const desc = lvl === 'high' ? 'Governance gaps identified' : lvl === 'moderate' ? 'Partial controls in place' : 'Controls documented';
-    return `<div class="domain-item"><div><div class="domain-name">${DOMAIN_NAMES[k]}</div><div class="domain-sub">${desc}</div></div><span class="risk-pill ${cls}">${lbl}</span></div>`;
+    const badgeClass = lvl === 'high' ? 'risk-pill lvl-high badge-high-risk' : 'risk-pill lvl-' + lvl;
+    /* Flat grid children so score and badge columns align across rows */
+    return `<div class="domain-item">` +
+      `<div class="domain-name">${DOMAIN_NAMES[k]}</div>` +
+      `<div class="domain-track progress-bar-track"><div class="domain-track__fill progress-bar-fill" style="width:0%" data-width="${pct}"></div></div>` +
+      `<span class="domain-pct">${pct}</span>` +
+      `<span class="${badgeClass}">${lbl}</span>` +
+      `</div>`;
   }).join('');
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.domain-track__fill[data-width]').forEach(el => {
+      el.style.width = el.getAttribute('data-width') + '%';
+    });
+  });
+}
+
+function cleanCopy(s) {
+  return String(s || '')
+    .replace(/[\u2013\u2014]/g, ', ')
+    .replace(/\s*,\s*,/g, ',')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 }
 
 function renderFlags(flags, regime) {
   const all = [...(flags||[]), ...(regime||[])];
   const c = document.getElementById('flagContainer');
   const l = document.getElementById('flagsLocked');
-  if (!all.length) { c.innerHTML = `<p style="color:var(--muted2);font-size:0.88rem;">No critical priority flags were identified in this assessment.</p>`; return; }
+  if (!all.length) {
+    c.innerHTML = `<p class="flag-empty">No critical flags in this assessment.</p>`;
+    return;
+  }
   const f = all[0];
   const sc = f.severity === 'critical' ? '' : f.severity === 'info' ? 'severity-info' : `severity-${f.severity}`;
-  c.innerHTML = `<div class="flag-card ${sc}"><div class="flag-label">${f.label||''}</div><div class="flag-basis">Regulatory basis: ${f.basis||''}</div></div>`;
-  if (all.length > 1) { l.style.display = 'flex'; document.getElementById('moreFlagsText').textContent = `${all.length-1} additional finding${all.length-1>1?'s':''} included in the full report.`; }
+  c.innerHTML = `<div class="flag-card ${sc}"><div><div class="flag-label">${cleanCopy(f.label)}</div><div class="flag-basis">${cleanCopy(f.basis)}</div></div></div>`;
+  if (all.length > 1) {
+    l.hidden = false;
+    document.getElementById('moreFlagsText').textContent =
+      `${all.length - 1} more finding${all.length - 1 > 1 ? 's' : ''} in the full report`;
+  }
 }
 
 function renderRecs(bandId) {
-  const recs = RECS[bandId] || RECS.moderate;
-  document.getElementById('recsBlurred').innerHTML = recs.slice(0,3).map((r,i) => `<div class="rec-card"><div class="rec-num">${i+1}</div><div class="rec-txt">${r}</div></div>`).join('');
+  const recs = (RECS[bandId] || RECS.moderate).slice(0, 4);
+  /* Row 1 fully visible; rows 2–4 real text, masked by gradient + unlock bar */
+  document.getElementById('recsBlurred').innerHTML = recs.map((r, i) =>
+    `<div class="rec-card${i === 0 ? '' : ' rec-card--dim'}"><div class="rec-num">${i + 1}</div><div class="rec-txt">${r}</div></div>`
+  ).join('');
+  const unlock = document.querySelector('.recs-unlock__copy strong');
+  if (unlock) unlock.textContent = (recs.length - 1) + ' more actions locked';
 }
 
 const PAGES = [
-  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div><div style="font-size:.62rem;color:var(--muted);margin-top:4px;letter-spacing:.06em;">AI GOVERNANCE RISK ASSESSMENT</div></div><div class="rp-meta">Confidential<br>${d.org}<br>Page 1 of 12</div></div><div class="rp-band-bar"><div class="rp-band-dot" style="background:${d.color}"></div><div class="rp-band-text" style="color:${d.color}">${d.band}</div></div><div class="rp-score-lg" style="color:${d.color}">${d.score}%</div><div class="rp-score-label">Adjusted Exposure Score</div><div style="font-size:.7rem;color:var(--muted2);margin-top:12px;line-height:1.5;">Executive Summary · AI Governance Risk Assessment<br>${d.org} · ${d.sector}</div>`,
-  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div></div><div class="rp-meta">Domain Findings<br>Page 4 of 12</div></div><div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px;">Domain-by-Domain Breakdown</div><div class="rp-domain-rows">${['Governance','Compliance','Human Oversight','Explainability','AI Inventory','Data Quality','Operational'].map((n,i)=>{const w=[76,42,58,81,33,67,89][i];const c=w>=65?'#22c55e':w>=40?'#f59e0b':'#ef4444';return`<div class="rp-domain-row"><div class="rp-dn">${n}</div><div class="rp-dp"><div class="rp-dp-fill" style="width:${w}%;background:${c}"></div></div><div class="rp-dr" style="color:${c}">${w>=65?'Low':w>=40?'Mod':'High'}</div></div>`;}).join('')}</div>`,
-  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div></div><div class="rp-meta">Priority Findings<br>Page 5 of 12</div></div><div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;">Detailed Findings</div>${['F1 · Critical','F2 · High','F3 · Moderate'].map((f,i)=>`<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-left:3px solid ${['#ef4444','#f97316','#f59e0b'][i]};border-radius:4px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:.7rem;font-weight:700;color:var(--muted2)">${f}</div><div style="font-size:.65rem;color:var(--muted);margin-top:3px;">${['Governance accountability gap identified','Human oversight controls require formalisation','DPIA requirements — UK GDPR Art.35'][i]}</div></div>`).join('')}`,
-  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div></div><div class="rp-meta">Recommendations<br>Page 7 of 12</div></div><div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;">Priority Roadmap</div>${[1,2,3,4].map(n=>`<div style="display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:flex-start;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.04);padding-bottom:10px;"><div style="font-family:'Instrument Serif',serif;font-size:1.1rem;color:rgba(96,165,250,.25);">${n}</div><div style="font-size:.67rem;color:var(--muted2);line-height:1.5;">${['Appoint named AI governance lead with board reporting line','Conduct DPIAs for all AI systems processing personal data','Implement decision logging for all high-impact AI outputs','Review third-party AI provider contracts for transparency'][n-1]}</div></div>`).join('')}<div class="rp-pages-label">12 pages total</div>`
+  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div><div class="eyebrow-label rp-doc-label">Risk assessment</div></div><div class="rp-meta">Confidential<br>${d.org}<br>Page 1 of 12</div></div><div class="rp-band-bar"><div class="rp-band-dot"></div><div class="rp-band-text">${d.band}</div></div><div class="rp-score-lg">${d.score}</div><div class="rp-score-label">Exposure score, ${d.tier}</div><p class="rp-exec">${d.org}<br>${d.sector}</p>`,
+  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div></div><div class="rp-meta">Domains<br>Page 4 of 12</div></div><div class="eyebrow-label">Domain scores</div><div class="rp-domain-rows">${['Governance','Compliance','Human oversight','Explainability','AI inventory','Data quality','Operations'].map((n,i)=>{const w=[76,42,58,81,33,67,89][i];return`<div class="rp-domain-row"><div class="rp-dn">${n}</div><div class="rp-dp progress-bar-track"><div class="rp-dp-fill progress-bar-fill" style="width:${w}%"></div></div><div class="rp-dr">${w>=65?'Low':w>=40?'Mod':'High'}</div></div>`;}).join('')}</div>`,
+  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div></div><div class="rp-meta">Findings<br>Page 5 of 12</div></div><div class="eyebrow-label">Priority findings</div>${['F1 Critical','F2 High','F3 Moderate'].map((f,i)=>`<div class="rp-finding"><div class="rp-finding__t">${f}</div><div class="rp-finding__d">${['Governance accountability gap','Human oversight needs formalising','DPIA required under UK GDPR Art.35'][i]}</div></div>`).join('')}`,
+  d => `<div class="rp-header"><div><div class="rp-logo ra-wordmark">RegAnchor</div></div><div class="rp-meta">Roadmap<br>Page 7 of 12</div></div><div class="eyebrow-label">Remediation plan</div>${[1,2,3,4].map(n=>`<div class="rp-rec"><div class="rp-rec__n">${n}</div><div class="rp-rec__t">${['Appoint AI governance lead with board reporting','Complete DPIAs for systems processing personal data','Add decision logging for high-impact outputs','Review third-party AI contracts'][n-1]}</div></div>`).join('')}<div class="rp-pages-label">12 pages</div>`
 ];
 
 let currentPage = 0;
 function startPageCycle(data) {
   const c = document.getElementById('reportPage');
+  if (!c) return;
   const show = idx => { c.innerHTML = `<div class="rp-face">${PAGES[idx](data)}</div>`; };
   show(0);
   setInterval(() => {
@@ -438,7 +329,25 @@ function startPageCycle(data) {
   }, 3500);
 }
 
-/* ── EMBEDDED CHECKOUT ─────────────────────────────────── */
+function bindScrollChrome() {
+  const chrome = document.getElementById('siteChrome');
+  const fill = document.getElementById('scrollProgress');
+  if (!chrome || !fill) return;
+  let ticking = false;
+  const update = () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    fill.style.transform = 'scaleX(' + p + ')';
+    chrome.classList.toggle('is-scrolled', window.scrollY > 12);
+    ticking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(update); ticking = true; }
+  }, { passive: true });
+  window.addEventListener('resize', update, { passive: true });
+  update();
+}
+
 let checkoutInstance = null;
 
 async function startCheckout() {
@@ -485,26 +394,28 @@ async function startCheckout() {
     btn.textContent = 'Hide checkout';
     btn.onclick = () => {
       contEl.style.display = 'none';
-      btn.textContent = 'Get Full Report — £295';
+      btn.textContent = CTA_LABEL;
       btn.onclick = startCheckout;
     };
 
   } catch (err) {
     loadEl.style.display = 'none';
     btn.disabled = false;
-    btn.textContent = 'Get Full Report — £295';
+    btn.textContent = CTA_LABEL;
     console.error(err);
     alert('Could not load checkout. Please try again.');
   }
 }
 
-/* ── INIT ──────────────────────────────────────────────── */
 function init() {
+  bindScrollChrome();
+
   let result = null;
   try { result = JSON.parse(sessionStorage.getItem('mla_diagnostic_result') || ''); } catch(e) {}
-  if (!result) { document.getElementById('noData').style.display = 'flex'; return; }
+  if (!result) { document.getElementById('noData').hidden = false; return; }
 
-  document.getElementById('resultsContent').style.display = 'block';
+  const root = document.getElementById('resultsContent');
+  root.hidden = false;
 
   const bandId = result.risk_band || 'moderate';
   const band   = BANDS[bandId] || BANDS.moderate;
@@ -512,14 +423,9 @@ function init() {
   const org    = result.organisation || 'Your Organisation';
   const sector = result.sector || 'Not specified';
 
-  setTimeout(() => animateGauge(score, band.color), 300);
-
-  const pill = document.getElementById('bandPill');
-  pill.textContent = band.label;
-  pill.style.background = band.color + '18';
-  pill.style.color = band.color;
-  pill.style.border = `1px solid ${band.color}30`;
-
+  renderMaturity(score);
+  document.getElementById('scoreCard').className = 'score-card results-container sev-' + bandId;
+  document.getElementById('bandPill').textContent = band.label;
   document.getElementById('bandHeading').textContent = band.heading;
   document.getElementById('bandDesc').textContent = band.desc;
   document.getElementById('ctxOrg').textContent = org;
@@ -528,14 +434,19 @@ function init() {
   renderDomains(result.section_scores || {});
   renderFlags(result.priority_flags || [], result.regime_flags || []);
   renderRecs(bandId);
-  startPageCycle({ org, sector, score, band: band.label, color: band.color });
+  startPageCycle({ org, sector, score, band: band.label, tier: raLevelText(score) });
 
   if (result.id) {
-  sessionStorage.setItem('pending_result_id', result.id);
-  localStorage.setItem('mla_result_id', result.id);
+    sessionStorage.setItem('pending_result_id', result.id);
+    localStorage.setItem('mla_result_id', result.id);
+  }
+
+  requestAnimationFrame(() => {
+    root.classList.add('is-ready');
+    bindScrollChrome();
+  });
 }
-}
-  
+
 init();
 </script>
 </body>

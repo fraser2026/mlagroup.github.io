@@ -1,5 +1,5 @@
 /**
- * MLA Group — AI Governance Diagnostic Report Generator
+ * RegAnchor — AI Governance Diagnostic Report Generator
  * 
  * Server-side PDF generation via Puppeteer.
  * Fetches data snapshot from Supabase, renders HTML template,
@@ -110,32 +110,34 @@ async function fetchResponseData(responseId) {
 function buildHeaderTemplate(orgName) {
   // Puppeteer header/footer templates must be self-contained HTML with inline styles.
   // Special classes: pageNumber, totalPages, date, title, url
+  // Ink on paper, no fill — matches report-template.html's running section header.
   return `
     <div style="
       width: 100%;
       height: 28mm;
       padding: 0 18mm;
-      background: #0f1f38;
+      background: #FFFFFF;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-family: 'DM Sans', 'Segoe UI', sans-serif;
+      font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
       box-sizing: border-box;
+      border-bottom: 1px solid #E4E7EC;
     ">
       <span style="
-        color: #c9a465;
+        color: #0A0E14;
         font-size: 7pt;
-        font-weight: 700;
+        font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.14em;
-      ">MLA GROUP</span>
+      ">RegAnchor</span>
       <span style="
-        color: rgba(255,255,255,0.6);
+        color: #6B7280;
         font-size: 7pt;
         font-weight: 400;
       ">AI Governance Diagnostic — ${orgName}</span>
       <span style="
-        color: rgba(255,255,255,0.4);
+        color: #6B7280;
         font-size: 7pt;
         font-weight: 500;
       "><span class="pageNumber"></span> / <span class="totalPages"></span></span>
@@ -152,14 +154,14 @@ function buildFooterTemplate(orgName, dateStr) {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-family: 'DM Sans', 'Segoe UI', sans-serif;
+      font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
       box-sizing: border-box;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid #E4E7EC;
     ">
-      <span style="color: #94a3b8; font-size: 6pt; letter-spacing: 0.04em;">
+      <span style="color: #6B7280; font-size: 6pt; letter-spacing: 0.04em;">
         Confidential — ${orgName} — ${dateStr}
       </span>
-      <span style="color: #94a3b8; font-size: 6pt; letter-spacing: 0.04em;">
+      <span style="color: #6B7280; font-size: 6pt; letter-spacing: 0.04em;">
         ${CONFIG.siteDomain}
       </span>
     </div>
@@ -186,9 +188,9 @@ async function generatePdf(data) {
     `const REPORT_DATA = ${JSON.stringify(snapshot)};`
   );
 
-  console.log(`[MLA Report] Generating report ${snapshot._report.id}`);
-  console.log(`[MLA Report] Organisation: ${snapshot.organisation}`);
-  console.log(`[MLA Report] Snapshot hash: ${snapshot._report.snapshot_hash}`);
+  console.log(`[RegAnchor Report] Generating report ${snapshot._report.id}`);
+  console.log(`[RegAnchor Report] Organisation: ${snapshot.organisation}`);
+  console.log(`[RegAnchor Report] Snapshot hash: ${snapshot._report.snapshot_hash}`);
 
   // Launch Puppeteer
   const browser = await puppeteer.launch({
@@ -236,9 +238,9 @@ async function generatePdf(data) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
   const dateSlug = snapshot.created_at.slice(0, 10);
-  const filename = `MLA-Governance-Report_${orgSlug}_${dateSlug}_${snapshot._report.snapshot_hash}.pdf`;
+  const filename = `RegAnchor-Governance-Report_${orgSlug}_${dateSlug}_${snapshot._report.snapshot_hash}.pdf`;
 
-  console.log(`[MLA Report] Generated: ${filename} (${(pdfBuffer.length / 1024).toFixed(0)} KB)`);
+  console.log(`[RegAnchor Report] Generated: ${filename} (${(pdfBuffer.length / 1024).toFixed(0)} KB)`);
 
   return {
     buffer: pdfBuffer,
@@ -267,7 +269,7 @@ async function storeReport(responseId, reportResult) {
     });
 
   if (uploadError) {
-    console.error(`[MLA Report] Storage upload failed: ${uploadError.message}`);
+    console.error(`[RegAnchor Report] Storage upload failed: ${uploadError.message}`);
   }
 
   // Update the response record with report metadata
@@ -282,10 +284,10 @@ async function storeReport(responseId, reportResult) {
     .eq('id', responseId);
 
   if (updateError) {
-    console.error(`[MLA Report] Record update failed: ${updateError.message}`);
+    console.error(`[RegAnchor Report] Record update failed: ${updateError.message}`);
   }
 
-  console.log(`[MLA Report] Stored to Supabase: ${storagePath}`);
+  console.log(`[RegAnchor Report] Stored to Supabase: ${storagePath}`);
   return storagePath;
 }
 
@@ -337,17 +339,17 @@ async function main() {
   let data;
 
   if (args.includes('--preview')) {
-    console.log('[MLA Report] Using preview mock data');
+    console.log('[RegAnchor Report] Using preview mock data');
     data = MOCK_DATA;
   } else if (args.includes('--id')) {
     const id = args[args.indexOf('--id') + 1];
     if (!id) throw new Error('--id requires a response ID');
-    console.log(`[MLA Report] Fetching response ${id} from Supabase`);
+    console.log(`[RegAnchor Report] Fetching response ${id} from Supabase`);
     data = await fetchResponseData(id);
   } else if (args.includes('--json')) {
     const path = args[args.indexOf('--json') + 1];
     if (!path) throw new Error('--json requires a file path');
-    console.log(`[MLA Report] Reading data from ${path}`);
+    console.log(`[RegAnchor Report] Reading data from ${path}`);
     data = JSON.parse(readFileSync(path, 'utf-8'));
   } else {
     console.log('Usage:');
@@ -364,7 +366,7 @@ async function main() {
   mkdirSync(CONFIG.outputDir, { recursive: true });
   const outputPath = join(CONFIG.outputDir, result.filename);
   writeFileSync(outputPath, result.buffer);
-  console.log(`[MLA Report] Written to: ${outputPath}`);
+  console.log(`[RegAnchor Report] Written to: ${outputPath}`);
 
   // Optionally store to Supabase
   if (args.includes('--store') && args.includes('--id')) {
@@ -380,6 +382,6 @@ export { generatePdf, createDataSnapshot, fetchResponseData, storeReport };
 
 // Run CLI
 main().catch(err => {
-  console.error(`[MLA Report] Error: ${err.message}`);
+  console.error(`[RegAnchor Report] Error: ${err.message}`);
   process.exit(1);
 });

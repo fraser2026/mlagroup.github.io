@@ -8,8 +8,22 @@ const TYPE_BORDER={organisation:'var(--ra-border)',system:'var(--ra-border)',ass
 const PILLAR_COLORS={visibility:'var(--ra-text-3)',accountability:'var(--ra-text-3)',control:'var(--ra-text-3)',assurance:'var(--ra-text-3)'};
 const CTRL_STATUS_L={not_started:'Not Started',in_progress:'In Progress',implemented:'Implemented',verified:'Verified'};
 const CTRL_STATUS_C={not_started:'var(--ra-text-3)',in_progress:'var(--ra-text-2)',implemented:'var(--ra-ok)',verified:'var(--ra-ok)'};
-const MATURITY_BANDS=[{max:30,label:'Initial'},{max:50,label:'Developing'},{max:70,label:'Structured'},{max:85,label:'Managed'},{max:100,label:'Governance Ready'}];
 let allControls=[],allTasks=[],allAssignments=[],currentControlId=null; let allComplianceRules=[];
+
+function titleCaseLabel(s){
+  return String(s||'').replace(/[_-]+/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
+}
+function fieldHint(label){
+  var l=String(label||'').toLowerCase();
+  if(l.indexOf('vendor')!==-1)return 'e.g. OpenAI';
+  if(l.indexOf('service')!==-1)return 'e.g. Model hosting';
+  if(l.indexOf('capability')!==-1)return 'e.g. Generative text';
+  if(l.indexOf('owner')!==-1)return 'Named individual';
+  if(l.indexOf('department')!==-1)return 'e.g. Operations';
+  if(l.indexOf('email')!==-1)return 'name@company.com';
+  if(l.indexOf('date')!==-1)return 'dd/mm/yyyy';
+  return '';
+}
  
 async function navigateControls(navEl){navigate('controls',navEl);if(!currentOrg)await ensureOrg();await loadControls();await loadScoreHistory();}
  
@@ -22,11 +36,6 @@ async function loadControls(){
   ]);
   allControls=controls||[];allTasks=tasks||[];allAssignments=assignments||[];
   renderControlsList();
-  // Update badge — use assignment counts not control category counts
-  const done=allAssignments.filter(a=>a.status==='implemented'||a.status==='verified').length;
-  const total=allAssignments.length;
-  if(total){document.getElementById('ctrl-count-badge').textContent=done+'/'+total;document.getElementById('ctrl-count-badge').style.display='inline-flex'}
-  else{document.getElementById('ctrl-count-badge').style.display='none'}
 }
  
 function getGovScore(){
@@ -57,13 +66,10 @@ function getGovScore(){
   return{score:Math.round(score),byType};
 }
  
-function getMaturity(score){return MATURITY_BANDS.find(b=>score<=b.max)?.label||'Initial'}
- 
 function renderControlsList(){
   const gov=getGovScore();
   document.getElementById('gov-score').textContent=gov.score+'%';
-  document.getElementById('gov-score').style.color=gov.score>=70?'#4ade80':gov.score>=40?'#fbbf24':'#f87171';
-  document.getElementById('gov-maturity').textContent=getMaturity(gov.score);
+  document.getElementById('gov-maturity').textContent=raLevelText(gov.score);
   ['organisation','system','assurance'].forEach(t=>{
     const d=gov.byType[t];const pct=d.total>0?Math.round(d.done/d.total*100):0;
     document.getElementById('gov-'+t.substring(0,3)+'-pct').textContent=pct+'%';
@@ -80,7 +86,7 @@ function renderControlsList(){
   if(orgCtrls.length){
     var orgItems=orgCtrls.map(function(c){var a=allAssignments.find(function(x){return x.control_id===c.id&&!x.system_id});var st=a?a.status:'not_started';return{ctrl:c,assign:a,st:st}});
     orgItems.sort(function(a,b){return controlUrgency(a.st,a.assign)-controlUrgency(b.st,b.assign)});
-    orgEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.organisation+';"></span>Organisation Controls</div><div class="panel-sub">Applies once per organisation</div></div><div style="padding:4px 20px 8px;font-size:.72rem;color:var(--muted);line-height:1.5;">Governance policies and structures that apply across your entire organisation.</div>'+
+    orgEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title">Organisation Controls</div><div class="panel-sub">Applies once per organisation</div></div><div class="panel-note">Governance policies and structures that apply across your entire organisation.</div>'+
     orgItems.map(function(item){return renderControlRow(item.ctrl,item.st,'organisation',null,item.assign?item.assign.id:null,item.assign)}).join('')+'</div>';
   }
   
@@ -92,7 +98,7 @@ function renderControlsList(){
   const systemIds=[...new Set(allAssignments.filter(a=>a.system_id).map(a=>a.system_id))];
   
   if(!systemIds.length&&perSysCtrls.length){
-    sysEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.system+';"></span>System & Assurance Controls</div></div><div class="empty-state" style="padding:28px 0;"><h4>No system controls triggered yet</h4><p>Run an assessment on an AI system to trigger applicable controls.</p></div></div>';
+    sysEl.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title">System &amp; Assurance Controls</div></div><div class="empty-state"><h4>No system controls triggered yet</h4><p>Run an assessment on an AI system to trigger applicable controls.</p></div></div>';
     assEl.innerHTML='';
     return;
   }
@@ -110,11 +116,11 @@ function renderControlsList(){
       else sysList.push({ctrl,assign:a});
     });
     if(sysList.length){
-      sysHtml+='<div class="panel" style="margin-bottom:12px;"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.system+';"></span>'+esc(sysName)+'</div><div class="panel-sub">'+sysList.length+' controls</div></div>'+
+      sysHtml+='<div class="panel"><div class="panel-header"><div class="panel-title">'+esc(sysName)+'</div><div class="panel-sub">'+sysList.length+' controls</div></div>'+
       sysList.sort(function(a,b){return controlUrgency(a.assign.status,a.assign)-controlUrgency(b.assign.status,b.assign)}).map(function(item){return renderControlRow(item.ctrl,item.assign.status,'system',sysId,item.assign.id,item.assign)}).join('')+'</div>';
     }
     if(assList.length){
-      assHtml+='<div class="panel" style="margin-bottom:12px;"><div class="panel-header"><div class="panel-title" style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:'+TYPE_COLORS.assurance+';"></span>'+esc(sysName)+' — Assurance</div><div class="panel-sub">'+assList.length+' controls</div></div><div style="padding:4px 20px 8px;font-size:.72rem;color:var(--muted);line-height:1.5;">Independent checks and audit processes that verify your governance is working.</div>'+
+      assHtml+='<div class="panel"><div class="panel-header"><div class="panel-title">'+esc(sysName)+' — Assurance</div><div class="panel-sub">'+assList.length+' controls</div></div><div class="panel-note">Independent checks and audit processes that verify your governance is working.</div>'+
       assList.sort(function(a,b){return controlUrgency(a.assign.status,a.assign)-controlUrgency(b.assign.status,b.assign)}).map(function(item){return renderControlRow(item.ctrl,item.assign.status,'assurance',sysId,item.assign.id,item.assign)}).join('')+'</div>';
     }
   });
@@ -137,14 +143,12 @@ function renderControlRow(c,st,type,sysId,assignId,assign){
   var today=new Date().toISOString().split('T')[0];
   var isOverdue=assign&&assign.due_date&&assign.due_date<today&&st!=='implemented'&&st!=='verified';
   var dueMeta='';
-  if(isOverdue)dueMeta=' <span style="font-size:.62rem;color:#f87171;font-weight:600;margin-left:4px;">OVERDUE</span>';
-  else if(assign&&assign.due_date&&st!=='implemented'&&st!=='verified')dueMeta=' <span style="font-size:.62rem;color:var(--muted);margin-left:4px;">Due '+fmtDate(assign.due_date+'T00:00:00')+'</span>';
-  var leftBorder=isOverdue?'border-left:3px solid #f87171;padding-left:17px;':'';
-  var hoverOut=isOverdue?'rgba(239,68,68,0.03)':'none';
-  return '<div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:background .1s;'+leftBorder+'background:'+hoverOut+';" onclick="openControlDetail(\''+c.id+'\','+aid+')" onmouseover="this.style.background=\'rgba(255,255,255,0.02)\'" onmouseout="this.style.background=\''+hoverOut+'\'">'+
-    '<div style="width:28px;height:28px;border-radius:8px;background:'+TYPE_BG[type]+';border:1px solid '+TYPE_BORDER[type]+';display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:'+TYPE_COLORS[type]+';flex-shrink:0;">'+c.control_number+'</div>'+
-    '<div style="flex:1;min-width:0;"><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px;">'+esc(c.title)+dueMeta+'</div><div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(c.description.substring(0,100))+'...</div></div>'+
-    '<span style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+CTRL_STATUS_L[st]+'</span>'+
+  if(isOverdue)dueMeta=' <span class="row-flag">Overdue</span>';
+  else if(assign&&assign.due_date&&st!=='implemented'&&st!=='verified')dueMeta=' <span class="row-due">Due '+fmtDate(assign.due_date+'T00:00:00')+'</span>';
+  return '<div class="row-item row-item--padded'+(isOverdue?' is-overdue':'')+'" onclick="openControlDetail(\''+c.id+'\','+aid+')">'+
+    '<div class="row-marker row-marker--icon" aria-hidden="true"><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/></svg></div>'+
+    '<div class="row-main"><div class="row-title"><span class="row-kicker">C'+c.control_number+'</span>'+esc(c.title)+dueMeta+'</div><div class="row-desc row-desc--truncate">'+esc(c.description.substring(0,100))+'…</div></div>'+
+    '<span class="state-label" style="color:'+CTRL_STATUS_C[st]+';">'+CTRL_STATUS_L[st]+'</span>'+
   '</div>';
 }
  
@@ -177,22 +181,24 @@ async function openControlDetail(ctrlId,assignId){
   const sysName=assign.system_id?allSystems.find(s=>s.id===assign.system_id)?.name:null;
   
   // Header badges
-  const tCol=TYPE_COLORS[ctrl.control_type];const tBg=TYPE_BG[ctrl.control_type];const tBor=TYPE_BORDER[ctrl.control_type];
-  document.getElementById('cd-type-badge').textContent=ctrl.control_type;
-  document.getElementById('cd-type-badge').style.cssText='font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+tCol+';background:'+tBg+';border:1px solid '+tBor;
-  const pCol=PILLAR_COLORS[ctrl.pillar]||'var(--muted)';
-  document.getElementById('cd-pillar-badge').textContent=ctrl.pillar;
-  document.getElementById('cd-pillar-badge').style.cssText='font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+pCol+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)';
+  var typeBadge=document.getElementById('cd-type-badge');
+  typeBadge.textContent=titleCaseLabel(ctrl.control_type);
+  typeBadge.removeAttribute('style');typeBadge.className='tag';
+  var pillarBadge=document.getElementById('cd-pillar-badge');
+  pillarBadge.textContent=titleCaseLabel(ctrl.pillar);
+  pillarBadge.removeAttribute('style');pillarBadge.className='tag';
   const st=assign?.status||'not_started';
-  document.getElementById('cd-status-badge').textContent=CTRL_STATUS_L[st];
-  document.getElementById('cd-status-badge').style.cssText='font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;color:'+CTRL_STATUS_C[st]+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)';
+  var statusBadge=document.getElementById('cd-status-badge');
+  statusBadge.textContent=CTRL_STATUS_L[st];
+  statusBadge.removeAttribute('style');statusBadge.className='state-label';
+  statusBadge.style.color=CTRL_STATUS_C[st];
  
-  document.getElementById('cd-title').textContent=ctrl.title+(sysName?' — '+sysName:'')+(ctrl.is_org_level?' (Global)':'');
+  document.getElementById('cd-title').textContent=ctrl.title+(sysName?': '+sysName:'')+(ctrl.is_org_level?' (Global)':'');
   document.getElementById('cd-desc').textContent=ctrl.description;
   document.getElementById('cd-purpose').textContent=ctrl.purpose||'';
-  document.getElementById('cd-task-count').textContent=tasks.length+' tasks';
+  document.getElementById('cd-task-count').textContent=tasks.length+' task'+(tasks.length===1?'':'s');
 
-  // Task progress bar
+  // Task progress bar — status lives in the header badge, not duplicated here
   var tasksDone=0;
   var tasksTotal=tasks.length;
   tasks.forEach(function(t){
@@ -206,51 +212,48 @@ async function openControlDetail(ctrlId,assignId){
     else if(t.task_type!=='checkbox'&&val.trim()!=='')tasksDone++;
   });
   var taskPct=tasksTotal>0?Math.round(tasksDone/tasksTotal*100):0;
-  var taskPctCol=taskPct>=100?'#4ade80':taskPct>=50?'#fbbf24':'var(--sky)';
   var isComplete=assign&&(assign.status==='implemented'||assign.status==='verified');
   var progressEl=document.getElementById('cd-progress-bar');
   if(tasksTotal>0){
-    progressEl.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span style="font-size:.85rem;font-weight:700;color:'+taskPctCol+';">'+taskPct+'%</span><span style="font-size:.78rem;color:var(--sub);font-weight:500;">'+tasksDone+' of '+tasksTotal+' tasks complete</span></div>'+(isComplete?'<span style="font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:100px;color:#4ade80;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18);">Implemented</span>':(taskPct===100?'<span style="font-size:.72rem;color:#4ade80;font-weight:600;">Ready to mark as Implemented</span>':''))+'</div><div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+taskPct+'%;background:'+taskPctCol+';border-radius:3px;transition:width .4s ease;"></div></div></div>';
+    var progressFlag=(!isComplete&&taskPct===100)?'<span class="state-label ctrl-summary__flag">Ready to mark as implemented</span>':'';
+    progressEl.innerHTML='<div class="ctrl-summary"><div class="ctrl-summary__head"><span class="ctrl-summary__pct ra-num">'+taskPct+'%</span><span class="ctrl-summary__note">'+tasksDone+' of '+tasksTotal+' tasks complete</span>'+progressFlag+'</div><div class="cprogress-bar"><div class="cprogress-fill" style="width:'+taskPct+'%;"></div></div></div>';
   }else{
     progressEl.innerHTML='';
   }
 
-  // Check for linked policy needing acknowledgment
+  // Linked policy banner — use the dedicated slot in the markup
   var linkedPolBanner='';
   if(allPolicies.length){
     var linkedPol=allPolicies.find(function(p){return p.linked_control_id===ctrlId&&p.published_at&&p.requires_acknowledgment});
     if(linkedPol){
       var polAcked=allAcknowledgments.find(function(a){return a.policy_id===linkedPol.id&&a.version_acknowledged===linkedPol.version});
       if(!polAcked){
-        linkedPolBanner='<div style="background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.18);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg><div style="flex:1;"><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:2px;">Linked policy requires your acknowledgment</div><div style="font-size:.75rem;color:var(--muted);line-height:1.5;">The policy &ldquo;'+esc(linkedPol.title)+'&rdquo; (v'+esc(linkedPol.version)+') is linked to this control and needs to be acknowledged before this control can be considered fully implemented.</div></div><button class="btn-topbar btn-topbar-primary" style="flex-shrink:0;padding:6px 14px;font-size:.72rem;" onclick="openPolicyDetail(\''+linkedPol.id+'\')">Review Policy</button></div>';
+        linkedPolBanner='<div class="callout callout--accent"><div class="callout__body"><div class="callout__title">Linked policy requires acknowledgment</div><div class="callout__desc">Acknowledge &ldquo;'+esc(linkedPol.title)+'&rdquo; (v'+esc(linkedPol.version)+') before this control can be marked fully implemented.</div></div><div class="callout__actions"><button class="btn-topbar btn-topbar-primary btn-sm" onclick="openPolicyDetail(\''+linkedPol.id+'\')">Review policy</button></div></div>';
       }
     }
   }
- 
-  // Render linked policy banner above tasks
-  var tasksPanel=document.getElementById('cd-tasks').parentElement.parentElement;
-  if(linkedPolBanner){
-    var bannerEl=document.getElementById('cd-policy-banner');
-    if(bannerEl)bannerEl.remove();
-    tasksPanel.insertAdjacentHTML('beforebegin','<div id="cd-policy-banner">'+linkedPolBanner+'</div>');
-  }else{
-    var oldBanner=document.getElementById('cd-policy-banner');
-    if(oldBanner)oldBanner.remove();
-  }
+  var bannerEl=document.getElementById('cd-policy-banner');
+  if(bannerEl)bannerEl.innerHTML=linkedPolBanner;
 
   // Render tasks
   document.getElementById('cd-tasks').innerHTML=tasks.map(t=>{
     const val=taskResp['task_'+t.task_number]||'';
     let input='';
-    if(t.task_type==='checkbox')input='<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.82rem;color:var(--sub);"><input type="checkbox" data-task="'+t.task_number+'" '+(val==='done'?'checked':'')+' style="accent-color:var(--accent);width:16px;height:16px;"> Mark as complete</label>';
-    else if(t.task_type==='select'){const opts=t.options?.options||[];input='<select class="field-input" data-task="'+t.task_number+'" style="margin-bottom:0;"><option value="">Select</option>'+opts.map(o=>'<option'+(val===o?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select>'}
-    else if(t.task_type==='text')input='<textarea class="field-input" data-task="'+t.task_number+'" rows="2" style="margin-bottom:0;min-height:60px;" placeholder="Enter details…">'+esc(val)+'</textarea>';
-    else if(t.task_type==='fields'){const fields=t.options?.fields||[];input=fields.map(f=>'<div style="margin-bottom:8px;"><label style="font-size:.68rem;color:var(--muted);margin-bottom:3px;display:block;">'+esc(f)+'</label><input type="text" class="field-input" data-task="'+t.task_number+'" data-field="'+esc(f)+'" value="'+esc((taskResp['task_'+t.task_number+'_'+f])||'')+'" style="margin-bottom:0;" placeholder="'+esc(f)+'"></div>').join('')}
-    return '<div style="padding:14px 0;border-bottom:1px solid var(--border);"><div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;"><span style="width:22px;height:22px;border-radius:6px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:var(--sky);flex-shrink:0;">'+t.task_number+'</span><div><div style="font-size:.82rem;font-weight:600;color:var(--main);margin-bottom:3px;">'+esc(t.title)+'</div><div style="font-size:.76rem;color:var(--muted);line-height:1.6;">'+esc(t.description||'')+'</div></div></div>'+input+'</div>'}).join('');
+    if(t.task_type==='checkbox')input='<label class="check-row"><input type="checkbox" data-task="'+t.task_number+'" '+(val==='done'?'checked':'')+'> Mark as complete</label>';
+    else if(t.task_type==='select'){const opts=t.options?.options||[];input='<select class="field-input" data-task="'+t.task_number+'"><option value="">Select…</option>'+opts.map(o=>'<option'+(val===o?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select>'}
+    else if(t.task_type==='text')input='<textarea class="field-input" data-task="'+t.task_number+'" rows="3" placeholder="Add notes or findings">'+esc(val)+'</textarea>';
+    else if(t.task_type==='fields'){
+      const fields=t.options?.fields||[];
+      input='<div class="task-fields">'+fields.map(function(f){
+        var hint=fieldHint(f);
+        return '<div class="field-group"><label class="field-label">'+esc(f)+'</label><input type="text" class="field-input" data-task="'+t.task_number+'" data-field="'+esc(f)+'" value="'+esc((taskResp['task_'+t.task_number+'_'+f])||'')+'"'+(hint?' placeholder="'+esc(hint)+'"':'')+'></div>';
+      }).join('')+'</div>';
+    }
+    return '<div class="task-row"><div class="task-row__head"><span class="row-marker row-marker--sm">'+t.task_number+'</span><div><div class="row-title">'+esc(t.title)+'</div><div class="row-desc">'+esc(t.description||'')+'</div></div></div><div class="task-row__body">'+input+'</div></div>'}).join('');
  
   // Evidence types
   const evTypes=ctrl.evidence_types||[];
-  document.getElementById('cd-evidence-types').innerHTML=evTypes.length?'<strong style="color:var(--main);font-size:.72rem;">Suggested evidence:</strong> '+evTypes.map(e=>esc(e)).join(' · '):'';
+  document.getElementById('cd-evidence-types').innerHTML=evTypes.length?'<strong>Suggested evidence:</strong> '+evTypes.map(e=>esc(e)).join(', '):'';
  
   // Load existing evidence with download links
   const{data:evidence}=await sb.from('evidence_uploads').select('*').eq('control_assignment_id',assign.id).order('uploaded_at',{ascending:false});
@@ -259,17 +262,17 @@ async function openControlDetail(ctrlId,assignId){
     for(const e of evidence){
       const{data:urlData}=await sb.storage.from('governance-reports').createSignedUrl(e.file_path,3600);
       const url=urlData?.signedUrl||'#';
-      evHtml.push('<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div style="flex:1;min-width:0;"><div style="font-size:.78rem;color:var(--main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(e.file_name)+'</div><div style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(e.uploaded_at)+'</div></div><a href="'+url+'" target="_blank" style="flex-shrink:0;font-size:.72rem;font-weight:600;color:var(--sky);text-decoration:none;padding:5px 10px;border:1px solid rgba(96,165,250,0.2);border-radius:6px;transition:background .15s;" onmouseover="this.style.background=\'rgba(96,165,250,0.08)\'" onmouseout="this.style.background=\'none\'">View</a></div>');
+      evHtml.push('<div class="evidence-row"><svg viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg><div class="evidence-row__main"><div class="evidence-row__name">'+esc(e.file_name)+'</div><div class="evidence-row__date">'+fmtDateLong(e.uploaded_at)+'</div></div><a href="'+url+'" target="_blank" class="btn-topbar btn-topbar-ghost btn-sm">View</a></div>');
     }
     document.getElementById('cd-evidence-list').innerHTML=evHtml.join('');
   }else{
-    document.getElementById('cd-evidence-list').innerHTML='<div style="font-size:.78rem;color:var(--muted);padding:8px 0;">No evidence uploaded yet.</div>';
+    document.getElementById('cd-evidence-list').innerHTML='<div class="empty-inline">No evidence uploaded yet.</div>';
   }
  
   // Update buttons based on current status
   const cBtn=document.getElementById('cd-complete-btn');
-  if(st==='implemented'||st==='verified'){cBtn.textContent='Implemented ✓';cBtn.disabled=true}
-  else{cBtn.textContent='Mark as Implemented';cBtn.disabled=false}
+  if(st==='implemented'||st==='verified'){cBtn.textContent='Implemented';cBtn.disabled=true}
+  else{cBtn.textContent='Mark as implemented';cBtn.disabled=false}
  
   // Load support requests for this control
   await loadSupportForControl(assign.id);
@@ -294,7 +297,7 @@ async function saveControlProgress(){
   await sb.from('control_assignments').update({task_responses:resp,status:newStatus}).eq('id',assign.id);
   assign.task_responses=resp;assign.status=newStatus;
   btn.textContent='Saved';btn.disabled=false;
-  setTimeout(()=>{btn.textContent='Save Progress'},2000);
+  setTimeout(()=>{btn.textContent='Save progress'},2000);
   await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_updated',entity_type:'governance_control',entity_id:currentControlId,changes:{_actor_name:actorName(),control:allControls.find(c=>c.id===currentControlId)?.title}});
 }
  
@@ -307,8 +310,10 @@ async function markControlComplete(){
   await sb.from('control_assignments').update({status:'implemented',completed_by:currentUser.id,completed_at:new Date().toISOString()}).eq('id',assign.id);
   assign.status='implemented';
   document.getElementById('cd-status-badge').textContent='Implemented';
-  document.getElementById('cd-status-badge').style.color='#4ade80';
-  btn.textContent='Implemented ✓';
+  document.getElementById('cd-status-badge').style.color='var(--ra-ok)';
+  btn.textContent='Implemented';
+  var progressFlag=document.querySelector('#cd-progress-bar .ctrl-summary__flag');
+  if(progressFlag)progressFlag.remove();
   await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'control_implemented',entity_type:'governance_control',entity_id:currentControlId,changes:{_actor_name:actorName(),control:allControls.find(c=>c.id===currentControlId)?.title}});
   await loadControls();
 await snapshotGovernanceScore('control_status_changed', currentControlId);
@@ -341,7 +346,7 @@ async function loadSupportForControl(assignId){
   if(!requests||!requests.length){
     // No requests — show new request form
     histEl.innerHTML='';
-    formEl.innerHTML='<p style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:12px;">If you need help implementing this control, request guidance from a RegAnchor governance expert.</p><textarea class="field-input" id="cd-support-msg" rows="3" placeholder="Describe what you need help with…" style="margin-bottom:8px;"></textarea><button class="btn-topbar btn-topbar-primary" onclick="submitSupportRequest()" style="padding:6px 14px;font-size:.75rem;">Request RegAnchor Expert</button><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div>';
+    formEl.innerHTML='<p class="form-note">If you need help implementing this control, request guidance from a RegAnchor governance expert.</p><textarea class="field-input" id="cd-support-msg" rows="3" placeholder="Describe what you need help with…"></textarea><button class="btn-topbar btn-topbar-primary btn-sm" onclick="submitSupportRequest()">Request RegAnchor Expert</button><div id="cd-support-status" class="form-status"></div>';
     return;
   }
   
@@ -354,26 +359,24 @@ async function loadSupportForControl(assignId){
     const nm=await loadNames([req.requested_by,...allMsgs.map(m=>m.sender_id)]);
     const isOpen=req.status==='open';
     
-    threadHtml+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;">';
-    threadHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span style="font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:.08em;color:'+(isOpen?'#fbbf24':req.status==='responded'?'#4ade80':'var(--muted)')+';background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">'+(isOpen?'Awaiting RegAnchor Response':req.status==='responded'?'RegAnchor Responded':'Closed')+'</span><span style="font-size:.68rem;color:var(--muted);">'+fmtDateLong(req.requested_at)+'</span></div>';
-    
-    // Original message
-    threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:var(--sky);font-weight:600;margin-bottom:4px;">'+esc(nm[req.requested_by]||'You')+'</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:rgba(37,99,235,0.03);border-left:2px solid var(--accent);padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(req.client_message)+'</div></div>';
-    
+    threadHtml+='<div class="thread">';
+    threadHtml+='<div class="thread__head"><span class="state-label" style="color:'+(isOpen?'var(--ra-warn)':req.status==='responded'?'var(--ra-ok)':'var(--ra-text-3)')+';">'+(isOpen?'Awaiting RegAnchor Response':req.status==='responded'?'RegAnchor Responded':'Closed')+'</span><span class="thread__date">'+fmtDateLong(req.requested_at)+'</span></div>';
+
+    // Original message. Who is speaking is carried by the label, not
+    // by a tint — client and RegAnchor differ in rule weight only.
+    threadHtml+='<div class="msg"><div class="msg__from">'+esc(nm[req.requested_by]||'You')+'</div><div class="msg__body">'+esc(req.client_message)+'</div></div>';
+
     // Legacy RegAnchor-side response (from old support_requests.mla_response)
     if(req.mla_response&&!allMsgs.some(m=>m.sender_type==='mla')){
-      threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:#4ade80;font-weight:600;margin-bottom:4px;">RegAnchor</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:rgba(34,197,94,0.03);border-left:2px solid #22c55e;padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(req.mla_response)+'</div><div style="font-size:.68rem;color:var(--muted);margin-top:4px;">'+fmtDateLong(req.responded_at)+'</div></div>';
+      threadHtml+='<div class="msg msg--them"><div class="msg__from">RegAnchor</div><div class="msg__body">'+esc(req.mla_response)+'</div><div class="msg__meta">'+fmtDateLong(req.responded_at)+'</div></div>';
     }
-    
+
     // Thread messages
     allMsgs.forEach(m=>{
       const isMLA=m.sender_type==='mla';
-      const col=isMLA?'#4ade80':'var(--sky)';
-      const bgCol=isMLA?'rgba(34,197,94,0.03)':'rgba(37,99,235,0.03)';
-      const borderCol=isMLA?'#22c55e':'var(--accent)';
       const name=isMLA?'RegAnchor':esc(nm[m.sender_id]||'You');
-      threadHtml+='<div style="margin-bottom:10px;"><div style="font-size:.68rem;color:'+col+';font-weight:600;margin-bottom:4px;">'+name+' <span style="color:var(--muted);font-weight:400;">'+fmtDateLong(m.created_at)+'</span></div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;background:'+bgCol+';border-left:2px solid '+borderCol+';padding:8px 12px;border-radius:0 6px 6px 0;">'+esc(m.message)+'</div>';
-      if(m.file_name)threadHtml+='<div style="margin-top:6px;font-size:.72rem;color:var(--sky);cursor:pointer;" onclick="viewSupportFile(\''+esc(m.file_path)+'\')">📎 '+esc(m.file_name)+'</div>';
+      threadHtml+='<div class="msg'+(isMLA?' msg--them':'')+'"><div class="msg__from">'+name+' <span class="msg__meta">'+fmtDateLong(m.created_at)+'</span></div><div class="msg__body">'+esc(m.message)+'</div>';
+      if(m.file_name)threadHtml+='<div class="msg__file" onclick="viewSupportFile(\''+esc(m.file_path)+'\')">'+esc(m.file_name)+'</div>';
       threadHtml+='</div>';
     });
     
@@ -383,12 +386,12 @@ async function loadSupportForControl(assignId){
   
   // Reply form — if there's an active request, show reply box
   if(openReq){
-    formEl.innerHTML='<div style="border-top:1px solid var(--border);padding-top:12px;"><textarea class="field-input" id="cd-support-msg" rows="2" placeholder="Reply to RegAnchor…" style="margin-bottom:8px;"></textarea><div style="display:flex;gap:8px;align-items:center;"><input type="file" id="support-file" style="display:none;" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg" /><button class="btn-topbar btn-topbar-ghost" onclick="document.getElementById(\'support-file\').click()" style="padding:5px 10px;font-size:.72rem;">Attach File</button><span id="support-file-name" style="font-size:.7rem;color:var(--muted);"></span><button class="btn-topbar btn-topbar-primary" onclick="sendSupportReply(\''+openReq.id+'\')" style="margin-left:auto;padding:6px 14px;font-size:.75rem;">Send Reply</button></div><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div></div>';
+    formEl.innerHTML='<div class="reply-box"><textarea class="field-input" id="cd-support-msg" rows="2" placeholder="Reply to RegAnchor…"></textarea><div class="reply-box__actions"><input type="file" id="support-file" style="display:none;" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg" /><button class="btn-topbar btn-topbar-ghost btn-sm" onclick="document.getElementById(\'support-file\').click()">Attach File</button><span id="support-file-name" class="reply-box__file"></span><button class="btn-topbar btn-topbar-primary btn-sm" style="margin-left:auto;" onclick="sendSupportReply(\''+openReq.id+'\')">Send Reply</button></div><div id="cd-support-status" class="form-status"></div></div>';
     const fileInput=document.getElementById('support-file');
     if(fileInput)fileInput.onchange=function(){document.getElementById('support-file-name').textContent=this.files[0]?.name||''};
   }else{
     // All requests closed — show new request option
-    formEl.innerHTML='<div style="border-top:1px solid var(--border);padding-top:12px;"><textarea class="field-input" id="cd-support-msg" rows="2" placeholder="Ask a new question…" style="margin-bottom:8px;"></textarea><button class="btn-topbar btn-topbar-primary" onclick="submitSupportRequest()" style="padding:6px 14px;font-size:.75rem;">New Request</button><div id="cd-support-status" style="font-size:.75rem;margin-top:8px;display:none;"></div></div>';
+    formEl.innerHTML='<div class="reply-box"><textarea class="field-input" id="cd-support-msg" rows="2" placeholder="Ask a new question…"></textarea><button class="btn-topbar btn-topbar-primary btn-sm" onclick="submitSupportRequest()">New Request</button><div id="cd-support-status" class="form-status"></div></div>';
   }
 }
  
@@ -401,14 +404,14 @@ async function submitSupportRequest(){
   if(!currentAssignId||!currentControlId||!currentOrg)return;
   const msg=document.getElementById('cd-support-msg').value.trim();
   const stEl=document.getElementById('cd-support-status');
-  if(!msg){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Please describe what you need help with.';return}
+  if(!msg){stEl.style.display='block';stEl.style.color='var(--ra-risk)';stEl.textContent='Please describe what you need help with.';return}
   stEl.style.display='none';
   const assign=allAssignments.find(a=>a.id===currentAssignId);
   const{data:req,error}=await sb.from('support_requests').insert({
     control_assignment_id:currentAssignId,control_id:currentControlId,org_id:currentOrg.id,
     system_id:assign?.system_id||null,client_message:msg,requested_by:currentUser.id
   }).select('id').single();
-  if(error){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Error: '+error.message;return}
+  if(error){stEl.style.display='block';stEl.style.color='var(--ra-risk)';stEl.textContent='Error: '+error.message;return}
   await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'support_requested',entity_type:'governance_control',entity_id:assign?.system_id||currentControlId,changes:{_actor_name:actorName(),control:allControls.find(c=>c.id===currentControlId)?.title}});
   await loadSupportForControl(currentAssignId);
 }
@@ -417,24 +420,24 @@ async function sendSupportReply(reqId){
   if(!currentOrg)return;
   const msg=document.getElementById('cd-support-msg').value.trim();
   const stEl=document.getElementById('cd-support-status');
-  if(!msg){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Please enter a message.';return}
+  if(!msg){stEl.style.display='block';stEl.style.color='var(--ra-risk)';stEl.textContent='Please enter a message.';return}
   stEl.style.display='none';
   // Upload file if attached
   let fileName=null,filePath=null,fileType=null;
   const fileInput=document.getElementById('support-file');
   if(fileInput&&fileInput.files[0]){
     const file=fileInput.files[0];
-    if(file.size>5*1024*1024){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='File must be under 5MB.';return}
+    if(file.size>5*1024*1024){stEl.style.display='block';stEl.style.color='var(--ra-risk)';stEl.textContent='File must be under 5MB.';return}
     filePath='support/'+currentOrg.id+'/'+reqId+'/'+Date.now()+'_'+file.name;
     const{error:upErr}=await sb.storage.from('governance-reports').upload(filePath,file,{contentType:file.type});
-    if(upErr){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='File upload failed.';return}
+    if(upErr){stEl.style.display='block';stEl.style.color='var(--ra-risk)';stEl.textContent='File upload failed.';return}
     fileName=file.name;fileType=file.type;
   }
   const{error}=await sb.from('support_messages').insert({
     request_id:reqId,sender_id:currentUser.id,sender_type:'client',message:msg,
     file_name:fileName,file_path:filePath,file_type:fileType
   });
-  if(error){stEl.style.display='block';stEl.style.color='var(--red)';stEl.textContent='Error: '+error.message;return}
+  if(error){stEl.style.display='block';stEl.style.color='var(--ra-risk)';stEl.textContent='Error: '+error.message;return}
   await loadSupportForControl(currentAssignId);
 }
 
@@ -472,7 +475,7 @@ async function loadScoreHistory(){
     .limit(20);
   var history=(result.data)||[];
   if(history.length<2){
-    el.innerHTML='<div style="text-align:center;padding:32px 0;font-size:.78rem;color:var(--muted);">Implement controls to start building your score trend.</div>';
+    el.innerHTML='<div class="empty-inline" style="text-align:center;padding:32px 0;">Implement controls to start building your score trend.</div>';
     return;
   }
   var W=660,H=180,PL=40,PR=20,PT=20,PB=32;
@@ -483,23 +486,78 @@ async function loadScoreHistory(){
   var prev=history.length>=2?history[history.length-2]:null;
   var delta=prev?(last.composite_score-prev.composite_score):0;
   var deltaSign=delta>=0?'+':'';
-  var deltaCol=delta>0?'#22c55e':delta<0?'#ef4444':'#64748b';
+  // Direction of travel is a state, so it keeps its colour.
+  var deltaCol=delta>0?'var(--ra-ok)':delta<0?'var(--ra-risk)':'var(--ra-text-3)';
   var deltaArrow=delta>0?'\u2191':delta<0?'\u2193':'';
   var pts=[];
   for(var i=0;i<history.length;i++){pts.push(xS(i).toFixed(1)+','+yS(history[i].composite_score).toFixed(1))}
   var linePath='M'+pts.join('L');
-  var areaPath=linePath+' L'+xS(history.length-1).toFixed(1)+','+yS(0).toFixed(1)+' L'+xS(0).toFixed(1)+','+yS(0).toFixed(1)+'Z';
   var fmtLabel=function(iso){return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'})};
   var labelIdxs=[0];
   if(history.length>2)labelIdxs.push(Math.floor((history.length-1)/2));
   labelIdxs.push(history.length-1);
   var gridLines='';
   var gridVals=[0,25,50,75,100];
-  for(var g=0;g<gridVals.length;g++){var v=gridVals[g];gridLines+='<line x1="'+PL+'" y1="'+yS(v).toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yS(v).toFixed(1)+'" stroke="rgba(148,163,184,0.06)" stroke-width="1"/>'+'<text x="'+(PL-8)+'" y="'+(yS(v)+3).toFixed(1)+'" text-anchor="end" fill="#64748b" font-size="9" font-weight="500" font-family="DM Sans,sans-serif">'+v+'%</text>'}
+  // Tokens throughout, so the chart follows the theme rather than
+  // pinning itself to hexes that only ever worked on navy.
+  for(var g=0;g<gridVals.length;g++){var v=gridVals[g];gridLines+='<line x1="'+PL+'" y1="'+yS(v).toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yS(v).toFixed(1)+'" stroke="var(--ra-border)" stroke-width="1"/>'+'<text x="'+(PL-8)+'" y="'+(yS(v)+3).toFixed(1)+'" text-anchor="end" fill="var(--ra-text-3)" font-size="9" font-weight="500">'+v+'%</text>'}
   var dots='';
-  for(var d=0;d<history.length;d++){dots+='<circle cx="'+xS(d).toFixed(1)+'" cy="'+yS(history[d].composite_score).toFixed(1)+'" r="3" fill="#38bdf8" stroke="rgba(15,23,42,1)" stroke-width="2"/>'}
+  for(var d=0;d<history.length;d++){dots+='<circle class="trend-dot" cx="'+xS(d).toFixed(1)+'" cy="'+yS(history[d].composite_score).toFixed(1)+'" r="2.5" fill="var(--ra-blurple)"/>'}
   var xLabels='';
-  for(var x=0;x<labelIdxs.length;x++){var li=labelIdxs[x];xLabels+='<text x="'+xS(li).toFixed(1)+'" y="'+(H+2)+'" text-anchor="middle" fill="#64748b" font-size="9" font-weight="500" font-family="DM Sans,sans-serif">'+fmtLabel(history[li].snapshot_at)+'</text>'}
-  el.innerHTML='<div style="display:flex;align-items:flex-start;gap:24px;">'+'<div style="flex-shrink:0;width:120px;padding-top:4px;">'+'<div style="font-size:2.2rem;font-weight:700;color:#fff;font-family:DM Sans,sans-serif;line-height:1;">'+last.composite_score+'%</div>'+'<div style="font-size:0.7rem;color:#64748b;margin-top:4px;">Current Score</div>'+'<div style="font-size:0.78rem;font-weight:600;color:'+deltaCol+';margin-top:6px;">'+deltaArrow+' '+deltaSign+delta+' pts</div>'+'</div>'+'<div style="flex:1;min-width:0;">'+'<svg viewBox="0 0 '+W+' '+(H+8)+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;min-height:160px;">'+'<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">'+'<stop offset="0%" stop-color="rgba(56,189,248,0.15)"/>'+'<stop offset="100%" stop-color="rgba(56,189,248,0)"/>'+'</linearGradient></defs>'+gridLines+'<path d="'+areaPath+'" fill="url(#sg)"/>'+'<path d="'+linePath+'" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+xLabels+'</svg>'+'</div>'+'</div>';
+  for(var x=0;x<labelIdxs.length;x++){var li=labelIdxs[x];xLabels+='<text x="'+xS(li).toFixed(1)+'" y="'+(H+2)+'" text-anchor="middle" fill="var(--ra-text-3)" font-size="9" font-weight="500">'+fmtLabel(history[li].snapshot_at)+'</text>'}
+  el.innerHTML='<div class="trend">'+
+    '<div class="trend__reading">'+
+      '<div class="trend__num ra-num" data-count-to="'+last.composite_score+'">0%</div>'+
+      '<div class="trend__label">Current score</div>'+
+      '<div class="trend__delta" style="color:'+deltaCol+';">'+deltaArrow+' '+deltaSign+delta+' pts</div>'+
+    '</div>'+
+    '<div class="trend__chart">'+
+      '<svg viewBox="0 0 '+W+' '+(H+8)+'" xmlns="http://www.w3.org/2000/svg">'+gridLines+
+      '<path class="trend-line" d="'+linePath+'" fill="none" stroke="var(--ra-blurple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
+      dots+xLabels+'</svg>'+
+    '</div>'+
+  '</div>';
+  requestAnimationFrame(function(){animateScoreTrend(el,last.composite_score)});
+}
+
+function animateScoreTrend(root,targetScore){
+  if(!root)return;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var numEl=root.querySelector('.trend__num');
+  var path=root.querySelector('.trend-line');
+  var dots=root.querySelectorAll('.trend-dot');
+  if(numEl){
+    if(reduce){numEl.textContent=Math.round(targetScore)+'%'}
+    else{
+      var start=performance.now(),duration=900;
+      var ease=function(t){return 1-Math.pow(1-t,3)};
+      function tick(now){
+        var t=Math.min(1,(now-start)/duration);
+        numEl.textContent=Math.round(targetScore*ease(t))+'%';
+        if(t<1)requestAnimationFrame(tick);
+        else numEl.textContent=Math.round(targetScore)+'%';
+      }
+      requestAnimationFrame(tick);
+    }
+  }
+  if(path&&path.getTotalLength){
+    var len=path.getTotalLength();
+    if(reduce){
+      path.style.strokeDasharray='none';
+      path.style.strokeDashoffset='0';
+      dots.forEach(function(d){d.style.opacity='1'});
+    }else{
+      path.style.strokeDasharray=String(len);
+      path.style.strokeDashoffset=String(len);
+      dots.forEach(function(d){d.style.opacity='0'});
+      void path.getBoundingClientRect();
+      path.style.transition='stroke-dashoffset 1s cubic-bezier(0.22, 1, 0.36, 1)';
+      path.style.strokeDashoffset='0';
+      dots.forEach(function(d,i){
+        d.style.transition='opacity .25s ease '+(650+i*40)+'ms';
+        d.style.opacity='1';
+      });
+    }
+  }
 }
 

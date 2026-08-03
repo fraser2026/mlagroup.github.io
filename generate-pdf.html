@@ -407,7 +407,7 @@ function hdr(doc,W,M,nv,rc,sec,dt) {
   doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(0,0,W,34,'F');
   doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(0,34,W,1.5,'F');
   doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(255,255,255);
-  doc.text('MLA GROUP',M,12);
+  doc.text('REGANCHOR',M,12);
   doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(120,155,200);
   doc.text('AI GOVERNANCE RISK ASSESSMENT  |  CONFIDENTIAL',M,19);
   doc.setFontSize(7.5); doc.setTextColor(160,185,215); doc.text(sec,M,28);
@@ -425,8 +425,8 @@ function ftr(doc,W,M,nv,rc,dt,pg) {
   doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(0,284,W,13,'F');
   doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(0,284,W,1,'F');
   doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(140,170,210);
-  doc.text('MLA Group  |  AI Governance Risk Assessment  |  '+location.host,M,290);
-  doc.text('This report is produced for informational purposes. MLA Group is not a certified audit regulator.',M,295);
+  doc.text('RegAnchor  |  AI Governance Risk Assessment  |  '+location.host,M,290);
+  doc.text('This report is produced for informational purposes. MLA Group Ltd is not a certified audit regulator.',M,295);
   doc.setTextColor(180,200,230);
   doc.text('Page '+pg,W-M,290,{align:'right'}); doc.text(dt,W-M,295,{align:'right'});
 }
@@ -472,8 +472,8 @@ function generatePortalPDF(row) {
     var band=ps(R.band.label), bc=R.band.id, pct=R.adjustedScore+'%';
     var title=ps(R.band.heading), summary=ps(R.band.summary);
     var today=new Date(row.created_at||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-    var nv=[0,26,58],wh=[255,255,255],lb=[247,249,252],mg=[120,130,148],dk=[30,40,58],bl=[26,107,255];
-    var rcm={critical:[180,35,35],high:[165,55,55],moderate:[185,115,0],lowmod:[170,120,0],low:[22,145,65]};
+    var nv=[10,14,20],wh=[255,255,255],lb=[247,249,252],mg=[107,114,128],dk=[10,14,20],bl=[29,78,216];
+    var rcm={critical:[185,28,28],high:[194,65,12],moderate:[146,64,14],lowmod:[29,78,216],low:[21,128,61]};
     var rc=rcm[bc]||bl;
 
     var findings=[];
@@ -499,7 +499,7 @@ function generatePortalPDF(row) {
     doc.setFillColor(nv[0],nv[1],nv[2]); doc.rect(0,0,W,297,'F');
     doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(0,0,W,6,'F');
     doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
-    doc.text('MLA GROUP',M,22);
+    doc.text('REGANCHOR',M,22);
     doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(100,140,190);
     doc.text('AI Governance & Risk Advisory  |  '+location.host,M,30);
     doc.setDrawColor(25,55,100); doc.setLineWidth(0.4); doc.line(M,36,W-M,36);
@@ -542,15 +542,15 @@ function generatePortalPDF(row) {
     ['1.  Executive Summary','2.  Assessment Results & Section Breakdown','3.  Detailed Findings','4.  Priority Recommendations','A.  Appendix: Scope, Methodology & Regulatory Framework'].forEach(function(it,i){doc.text(it,M,ty+16+i*7);});
     doc.setFillColor(rc[0],rc[1],rc[2]); doc.rect(0,292,W,5,'F');
     doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(50,80,130);
-    doc.text('This document is confidential and prepared exclusively for the named recipient. MLA Group | '+location.host,W/2,289.5,{align:'center'});
+    doc.text('This document is confidential and prepared exclusively for the named recipient. RegAnchor | '+location.host,W/2,289.5,{align:'center'});
 
     // PAGE 2 EXEC SUMMARY
     pn++; y=np(doc,W,M,nv,rc,'1. EXECUTIVE SUMMARY',today,pn);
     y=sh(doc,W,M,nv,'1.1  Confidentiality Statement',y);
-    y=tb(doc,ps('This report is the exclusive property of '+org+' and MLA Group. It contains confidential information prepared solely for the named recipient ('+name+(role?', '+role:'')+'). Duplication, redistribution, or use - in whole or in part - requires the prior written consent of both parties.'),M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
+    y=tb(doc,ps('This report is the exclusive property of '+org+' and MLA Group Ltd (trading as RegAnchor). It contains confidential information prepared solely for the named recipient ('+name+(role?', '+role:'')+'). Duplication, redistribution, or use - in whole or in part - requires the prior written consent of both parties.'),M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
     y+=8;
     y=sh(doc,W,M,nv,'1.2  Report Overview',y);
-    y=tb(doc,ps('On '+today+', MLA Group completed an AI Governance Risk Diagnostic for '+org+'. This assessment was completed by '+name+(role?' ('+role+')':'')+' and covers seven governance domains aligned to UK and EU regulatory expectations, including the EU AI Act, UK GDPR, FCA operational resilience requirements, and sector-specific guidance from the ICO. Framework version '+R.frameworkVersion+' ('+R.frameworkDate+'). Weighted score: '+R.weightedScore+'%. Sector multiplier ('+sector+'): '+Math.round(R.multiplier*100)+'%. Adjusted exposure score: '+R.adjustedScore+'%.'),M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
+    y=tb(doc,ps('On '+today+', RegAnchor completed an AI Governance Risk Diagnostic for '+org+'. This assessment was completed by '+name+(role?' ('+role+')':'')+' and covers seven governance domains aligned to UK and EU regulatory expectations, including the EU AI Act, UK GDPR, FCA operational resilience requirements, and sector-specific guidance from the ICO. Framework version '+R.frameworkVersion+' ('+R.frameworkDate+'). Weighted score: '+R.weightedScore+'%. Sector multiplier ('+sector+'): '+Math.round(R.multiplier*100)+'%. Adjusted exposure score: '+R.adjustedScore+'%.'),M+4,y,TWI,8.5,'normal',[60,72,88],5.2);
     y+=8;
     y=sh(doc,W,M,nv,'1.3  Key Findings & Risk Position',y);
     var psl=doc.splitTextToSize(summary,TWI-36), ph=Math.max(46,34+psl.length*5.2);
@@ -742,7 +742,7 @@ function generatePortalPDF(row) {
       doc.text(dl,M+72,y+5.5); y+=rh3;
     });
     y+=10;
-    var dt2=ps('This report is produced for informational purposes based on self-reported responses. It does not constitute legal or regulatory advice and MLA Group is not a certified audit regulator. Organisations should engage qualified legal and compliance counsel when implementing changes. Framework version '+R.frameworkVersion+'. Next scheduled review: '+_FW.nextReview+'.');
+    var dt2=ps('This report is produced for informational purposes based on self-reported responses. It does not constitute legal or regulatory advice and MLA Group Ltd is not a certified audit regulator. Organisations should engage qualified legal and compliance counsel when implementing changes. Framework version '+R.frameworkVersion+'. Next scheduled review: '+_FW.nextReview+'.');
     var dl2=doc.splitTextToSize(dt2,TWI-4), dh=dl2.length*5+16;
     if (y+dh>274) { ftr(doc,W,M,nv,rc,today,pn); pn++; y=np(doc,W,M,nv,rc,'A. APPENDIX (continued)',today,pn); }
     doc.setFillColor(248,249,252); doc.rect(M,y,TW,dh,'F');
@@ -756,7 +756,7 @@ function generatePortalPDF(row) {
     // SAVE - desktop normal, iOS blob URL
     var so=ps(org).replace(/[^a-zA-Z0-9\s-]/g,'').replace(/\s+/g,'-');
     var sd=today.replace(/\s/g,'-');
-    var fn='MLA-AI-Risk-Report-'+so+'-'+sd+'.pdf';
+    var fn='RegAnchor-AI-Risk-Report-'+so+'-'+sd+'.pdf';
     var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
 
     if (isIOS) {
