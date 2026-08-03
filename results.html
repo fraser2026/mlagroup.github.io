@@ -369,9 +369,17 @@ async function startCheckout() {
     const result = JSON.parse(sessionStorage.getItem('mla_diagnostic_result') || '{}');
     const resultId = result.id || localStorage.getItem('mla_result_id') || '';
 
+    // Checkout runs before the buyer has an account, so there is usually no user
+    // session. The Supabase edge-function gateway still requires an Authorization
+    // bearer for JWT verification, so fall back to the anon key when signed out.
+    // (The portal subscription flow sends the same header with the user token.)
     const res = await fetch(SUPABASE_URL + '/functions/v1/create-checkout-session', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (session?.access_token || SUPABASE_KEY),
+        'apikey': SUPABASE_KEY
+      },
       body: JSON.stringify({
         result_id: resultId,
         user_id: session?.user?.id || '',
