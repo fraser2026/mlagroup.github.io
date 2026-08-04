@@ -8,12 +8,16 @@
 | `ra-mark-light.png` | 2048px raster for decks / partners (ink R on white) |
 | `ra-mark-dark.png` | 2048px raster for decks / partners (white R on ink) |
 
-Wordmark in product UI remains the text `RegAnchor` set in **IBM Plex Sans Medium** via `.ra-wordmark`. Legal entity remains **MLA Group Ltd**.
+The R path is extracted from **Inter Medium** so it matches the live `.ra-wordmark` on the public site and portal (Inter). Legal entity remains **MLA Group Ltd**.
 
-Export high-res PNGs from the SVGs (source of truth for the R path):
+Rebuild the SVG paths:
+
+```bash
+node tools/build-favicon-r.mjs
+```
+
+Export high-res PNGs from the SVGs:
 
 ```bash
 node tools/export-brand-marks.mjs
 ```
-
-Requires Puppeteer Chrome, or set `PUPPETEER_EXECUTABLE_PATH` to a local Chrome install.

@@ -38,7 +38,7 @@ Do not invent a parallel theme. Extend the portal language.
 | OK | `#24B47E` |
 | Control radius | **4px** (not pills) |
 
-**Type:** Inter for UI/body. IBM Plex Sans Medium for wordmark and score numerals (`font-feature-settings: 'tnum'` on scores).
+**Type:** Inter for UI/body and the live `.ra-wordmark`. Favicon / brand-mark R must match that Inter Medium R (outlined path so browsers do not need a webfont). Score numerals may use tabular figures; do not swap the public wordmark to a different family to “fix” the favicon.
 
 ---
 
