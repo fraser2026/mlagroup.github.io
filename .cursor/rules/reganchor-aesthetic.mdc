@@ -1,0 +1,44 @@
+---
+description: RegAnchor portal aesthetic and brand locks — read before any UI work
+alwaysApply: true
+---
+
+# RegAnchor aesthetic (mandatory)
+
+Full reference: [DESIGN.md](DESIGN.md). Naming/legal: [BRAND.md](BRAND.md). Tokens: `css/reganchor.css`, `css/portal.css`.
+
+## Before changing UI
+
+1. Open `portal.html` / `css/portal.css` and match that language.
+2. Do not invent a second theme (especially dark fintech or purple-gradient startup).
+
+## Non-negotiables
+
+- Light paper canvas, ink `#0A0E14`, hairlines `#E6EBF1`, Blurple `#533AFD` **only** for primary actions and score meters
+- Inter body; IBM Plex Sans for wordmark and score numerals
+- Sentence case chrome — no stamped all-caps
+- Severity = typographic colour on the label, never a parent `color` that paints the whole block
+- 4px controls; ledgers over decorative cards; no glow/glass/pill clusters
+- Product copy = **RegAnchor**; certificates/legal issuer = **MLA Group Ltd**
+- PDF templates (`report-template.html`, `certificate-template.html`) stay self-contained CSS for Puppeteer
+
+## Reject these patterns
+
+```html
+<!-- BAD: risk colour cascades into every child -->
+<div class="dom-band" style="color:${sc.c}">...</div>
+
+<!-- BAD: full-width pink number bar -->
+<div class="act-n" style="background:${ph.color}22;color:${ph.color}">1</div>
+```
+
+```html
+<!-- GOOD: ink hierarchy + meter; risk only on status word -->
+<div class="dom-band">
+  <div class="dom-concept-name">…</div>
+  <div class="dom-meter"><span style="width:39%"></span></div>
+  <span class="dom-status-pill is-risk">High risk</span>
+</div>
+```
+
+If layout CSS for JS-emitted classes is missing, restore layout — do not only swap CSS variables.

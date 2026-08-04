@@ -1,0 +1,21 @@
+---
+description: Board report and certificate surfaces must match portal ledger language
+globs: report.html,system-report.html,report-template.html,certificate-template.html,verify.html,css/reganchor-report.css,css/portal.css,js/portal-cert.js,generate-pdf.html
+alwaysApply: false
+---
+
+# Reports / certificates
+
+- Visual source of truth: [DESIGN.md](DESIGN.md) + live `portal.html`
+- Shared web skin: `css/reganchor-report.css` (link after `reganchor.css`)
+- Production PDF path: portal → edge → Puppeteer → `report-template.html` — **not** `generate-pdf.html` (orphaned jsPDF)
+- Web and PDF need not be pixel-identical; they must feel like the same product
+- After CSS/JS changes on `file://`, tell the user to hard-refresh
+- Do not claim “restyled” unless Findings domain tabs and Roadmap actions look like quiet ledgers (no all-red headers, no pink number bars)
+
+## Checklist
+
+- Domain header: ink title + Blurple meter + risk on status only
+- Roadmap: compact numbered rows, muted owners, no phase-coloured slabs
+- No Instrument Serif / DM Sans / dark navy canvas leftovers
+- Sentence case labels throughout

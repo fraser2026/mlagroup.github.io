@@ -4,6 +4,9 @@ RegAnchor is the trading name of **MLA Group Ltd**. The legal entity is unchange
 is the single reference for deciding, at any given occurrence, whether "MLA" becomes "RegAnchor"
 or stays as it is.
 
+**Visual / portal aesthetic** (colours, type, report/portal UI rules) lives in [DESIGN.md](DESIGN.md).
+Agents must follow both files.
+
 ## The entity
 
 | Field | Value |
