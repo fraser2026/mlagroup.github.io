@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Subscription Confirmed | RegAnchor</title>
+  <title>Activate your plan | RegAnchor</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -11,137 +11,157 @@
   <style>
     :root {
       --bg: var(--ra-bg, #FFFFFF);
-      --border: var(--ra-border, #E6EBF1);
+      --border: var(--ra-line, #E6EBF1);
       --main: var(--ra-ink, #0A0E14);
       --sub: var(--ra-text-2, #425466);
       --muted: var(--ra-text-3, #697386);
       --accent: var(--ra-blurple, #533AFD);
       --accent-h: var(--ra-blurple-hover, #4434E0);
-      --ok: var(--ra-ok, #24B47E);
       --err: var(--ra-risk, #CD3D64);
       --font-brand: var(--ra-font-brand, 'IBM Plex Sans', sans-serif);
       --font-body: var(--ra-font-product, 'Inter', sans-serif);
     }
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     body {
-      background:var(--bg); color:var(--sub); font-family:var(--font-body);
-      min-height:100vh; display:flex; flex-direction:column;
-      align-items:center; justify-content:center; padding:40px 20px;
+      min-height:100vh; font-family:var(--font-body); color:var(--sub);
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(83,58,253,0.06), transparent 55%),
+        var(--bg);
       -webkit-font-smoothing:antialiased;
     }
-    nav {
-      position:fixed; top:0; left:0; right:0; z-index:100; height:60px;
-      display:flex; align-items:center; padding:0 40px;
-      border-bottom:1px solid var(--border); background:var(--bg);
+    /* Modal shell */
+    .backdrop {
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      padding:24px 16px;
     }
-    .nav-logo {
-      font-family:var(--font-brand); font-size:0.95rem; font-weight:500;
-      letter-spacing:-0.025em; color:var(--main); text-decoration:none;
+    .modal {
+      width:100%; max-width:440px;
+      background:var(--bg);
+      border:1px solid var(--border);
+      box-shadow:0 24px 64px rgba(10,14,20,0.10);
+      position:relative;
     }
-    .wrapper { width:100%; max-width:480px; margin-top:60px; }
-    .card { border:1px solid var(--border); overflow:hidden; }
-    .card-shimmer { height:2px; background:var(--accent); }
-    .card-body { padding:44px 40px 40px; }
+    .modal__bar { height:3px; background:var(--accent); }
+    .modal__body { padding:28px 28px 32px; }
     .eyebrow {
       font-family:var(--font-brand); font-size:0.68rem; font-weight:500;
-      letter-spacing:0.08em; color:var(--muted); margin-bottom:10px;
+      letter-spacing:0.08em; color:var(--muted); margin-bottom:8px;
     }
     h1 {
-      font-family:var(--font-brand); font-size:1.7rem; font-weight:500;
-      line-height:1.15; letter-spacing:-0.025em; color:var(--main); margin-bottom:12px;
+      font-family:var(--font-brand); font-size:1.45rem; font-weight:500;
+      letter-spacing:-0.02em; color:var(--main); line-height:1.2; margin-bottom:8px;
     }
-    h1 em { font-style:normal; font-weight:400; color:var(--muted); }
-    .subtext { font-size:0.85rem; color:var(--sub); line-height:1.7; }
+    h1 em { font-style:normal; color:var(--muted); font-weight:400; }
+    .subtext { font-size:0.84rem; line-height:1.55; color:var(--sub); margin-bottom:22px; }
+    .plan-chip {
+      display:inline-block; font-size:0.72rem; font-weight:500; color:var(--main);
+      border:1px solid var(--border); padding:4px 10px; margin-bottom:16px;
+    }
     .field { margin-bottom:12px; }
     .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
-    .field-label {
-      display:block; font-size:0.7rem; font-weight:500; color:var(--muted); margin-bottom:6px;
+    .field-label { display:block; font-size:0.7rem; font-weight:500; color:var(--muted); margin-bottom:5px; }
+    .field-input, .field-select {
+      width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:4px;
+      background:var(--bg); color:var(--main); font:inherit; font-size:0.86rem; outline:none;
     }
-    .field-input {
-      width:100%; padding:11px 14px; background:var(--bg); border:1px solid var(--border);
-      border-radius:4px; color:var(--main); font:inherit; font-size:0.86rem; outline:none;
-    }
-    .field-input:focus { border-color:var(--accent); }
+    .field-input:focus, .field-select:focus { border-color:var(--accent); }
+    .field-hint { font-size:0.68rem; color:var(--muted); margin-top:4px; }
     .error-box {
       border:1px solid var(--err); border-left:3px solid var(--err);
-      padding:10px 14px; font-size:0.78rem; color:var(--err); margin-top:10px; display:none;
+      padding:10px 12px; font-size:0.78rem; color:var(--err); margin:10px 0; display:none;
     }
     .btn-primary {
-      display:flex; align-items:center; justify-content:center; gap:8px;
-      width:100%; padding:12px 16px; margin-top:20px;
-      background:var(--accent); color:#fff; border:1px solid transparent;
-      border-radius:4px; font:inherit; font-size:0.88rem; font-weight:500; cursor:pointer;
-      text-decoration:none;
+      display:flex; align-items:center; justify-content:center; width:100%;
+      margin-top:8px; padding:12px 16px; border:none; border-radius:4px;
+      background:var(--accent); color:#fff; font:inherit; font-size:0.88rem; font-weight:500;
+      cursor:pointer;
     }
     .btn-primary:hover { background:var(--accent-h); }
-    .btn-primary:disabled { opacity:0.45; cursor:not-allowed; }
+    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
     .btn-ghost {
-      display:flex; align-items:center; justify-content:center;
-      width:100%; padding:11px 16px; margin-top:10px;
-      background:transparent; color:var(--main); border:1px solid var(--border);
-      border-radius:4px; font:inherit; font-size:0.84rem; text-decoration:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; width:100%;
+      margin-top:8px; padding:11px; border:1px solid var(--border); border-radius:4px;
+      background:transparent; color:var(--main); font:inherit; font-size:0.84rem; cursor:pointer;
+      text-decoration:none;
     }
-    .divider {
-      display:flex; align-items:center; gap:12px; margin:22px 0;
-      font-size:0.7rem; color:var(--muted);
+    .switch-link {
+      margin-top:16px; text-align:center; font-size:0.78rem; color:var(--muted);
     }
-    .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
-    .footer-note { margin-top:20px; font-size:0.72rem; color:var(--muted); line-height:1.6; text-align:center; }
-    .footer-note a { color:var(--main); }
-    .loading { text-align:center; padding:24px 0; font-size:0.85rem; color:var(--muted); }
+    .switch-link button {
+      background:none; border:none; color:var(--accent); font:inherit; font-size:inherit;
+      cursor:pointer; text-decoration:underline;
+    }
+    .loading { text-align:center; padding:36px 12px; font-size:0.85rem; color:var(--muted); }
+    .test-banner {
+      position:fixed; top:0; left:0; right:0; z-index:50;
+      background:#0A0E14; color:#fff; font-size:0.72rem; text-align:center; padding:6px 12px;
+    }
+    .test-banner strong { font-weight:600; }
+    .backdrop.has-test { padding-top:40px; }
+    @media (max-width:480px) {
+      .modal__body { padding:22px 18px 26px; }
+      .field-row { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
-<nav>
-  <a href="index.html" class="nav-logo ra-wordmark">RegAnchor</a>
-</nav>
+<div id="test-banner" class="test-banner" style="display:none;">
+  <strong>Stripe test mode</strong> — use card <code>4242 4242 4242 4242</code>, any future expiry, any CVC
+</div>
+<div class="backdrop" id="backdrop">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal__bar"></div>
+    <div class="modal__body">
 
-<div class="wrapper">
-  <div class="card">
-    <div class="card-shimmer"></div>
-    <div class="card-body">
-
-      <div id="state-loading" class="loading">Confirming your subscription…</div>
+      <div id="state-loading" class="loading">Confirming payment…</div>
 
       <div id="state-signup" style="display:none;">
         <div class="eyebrow">Payment confirmed</div>
-        <h1>Create your<br><em>account.</em></h1>
-        <p class="subtext">Your subscription is active. Create an account to open the portal and start governing.</p>
-        <div class="field-row" style="margin-top:24px;">
-          <div>
-            <label class="field-label">First name</label>
-            <input type="text" class="field-input" id="su-first" autocomplete="given-name">
-          </div>
-          <div>
-            <label class="field-label">Last name</label>
-            <input type="text" class="field-input" id="su-last" autocomplete="family-name">
-          </div>
+        <h1 id="modal-title">Create your<br><em>account</em></h1>
+        <p class="subtext">One step to open your governance portal. Use your work email so invitations and certificates reach the right people.</p>
+        <div class="plan-chip" id="plan-chip">Essentials</div>
+
+        <div class="field">
+          <label class="field-label">Full name</label>
+          <input type="text" class="field-input" id="su-name" autocomplete="name" placeholder="Jane Smith">
         </div>
         <div class="field">
-          <label class="field-label">Organisation</label>
-          <input type="text" class="field-input" id="su-org" autocomplete="organization">
+          <label class="field-label">Work email</label>
+          <input type="email" class="field-input" id="su-email" autocomplete="email" placeholder="jane@company.com">
+          <div class="field-hint">Prefer a company domain over free webmail when possible</div>
         </div>
         <div class="field">
-          <label class="field-label">Email address</label>
-          <input type="email" class="field-input" id="su-email" autocomplete="email">
+          <label class="field-label">Company name</label>
+          <input type="text" class="field-input" id="su-org" autocomplete="organization" placeholder="Acme Ltd">
         </div>
         <div class="field">
-          <label class="field-label">Create a password</label>
-          <input type="password" class="field-input" id="su-password" placeholder="Min. 8 characters" autocomplete="new-password">
+          <label class="field-label">Your role</label>
+          <select class="field-select" id="su-title">
+            <option value="">Select…</option>
+            <option>Risk / compliance</option>
+            <option>Legal / counsel</option>
+            <option>CIO / CTO / technology</option>
+            <option>Product / data science</option>
+            <option>Executive / board</option>
+            <option>Consultant / advisor</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Password</label>
+          <input type="password" class="field-input" id="su-password" autocomplete="new-password" placeholder="Min. 8 characters">
         </div>
         <div class="error-box" id="su-error"></div>
         <button type="button" class="btn-primary" id="su-btn" onclick="doSignup()">Create account &amp; open portal</button>
-        <div class="divider">Already have an account?</div>
-        <button type="button" class="btn-ghost" onclick="showSignin()">Sign in instead</button>
-        <div class="footer-note">By creating an account you agree to our terms.</div>
+        <div class="switch-link">Already have an account? <button type="button" onclick="showSignin()">Sign in</button></div>
       </div>
 
       <div id="state-signin" style="display:none;">
         <div class="eyebrow">Payment confirmed</div>
-        <h1>Sign in to<br><em>claim your plan.</em></h1>
-        <p class="subtext">Link this subscription to your existing RegAnchor account.</p>
-        <div class="field" style="margin-top:24px;">
-          <label class="field-label">Email address</label>
+        <h1>Sign in to<br><em>claim your plan</em></h1>
+        <p class="subtext">Link this subscription to your existing RegAnchor organisation.</p>
+        <div class="field">
+          <label class="field-label">Email</label>
           <input type="email" class="field-input" id="si-email" autocomplete="email">
         </div>
         <div class="field">
@@ -150,22 +170,22 @@
         </div>
         <div class="error-box" id="si-error"></div>
         <button type="button" class="btn-primary" id="si-btn" onclick="doSignin()">Sign in &amp; open portal</button>
-        <button type="button" class="btn-ghost" onclick="showSignup()">Create a new account instead</button>
+        <div class="switch-link">New here? <button type="button" onclick="showSignup()">Create an account</button></div>
       </div>
 
       <div id="state-success" style="display:none;">
-        <div class="eyebrow">You're in</div>
-        <h1>Subscription<br><em>activated.</em></h1>
-        <p class="subtext" id="success-copy">Your plan is linked to your organisation. Continue in the portal.</p>
-        <a href="portal.html" class="btn-primary">Open my portal</a>
+        <div class="eyebrow">You're set</div>
+        <h1>Subscription<br><em>activated</em></h1>
+        <p class="subtext" id="success-copy">Your plan is linked. Continue in the portal to register systems and evidence controls.</p>
+        <a href="portal.html" class="btn-primary">Open portal</a>
       </div>
 
       <div id="state-error" style="display:none;">
         <div class="eyebrow">Something went wrong</div>
-        <h1>We couldn't<br><em>finish setup.</em></h1>
-        <p class="subtext">Your payment may still have succeeded. Contact us with your receipt and we'll activate access.</p>
+        <h1>We couldn't<br><em>finish setup</em></h1>
+        <p class="subtext">Your payment may still have succeeded. Contact support with your receipt and we'll activate access.</p>
         <a href="mailto:info@reganchor.com?subject=Subscription%20setup" class="btn-primary">Contact support</a>
-        <a href="portal.html" class="btn-ghost">Try the portal anyway</a>
+        <a href="portal.html" class="btn-ghost">Try portal</a>
       </div>
 
     </div>
@@ -188,18 +208,32 @@ function show(id){
 function showSignup(){show('state-signup')}
 function showSignin(){show('state-signin')}
 
-async function callLinkSubscription(userId, organisation){
+function planLabel(p){return p==='professional'?'Professional':'Essentials'}
+
+async function loadSessionInfo(){
+  if(!STRIPE_SESSION_ID)return null;
+  try{
+    const res=await fetch(SUPABASE_URL+'/functions/v1/checkout-session-info',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY,'apikey':SUPABASE_KEY},
+      body:JSON.stringify({session_id:STRIPE_SESSION_ID})
+    });
+    const json=await res.json();
+    if(!res.ok)return null;
+    return json;
+  }catch(e){return null}
+}
+
+async function callLinkSubscription(userId, fields){
   const res=await fetch(SUPABASE_URL+'/functions/v1/link-subscription',{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer '+SUPABASE_KEY,
-      'apikey':SUPABASE_KEY
-    },
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY,'apikey':SUPABASE_KEY},
     body:JSON.stringify({
       session_id:STRIPE_SESSION_ID,
       user_id:userId,
-      organisation:organisation||''
+      organisation:fields.organisation||'',
+      full_name:fields.full_name||'',
+      job_title:fields.job_title||''
     })
   });
   const json=await res.json();
@@ -207,13 +241,12 @@ async function callLinkSubscription(userId, organisation){
   return json;
 }
 
-async function finishForUser(userId, organisation){
+async function finishForUser(userId, fields){
   show('state-loading');
   try{
-    const linked=await callLinkSubscription(userId, organisation);
-    const planLabel=linked.plan==='professional'?'Professional':'Essentials';
+    const linked=await callLinkSubscription(userId, fields||{});
     document.getElementById('success-copy').textContent=
-      'Your '+planLabel+' plan is linked to your organisation. Continue in the portal.';
+      'Your '+planLabel(linked.plan||PLAN)+' plan is linked to your organisation.';
     show('state-success');
   }catch(e){
     console.error(e);
@@ -222,29 +255,31 @@ async function finishForUser(userId, organisation){
 }
 
 async function doSignup(){
-  const first=document.getElementById('su-first').value.trim();
-  const last=document.getElementById('su-last').value.trim();
+  const name=document.getElementById('su-name').value.trim();
   const org=document.getElementById('su-org').value.trim();
+  const title=document.getElementById('su-title').value.trim();
   const email=document.getElementById('su-email').value.trim();
   const pass=document.getElementById('su-password').value;
   const err=document.getElementById('su-error');
   const btn=document.getElementById('su-btn');
   err.style.display='none';
-  if(!email||!pass){err.textContent='Email and password are required.';err.style.display='block';return}
+  if(!name){err.textContent='Enter your full name.';err.style.display='block';return}
+  if(!email){err.textContent='Enter your work email.';err.style.display='block';return}
+  if(!org){err.textContent='Enter your company name.';err.style.display='block';return}
   if(pass.length<8){err.textContent='Password must be at least 8 characters.';err.style.display='block';return}
   btn.disabled=true;
   try{
     const{data,error}=await sb.auth.signUp({email,password:pass});
     if(error)throw error;
-    if(!data.user)throw new Error('Account created — check your email, then sign in.');
-    const full=(first+' '+last).trim();
+    if(!data.user)throw new Error('Check your email to confirm the account, then sign in.');
     await sb.from('profiles').insert({
       id:data.user.id,
       email:email,
-      full_name:full||null,
-      organisation:org||null
+      full_name:name,
+      organisation:org,
+      job_title:title||null
     });
-    await finishForUser(data.user.id, org);
+    await finishForUser(data.user.id,{organisation:org,full_name:name,job_title:title});
   }catch(e){
     err.textContent=e.message||'Could not create account.';
     err.style.display='block';
@@ -263,7 +298,7 @@ async function doSignin(){
   try{
     const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
     if(error)throw error;
-    await finishForUser(data.user.id, '');
+    await finishForUser(data.user.id,{});
   }catch(e){
     err.textContent=e.message||'Could not sign in.';
     err.style.display='block';
@@ -272,17 +307,26 @@ async function doSignin(){
 }
 
 window.addEventListener('load', async function(){
+  document.getElementById('plan-chip').textContent=planLabel(PLAN)+' plan';
   if(!STRIPE_SESSION_ID){show('state-error');return}
+
+  const info=await loadSessionInfo();
+  if(info&&info.testMode){
+    document.getElementById('test-banner').style.display='block';
+    document.getElementById('backdrop').classList.add('has-test');
+  }
+  if(info&&info.email){
+    document.getElementById('su-email').value=info.email;
+    document.getElementById('si-email').value=info.email;
+  }
+  if(info&&info.name)document.getElementById('su-name').value=info.name;
+  if(info&&info.plan)document.getElementById('plan-chip').textContent=planLabel(info.plan)+' plan';
+
   try{
     const{data:{session}}=await sb.auth.getSession();
-    if(session){
-      await finishForUser(session.user.id, '');
-      return;
-    }
-    // Prefill plan-aware copy; email comes from Stripe after claim if needed
+    if(session){await finishForUser(session.user.id,{});return}
     show('state-signup');
   }catch(e){
-    console.error(e);
     show('state-signup');
   }
 });

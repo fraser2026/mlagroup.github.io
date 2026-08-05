@@ -6,12 +6,15 @@ topbarTitles['policies']={label:'Policies',icon:'<path d="M4 2h8a1 1 0 011 1v10a
 topbarTitles['plans']={label:'Subscription Plans',icon:'<path d="M2 4h12M2 8h8M2 12h10"/><circle cx="14" cy="8" r="1.5"/>'};
 
 var portalAnnual=false;
-var PORTAL_PRICES={
-  essentials:{monthly:'price_1TD37VRfSQTwpCt9fmlCcuQh',annual:'price_1TD37VRfSQTwpCt914LUfLrf'},
-  professional:{monthly:'price_1TD392RfSQTwpCt9yaJicEiY',annual:'price_1TD3AbRfSQTwpCt969zGi3bD'}
-};
 var portalStripe=null;
 var portalCheckoutInstance=null;
+function portalPriceId(plan){
+  if(window.RA_STRIPE)return window.RA_STRIPE.priceId(plan,portalAnnual?'annual':'monthly');
+  return null;
+}
+function portalStripePk(){
+  return window.RA_STRIPE?window.RA_STRIPE.publishableKey():'';
+}
 
 function togglePortalPeriod(){portalAnnual=!portalAnnual;closePortalCheckout();updatePortalPricing()}
 function setPortalPeriod(p){portalAnnual=(p==='annual');updatePortalPricing()}
@@ -277,13 +280,15 @@ async function submitEnterpriseInquiry(){
 }
 
 function portalSubscribe(plan){
-  var priceId=PORTAL_PRICES[plan]?PORTAL_PRICES[plan][portalAnnual?'annual':'monthly']:null;
+  var priceId=portalPriceId(plan);
   if(!priceId)return;
+  var pk=portalStripePk();
+  if(!pk){alert('Stripe key missing. Check js/stripe-config.js');return}
   var loadEl=document.getElementById('portal-checkout-loading');
   var contEl=document.getElementById('portal-checkout-container');
   if(contEl.style.display==='block'){contEl.scrollIntoView({behavior:'smooth'});return}
   loadEl.style.display='block';
-  if(!portalStripe)portalStripe=Stripe('pk_live_51SVuGRRfSQTwpCt9hCFdOOyVJBOLgV1Gss5CxMOry1T3kKW3cE7IF8OhQzvXjBd9IjOCp941p4uc9R8RPolEvRVV00fiMjUyXQ');
+  if(!portalStripe)portalStripe=Stripe(pk);
   Promise.resolve(typeof ensureOrg==='function'?ensureOrg():currentOrg).then(function(org){
     if(!org){loadEl.style.display='none';alert('Could not set up your organisation. Please refresh and try again.');return null}
     return sb.auth.getSession().then(function(sd){
@@ -316,6 +321,8 @@ function portalSubscribe(plan){
 }
 
 async function startSubscription(priceId){
+  if(!priceId&&arguments.length)priceId=arguments[0];
+  // Legacy helper — prefer portalSubscribe(planKey)
   try{
     var org=typeof ensureOrg==='function'?await ensureOrg():currentOrg;
     if(!org){alert('Could not set up your organisation. Please refresh and try again.');return}

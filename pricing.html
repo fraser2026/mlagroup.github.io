@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://js.stripe.com/v3/"></script>
+<script src="js/stripe-config.js"></script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/reganchor.css">
 <style>
@@ -756,14 +757,16 @@ var SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
 var SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 var isAnnual=false;
-// Same live Stripe prices as portal Essentials / Professional
-var PRICES={
-  essentials:{monthly:'price_1TD37VRfSQTwpCt9fmlCcuQh',annual:'price_1TD37VRfSQTwpCt914LUfLrf'},
-  professional:{monthly:'price_1TD392RfSQTwpCt9yaJicEiY',annual:'price_1TD3AbRfSQTwpCt969zGi3bD'}
-};
 var pricingStripe=null;
 var pricingCheckoutInstance=null;
-var STRIPE_PK='pk_live_51SVuGRRfSQTwpCt9hCFdOOyVJBOLgV1Gss5CxMOry1T3kKW3cE7IF8OhQzvXjBd9IjOCp941p4uc9R8RPolEvRVV00fiMjUyXQ';
+function priceIdFor(plan){
+  return window.RA_STRIPE.priceId(plan, isAnnual?'annual':'monthly');
+}
+function stripePk(){
+  var k=window.RA_STRIPE.publishableKey();
+  if(!k)alert('Stripe test publishable key is missing. Add pk_test_… in js/stripe-config.js');
+  return k;
+}
 
 function togglePeriod(){isAnnual=!isAnnual;closePricingCheckout();updatePrices()}
 function setPeriod(p){isAnnual=(p==='annual');closePricingCheckout();updatePrices()}
@@ -855,8 +858,10 @@ async function ensurePricingOrg(session){
 }
 
 async function subscribe(plan){
-  var priceId=PRICES[plan]?PRICES[plan][isAnnual?'annual':'monthly']:null;
+  var priceId=priceIdFor(plan);
   if(!priceId)return;
+  var pk=stripePk();
+  if(!pk)return;
 
   var loadEl=document.getElementById('pricing-checkout-loading');
   var contEl=document.getElementById('pricing-checkout-container');
@@ -864,21 +869,12 @@ async function subscribe(plan){
 
   loadEl.style.display='block';
   contEl.style.display='none';
-  if(!pricingStripe)pricingStripe=Stripe(STRIPE_PK);
+  if(!pricingStripe)pricingStripe=Stripe(pk);
 
   try{
-    // Prefer logged-in org checkout when a session exists; otherwise pay-first guest.
-    var session=await getAuthSession(1500);
-    var payload;
+    // Public pricing always uses pay-first guest checkout; portal handles logged-in upgrades.
+    var payload={price_id:priceId,embedded:true,guest:true};
     var authHeader=SUPABASE_KEY;
-
-    if(session){
-      var org=await ensurePricingOrg(session);
-      payload={price_id:priceId,org_id:org.id,embedded:true};
-      authHeader=session.access_token;
-    }else{
-      payload={price_id:priceId,embedded:true,guest:true};
-    }
 
     var res=await fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{
       method:'POST',
@@ -1007,10 +1003,17 @@ document.addEventListener('keydown',function(e){
 });
 
 (function(){
+  if(window.RA_STRIPE&&window.RA_STRIPE.isTest()){
+    var ban=document.createElement('div');
+    ban.style.cssText='position:fixed;top:0;left:0;right:0;z-index:200;background:#0A0E14;color:#fff;font-size:12px;text-align:center;padding:6px 10px;';
+    ban.textContent='Stripe test mode — payments use test cards only';
+    document.body.appendChild(ban);
+    document.body.style.paddingTop='28px';
+  }
   var p=new URLSearchParams(window.location.search);
   var plan=p.get('plan');
   var period=p.get('period');
-  if(plan&&PRICES[plan]){
+  if(plan&&(plan==='essentials'||plan==='professional')){
     if(period==='annual'){isAnnual=true;updatePrices()}
     setTimeout(function(){subscribe(plan)},400);
   }

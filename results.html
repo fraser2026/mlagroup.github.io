@@ -7,6 +7,7 @@
   <meta name="color-scheme" content="light">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
+  <script src="js/stripe-config.js"></script>
   <link rel="stylesheet" href="css/reganchor.css">
   <link rel="stylesheet" href="css/reganchor-flow.css">
   <script src="js/ra-maturity.js"></script>
@@ -192,7 +193,7 @@
 const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const stripe = Stripe('pk_live_51SVuGRRfSQTwpCt9hCFdOOyVJBOLgV1Gss5CxMOry1T3kKW3cE7IF8OhQzvXjBd9IjOCp941p4uc9R8RPolEvRVV00fiMjUyXQ');
+const stripe = Stripe(window.RA_STRIPE.publishableKey());
 
 const CTA_LABEL = 'Get Full Report';
 
