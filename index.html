@@ -277,8 +277,10 @@
       align-items:center;
       margin-bottom:48px;
       min-width:0;
+      width:100%;
+      max-width:100%;
     }
-    .system-intro { max-width:620px; min-width:0; }
+    .system-intro { max-width:620px; min-width:0; width:100%; }
     .system-intro h2 { margin-bottom:16px; }
     .system-intro .section-sub { max-width:min(36em, 100%); }
     .system-maturity {
@@ -288,7 +290,9 @@
       justify-self:center;
       width:fit-content;
       max-width:100%;
+      min-width:0;
       gap:14px;
+      box-sizing:border-box;
     }
     .system-maturity__label {
       font-family:var(--font-brand);
@@ -303,6 +307,8 @@
       align-items:center;
       gap:16px;
       width:fit-content;
+      max-width:100%;
+      min-width:0;
     }
     /* Portal object — stock raMaturityBlock (bar + score/tier) */
     .system-maturity__object {
@@ -392,13 +398,14 @@
       scrollbar-width:none;
       -webkit-overflow-scrolling:touch;
     }
+    /* Touch: no CSS snap — native momentum like Liveline / social feeds */
     @media (pointer: coarse) {
       .system-maturity__glass-scroller {
-        scroll-snap-type:y mandatory;
+        scroll-snap-type:none;
         touch-action:pan-y;
       }
-      /* normal = flick can pass levels; always was fighting the finger on iOS */
       .system-maturity__step {
+        scroll-snap-align:none;
         scroll-snap-stop:normal;
         transition:none;
       }
@@ -638,8 +645,19 @@
       .feat-sticky { position:static; }
       .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:40px 32px 28px; }
       .fines-band__top { grid-template-columns:1fr; gap:28px; }
-      .system-head { grid-template-columns:1fr; gap:32px; margin-bottom:40px; min-width:0; }
+      .system-head {
+        grid-template-columns:1fr;
+        gap:32px;
+        margin-bottom:40px;
+        min-width:0;
+        justify-items:start;
+      }
       .system-intro { max-width:100%; }
+      .system-maturity {
+        justify-self:start;
+        width:100%;
+        max-width:100%;
+      }
     }
     @media (max-width:768px) {
       .home-chrome nav { padding:0 20px; }
@@ -653,20 +671,72 @@
       .wrap { padding:0 20px; }
       .section-pad { padding-top:56px; padding-bottom:56px; }
       .fines-chips { display:none; }
-      .system-intro { max-width:100%; width:100%; }
-      .system-intro .section-sub { max-width:100%; }
+      .system-section,
+      .system-section .wrap,
+      .system-head { overflow-x:clip; max-width:100%; }
+      .system-intro { max-width:100%; width:100%; min-width:0; }
+      .system-intro h2,
+      .system-intro .section-sub {
+        max-width:100%;
+        overflow-wrap:anywhere;
+        word-break:break-word;
+        text-wrap:balance;
+      }
       .system-grid { grid-template-columns:1fr; }
       .system-card { border-right:none; border-bottom:1px solid var(--border); padding:28px 24px; }
       .system-card:last-child { border-bottom:none; }
       .system-card:nth-child(n+3) { border-bottom:1px solid var(--border); }
+      /* Left-align with page column — no centering that can read as “shifted right” */
       .system-maturity {
-        margin:8px auto 12px;
-        align-items:center;
+        margin:8px 0 12px;
+        align-items:flex-start;
+        justify-self:start;
+        width:100%;
+        max-width:100%;
       }
-      .system-maturity__label { text-align:center; width:100%; }
-      .system-maturity__stage { gap:14px; }
+      .system-maturity__label { text-align:left; width:100%; }
+      .system-maturity__stage {
+        gap:8px;
+        width:100%;
+        max-width:100%;
+        justify-content:flex-start;
+        min-width:0;
+      }
+      .system-maturity__object {
+        min-width:0;
+        flex:1 1 auto;
+        max-width:calc(100% - 5.6em);
+        overflow:hidden;
+      }
+      .system-maturity__object .ra-maturity { gap:8px; max-width:100%; }
+      .system-maturity__object .ra-maturity__text { min-width:0; }
+      .system-maturity__object .ra-cbar { width:64px; flex-shrink:0; }
+      .system-maturity__object .ra-cbar__row { height:4px; }
+      /* Kill current-row overhang — it was widening the cluster past the column */
+      .system-maturity__object .ra-cbar__row--current {
+        height:5px; width:64px; margin-left:0;
+      }
+      .system-maturity__object .ra-maturity__score {
+        font-size:26px;
+        min-width:0;
+      }
+      .system-maturity__object .ra-maturity__tier {
+        font-size:11px;
+        white-space:normal;
+        overflow-wrap:anywhere;
+      }
+      .system-maturity__glass {
+        width:5.4em;
+        height:140px;
+        flex:0 0 5.4em;
+        min-width:0;
+      }
       .system-maturity__glass-scroller {
-        scroll-snap-type:y mandatory;
+        scroll-snap-type:none;
+        touch-action:pan-y;
+      }
+      .system-maturity__step {
+        scroll-snap-align:none;
         touch-action:pan-y;
       }
       .entry-grid { grid-template-columns:1fr; }
@@ -996,6 +1066,8 @@
     let hovering = false;
     let wheelLock = false;
     let fingerDown = false;
+    let touchSamples = [];
+    const FLICK_PX_MS = 0.38; // social-style: faster than this → fling to end
 
     function clampScore(n) {
       const v = Math.round(Number(n));
@@ -1037,15 +1109,45 @@
       });
     }
 
+    /* Liveline-like sync: update score/tier/bars without remounting during scrub */
+    function syncReadingLive(n) {
+      n = Math.max(1, Math.min(7, n));
+      if (n === currentN && objectEl.querySelector('.ra-cbar')) {
+        updateFocus(n);
+        return;
+      }
+      currentN = n;
+      updateFocus(n);
+      const score = clampScore(LEVEL_SCORES[n - 1]);
+      const lvl = RA_LEVELS[n - 1];
+      displayScore = score;
+      const scoreEl = objectEl.querySelector('.ra-maturity__score');
+      if (scoreEl) scoreEl.innerHTML = score + OF;
+      const tierEl = objectEl.querySelector('.ra-maturity__tier');
+      if (tierEl) tierEl.textContent = lvl.code + ' ' + lvl.label;
+      const rows = objectEl.querySelectorAll('.ra-cbar__row');
+      if (rows.length === 7) {
+        const current = n - 1;
+        rows.forEach((row, i) => {
+          let mod = 'ra-cbar__row';
+          if (i === current) mod += ' ra-cbar__row--current';
+          else if (i < current) mod += ' ra-cbar__row--achieved-' + Math.min(i + 1, 3);
+          else mod += ' ra-cbar__row--pending-' + Math.min(i - current, 3);
+          row.className = mod;
+          row.style.setProperty('--ra-cbar-i', String(i));
+        });
+      }
+    }
+
     function scrollToLevel(n, smooth) {
       const btn = scroller.querySelector('.system-maturity__step[data-level="' + n + '"]');
       if (!btn) return;
       const top = btn.offsetTop - (scroller.clientHeight / 2) + (btn.offsetHeight / 2);
       scrollSync = true;
-      // Never use smooth scrollTo on touch — it fights iOS momentum
-      const behavior = (!isTouch && smooth && !reduce) ? 'smooth' : 'auto';
+      // Smooth is OK after finger-up (fling/tap). Never call this mid-gesture.
+      const behavior = (smooth && !reduce) ? 'smooth' : 'auto';
       scroller.scrollTo({ top: Math.max(0, top), behavior: behavior });
-      setTimeout(() => { scrollSync = false; }, behavior === 'smooth' ? 380 : 32);
+      setTimeout(() => { scrollSync = false; }, behavior === 'smooth' ? 420 : 32);
     }
 
     function paintObject(n, animate) {
@@ -1058,7 +1160,7 @@
           row.setAttribute('role', 'button');
           row.setAttribute('tabindex', '0');
           row.setAttribute('aria-label', 'Show ' + RA_LEVELS[i].code + ' ' + RA_LEVELS[i].label);
-          const go = () => applyLevel(i + 1, true, {});
+          const go = () => applyLevel(i + 1, true, isTouch ? { forceScroll: true } : {});
           row.onclick = go;
           row.onkeydown = (e) => {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
@@ -1079,7 +1181,7 @@
       opts = opts || {};
       n = Math.max(1, Math.min(7, Number(n) || 1));
       const fromScroll = !!opts.fromScroll;
-      // Touch: never programmatic-scroll except explicit tap recenter (opts.forceScroll)
+      // Touch: never programmatic-scroll except tap / fast fling (opts.forceScroll)
       const skipScroll = !!opts.skipScroll || fromScroll || (isTouch && !opts.forceScroll);
       if (n === currentN && fromScroll) {
         updateFocus(n);
@@ -1088,7 +1190,10 @@
       currentN = n;
       paintObject(n, animate);
       updateFocus(n);
-      if (!skipScroll) scrollToLevel(n, !isTouch);
+      if (!skipScroll) {
+        // Smooth after animated fling/tap; initial paint stays instant
+        scrollToLevel(n, animate && (!isTouch || !!opts.forceScroll));
+      }
     }
 
     function levelFromScroll() {
@@ -1108,9 +1213,21 @@
 
     function commitScrollLevel() {
       if (fingerDown || scrollSync) return;
-      const n = levelFromScroll();
-      updateFocus(n);
-      if (n !== currentN) applyLevel(n, true, { fromScroll: true, skipScroll: true });
+      // Keep Liveline-style live reading; no remount / scrollTo on settle
+      syncReadingLive(levelFromScroll());
+    }
+
+    /* Velocity from the last ~80ms of the stroke (social-style flick detect) */
+    function touchVelocity() {
+      if (touchSamples.length < 2) return 0;
+      const end = touchSamples[touchSamples.length - 1];
+      let start = touchSamples[0];
+      for (let i = touchSamples.length - 2; i >= 0; i--) {
+        if (end.t - touchSamples[i].t > 80) break;
+        start = touchSamples[i];
+      }
+      const dt = Math.max(1, end.t - start.t);
+      return (end.y - start.y) / dt; // px/ms
     }
 
     // Glass list L7 → L1 (top to bottom)
@@ -1125,7 +1242,6 @@
 
     scroller.querySelectorAll('.system-maturity__step').forEach((btn) => {
       btn.addEventListener('click', () => {
-        // Tap: update reading + auto-recenter (no smooth scroll on touch)
         applyLevel(Number(btn.dataset.level), true, isTouch ? { forceScroll: true } : {});
       });
       if (canHover) {
@@ -1156,37 +1272,54 @@
       }, { passive: false });
     }
 
-    // Touch: native snap owns the gesture; sync reading only after finger up + settle
+    // Touch: native momentum (no snap) + velocity fling to ends + live sync
     if (isTouch) {
-      scroller.addEventListener('touchstart', () => { fingerDown = true; }, { passive: true });
-      scroller.addEventListener('touchend', () => {
-        fingerDown = false;
-        clearTimeout(scrollTimer);
-        scrollTimer = setTimeout(commitScrollLevel, 100);
+      scroller.addEventListener('touchstart', (e) => {
+        fingerDown = true;
+        const t = e.touches[0];
+        touchSamples = [{ y: t.clientY, t: performance.now() }];
       }, { passive: true });
-      scroller.addEventListener('touchcancel', () => {
-        fingerDown = false;
-        clearTimeout(scrollTimer);
-        scrollTimer = setTimeout(commitScrollLevel, 100);
+
+      scroller.addEventListener('touchmove', (e) => {
+        const t = e.touches[0];
+        touchSamples.push({ y: t.clientY, t: performance.now() });
+        if (touchSamples.length > 8) touchSamples.shift();
       }, { passive: true });
+
+      const endTouch = () => {
+        fingerDown = false;
+        const v = touchVelocity();
+        clearTimeout(scrollTimer);
+        // Fast flick → end of list in flick direction (feed-style)
+        // Finger up (v < 0) scrolls toward L1; finger down (v > 0) toward L7
+        if (Math.abs(v) >= FLICK_PX_MS) {
+          const target = v < 0 ? 1 : 7;
+          applyLevel(target, true, { forceScroll: true });
+          touchSamples = [];
+          return;
+        }
+        // Slow stroke: let native inertia finish, then commit centered level
+        scrollTimer = setTimeout(commitScrollLevel, 180);
+        touchSamples = [];
+      };
+      scroller.addEventListener('touchend', endTouch, { passive: true });
+      scroller.addEventListener('touchcancel', endTouch, { passive: true });
 
       scroller.addEventListener('scroll', () => {
         if (scrollSync) return;
-        updateFocus(levelFromScroll());
+        syncReadingLive(levelFromScroll());
+        if (!fingerDown) {
+          clearTimeout(scrollTimer);
+          scrollTimer = setTimeout(commitScrollLevel, 160);
+        }
       }, { passive: true });
 
-      const onScrollEnd = () => {
-        if (fingerDown || scrollSync) return;
-        commitScrollLevel();
-      };
       if ('onscrollend' in scroller) {
-        scroller.addEventListener('scrollend', onScrollEnd);
-      } else {
-        scroller.addEventListener('scroll', () => {
-          if (scrollSync || fingerDown) return;
+        scroller.addEventListener('scrollend', () => {
+          if (fingerDown || scrollSync) return;
           clearTimeout(scrollTimer);
-          scrollTimer = setTimeout(onScrollEnd, 120);
-        }, { passive: true });
+          commitScrollLevel();
+        });
       }
     }
 
@@ -1196,7 +1329,6 @@
     const mio = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (e.isIntersecting) {
-          // Touch: animate reading only — do not yank the scroller while user may be on it
           applyLevel(7, true, isTouch ? { skipScroll: true } : {});
         } else {
           cancelCount();
