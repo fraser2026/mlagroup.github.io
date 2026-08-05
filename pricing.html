@@ -474,7 +474,7 @@ footer { border-top:1px solid var(--main); background:var(--bg); position:relati
           <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Full governance framework</div>
           <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Email support</div>
         </div>
-        <button class="plan-card__cta" onclick="subscribe('essentials')">Get started</button>
+        <button type="button" class="plan-card__cta" onclick="subscribe('essentials')">Get started</button>
       </div>
 
       <div class="plan-card fade">
@@ -493,7 +493,7 @@ footer { border-top:1px solid var(--main); background:var(--bg); position:relati
           <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Compliance automation</div>
           <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Priority support</div>
         </div>
-        <button class="plan-card__cta" onclick="subscribe('professional')">Upgrade to Professional</button>
+        <button type="button" class="plan-card__cta" onclick="subscribe('professional')">Upgrade to Professional</button>
       </div>
 
       <div class="plan-card fade">
@@ -653,6 +653,27 @@ function closePricingCheckout(){
   if(l)l.style.display='none';
 }
 
+/** Wait for Supabase to hydrate session from storage (avoids false login redirects). */
+function getAuthSession(timeoutMs){
+  return sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session)return r.data.session;
+    return new Promise(function(resolve){
+      var done=false;
+      var finish=function(session){
+        if(done)return;
+        done=true;
+        try{sub.unsubscribe()}catch(e){}
+        clearTimeout(timer);
+        resolve(session||null);
+      };
+      var timer=setTimeout(function(){finish(null)},timeoutMs||3000);
+      var sub=sb.auth.onAuthStateChange(function(event,session){
+        if(event==='INITIAL_SESSION'||event==='SIGNED_IN'||session)finish(session);
+      }).data.subscription;
+    });
+  });
+}
+
 async function ensurePricingOrg(session){
   var userId=session.user.id;
   var pr=await sb.from('profiles').select('org_id,organisation,full_name').eq('id',userId).maybeSingle();
@@ -685,18 +706,20 @@ async function subscribe(plan){
   var priceId=PRICES[plan]?PRICES[plan][isAnnual?'annual':'monthly']:null;
   if(!priceId)return;
 
-  var r=await sb.auth.getSession();var session=r.data.session;
-  if(!session){
-    window.location.href='login.html?redirect=pricing&plan='+encodeURIComponent(plan)+'&period='+(isAnnual?'annual':'monthly');
-    return;
-  }
-
   var loadEl=document.getElementById('pricing-checkout-loading');
   var contEl=document.getElementById('pricing-checkout-container');
   if(contEl.style.display==='block'){contEl.scrollIntoView({behavior:'smooth',block:'start'});return}
 
   loadEl.style.display='block';
   contEl.style.display='none';
+
+  var session=await getAuthSession(3000);
+  if(!session){
+    loadEl.style.display='none';
+    window.location.href='login.html?redirect=pricing&plan='+encodeURIComponent(plan)+'&period='+(isAnnual?'annual':'monthly');
+    return;
+  }
+
   if(!pricingStripe)pricingStripe=Stripe(STRIPE_PK);
 
   try{
@@ -738,7 +761,11 @@ async function subscribe(plan){
   var period=p.get('period');
   if(plan&&PRICES[plan]){
     if(period==='annual'){isAnnual=true;updatePrices()}
-    setTimeout(function(){subscribe(plan)},500);
+    // Wait for auth hydration before auto-opening checkout after login return
+    getAuthSession(4000).then(function(session){
+      if(session)subscribe(plan);
+      else window.location.href='login.html?redirect=pricing&plan='+encodeURIComponent(plan)+'&period='+(period||'monthly');
+    });
   }
 })();
 

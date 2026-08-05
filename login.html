@@ -451,6 +451,14 @@
     const signinVisible = document.getElementById('form-signin').style.display !== 'none';
     if (signinVisible) signIn(); else signUp();
   });
+
+  // If already signed in (e.g. came from portal), skip the form and continue checkout.
+  sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session){
+      var p=new URLSearchParams(window.location.search);
+      if(p.get('redirect')==='pricing') postAuthRedirect();
+    }
+  });
 </script>
 </body>
 </html>
