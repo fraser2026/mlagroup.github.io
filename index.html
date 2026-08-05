@@ -61,19 +61,24 @@
       z-index: 200;
       background: var(--bg);
       overflow: visible;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.25s ease;
     }
+    .home-chrome.is-scrolled {
+      border-bottom-color: var(--border);
+    }
+    /* Same content column as .wrap — logo/CTA align with page edges */
     .home-chrome nav {
       position: relative;
       z-index: 1;
       height: 64px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
       display: flex; align-items:center; justify-content:space-between;
       padding: 0 48px;
-      background: var(--bg);
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.25s ease;
-    }
-    .home-chrome.is-scrolled nav {
-      border-bottom-color: var(--border);
+      box-sizing: border-box;
+      background: transparent;
     }
     /* Soft veil below the solid chrome only — must sit outside the
        nav box so scrolled content fades under the bar, not through it. */
@@ -121,15 +126,24 @@
     }
     .nav-signin:hover { color:var(--main); background:var(--hover); }
     .nav-cta {
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
       padding: 9px 18px;
       font-size: 0.85rem; font-weight:500; color:#FFFFFF;
       background: var(--accent); text-decoration:none; border:1px solid var(--accent);
       border-radius: 4px;
       transition: background 0.15s, border-color 0.15s;
     }
-    .nav-cta:hover { background: var(--accent-h); border-color: var(--accent-h); }
+    .nav-cta:hover,
+    .nav-cta:focus-visible {
+      background: var(--accent-h); border-color: var(--accent-h); color:#FFFFFF;
+    }
+    .nav-cta svg { stroke:#FFFFFF; flex-shrink:0; }
 
-    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:4px; }
+    .hamburger {
+      display:none; flex-direction:column; gap:5px; cursor:pointer;
+      padding:0; margin:0; border:none; background:none;
+      width:20px;
+    }
     .hamburger span { display:block; width:20px; height:1.5px; background:var(--main); transition:0.25s; }
 
     /* FIX 1: position:fixed so it always appears below the nav regardless of scroll position */
@@ -151,12 +165,20 @@
     }
     .mob-link:hover { color:var(--main); background:var(--hover); }
     .mob-cta {
-      margin-top:8px; padding:13px; border:1px solid var(--main);
-      background:var(--main); color:var(--bg); font-weight:500;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      margin-top:8px; padding:13px;
+      border:1px solid var(--accent);
+      background:var(--accent); color:#FFFFFF; font-weight:500;
+      border-radius:4px;
       text-decoration:none; text-align:center; font-size:0.9rem;
-      width:100%; transition:opacity 0.15s;
+      width:100%; transition:background 0.15s, border-color 0.15s;
     }
-    .mob-cta:hover { opacity:0.85; }
+    .mob-cta:hover,
+    .mob-cta:focus-visible {
+      background:var(--accent-h); border-color:var(--accent-h); color:#FFFFFF;
+    }
+    .mob-cta svg { stroke:#FFFFFF; flex-shrink:0; transition:transform 0.18s; }
+    .mob-cta:hover svg { transform:translateX(3px); }
 
     /* ── HERO ── */
     .hero {
@@ -184,11 +206,31 @@
       line-height: 1.06; font-weight:500; letter-spacing:-0.03em;
       margin-bottom: 28px; color:var(--main);
     }
-    h1 em { font-style:normal; font-weight:400; color:var(--muted); }
+    h1 em, .type-line {
+      font-style:normal; font-weight:400; color:var(--muted);
+      display:inline-block; min-height:1.1em;
+    }
+    .type-line::after {
+      content:'';
+      display:inline-block;
+      width:0.08em;
+      height:0.85em;
+      margin-left:0.06em;
+      background:var(--muted);
+      vertical-align:-0.05em;
+      opacity:0;
+      transition:opacity 0.15s;
+    }
+    .type-line.is-typing::after { opacity:0.55; animation: typeCaret 0.7s steps(1) infinite; }
+    @keyframes typeCaret { 50% { opacity:0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .type-line::after { display:none; }
+      .type-line.is-typing::after { animation:none; opacity:0; }
+    }
 
     .hero-sub {
       font-size: 1.1rem; font-weight:400; color:var(--sub);
-      line-height: 1.7; max-width:580px; margin:0 auto 44px;
+      line-height: 1.7; max-width:620px; margin:0 auto 44px;
     }
 
     .hero-actions { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; }
@@ -202,7 +244,10 @@
       font-size:0.9rem; font-weight:500; text-decoration:none;
       transition: background 0.15s, border-color 0.15s;
     }
-    .btn-primary:hover { background:var(--accent-h); border-color:var(--accent-h); }
+    .btn-primary:hover,
+    .btn-primary:focus-visible {
+      background:var(--accent-h); border-color:var(--accent-h); color:#FFFFFF;
+    }
     .btn-primary svg { transition:transform 0.18s; stroke:#FFFFFF; }
     .btn-primary:hover svg { transform:translateX(3px); }
 
@@ -213,29 +258,190 @@
       border-radius: 4px;
       font-size:0.9rem; font-weight:500; text-decoration:none;
       background:var(--bg);
-      transition: border-color 0.18s, background 0.18s;
+      transition: border-color 0.18s, background 0.18s, color 0.18s;
     }
-    .btn-ghost:hover { border-color:var(--border-h); background:var(--hover); }
+    .btn-ghost:hover,
+    .btn-ghost:focus-visible {
+      border-color:var(--accent);
+      background:var(--hover);
+      color:var(--accent);
+      outline:none;
+    }
 
-    /* ── PRODUCT CARDS ── */
-    .cards-grid {
-      display:grid; grid-template-columns:repeat(3,1fr);
+    /* ── SYSTEM PILLARS ── */
+    .system-section { border-top:1px solid var(--border); }
+    .system-head {
+      display:grid;
+      grid-template-columns:1.15fr 0.85fr;
+      gap:48px;
+      align-items:center;
+      margin-bottom:48px;
+    }
+    .system-intro { max-width:620px; }
+    .system-intro h2 { margin-bottom:16px; }
+    .system-intro .section-sub { max-width:36em; }
+    .system-maturity {
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-self:center;
+      width:fit-content;
+      max-width:100%;
+      gap:14px;
+    }
+    .system-maturity__label {
+      font-family:var(--font-brand);
+      font-size:0.78rem;
+      font-weight:500;
+      letter-spacing:-0.01em;
+      color:var(--main);
+    }
+    /* Pack object + glass as one tight group (no full-width stretch) */
+    .system-maturity__stage {
+      display:flex;
+      align-items:center;
+      gap:16px;
+      width:fit-content;
+    }
+    /* Portal object — stock raMaturityBlock (bar + score/tier) */
+    .system-maturity__object {
+      flex-shrink:0;
+    }
+    .system-maturity__object .ra-maturity {
+      align-items:flex-end;
+      gap:18px;
+    }
+    .system-maturity__object .ra-cbar {
+      width:120px;
+    }
+    .system-maturity__object .ra-cbar__row {
+      height:5px;
+      background:var(--accent);
+      cursor:pointer;
+    }
+    .system-maturity__object .ra-cbar__row--current {
+      height:6px;
+      width:130px;
+      margin-left:-5px;
+      background:var(--accent);
+    }
+    @keyframes ra-cbar-grow {
+      from { transform:scaleX(0); }
+      to { transform:scaleX(1); }
+    }
+    .system-maturity__object .ra-cbar--animate .ra-cbar__row {
+      transform-origin:left center;
+      animation:ra-cbar-grow 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay:calc(var(--ra-cbar-i, 0) * 220ms);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .system-maturity__object .ra-cbar--animate .ra-cbar__row { animation:none; }
+    }
+    .system-maturity__object .ra-maturity__score {
+      font-feature-settings:'tnum';
+      font-variant-numeric:tabular-nums;
+      min-width:4.6em; /* digit stability only — not a wide spacer */
+      white-space:nowrap;
+    }
+    .system-maturity__object .ra-maturity__tier {
+      white-space:nowrap;
+    }
+    /* Glass picker — width hugs longest label (L7 Authoritative) */
+    .system-maturity__glass {
+      position:relative;
+      width:7.6em;
+      flex-shrink:0;
+      height:148px;
+      overflow:hidden;
+      -webkit-mask-image:linear-gradient(
+        to bottom,
+        transparent 0%,
+        #000 24%,
+        #000 76%,
+        transparent 100%
+      );
+      mask-image:linear-gradient(
+        to bottom,
+        transparent 0%,
+        #000 24%,
+        #000 76%,
+        transparent 100%
+      );
+    }
+    .system-maturity__glass::before {
+      content:'';
+      position:absolute;
+      left:0; right:0;
+      top:50%;
+      height:32px;
+      margin-top:-16px;
+      border-top:1px solid rgba(83,58,253,0.12);
+      border-bottom:1px solid rgba(83,58,253,0.12);
+      background:rgba(83,58,253,0.04);
+      pointer-events:none;
+      z-index:0;
+    }
+    .system-maturity__glass-scroller {
+      position:relative;
+      z-index:1;
+      height:100%;
+      overflow-y:auto;
+      overscroll-behavior:contain;
+      scroll-snap-type:y proximity;
+      scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;
+    }
+    .system-maturity__glass-scroller::-webkit-scrollbar { display:none; }
+    .system-maturity__glass-pad {
+      height:calc(50% - 16px);
+      flex-shrink:0;
+      pointer-events:none;
+    }
+    .system-maturity__step {
+      appearance:none;
+      background:none;
+      border:none;
+      display:flex;
+      align-items:center;
+      width:100%;
+      height:32px;
+      padding:0 2px;
+      margin:0;
+      font-family:var(--font-brand);
+      font-size:12px;
+      font-weight:500;
+      letter-spacing:-0.01em;
+      line-height:1;
+      color:var(--muted);
+      text-align:left;
+      cursor:pointer;
+      white-space:nowrap;
+      scroll-snap-align:center;
+      scroll-snap-stop:always;
+      opacity:0.28;
+      transition:opacity 0.2s, color 0.2s;
+    }
+    .system-maturity__step.is-focus {
+      opacity:1;
+      color:var(--main);
+    }
+    .system-grid {
+      display:grid; grid-template-columns:1fr 1fr;
       border:1px solid var(--border);
-      position:relative; z-index:1;
     }
-    .product-card {
-      padding:48px 40px; background:var(--card);
+    .system-card {
+      padding:36px 32px; background:var(--card);
       border-right:1px solid var(--border);
-      display:flex; flex-direction:column;
-      transition:background 0.2s;
+      border-bottom:1px solid var(--border);
     }
-    .product-card:last-child { border-right:none; }
-    .product-card:hover { background:var(--hover); }
-    .card-label { font-family:var(--font-brand); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.16em; color:var(--muted); margin-bottom:16px; }
-    .card-title { font-family:var(--font-brand); font-size:1.35rem; font-weight:500; line-height:1.2; letter-spacing:-0.02em; color:var(--main); margin-bottom:14px; }
-    .card-p { font-size:0.875rem; color:var(--sub); line-height:1.75; flex:1; }
-    .card-tier { margin-top:22px; font-size:0.72rem; color:var(--muted); display:flex; align-items:center; gap:8px; text-transform:uppercase; letter-spacing:0.08em; }
-    .card-tier::before { content:''; width:14px; height:1px; background:var(--border); flex-shrink:0; }
+    .system-card:nth-child(2n) { border-right:none; }
+    .system-card:nth-child(n+3) { border-bottom:none; }
+    .system-label {
+      font-family:var(--font-brand); font-size:0.85rem; font-weight:500;
+      color:var(--main); margin-bottom:10px; letter-spacing:-0.01em;
+    }
+    .system-p { font-size:0.875rem; color:var(--sub); line-height:1.75; margin:0; }
+    .system-explore { margin-top:28px; }
 
     /* ── SECTION COMMONS ── */
     section { position:relative; z-index:1; }
@@ -252,15 +458,19 @@
     .feat-sticky { position:sticky; top:96px; }
     .feat-sticky h2 { margin-bottom:18px; }
     .feat-sticky p { margin-bottom:32px; }
-    .feat-cta { display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:500; color:var(--accent); text-decoration:none; transition:gap 0.18s, color 0.15s, border-color 0.15s; border-bottom:1px solid rgba(83,58,253,0.28); padding-bottom:2px; }
+    .feat-cta {
+      display:inline-flex; align-items:center; gap:6px; width:fit-content;
+      font-size:0.85rem; font-weight:500; color:var(--accent); text-decoration:none;
+      transition:gap 0.18s, color 0.15s, border-color 0.15s;
+      border-bottom:1px solid rgba(83,58,253,0.28); padding-bottom:2px;
+    }
     .feat-cta:hover { gap:10px; color:var(--accent-h); border-color:var(--accent); }
     .feat-list { display:flex; flex-direction:column; }
-    .feat-item { display:flex; gap:18px; padding:26px 0; border-bottom:1px solid var(--border); transition:padding-left 0.2s; }
+    .feat-item { display:flex; gap:18px; padding:26px 0; border-bottom:1px solid var(--border); }
     .feat-item:first-child { border-top:1px solid var(--border); }
-    .feat-item:hover { padding-left:6px; }
     .feat-item:hover .feat-icon {
-      border-color: rgba(83,58,253,0.35);
-      background: rgba(83,58,253,0.09);
+      border-color: rgba(83,58,253,0.4);
+      background: rgba(83,58,253,0.12);
     }
     .feat-icon {
       width:36px; height:36px; min-width:36px;
@@ -282,33 +492,50 @@
       border-bottom: 1px solid var(--border);
       background: var(--bg);
     }
-    .fines-band__intro {
-      max-width: 560px;
+    .fines-band__top {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 40px;
+      align-items: start;
       margin-bottom: 40px;
     }
     .fines-band__intro h2 { margin-bottom: 16px; }
+    .fines-band__intro .section-sub { max-width: 36em; }
+    .fines-chips {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 8px 0;
+    }
+    .fines-chip {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--main);
+      letter-spacing: -0.01em;
+    }
+    .fines-chip:last-child { border-bottom: none; }
+    .fines-chip span {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
     .fines-band__bridge {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-      max-width: 36em;
       margin-top: 28px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border);
+      padding: 20px 22px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--main);
     }
     .fines-band__bridge-note {
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       color: var(--sub);
-      line-height: 1.55;
+      line-height: 1.6;
       margin: 0;
+      max-width: 52em;
     }
-    .products-intro {
-      max-width: 560px;
-      margin-bottom: 48px;
-    }
-    .products-intro h2 { margin-bottom: 16px; }
-    /* Chart island inherits page canvas; tighten outer padding inside this section */
     .fines-band .fines-chart {
       max-width: none;
       padding: 0;
@@ -328,38 +555,37 @@
       border-radius: 8px;
     }
 
-    /* ── PRICING ── */
-    .pricing-section { border-top:1px solid var(--border); }
-    .pricing-header { text-align:center; margin-bottom:52px; }
-    .pricing-header h2 { margin-bottom:14px; }
-    .pricing-header p { font-size:1rem; color:var(--sub); font-weight:400; }
-    .pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--border); }
-    .pricing-card { border-right:1px solid var(--border); padding:36px 32px; background:var(--card); display:flex; flex-direction:column; transition:background 0.2s; position:relative; }
-    .pricing-card:last-child { border-right:none; }
-    .pricing-card:hover { background:var(--hover); }
-    .pricing-card.featured { background:var(--card); box-shadow:inset 0 0 0 1px var(--main); }
-    .pricing-tag { position:absolute; top:-1px; left:50%; transform:translateX(-50%); background:var(--card); color:var(--main); border:1px solid var(--border); border-top:none; font-family:var(--font-brand); font-size:0.65rem; font-weight:500; text-transform:uppercase; letter-spacing:0.12em; padding:4px 14px; }
-    .pricing-tier { font-family:var(--font-brand); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); margin-bottom:12px; }
-    .pricing-name { font-family:var(--font-brand); font-size:1.4rem; font-weight:500; color:var(--main); margin-bottom:8px; line-height:1.15; letter-spacing:-0.02em; }
-    .pricing-desc { font-size:0.82rem; color:var(--sub); line-height:1.6; margin-bottom:26px; }
-    .pricing-price { font-family:var(--font-brand); font-size:2.2rem; font-weight:500; color:var(--main); line-height:1; margin-bottom:4px; font-feature-settings:'tnum'; }
-    .pricing-price sup { font-size:1rem; font-weight:500; vertical-align:top; margin-top:6px; }
-    .pricing-cadence { font-size:0.75rem; color:var(--muted); margin-bottom:26px; }
-    .pricing-divider { height:1px; background:var(--border); margin-bottom:24px; }
-    .pricing-features { list-style:none; display:flex; flex-direction:column; gap:10px; flex:1; margin-bottom:28px; }
-    .pricing-features li { display:flex; gap:10px; align-items:flex-start; font-size:0.82rem; color:var(--sub); line-height:1.45; }
-    .pricing-features li::before { content:''; width:14px; height:14px; min-width:14px; margin-top:1px; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 14 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 7l3.5 3.5L12 3.5' stroke='%230A0E14' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-size:contain; }
-    .pricing-features li.muted { color:var(--muted); }
-    .pricing-features li.muted::before { background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 14 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 7h8' stroke='%236B7280' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E"); }
-    /* The checkmarks above are embedded SVG data-URIs, so they can't inherit
-       currentColor — dark mode needs its own light-stroke copies. */
-    [data-theme="dark"] .pricing-features li::before { background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 14 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 7l3.5 3.5L12 3.5' stroke='%23FFFFFF' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
-    [data-theme="dark"] .pricing-features li.muted::before { background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 14 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 7h8' stroke='%239CA3AF' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E"); }
-    .pricing-btn { display:block; width:100%; padding:12px; text-align:center; font-family:var(--font-body); font-size:0.88rem; font-weight:500; text-decoration:none; transition:opacity 0.15s, background 0.15s; }
-    .pricing-btn-outline { border:1px solid var(--border); color:var(--main); background:var(--bg); border-radius:4px; }
-    .pricing-btn-outline:hover { border-color:var(--border-h); background:var(--hover); }
-    .pricing-btn-solid { background:var(--accent); color:#FFFFFF; border:1px solid var(--accent); border-radius:4px; }
-    .pricing-btn-solid:hover { background:var(--accent-h); border-color:var(--accent-h); }
+    /* ── ENTRY POINTS ── */
+    .entry-section { border-top:1px solid var(--border); }
+    .entry-header { max-width:560px; margin-bottom:40px; }
+    .entry-header h2 { margin-bottom:0; }
+    .entry-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      border:1px solid var(--border);
+    }
+    .entry-card {
+      display:flex; flex-direction:column; align-items:flex-start;
+      padding:32px 28px; background:var(--card);
+      border-right:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+      transition:background 0.15s;
+    }
+    .entry-card:nth-child(2n) { border-right:none; }
+    .entry-card:nth-child(n+3) { border-bottom:none; }
+    .entry-card:hover { background:var(--hover); }
+    .entry-name {
+      font-family:var(--font-brand); font-size:1.15rem; font-weight:500;
+      color:var(--main); letter-spacing:-0.02em; margin-bottom:8px;
+    }
+    .entry-desc { font-size:0.9rem; color:var(--sub); line-height:1.55; margin:0 0 20px; max-width:36ch; flex:1; }
+    .entry-cta {
+      display:inline-flex; align-items:center; gap:6px; width:fit-content;
+      font-size:0.85rem; font-weight:500; color:var(--accent);
+      text-decoration:none; white-space:nowrap; align-self:flex-start;
+      border-bottom:1px solid rgba(83,58,253,0.28); padding-bottom:2px;
+      transition:gap 0.18s, color 0.15s, border-color 0.15s;
+    }
+    .entry-cta:hover { gap:10px; color:var(--accent-h); border-color:var(--accent); }
 
     /* ── CTA ── */
     .cta-section { border-top:1px solid var(--border); }
@@ -368,20 +594,26 @@
     .cta-box p { font-size:1rem; color:var(--sub); font-weight:400; max-width:480px; margin:0 auto 40px; line-height:1.75; }
     .cta-actions { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; }
 
-    /* ── FOOTER ── */
-    footer { border-top:1px solid var(--rule); background:var(--bg); }
-    .footer-top { max-width:1100px; margin:0 auto; padding:60px 48px 48px; display:grid; grid-template-columns:1.8fr 1fr 1fr 1fr; gap:56px; }
-    .f-brand .footer-logo { font-family:var(--font-brand); font-size:1rem; font-weight:500; margin-bottom:14px; color:var(--main); }
-    .f-brand p { font-size:0.8rem; color:var(--muted); line-height:1.75; max-width:230px; }
-    .f-col h4 { font-family:var(--font-brand); font-size:0.68rem; font-weight:500; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); margin-bottom:18px; }
-    .f-col ul { list-style:none; display:flex; flex-direction:column; gap:10px; }
-    .f-col a { font-size:0.83rem; color:var(--sub); text-decoration:none; transition:color 0.15s; }
-    .f-col a:hover { color:var(--main); }
-    .footer-bottom { max-width:1100px; margin:0 auto; padding:20px 48px 32px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:20px; }
-    .footer-bottom span { font-size:0.75rem; color:var(--muted); }
-    .footer-legal { display:flex; gap:20px; }
-    .footer-legal a { font-size:0.75rem; color:var(--muted); text-decoration:none; transition:color 0.15s; }
-    .footer-legal a:hover { color:var(--main); }
+    /* ── FOOTER (compact, Stripe-scale type) ── */
+    footer { border-top:1px solid var(--border); background:var(--bg); }
+    .footer-top { max-width:1100px; margin:0 auto; padding:48px 48px 36px; display:grid; grid-template-columns:1.8fr 1fr 1fr 1fr; gap:40px; }
+    .f-brand .footer-logo { font-family:var(--font-brand); font-size:1rem; font-weight:500; margin-bottom:10px; color:var(--main); }
+    .f-brand p { font-size:0.75rem; color:var(--muted); line-height:1.65; max-width:220px; }
+    /* Column labels: sentence case, slightly stronger than links, never as strong as RegAnchor */
+    .f-col h4 {
+      font-family:var(--font-brand);
+      font-size:0.8rem;
+      font-weight:500;
+      text-transform:none;
+      letter-spacing:-0.01em;
+      color:var(--sub);
+      margin-bottom:10px;
+    }
+    .f-col ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
+    .f-col a { font-size:0.75rem; color:var(--muted); text-decoration:none; transition:color 0.15s; }
+    .f-col a:hover { color:var(--sub); }
+    .footer-bottom { max-width:1100px; margin:0 auto; padding:16px 48px 24px; border-top:1px solid var(--border); text-align:center; }
+    .footer-bottom span { font-size:0.7rem; color:var(--muted); line-height:1.55; display:block; }
 
     /* ── ANIMATIONS ── */
     .fade { opacity:0; transform:translateY(16px); transition:opacity 0.6s ease, transform 0.6s ease; }
@@ -392,10 +624,13 @@
       .nav-centre { display:none; }
       .feat-layout { grid-template-columns:1fr; gap:40px; }
       .feat-sticky { position:static; }
-      .footer-top { grid-template-columns:1fr 1fr; gap:36px; }
+      .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:40px 32px 28px; }
+      .fines-band__top { grid-template-columns:1fr; gap:28px; }
+      .system-head { grid-template-columns:1fr; gap:32px; margin-bottom:40px; }
     }
     @media (max-width:768px) {
-      nav { padding:0 20px; }
+      .home-chrome nav { padding:0 20px; }
+      .mob-menu { padding:16px 20px 20px; }
       .nav-right { display:none; }
       .hamburger { display:flex; }
       .hero { padding:64px 20px 56px; min-height:auto; }
@@ -404,15 +639,33 @@
       .badge { font-size:0.68rem; padding:6px 12px; white-space:normal; text-align:left; }
       .wrap { padding:0 20px; }
       .section-pad { padding-top:56px; padding-bottom:56px; }
-      .cards-grid { grid-template-columns:1fr; }
-      .product-card { border-right:none; border-bottom:1px solid var(--border); padding:36px 24px; }
-      .product-card:last-child { border-bottom:none; }
+      .fines-chips { display:none; }
+      .system-grid { grid-template-columns:1fr; }
+      .system-card { border-right:none; border-bottom:1px solid var(--border); padding:28px 24px; }
+      .system-card:last-child { border-bottom:none; }
+      .system-card:nth-child(n+3) { border-bottom:1px solid var(--border); }
+      .system-maturity {
+        margin:8px auto 12px;
+        align-items:center;
+      }
+      .system-maturity__label { text-align:center; width:100%; }
+      .system-maturity__stage { gap:14px; }
+      .entry-grid { grid-template-columns:1fr; }
+      .entry-card {
+        border-right:none; border-bottom:1px solid var(--border);
+        padding:28px 22px;
+      }
+      .entry-card:nth-child(n+3) { border-bottom:1px solid var(--border); }
+      .entry-card:last-child { border-bottom:none; }
       .cta-box { padding:48px 20px; }
-      .footer-top { grid-template-columns:1fr; gap:32px; padding:44px 20px 32px; }
-      .footer-bottom { flex-direction:column; text-align:center; padding:20px 20px 28px; }
-      .pricing-grid { grid-template-columns:1fr; }
-      .pricing-card { border-right:none; border-bottom:1px solid var(--border); }
-      .pricing-card:last-child { border-bottom:none; }
+      .footer-top { grid-template-columns:1fr 1fr; gap:22px 20px; padding:28px 20px 20px; }
+      .f-brand { grid-column:1 / -1; margin-bottom:4px; }
+      .f-brand p { max-width:none; }
+      .f-col h4 { margin-bottom:8px; font-size:0.78rem; }
+      .f-col ul { gap:5px; }
+      .f-col a { font-size:0.72rem; }
+      .footer-bottom { padding:14px 20px 20px; }
+      .footer-bottom span { font-size:0.65rem; }
     }
   </style>
 </head>
@@ -435,100 +688,112 @@
 <div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
 <div class="mob-menu" id="mobMenu">
   <a href="login.html" class="mob-link">Sign in</a>
-  <a href="diagnostic.html" class="mob-cta">Get Started</a>
+  <a href="diagnostic.html" class="mob-cta">
+    Get Started
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
 </div>
 
-<!-- HERO -->
+<!-- 1. HERO -->
 <section>
   <div class="hero fade">
-    <h1>Evidence your<br>AI Governance.<br><em>Before they ask for it.</em></h1>
-    <p class="hero-sub">Transition from experimental AI to a defensible decision framework. RegAnchor provides structured, audit-ready diagnostics for UK professional services firms facing regulatory scrutiny.</p>
+    <h1>Evidence your<br>AI Governance.<br><em class="type-line" data-type="Before they ask for it." aria-label="Before they ask for it."></em></h1>
+    <p class="hero-sub">RegAnchor is where regulated organisations register their AI systems, manage the obligations attached to them, and continuously build the evidence a board, auditor, or regulator will eventually ask to see.</p>
     <div class="hero-actions">
       <a href="diagnostic.html" class="btn-primary">
-        Generate My AI Exposure Report
+        Start Assessment
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="var(--bg)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
       <a href="methodology.html" class="btn-ghost">View Methodology</a>
     </div>
-    <p class="hero-compliance">Aligned with FCA DP5/22, ICO Guidance, and EU AI Act Standards.</p>
+    <p class="hero-compliance">Aligned with FCA DP5/23, ICO guidance, and the EU AI Act.</p>
   </div>
 </section>
 
-<!-- ENFORCEMENT PROOF -->
+<!-- 2. LANDSCAPE -->
 <section class="fines-band" id="enforcement" aria-label="UK and EU regulatory fines">
   <div class="wrap section-pad">
-    <div class="fines-band__intro fade">
-      <div class="eyebrow">Enforcement</div>
-      <h2>Regulatory fines are<br><em>rising.</em></h2>
-      <p class="section-sub">Cumulative tracking of landmark EU GDPR and UK FCA/ICO enforcement actions. Empirical baseline metrics mapping enterprise financial exposure against active regulatory penalties.</p>
+    <div class="fines-band__top fade">
+      <div class="fines-band__intro">
+        <h2>Obligations are<br><em>current.</em></h2>
+        <p class="section-sub">The EU AI Act’s transparency obligations are now in force, with high-risk requirements under Annex III phased in from December 2027. Alongside that, UK and EU regulators have spent several years building an enforcement record under GDPR, FCA, and ICO frameworks. The kind of record a board is expected to know about.</p>
+      </div>
+      <aside class="fines-chips" aria-label="Key regulatory facts">
+        <div class="fines-chip"><span>EU AI Act</span>Transparency obligations in force</div>
+        <div class="fines-chip"><span>Annex III</span>High-risk requirements from Dec 2027</div>
+        <div class="fines-chip"><span>UK enforcement</span>FCA / ICO record already active</div>
+      </aside>
     </div>
     <div id="fines-chart-root"></div>
     <div class="fines-band__bridge fade">
-      <p class="fines-band__bridge-note">RegAnchor turns that exposure into a scored, citable record your board can stand behind.</p>
-      <a href="diagnostic.html" class="feat-cta">
-        See where you stand
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </a>
+      <p class="fines-band__bridge-note">That’s the public record so far. What follows is about the record your organisation keeps.</p>
     </div>
   </div>
 </section>
 
-<!-- PRODUCTS -->
-<section id="how" style="position:relative; overflow:hidden;">
-  <div class="wrap section-pad" style="position:relative;z-index:1;">
-    <div class="products-intro fade">
-      <div class="eyebrow">Product</div>
-      <h2>From exposure to<br><em>evidence.</em></h2>
-      <p class="section-sub">Map your AI governance posture, manage remediation, and produce an audit-ready pack before the next supervisory ask.</p>
+<!-- 3. SYSTEM -->
+<section id="system" class="system-section">
+  <div class="wrap section-pad">
+    <div class="system-head">
+      <div class="system-intro fade">
+        <h2>How the record gets <em>built.</em></h2>
+        <p class="section-sub">Every AI system your organisation uses moves through the same journey. From visibility to control, evidence, and ongoing intelligence.</p>
+      </div>
+      <div class="system-maturity" id="systemMaturity" aria-label="Organisational maturity">
+        <div class="system-maturity__label">Organisational maturity</div>
+        <div class="system-maturity__stage">
+          <div class="system-maturity__object" id="systemMaturityObject"></div>
+          <div class="system-maturity__glass">
+            <div class="system-maturity__glass-scroller" id="systemMaturityScroller" role="listbox" aria-label="Maturity levels L1 to L7" tabindex="0"></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="cards-grid">
-      <div class="product-card fade">
-        <div class="card-label">The Diagnostic</div>
-        <div class="card-title">20-Minute Inquiry</div>
-        <p class="card-p">Start here. A weighted assessment across 7 governance domains, adjusted for your sector. Risk score and domain breakdown on completion.</p>
+    <div class="system-grid">
+      <div class="system-card fade">
+        <div class="system-label">Registry</div>
+        <p class="system-p">Log every AI system in use. Understand what it does, who owns it, and where it sits against relevant AI risk categories.</p>
       </div>
-      <div class="product-card fade">
-        <div class="card-label">The Portal</div>
-        <div class="card-title">Audit-Ready Workspace</div>
-        <p class="card-p">A secure management tool to evidence board decision-making and track remediation over time.</p>
-        <div class="card-tier">Requires premium tier</div>
+      <div class="system-card fade">
+        <div class="system-label">Governance</div>
+        <p class="system-p">Each system assessment identifies the policies and controls required. Work through them and improve your governance posture.</p>
       </div>
-      <div class="product-card fade">
-        <div class="card-label">The Output</div>
-        <div class="card-title">Board Prep Pack</div>
-        <p class="card-p">Professional, audit-ready PDF reports with regulatory article mapping, domain findings, and sequenced remediation roadmaps.</p>
-        <div class="card-tier">Requires premium tier</div>
+      <div class="system-card fade">
+        <div class="system-label">Evidence</div>
+        <p class="system-p">Every completed control, policy, approval, and assessment becomes evidence automatically. Your governance record grows continuously, ready for reporting, review, and assurance.</p>
       </div>
+      <div class="system-card fade">
+        <div class="system-label">Intelligence</div>
+        <p class="system-p">Roll it up. Benchmark your posture, track maturity over time, and understand regulatory change before it becomes exposure.</p>
+      </div>
+    </div>
+    <div class="system-explore fade">
+      <a href="#" class="feat-cta" onclick="return false;">Explore the full platform →</a>
     </div>
   </div>
 </section>
 
-<!-- FEATURES -->
+<!-- 4. RIGOR -->
 <section id="features" class="feat-section">
   <div class="wrap section-pad">
     <div class="feat-layout">
       <div class="feat-sticky">
-        <div class="eyebrow fade">Capabilities</div>
-        <h2 class="fade">Built for<br><em>scrutiny.</em></h2>
-        <p class="section-sub fade">Every element of the diagnostic and reporting framework is calibrated for organisations operating under active UK and EU regulatory oversight. Not generic checklists.</p>
-        <a href="diagnostic.html" class="feat-cta fade">
-          Start the diagnostic
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
+        <h2 class="fade">Built to withstand<br><em>scrutiny.</em></h2>
+        <p class="section-sub fade">Every element of the platform is designed for organisations operating under active UK and EU regulatory oversight, from assessment logic through to reporting.</p>
       </div>
       <div class="feat-list">
         <div class="feat-item fade">
           <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M3 21h18"/><circle cx="8" cy="14" r="3"/><circle cx="16" cy="14" r="3"/></svg></div>
           <div class="feat-body">
             <div class="feat-title">Precise Regulatory Mapping</div>
-            <p class="feat-p">Every finding references the specific article, ICO guidance paragraph, or FCA expectation it addresses. Not paraphrased advice — the exact legal basis, cited.</p>
+            <p class="feat-p">Every finding references the specific article, ICO guidance paragraph, or FCA expectation it addresses, every time — for example, EU AI Act Article 14 on human oversight.</p>
           </div>
         </div>
         <div class="feat-item fade">
           <div class="feat-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v5c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 10v5c0 1.657 4.03 3 9 3s9-1.343 9-3v-5"/></svg></div>
           <div class="feat-body">
             <div class="feat-title">Sector Exposure Adjustment</div>
-            <p class="feat-p">Financial services, healthcare, legal, and public sector deployments carry different risk profiles. Your maturity score is adjusted by a sector-specific multiplier — not a flat number that means nothing to your regulator.</p>
+            <p class="feat-p">Your maturity score is adjusted by a sector-specific multiplier, so a financial services deployment and a public sector one are held to different baselines.</p>
           </div>
         </div>
         <div class="feat-item fade">
@@ -549,7 +814,7 @@
           <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
           <div class="feat-body">
             <div class="feat-title">Secure Client Portal</div>
-            <p class="feat-p">Every assessment is stored in your private account. Revisit results, download reports, and track governance posture over time. Your assessment data is not shared or used beyond your account.</p>
+            <p class="feat-p">Every AI system, control, and certificate lives in your organisation’s private account, not ours to share. Come back any time to check status, pull a report, or see how your posture has moved since the last review.</p>
           </div>
         </div>
       </div>
@@ -557,82 +822,49 @@
   </div>
 </section>
 
-<!-- PRICING -->
-<section id="pricing" class="pricing-section">
+<!-- 5. ENTRY -->
+<section id="entry" class="entry-section">
   <div class="wrap section-pad">
-    <div class="pricing-header fade">
-      <div class="eyebrow" style="justify-content:center;">Audit-Ready in minutes</div>
-      <h2>Determine your compliance<br><em>posture.</em></h2>
-      <p>No subscription. No lock-in. Pay only when you need a report.</p>
+    <div class="entry-header fade">
+      <h2>Get <em>Started.</em></h2>
     </div>
-    <div class="pricing-grid">
-      <div class="pricing-card fade">
-        <div class="pricing-tier">Internal Scan</div>
-        <div class="pricing-name">Free Assessment</div>
-        <div class="pricing-desc">High-level exposure check for internal review and initial board discussions.</div>
-        <div class="pricing-price">£0</div>
-        <div class="pricing-cadence">Always free — no account required</div>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li>Governance Maturity Score</li>
-          <li>5-Band Risk Rating</li>
-          <li>Domain Breakdown Summary</li>
-          <li class="muted">FCA/ICO Article Mapping</li>
-          <li class="muted">Remediation Roadmap</li>
-          <li class="muted">Board-Ready PDF Report</li>
-        </ul>
-        <a href="diagnostic.html" class="pricing-btn pricing-btn-outline">Start Free Diagnostic</a>
+    <div class="entry-grid">
+      <div class="entry-card fade">
+        <div class="entry-name">Free Assessment</div>
+        <p class="entry-desc">Understand your current AI governance posture in around 20 minutes.</p>
+        <a href="diagnostic.html" class="entry-cta">Start Assessment →</a>
       </div>
-      <div class="pricing-card featured fade">
-        <div class="pricing-tag">Most Popular</div>
-        <div class="pricing-tier">Board Prep Pack</div>
-        <div class="pricing-name">Premium</div>
-        <div class="pricing-desc">The industry standard for evidencing defensible AI governance to boards and regulators.</div>
-        <div class="pricing-price"><sup>£</sup>295</div>
-        <div class="pricing-cadence">Per report — download immediately</div>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li>Everything in Free</li>
-          <li>Full Board-Ready PDF Report</li>
-          <li>FCA &amp; ICO Article Mapping</li>
-          <li>Remediation Roadmap</li>
-          <li>EU AI Act Annex III Detection</li>
-          <li>Secure Portal Access</li>
-        </ul>
-        <a href="diagnostic.html" class="pricing-btn pricing-btn-solid">Generate Premium Report</a>
+      <div class="entry-card fade">
+        <div class="entry-name">Full Report</div>
+        <p class="entry-desc">Complete regulatory analysis and workspace. Requires a £295 purchase.</p>
+        <a href="diagnostic.html" class="entry-cta">Get Full Report →</a>
       </div>
-      <div class="pricing-card fade">
-        <div class="pricing-tier">Enterprise</div>
-        <div class="pricing-name">Full Lifecycle</div>
-        <div class="pricing-desc">Governance lifecycle management for large firms with multi-department or multi-jurisdiction exposure.</div>
-        <div class="pricing-price" style="font-size:1.6rem;padding-top:6px;">Bespoke</div>
-        <div class="pricing-cadence">Tailored to your organisation</div>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li>Everything in Board Prep Pack</li>
-          <li>Multi-Department Portal</li>
-          <li>On-Site Validation Sessions</li>
-          <li>Quarterly Benchmarking</li>
-          <li>Dedicated Advisory Lead</li>
-        </ul>
-        <a href="mailto:hello@mlagroup.co.uk" class="pricing-btn pricing-btn-outline">Talk to Advisory</a>
+      <div class="entry-card fade">
+        <div class="entry-name">Governance Platform</div>
+        <p class="entry-desc">Manage AI systems continuously through Registry, Governance, Evidence and Intelligence.</p>
+        <a href="pricing.html" class="entry-cta">View Plans →</a>
+      </div>
+      <div class="entry-card fade">
+        <div class="entry-name">Enterprise &amp; Advisory</div>
+        <p class="entry-desc">For organisations operating across multiple departments, jurisdictions or regulated environments.</p>
+        <a href="contact.html" class="entry-cta">Talk to Advisory →</a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
+<!-- 6. CLOSE -->
 <section class="cta-section">
   <div class="wrap section-pad">
     <div class="cta-box fade">
-      <h2>Know your exposure<br><em>before your regulator does.</em></h2>
-      <p>Complete the diagnostic in under 20 minutes. Receive your risk score, domain breakdown, and a professionally formatted governance report.</p>
+      <h2>Know your exposure.<br><em class="type-line" data-type="Before you’re asked." aria-label="Before you’re asked."></em></h2>
+      <p>Every organisation deploying AI creates a record. Make sure yours exists. Assess your exposure, build your governance foundation, and maintain the evidence needed for accountability.</p>
       <div class="cta-actions">
         <a href="diagnostic.html" class="btn-primary">
-          Generate My AI Exposure Report
+          Start Assessment
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="var(--bg)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
-        <a href="login.html" class="btn-ghost">Sign in to Portal</a>
+        <a href="#" class="btn-ghost" onclick="return false;">View Platform</a>
       </div>
     </div>
   </div>
@@ -650,7 +882,7 @@
       <ul>
         <li><a href="diagnostic.html">Risk Diagnostic</a></li>
         <li><a href="login.html">Client Portal</a></li>
-        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
         <li><a href="methodology.html">Methodology</a></li>
       </ul>
     </div>
@@ -670,20 +902,16 @@
         <li><a href="contact.html">Contact</a></li>
         <li><a href="privacy.html">Privacy Policy</a></li>
         <li><a href="terms.html">Terms of Use</a></li>
+        <li><a href="cookies.html">Cookies</a></li>
       </ul>
     </div>
   </div>
-  <!-- FIX 2: Footer legal links now point to actual pages -->
   <div class="footer-bottom">
-    <span>RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562). &copy; 2026 MLA Group Ltd. All rights reserved.</span>
-    <div class="footer-legal">
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="cookies.html">Cookies</a>
-    </div>
+    <span>RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562). &copy; All rights reserved.</span>
   </div>
 </footer>
 
+<script src="js/ra-maturity.js"></script>
 <script>
   // FIX 3: Disable browser scroll restoration so refresh always goes to top
   if ('scrollRestoration' in history) {
@@ -726,6 +954,253 @@
     syncChrome();
     window.addEventListener('scroll', syncChrome, { passive: true });
   }
+
+  // System maturity — portal raMaturityBlock + glass L1–L7 picker beside it.
+  (function () {
+    const root = document.getElementById('systemMaturity');
+    const objectEl = document.getElementById('systemMaturityObject');
+    const scroller = document.getElementById('systemMaturityScroller');
+    if (!root || !objectEl || !scroller || typeof raMaturityBlock !== 'function') return;
+
+    const LEVEL_SCORES = [10, 45, 62, 74, 84, 91, 100];
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const COUNT_MS = reduce ? 0 : 2800;
+    const OF = '<span class="ra-maturity__of">/ 100</span>';
+
+    let currentN = 7;
+    let displayScore = 100;
+    let countRaf = null;
+    let scrollSync = false;
+    let scrollTimer = null;
+    let hovering = false;
+    let wheelLock = false;
+
+    function clampScore(n) {
+      const v = Math.round(Number(n));
+      if (!isFinite(v)) return 0;
+      return Math.max(0, Math.min(100, v));
+    }
+
+    function cancelCount() {
+      if (countRaf) { cancelAnimationFrame(countRaf); countRaf = null; }
+    }
+
+    function setScore(n) {
+      displayScore = clampScore(n);
+      const el = objectEl.querySelector('.ra-maturity__score');
+      if (el) el.innerHTML = displayScore + OF;
+    }
+
+    function slowCount(to) {
+      cancelCount();
+      to = clampScore(to);
+      const from = clampScore(displayScore);
+      if (reduce || !COUNT_MS) { setScore(to); return; }
+      const start = performance.now();
+      const tick = (now) => {
+        const t = Math.min(1, (now - start) / COUNT_MS);
+        const eased = 1 - Math.pow(1 - t, 3);
+        setScore(from + (to - from) * eased);
+        if (t < 1) countRaf = requestAnimationFrame(tick);
+        else { setScore(to); countRaf = null; }
+      };
+      countRaf = requestAnimationFrame(tick);
+    }
+
+    function updateFocus(n) {
+      scroller.querySelectorAll('.system-maturity__step').forEach((btn) => {
+        const on = Number(btn.dataset.level) === n;
+        btn.classList.toggle('is-focus', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+
+    function scrollToLevel(n, smooth) {
+      const btn = scroller.querySelector('.system-maturity__step[data-level="' + n + '"]');
+      if (!btn) return;
+      const top = btn.offsetTop - (scroller.clientHeight / 2) + (btn.offsetHeight / 2);
+      scrollSync = true;
+      scroller.scrollTo({ top: Math.max(0, top), behavior: smooth && !reduce ? 'smooth' : 'auto' });
+      setTimeout(() => { scrollSync = false; }, smooth && !reduce ? 380 : 0);
+    }
+
+    function paintObject(n, animate) {
+      const score = clampScore(LEVEL_SCORES[n - 1]);
+      objectEl.innerHTML = raMaturityBlock(score, { animate: false });
+
+      const bar = objectEl.querySelector('.ra-cbar');
+      if (bar) {
+        bar.querySelectorAll('.ra-cbar__row').forEach((row, i) => {
+          row.setAttribute('role', 'button');
+          row.setAttribute('tabindex', '0');
+          row.setAttribute('aria-label', 'Show ' + RA_LEVELS[i].code + ' ' + RA_LEVELS[i].label);
+          const go = () => applyLevel(i + 1, true, false);
+          row.onclick = go;
+          row.onkeydown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+          };
+        });
+        if (animate && !reduce) {
+          bar.classList.remove('ra-cbar--animate');
+          void bar.offsetWidth;
+          bar.classList.add('ra-cbar--animate');
+        }
+      }
+
+      if (animate) slowCount(score);
+      else setScore(score);
+    }
+
+    function applyLevel(n, animate, fromScroll) {
+      n = Math.max(1, Math.min(7, Number(n) || 1));
+      if (n === currentN && fromScroll) {
+        updateFocus(n);
+        return;
+      }
+      currentN = n;
+      paintObject(n, animate);
+      updateFocus(n);
+      if (!fromScroll) scrollToLevel(n, true);
+    }
+
+    function levelFromScroll() {
+      const mid = scroller.scrollTop + scroller.clientHeight / 2;
+      let best = currentN;
+      let bestDist = Infinity;
+      scroller.querySelectorAll('.system-maturity__step').forEach((btn) => {
+        const center = btn.offsetTop + btn.offsetHeight / 2;
+        const dist = Math.abs(center - mid);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = Number(btn.dataset.level);
+        }
+      });
+      return best;
+    }
+
+    // Glass list L7 → L1 (top to bottom)
+    scroller.innerHTML =
+      '<div class="system-maturity__glass-pad" aria-hidden="true"></div>' +
+      RA_LEVELS.slice().reverse().map((L) =>
+        '<button type="button" class="system-maturity__step" role="option" data-level="' + L.n + '" aria-selected="false">' +
+          L.code + ' ' + L.label +
+        '</button>'
+      ).join('') +
+      '<div class="system-maturity__glass-pad" aria-hidden="true"></div>';
+
+    scroller.querySelectorAll('.system-maturity__step').forEach((btn) => {
+      btn.addEventListener('click', () => applyLevel(Number(btn.dataset.level), true, false));
+      if (canHover) {
+        btn.addEventListener('mouseenter', () => {
+          hovering = true;
+          applyLevel(Number(btn.dataset.level), true, false);
+        });
+      }
+    });
+
+    if (canHover) {
+      scroller.addEventListener('mouseleave', () => {
+        hovering = false;
+        scrollToLevel(currentN, true);
+        updateFocus(currentN);
+      });
+    }
+
+    // One level per wheel notch — stops flinging to top/bottom
+    scroller.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (wheelLock || hovering) return;
+      wheelLock = true;
+      const next = currentN + (e.deltaY > 0 ? -1 : 1);
+      if (next >= 1 && next <= 7) applyLevel(next, true, false);
+      setTimeout(() => { wheelLock = false; }, 160);
+    }, { passive: false });
+
+    // Touch: settle, then move at most one level — no fling to top/bottom
+    scroller.addEventListener('scroll', () => {
+      if (scrollSync || hovering) return;
+      updateFocus(levelFromScroll());
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        const raw = levelFromScroll();
+        let next = raw;
+        if (raw > currentN + 1) next = currentN + 1;
+        if (raw < currentN - 1) next = currentN - 1;
+        if (next !== currentN) applyLevel(next, true, true);
+        else updateFocus(currentN);
+        scrollToLevel(next, true);
+      }, 140);
+    }, { passive: true });
+
+    applyLevel(7, false, false);
+
+    const mio = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) applyLevel(7, true, false);
+        else cancelCount();
+      });
+    }, { threshold: 0.4 });
+    mio.observe(root);
+  })();
+
+  // Muted accent typewriter (hero + close) — replays each time the section enters view.
+  (function () {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ms = 28;
+    const timers = new WeakMap();
+
+    function stopType(el) {
+      const id = timers.get(el);
+      if (id) {
+        clearTimeout(id);
+        timers.delete(el);
+      }
+      el.classList.remove('is-typing');
+    }
+
+    function typeLine(el) {
+      const full = el.getAttribute('data-type') || '';
+      if (!full) return;
+      stopType(el);
+      if (reduce) {
+        el.textContent = full;
+        return;
+      }
+      el.textContent = '';
+      el.classList.add('is-typing');
+      let i = 0;
+      const tick = () => {
+        i += 1;
+        el.textContent = full.slice(0, i);
+        if (i < full.length) {
+          timers.set(el, setTimeout(tick, ms));
+        } else {
+          el.classList.remove('is-typing');
+          timers.delete(el);
+        }
+      };
+      timers.set(el, setTimeout(tick, 160));
+    }
+
+    function watchTypeLine(el, root) {
+      if (!el) return;
+      const target = root || el;
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) typeLine(el);
+          else stopType(el);
+        });
+      }, { threshold: 0.35 });
+      io.observe(target);
+    }
+
+    const heroLine = document.querySelector('.hero .type-line[data-type]');
+    watchTypeLine(heroLine, document.querySelector('.hero'));
+
+    const closeLine = document.querySelector('.cta-box .type-line[data-type]');
+    watchTypeLine(closeLine, document.querySelector('.cta-box'));
+  })();
 </script>
 <script src="js/fines-chart/fines-chart.js" defer></script>
 </body>

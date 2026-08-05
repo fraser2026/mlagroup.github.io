@@ -127,7 +127,13 @@
       transition: border-color 0.12s ease, background 0.12s ease; margin-top: 10px;
       box-shadow: none;
     }
-    .btn-ghost:hover { border-color: var(--ra-border-hover, var(--border)); background: var(--ra-mist, var(--hover)); }
+    .btn-ghost:hover,
+    .btn-ghost:focus-visible {
+      border-color: var(--accent, var(--ra-blurple, #533AFD));
+      background: var(--ra-mist, var(--hover));
+      color: var(--accent, var(--ra-blurple, #533AFD));
+      outline: none;
+    }
     .footer-note { margin-top: 20px; text-align: center; font-size: 0.7rem; color: var(--muted); line-height: 1.65; opacity: 0; animation: fadeUp 0.5s ease 1s forwards; }
     .footer-note a { color: var(--main); text-decoration: underline; text-underline-offset: 2px; }
     .spin { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: rotate 0.8s linear infinite; margin: 0 auto 28px; }

@@ -40,6 +40,19 @@ function clamp(n, lo, hi) {
   return Math.min(hi, Math.max(lo, n));
 }
 
+/** Split "£4.49bn cumulative — after …" into lead + italic note (no dash). */
+function renderDetail(detail) {
+  if (!detail) return null;
+  const m = String(detail).match(/^(.*?)\s+[—–]\s+(.*)$/);
+  if (!m) return detail;
+  return (
+    <>
+      {m[1]}{' '}
+      <em>{m[2]}</em>
+    </>
+  );
+}
+
 /** One series + one value for header, detail, and tooltip (no mismatch). */
 function resolveHover(euPts, ukPts, time, currency) {
   const euM = nearestMilestone(euPts, time);
@@ -101,17 +114,27 @@ export default function FinesChart() {
     [pack]
   );
 
+  // Replay draw every time the chart enters view (scroll up or down).
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return undefined;
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          setHover(null);
+          setFrozen(false);
+          setDrawn(false);
+          setDraw(0);
           setInView(true);
-          io.disconnect();
+        } else {
+          setInView(false);
+          setHover(null);
+          setFrozen(false);
+          setDrawn(false);
+          setDraw(0);
         }
       },
-      { threshold: 0.2, rootMargin: '40px 0px' }
+      { threshold: 0.25, rootMargin: '0px' }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -214,7 +237,7 @@ export default function FinesChart() {
                   : `EU total, ${CHART_META.asOf}`}
               </span>
             </div>
-            <p className="fines-chart__detail">{displayDetail}</p>
+            <p className="fines-chart__detail">{renderDetail(displayDetail)}</p>
           </div>
           <div className="fines-chart__aside">
             <div className="fines-chart__fx" role="group" aria-label="Currency">

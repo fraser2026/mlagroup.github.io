@@ -165,7 +165,13 @@
       font-size:0.88rem; font-weight:500; text-decoration:none;
       transition:background 0.12s ease, border-color 0.12s ease;
     }
-    .alt-btn:hover { background:var(--ra-mist, var(--hover)); border-color:var(--ra-border-hover, var(--border)); }
+    .alt-btn:hover,
+    .alt-btn:focus-visible {
+      background:var(--ra-mist, var(--hover));
+      border-color:var(--accent, var(--ra-blurple, #533AFD));
+      color:var(--accent, var(--ra-blurple, #533AFD));
+      outline:none;
+    }
 
     .form-foot { margin-top:32px; padding-top:20px; border-top:1px solid var(--border); }
     .form-foot p { font-size:0.73rem; color:var(--muted); line-height:1.6; }

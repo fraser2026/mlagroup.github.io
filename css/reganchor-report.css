@@ -215,11 +215,15 @@
 }
 
 .ra-report .rpt-btn--ghost:hover,
+.ra-report .rpt-btn--ghost:focus-visible,
 .ra-report .nav-btn-ghost:hover,
-.ra-report .btn-topbar-ghost:hover {
-  border-color: var(--rpt-ink);
-  background: rgba(6, 27, 49, 0.04);
-  color: var(--rpt-ink);
+.ra-report .nav-btn-ghost:focus-visible,
+.ra-report .btn-topbar-ghost:hover,
+.ra-report .btn-topbar-ghost:focus-visible {
+  border-color: var(--ra-blurple, #533AFD);
+  background: var(--ra-mist, #F6F9FC);
+  color: var(--ra-blurple, #533AFD);
+  outline: none;
 }
 
 .ra-report .rnav-r,

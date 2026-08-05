@@ -201,14 +201,25 @@ table.ra-table,
 }
 
 .btn-primary:hover,
+.btn-primary:focus-visible,
 .btn-cta:hover,
+.btn-cta:focus-visible,
 .btn-start:hover,
+.btn-start:focus-visible,
 .btn-get-report:hover,
+.btn-get-report:focus-visible,
 .btn-unlock:hover,
-.nav-cta:hover {
+.btn-unlock:focus-visible,
+.nav-cta:hover,
+.nav-cta:focus-visible,
+.mob-cta:hover,
+.mob-cta:focus-visible {
   background: var(--ra-blurple-hover) !important;
+  border-color: var(--ra-blurple-hover) !important;
+  color: var(--ra-white) !important;
   transform: none;
   box-shadow: none !important;
+  outline: none;
 }
 
 .btn-primary:disabled,
@@ -240,9 +251,13 @@ table.ra-table,
 }
 
 .btn-secondary:hover,
-.btn-consult:hover {
+.btn-secondary:focus-visible,
+.btn-consult:hover,
+.btn-consult:focus-visible {
   background: var(--ra-mist) !important;
-  border-color: var(--ra-border-hover) !important;
+  border-color: var(--ra-blurple) !important;
+  color: var(--ra-blurple) !important;
+  outline: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════

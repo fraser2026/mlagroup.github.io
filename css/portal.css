@@ -666,10 +666,15 @@ body {
 }
 
 .btn-topbar-ghost:hover,
+.btn-topbar-ghost:focus-visible,
 .btn-topbar.btn-topbar-ghost:hover,
-.btn-pdf:hover {
+.btn-topbar.btn-topbar-ghost:focus-visible,
+.btn-pdf:hover,
+.btn-pdf:focus-visible {
   background: var(--ra-mist, var(--ra-bg-raised));
-  border-color: var(--ra-border-hover, var(--ra-border));
+  border-color: var(--ra-blurple);
+  color: var(--ra-blurple);
+  outline: none;
 }
 
 .btn-topbar svg,

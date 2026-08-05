@@ -313,7 +313,13 @@ h1 {
   font-size:0.9rem; font-weight:500; text-decoration:none; background:var(--bg);
   transition: border-color 0.18s, background 0.18s;
 }
-.btn-ghost:hover { border-color:var(--main); background:var(--hover); }
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  border-color:var(--accent, #533AFD);
+  background:var(--hover);
+  color:var(--accent, #533AFD);
+  outline:none;
+}
  
 /* Footer — matching homepage */
 footer { border-top:1px solid var(--main); background:var(--bg); position:relative; z-index:1; }
