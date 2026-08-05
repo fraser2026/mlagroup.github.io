@@ -347,8 +347,14 @@
     .system-maturity__object .ra-maturity__score {
       font-feature-settings:'tnum';
       font-variant-numeric:tabular-nums;
-      min-width:4.6em; /* digit stability only — not a wide spacer */
+      /* Always reserve “100 / 100” so 91→100 never shifts the strip */
+      min-width:5.2em;
       white-space:nowrap;
+    }
+    .system-maturity__object .ra-maturity__text {
+      flex-shrink:0;
+      /* Longest tier “L7 Authoritative” — locks object width while scrolling */
+      min-width:8.6em;
     }
     .system-maturity__object .ra-maturity__tier {
       white-space:nowrap;
@@ -676,6 +682,7 @@
       .system-card { border-right:none; border-bottom:1px solid var(--border); padding:28px 24px; }
       .system-card:last-child { border-bottom:none; }
       .system-card:nth-child(n+3) { border-bottom:1px solid var(--border); }
+      /* Lock 100-layout: object left as-at-100, glass flush to content right edge */
       .system-maturity {
         width:100%;
         max-width:100%;
@@ -690,20 +697,30 @@
       }
       .system-maturity__stage {
         gap:8px;
-        width:fit-content;
+        width:100%;
         max-width:100%;
-        margin:0 auto;
-        justify-content:center;
-        padding-inline:5px; /* room for current-bar overhang so group stays optically centered */
+        margin:0;
+        justify-content:flex-start;
+        padding-inline:0;
         box-sizing:border-box;
       }
-      /* Horizontal packing only — bar width + glass height stay at desktop size */
+      .system-maturity__object {
+        flex-shrink:0;
+        padding-left:5px; /* current-bar overhang */
+      }
       .system-maturity__object .ra-maturity { gap:10px; }
-      .system-maturity__object .ra-maturity__score { min-width:0; }
+      .system-maturity__object .ra-maturity__text {
+        min-width:8.6em;
+        width:8.6em;
+      }
+      .system-maturity__object .ra-maturity__score {
+        min-width:5.2em; /* keep 3-digit lock on mobile */
+      }
       .system-maturity__glass {
-        width:6.9em; /* still fits “L7 Authoritative”; closes the dead gap / overflow */
+        width:7.6em;
         height:148px;
         flex-shrink:0;
+        margin-left:auto; /* nest against right edge of the content column */
       }
       .system-maturity__glass-scroller {
         scroll-snap-type:none;
