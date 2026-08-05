@@ -240,6 +240,7 @@ h1 {
   cursor:pointer; border:1px solid var(--ra-blurple, #533AFD);
   background:var(--ra-blurple, #533AFD); color:#FFFFFF;
   border-radius:4px;
+  white-space:nowrap;
 }
 .plan-card__cta:hover { background:var(--ra-blurple-hover, #4434E0); border-color:var(--ra-blurple-hover, #4434E0); }
 .plan-card__cta--ink {
@@ -402,6 +403,89 @@ footer { border-top:1px solid var(--main); background:var(--bg); position:relati
 .footer-legal { display:flex; gap:20px; }
 .footer-legal a { font-size:0.75rem; color:var(--muted); text-decoration:none; transition:color 0.15s; }
 .footer-legal a:hover { color:var(--main); }
+
+/* Enterprise inquiry modal — portal-aligned */
+.modal-overlay {
+  position:fixed; inset:0; z-index:999;
+  background:rgba(10,14,20,0.45);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  opacity:0; pointer-events:none;
+  transition:opacity .2s;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--bg);
+  border:1px solid var(--border-h);
+  width:100%; max-width:560px; max-height:90vh;
+  overflow-y:auto;
+  scrollbar-width:thin;
+}
+.modal-header {
+  padding:22px 24px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:flex-start; justify-content:space-between;
+  position:sticky; top:0; background:var(--bg); z-index:2;
+}
+.modal-header h3 {
+  font-family:var(--font-brand);
+  font-size:1.125rem; font-weight:500;
+  letter-spacing:-0.025em; color:var(--main); margin-bottom:4px;
+}
+.modal-header p { font-size:0.8125rem; color:var(--muted); }
+.modal-close {
+  background:none; border:none; color:var(--muted);
+  cursor:pointer; font-size:15px; line-height:1; padding:2px;
+}
+.modal-close:hover { color:var(--main); }
+.modal-body { padding:22px 24px; }
+.modal-footer {
+  padding:16px 24px;
+  border-top:1px solid var(--border);
+  display:flex; gap:10px; justify-content:flex-end;
+  position:sticky; bottom:0; background:var(--bg); z-index:2;
+}
+.modal-inset {
+  border:1px solid var(--border);
+  background:var(--bg);
+  padding:14px 16px; margin-bottom:16px;
+  font-size:0.8125rem; color:var(--sub); line-height:1.65;
+}
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.field-group { margin-bottom:16px; }
+.field-label {
+  display:block; font-size:0.75rem; font-weight:500;
+  color:var(--muted); margin-bottom:6px; letter-spacing:-0.01em;
+}
+.field-input {
+  width:100%; padding:10px 12px;
+  border:1px solid var(--border); background:var(--bg);
+  color:var(--main); font-family:var(--font-body); font-size:0.88rem;
+  outline:none;
+}
+.field-input:focus { border-color:var(--main); }
+textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
+.modal-btn {
+  padding:10px 18px; font-family:var(--font-body);
+  font-size:0.88rem; font-weight:500; cursor:pointer;
+  border-radius:4px; border:1px solid var(--border);
+  background:var(--bg); color:var(--main);
+}
+.modal-btn:hover { border-color:var(--main); }
+.modal-btn--primary {
+  background:var(--main); color:var(--bg); border-color:var(--main);
+}
+.modal-btn--primary:hover { opacity:0.88; }
+.modal-btn:disabled { opacity:0.55; cursor:not-allowed; }
+.ent-success { text-align:center; padding:40px 0 20px; }
+.ent-success h4 {
+  font-family:var(--font-brand); font-size:1.15rem; font-weight:500;
+  color:var(--main); margin-bottom:10px;
+}
+.ent-success p { font-size:0.9rem; color:var(--sub); line-height:1.65; }
+@media(max-width:560px){
+  .field-row { grid-template-columns:1fr; }
+}
  
 /* Animations */
 .fade { opacity:0; transform:translateY(16px); transition:opacity 0.6s ease, transform 0.6s ease; }
@@ -512,7 +596,7 @@ footer { border-top:1px solid var(--main); background:var(--bg); position:relati
           <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>On-site sessions &amp; benchmarking</div>
           <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Custom SLA</div>
         </div>
-        <a href="mailto:hello@mlagroup.co.uk" class="plan-card__cta plan-card__cta--ink">Design your governance function</a>
+        <button type="button" class="plan-card__cta plan-card__cta--ink" onclick="openEnterpriseModal()">Talk to advisory</button>
       </div>
 
     </div>
@@ -598,7 +682,75 @@ footer { border-top:1px solid var(--main); background:var(--bg); position:relati
     </div>
   </div>
 </footer>
- 
+
+<div class="modal-overlay" id="enterprise-modal" role="dialog" aria-modal="true" aria-labelledby="ent-modal-title">
+  <div class="modal" id="enterprise-modal-inner">
+    <div class="modal-header">
+      <div>
+        <h3 id="ent-modal-title">Enterprise inquiry</h3>
+        <p>Tell us about your organisation and requirements.</p>
+      </div>
+      <button type="button" class="modal-close" onclick="closeEnterpriseModal()" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="modal-body" id="ent-modal-body">
+      <div class="modal-inset">Enterprise plans include unlimited users, multi-department portals, dedicated advisory, on-site sessions, and custom SLA. We respond within 24 hours.</div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" for="ent-name">Full name</label>
+          <input type="text" class="field-input" id="ent-name" placeholder="Your full name" autocomplete="name">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="ent-role">Role / title</label>
+          <input type="text" class="field-input" id="ent-role" placeholder="e.g. Head of Risk, CTO" autocomplete="organization-title">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" for="ent-email">Email</label>
+          <input type="email" class="field-input" id="ent-email" placeholder="you@yourfirm.co.uk" autocomplete="email">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="ent-org">Organisation</label>
+          <input type="text" class="field-input" id="ent-org" placeholder="Organisation name" autocomplete="organization">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="ent-systems">Number of AI systems</label>
+        <select class="field-input" id="ent-systems">
+          <option value="">Select</option>
+          <option value="1-5">1 — 5 systems</option>
+          <option value="6-20">6 — 20 systems</option>
+          <option value="20-50">20 — 50 systems</option>
+          <option value="50+">50+ systems</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">What are you looking for?</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="ent-reqs">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Multi-department portal" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Multi-department portal</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Dedicated advisory lead" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Dedicated advisory lead</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="API access" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">API access</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Custom integrations" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Custom integrations</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="On-site validation" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">On-site validation</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="ISO 42001 alignment" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">ISO 42001 alignment</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Quarterly benchmarking" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Quarterly benchmarking</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Other" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Other</label>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="ent-message">Tell us more about your requirements</label>
+        <textarea class="field-input" id="ent-message" rows="3" placeholder="Describe your governance needs, number of departments, jurisdictions, or any specific requirements..."></textarea>
+      </div>
+      <div id="ent-error" style="font-size:0.75rem;color:#B91C1C;margin-bottom:8px;display:none;"></div>
+    </div>
+    <div class="modal-footer" id="ent-modal-footer">
+      <button type="button" class="modal-btn" onclick="closeEnterpriseModal()">Cancel</button>
+      <button type="button" class="modal-btn modal-btn--primary" id="ent-submit-btn" onclick="submitEnterpriseInquiry()">Submit inquiry</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
 var SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
 var SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
@@ -758,6 +910,101 @@ async function subscribe(plan){
     alert(e.message||'Could not load checkout. Please try again.');
   }
 }
+
+function escHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+var ENT_FORM_HTML=null;
+function cacheEntForm(){
+  if(!ENT_FORM_HTML){
+    var body=document.getElementById('ent-modal-body');
+    var foot=document.getElementById('ent-modal-footer');
+    var head=document.querySelector('#enterprise-modal .modal-header');
+    if(body&&foot&&head){
+      ENT_FORM_HTML={header:head.innerHTML,body:body.innerHTML,footer:foot.innerHTML};
+    }
+  }
+}
+
+function openEnterpriseModal(){
+  cacheEntForm();
+  var modal=document.getElementById('enterprise-modal');
+  if(ENT_FORM_HTML){
+    document.querySelector('#enterprise-modal .modal-header').innerHTML=ENT_FORM_HTML.header;
+    document.getElementById('ent-modal-body').innerHTML=ENT_FORM_HTML.body;
+    document.getElementById('ent-modal-footer').innerHTML=ENT_FORM_HTML.footer;
+  }
+  var nameEl=document.getElementById('ent-name');
+  if(nameEl)nameEl.value='';
+  ['ent-role','ent-email','ent-org','ent-systems','ent-message'].forEach(function(id){
+    var el=document.getElementById(id); if(el)el.value='';
+  });
+  document.querySelectorAll('#ent-reqs input[type=checkbox]').forEach(function(c){c.checked=false});
+  var err=document.getElementById('ent-error');
+  if(err)err.style.display='none';
+  var btn=document.getElementById('ent-submit-btn');
+  if(btn){btn.textContent='Submit inquiry';btn.disabled=false}
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeEnterpriseModal(){
+  var modal=document.getElementById('enterprise-modal');
+  if(modal)modal.classList.remove('open');
+  document.body.style.overflow='';
+}
+
+async function submitEnterpriseInquiry(){
+  var name=(document.getElementById('ent-name').value||'').trim();
+  var role=(document.getElementById('ent-role').value||'').trim();
+  var email=(document.getElementById('ent-email').value||'').trim();
+  var orgName=(document.getElementById('ent-org').value||'').trim();
+  var systems=document.getElementById('ent-systems').value||'';
+  var message=(document.getElementById('ent-message').value||'').trim();
+  var errEl=document.getElementById('ent-error');
+  var btn=document.getElementById('ent-submit-btn');
+  if(!name){errEl.textContent='Please enter your name.';errEl.style.display='block';return}
+  if(!email||email.indexOf('@')<0){errEl.textContent='Please enter a valid email.';errEl.style.display='block';return}
+  if(!orgName){errEl.textContent='Please enter your organisation.';errEl.style.display='block';return}
+  errEl.style.display='none';
+  btn.textContent='Submitting…';btn.disabled=true;
+  var reqs=[];
+  document.querySelectorAll('#ent-reqs input[type=checkbox]:checked').forEach(function(c){reqs.push(c.value)});
+  try{
+    await sb.from('enterprise_inquiries').insert({
+      org_id:null,user_id:null,
+      full_name:name,email:email,organisation:orgName,
+      role_title:role||null,system_count:systems||null,
+      requirements:reqs.length?reqs:null,message:message||null
+    });
+    try{
+      if(typeof emailjs!=='undefined'){
+        emailjs.init('vxitc5LFJHMfNcmUL');
+        await emailjs.send('service_umdte26','template_o6h9et7',{
+          to_name:'Fraser',
+          to_email:'fraser@mlagroup.co.uk',
+          alert_title:'Enterprise Inquiry (pricing): '+name,
+          alert_body:'Name: '+name+' | Role: '+(role||'Not specified')+' | Email: '+email+' | Organisation: '+orgName+' | AI Systems: '+(systems||'Not specified')+' | Requirements: '+(reqs.length?reqs.join(', '):'None selected')+' | Message: '+(message||'No message')
+        });
+      }
+    }catch(eml){console.log('Email notification skipped')}
+    document.querySelector('#enterprise-modal .modal-header').innerHTML='<div></div><button type="button" class="modal-close" onclick="closeEnterpriseModal()" aria-label="Close">&#10005;</button>';
+    document.getElementById('ent-modal-body').innerHTML='<div class="ent-success"><h4>Inquiry received</h4><p>Thank you, '+escHtml(name.split(' ')[0])+'. A RegAnchor governance specialist will be in touch within 24 hours.</p></div>';
+    document.getElementById('ent-modal-footer').innerHTML='<button type="button" class="modal-btn modal-btn--primary" onclick="closeEnterpriseModal()">Close</button>';
+  }catch(err){
+    errEl.textContent='Error: '+(err.message||'Could not submit. Please try again.');
+    errEl.style.display='block';
+    btn.textContent='Submit inquiry';btn.disabled=false;
+  }
+}
+
+document.getElementById('enterprise-modal').addEventListener('click',function(e){
+  if(e.target===this)closeEnterpriseModal();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&document.getElementById('enterprise-modal').classList.contains('open'))closeEnterpriseModal();
+});
 
 (function(){
   var p=new URLSearchParams(window.location.search);
