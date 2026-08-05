@@ -417,8 +417,9 @@
       return;
     }
     if (data.user) {
+      // Insert-only profile bootstrap. Do not set role/paid from the client.
       await sb.from('profiles').insert({
-        id: data.user.id, email, full_name: name, organisation: org, role: 'client'
+        id: data.user.id, email, full_name: name, organisation: org
       });
       const pendingId = sessionStorage.getItem('pending_result_id');
       if (pendingId) {

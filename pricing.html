@@ -602,13 +602,25 @@ function toggleFaq(el){var w=el.classList.contains('open');document.querySelecto
 async function subscribe(plan){
   var r=await sb.auth.getSession();var session=r.data.session;
   if(!session){window.location.href='login.html?redirect=pricing&plan='+plan+'&period='+(isAnnual?'annual':'monthly');return}
-  var pr=await sb.from('profiles').select('org_id').eq('id',session.user.id).single();
-  var orgId=pr.data?pr.data.org_id:null;
-  if(!orgId){alert('Please complete your portal setup first.');window.location.href='portal.html';return}
   var priceId=PRICES[plan]?PRICES[plan][isAnnual?'annual':'monthly']:null;
   if(!priceId)return;
+  // Ensure a profile exists (avoids PostgREST 406 from .single() on zero rows),
+  // then open portal plans where org provisioning + embedded checkout run.
+  var pr=await sb.from('profiles').select('org_id').eq('id',session.user.id).maybeSingle();
+  if(!pr.data){
+    // Insert-only; do not write role/paid from the browser.
+    await sb.from('profiles').insert({
+      id:session.user.id,
+      email:session.user.email,
+      full_name:session.user.user_metadata?.full_name||session.user.email.split('@')[0]
+    });
+  }
+  if(!pr.data||!pr.data.org_id){
+    window.location.href='portal.html?goto=plans&plan='+plan+'&period='+(isAnnual?'annual':'monthly');
+    return;
+  }
   try{
-    var res=await fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},body:JSON.stringify({price_id:priceId,org_id:orgId})});
+    var res=await fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},body:JSON.stringify({price_id:priceId,org_id:pr.data.org_id})});
     var data=await res.json();
     if(data.url)window.location.href=data.url;
     else if(data.existing){alert('Active subscription exists.');window.location.href='portal.html'}

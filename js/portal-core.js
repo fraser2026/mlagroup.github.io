@@ -146,24 +146,47 @@ function closeSidebar(){
 async function init(){
   const{data:{session}}=await sb.auth.getSession();if(!session){window.location.href='login.html';return}
   currentUser=session.user;
-  const[{data:profile},{data:entitlements}]=await Promise.all([sb.from('profiles').select('full_name,organisation,paid,org_id').eq('id',currentUser.id).single(),sb.from('entitlements').select('id,diagnostic_id,status').eq('user_id',currentUser.id).eq('status','active')]);
-  currentProfile=profile;isPaid=(entitlements&&entitlements.length>0)||profile?.paid===true;
+  // maybeSingle avoids PostgREST 406 when the profile row is missing (common after
+  // auth signup without a successful profiles insert).
+  const[{data:profile},{data:entitlements}]=await Promise.all([
+    sb.from('profiles').select('full_name,organisation,paid,org_id,email').eq('id',currentUser.id).maybeSingle(),
+    sb.from('entitlements').select('id,diagnostic_id,status').eq('user_id',currentUser.id).eq('status','active')
+  ]);
+  currentProfile=profile;
+  if(!currentProfile){
+    // Insert-only self-heal: never upsert privileged fields (role/paid).
+    // Those must stay server-controlled; profiles RLS should also be enabled separately.
+    const fallbackName=currentUser.user_metadata?.full_name||currentUser.email.split('@')[0];
+    const{data:created,error:createErr}=await sb.from('profiles').insert({
+      id:currentUser.id,
+      email:currentUser.email,
+      full_name:fallbackName
+    }).select('full_name,organisation,paid,org_id,email').maybeSingle();
+    if(createErr){
+      // Race: row may have appeared; re-read without overwriting anything.
+      const{data:again}=await sb.from('profiles').select('full_name,organisation,paid,org_id,email').eq('id',currentUser.id).maybeSingle();
+      currentProfile=again||{full_name:fallbackName,organisation:'',paid:false,org_id:null,email:currentUser.email};
+    }else{
+      currentProfile=created||{full_name:fallbackName,organisation:'',paid:false,org_id:null,email:currentUser.email};
+    }
+  }
+  isPaid=(entitlements&&entitlements.length>0)||currentProfile?.paid===true;
   const paidIds=new Set((entitlements||[]).map(e=>e.diagnostic_id).filter(Boolean));
-  const fullName=profile?.full_name||currentUser.email.split('@')[0];
+  const fullName=currentProfile?.full_name||currentUser.email.split('@')[0];
   const initials=fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
   profilesCache[currentUser.id]=fullName;
   document.getElementById('sidebar-name').textContent=fullName;
   document.getElementById('sidebar-avatar').textContent=initials;
-  if(profile?.full_name){const p=profile.full_name.split(' ');document.getElementById('set-first').value=p[0]||'';document.getElementById('set-last').value=p.slice(1).join(' ')||''}
-  document.getElementById('set-org').value=profile?.organisation||'';document.getElementById('set-email').value=currentUser.email;
+  if(currentProfile?.full_name){const p=currentProfile.full_name.split(' ');document.getElementById('set-first').value=p[0]||'';document.getElementById('set-last').value=p.slice(1).join(' ')||''}
+  document.getElementById('set-org').value=currentProfile?.organisation||'';document.getElementById('set-email').value=currentUser.email;
   document.getElementById('referral-link').textContent=location.host+'/ref/'+currentUser.id.substring(0,8);
   const{data:results}=await sb.from('diagnostic_results').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
   currentResults=results||[];
   document.getElementById('paywall-banner').style.display=(isPaid||isPaidTier())?'none':'flex'; document.getElementById('tier-banner').style.display=isPaidTier()?'none':'flex'; document.getElementById('controls-tier-banner').style.display=isPaidTier()?'none':'flex';
   renderReports(paidIds);
   history.replaceState({view:'dashboard'},'','#dashboard');
-  if(profile?.org_id)ensureOrg().then(()=>Promise.all([loadSystems(),loadControls(),refreshSidebarContext()])).then(()=>{renderDashboard(paidIds);loadScoreHistory();loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
-  else renderDashboard(paidIds);
+  // Always provision org — subscriptions need currentOrg even when org_id is still null.
+  ensureOrg().then(()=>Promise.all([loadSystems(),loadControls(),refreshSidebarContext()])).then(()=>{renderDashboard(paidIds);loadScoreHistory();loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
 }
 
 async function refreshSidebarContext(){
@@ -189,6 +212,13 @@ function handleDeepLink(){
   if(goto==='plans'){
     history.replaceState(null,'',window.location.pathname+'#plans');
     navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();
+    var plan=urlParams.get('plan');
+    var period=urlParams.get('period');
+    if(period==='annual')portalAnnual=true;
+    if(plan&&typeof portalSubscribe==='function'){
+      updatePortalPricing();
+      setTimeout(function(){portalSubscribe(plan)},400);
+    }
     return;
   }
   if(goto&&goto.startsWith('system-controls-')){
@@ -212,18 +242,18 @@ function handleDeepLink(){
 // ═══ AUTO-PROVISIONING ════════════════════════════════════════
 async function ensureOrg(){
   if(currentOrg)return currentOrg;
-  if(currentProfile?.org_id){const{data}=await sb.from('organisations').select('*').eq('id',currentProfile.org_id).single();if(data){currentOrg=data;return data}}
-  const{data:existing}=await sb.from('organisations').select('*').eq('created_by',currentUser.id).limit(1).single();
-  if(existing){currentOrg=existing;if(!currentProfile.org_id){await sb.from('profiles').update({org_id:existing.id}).eq('id',currentUser.id);currentProfile.org_id=existing.id}return existing}
+  if(currentProfile?.org_id){const{data}=await sb.from('organisations').select('*').eq('id',currentProfile.org_id).maybeSingle();if(data){currentOrg=data;return data}}
+  const{data:existing}=await sb.from('organisations').select('*').eq('created_by',currentUser.id).limit(1).maybeSingle();
+  if(existing){currentOrg=existing;if(!currentProfile)currentProfile={};if(!currentProfile.org_id){await sb.from('profiles').update({org_id:existing.id}).eq('id',currentUser.id);currentProfile.org_id=existing.id}return existing}
   let orgName=currentProfile?.organisation||'My Organisation';
   // Pull sector/size from most recent diagnostic
   let orgSector=null,orgSize=null;
   if(currentResults.length){orgSector=currentResults[0].sector||null;orgSize=currentResults[0].org_size||null}
-  else{const{data:dr}=await sb.from('diagnostic_results').select('sector,org_size,organisation').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(1).single();if(dr){orgSector=dr.sector;orgSize=dr.org_size;if(dr.organisation)orgName=dr.organisation}}
-  const{data:newOrg,error}=await sb.from('organisations').insert({name:orgName,created_by:currentUser.id,sector:orgSector,org_size:orgSize}).select().single();
+  else{const{data:dr}=await sb.from('diagnostic_results').select('sector,org_size,organisation').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();if(dr){orgSector=dr.sector;orgSize=dr.org_size;if(dr.organisation)orgName=dr.organisation}}
+  const{data:newOrg,error}=await sb.from('organisations').insert({name:orgName,created_by:currentUser.id,sector:orgSector,org_size:orgSize}).select().maybeSingle();
   if(error){console.error('Org creation error:',error);return null}
   await sb.from('org_members').insert({org_id:newOrg.id,user_id:currentUser.id,role:'owner',accepted_at:new Date().toISOString()});
-  await sb.from('profiles').update({org_id:newOrg.id}).eq('id',currentUser.id);currentProfile.org_id=newOrg.id;currentOrg=newOrg;currentMemberRole='owner';return newOrg;
+  await sb.from('profiles').update({org_id:newOrg.id}).eq('id',currentUser.id);if(!currentProfile)currentProfile={};currentProfile.org_id=newOrg.id;currentOrg=newOrg;currentMemberRole='owner';return newOrg;
 }
  
 

@@ -277,7 +277,6 @@ async function submitEnterpriseInquiry(){
 }
 
 function portalSubscribe(plan){
-  if(!currentOrg)return;
   var priceId=PORTAL_PRICES[plan]?PORTAL_PRICES[plan][portalAnnual?'annual':'monthly']:null;
   if(!priceId)return;
   var loadEl=document.getElementById('portal-checkout-loading');
@@ -285,14 +284,17 @@ function portalSubscribe(plan){
   if(contEl.style.display==='block'){contEl.scrollIntoView({behavior:'smooth'});return}
   loadEl.style.display='block';
   if(!portalStripe)portalStripe=Stripe('pk_live_51SVuGRRfSQTwpCt9hCFdOOyVJBOLgV1Gss5CxMOry1T3kKW3cE7IF8OhQzvXjBd9IjOCp941p4uc9R8RPolEvRVV00fiMjUyXQ');
-  sb.auth.getSession().then(function(sd){
-    var session=sd.data.session;
-    if(!session){loadEl.style.display='none';alert('Please sign in first.');return}
-    return fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},
-      body:JSON.stringify({price_id:priceId,org_id:currentOrg.id,embedded:true})
-    }).then(function(res){return res.json()});
+  Promise.resolve(typeof ensureOrg==='function'?ensureOrg():currentOrg).then(function(org){
+    if(!org){loadEl.style.display='none';alert('Could not set up your organisation. Please refresh and try again.');return null}
+    return sb.auth.getSession().then(function(sd){
+      var session=sd.data.session;
+      if(!session){loadEl.style.display='none';alert('Please sign in first.');return null}
+      return fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},
+        body:JSON.stringify({price_id:priceId,org_id:org.id,embedded:true})
+      }).then(function(res){return res.json()});
+    });
   }).then(function(data){
     if(!data)return;
     if(data.error){loadEl.style.display='none';if(data.existing){alert('Your organisation already has an active subscription.')}else{alert(data.error)}return}
@@ -314,14 +316,15 @@ function portalSubscribe(plan){
 }
 
 async function startSubscription(priceId){
-  if(!currentOrg)return;
   try{
+    var org=typeof ensureOrg==='function'?await ensureOrg():currentOrg;
+    if(!org){alert('Could not set up your organisation. Please refresh and try again.');return}
     var sd=await sb.auth.getSession();var session=sd.data.session;
     if(!session){alert('Please sign in first.');return}
     var res=await fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},
-      body:JSON.stringify({price_id:priceId,org_id:currentOrg.id})
+      body:JSON.stringify({price_id:priceId,org_id:org.id})
     });
     var data=await res.json();
     if(data.url){window.location.href=data.url}
