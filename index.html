@@ -393,7 +393,7 @@
       z-index:1;
       height:100%;
       overflow-y:auto;
-      overscroll-behavior:contain;
+      overscroll-behavior:none;
       scroll-snap-type:y proximity;
       scrollbar-width:none;
       -webkit-overflow-scrolling:touch;
@@ -403,6 +403,7 @@
       .system-maturity__glass-scroller {
         scroll-snap-type:none;
         touch-action:pan-y;
+        overscroll-behavior-y:none;
       }
       .system-maturity__step {
         scroll-snap-align:none;
@@ -412,7 +413,8 @@
     }
     .system-maturity__glass-scroller::-webkit-scrollbar { display:none; }
     .system-maturity__glass-pad {
-      height:calc(50% - 16px);
+      /* Fixed to glass height so % doesn't mis-resolve and allow empty overscroll */
+      height:calc(74px - 16px);
       flex-shrink:0;
       pointer-events:none;
     }
@@ -650,14 +652,8 @@
         gap:32px;
         margin-bottom:40px;
         min-width:0;
-        justify-items:start;
       }
       .system-intro { max-width:100%; }
-      .system-maturity {
-        justify-self:start;
-        width:100%;
-        max-width:100%;
-      }
     }
     @media (max-width:768px) {
       .home-chrome nav { padding:0 20px; }
@@ -671,69 +667,27 @@
       .wrap { padding:0 20px; }
       .section-pad { padding-top:56px; padding-bottom:56px; }
       .fines-chips { display:none; }
-      .system-section,
-      .system-section .wrap,
-      .system-head { overflow-x:clip; max-width:100%; }
+      /* Keep column alignment without shrinking the maturity object/glass */
+      .system-section { overflow-x:clip; }
       .system-intro { max-width:100%; width:100%; min-width:0; }
       .system-intro h2,
-      .system-intro .section-sub {
-        max-width:100%;
-        overflow-wrap:anywhere;
-        word-break:break-word;
-        text-wrap:balance;
-      }
+      .system-intro .section-sub { max-width:100%; overflow-wrap:break-word; }
       .system-grid { grid-template-columns:1fr; }
       .system-card { border-right:none; border-bottom:1px solid var(--border); padding:28px 24px; }
       .system-card:last-child { border-bottom:none; }
       .system-card:nth-child(n+3) { border-bottom:1px solid var(--border); }
-      /* Left-align with page column — no centering that can read as “shifted right” */
       .system-maturity {
-        margin:8px 0 12px;
-        align-items:flex-start;
-        justify-self:start;
-        width:100%;
+        margin:8px auto 12px;
+        align-items:center;
+        width:fit-content;
         max-width:100%;
       }
-      .system-maturity__label { text-align:left; width:100%; }
-      .system-maturity__stage {
-        gap:8px;
-        width:100%;
-        max-width:100%;
-        justify-content:flex-start;
-        min-width:0;
-      }
-      .system-maturity__object {
-        min-width:0;
-        flex:1 1 auto;
-        max-width:calc(100% - 5.6em);
-        overflow:hidden;
-      }
-      .system-maturity__object .ra-maturity { gap:8px; max-width:100%; }
-      .system-maturity__object .ra-maturity__text { min-width:0; }
-      .system-maturity__object .ra-cbar { width:64px; flex-shrink:0; }
-      .system-maturity__object .ra-cbar__row { height:4px; }
-      /* Kill current-row overhang — it was widening the cluster past the column */
-      .system-maturity__object .ra-cbar__row--current {
-        height:5px; width:64px; margin-left:0;
-      }
-      .system-maturity__object .ra-maturity__score {
-        font-size:26px;
-        min-width:0;
-      }
-      .system-maturity__object .ra-maturity__tier {
-        font-size:11px;
-        white-space:normal;
-        overflow-wrap:anywhere;
-      }
-      .system-maturity__glass {
-        width:5.4em;
-        height:140px;
-        flex:0 0 5.4em;
-        min-width:0;
-      }
+      .system-maturity__label { text-align:center; width:100%; }
+      .system-maturity__stage { gap:14px; }
       .system-maturity__glass-scroller {
         scroll-snap-type:none;
         touch-action:pan-y;
+        overscroll-behavior-y:none;
       }
       .system-maturity__step {
         scroll-snap-align:none;
@@ -1139,14 +1093,44 @@
       }
     }
 
-    function scrollToLevel(n, smooth) {
+    function scrollTopForLevel(n) {
       const btn = scroller.querySelector('.system-maturity__step[data-level="' + n + '"]');
-      if (!btn) return;
-      const top = btn.offsetTop - (scroller.clientHeight / 2) + (btn.offsetHeight / 2);
+      if (!btn) return 0;
+      return Math.max(0, btn.offsetTop - (scroller.clientHeight / 2) + (btn.offsetHeight / 2));
+    }
+
+    function scrollBounds() {
+      // L7 is top of list, L1 is bottom — never allow focus band into empty pad
+      return {
+        min: scrollTopForLevel(7),
+        max: scrollTopForLevel(1)
+      };
+    }
+
+    function clampScrollToLevels() {
+      const { min, max } = scrollBounds();
+      const t = scroller.scrollTop;
+      if (t < min - 0.5) {
+        scrollSync = true;
+        scroller.scrollTop = min;
+        setTimeout(() => { scrollSync = false; }, 16);
+        return true;
+      }
+      if (t > max + 0.5) {
+        scrollSync = true;
+        scroller.scrollTop = max;
+        setTimeout(() => { scrollSync = false; }, 16);
+        return true;
+      }
+      return false;
+    }
+
+    function scrollToLevel(n, smooth) {
+      const top = scrollTopForLevel(n);
       scrollSync = true;
       // Smooth is OK after finger-up (fling/tap). Never call this mid-gesture.
       const behavior = (smooth && !reduce) ? 'smooth' : 'auto';
-      scroller.scrollTo({ top: Math.max(0, top), behavior: behavior });
+      scroller.scrollTo({ top: top, behavior: behavior });
       setTimeout(() => { scrollSync = false; }, behavior === 'smooth' ? 420 : 32);
     }
 
@@ -1213,7 +1197,8 @@
 
     function commitScrollLevel() {
       if (fingerDown || scrollSync) return;
-      // Keep Liveline-style live reading; no remount / scrollTo on settle
+      clampScrollToLevels();
+      // Keep Liveline-style live reading; no remount on settle
       syncReadingLive(levelFromScroll());
     }
 
@@ -1307,6 +1292,13 @@
 
       scroller.addEventListener('scroll', () => {
         if (scrollSync) return;
+        // Hard stop at L7 / L1 so empty pad never sits in the focus band
+        if (!fingerDown) clampScrollToLevels();
+        else {
+          const { min, max } = scrollBounds();
+          if (scroller.scrollTop < min) scroller.scrollTop = min;
+          else if (scroller.scrollTop > max) scroller.scrollTop = max;
+        }
         syncReadingLive(levelFromScroll());
         if (!fingerDown) {
           clearTimeout(scrollTimer);
