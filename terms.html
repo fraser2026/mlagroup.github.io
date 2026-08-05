@@ -34,21 +34,21 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 .content{max-width:900px;margin:0 auto;padding:0 60px 88px}
 .section{margin-bottom:44px;padding-bottom:44px;border-bottom:1px solid var(--border)}
 .section:last-child{border-bottom:none}
-.section-num{font-family:var(--font-brand);font-size:.62rem;letter-spacing:-0.01em;text-transform:none;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:14px}
+.section-num{font-family:var(--font-brand);font-size:.72rem;letter-spacing:-0.01em;text-transform:none;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:14px}
 .section-num::after{content:'';display:block;width:60px;height:1px;background:var(--border)}
 .section-title{font-family:var(--font-brand);font-size:1.35rem;font-weight:500;color:var(--text-1);margin-bottom:18px;letter-spacing:-.02em}
-.body-text{font-size:.9rem;color:var(--text-2);line-height:1.8;margin-bottom:16px}
+.body-text{font-size:.94rem;color:var(--text-2);line-height:1.8;margin-bottom:16px}
 .body-text:last-child{margin-bottom:0}
 .body-text strong{color:var(--text-1);font-weight:600}
 .body-text a{color:var(--text-1);text-decoration:underline;text-underline-offset:2px}
 .info-block{background:var(--bg);border:1px solid var(--border);border-left:2px solid var(--text-1);padding:22px 26px;margin-bottom:24px}
-.info-block-lbl{font-family:var(--font-brand);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:500;margin-bottom:10px}
-.info-block p{font-size:.88rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
+.info-block-lbl{font-family:var(--font-brand);font-size:.72rem;letter-spacing:-0.01em;text-transform:none;color:var(--text-3);font-weight:500;margin-bottom:10px}
+.info-block p{font-size:.9rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
 .info-block p:last-child{margin-bottom:0}
 .info-block strong{color:var(--text-1)}
 .contact-reveal{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
 .contact-reveal summary{
-  list-style:none;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--text-1);
+  list-style:none;cursor:pointer;font-size:.88rem;font-weight:500;color:var(--text-1);
   display:inline-flex;align-items:center;gap:8px;user-select:none;
 }
 .contact-reveal summary::-webkit-details-marker{display:none}
@@ -59,12 +59,13 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 .contact-reveal[open] summary::before{transform:rotate(45deg);margin-top:0}
 .contact-reveal summary:hover{color:var(--ra-blurple,#533AFD)}
 .contact-reveal-body{margin-top:12px}
-.contact-reveal-body p{font-size:.88rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
+.contact-reveal-body p{font-size:.9rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
 .contact-reveal-body p:last-child{margin-bottom:0}
 .contact-reveal-body a{color:var(--text-1);text-decoration:underline;text-underline-offset:2px}
 .warning-block{background:var(--bg);border:1px solid var(--border);border-left:2px solid var(--warn);padding:22px 26px;margin-bottom:24px}
-.warning-block-lbl{font-family:var(--font-brand);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);font-weight:600;margin-bottom:10px}
-.warning-block p{font-size:.88rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
+.warning-block-lbl{font-family:var(--font-brand);font-size:.72rem;letter-spacing:-0.01em;text-transform:none;color:var(--warn);font-weight:600;margin-bottom:10px}
+.warning-block-lbl--shout{letter-spacing:.1em;text-transform:uppercase}
+.warning-block p{font-size:.9rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
 .warning-block p:last-child{margin-bottom:0}
 .rfooter{max-width:900px;margin:0 auto;padding:36px 60px;border-top:1px solid var(--text-1);display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
 .rf-logo{font-family:var(--font-brand);font-size:.88rem;font-weight:500;color:var(--text-1);text-decoration:none;letter-spacing:-.02em}
@@ -100,7 +101,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 <div class="content">
 
   <div class="warning-block">
-    <div class="warning-block-lbl">Important Notice</div>
+    <div class="warning-block-lbl warning-block-lbl--shout">Important Notice</div>
     <p>Please read these Terms and Conditions carefully before using our website or services. By accessing <strong>www.reganchor.com</strong> or using any RegAnchor service, you agree to be bound by these terms. If you do not agree, please do not use our services.</p>
   </div>
 
@@ -108,7 +109,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
     <div class="section-num">Section 01</div>
     <h2 class="section-title">About Us</h2>
     <div class="info-block">
-      <div class="info-block-lbl">Registered Entity</div>
+      <div class="info-block-lbl">Registered entity</div>
       <p><strong>MLA Group Ltd</strong> (trading as RegAnchor)</p>
       <p>Company Registration No: 16117562 (registered in England and Wales)</p>
       <p>ICO Registration No: ZB826186</p>
@@ -136,7 +137,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
     <div class="section-num">Section 03</div>
     <h2 class="section-title">Nature of Our Services — Important Limitations</h2>
     <div class="warning-block">
-      <div class="warning-block-lbl">Not Legal or Regulatory Advice</div>
+      <div class="warning-block-lbl">Not legal or regulatory advice</div>
       <p>The AI Governance Risk Diagnostic and all reports, outputs, and content produced by RegAnchor are provided for <strong>informational and advisory purposes only</strong>. They do not constitute legal advice, regulatory advice, compliance certification, or audit opinion of any kind.</p>
     </div>
     <p class="body-text">Our diagnostic is based on self-reported responses provided by you. We do not independently verify the accuracy or completeness of information submitted. Risk scores, maturity ratings, and recommendations are generated by our framework based on the information you provide.</p>
@@ -229,7 +230,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
     <div class="section-num">Section 13</div>
     <h2 class="section-title">Contact</h2>
     <div class="info-block">
-      <div class="info-block-lbl">Legal Enquiries</div>
+      <div class="info-block-lbl">Legal enquiries</div>
       <p><strong>MLA Group Ltd</strong></p>
       <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
       <p>Tel: 0151 558 0162</p>
