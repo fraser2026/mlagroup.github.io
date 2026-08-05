@@ -276,10 +276,11 @@
       gap:48px;
       align-items:center;
       margin-bottom:48px;
+      min-width:0;
     }
-    .system-intro { max-width:620px; }
+    .system-intro { max-width:620px; min-width:0; }
     .system-intro h2 { margin-bottom:16px; }
-    .system-intro .section-sub { max-width:36em; }
+    .system-intro .section-sub { max-width:min(36em, 100%); }
     .system-maturity {
       display:flex;
       flex-direction:column;
@@ -390,6 +391,17 @@
       scroll-snap-type:y proximity;
       scrollbar-width:none;
       -webkit-overflow-scrolling:touch;
+    }
+    @media (pointer: coarse) {
+      .system-maturity__glass-scroller {
+        scroll-snap-type:y mandatory;
+        touch-action:pan-y;
+      }
+      /* normal = flick can pass levels; always was fighting the finger on iOS */
+      .system-maturity__step {
+        scroll-snap-stop:normal;
+        transition:none;
+      }
     }
     .system-maturity__glass-scroller::-webkit-scrollbar { display:none; }
     .system-maturity__glass-pad {
@@ -626,7 +638,8 @@
       .feat-sticky { position:static; }
       .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:40px 32px 28px; }
       .fines-band__top { grid-template-columns:1fr; gap:28px; }
-      .system-head { grid-template-columns:1fr; gap:32px; margin-bottom:40px; }
+      .system-head { grid-template-columns:1fr; gap:32px; margin-bottom:40px; min-width:0; }
+      .system-intro { max-width:100%; }
     }
     @media (max-width:768px) {
       .home-chrome nav { padding:0 20px; }
@@ -640,6 +653,8 @@
       .wrap { padding:0 20px; }
       .section-pad { padding-top:56px; padding-bottom:56px; }
       .fines-chips { display:none; }
+      .system-intro { max-width:100%; width:100%; }
+      .system-intro .section-sub { max-width:100%; }
       .system-grid { grid-template-columns:1fr; }
       .system-card { border-right:none; border-bottom:1px solid var(--border); padding:28px 24px; }
       .system-card:last-child { border-bottom:none; }
@@ -650,6 +665,10 @@
       }
       .system-maturity__label { text-align:center; width:100%; }
       .system-maturity__stage { gap:14px; }
+      .system-maturity__glass-scroller {
+        scroll-snap-type:y mandatory;
+        touch-action:pan-y;
+      }
       .entry-grid { grid-template-columns:1fr; }
       .entry-card {
         border-right:none; border-bottom:1px solid var(--border);
@@ -965,6 +984,7 @@
     const LEVEL_SCORES = [10, 45, 62, 74, 84, 91, 100];
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const isTouch = window.matchMedia('(pointer: coarse)').matches || !canHover;
     const COUNT_MS = reduce ? 0 : 2800;
     const OF = '<span class="ra-maturity__of">/ 100</span>';
 
@@ -975,6 +995,7 @@
     let scrollTimer = null;
     let hovering = false;
     let wheelLock = false;
+    let fingerDown = false;
 
     function clampScore(n) {
       const v = Math.round(Number(n));
@@ -1021,8 +1042,10 @@
       if (!btn) return;
       const top = btn.offsetTop - (scroller.clientHeight / 2) + (btn.offsetHeight / 2);
       scrollSync = true;
-      scroller.scrollTo({ top: Math.max(0, top), behavior: smooth && !reduce ? 'smooth' : 'auto' });
-      setTimeout(() => { scrollSync = false; }, smooth && !reduce ? 380 : 0);
+      // Never use smooth scrollTo on touch — it fights iOS momentum
+      const behavior = (!isTouch && smooth && !reduce) ? 'smooth' : 'auto';
+      scroller.scrollTo({ top: Math.max(0, top), behavior: behavior });
+      setTimeout(() => { scrollSync = false; }, behavior === 'smooth' ? 380 : 32);
     }
 
     function paintObject(n, animate) {
@@ -1035,7 +1058,7 @@
           row.setAttribute('role', 'button');
           row.setAttribute('tabindex', '0');
           row.setAttribute('aria-label', 'Show ' + RA_LEVELS[i].code + ' ' + RA_LEVELS[i].label);
-          const go = () => applyLevel(i + 1, true, false);
+          const go = () => applyLevel(i + 1, true, {});
           row.onclick = go;
           row.onkeydown = (e) => {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
@@ -1052,8 +1075,12 @@
       else setScore(score);
     }
 
-    function applyLevel(n, animate, fromScroll) {
+    function applyLevel(n, animate, opts) {
+      opts = opts || {};
       n = Math.max(1, Math.min(7, Number(n) || 1));
+      const fromScroll = !!opts.fromScroll;
+      // Touch: never programmatic-scroll except explicit tap recenter (opts.forceScroll)
+      const skipScroll = !!opts.skipScroll || fromScroll || (isTouch && !opts.forceScroll);
       if (n === currentN && fromScroll) {
         updateFocus(n);
         return;
@@ -1061,7 +1088,7 @@
       currentN = n;
       paintObject(n, animate);
       updateFocus(n);
-      if (!fromScroll) scrollToLevel(n, true);
+      if (!skipScroll) scrollToLevel(n, !isTouch);
     }
 
     function levelFromScroll() {
@@ -1079,6 +1106,13 @@
       return best;
     }
 
+    function commitScrollLevel() {
+      if (fingerDown || scrollSync) return;
+      const n = levelFromScroll();
+      updateFocus(n);
+      if (n !== currentN) applyLevel(n, true, { fromScroll: true, skipScroll: true });
+    }
+
     // Glass list L7 → L1 (top to bottom)
     scroller.innerHTML =
       '<div class="system-maturity__glass-pad" aria-hidden="true"></div>' +
@@ -1090,11 +1124,14 @@
       '<div class="system-maturity__glass-pad" aria-hidden="true"></div>';
 
     scroller.querySelectorAll('.system-maturity__step').forEach((btn) => {
-      btn.addEventListener('click', () => applyLevel(Number(btn.dataset.level), true, false));
+      btn.addEventListener('click', () => {
+        // Tap: update reading + auto-recenter (no smooth scroll on touch)
+        applyLevel(Number(btn.dataset.level), true, isTouch ? { forceScroll: true } : {});
+      });
       if (canHover) {
         btn.addEventListener('mouseenter', () => {
           hovering = true;
-          applyLevel(Number(btn.dataset.level), true, false);
+          applyLevel(Number(btn.dataset.level), true, {});
         });
       }
     });
@@ -1107,38 +1144,63 @@
       });
     }
 
-    // One level per wheel notch — stops flinging to top/bottom
-    scroller.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      if (wheelLock || hovering) return;
-      wheelLock = true;
-      const next = currentN + (e.deltaY > 0 ? -1 : 1);
-      if (next >= 1 && next <= 7) applyLevel(next, true, false);
-      setTimeout(() => { wheelLock = false; }, 160);
-    }, { passive: false });
+    // Desktop: one level per wheel notch
+    if (!isTouch) {
+      scroller.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (wheelLock || hovering) return;
+        wheelLock = true;
+        const next = currentN + (e.deltaY > 0 ? -1 : 1);
+        if (next >= 1 && next <= 7) applyLevel(next, true, {});
+        setTimeout(() => { wheelLock = false; }, 160);
+      }, { passive: false });
+    }
 
-    // Touch: settle, then move at most one level — no fling to top/bottom
-    scroller.addEventListener('scroll', () => {
-      if (scrollSync || hovering) return;
-      updateFocus(levelFromScroll());
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => {
-        const raw = levelFromScroll();
-        let next = raw;
-        if (raw > currentN + 1) next = currentN + 1;
-        if (raw < currentN - 1) next = currentN - 1;
-        if (next !== currentN) applyLevel(next, true, true);
-        else updateFocus(currentN);
-        scrollToLevel(next, true);
-      }, 140);
-    }, { passive: true });
+    // Touch: native snap owns the gesture; sync reading only after finger up + settle
+    if (isTouch) {
+      scroller.addEventListener('touchstart', () => { fingerDown = true; }, { passive: true });
+      scroller.addEventListener('touchend', () => {
+        fingerDown = false;
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(commitScrollLevel, 100);
+      }, { passive: true });
+      scroller.addEventListener('touchcancel', () => {
+        fingerDown = false;
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(commitScrollLevel, 100);
+      }, { passive: true });
 
-    applyLevel(7, false, false);
+      scroller.addEventListener('scroll', () => {
+        if (scrollSync) return;
+        updateFocus(levelFromScroll());
+      }, { passive: true });
+
+      const onScrollEnd = () => {
+        if (fingerDown || scrollSync) return;
+        commitScrollLevel();
+      };
+      if ('onscrollend' in scroller) {
+        scroller.addEventListener('scrollend', onScrollEnd);
+      } else {
+        scroller.addEventListener('scroll', () => {
+          if (scrollSync || fingerDown) return;
+          clearTimeout(scrollTimer);
+          scrollTimer = setTimeout(onScrollEnd, 120);
+        }, { passive: true });
+      }
+    }
+
+    // Initial paint; touch uses auto recenter once (no smooth fight)
+    applyLevel(7, false, isTouch ? { forceScroll: true } : {});
 
     const mio = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
-        if (e.isIntersecting) applyLevel(7, true, false);
-        else cancelCount();
+        if (e.isIntersecting) {
+          // Touch: animate reading only — do not yank the scroller while user may be on it
+          applyLevel(7, true, isTouch ? { skipScroll: true } : {});
+        } else {
+          cancelCount();
+        }
       });
     }, { threshold: 0.4 });
     mio.observe(root);
