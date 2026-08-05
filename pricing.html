@@ -712,26 +712,30 @@ async function subscribe(plan){
 
   loadEl.style.display='block';
   contEl.style.display='none';
-
-  var session=await getAuthSession(3000);
-  if(!session){
-    loadEl.style.display='none';
-    window.location.href='login.html?redirect=pricing&plan='+encodeURIComponent(plan)+'&period='+(isAnnual?'annual':'monthly');
-    return;
-  }
-
   if(!pricingStripe)pricingStripe=Stripe(STRIPE_PK);
 
   try{
-    var org=await ensurePricingOrg(session);
+    // Prefer logged-in org checkout when a session exists; otherwise pay-first guest.
+    var session=await getAuthSession(1500);
+    var payload;
+    var authHeader=SUPABASE_KEY;
+
+    if(session){
+      var org=await ensurePricingOrg(session);
+      payload={price_id:priceId,org_id:org.id,embedded:true};
+      authHeader=session.access_token;
+    }else{
+      payload={price_id:priceId,embedded:true,guest:true};
+    }
+
     var res=await fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'Authorization':'Bearer '+session.access_token,
+        'Authorization':'Bearer '+authHeader,
         'apikey':SUPABASE_KEY
       },
-      body:JSON.stringify({price_id:priceId,org_id:org.id,embedded:true})
+      body:JSON.stringify(payload)
     });
     var data=await res.json();
     if(data.error){
@@ -761,11 +765,7 @@ async function subscribe(plan){
   var period=p.get('period');
   if(plan&&PRICES[plan]){
     if(period==='annual'){isAnnual=true;updatePrices()}
-    // Wait for auth hydration before auto-opening checkout after login return
-    getAuthSession(4000).then(function(session){
-      if(session)subscribe(plan);
-      else window.location.href='login.html?redirect=pricing&plan='+encodeURIComponent(plan)+'&period='+(period||'monthly');
-    });
+    setTimeout(function(){subscribe(plan)},400);
   }
 })();
 

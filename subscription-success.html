@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subscription Confirmed | RegAnchor</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
+  <style>
+    :root {
+      --bg: var(--ra-bg, #FFFFFF);
+      --border: var(--ra-border, #E6EBF1);
+      --main: var(--ra-ink, #0A0E14);
+      --sub: var(--ra-text-2, #425466);
+      --muted: var(--ra-text-3, #697386);
+      --accent: var(--ra-blurple, #533AFD);
+      --accent-h: var(--ra-blurple-hover, #4434E0);
+      --ok: var(--ra-ok, #24B47E);
+      --err: var(--ra-risk, #CD3D64);
+      --font-brand: var(--ra-font-brand, 'IBM Plex Sans', sans-serif);
+      --font-body: var(--ra-font-product, 'Inter', sans-serif);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--sub); font-family:var(--font-body);
+      min-height:100vh; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; padding:40px 20px;
+      -webkit-font-smoothing:antialiased;
+    }
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:100; height:60px;
+      display:flex; align-items:center; padding:0 40px;
+      border-bottom:1px solid var(--border); background:var(--bg);
+    }
+    .nav-logo {
+      font-family:var(--font-brand); font-size:0.95rem; font-weight:500;
+      letter-spacing:-0.025em; color:var(--main); text-decoration:none;
+    }
+    .wrapper { width:100%; max-width:480px; margin-top:60px; }
+    .card { border:1px solid var(--border); overflow:hidden; }
+    .card-shimmer { height:2px; background:var(--accent); }
+    .card-body { padding:44px 40px 40px; }
+    .eyebrow {
+      font-family:var(--font-brand); font-size:0.68rem; font-weight:500;
+      letter-spacing:0.08em; color:var(--muted); margin-bottom:10px;
+    }
+    h1 {
+      font-family:var(--font-brand); font-size:1.7rem; font-weight:500;
+      line-height:1.15; letter-spacing:-0.025em; color:var(--main); margin-bottom:12px;
+    }
+    h1 em { font-style:normal; font-weight:400; color:var(--muted); }
+    .subtext { font-size:0.85rem; color:var(--sub); line-height:1.7; }
+    .field { margin-bottom:12px; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+    .field-label {
+      display:block; font-size:0.7rem; font-weight:500; color:var(--muted); margin-bottom:6px;
+    }
+    .field-input {
+      width:100%; padding:11px 14px; background:var(--bg); border:1px solid var(--border);
+      border-radius:4px; color:var(--main); font:inherit; font-size:0.86rem; outline:none;
+    }
+    .field-input:focus { border-color:var(--accent); }
+    .error-box {
+      border:1px solid var(--err); border-left:3px solid var(--err);
+      padding:10px 14px; font-size:0.78rem; color:var(--err); margin-top:10px; display:none;
+    }
+    .btn-primary {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      width:100%; padding:12px 16px; margin-top:20px;
+      background:var(--accent); color:#fff; border:1px solid transparent;
+      border-radius:4px; font:inherit; font-size:0.88rem; font-weight:500; cursor:pointer;
+      text-decoration:none;
+    }
+    .btn-primary:hover { background:var(--accent-h); }
+    .btn-primary:disabled { opacity:0.45; cursor:not-allowed; }
+    .btn-ghost {
+      display:flex; align-items:center; justify-content:center;
+      width:100%; padding:11px 16px; margin-top:10px;
+      background:transparent; color:var(--main); border:1px solid var(--border);
+      border-radius:4px; font:inherit; font-size:0.84rem; text-decoration:none; cursor:pointer;
+    }
+    .divider {
+      display:flex; align-items:center; gap:12px; margin:22px 0;
+      font-size:0.7rem; color:var(--muted);
+    }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .footer-note { margin-top:20px; font-size:0.72rem; color:var(--muted); line-height:1.6; text-align:center; }
+    .footer-note a { color:var(--main); }
+    .loading { text-align:center; padding:24px 0; font-size:0.85rem; color:var(--muted); }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo ra-wordmark">RegAnchor</a>
+</nav>
+
+<div class="wrapper">
+  <div class="card">
+    <div class="card-shimmer"></div>
+    <div class="card-body">
+
+      <div id="state-loading" class="loading">Confirming your subscription…</div>
+
+      <div id="state-signup" style="display:none;">
+        <div class="eyebrow">Payment confirmed</div>
+        <h1>Create your<br><em>account.</em></h1>
+        <p class="subtext">Your subscription is active. Create an account to open the portal and start governing.</p>
+        <div class="field-row" style="margin-top:24px;">
+          <div>
+            <label class="field-label">First name</label>
+            <input type="text" class="field-input" id="su-first" autocomplete="given-name">
+          </div>
+          <div>
+            <label class="field-label">Last name</label>
+            <input type="text" class="field-input" id="su-last" autocomplete="family-name">
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Organisation</label>
+          <input type="text" class="field-input" id="su-org" autocomplete="organization">
+        </div>
+        <div class="field">
+          <label class="field-label">Email address</label>
+          <input type="email" class="field-input" id="su-email" autocomplete="email">
+        </div>
+        <div class="field">
+          <label class="field-label">Create a password</label>
+          <input type="password" class="field-input" id="su-password" placeholder="Min. 8 characters" autocomplete="new-password">
+        </div>
+        <div class="error-box" id="su-error"></div>
+        <button type="button" class="btn-primary" id="su-btn" onclick="doSignup()">Create account &amp; open portal</button>
+        <div class="divider">Already have an account?</div>
+        <button type="button" class="btn-ghost" onclick="showSignin()">Sign in instead</button>
+        <div class="footer-note">By creating an account you agree to our terms.</div>
+      </div>
+
+      <div id="state-signin" style="display:none;">
+        <div class="eyebrow">Payment confirmed</div>
+        <h1>Sign in to<br><em>claim your plan.</em></h1>
+        <p class="subtext">Link this subscription to your existing RegAnchor account.</p>
+        <div class="field" style="margin-top:24px;">
+          <label class="field-label">Email address</label>
+          <input type="email" class="field-input" id="si-email" autocomplete="email">
+        </div>
+        <div class="field">
+          <label class="field-label">Password</label>
+          <input type="password" class="field-input" id="si-password" autocomplete="current-password">
+        </div>
+        <div class="error-box" id="si-error"></div>
+        <button type="button" class="btn-primary" id="si-btn" onclick="doSignin()">Sign in &amp; open portal</button>
+        <button type="button" class="btn-ghost" onclick="showSignup()">Create a new account instead</button>
+      </div>
+
+      <div id="state-success" style="display:none;">
+        <div class="eyebrow">You're in</div>
+        <h1>Subscription<br><em>activated.</em></h1>
+        <p class="subtext" id="success-copy">Your plan is linked to your organisation. Continue in the portal.</p>
+        <a href="portal.html" class="btn-primary">Open my portal</a>
+      </div>
+
+      <div id="state-error" style="display:none;">
+        <div class="eyebrow">Something went wrong</div>
+        <h1>We couldn't<br><em>finish setup.</em></h1>
+        <p class="subtext">Your payment may still have succeeded. Contact us with your receipt and we'll activate access.</p>
+        <a href="mailto:info@reganchor.com?subject=Subscription%20setup" class="btn-primary">Contact support</a>
+        <a href="portal.html" class="btn-ghost">Try the portal anyway</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const urlParams=new URLSearchParams(window.location.search);
+const STRIPE_SESSION_ID=urlParams.get('session_id')||'';
+const PLAN=urlParams.get('plan')||'essentials';
+
+function show(id){
+  ['state-loading','state-signup','state-signin','state-success','state-error'].forEach(function(s){
+    document.getElementById(s).style.display=s===id?'block':'none';
+  });
+}
+function showSignup(){show('state-signup')}
+function showSignin(){show('state-signin')}
+
+async function callLinkSubscription(userId, organisation){
+  const res=await fetch(SUPABASE_URL+'/functions/v1/link-subscription',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+SUPABASE_KEY,
+      'apikey':SUPABASE_KEY
+    },
+    body:JSON.stringify({
+      session_id:STRIPE_SESSION_ID,
+      user_id:userId,
+      organisation:organisation||''
+    })
+  });
+  const json=await res.json();
+  if(!res.ok||json.error)throw new Error(json.error||'Could not link subscription');
+  return json;
+}
+
+async function finishForUser(userId, organisation){
+  show('state-loading');
+  try{
+    const linked=await callLinkSubscription(userId, organisation);
+    const planLabel=linked.plan==='professional'?'Professional':'Essentials';
+    document.getElementById('success-copy').textContent=
+      'Your '+planLabel+' plan is linked to your organisation. Continue in the portal.';
+    show('state-success');
+  }catch(e){
+    console.error(e);
+    show('state-error');
+  }
+}
+
+async function doSignup(){
+  const first=document.getElementById('su-first').value.trim();
+  const last=document.getElementById('su-last').value.trim();
+  const org=document.getElementById('su-org').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const pass=document.getElementById('su-password').value;
+  const err=document.getElementById('su-error');
+  const btn=document.getElementById('su-btn');
+  err.style.display='none';
+  if(!email||!pass){err.textContent='Email and password are required.';err.style.display='block';return}
+  if(pass.length<8){err.textContent='Password must be at least 8 characters.';err.style.display='block';return}
+  btn.disabled=true;
+  try{
+    const{data,error}=await sb.auth.signUp({email,password:pass});
+    if(error)throw error;
+    if(!data.user)throw new Error('Account created — check your email, then sign in.');
+    const full=(first+' '+last).trim();
+    await sb.from('profiles').insert({
+      id:data.user.id,
+      email:email,
+      full_name:full||null,
+      organisation:org||null
+    });
+    await finishForUser(data.user.id, org);
+  }catch(e){
+    err.textContent=e.message||'Could not create account.';
+    err.style.display='block';
+    btn.disabled=false;
+  }
+}
+
+async function doSignin(){
+  const email=document.getElementById('si-email').value.trim();
+  const pass=document.getElementById('si-password').value;
+  const err=document.getElementById('si-error');
+  const btn=document.getElementById('si-btn');
+  err.style.display='none';
+  if(!email||!pass){err.textContent='Email and password are required.';err.style.display='block';return}
+  btn.disabled=true;
+  try{
+    const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error)throw error;
+    await finishForUser(data.user.id, '');
+  }catch(e){
+    err.textContent=e.message||'Could not sign in.';
+    err.style.display='block';
+    btn.disabled=false;
+  }
+}
+
+window.addEventListener('load', async function(){
+  if(!STRIPE_SESSION_ID){show('state-error');return}
+  try{
+    const{data:{session}}=await sb.auth.getSession();
+    if(session){
+      await finishForUser(session.user.id, '');
+      return;
+    }
+    // Prefill plan-aware copy; email comes from Stripe after claim if needed
+    show('state-signup');
+  }catch(e){
+    console.error(e);
+    show('state-signup');
+  }
+});
+</script>
+</body>
+</html>
