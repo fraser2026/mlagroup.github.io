@@ -66,7 +66,11 @@
     .sec { position:relative; z-index:1; padding:76px 0; border-top:1px solid var(--border); }
 
     /* TYPOGRAPHY */
-    .label { font-family:var(--font-brand); font-size:.7rem; font-weight:500; letter-spacing:-0.01em; color:var(--muted); margin-bottom:16px; display:block; }
+    .label {
+      font-family:var(--font-brand); font-size:.7rem; font-weight:500;
+      letter-spacing:-0.01em; color:var(--muted); margin-bottom:16px; display:block;
+      text-transform:none;
+    }
     h1 { font-family:var(--font-brand); font-size:clamp(2.2rem,4.2vw,3.2rem); font-weight:500; line-height:1.1; letter-spacing:-.025em; color:var(--main); margin-bottom:20px; }
     h1 em { font-style:normal; font-weight:400; color:var(--muted); }
     h2 { font-family:var(--font-brand); font-size:clamp(1.5rem,2.6vw,2.1rem); font-weight:500; line-height:1.2; letter-spacing:-.02em; color:var(--main); margin-bottom:16px; }
@@ -94,7 +98,7 @@
     .meta-panel { text-align:right; }
     .meta-item { margin-bottom:18px; }
     .meta-item:last-child { margin-bottom:0; }
-    .meta-key { font-family:var(--font-brand); font-size:.65rem; font-weight:500; letter-spacing:-0.01em; color:var(--muted); margin-bottom:4px; }
+    .meta-key { font-family:var(--font-brand); font-size:.65rem; font-weight:500; letter-spacing:-0.01em; color:var(--muted); margin-bottom:4px; text-transform:none; }
     .meta-val { font-size:.82rem; font-weight:600; color:var(--main); }
     .meta-rule { width:28px; height:1px; background:var(--border-m); margin:16px 0 16px auto; }
 
@@ -153,14 +157,24 @@
     .p-hi { color:var(--risk); }
     .p-cr { color:var(--risk); font-weight:700; }
 
-    /* FRAMEWORK LIST */
+    /* FRAMEWORK LIST — one hierarchy: name → caption → topic → body */
     .fwlist { display:flex; flex-direction:column; max-width:860px; }
-    .fwitem { padding:22px 0; border-bottom:1px solid var(--border); display:grid; grid-template-columns:190px 1fr; gap:32px; align-items:start; }
+    .fwitem { padding:28px 0; border-bottom:1px solid var(--border); }
     .fwitem:first-child { border-top:1px solid var(--border); }
-    .fw-ref { font-family:var(--font-brand); font-size:.75rem; font-weight:600; letter-spacing:-0.01em; color:var(--main); line-height:1.4; }
-    .fw-sub { font-size:.69rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted); margin-top:4px; display:block; }
-    .fw-d h3 { font-size:.91rem; margin-bottom:6px; }
-    .fw-d p  { font-size:.84rem; margin:0; }
+    .fw-ref {
+      font-family:var(--font-brand); font-size:.94rem; font-weight:600;
+      letter-spacing:-0.01em; color:var(--main); line-height:1.35;
+      text-transform:none; margin:0 0 4px;
+    }
+    .fw-sub {
+      font-size:.84rem; font-weight:400; text-transform:none; letter-spacing:0;
+      color:var(--muted); line-height:1.5; margin:0 0 12px; display:block;
+    }
+    .fw-d h3 {
+      font-family:var(--font-body); font-size:.94rem; font-weight:600;
+      letter-spacing:-0.01em; color:var(--main); margin:0 0 8px; line-height:1.4;
+    }
+    .fw-d p { font-size:.9rem; margin:0; line-height:1.75; }
 
     /* PROPRIETARY BOX */
     .prop-list { list-style:none; display:flex; flex-direction:column; }
@@ -177,7 +191,7 @@
     /* DISCLAIMER */
     .disc-sec { position:relative; z-index:1; padding:48px 0; border-top:1px solid var(--border); background:var(--bg); }
     .disc-inner { display:grid; grid-template-columns:180px 1fr; gap:48px; align-items:start; }
-    .disc-head { font-family:var(--font-brand); font-size:.68rem; font-weight:500; letter-spacing:-0.01em; color:var(--muted); padding-top:4px; }
+    .disc-head { font-family:var(--font-brand); font-size:.68rem; font-weight:500; letter-spacing:-0.01em; color:var(--muted); padding-top:4px; text-transform:none; }
     .disc-body p { font-size:.84rem; color:var(--muted); line-height:1.8; margin-bottom:10px; }
     .disc-body p:last-child { margin-bottom:0; }
     .disc-body strong { color:var(--sub); font-weight:600; }
@@ -225,7 +239,6 @@
       .sec { padding:52px 0; }
       .page-header { padding:60px 0 44px; }
       .dtable td, .dtable th, .btable td, .btable th { padding:11px 12px; font-size:.8rem; }
-      .fwitem { grid-template-columns:1fr; gap:6px; }
       .disc-inner { grid-template-columns:1fr; gap:14px; }
       .prop-list .prop-copy { grid-template-columns:1fr; gap:4px; }
       .footer-top { grid-template-columns:1fr 1fr; gap:22px 20px; padding:28px 20px 20px; }
@@ -297,7 +310,7 @@
   <div class="pw">
     <div class="two-col">
       <div>
-        <span class="label">01 Assessment philosophy</span>
+        <span class="label">01 Assessment Philosophy</span>
         <h2>Constructed from<br><em>enforcement logic.</em></h2>
         <p>Regulatory scrutiny of AI deployment has moved from principle to enforcement. The FCA, ICO, and European Commission have each demonstrated that organisations without documented governance frameworks face material exposure. The burden of proof rests with the organisation.</p>
         <p>Generic AI checklists and self-certification exercises do not meet this standard. They produce a summary, not a defensible position. They generate internal awareness, not board-level accountability. They fail the moment a supervisory reviewer asks: what is the legal basis for this control?</p>
@@ -335,7 +348,7 @@
 ════════════════════════════════════════════════ -->
 <section class="sec">
   <div class="pw">
-    <span class="label">02 Architecture overview</span>
+    <span class="label">02 Architecture Overview</span>
     <div class="two-col" style="margin-bottom:44px;">
       <div>
         <h2>Seven domains.<br><em>Differentially weighted.</em></h2>
@@ -412,7 +425,7 @@
   <div class="pw">
     <div class="two-col" style="margin-bottom:44px;">
       <div>
-        <span class="label">03 Scoring engine logic</span>
+        <span class="label">03 Scoring Engine Logic</span>
         <h2>From response to<br><em>risk position.</em></h2>
         <p>The scoring model converts individual question responses into a composite risk classification through a structured sequence. Each step applies a distinct analytical layer; the final output reflects all of them simultaneously. What follows is a summary at a level appropriate for professional review. Specific calibration parameters — weighting ratios, band boundaries, and threshold values — are proprietary.</p>
       </div>
@@ -480,7 +493,7 @@
   <div class="pw">
     <div class="two-col" style="margin-bottom:44px;">
       <div>
-        <span class="label">04 Risk band framework</span>
+        <span class="label">04 Risk Band Framework</span>
         <h2>Five bands.<br><em>Precisely defined.</em></h2>
         <p>The diagnostic produces one of five risk band classifications. Each band carries a specific heading written to communicate regulatory consequence with precision — designed to produce accurate interpretation by board members, compliance officers, and legal reviewers without translation.</p>
         <p>The five-band structure removes the ambiguity of conventional four-band models, where the midpoint is consistently misread as an acceptable position. Every band in this model represents a distinct governance position requiring a distinct response. Numeric band boundaries are proprietary.</p>
@@ -534,7 +547,7 @@
   <div class="pw">
     <div class="two-col" style="margin-bottom:44px;">
       <div>
-        <span class="label">05 Regulatory alignment</span>
+        <span class="label">05 Regulatory Alignment</span>
         <h2>Grounded in<br><em>applicable law.</em></h2>
         <p>Regulatory alignment in the RegAnchor diagnostic is not asserted at a product level — it is visible in the output. Every question references a specific article, guidance paragraph, or supervisory expectation. The instrument does not map generic governance principles retrospectively to regulation. It begins with regulatory text.</p>
         <p>The frameworks listed below are those from which the diagnostic's questions and scoring rationale are directly derived. Each finding in the report output carries the specific regulatory citation that makes it usable in a board submission, supervisory response, or procurement disclosure.</p>
@@ -544,44 +557,50 @@
 
     <div class="fwlist">
       <div class="fwitem">
-        <div class="fw-ref">EU AI Act <span class="fw-sub">In force August 2024. High-risk obligations from August 2026.</span></div>
+        <div class="fw-ref">EU AI Act</div>
+        <div class="fw-sub">In force August 2024. High-risk obligations from August 2026.</div>
         <div class="fw-d">
-          <h3>Annex III High-Risk Classification &amp; Governance Obligations</h3>
+          <h3>Annex III high-risk classification and governance obligations</h3>
           <p>Articles 9, 10, 11, 12, 14, 15, 16, and 27 are referenced directly across the assessment. High-risk AI category selection in the pre-screen activates adjusted domain requirements across the Human Oversight and Compliance sections. Annex III classification is used to determine whether additional scoring weight applies to affected areas.</p>
         </div>
       </div>
       <div class="fwitem">
-        <div class="fw-ref">UK GDPR <span class="fw-sub">ICO enforcement ongoing.</span></div>
+        <div class="fw-ref">UK GDPR</div>
+        <div class="fw-sub">ICO enforcement ongoing.</div>
         <div class="fw-d">
-          <h3>Automated Decision-Making, Transparency &amp; Individual Rights</h3>
+          <h3>Automated decision-making, transparency and individual rights</h3>
           <p>Article 22 obligations around automated decision-making and human oversight are assessed directly. Article 35 DPIA requirements, Articles 13 and 14 transparency obligations, the Article 5(2) accountability principle, and Chapter III individual rights provisions are referenced across multiple domains. Absence of a DPIA where personal data is processed at scale constitutes a Priority Flag.</p>
         </div>
       </div>
       <div class="fwitem">
-        <div class="fw-ref">Financial Conduct Authority <span class="fw-sub">DP5/22 · PS7/21 · Consumer Duty PS22/9</span></div>
+        <div class="fw-ref">Financial Conduct Authority</div>
+        <div class="fw-sub">DP5/22 · PS7/21 · Consumer Duty PS22/9</div>
         <div class="fw-d">
-          <h3>SM&amp;CR Accountability &amp; Board Governance Requirements</h3>
+          <h3>SM&amp;CR accountability and board governance requirements</h3>
           <p>FCA expectations under DP5/22 and PS7/21 require AI risk to be embedded in operational risk frameworks with named Senior Manager accountability. Consumer Duty requires boards to receive management information on AI-driven outcomes. Absence of a named governance owner is a Priority Flag reflecting the binary nature of SM&amp;CR accountability obligations.</p>
         </div>
       </div>
       <div class="fwitem">
-        <div class="fw-ref">Information Commissioner's Office <span class="fw-sub">ICO AI &amp; Data Protection Guidance 2023</span></div>
+        <div class="fw-ref">Information Commissioner's Office</div>
+        <div class="fw-sub">ICO AI &amp; Data Protection Guidance 2023</div>
         <div class="fw-d">
-          <h3>Accountability Framework &amp; Automated Decision Transparency</h3>
+          <h3>Accountability framework and automated decision transparency</h3>
           <p>The ICO Accountability Framework's requirements for documented policies, privacy by design, and records of processing are assessed across the Compliance and Governance domains. ICO guidance on automated decision-making transparency and explainability informs the Explainability domain. ICO enforcement priorities around automated processing are reflected in the flag logic.</p>
         </div>
       </div>
       <div class="fwitem">
-        <div class="fw-ref">ISO/IEC 42001 <span class="fw-sub">International AI Management System Standard</span></div>
+        <div class="fw-ref">ISO/IEC 42001</div>
+        <div class="fw-sub">International AI Management System Standard</div>
         <div class="fw-d">
-          <h3>AI Management System Architecture</h3>
+          <h3>AI management system architecture</h3>
           <p>ISO/IEC 42001 provides the structural reference for AI governance documentation, risk assessment cycles, and continuous improvement requirements that complement the regulatory obligations above. The diagnostic assesses alignment with the standard's core requirements as a component of the Governance and Operational Controls domains.</p>
         </div>
       </div>
       <div class="fwitem">
-        <div class="fw-ref">Sector-Specific <span class="fw-sub">SRA · CQC · NHS DTAC · DCB0129</span></div>
+        <div class="fw-ref">Sector-specific</div>
+        <div class="fw-sub">SRA · CQC · NHS DTAC · DCB0129</div>
         <div class="fw-d">
-          <h3>Profession-Specific Obligations</h3>
+          <h3>Profession-specific obligations</h3>
           <p>SRA AI Guidance (2024) requirements for client disclosure of AI use are activated for legal sector respondents. NHS DTAC, DCB0129 clinical safety requirements, and CQC oversight obligations are activated for healthcare respondents. Sector selection in the pre-screen determines which profession-specific flags are mandatory in the output regardless of scored question responses.</p>
         </div>
       </div>
@@ -596,7 +615,7 @@
   <div class="pw">
     <div class="two-col">
       <div>
-        <span class="label">06 Controlled transparency</span>
+        <span class="label">06 Controlled Transparency</span>
         <h2>What this disclosure<br><em>does not include.</em></h2>
         <p>The methodology disclosure above is complete at the level required for professional due diligence and procurement review. It describes the structural architecture of the instrument, the seven domains assessed, the nature of the scoring model, the regulatory frameworks applied, and the logic governing risk band assignment and Priority Flag generation.</p>
         <p>Exact domain weighting ratios, numeric band boundaries, sector calibration parameters, uncertainty flag thresholds, and question-level scoring scales are not included. These elements constitute the proprietary calibration of the instrument.</p>

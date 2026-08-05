@@ -33,19 +33,10 @@ nav{position:sticky;top:0;z-index:100;height:var(--nav-h);display:flex;align-ite
 
 /* LEFT — INFO */
 .info-side{position:sticky;top:calc(var(--nav-h) + 40px)}
-.info-side.is-success .info-intro,
-.info-side.is-success .contact-details{display:none}
+.info-side.is-success .info-intro{display:none}
 h1{font-family:var(--font-brand);font-size:clamp(2.1rem,3.6vw,3rem);font-weight:500;line-height:1.12;letter-spacing:-0.03em;color:var(--main);margin-bottom:22px}
 h1 em{font-style:normal;font-weight:400;color:var(--muted)}
-.info-sub{font-size:0.95rem;font-weight:400;color:var(--sub);line-height:1.75;margin-bottom:44px;max-width:380px}
-
-.contact-details{display:flex;flex-direction:column;gap:0}
-.detail-row{display:flex;gap:16px;align-items:flex-start;padding:20px 0;border-bottom:1px solid var(--border)}
-.detail-row:first-child{border-top:1px solid var(--border)}
-.detail-icon{width:36px;height:36px;min-width:36px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-top:2px}
-.detail-icon svg{width:15px;height:15px;stroke:var(--main);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.detail-label{font-family:var(--font-brand);font-size:0.65rem;font-weight:500;letter-spacing:-0.01em;color:var(--muted);margin-bottom:4px}
-.detail-val{font-size:0.88rem;color:var(--sub);line-height:1.5}
+.info-sub{font-size:0.95rem;font-weight:400;color:var(--sub);line-height:1.75;margin-bottom:0;max-width:380px}
 
 /* FORM SIDE */
 .form-side{}
@@ -150,45 +141,6 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
     <div class="info-intro">
       <h1 class="fade">Let's talk<br><em>governance.</em></h1>
       <p class="info-sub fade">Whether you're exploring the diagnostic, have a question about your sector's obligations, or want to discuss an enterprise engagement — we're here.</p>
-    </div>
-
-    <div class="contact-details">
-      <div class="detail-row fade">
-        <div class="detail-icon">
-          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        </div>
-        <div>
-          <div class="detail-label">Office</div>
-          <div class="detail-val">Unit 1 (Suite 121), Imperial Court<br>Exchange Street East, Liverpool, L2 3AB</div>
-        </div>
-      </div>
-      <div class="detail-row fade">
-        <div class="detail-icon">
-          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.12 2.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.46-.46a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
-        </div>
-        <div>
-          <div class="detail-label">Telephone</div>
-          <div class="detail-val">0151 558 0162</div>
-        </div>
-      </div>
-      <div class="detail-row fade">
-        <div class="detail-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div>
-          <div class="detail-label">Response time</div>
-          <div class="detail-val">We aim to respond within one business day</div>
-        </div>
-      </div>
-      <div class="detail-row fade">
-        <div class="detail-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div>
-          <div class="detail-label">Registered</div>
-          <div class="detail-val">MLA Group Ltd · Co. No. 16117562<br>ICO Reg. ZB826186</div>
-        </div>
-      </div>
     </div>
   </div>
 
