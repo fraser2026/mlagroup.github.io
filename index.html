@@ -660,6 +660,12 @@
         min-width:0;
       }
       .system-intro { max-width:100%; }
+      /* Landscape / tablet stack: center label over the strip (objects unchanged) */
+      .system-maturity { align-items:center; }
+      .system-maturity__label {
+        text-align:center;
+        width:100%;
+      }
     }
     @media (max-width:768px) {
       .home-chrome nav { padding:0 20px; }
@@ -1059,6 +1065,7 @@
     let wheelLock = false;
     let fingerDown = false;
     let touchSamples = [];
+    let pendingSettleAnim = false;
     const FLICK_PX_MS = 0.38; // social-style: faster than this → fling to end
 
     function clampScore(n) {
@@ -1195,8 +1202,13 @@
         }
       }
 
-      if (animate) slowCount(score);
-      else setScore(score);
+      if (animate) {
+        displayScore = 0;
+        setScore(0);
+        slowCount(score);
+      } else {
+        setScore(score);
+      }
     }
 
     function applyLevel(n, animate, opts) {
@@ -1236,8 +1248,16 @@
     function commitScrollLevel() {
       if (fingerDown || scrollSync) return;
       clampScrollToLevels();
-      // Keep Liveline-style live reading; no remount on settle
-      syncReadingLive(levelFromScroll());
+      const n = levelFromScroll();
+      // Finger-up settle: play bar grow + score count. During drag we only live-sync.
+      if (pendingSettleAnim) {
+        pendingSettleAnim = false;
+        currentN = n;
+        updateFocus(n);
+        paintObject(n, true);
+        return;
+      }
+      syncReadingLive(n);
     }
 
     /* Velocity from the last ~80ms of the stroke (social-style flick detect) */
@@ -1299,6 +1319,8 @@
     if (isTouch) {
       scroller.addEventListener('touchstart', (e) => {
         fingerDown = true;
+        pendingSettleAnim = true;
+        cancelCount();
         const t = e.touches[0];
         touchSamples = [{ y: t.clientY, t: performance.now() }];
       }, { passive: true });
@@ -1316,12 +1338,14 @@
         // Fast flick → end of list in flick direction (feed-style)
         // Finger up (v < 0) scrolls toward L1; finger down (v > 0) toward L7
         if (Math.abs(v) >= FLICK_PX_MS) {
+          pendingSettleAnim = false;
           const target = v < 0 ? 1 : 7;
           applyLevel(target, true, { forceScroll: true });
           touchSamples = [];
           return;
         }
-        // Slow stroke: let native inertia finish, then commit centered level
+        // Slow stroke: let native inertia finish, then animate the settled level
+        pendingSettleAnim = true;
         scrollTimer = setTimeout(commitScrollLevel, 180);
         touchSamples = [];
       };
@@ -1337,8 +1361,9 @@
           if (scroller.scrollTop < min) scroller.scrollTop = min;
           else if (scroller.scrollTop > max) scroller.scrollTop = max;
         }
+        // Live sync while finger is down (and during residual momentum)
         syncReadingLive(levelFromScroll());
-        if (!fingerDown) {
+        if (!fingerDown && pendingSettleAnim) {
           clearTimeout(scrollTimer);
           scrollTimer = setTimeout(commitScrollLevel, 160);
         }
