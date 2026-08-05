@@ -667,7 +667,7 @@
       .wrap { padding:0 20px; }
       .section-pad { padding-top:56px; padding-bottom:56px; }
       .fines-chips { display:none; }
-      /* Keep column alignment without shrinking the maturity object/glass */
+      /* Maturity strip: keep full bar/glass size, pack + center so glass never hangs off */
       .system-section { overflow-x:clip; }
       .system-intro { max-width:100%; width:100%; min-width:0; }
       .system-intro h2,
@@ -677,13 +677,34 @@
       .system-card:last-child { border-bottom:none; }
       .system-card:nth-child(n+3) { border-bottom:1px solid var(--border); }
       .system-maturity {
+        width:100%;
+        max-width:100%;
         margin:8px auto 12px;
         align-items:center;
+        justify-self:center;
+        overflow-x:clip;
+      }
+      .system-maturity__label {
+        text-align:center;
+        width:100%;
+      }
+      .system-maturity__stage {
+        gap:8px;
         width:fit-content;
         max-width:100%;
+        margin:0 auto;
+        justify-content:center;
+        padding-inline:5px; /* room for current-bar overhang so group stays optically centered */
+        box-sizing:border-box;
       }
-      .system-maturity__label { text-align:center; width:100%; }
-      .system-maturity__stage { gap:14px; }
+      /* Horizontal packing only — bar width + glass height stay at desktop size */
+      .system-maturity__object .ra-maturity { gap:10px; }
+      .system-maturity__object .ra-maturity__score { min-width:0; }
+      .system-maturity__glass {
+        width:6.9em; /* still fits “L7 Authoritative”; closes the dead gap / overflow */
+        height:148px;
+        flex-shrink:0;
+      }
       .system-maturity__glass-scroller {
         scroll-snap-type:none;
         touch-action:pan-y;
