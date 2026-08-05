@@ -486,12 +486,22 @@
     .feat-sticky h2 { margin-bottom:18px; }
     .feat-sticky p { margin-bottom:32px; }
     .feat-cta {
-      display:inline-flex; align-items:center; gap:6px; width:fit-content;
+      display:inline-flex; align-items:center; width:fit-content;
       font-size:0.85rem; font-weight:500; color:var(--accent); text-decoration:none;
-      transition:gap 0.18s, color 0.15s, border-color 0.15s;
+      transition:color 0.15s, border-color 0.15s;
       border-bottom:1px solid rgba(83,58,253,0.28); padding-bottom:2px;
     }
-    .feat-cta:hover { gap:10px; color:var(--accent-h); border-color:var(--accent); }
+    .feat-cta::after {
+      content:'→';
+      display:inline-block;
+      margin-left:0.35em;
+      transition:transform 0.18s ease;
+    }
+    .feat-cta:hover,
+    .feat-cta:focus-visible { color:var(--accent-h); border-color:var(--accent); }
+    .feat-cta:hover::after,
+    .feat-cta:focus-visible::after,
+    .feat-cta:active::after { transform:translateX(3px); }
     .feat-list { display:flex; flex-direction:column; }
     .feat-item { display:flex; gap:18px; padding:26px 0; border-bottom:1px solid var(--border); }
     .feat-item:first-child { border-top:1px solid var(--border); }
@@ -606,13 +616,23 @@
     }
     .entry-desc { font-size:0.9rem; color:var(--sub); line-height:1.55; margin:0 0 20px; max-width:36ch; flex:1; }
     .entry-cta {
-      display:inline-flex; align-items:center; gap:6px; width:fit-content;
+      display:inline-flex; align-items:center; width:fit-content;
       font-size:0.85rem; font-weight:500; color:var(--accent);
       text-decoration:none; white-space:nowrap; align-self:flex-start;
       border-bottom:1px solid rgba(83,58,253,0.28); padding-bottom:2px;
-      transition:gap 0.18s, color 0.15s, border-color 0.15s;
+      transition:color 0.15s, border-color 0.15s;
     }
-    .entry-cta:hover { gap:10px; color:var(--accent-h); border-color:var(--accent); }
+    .entry-cta::after {
+      content:'→';
+      display:inline-block;
+      margin-left:0.35em;
+      transition:transform 0.18s ease;
+    }
+    .entry-cta:hover,
+    .entry-cta:focus-visible { color:var(--accent-h); border-color:var(--accent); }
+    .entry-cta:hover::after,
+    .entry-cta:focus-visible::after,
+    .entry-cta:active::after { transform:translateX(3px); }
 
     /* ── CTA ── */
     .cta-section { border-top:1px solid var(--border); }
@@ -855,7 +875,7 @@
       </div>
     </div>
     <div class="system-explore fade">
-      <a href="#" class="feat-cta" onclick="return false;">Explore the full platform →</a>
+      <a href="#" class="feat-cta" onclick="return false;">Explore the full platform</a>
     </div>
   </div>
 </section>
@@ -919,22 +939,22 @@
       <div class="entry-card fade">
         <div class="entry-name">Free Assessment</div>
         <p class="entry-desc">Understand your current AI governance posture in around 20 minutes.</p>
-        <a href="diagnostic.html" class="entry-cta">Start Assessment →</a>
+        <a href="diagnostic.html" class="entry-cta">Start Assessment</a>
       </div>
       <div class="entry-card fade">
         <div class="entry-name">Full Report</div>
         <p class="entry-desc">Complete regulatory analysis and workspace. Requires a £295 purchase.</p>
-        <a href="diagnostic.html" class="entry-cta">Get Full Report →</a>
+        <a href="diagnostic.html" class="entry-cta">Get Full Report</a>
       </div>
       <div class="entry-card fade">
         <div class="entry-name">Governance Platform</div>
         <p class="entry-desc">Manage AI systems continuously through Registry, Governance, Evidence and Intelligence.</p>
-        <a href="pricing.html" class="entry-cta">View Plans →</a>
+        <a href="pricing.html" class="entry-cta">View Plans</a>
       </div>
       <div class="entry-card fade">
         <div class="entry-name">Enterprise &amp; Advisory</div>
         <p class="entry-desc">For organisations operating across multiple departments, jurisdictions or regulated environments.</p>
-        <a href="contact.html" class="entry-cta">Talk to Advisory →</a>
+        <a href="contact.html" class="entry-cta">Talk to Advisory</a>
       </div>
     </div>
   </div>
@@ -1056,8 +1076,8 @@
     const COUNT_MS = reduce ? 0 : 2800;
     const OF = '<span class="ra-maturity__of">/ 100</span>';
 
-    let currentN = 7;
-    let displayScore = 100;
+    let currentN = 6;
+    let displayScore = 91;
     let countRaf = null;
     let scrollSync = false;
     let scrollTimer = null;
@@ -1378,13 +1398,13 @@
       }
     }
 
-    // Initial paint; touch uses auto recenter once (no smooth fight)
-    applyLevel(7, false, isTouch ? { forceScroll: true } : {});
+    // Initial paint at L6 so the glass shows faded neighbours above and below
+    applyLevel(6, false, isTouch ? { forceScroll: true } : {});
 
     const mio = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (e.isIntersecting) {
-          applyLevel(7, true, isTouch ? { skipScroll: true } : {});
+          applyLevel(6, true, isTouch ? { skipScroll: true } : {});
         } else {
           cancelCount();
         }
