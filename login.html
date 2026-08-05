@@ -386,6 +386,21 @@
     spin.style.display = on ? 'block' : 'none';
   }
 
+  function postAuthRedirect() {
+    var p = new URLSearchParams(window.location.search);
+    var redirect = p.get('redirect');
+    if (redirect === 'pricing') {
+      var plan = p.get('plan') || '';
+      var period = p.get('period') || 'monthly';
+      var q = [];
+      if (plan) q.push('plan=' + encodeURIComponent(plan));
+      if (period) q.push('period=' + encodeURIComponent(period));
+      window.location.href = 'pricing.html' + (q.length ? '?' + q.join('&') : '');
+      return;
+    }
+    window.location.href = 'portal.html';
+  }
+
   async function signIn() {
     hideErr();
     var email = document.getElementById('signin-email').value.trim();
@@ -397,7 +412,7 @@
       showErr(error.message);
       setLoading('signin', false);
     } else {
-      window.location.href = 'portal.html';
+      postAuthRedirect();
     }
   }
 
@@ -427,8 +442,8 @@
         sessionStorage.removeItem('pending_result_id');
       }
     }
-    showOk('Account created! Redirecting to your portal...');
-    setTimeout(() => window.location.href = 'portal.html', 1500);
+    showOk('Account created! Redirecting…');
+    setTimeout(postAuthRedirect, 1500);
   }
 
   document.addEventListener('keydown', function(e) {

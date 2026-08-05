@@ -7,6 +7,7 @@
 <meta name="description" content="AI governance plans aligned to EU AI Act, UK GDPR, and FCA standards. Certification, evidence, and compliance lifecycle management.">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/reganchor.css">
 <style>
@@ -245,6 +246,41 @@ h1 {
   background:var(--main); color:var(--bg); border-color:var(--main);
 }
 .plan-card__cta--ink:hover { opacity:0.82; background:var(--main); border-color:var(--main); }
+.plan-card__cta:disabled { opacity:0.55; cursor:not-allowed; }
+
+/* Embedded checkout — same Stripe products as portal subscriptions */
+#pricing-checkout-loading,
+#pricing-checkout-container {
+  display: none;
+  max-width: 480px;
+  margin: 28px auto 0;
+  border: 1px solid var(--border);
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+#pricing-checkout-loading { padding: 24px; }
+#pricing-checkout-container { padding: 0; overflow: hidden; text-align: left; }
+.pricing-checkout__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--main);
+}
+.pricing-checkout__cancel {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.pricing-checkout__cancel:hover { border-color: var(--main); color: var(--main); }
 
 /* Free line */
 .free-line {
@@ -482,6 +518,9 @@ footer { border-top:1px solid var(--main); background:var(--bg); position:relati
     </div>
   </div>
 </div>
+
+<div id="pricing-checkout-loading">Loading secure checkout…</div>
+<div id="pricing-checkout-container"></div>
  
 <div class="free-line fade">Not ready to commit? <a href="diagnostic.html">Start with a free assessment</a>. No card required.</div>
  
@@ -565,11 +604,18 @@ var SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
 var SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 var isAnnual=false;
-var PRICES={essentials:{monthly:'price_1TD37VRfSQTwpCt9fmlCcuQh',annual:'price_1TD37VRfSQTwpCt914LUfLrf'},professional:{monthly:'price_1TD392RfSQTwpCt9yaJicEiY',annual:'price_1TD3AbRfSQTwpCt969zGi3bD'}};
- 
-function togglePeriod(){isAnnual=!isAnnual;updatePrices()}
-function setPeriod(p){isAnnual=(p==='annual');updatePrices()}
- 
+// Same live Stripe prices as portal Essentials / Professional
+var PRICES={
+  essentials:{monthly:'price_1TD37VRfSQTwpCt9fmlCcuQh',annual:'price_1TD37VRfSQTwpCt914LUfLrf'},
+  professional:{monthly:'price_1TD392RfSQTwpCt9yaJicEiY',annual:'price_1TD3AbRfSQTwpCt969zGi3bD'}
+};
+var pricingStripe=null;
+var pricingCheckoutInstance=null;
+var STRIPE_PK='pk_live_51SVuGRRfSQTwpCt9hCFdOOyVJBOLgV1Gss5CxMOry1T3kKW3cE7IF8OhQzvXjBd9IjOCp941p4uc9R8RPolEvRVV00fiMjUyXQ';
+
+function togglePeriod(){isAnnual=!isAnnual;closePricingCheckout();updatePrices()}
+function setPeriod(p){isAnnual=(p==='annual');closePricingCheckout();updatePrices()}
+
 function updatePrices(){
   var t=document.getElementById('tog'),m=document.getElementById('lm'),a=document.getElementById('la');
   if(t)t.classList.toggle('is-annual',isAnnual);
@@ -591,46 +637,111 @@ function updatePrices(){
     document.getElementById('psp').textContent='';
   }
 }
- 
+
 function toggleCompare(){
   var el=document.getElementById('comp-table');
   if(!el)return;
   el.hidden=!el.hidden;
 }
 function toggleFaq(el){var w=el.classList.contains('open');document.querySelectorAll('.qi').forEach(function(i){i.classList.remove('open')});if(!w)el.classList.add('open')}
- 
+
+function closePricingCheckout(){
+  var c=document.getElementById('pricing-checkout-container');
+  var l=document.getElementById('pricing-checkout-loading');
+  if(pricingCheckoutInstance){pricingCheckoutInstance.destroy();pricingCheckoutInstance=null}
+  if(c){c.style.display='none';c.innerHTML=''}
+  if(l)l.style.display='none';
+}
+
+async function ensurePricingOrg(session){
+  var userId=session.user.id;
+  var pr=await sb.from('profiles').select('org_id,organisation,full_name').eq('id',userId).maybeSingle();
+  if(!pr.data){
+    await sb.from('profiles').insert({
+      id:userId,
+      email:session.user.email,
+      full_name:session.user.user_metadata&&session.user.user_metadata.full_name||session.user.email.split('@')[0]
+    });
+    pr=await sb.from('profiles').select('org_id,organisation,full_name').eq('id',userId).maybeSingle();
+  }
+  if(pr.data&&pr.data.org_id){
+    var byId=await sb.from('organisations').select('id,name,plan,subscription_status').eq('id',pr.data.org_id).maybeSingle();
+    if(byId.data)return byId.data;
+  }
+  var existing=await sb.from('organisations').select('id,name,plan,subscription_status').eq('created_by',userId).limit(1).maybeSingle();
+  if(existing.data){
+    await sb.from('profiles').update({org_id:existing.data.id}).eq('id',userId);
+    return existing.data;
+  }
+  var orgName=(pr.data&&pr.data.organisation)||'My Organisation';
+  var created=await sb.from('organisations').insert({name:orgName,created_by:userId}).select('id,name,plan,subscription_status').maybeSingle();
+  if(created.error||!created.data)throw new Error(created.error&&created.error.message||'Could not create organisation');
+  await sb.from('org_members').insert({org_id:created.data.id,user_id:userId,role:'owner',accepted_at:new Date().toISOString()});
+  await sb.from('profiles').update({org_id:created.data.id}).eq('id',userId);
+  return created.data;
+}
+
 async function subscribe(plan){
-  var r=await sb.auth.getSession();var session=r.data.session;
-  if(!session){window.location.href='login.html?redirect=pricing&plan='+plan+'&period='+(isAnnual?'annual':'monthly');return}
   var priceId=PRICES[plan]?PRICES[plan][isAnnual?'annual':'monthly']:null;
   if(!priceId)return;
-  // Ensure a profile exists (avoids PostgREST 406 from .single() on zero rows),
-  // then open portal plans where org provisioning + embedded checkout run.
-  var pr=await sb.from('profiles').select('org_id').eq('id',session.user.id).maybeSingle();
-  if(!pr.data){
-    // Insert-only; do not write role/paid from the browser.
-    await sb.from('profiles').insert({
-      id:session.user.id,
-      email:session.user.email,
-      full_name:session.user.user_metadata?.full_name||session.user.email.split('@')[0]
-    });
-  }
-  if(!pr.data||!pr.data.org_id){
-    window.location.href='portal.html?goto=plans&plan='+plan+'&period='+(isAnnual?'annual':'monthly');
+
+  var r=await sb.auth.getSession();var session=r.data.session;
+  if(!session){
+    window.location.href='login.html?redirect=pricing&plan='+encodeURIComponent(plan)+'&period='+(isAnnual?'annual':'monthly');
     return;
   }
+
+  var loadEl=document.getElementById('pricing-checkout-loading');
+  var contEl=document.getElementById('pricing-checkout-container');
+  if(contEl.style.display==='block'){contEl.scrollIntoView({behavior:'smooth',block:'start'});return}
+
+  loadEl.style.display='block';
+  contEl.style.display='none';
+  if(!pricingStripe)pricingStripe=Stripe(STRIPE_PK);
+
   try{
-    var res=await fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},body:JSON.stringify({price_id:priceId,org_id:pr.data.org_id})});
+    var org=await ensurePricingOrg(session);
+    var res=await fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+session.access_token,
+        'apikey':SUPABASE_KEY
+      },
+      body:JSON.stringify({price_id:priceId,org_id:org.id,embedded:true})
+    });
     var data=await res.json();
-    if(data.url)window.location.href=data.url;
-    else if(data.existing){alert('Active subscription exists.');window.location.href='portal.html'}
-    else alert(data.error||'Could not start checkout.');
-  }catch(e){alert('Connection error.')}
+    if(data.error){
+      loadEl.style.display='none';
+      if(data.existing){alert('Active subscription exists.');window.location.href='portal.html';return}
+      alert(data.error);return;
+    }
+    if(!data.clientSecret){loadEl.style.display='none';alert('Could not load checkout.');return}
+
+    if(pricingCheckoutInstance)pricingCheckoutInstance.destroy();
+    pricingCheckoutInstance=await pricingStripe.initEmbeddedCheckout({clientSecret:data.clientSecret});
+    loadEl.style.display='none';
+    contEl.innerHTML='<div class="pricing-checkout__head"><span>Complete your '+(plan==='professional'?'Professional':'Essentials')+' subscription</span><button type="button" class="pricing-checkout__cancel" onclick="closePricingCheckout()">Cancel</button></div><div id="pricing-checkout-mount"></div>';
+    contEl.style.display='block';
+    pricingCheckoutInstance.mount('#pricing-checkout-mount');
+    setTimeout(function(){contEl.scrollIntoView({behavior:'smooth',block:'start'})},100);
+  }catch(e){
+    loadEl.style.display='none';
+    console.error(e);
+    alert(e.message||'Could not load checkout. Please try again.');
+  }
 }
- 
-(function(){var p=new URLSearchParams(window.location.search);var plan=p.get('plan');var period=p.get('period');if(plan&&PRICES[plan]){if(period==='annual'){isAnnual=true;updatePrices()}setTimeout(function(){subscribe(plan)},500)}})();
- 
-// Fade-in observer — matching homepage
+
+(function(){
+  var p=new URLSearchParams(window.location.search);
+  var plan=p.get('plan');
+  var period=p.get('period');
+  if(plan&&PRICES[plan]){
+    if(period==='annual'){isAnnual=true;updatePrices()}
+    setTimeout(function(){subscribe(plan)},500);
+  }
+})();
+
 var io=new IntersectionObserver(function(entries){entries.forEach(function(e,i){if(e.isIntersecting){setTimeout(function(){e.target.classList.add('in')},i*90);io.unobserve(e.target)}})},{threshold:0.1});
 document.querySelectorAll('.fade').forEach(function(el){io.observe(el)});
 </script>
