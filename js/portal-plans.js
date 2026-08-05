@@ -51,8 +51,8 @@ function renderPortalPricingCards(){
   var ePrice=portalAnnual?'1,290':'129';
   var pPrice=portalAnnual?'2,490':'249';
   var per=portalAnnual?'/year':'/month';
-  var eSave=portalAnnual?'<div class="plan-card__save">£107.50/mo · save £258/yr</div>':'';
-  var pSave=portalAnnual?'<div class="plan-card__save">£207.50/mo · save £498/yr</div>':'';
+  var eSave=portalAnnual?'<div class="plan-card__save">Save £258/yr</div>':'';
+  var pSave=portalAnnual?'<div class="plan-card__save">Save £498/yr</div>':'';
   var essCurrent=plan==='essentials'&&isActive;
   var proCurrent=plan==='professional'&&isActive;
 
@@ -66,11 +66,11 @@ function renderPortalPricingCards(){
       eSave+
       '<div class="plan-card__rule"></div>'+
       '<div class="plan-card__feats">'+
-        planFeature('Governance certificate &amp; PDF',true)+
+        planFeature('Governance Certificate',true)+
         planFeature('Public verification page',true)+
-        planFeature('PDF assessment reports',true)+
-        planFeature('Full governance framework',false)+
-        planFeature('Email support',false)+
+        planFeature('Assessment reports',true)+
+        planFeature('Full governance framework',true)+
+        planFeature('Email support',true)+
       '</div>'+
       planCta('essentials','Get started',essCurrent)+
     '</div>'+
@@ -86,8 +86,8 @@ function renderPortalPricingCards(){
         planFeature('Unlimited AI systems',true)+
         planFeature('Multi-user access (5 seats)',true)+
         planFeature('Organisation-wide certification',true)+
-        planFeature('Compliance automation',false)+
-        planFeature('Priority support',false)+
+        planFeature('Compliance automation',true)+
+        planFeature('Priority support',true)+
       '</div>'+
       planCta('professional','Upgrade to Professional',proCurrent)+
     '</div>'+
@@ -100,13 +100,13 @@ function renderPortalPricingCards(){
       '<div class="plan-card__save">Tailored to your organisation</div>'+
       '<div class="plan-card__rule"></div>'+
       '<div class="plan-card__feats">'+
-        planFeature('Everything in Professional',false)+
-        planFeature('Unlimited users',false)+
-        planFeature('Dedicated advisory lead',false)+
-        planFeature('On-site sessions &amp; benchmarking',false)+
-        planFeature('Custom SLA',false)+
+        planFeature('Everything in Professional',true)+
+        planFeature('Unlimited users',true)+
+        planFeature('Dedicated advisory lead',true)+
+        planFeature('On-site sessions &amp; benchmarking',true)+
+        planFeature('Custom SLA',true)+
       '</div>'+
-      '<a href="#" class="btn-topbar btn-topbar-ghost plan-card__cta" onclick="openEnterpriseModal();return false;" style="text-decoration:none;text-align:center;">Design your governance function</a>'+
+      '<a href="#" class="btn-topbar btn-topbar-ink plan-card__cta" onclick="openEnterpriseModal();return false;" style="text-decoration:none;text-align:center;">Design your governance function</a>'+
     '</div>'+
   '</div>'+
 
@@ -120,7 +120,7 @@ function renderPortalPricingCards(){
       portalCompData('Governance diagnostic','y','y','y','y')+
       portalCompData('Maturity score &amp; risk band','y','y','y','y')+
       portalCompData('7-domain system assessment','y','y','y','y')+
-      portalCompData('PDF assessment reports','n','y','y','y')+
+      portalCompData('Assessment reports','n','y','y','y')+
       portalCompRow('Registry &amp; Systems')+
       portalCompData('AI systems in registry','1','1','Unlimited','Unlimited')+
       portalCompData('EU AI Act risk classification','y','y','y','y')+
@@ -184,12 +184,12 @@ function openUpgradeModal(contextMsg){
   }
 
   var essCard=miniCard('Essentials','Governance','Certified governance maturity with a publicly verifiable certificate.','129',
-    ['Governance certificate','PDF assessment reports','1 AI system'],
+    ['Governance Certificate','Assessment reports','1 AI system'],
     '<button class="btn-topbar btn-topbar-primary plan-card__cta" onclick="closeUpgradeModal();portalAnnual=false;navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();setTimeout(function(){portalSubscribe(\'essentials\')},300)">Get started</button>');
 
   var proCard=miniCard('Professional','Compliance','Unlimited systems, multi-user access, and audit-ready coverage.','249',
     ['Unlimited AI systems','Multi-user (5 seats)','Organisation-wide certification'],
-    '<button class="btn-topbar btn-topbar-ghost plan-card__cta" onclick="closeUpgradeModal();portalAnnual=false;navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();setTimeout(function(){portalSubscribe(\'professional\')},300)">Upgrade to Professional</button>');
+    '<button class="btn-topbar btn-topbar-primary plan-card__cta" onclick="closeUpgradeModal();portalAnnual=false;navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();setTimeout(function(){portalSubscribe(\'professional\')},300)">Upgrade to Professional</button>');
 
   var entCard='<div class="plan-card plan-card--modal">'+
     '<div class="plan-card__tier">Enterprise</div>'+
@@ -197,11 +197,11 @@ function openUpgradeModal(contextMsg){
     '<div class="plan-card__desc">Bespoke governance infrastructure for multi-jurisdiction obligations.</div>'+
     '<div class="plan-card__price"><span class="plan-card__num ra-num" style="font-size:22px;">Bespoke</span></div>'+
     '<div class="plan-card__feats">'+
-      planFeature('Everything in Professional',false)+
-      planFeature('Unlimited users',false)+
-      planFeature('Dedicated advisory lead',false)+
+      planFeature('Everything in Professional',true)+
+      planFeature('Unlimited users',true)+
+      planFeature('Dedicated advisory lead',true)+
     '</div>'+
-    '<button class="btn-topbar btn-topbar-ghost plan-card__cta" onclick="closeUpgradeModal();openEnterpriseModal()">Contact us</button>'+
+    '<button class="btn-topbar btn-topbar-ink plan-card__cta" onclick="closeUpgradeModal();openEnterpriseModal()">Contact us</button>'+
   '</div>';
 
   if(plan==='professional'&&isActive){

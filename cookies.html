@@ -40,7 +40,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 .content{max-width:900px;margin:0 auto;padding:0 60px 88px}
 .section{margin-bottom:44px;padding-bottom:44px;border-bottom:1px solid var(--border)}
 .section:last-child{border-bottom:none}
-.section-num{font-family:var(--font-brand);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:14px}
+.section-num{font-family:var(--font-brand);font-size:.62rem;letter-spacing:-0.01em;text-transform:none;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:14px}
 .section-num::after{content:'';display:block;width:60px;height:1px;background:var(--border)}
 .section-title{font-family:var(--font-brand);font-size:1.35rem;font-weight:500;color:var(--text-1);margin-bottom:18px;letter-spacing:-.02em}
 .body-text{font-size:.9rem;color:var(--text-2);line-height:1.8;margin-bottom:16px}
@@ -54,11 +54,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 .info-block p{font-size:.88rem;color:var(--text-2);line-height:1.7;margin-bottom:6px}
 .info-block p:last-child{margin-bottom:0}
 .info-block strong{color:var(--text-1)}
-.quiet-details{margin-top:12px}
-.quiet-details summary{cursor:pointer;font-size:.8rem;color:var(--text-3);list-style:none}
-.quiet-details summary::-webkit-details-marker{display:none}
-.quiet-details[open] summary{margin-bottom:10px;color:var(--text-2)}
-.quiet-details p{margin-bottom:6px}
 
 /* DATA TABLE */
 .data-tbl{width:100%;border-collapse:collapse;margin:20px 0;border:1px solid var(--border)}
@@ -93,7 +88,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 <div class="ra-anchor-line ra-anchor-line--entrance" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:99;"><div class="ra-anchor-line__seg"></div></div>
 
 <div class="hero">
-  <div class="hero-eyebrow">Legal Documentation</div>
   <h1 class="hero-title">Cookie Policy</h1>
   <div class="hero-meta">
     <span>Effective date: 1 March 2026</span>
@@ -190,13 +184,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
     <p class="body-text">We review this policy when our technology changes and at least annually. Material changes will be reflected in the effective date at the top of this page.</p>
     <div class="info-block">
       <div class="info-block-lbl">Contact</div>
-      <p>Email: <a href="mailto:info@reganchor.com">info@reganchor.com</a></p>
-      <details class="quiet-details">
-        <summary>Registered office and telephone</summary>
-        <p><strong>MLA Group Ltd</strong></p>
-        <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
-        <p>Tel: 0151 558 0162</p>
-      </details>
+      <p><strong>MLA Group Ltd</strong></p>
+      <p>Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB</p>
+      <p>Email: <a href="mailto:info@mlagroup.co.uk">info@mlagroup.co.uk</a></p>
+      <p>Tel: 0151 558 0162</p>
     </div>
     <p class="body-text">If you are unhappy with how we handle your data, you may complain to the Information Commissioner's Office at <a href="https://ico.org.uk" target="_blank" rel="noopener">ico.org.uk</a>.</p>
   </div>
