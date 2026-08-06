@@ -764,7 +764,7 @@ function priceIdFor(plan){
 }
 function stripePk(){
   var k=window.RA_STRIPE.publishableKey();
-  if(!k)alert('Stripe test publishable key is missing. Add pk_test_… in js/stripe-config.js');
+  if(!k)alert('Stripe publishable key is missing. Check mode and keys in js/stripe-config.js');
   return k;
 }
 

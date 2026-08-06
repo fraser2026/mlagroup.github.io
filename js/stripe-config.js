@@ -19,7 +19,7 @@
   var TEST_PK = ''; // e.g. pk_test_51SVuGR...
 
   var cfg = {
-    mode: 'test', // 'test' | 'live'
+    mode: 'live', // 'test' | 'live'
 
     keys: {
       test: TEST_PK,
