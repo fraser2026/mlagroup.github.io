@@ -1003,13 +1003,6 @@ document.addEventListener('keydown',function(e){
 });
 
 (function(){
-  if(window.RA_STRIPE&&window.RA_STRIPE.isTest()){
-    var ban=document.createElement('div');
-    ban.style.cssText='position:fixed;top:0;left:0;right:0;z-index:200;background:#0A0E14;color:#fff;font-size:12px;text-align:center;padding:6px 10px;';
-    ban.textContent='Stripe test mode — payments use test cards only';
-    document.body.appendChild(ban);
-    document.body.style.paddingTop='28px';
-  }
   var p=new URLSearchParams(window.location.search);
   var plan=p.get('plan');
   var period=p.get('period');

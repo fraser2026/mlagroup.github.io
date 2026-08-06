@@ -92,12 +92,6 @@
       cursor:pointer; text-decoration:underline;
     }
     .loading { text-align:center; padding:36px 12px; font-size:0.85rem; color:var(--muted); }
-    .test-banner {
-      position:fixed; top:0; left:0; right:0; z-index:50;
-      background:#0A0E14; color:#fff; font-size:0.72rem; text-align:center; padding:6px 12px;
-    }
-    .test-banner strong { font-weight:600; }
-    .backdrop.has-test { padding-top:40px; }
     @media (max-width:480px) {
       .modal__body { padding:22px 18px 26px; }
       .field-row { grid-template-columns:1fr; }
@@ -105,9 +99,6 @@
   </style>
 </head>
 <body>
-<div id="test-banner" class="test-banner" style="display:none;">
-  <strong>Stripe test mode</strong> — use card <code>4242 4242 4242 4242</code>, any future expiry, any CVC
-</div>
 <div class="backdrop" id="backdrop">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal__bar"></div>
@@ -311,10 +302,6 @@ window.addEventListener('load', async function(){
   if(!STRIPE_SESSION_ID){show('state-error');return}
 
   const info=await loadSessionInfo();
-  if(info&&info.testMode){
-    document.getElementById('test-banner').style.display='block';
-    document.getElementById('backdrop').classList.add('has-test');
-  }
   if(info&&info.email){
     document.getElementById('su-email').value=info.email;
     document.getElementById('si-email').value=info.email;
