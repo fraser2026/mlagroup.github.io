@@ -82,7 +82,7 @@
     <h2>Reganchor Revenue Model</h2>
     
     <div class="input-group">
-        <label>Diagnostic Reports Issued (£85 one-time)</label>
+        <label>Diagnostic Reports Issued (£285 one-time)</label>
         <input type="number" id="diagnostics" value="50" oninput="calculate()">
     </div>
     
@@ -130,7 +130,7 @@ function calculate() {
     const enterpriseCount = parseFloat(document.getElementById('enterpriseCount').value) || 0;
     const enterprisePrice = parseFloat(document.getElementById('enterprisePrice').value) || 0;
 
-    const diagRev = diagnostics * 85;
+    const diagRev = diagnostics * 285;
     const mrr = (essentials * 129) + (professional * 249) + (enterpriseCount * enterprisePrice);
     const arr = (mrr * 12) + diagRev;
 
