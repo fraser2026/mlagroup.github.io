@@ -299,6 +299,30 @@ async function doSignin(){
 
 window.addEventListener('load', async function(){
   document.getElementById('plan-chip').textContent=planLabel(PLAN)+' plan';
+
+  // Design/preview: no Stripe — force UI states for UX work
+  // ?preview=1|signup|signin|success|error|loading
+  var preview=urlParams.get('preview');
+  if(preview!==null&&preview!==''){
+    var stateMap={
+      '1':'state-signup','true':'state-signup','signup':'state-signup',
+      'signin':'state-signin','success':'state-success','error':'state-error','loading':'state-loading'
+    };
+    var target=stateMap[String(preview).toLowerCase()]||'state-signup';
+    document.getElementById('su-name').value='Jane Smith';
+    document.getElementById('su-email').value='jane@company.com';
+    document.getElementById('si-email').value='jane@company.com';
+    document.getElementById('su-org').value='Acme Ltd';
+    document.getElementById('su-title').value='Risk / compliance';
+    if(target==='state-success'){
+      document.getElementById('success-copy').textContent=
+        'Your '+planLabel(PLAN)+' plan is linked to your organisation. (preview — no charge)';
+    }
+    document.title='[Preview] '+document.title;
+    show(target);
+    return;
+  }
+
   if(!STRIPE_SESSION_ID){show('state-error');return}
 
   const info=await loadSessionInfo();

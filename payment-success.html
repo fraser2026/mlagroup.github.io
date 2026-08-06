@@ -403,6 +403,30 @@
   // ── Main flow on page load ──
   window.addEventListener('load', async () => {
     try {
+      // Design/preview: no Stripe. ?preview=1|signup|success|activating|error|loading
+      const preview = urlParams.get('preview');
+      if (preview !== null && preview !== '') {
+        const map = {
+          '1': 'state-signup', true: 'state-signup', signup: 'state-signup',
+          success: 'state-success', activating: 'state-activating',
+          error: 'state-error', loading: 'state-loading'
+        };
+        const target = map[String(preview).toLowerCase()] || 'state-signup';
+        document.getElementById('su-first').value = 'Jane';
+        document.getElementById('su-last').value = 'Smith';
+        document.getElementById('su-email').value = 'jane@company.com';
+        if (target === 'state-success' || target === 'state-signup') {
+          document.getElementById('nav-status').style.display = 'flex';
+        }
+        if (target === 'state-activating') {
+          const bar = document.getElementById('progress-bar');
+          if (bar) bar.style.width = '55%';
+        }
+        document.title = '[Preview] ' + document.title;
+        show(target);
+        return;
+      }
+
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
         // ── Already logged in: call link-diagnostic, then poll ──

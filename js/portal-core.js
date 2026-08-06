@@ -144,7 +144,19 @@ function closeSidebar(){
  
 // ═══ INIT ═════════════════════════════════════════════════════
 async function init(){
-  const{data:{session}}=await sb.auth.getSession();if(!session){window.location.href='login.html';return}
+  const urlPreview=new URLSearchParams(window.location.search);
+  const isPreview=urlPreview.get('preview')==='1'||urlPreview.get('preview')==='true';
+
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){
+    if(isPreview){
+      // Design mode: stay out of login so subscription return UX can be shaped offline
+      showPortalSubscriptionPreview(urlPreview.get('plan')||'essentials');
+      return;
+    }
+    window.location.href='login.html';
+    return;
+  }
   currentUser=session.user;
   // maybeSingle avoids PostgREST 406 when the profile row is missing (common after
   // auth signup without a successful profiles insert).
@@ -187,6 +199,30 @@ async function init(){
   history.replaceState({view:'dashboard'},'','#dashboard');
   // Always provision org — subscriptions need currentOrg even when org_id is still null.
   ensureOrg().then(()=>Promise.all([loadSystems(),loadControls(),refreshSidebarContext()])).then(()=>{renderDashboard(paidIds);loadScoreHistory();loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
+}
+
+function showPortalSubscriptionPreview(plan){
+  document.title='[Preview] Portal | RegAnchor';
+  var app=document.querySelector('.app');
+  if(app)app.style.display='none';
+  var planLabel=plan==='professional'?'Professional':'Essentials';
+  var wrap=document.createElement('div');
+  wrap.id='portal-sub-preview';
+  wrap.innerHTML=
+    '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--ra-bg,#fff);font-family:var(--ra-font-product,Inter,sans-serif);">'+
+      '<div style="width:100%;max-width:440px;border:1px solid var(--ra-border,#E6EBF1);padding:32px 28px;">'+
+        '<div style="height:3px;background:var(--ra-blurple,#533AFD);margin:-32px -28px 24px;width:calc(100% + 56px);"></div>'+
+        '<div style="font-size:0.68rem;letter-spacing:0.08em;color:var(--ra-text-3,#697386);margin-bottom:8px;">Payment confirmed · preview</div>'+
+        '<h1 style="font-family:var(--ra-font-brand,\'IBM Plex Sans\',sans-serif);font-size:1.5rem;font-weight:500;color:var(--ra-ink,#0A0E14);letter-spacing:-0.02em;line-height:1.2;margin:0 0 10px;">'+planLabel+' is<br><span style="color:var(--ra-text-3,#697386);font-weight:400;">now active.</span></h1>'+
+        '<p style="font-size:0.85rem;color:var(--ra-text-2,#425466);line-height:1.6;margin:0 0 22px;">Your organisation subscription is linked. Continue to the dashboard, register systems, or open the plans page to manage billing.</p>'+
+        '<div style="display:flex;flex-direction:column;gap:8px;">'+
+          '<a href="portal.html" style="display:block;text-align:center;padding:12px 16px;background:var(--ra-blurple,#533AFD);color:#fff;text-decoration:none;font-size:0.88rem;font-weight:500;border-radius:4px;">Open portal (sign in if needed)</a>'+
+          '<a href="portal.html?goto=plans" style="display:block;text-align:center;padding:11px 16px;border:1px solid var(--ra-border,#E6EBF1);color:var(--ra-ink,#0A0E14);text-decoration:none;font-size:0.84rem;border-radius:4px;">View subscription plans</a>'+
+          '<a href="design-checkout.html" style="display:block;text-align:center;padding:10px;color:var(--ra-text-3,#697386);font-size:0.78rem;text-decoration:none;">← Design launcher</a>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  document.body.appendChild(wrap);
 }
 
 async function refreshSidebarContext(){

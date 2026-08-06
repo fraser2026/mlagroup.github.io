@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout journey design | RegAnchor</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
+  <style>
+    :root {
+      --bg: var(--ra-bg, #FFFFFF);
+      --border: var(--ra-line, #E6EBF1);
+      --main: var(--ra-ink, #0A0E14);
+      --sub: var(--ra-text-2, #425466);
+      --muted: var(--ra-text-3, #697386);
+      --accent: var(--ra-blurple, #533AFD);
+      --font-brand: var(--ra-font-brand, 'IBM Plex Sans', sans-serif);
+      --font-body: var(--ra-font-product, 'Inter', sans-serif);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      color: var(--sub);
+      background: var(--bg);
+      min-height: 100vh;
+      padding: 48px 24px 64px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    .wordmark {
+      font-family: var(--font-brand);
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--main);
+      letter-spacing: -0.02em;
+      text-decoration: none;
+    }
+    h1 {
+      font-family: var(--font-brand);
+      font-size: 1.75rem;
+      font-weight: 500;
+      letter-spacing: -0.025em;
+      color: var(--main);
+      margin: 28px 0 8px;
+      line-height: 1.2;
+    }
+    .lead { font-size: 0.9rem; line-height: 1.6; color: var(--sub); max-width: 38em; margin-bottom: 8px; }
+    .note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      margin: 20px 0 28px;
+      line-height: 1.5;
+    }
+    .section {
+      border-top: 1px solid var(--border);
+      padding: 22px 0 8px;
+      margin-top: 8px;
+    }
+    .section h2 {
+      font-family: var(--font-brand);
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--main);
+      margin-bottom: 4px;
+    }
+    .section p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .links { display: flex; flex-wrap: wrap; gap: 8px; }
+    a.pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      color: var(--main);
+      text-decoration: none;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    a.pill:hover { border-color: var(--main); background: var(--ra-hover, rgba(17,17,17,0.028)); }
+    a.pill.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    a.pill.primary:hover { opacity: 0.92; background: var(--accent); }
+    code {
+      font-size: 0.74rem;
+      background: var(--ra-hover, rgba(17,17,17,0.04));
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .foot {
+      margin-top: 36px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .foot a { color: var(--main); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="index.html" class="wordmark ra-wordmark">RegAnchor</a>
+    <h1>Checkout journey design</h1>
+    <p class="lead">
+      Open real after-checkout screens with fake data. No Stripe keys, no charges, no webhooks.
+      Use this while shaping the experience for the three paid surfaces.
+    </p>
+    <div class="note">
+      Query flag: <code>?preview=1</code> (or a state name). Production checkout ignores this unless the parameter is present.
+      This page is for local / internal design — not linked from public nav.
+    </div>
+
+    <div class="section">
+      <h2>1. Public pricing — Essentials / Professional</h2>
+      <p>Guest pays on pricing → land on subscription claim modal (create account).</p>
+      <div class="links">
+        <a class="pill primary" href="subscription-success.html?preview=1&amp;plan=essentials">Signup modal (Essentials)</a>
+        <a class="pill" href="subscription-success.html?preview=1&amp;plan=professional">Signup modal (Professional)</a>
+        <a class="pill" href="subscription-success.html?preview=signin&amp;plan=essentials">Sign-in state</a>
+        <a class="pill" href="subscription-success.html?preview=success&amp;plan=essentials">Activated success</a>
+        <a class="pill" href="subscription-success.html?preview=error">Error state</a>
+        <a class="pill" href="subscription-success.html?preview=loading">Loading state</a>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>2. Diagnostic report — £295 one-off</h2>
+      <p>Results → pay → payment-success (unlock report / create account).</p>
+      <div class="links">
+        <a class="pill primary" href="payment-success.html?preview=1">Signup (report access)</a>
+        <a class="pill" href="payment-success.html?preview=success">Report unlocked</a>
+        <a class="pill" href="payment-success.html?preview=activating">Activating…</a>
+        <a class="pill" href="payment-success.html?preview=error">Error state</a>
+        <a class="pill" href="payment-success.html?preview=loading">Loading state</a>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>3. Portal subscription upgrade</h2>
+      <p>Signed-in plans page → Checkout → return. Preview below works without signing in.</p>
+      <div class="links">
+        <a class="pill primary" href="portal.html?preview=1&amp;subscription=success&amp;plan=essentials">Portal activated (Essentials)</a>
+        <a class="pill" href="portal.html?preview=1&amp;subscription=success&amp;plan=professional">Portal activated (Professional)</a>
+        <a class="pill" href="portal.html?goto=plans">Real plans page (needs login)</a>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Where buyers start (live entry points)</h2>
+      <p>Optional: inspect pre-pay UI. These still hit real Stripe when you click pay.</p>
+      <div class="links">
+        <a class="pill" href="pricing.html">pricing.html</a>
+        <a class="pill" href="results.html">results.html</a>
+        <a class="pill" href="portal.html?goto=plans">portal plans</a>
+      </div>
+    </div>
+
+    <p class="foot">
+      Flip back to live payments later via <code>js/stripe-config.js</code> and Supabase secrets —
+      not needed for this design loop. See <a href="docs/STRIPE-TEST-MODE.md">docs/STRIPE-TEST-MODE.md</a>.
+    </p>
+  </div>
+</body>
+</html>
