@@ -1227,6 +1227,18 @@ a.btn-topbar-ink:hover {
 .obligation-select:focus,
 .obligation-evidence:focus { border-color: var(--ra-blurple) }
 
+/* Enterprise inquiry modal only — lighter placeholders (match contact.html) */
+#enterprise-modal .field-input::placeholder {
+  color: var(--ra-slate-30, #A3ACB9);
+  opacity: 1;
+}
+#enterprise-modal select.field-input:has(option[value=""]:checked) {
+  color: var(--ra-slate-30, #A3ACB9);
+}
+#enterprise-modal select.field-input option {
+  color: var(--ra-text, var(--main, #0A0E14));
+}
+
 .field-input[disabled] { opacity: .5; cursor: not-allowed; background: var(--ra-bg-raised) }
 
 select.field-input, .obligation-select { cursor: pointer; color-scheme: light; width: auto; min-width: 160px }

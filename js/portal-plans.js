@@ -109,7 +109,7 @@ function renderPortalPricingCards(){
         planFeature('On-site sessions &amp; benchmarking',true)+
         planFeature('Custom SLA',true)+
       '</div>'+
-      '<a href="#" class="btn-topbar btn-topbar-ink plan-card__cta" onclick="openEnterpriseModal();return false;" style="text-decoration:none;text-align:center;">Design your governance function</a>'+
+      '<a href="#" class="btn-topbar btn-topbar-ink plan-card__cta" onclick="openEnterpriseModal();return false;" style="text-decoration:none;text-align:center;">Talk to advisory</a>'+
     '</div>'+
   '</div>'+
 
@@ -264,8 +264,15 @@ async function submitEnterpriseInquiry(){
     await sb.from('enterprise_inquiries').insert({org_id:currentOrg?currentOrg.id:null,user_id:currentUser?currentUser.id:null,full_name:name,email:email,organisation:orgName,role_title:role||null,system_count:systems||null,requirements:reqs.length?reqs:null,message:message||null});
     try{
       if(typeof emailjs!=='undefined'){
-        emailjs.init('vxitc5LFJHMfNcmUL');
-        await emailjs.send('service_umdte26','template_o6h9et7',{to_name:'Fraser',to_email:'fraser@mlagroup.co.uk',alert_title:'Enterprise Inquiry: '+name,alert_body:'Name: '+name+' | Role: '+(role||'Not specified')+' | Email: '+email+' | Organisation: '+orgName+' | AI Systems: '+(systems||'Not specified')+' | Requirements: '+(reqs.length?reqs.join(', '):'None selected')+' | Message: '+(message||'No message')});
+        var C=window.RA_CONTACT||{};
+        var ej=C.emailjs||{};
+        emailjs.init(ej.publicKey||'vxitc5LFJHMfNcmUL');
+        await emailjs.send(ej.opsService||'service_umdte26',ej.opsTemplate||'template_o6h9et7',{
+          to_name:'RegAnchor',
+          to_email:C.ops||'info@reganchor.com',
+          alert_title:'Enterprise inquiry: '+name,
+          alert_body:'Name: '+name+' | Role: '+(role||'Not specified')+' | Email: '+email+' | Organisation: '+orgName+' | AI Systems: '+(systems||'Not specified')+' | Requirements: '+(reqs.length?reqs.join(', '):'None selected')+' | Message: '+(message||'No message')
+        });
       }
     }catch(eml){console.log('Email notification skipped')}
     if(currentOrg){await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'enterprise_inquiry',entity_type:'organisation',entity_id:currentOrg.id,changes:{_actor_name:actorName(),requirements:reqs}})}

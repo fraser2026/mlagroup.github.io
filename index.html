@@ -210,22 +210,89 @@
       font-style:normal; font-weight:400; color:var(--muted);
       display:inline-block; min-height:1.1em;
     }
-    .type-line::after {
-      content:'';
-      display:inline-block;
-      width:0.08em;
-      height:0.85em;
-      margin-left:0.06em;
-      background:var(--muted);
-      vertical-align:-0.05em;
-      opacity:0;
-      transition:opacity 0.15s;
+    /* Vertical line rotate — hero carousel + section accent words */
+    .hero-type-line {
+      display:inline-grid;
+      justify-items:center;
+      vertical-align:top;
+      white-space:nowrap;
+      max-width:none;
     }
-    .type-line.is-typing::after { opacity:0.55; animation: typeCaret 0.7s steps(1) infinite; }
-    @keyframes typeCaret { 50% { opacity:0; } }
+    .hero-type-line__sizer,
+    .hero-type-line .line-rotate {
+      grid-area:1 / 1;
+      white-space:nowrap;
+      font-style:normal;
+      font-weight:400;
+      font-family:inherit;
+      font-size:inherit;
+      line-height:inherit;
+      letter-spacing:inherit;
+      color:var(--muted);
+      min-height:1.1em;
+    }
+    .hero-type-line__sizer {
+      visibility:hidden;
+      pointer-events:none;
+      user-select:none;
+    }
+    .line-rotate {
+      display:inline-grid;
+      justify-items:center;
+      align-items:center;
+      overflow:hidden;
+      position:relative;
+      vertical-align:baseline;
+      white-space:nowrap;
+      font-style:normal;
+      font-weight:400;
+      color:var(--muted);
+      min-height:1.1em;
+    }
+    h2 .line-rotate {
+      display:inline-grid;
+      vertical-align:baseline;
+    }
+    .hero-type-line .line-rotate {
+      display:grid;
+      width:100%;
+      vertical-align:top;
+    }
+    .line-rotate__item {
+      grid-area:1 / 1;
+      display:block;
+      white-space:nowrap;
+      font:inherit;
+      font-style:normal;
+      font-weight:inherit;
+      color:inherit;
+      letter-spacing:inherit;
+      text-align:inherit;
+      will-change:transform, opacity;
+      transition:
+        transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.45s ease;
+    }
+    .hero-type-line .line-rotate__item {
+      width:100%;
+      text-align:center;
+    }
+    .line-rotate__item[data-state="in"] {
+      transform:translateY(0);
+      opacity:1;
+    }
+    .line-rotate__item[data-state="exit"] {
+      transform:translateY(-108%);
+      opacity:0;
+    }
+    .line-rotate__item[data-state="enter"] {
+      transform:translateY(108%);
+      opacity:0;
+    }
     @media (prefers-reduced-motion: reduce) {
-      .type-line::after { display:none; }
-      .type-line.is-typing::after { animation:none; opacity:0; }
+      .line-rotate__item {
+        transition:none;
+      }
     }
 
     .hero-sub {
@@ -784,7 +851,7 @@
     <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
     <div class="nav-right">
       <a href="login.html" class="nav-signin">Sign in</a>
-      <a href="diagnostic.html" class="nav-cta">Get Started</a>
+      <a href="diagnostic.html" class="nav-cta">Get started</a>
     </div>
     <div class="hamburger" id="ham" onclick="toggleMob()">
       <span></span><span></span><span></span>
@@ -796,7 +863,7 @@
 <div class="mob-menu" id="mobMenu">
   <a href="login.html" class="mob-link">Sign in</a>
   <a href="diagnostic.html" class="mob-cta">
-    Get Started
+    Get started
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
 </div>
@@ -804,7 +871,7 @@
 <!-- 1. HERO -->
 <section>
   <div class="hero fade">
-    <h1>Evidence your<br>AI Governance.<br><em class="type-line" data-type="Before they ask for it." aria-label="Before they ask for it."></em></h1>
+    <h1>Evidence your<br>AI Governance.<br><span class="hero-type-line"><span class="hero-type-line__sizer" aria-hidden="true">Before regulation lands.</span><span class="line-rotate" data-phrases="Before they ask for it.|Before exposure begins.|Before regulation lands." aria-live="polite" aria-label="Before they ask for it. Before exposure begins. Before regulation lands."></span></span></h1>
     <p class="hero-sub">Register AI systems, map regulatory obligations, and build audit-ready evidence for your board and regulators</p>
     <div class="hero-actions">
       <a href="diagnostic.html" class="btn-primary">
@@ -875,7 +942,7 @@
       </div>
     </div>
     <div class="system-explore fade">
-      <a href="#" class="feat-cta" onclick="return false;">Explore the full platform</a>
+      <a href="product.html" class="feat-cta">Explore the full platform</a>
     </div>
   </div>
 </section>
@@ -933,7 +1000,7 @@
 <section id="entry" class="entry-section">
   <div class="wrap section-pad">
     <div class="entry-header fade">
-      <h2>Get <em>Started.</em></h2>
+      <h2>Get <em>started.</em></h2>
     </div>
     <div class="entry-grid">
       <div class="entry-card fade">
@@ -964,14 +1031,14 @@
 <section class="cta-section">
   <div class="wrap section-pad">
     <div class="cta-box fade">
-      <h2>Know your exposure.<br><em class="type-line" data-type="Before you’re asked." aria-label="Before you’re asked."></em></h2>
+      <h2>Know your exposure.<br><em class="line-rotate" data-phrases="Before you’re asked." aria-label="Before you’re asked."></em></h2>
       <p>Every organisation deploying AI creates a record. Make sure yours exists. Assess your exposure, build your governance foundation, and maintain the evidence needed for accountability.</p>
       <div class="cta-actions">
         <a href="diagnostic.html" class="btn-primary">
           Start Assessment
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="var(--bg)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
-        <a href="#" class="btn-ghost" onclick="return false;">View Platform</a>
+        <a href="product.html" class="btn-ghost">View Platform</a>
       </div>
     </div>
   </div>
@@ -1414,62 +1481,111 @@
     mio.observe(root);
   })();
 
-  // Muted accent typewriter (hero + close) — replays each time the section enters view.
+  // Vertical line rotate — carousel for multi phrases; single accents enter once per view.
+  // Restarts whenever the observed root leaves and re-enters the viewport.
   (function () {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const ms = 28;
-    const timers = new WeakMap();
+    const rotateState = new WeakMap();
+    const holdMs = 2800;
+    const transMs = reduce ? 0 : 560;
 
-    function stopType(el) {
-      const id = timers.get(el);
-      if (id) {
-        clearTimeout(id);
-        timers.delete(el);
-      }
-      el.classList.remove('is-typing');
+    function stopRotate(el) {
+      const st = rotateState.get(el);
+      if (!st) return;
+      if (st.holdTimer) clearTimeout(st.holdTimer);
+      if (st.transTimer) clearTimeout(st.transTimer);
+      rotateState.delete(el);
+      el.innerHTML = '';
     }
 
-    function typeLine(el) {
-      const full = el.getAttribute('data-type') || '';
-      if (!full) return;
-      stopType(el);
+    function makeItem(text, state) {
+      const span = document.createElement('span');
+      span.className = 'line-rotate__item';
+      span.setAttribute('data-state', state);
+      span.textContent = text;
+      return span;
+    }
+
+    function paintIn(node) {
       if (reduce) {
-        el.textContent = full;
+        node.setAttribute('data-state', 'in');
         return;
       }
-      el.textContent = '';
-      el.classList.add('is-typing');
-      let i = 0;
-      const tick = () => {
-        i += 1;
-        el.textContent = full.slice(0, i);
-        if (i < full.length) {
-          timers.set(el, setTimeout(tick, ms));
-        } else {
-          el.classList.remove('is-typing');
-          timers.delete(el);
-        }
-      };
-      timers.set(el, setTimeout(tick, 160));
+      void node.offsetWidth;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          node.setAttribute('data-state', 'in');
+        });
+      });
     }
 
-    function watchTypeLine(el, root) {
+    function startRotate(el, phrases) {
+      stopRotate(el);
+      if (!phrases.length) return;
+
+      let index = 0;
+      const multi = phrases.length > 1 && !reduce;
+
+      const first = makeItem(phrases[0], reduce ? 'in' : 'enter');
+      el.appendChild(first);
+      paintIn(first);
+
+      if (!multi) {
+        rotateState.set(el, { holdTimer: null, transTimer: null, index: 0, busy: false });
+        return;
+      }
+
+      const st = { holdTimer: null, transTimer: null, index: 0, busy: false };
+      rotateState.set(el, st);
+
+      const advance = () => {
+        if (!rotateState.get(el) || st.busy) return;
+        st.busy = true;
+        const nextIndex = (index + 1) % phrases.length;
+        const outgoing = el.querySelector('.line-rotate__item[data-state="in"]');
+        const incoming = makeItem(phrases[nextIndex], 'enter');
+        el.appendChild(incoming);
+
+        void incoming.offsetWidth;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (outgoing) outgoing.setAttribute('data-state', 'exit');
+            incoming.setAttribute('data-state', 'in');
+          });
+        });
+
+        st.transTimer = setTimeout(() => {
+          if (outgoing && outgoing.parentNode === el) outgoing.remove();
+          el.querySelectorAll('.line-rotate__item[data-state="exit"]').forEach(n => n.remove());
+          index = nextIndex;
+          st.index = index;
+          st.busy = false;
+          st.holdTimer = setTimeout(advance, holdMs);
+        }, transMs);
+      };
+
+      st.holdTimer = setTimeout(advance, holdMs);
+    }
+
+    function watchRotate(el, root) {
       if (!el) return;
-      const target = root || el;
+      const phrases = (el.getAttribute('data-phrases') || '')
+        .split('|').map(s => s.trim()).filter(Boolean);
+      if (!phrases.length) return;
+      const target = root || el.closest('section') || el;
       const io = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting) typeLine(el);
-          else stopType(el);
+          if (e.isIntersecting) startRotate(el, phrases);
+          else stopRotate(el);
         });
       }, { threshold: 0.35 });
       io.observe(target);
     }
 
-    const heroLine = document.querySelector('.hero .type-line[data-type]');
-    watchTypeLine(heroLine, document.querySelector('.hero'));
-
-    const closeLine = document.querySelector('.cta-box .type-line[data-type]');
-    watchTypeLine(closeLine, document.querySelector('.cta-box'));
+    document.querySelectorAll('.line-rotate[data-phrases]').forEach((el) => {
+      const root = el.closest('.hero') || el.closest('.cta-box') || el;
+      watchRotate(el, root);
+    });
   })();
 </script>
 <script src="js/fines-chart/fines-chart.js" defer></script>

@@ -7,10 +7,40 @@
   <title>AI Governance Risk Diagnostic | RegAnchor</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script>emailjs.init('vxitc5LFJHMfNcmUL');</script>
+  <script src="js/ra-contact.js"></script>
+  <script>emailjs.init((window.RA_CONTACT&&RA_CONTACT.emailjs.publicKey)||'vxitc5LFJHMfNcmUL');</script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/reganchor.css">
   <link rel="stylesheet" href="css/reganchor-flow.css">
+  <style>
+  /* Prescreen labels — match .section-desc; placeholders match contact.html lightness */
+  #screen-prescreen .form-label {
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--sub);
+    line-height: 1.55;
+    margin-bottom: 6px;
+  }
+  #screen-prescreen .form-label .form-label-note {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--sub);
+  }
+  #screen-prescreen .form-input::placeholder {
+    color: var(--ra-slate-30, #A3ACB9);
+    opacity: 1;
+    font-weight: 400;
+  }
+  #screen-prescreen .form-select:has(option[value=""]:checked) {
+    color: var(--ra-slate-30, #A3ACB9);
+  }
+  #screen-prescreen .form-select option {
+    color: var(--main);
+  }
+  </style>
   <script src="js/ra-maturity.js"></script>
 </head>
 <body class="flow-page">
@@ -74,13 +104,13 @@
         <div class="section-title">Organisation details</div>
         <div class="section-desc">Used to calibrate your score. Handled in confidence.</div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Full Name *</label><input type="text" class="form-input" id="ps-name" placeholder="e.g. Alex Johnson"></div>
-          <div class="form-group"><label class="form-label">Job Title / Role *</label><input type="text" class="form-input" id="ps-role" placeholder="e.g. Chief Risk Officer"></div>
+          <div class="form-group"><label class="form-label" for="ps-name">Full name *</label><input type="text" class="form-input" id="ps-name" placeholder="e.g. Alex Johnson" autocomplete="name"></div>
+          <div class="form-group"><label class="form-label" for="ps-role">Job title / role *</label><input type="text" class="form-input" id="ps-role" placeholder="e.g. Chief Risk Officer" autocomplete="organization-title"></div>
         </div>
-        <div class="form-group"><label class="form-label">Professional Email Address *</label><input type="email" class="form-input" id="ps-email" placeholder="you@yourcompany.com"></div>
-        <div class="form-group"><label class="form-label">Organisation Name *</label><input type="text" class="form-input" id="ps-org" placeholder="e.g. Acme Financial Ltd"></div>
+        <div class="form-group"><label class="form-label" for="ps-email">Professional email address *</label><input type="email" class="form-input" id="ps-email" placeholder="you@yourcompany.com" autocomplete="email"></div>
+        <div class="form-group"><label class="form-label" for="ps-org">Organisation name *</label><input type="text" class="form-input" id="ps-org" placeholder="e.g. Acme Financial Ltd" autocomplete="organization"></div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Industry Sector *</label>
+          <div class="form-group"><label class="form-label" for="ps-sector">Industry sector *</label>
             <select class="form-select" id="ps-sector">
               <option value="">Select your sector</option>
               <option>Financial Services</option><option>Healthcare &amp; Life Sciences</option>
@@ -89,7 +119,7 @@
               <option>Education</option><option>Manufacturing &amp; Logistics</option><option>Other</option>
             </select>
           </div>
-          <div class="form-group"><label class="form-label">Number of Employees *</label>
+          <div class="form-group"><label class="form-label" for="ps-size">Number of employees *</label>
             <select class="form-select" id="ps-size">
               <option value="">Select range</option>
               <option>1-49</option><option>50-249</option><option>250-999</option><option>1,000+</option>
@@ -881,22 +911,26 @@ function sendEmails() {
   const allRecs    = sectorRec ? [sectorRec, ...bandRecs] : bandRecs;
   const recText    = allRecs.map(r => '- ' + r).join('\n');
 
+  const C = window.RA_CONTACT || {};
+  const ej = C.emailjs || {};
+  const opsEmail = C.ops || 'info@reganchor.com';
   const templateParams = {
     email, to_email:email, client_name:name, risk_band:band, risk_score:score,
     risk_summary:summary, recommendations:recText, flags:flagText,
     report_date:today, organisation:org, client_role:role, sector, org_size:size,
-    fraser_email:'fraser@mlagroup.co.uk', framework_version:RESULTS.frameworkVersion
+    fraser_email:opsEmail, reply_to:opsEmail, support_email:C.support||opsEmail,
+    framework_version:RESULTS.frameworkVersion
   };
 
-  emailjs.send('service_amfeqty','template_xczn8bt',templateParams)
+  emailjs.send(ej.clientService||'service_amfeqty', ej.clientTemplate||'template_xczn8bt', templateParams)
     .then(()=>console.log('Client email sent')).catch(e=>console.log('Email error:',e));
 
-  // Lead notification via FormSubmit
+  // Lead notification via FormSubmit (ops inbox — re-confirm address in FormSubmit if changed)
   const form = document.createElement('form');
-  form.action = 'https://formsubmit.co/fraser@mlagroup.co.uk';
+  form.action = (C.formSubmitUrl && C.formSubmitUrl()) || ('https://formsubmit.co/'+opsEmail);
   form.method = 'POST'; form.style.display = 'none';
   const fields = {
-    '_subject':   'New AI Diagnostic: ' + band + ' - ' + org,
+    '_subject':   'New RegAnchor diagnostic: ' + band + ' - ' + org,
     '_captcha':   'false',
     '_next':      location.origin + '/results.html',
     'Full Name':  name, 'Email': email, 'Organisation': org, 'Role': role,

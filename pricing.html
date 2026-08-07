@@ -466,6 +466,17 @@ footer { border-top:1px solid var(--main); background:var(--bg); position:relati
 }
 .field-input:focus { border-color:var(--main); }
 textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
+/* Enterprise modal only — lighter placeholders (match contact.html) */
+#enterprise-modal .field-input::placeholder {
+  color:var(--ra-slate-30,#A3ACB9);
+  opacity:1;
+}
+#enterprise-modal select.field-input:has(option[value=""]:checked) {
+  color:var(--ra-slate-30,#A3ACB9);
+}
+#enterprise-modal select.field-input option {
+  color:var(--main);
+}
 .modal-btn {
   padding:10px 18px; font-family:var(--font-body);
   font-size:0.88rem; font-weight:500; cursor:pointer;
@@ -752,6 +763,7 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="js/ra-contact.js"></script>
 <script>
 var SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
 var SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
@@ -976,10 +988,12 @@ async function submitEnterpriseInquiry(){
     });
     try{
       if(typeof emailjs!=='undefined'){
-        emailjs.init('vxitc5LFJHMfNcmUL');
-        await emailjs.send('service_umdte26','template_o6h9et7',{
-          to_name:'Fraser',
-          to_email:'fraser@mlagroup.co.uk',
+        var C=window.RA_CONTACT||{};
+        var ej=C.emailjs||{};
+        emailjs.init(ej.publicKey||'vxitc5LFJHMfNcmUL');
+        await emailjs.send(ej.opsService||'service_umdte26',ej.opsTemplate||'template_o6h9et7',{
+          to_name:'RegAnchor',
+          to_email:C.ops||'info@reganchor.com',
           alert_title:'Enterprise Inquiry (pricing): '+name,
           alert_body:'Name: '+name+' | Role: '+(role||'Not specified')+' | Email: '+email+' | Organisation: '+orgName+' | AI Systems: '+(systems||'Not specified')+' | Requirements: '+(reqs.length?reqs.join(', '):'None selected')+' | Message: '+(message||'No message')
         });

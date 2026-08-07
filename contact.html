@@ -13,6 +13,7 @@
   --border:var(--ra-line,#E4E7EC);--border-h:var(--ra-ink,#0A0E14);
   --hover:var(--ra-hover,rgba(17,17,17,0.028));
   --main:var(--ra-ink,#0A0E14);--sub:var(--ra-slate-70,#374151);--muted:var(--ra-steel,#6B7280);
+  --accent:var(--ra-blurple,#533AFD);--accent-h:var(--ra-blurple-hover,#4434E0);
   --font-brand:var(--ra-font-brand,'IBM Plex Sans',sans-serif);--font-body:var(--ra-font-product,'Inter',sans-serif);
   --nav-h:64px;
 }
@@ -44,8 +45,9 @@ h1 em{font-style:normal;font-weight:400;color:var(--muted)}
 
 .form-group{margin-bottom:22px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
-label{display:block;font-family:var(--font-brand);font-size:0.7rem;font-weight:500;letter-spacing:-0.01em;color:var(--muted);margin-bottom:8px}
-input,select,textarea{
+/* Field hierarchy: label (muted) > placeholder (lighter) > typed/autofill (ink) */
+label{display:block;font-family:var(--font-body);font-size:0.75rem;font-weight:500;letter-spacing:-0.01em;color:var(--sub);margin-bottom:8px}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{
   width:100%;padding:11px 14px;
   background:var(--bg);
   border:1px solid var(--border);
@@ -53,18 +55,48 @@ input,select,textarea{
   outline:none;transition:border-color 0.15s;
   -webkit-appearance:none;appearance:none;
 }
-input::placeholder,textarea::placeholder{color:var(--muted)}
+input::placeholder,textarea::placeholder{color:var(--ra-slate-30,#A3ACB9);opacity:1}
+input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(--ra-slate-30,#A3ACB9);opacity:1}
+input::-moz-placeholder,textarea::-moz-placeholder{color:var(--ra-slate-30,#A3ACB9);opacity:1}
 input:focus,select:focus,textarea:focus{border-color:var(--main)}
 select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+select:has(option[value=""]:checked){color:var(--ra-slate-30,#A3ACB9)}
 select option{background:var(--bg);color:var(--main)}
+/* Autofill: keep ink text, suppress yellow fill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus{
+  -webkit-text-fill-color:var(--main);
+  caret-color:var(--main);
+  box-shadow:0 0 0 1000px var(--bg) inset;
+  transition:background-color 99999s ease-out;
+}
 textarea{resize:vertical;min-height:130px;line-height:1.6}
 
-/* Interest checkboxes */
+/* Interest checkboxes — native toggle + blurple selected state */
 .checkbox-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.check-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s,background 0.15s}
+.check-item{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  margin:0;border:1px solid var(--border);
+  font-size:0.8rem;font-weight:400;color:var(--sub);letter-spacing:0;
+  cursor:pointer;transition:border-color 0.15s,background 0.15s,color 0.15s;
+  -webkit-user-select:none;user-select:none;
+}
 .check-item:hover{border-color:var(--border-h);background:var(--hover)}
-.check-item input[type="checkbox"]{width:16px;height:16px;min-width:16px;padding:0;accent-color:var(--main);cursor:pointer}
-.check-label{font-size:0.8rem;color:var(--sub);font-weight:400;text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
+.check-item:has(input:checked){
+  border-color:var(--accent);
+  background:rgba(83,58,253,0.06);
+  color:var(--main);
+}
+.check-item input[type="checkbox"]{
+  width:16px;height:16px;min-width:16px;margin:0;padding:0;
+  flex-shrink:0;accent-color:var(--accent);cursor:pointer;
+  -webkit-appearance:auto;appearance:auto;
+}
+.check-label{font-size:inherit;color:inherit;font-weight:inherit;text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
 
 .form-divider{height:1px;background:var(--border);margin:26px 0}
 
@@ -140,7 +172,7 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
   <div class="info-side" id="infoSide">
     <div class="info-intro">
       <h1 class="fade">Let's talk<br><em>governance.</em></h1>
-      <p class="info-sub fade">Whether you're exploring the diagnostic, have a question about your sector's obligations, or want to discuss an enterprise engagement — we're here.</p>
+      <p class="info-sub fade">Whether you have questions, need support, or want a demo our team is here to help.</p>
     </div>
   </div>
 
@@ -164,9 +196,15 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="email">Work email</label>
-          <input type="email" id="email" name="email" placeholder="james@yourfirm.co.uk" required>
+        <div class="form-row">
+          <div>
+            <label for="email">Work email</label>
+            <input type="email" id="email" name="email" placeholder="james@yourfirm.co.uk" required>
+          </div>
+          <div>
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" placeholder="+44 7700 900000" autocomplete="tel">
+          </div>
         </div>
 
         <div class="form-row">
