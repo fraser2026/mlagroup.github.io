@@ -29,11 +29,19 @@
       --portal-h: 720;
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    /* Lock root type scale to index (16px) so portal scale never shrinks copy */
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      overflow-x: clip;
+      max-width: 100%;
+    }
     body {
       background: var(--bg); color: var(--sub);
       font-family: var(--font-body); line-height: 1.6;
-      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: clip;
+      max-width: 100%;
     }
 
     .home-chrome {
@@ -82,51 +90,69 @@
       border: none; border-radius: 4px; font-weight: 500; cursor: pointer; font-family: inherit;
     }
 
-    .hero-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 48px 64px; }
+    .hero-wrap {
+      max-width: 1100px; margin: 0 auto; padding: 40px 48px 64px;
+      max-width: min(1100px, 100%);
+      box-sizing: border-box;
+      min-width: 0;
+    }
     .hero {
       display: grid;
       grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.22fr);
       gap: 28px 36px; align-items: center;
+      min-width: 0;
+      width: 100%;
     }
+    .hero-copy { min-width: 0; max-width: 100%; }
+    /* Match index.html hero type scale (do not scale with portal) */
     .hero-copy h1 {
       font-family: var(--font-brand);
-      font-size: clamp(1.9rem, 3.6vw, 2.85rem);
-      font-weight: 500; line-height: 1.08; letter-spacing: -0.03em;
-      color: var(--main); margin-bottom: 16px;
+      font-size: clamp(2.75rem, 6vw, 5rem);
+      font-weight: 500;
+      line-height: 1.18;
+      letter-spacing: -0.03em;
+      color: var(--main);
+      margin-bottom: 28px;
     }
     .hero-sub {
-      font-size: 0.95rem; color: var(--sub); line-height: 1.65;
-      max-width: 32em; margin-bottom: 24px;
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--sub);
+      line-height: 1.7;
+      max-width: 620px;
+      margin-bottom: 44px;
     }
-    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
     .btn-primary {
       display: inline-flex; align-items: center; padding: 12px 22px;
       background: var(--accent); color: #fff; border: 1px solid var(--accent);
-      border-radius: 4px; font-size: 0.88rem; font-weight: 500;
+      border-radius: 4px; font-size: 0.9rem; font-weight: 500;
       cursor: pointer; font-family: inherit;
     }
     .btn-primary:hover { background: var(--accent-h); color: #fff; }
     .btn-ghost {
       display: inline-flex; align-items: center; padding: 11px 20px;
       border: 1px solid var(--border); border-radius: 4px;
-      font-size: 0.88rem; font-weight: 500; color: var(--main);
+      font-size: 0.9rem; font-weight: 500; color: var(--main);
       text-decoration: none; background: var(--bg);
     }
     .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 
     /*
       Exact portal replica:
-      portal-demo-test.html is a full 1180×720 portal using real portal.css.
-      This stage only clips + scales it — no second design system.
+      portal-demo-test.html is 1180×720. Stage clips + scales only the portal
+      box — never the page root font-size. Iframe is out of flow so 1180px
+      native width cannot force horizontal page zoom on mobile.
     */
+    .hero-stage { min-width: 0; width: 100%; max-width: 100%; }
     .stage {
       border: 1px solid var(--border);
       background: var(--bg);
       overflow: hidden;
-      /* width fills hero column; height derived from scale */
       width: 100%;
-      max-width: 640px;
+      max-width: min(640px, 100%);
       margin-left: auto;
+      min-width: 0;
     }
     .stage__chrome {
       height: 32px;
@@ -142,14 +168,18 @@
     .stage__viewport {
       position: relative;
       width: 100%;
-      /* JS sets --scale and height */
+      /* JS sets --scale and height from stage width only */
       overflow: hidden;
       background: var(--bg);
       line-height: 0;
+      /* Keep iframe out of document scroll width (paired with position:absolute) */
+      contain: layout paint;
     }
     .stage__viewport iframe {
       border: 0;
-      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
       width: calc(var(--portal-w) * 1px);
       height: calc(var(--portal-h) * 1px);
       transform: scale(var(--scale, 0.42));
@@ -157,7 +187,7 @@
       pointer-events: auto;
     }
     .stage-hint {
-      font-size: 0.7rem; color: var(--muted); margin-top: 12px; text-align: center;
+      font-size: 0.75rem; color: var(--muted); margin-top: 12px; text-align: center;
       line-height: 1.5;
     }
 
@@ -228,14 +258,45 @@
     .modal-success p { font-size: 0.84rem; color: var(--sub); margin-bottom: 20px; }
 
     @media (max-width: 960px) {
-      .hero { grid-template-columns: 1fr; }
-      .stage { max-width: 100%; margin: 0; }
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .hero-stage { order: 2; }
+      .hero-copy { order: 1; }
+      .stage {
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+      }
     }
-    @media (max-width: 720px) {
-      .home-chrome nav, .hero-wrap, .philosophy, .close-cta, .footer-inner { padding-left: 20px; padding-right: 20px; }
+    /* Index mobile type breakpoints — copy size stays site-true; portal scales alone */
+    @media (max-width: 768px) {
+      .home-chrome nav,
+      .hero-wrap,
+      .philosophy,
+      .close-cta,
+      .footer-inner { padding-left: 20px; padding-right: 20px; }
+      .hero-wrap { padding-top: 32px; padding-bottom: 48px; }
+      .hero-copy h1 {
+        font-size: clamp(2.1rem, 8vw, 3rem);
+        line-height: 1.14;
+        letter-spacing: -0.02em;
+        margin-bottom: 20px;
+      }
+      .hero-sub {
+        font-size: 1rem;
+        margin-bottom: 28px;
+        max-width: none;
+      }
       .nav-right { display: none; }
       .hamburger { display: flex; }
       .fg-row { grid-template-columns: 1fr; }
+      /* Edge-to-edge portal within page padding — full usable width, never page zoom */
+      .hero-stage {
+        width: 100%;
+        max-width: 100%;
+      }
     }
   </style>
 </head>
@@ -270,7 +331,7 @@
         </div>
       </div>
 
-      <div>
+      <div class="hero-stage">
         <div class="stage" id="stage">
           <div class="stage__chrome">
             <span class="stage__dot"></span><span class="stage__dot"></span><span class="stage__dot"></span>
@@ -369,24 +430,29 @@
     document.getElementById('mobMenu').classList.toggle('open');
   };
 
-  /* Scale exact portal canvas into the stage width */
+  /* Scale portal canvas to stage width only — never touches root font-size */
   var PW = 1180;
   var PH = 720;
   var viewport = document.getElementById('portalViewport');
   var stage = document.getElementById('stage');
 
   function fitPortal() {
-    var w = stage.clientWidth;
-    if (!w) return;
-    var scale = w / PW;
+    if (!stage || !viewport) return;
+    /* Use bounding width of stage border box; minmax(0) ancestors keep page ≤ viewport */
+    var w = stage.getBoundingClientRect().width;
+    if (!w || w < 40) return;
+    var scale = Math.min(1, w / PW);
     viewport.style.setProperty('--scale', String(scale));
-    viewport.style.height = Math.round(PH * scale) + 'px';
+    viewport.style.height = Math.max(1, Math.round(PH * scale)) + 'px';
   }
   window.addEventListener('resize', fitPortal);
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(fitPortal).observe(stage);
+  }
   fitPortal();
-  /* Second pass after fonts / layout */
   requestAnimationFrame(fitPortal);
   setTimeout(fitPortal, 100);
+  window.addEventListener('load', fitPortal);
 
   /* Demo modal */
   var modal = document.getElementById('demoModal');
