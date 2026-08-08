@@ -53,6 +53,7 @@
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
+    html { overflow-x: hidden; }
 
     /* ── NAV + SCROLL FADE (same veil behaviour as assessment) ── */
     .home-chrome {
@@ -188,6 +189,9 @@
       text-align:center;
       min-height: calc(100vh - 64px);
       display:flex; flex-direction:column; justify-content:center; align-items:center;
+      overflow-x:clip;
+      max-width:min(900px, 100%);
+      box-sizing:border-box;
     }
 
     .badge {
@@ -203,90 +207,121 @@
     h1 {
       font-family: var(--font-brand);
       font-size: clamp(2.75rem, 6vw, 5rem);
-      line-height: 1.06; font-weight:500; letter-spacing:-0.03em;
-      margin-bottom: 28px; color:var(--main);
+      line-height: 1.18;
+      font-weight:500;
+      letter-spacing:-0.03em;
+      margin-bottom: 28px;
+      color:var(--main);
+      overflow: visible;
     }
     h1 em, .type-line {
       font-style:normal; font-weight:400; color:var(--muted);
-      display:inline-block; min-height:1.1em;
+      display:inline-block;
     }
-    /* Vertical line rotate — hero carousel + section accent words */
+    /*
+     * Hero tagline carousel:
+     * Fixed-height line slot (room for y/g/p). overflow hidden on both axes so
+     * dual phrases never widen the page (no horizontal scrollbar).
+     * Absolute items sit in that slot; width is driven only by the sizer.
+     */
     .hero-type-line {
-      display:inline-grid;
-      justify-items:center;
-      vertical-align:top;
+      display:block;
+      position:relative;
+      width:max-content;
+      max-width:100%;
+      margin-left:auto;
+      margin-right:auto;
+      line-height:1.4;
+      height:1.4em;
+      overflow:hidden;
       white-space:nowrap;
-      max-width:none;
     }
-    .hero-type-line__sizer,
-    .hero-type-line .line-rotate {
-      grid-area:1 / 1;
+    .hero-type-line__sizer {
+      display:block;
+      visibility:hidden;
+      pointer-events:none;
+      user-select:none;
       white-space:nowrap;
       font-style:normal;
       font-weight:400;
       font-family:inherit;
       font-size:inherit;
-      line-height:inherit;
+      line-height:1.4;
       letter-spacing:inherit;
       color:var(--muted);
-      min-height:1.1em;
+      height:1.4em;
+      padding:0 0.25em;
+      box-sizing:content-box;
     }
-    .hero-type-line__sizer {
-      visibility:hidden;
-      pointer-events:none;
-      user-select:none;
+    .hero-type-line .line-rotate {
+      position:absolute;
+      inset:0;
+      display:block;
+      overflow:hidden;
+      color:var(--muted);
+      font-style:normal;
+      font-weight:400;
+      margin:0;
+      padding:0;
     }
     .line-rotate {
-      display:inline-grid;
-      justify-items:center;
-      align-items:center;
-      overflow:hidden;
+      display:inline-block;
       position:relative;
+      overflow:hidden;
       vertical-align:baseline;
       white-space:nowrap;
       font-style:normal;
       font-weight:400;
       color:var(--muted);
-      min-height:1.1em;
+      line-height:1.4;
+      height:1.4em;
+      max-width:100%;
     }
     h2 .line-rotate {
-      display:inline-grid;
       vertical-align:baseline;
     }
-    .hero-type-line .line-rotate {
-      display:grid;
-      width:100%;
-      vertical-align:top;
-    }
     .line-rotate__item {
-      grid-area:1 / 1;
-      display:block;
       white-space:nowrap;
       font:inherit;
       font-style:normal;
       font-weight:inherit;
       color:inherit;
       letter-spacing:inherit;
-      text-align:inherit;
+      line-height:1.4;
+      text-align:center;
+      box-sizing:border-box;
       will-change:transform, opacity;
       transition:
-        transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 0.45s ease;
+        transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.4s ease;
     }
     .hero-type-line .line-rotate__item {
-      width:100%;
-      text-align:center;
+      position:absolute;
+      left:0;
+      right:0;
+      top:0;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 0.25em;
+      margin:0;
+    }
+    h2 .line-rotate__item {
+      display:block;
+      line-height:1.4;
+      padding:0 0.08em;
     }
     .line-rotate__item[data-state="in"] {
-      transform:translateY(0);
+      transform:translate3d(0,0,0);
       opacity:1;
     }
     .line-rotate__item[data-state="exit"] {
-      transform:translateY(-108%);
+      transform:translate3d(0,-100%,0);
       opacity:0;
     }
     .line-rotate__item[data-state="enter"] {
-      transform:translateY(108%);
+      transform:translate3d(0,100%,0);
       opacity:0;
     }
     @media (prefers-reduced-motion: reduce) {
@@ -682,6 +717,11 @@
       color:var(--main); letter-spacing:-0.02em; margin-bottom:8px;
     }
     .entry-desc { font-size:0.9rem; color:var(--sub); line-height:1.55; margin:0 0 20px; max-width:36ch; flex:1; }
+    .entry-desc:has(+ .entry-note) { margin-bottom:6px; flex:0 0 auto; }
+    .entry-note {
+      font-size:0.75rem; font-style:italic; font-weight:400;
+      color:var(--muted); line-height:1.5; margin:0 0 20px; max-width:36ch; flex:1;
+    }
     .entry-cta {
       display:inline-flex; align-items:center; width:fit-content;
       font-size:0.85rem; font-weight:500; color:var(--accent);
@@ -871,7 +911,7 @@
 <!-- 1. HERO -->
 <section>
   <div class="hero fade">
-    <h1>Evidence your<br>AI Governance.<br><span class="hero-type-line"><span class="hero-type-line__sizer" aria-hidden="true">Before regulation lands.</span><span class="line-rotate" data-phrases="Before they ask for it.|Before exposure begins.|Before regulation lands." aria-live="polite" aria-label="Before they ask for it. Before exposure begins. Before regulation lands."></span></span></h1>
+    <h1>Evidence your<br>AI Governance.<br><span class="hero-type-line"><span class="hero-type-line__sizer" aria-hidden="true">Before scrutiny arrives.</span><span class="line-rotate" data-phrases="Before regulation lands.|Before exposure begins.|Before gaps show up.|Before rivals get ahead.|Before scrutiny arrives.|Before the audit lands.|Before deadlines hit.|Before the fines land.|Before the board asks.|Before it's guesswork." aria-live="polite" aria-label="Before regulation lands. Before exposure begins. Before gaps show up. Before rivals get ahead. Before scrutiny arrives. Before the audit lands. Before deadlines hit. Before the fines land. Before the board asks. Before it's guesswork."></span></span></h1>
     <p class="hero-sub">Register AI systems, map regulatory obligations, and build audit-ready evidence for your board and regulators</p>
     <div class="hero-actions">
       <a href="diagnostic.html" class="btn-primary">
@@ -1010,12 +1050,14 @@
       </div>
       <div class="entry-card fade">
         <div class="entry-name">Full Report</div>
-        <p class="entry-desc">Complete regulatory analysis and workspace. Requires a £295 purchase.</p>
+        <p class="entry-desc">Complete regulatory analysis and workspace.</p>
+        <p class="entry-note">One-time fee.</p>
         <a href="diagnostic.html" class="entry-cta">Get Full Report</a>
       </div>
       <div class="entry-card fade">
         <div class="entry-name">Governance Platform</div>
         <p class="entry-desc">Manage AI systems continuously through Registry, Governance, Evidence and Intelligence.</p>
+        <p class="entry-note">Subscription required.</p>
         <a href="pricing.html" class="entry-cta">View Plans</a>
       </div>
       <div class="entry-card fade">
@@ -1481,15 +1523,18 @@
     mio.observe(root);
   })();
 
-  // Vertical line rotate — carousel for multi phrases; single lines enter once per view.
-  // Hard-settles to one line after each handoff; self-heals after freeze/tab resume.
+  // Vertical line rotate — first phrase types in (no caret); later multi phrases slide only.
+  // Close section: type-in once per view. Restart when root leaves/re-enters viewport.
+  // Hard-settles after handoffs; self-heals after freeze/tab resume.
   (function () {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const rotateState = new WeakMap();
     /** @type {HTMLElement[]} */
     const activeEls = [];
-    const holdMs = 2800;
-    const transMs = reduce ? 0 : 560;
+    const firstHoldMs = 1600;
+    const holdMs = 2200;
+    const transMs = reduce ? 0 : 480;
+    const typeMs = 14; // quick type for first line / close only
     const lagGapMs = 1600;
 
     function track(el) {
@@ -1508,15 +1553,42 @@
       return span;
     }
 
-    /** Exactly one visible phrase — kills stacked/garbled mid-transition debris. */
+    function normalizePhrase(s) {
+      s = String(s || '').trim();
+      if (!s) return s;
+      if (!/[.!?…]$/.test(s)) s += '.';
+      return s;
+    }
+
+    function parsePhrases(attr) {
+      return String(attr || '')
+        .split('|')
+        .map(normalizePhrase)
+        .filter(Boolean);
+    }
+
     function settle(el, phrase) {
-      el.replaceChildren(makeItem(phrase, 'in'));
+      el.replaceChildren(makeItem(normalizePhrase(phrase), 'in'));
+    }
+
+    function finishHandoff(el, keep, phrase) {
+      phrase = normalizePhrase(phrase);
+      el.querySelectorAll('.line-rotate__item').forEach(function (n) {
+        if (n !== keep) n.remove();
+      });
+      if (keep && keep.isConnected) {
+        keep.setAttribute('data-state', 'in');
+        keep.textContent = phrase;
+      } else {
+        settle(el, phrase);
+      }
     }
 
     function clearTimers(st) {
       if (!st) return;
       if (st.holdTimer) { clearTimeout(st.holdTimer); st.holdTimer = null; }
       if (st.transTimer) { clearTimeout(st.transTimer); st.transTimer = null; }
+      if (st.typeTimer) { clearTimeout(st.typeTimer); st.typeTimer = null; }
     }
 
     function stopRotate(el) {
@@ -1527,20 +1599,33 @@
       untrack(el);
     }
 
-    function paintIn(node) {
+    /** Fast type into node — no caret. Aborts if this rotate instance was stopped. */
+    function typeInto(st, node, full, done) {
+      full = normalizePhrase(full);
+      if (st.typeTimer) { clearTimeout(st.typeTimer); st.typeTimer = null; }
       if (reduce) {
-        node.setAttribute('data-state', 'in');
+        node.textContent = full;
+        if (done) done();
         return;
       }
-      void node.offsetWidth;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (node.isConnected) node.setAttribute('data-state', 'in');
-        });
-      });
+      let i = 0;
+      node.textContent = '';
+      node.setAttribute('data-state', 'in');
+      const tick = () => {
+        if (rotateState.get(st.el) !== st) return;
+        i += 1;
+        node.textContent = full.slice(0, i);
+        if (i < full.length) {
+          st.typeTimer = setTimeout(tick, typeMs);
+        } else {
+          node.textContent = full;
+          st.typeTimer = null;
+          if (done) done();
+        }
+      };
+      st.typeTimer = setTimeout(tick, 40);
     }
 
-    /** Recover from lag/freeze/tab resume: snap to one phrase, resume loop if multi. */
     function heal(el) {
       const st = rotateState.get(el);
       if (!st || !st.phrases || !st.phrases.length) return;
@@ -1560,38 +1645,39 @@
 
     function startRotate(el, phrases) {
       stopRotate(el);
+      phrases = phrases.map(normalizePhrase).filter(Boolean);
       if (!phrases.length) return;
 
       const multi = phrases.length > 1 && !reduce;
       track(el);
 
-      const first = makeItem(phrases[0], reduce ? 'in' : 'enter');
+      // Empty "in" node — first phrase types in place (no slide, no caret)
+      const first = makeItem('', 'in');
       el.appendChild(first);
-      paintIn(first);
-
-      if (!multi) {
-        rotateState.set(el, {
-          phrases, index: 0, multi: false, busy: false,
-          holdTimer: null, transTimer: null, advance: null
-        });
-        // Ensure single line if enter animation was interrupted by lag
-        setTimeout(() => {
-          if (rotateState.get(el)) settle(el, phrases[0]);
-        }, transMs + 80);
-        return;
-      }
 
       const st = {
-        phrases, index: 0, multi: true, busy: false,
-        holdTimer: null, transTimer: null, advance: null
+        el: el,
+        phrases: phrases,
+        index: 0,
+        multi: multi,
+        busy: false,
+        holdTimer: null,
+        transTimer: null,
+        typeTimer: null,
+        advance: null
       };
       rotateState.set(el, st);
+
+      if (!multi) {
+        // Close (and any single phrase): type on every enter
+        typeInto(st, first, phrases[0]);
+        return;
+      }
 
       const advance = () => {
         if (rotateState.get(el) !== st || st.busy) return;
         st.busy = true;
 
-        // Bail if debris already stacked from a prior stall
         if (el.querySelectorAll('.line-rotate__item').length > 2) {
           heal(el);
           return;
@@ -1600,6 +1686,7 @@
         const nextIndex = (st.index + 1) % phrases.length;
         const phrase = phrases[nextIndex];
         const outgoing = el.querySelector('.line-rotate__item[data-state="in"]');
+        // Full string immediately — carousel slides only (no type after line 1)
         const incoming = makeItem(phrase, 'enter');
         el.appendChild(incoming);
 
@@ -1614,8 +1701,7 @@
 
         st.transTimer = setTimeout(() => {
           if (rotateState.get(el) !== st) return;
-          // Always collapse to exactly one settled line (anti-scramble)
-          settle(el, phrase);
+          finishHandoff(el, incoming, phrase);
           st.index = nextIndex;
           st.busy = false;
           st.transTimer = null;
@@ -1624,13 +1710,17 @@
       };
 
       st.advance = advance;
-      st.holdTimer = setTimeout(advance, holdMs);
+
+      // Type first phrase, then same first-hold → slide loop as before
+      typeInto(st, first, phrases[0], () => {
+        if (rotateState.get(el) !== st) return;
+        st.holdTimer = setTimeout(advance, firstHoldMs);
+      });
     }
 
     function watchRotate(el, root) {
       if (!el) return;
-      const phrases = (el.getAttribute('data-phrases') || '')
-        .split('|').map(s => s.trim()).filter(Boolean);
+      const phrases = parsePhrases(el.getAttribute('data-phrases'));
       if (!phrases.length) return;
       const target = root || el;
       const io = new IntersectionObserver((entries) => {
@@ -1647,14 +1737,12 @@
       watchRotate(el, root);
     });
 
-    // Tab focus back / laptop thaw — snap any stuck handoff to a single readable line
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') healAll();
     });
     window.addEventListener('pageshow', healAll);
     window.addEventListener('focus', healAll);
 
-    // Detect long freezes: if the event loop stalled hard, clean carousels on recovery
     let lastBeat = performance.now();
     setInterval(() => {
       const now = performance.now();
