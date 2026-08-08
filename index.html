@@ -1534,7 +1534,9 @@
     const firstHoldMs = 1600;
     const holdMs = 2200;
     const transMs = reduce ? 0 : 480;
-    const typeMs = 14; // quick type for first line / close only
+    const typeMs = 14; // char pace for first line / close only (unchanged)
+    /** Brief beat before first char (heal race fixed; keep short) */
+    const typeStartDelayMs = 200;
     const lagGapMs = 1600;
 
     function track(el) {
@@ -1604,13 +1606,21 @@
       full = normalizePhrase(full);
       if (st.typeTimer) { clearTimeout(st.typeTimer); st.typeTimer = null; }
       if (reduce) {
+        st.typing = false;
         node.textContent = full;
         if (done) done();
         return;
       }
+      st.typing = true;
       let i = 0;
       node.textContent = '';
       node.setAttribute('data-state', 'in');
+      const finish = () => {
+        node.textContent = full;
+        st.typeTimer = null;
+        st.typing = false;
+        if (done) done();
+      };
       const tick = () => {
         if (rotateState.get(st.el) !== st) return;
         i += 1;
@@ -1618,17 +1628,19 @@
         if (i < full.length) {
           st.typeTimer = setTimeout(tick, typeMs);
         } else {
-          node.textContent = full;
-          st.typeTimer = null;
-          if (done) done();
+          finish();
         }
       };
-      st.typeTimer = setTimeout(tick, 40);
+      // Hold empty first so hero paint + load thrash don't skip the reveal
+      st.typeTimer = setTimeout(tick, typeStartDelayMs);
     }
 
     function heal(el) {
       const st = rotateState.get(el);
       if (!st || !st.phrases || !st.phrases.length) return;
+      // Never snap full text while a deliberate type-in is playing
+      // (pageshow/focus/lag-heal on first paint was killing the hero animation)
+      if (st.typing) return;
       clearTimers(st);
       const n = st.phrases.length;
       st.index = ((st.index % n) + n) % n;
@@ -1661,6 +1673,7 @@
         index: 0,
         multi: multi,
         busy: false,
+        typing: false,
         holdTimer: null,
         transTimer: null,
         typeTimer: null,
@@ -1738,14 +1751,25 @@
     });
 
     document.addEventListener('visibilitychange', () => {
+      // Resume after background/freeze only — not initial load (already visible)
       if (document.visibilityState === 'visible') healAll();
     });
-    window.addEventListener('pageshow', healAll);
-    window.addEventListener('focus', healAll);
+    // First paint always fires pageshow; full heal here snaps past type-in.
+    // Only restore after bfcache (back-forward) restore.
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) healAll();
+    });
+    // window focus on open/tab also races with the first type — skip it.
+    // Tab freeze / long main-thread stalls still use the beat watcher below.
 
-    let lastBeat = performance.now();
+    // Beat watcher: ignore the first tick (load can stall intervals without a freeze)
+    let lastBeat = 0;
     setInterval(() => {
       const now = performance.now();
+      if (!lastBeat) {
+        lastBeat = now;
+        return;
+      }
       const gap = now - lastBeat;
       lastBeat = now;
       if (gap >= lagGapMs) healAll();
