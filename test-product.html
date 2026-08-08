@@ -228,6 +228,8 @@
       max-width: min(640px, 100%);
       margin-left: auto;
       min-width: 0;
+      /* Isolate paint so stage frame stays a single hairline */
+      box-shadow: none;
     }
     .stage__chrome {
       height: 32px;
@@ -347,7 +349,19 @@
         max-width: 100%;
         width: 100%;
         margin: 0;
+        border-width: 1px;
       }
+      .stage__chrome {
+        border-bottom-width: 1px;
+      }
+      /* Site chrome hairlines match desktop weight on mobile */
+      .ra-anchor-line,
+      .ra-anchor-line::before {
+        height: 1px !important;
+        max-height: 1px;
+      }
+      .close-cta { border-top-width: 1px; }
+      footer { border-top-width: 1px; }
     }
     /* Index mobile type breakpoints — copy size stays site-true; portal scales alone */
     @media (max-width: 768px) {
@@ -550,9 +564,12 @@
     if (!stage || !viewport) return;
     var w = stage.getBoundingClientRect().width;
     if (!w || w < 40) return;
-    var scale = Math.min(1, w / PW);
+    /* Snap scale to device pixels so 1px portal hairlines stay 1 device-pixel thin on mobile */
+    var dpr = window.devicePixelRatio || 1;
+    var raw = Math.min(1, w / PW);
+    var scale = Math.round(raw * dpr * PW) / (dpr * PW);
+    if (scale <= 0) scale = raw;
     viewport.style.setProperty('--scale', String(scale));
-    /* Height comes from aspect-ratio; only set scale so no reflow jump */
   }
   window.addEventListener('resize', fitPortal);
   if (typeof ResizeObserver !== 'undefined') {
