@@ -82,31 +82,31 @@ MLA Group Ltd as the legal business name; that is correct and should not be chan
 
 ---
 
-## 3. EmailJS
+## 3. EmailJS + FormSubmit
 
-Template content lives in the EmailJS dashboard, not in this repo. Any links or branding
-inside these templates will still say MLA Group.
+See **[EMAIL.md](EMAIL.md)** for the full stack map and dashboard checklist.
+
+Template HTML lives in the EmailJS dashboard (not this repo). Until those templates are
+rebranded, messages can still look like early “MLA Group” drafts even when code uses
+`@reganchor.com`.
 
 - [ ] Service `service_amfeqty`, template `template_xczn8bt` — post-diagnostic client email
-- [ ] Service `service_umdte26`, template `template_o6h9et7` — alerts, admin support
-      replies, enterprise inquiries
-- [ ] Update the from-name and any logo or footer links in each
+- [ ] Service `service_umdte26`, template `template_o6h9et7` — alerts, admin support, enterprise
+- [ ] From name + logo + footer → RegAnchor / reganchor.com
+- [ ] FormSubmit: re-confirm destination after changing `RA_CONTACT.ops`
 
 ---
 
 ## 4. Email addresses
 
-Phase one deliberately left these on `@mlagroup.co.uk` because the mailboxes still work.
+Code now centralises addresses in **`js/ra-contact.js`** (default `info@reganchor.com`).
 
-- [ ] Set up the RegAnchor equivalents and forwarding
-- [ ] `info@` — `terms.html`, `privacy.html`
-- [ ] `hello@` — `index.html`, `pricing.html`
-- [ ] `governance@` — `results.html`, `payment-success.html`
-- [ ] `fraser@` — `portal.html`, `js/portal-plans.js`, and the FormSubmit endpoint plus
-      the `fraser_email` parameter in `diagnostic.html`
-
-Note the FormSubmit endpoint is `https://formsubmit.co/fraser@mlagroup.co.uk`. Changing the
-address means re-confirming the new one with FormSubmit before it will deliver.
+- [x] Public mailtos (results, payment-success) → `info@reganchor.com`
+- [x] Legal pages already use `info@reganchor.com`
+- [x] Ops / FormSubmit / enterprise EmailJS → `RA_CONTACT.ops` (`info@reganchor.com`)
+- [ ] Mailbox `info@reganchor.com` receives mail (or forwards to you)
+- [ ] FormSubmit confirmation completed for the new ops address
+- [ ] Optional: set `ops` to `fraser@reganchor.com` once that alias exists
 
 ---
 

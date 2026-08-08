@@ -1,5 +1,17 @@
 # Stripe test mode cutover
 
+## Design post-checkout UX (no keys)
+
+Use this instead of swapping test/live secrets when you only need the after-checkout screens:
+
+1. Open [design-checkout.html](../design-checkout.html) locally or on the deploy.
+2. Each link loads the real success page with `?preview=…` and mock form data.
+3. No Stripe session, no charge, no webhook.
+
+States: `signup` / `signin` / `success` / `error` / `loading` / `activating` (report only).
+
+Reserve full test-mode keys (below) when you need end-to-end Checkout + webhooks.
+
 ## Why both keys must match
 
 | Layer | Test | Live |

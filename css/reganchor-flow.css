@@ -920,12 +920,27 @@ footer {
   text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
 }
 .q-rail-item {
-  display: flex; align-items: baseline; gap: 12px;
-  padding: 12px 0; border-bottom: 1px solid var(--border);
+  position: relative;
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 12px 0 12px 18px; border-bottom: 1px solid var(--border);
   color: var(--muted); font-size: 12.5px; line-height: 1.45;
   cursor: default; transition: color .15s;
 }
 .q-rail-item:first-child { border-top: 1px solid var(--border) }
+.q-rail-item::before {
+  content: '';
+  position: absolute; left: 0; top: 14px;
+  width: 11px; height: 11px;
+  box-sizing: border-box;
+}
+.q-rail-item.done::before {
+  content: '';
+  background: transparent;
+  /* tick via mask-like border check using background image */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23533AFD' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 6l3 3 5-6'/%3E%3C/svg%3E");
+  background-size: 11px 11px;
+  background-repeat: no-repeat;
+}
 .q-rail-num {
   font-size: 11px; font-weight: 600;
   color: var(--muted); flex-shrink: 0; width: 16px; font-feature-settings: 'tnum';
@@ -933,8 +948,20 @@ footer {
 .q-rail-item.done { color: var(--sub); cursor: pointer }
 .q-rail-item.done .q-rail-num { color: var(--main) }
 .q-rail-item.done:hover { color: var(--main) }
-.q-rail-item.active { color: var(--main); font-weight: 500; border-bottom-color: var(--accent) }
+.q-rail-item.active { color: var(--main); font-weight: 500; }
 .q-rail-item.active .q-rail-num { color: var(--accent) }
+/* Active underline grows from the left (lightweight motion) */
+.q-rail-item.active::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: var(--accent);
+  transform-origin: left center;
+  animation: qRailGrow 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes qRailGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
 
 .q-block { margin-bottom: 40px; padding-bottom: 0; border-bottom: none }
 .q-block:last-of-type { margin-bottom: 28px }
@@ -1024,18 +1051,42 @@ footer {
   position: fixed; inset: 0; z-index: 9999;
   background: var(--bg);
   display: none; flex-direction: column;
-  align-items: center; justify-content: center; gap: 20px; text-align: center;
+  align-items: center; justify-content: center; gap: 16px; text-align: center;
+  padding: 24px;
 }
 .calc-overlay.active { display: flex }
+/* Circular loader — payment-success visual language (never a square) */
 .calc-spinner {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  border: 2px solid var(--border) !important;
+  border-top-color: var(--accent, #533AFD) !important;
+  background: transparent !important;
   animation: spin .8s linear infinite;
+  margin: 0 auto 12px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.calc-track {
+  width: min(280px, 72vw); height: 2px;
+  background: var(--border);
+  overflow: hidden;
+  margin: 8px auto 0;
+}
+.calc-track__fill {
+  height: 100%; width: 8%;
+  background: var(--accent);
+  transition: width 0.55s ease;
 }
 @keyframes spin { to { transform: rotate(360deg) } }
-.calc-title { font-size: 18px; font-weight: 400; color: var(--main); letter-spacing: -0.02em }
-.calc-sub { font-size: 13px; color: var(--muted) }
+.calc-title {
+  font-family: var(--ra-font-brand, inherit);
+  font-size: 18px; font-weight: 500;
+  color: var(--main); letter-spacing: -0.02em;
+  margin-top: 8px;
+}
+.calc-sub { font-size: 13px; color: var(--muted); max-width: 28em; line-height: 1.5 }
 
 /* ── Flow landing (diagnostic) — centered like index hero ────── */
 .flow-landing {

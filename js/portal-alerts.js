@@ -136,10 +136,6 @@ async function logAutomation(ruleId,systemId,outcome,detail){
 }
 
  // ═══ PHASE 4B: ALERTS ═════════════════════════════════════════
- const EMAILJS_SVC='service_umdte26';
-const EMAILJS_TPL='template_o6h9et7';
-const EMAILJS_KEY='vxitc5LFJHMfNcmUL';
-
 async function navigateAlerts(){
   navigate('alerts',document.getElementById('nav-alerts'));
   if(!currentOrg)await ensureOrg();
@@ -194,8 +190,9 @@ async function maybeCreateAlert(type,severity,title,body,refId,refType){
 async function sendAlertEmail(title,body){
   try{
     if(typeof emailjs==='undefined')return;
-    emailjs.init(EMAILJS_KEY);
-    await emailjs.send(EMAILJS_SVC,EMAILJS_TPL,{
+    var ej=(window.RA_CONTACT&&RA_CONTACT.emailjs)||{};
+    emailjs.init(ej.publicKey||'vxitc5LFJHMfNcmUL');
+    await emailjs.send(ej.opsService||'service_umdte26',ej.opsTemplate||'template_o6h9et7',{
       to_name:currentProfile?.full_name?.split(' ')[0]||'there',
       to_email:currentUser.email,
       alert_title:title,

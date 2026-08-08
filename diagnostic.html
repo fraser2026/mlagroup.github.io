@@ -47,9 +47,10 @@
 
 <!-- CALCULATING OVERLAY -->
 <div class="calc-overlay" id="calcOverlay">
-  <div class="calc-spinner"></div>
+  <div class="calc-spinner" aria-hidden="true"></div>
   <div class="calc-title">Analysing your responses</div>
   <div class="calc-sub">Applying sector calibration and regulatory scoring</div>
+  <div class="calc-track" aria-hidden="true"><div class="calc-track__fill" id="calcTrackFill"></div></div>
 </div>
 
 <div class="page">
@@ -811,7 +812,16 @@ function calcResults() {
   };
 
   // ── SHOW CALCULATING OVERLAY ────────────────────────────────────
-  document.getElementById('calcOverlay').classList.add('active');
+  const calcEl = document.getElementById('calcOverlay');
+  const calcFill = document.getElementById('calcTrackFill');
+  if (calcFill) {
+    calcFill.style.transition = 'none';
+    calcFill.style.width = '8%';
+    void calcFill.offsetWidth;
+    calcFill.style.transition = 'width 1.1s ease';
+  }
+  calcEl.classList.add('active');
+  if (calcFill) requestAnimationFrame(() => { calcFill.style.width = '78%'; });
 
   // ── SAVE TO SESSIONstorage (for results.html to read) ───────────
   sessionStorage.setItem('mla_diagnostic_result', JSON.stringify({

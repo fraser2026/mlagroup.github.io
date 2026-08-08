@@ -3,8 +3,8 @@
 Marketing site, diagnostic, and client governance portal for **RegAnchor**, the trading
 name of MLA Group Ltd.
 
-Served as a static site from GitHub Pages. Currently live at `mlagroup.co.uk`; moving to
-`reganchor.com` — see [docs/CUTOVER.md](docs/CUTOVER.md).
+Served as a static site from GitHub Pages at **reganchor.com** (legacy `mlagroup.co.uk`
+should 301 here — see [docs/CUTOVER.md](docs/CUTOVER.md)).
 
 ## Layout
 
@@ -14,7 +14,8 @@ edit.
 
 | Path | What it is |
 |------|-----------|
-| `index.html`, `platform.html`, `pricing.html`, `methodology.html`, `contact.html` | Marketing pages |
+| `index.html`, `product.html`, `pricing.html`, `methodology.html`, `contact.html` | Marketing pages |
+| `platform.html` | Redirect shim → `product.html` (legacy URL) |
 | `privacy.html`, `terms.html`, `cookies.html` | Legal pages |
 | `diagnostic.html`, `results.html` | The AI governance diagnostic and its scored output |
 | `payment-success.html` | Post-Stripe account creation |
@@ -32,8 +33,8 @@ edit.
 |---------|----------|
 | Supabase | Database, auth, storage, edge functions |
 | Stripe | One-off report purchases and subscriptions |
-| EmailJS | Client and admin notification email |
-| FormSubmit | Diagnostic lead notification |
+| EmailJS | Client and admin notification email (templates in EmailJS dashboard; see [docs/EMAIL.md](docs/EMAIL.md)) |
+| FormSubmit | Diagnostic lead notification to `RA_CONTACT.ops` |
 | Render | `mla-pdf-service`, the Puppeteer PDF renderer |
 
 ## PDF generation
@@ -57,5 +58,6 @@ entity, the data controller, the contracting party, and the certificate issuer.
 ## Docs
 
 - [BRAND.md](BRAND.md) — trading name versus legal entity
+- [docs/EMAIL.md](docs/EMAIL.md) — EmailJS + FormSubmit + address map
 - [docs/SMOKE-TEST.md](docs/SMOKE-TEST.md) — manual test checklist, run before and after changes
 - [docs/CUTOVER.md](docs/CUTOVER.md) — everything required to move to `reganchor.com`

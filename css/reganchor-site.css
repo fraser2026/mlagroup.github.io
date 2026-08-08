@@ -1,0 +1,426 @@
+/* ═══════════════════════════════════════════════════════════════
+   RegAnchor public site — RGA-001 ink-on-paper
+
+   Load after each page's legacy inline <style>, after
+   css/reganchor.css. Remaps page tokens and overrides the dark
+   navy / blue / gold marketing chrome without rewriting every
+   HTML structure in one pass.
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --bg: var(--ra-paper, #FFFFFF);
+  --bg2: var(--ra-paper, #FFFFFF);
+  --bg3: var(--ra-paper, #FFFFFF);
+  --card: var(--ra-paper, #FFFFFF);
+  --border: var(--ra-line, #E4E7EC);
+  --border-h: var(--ra-slate, #1F2937);
+  --border-m: var(--ra-slate, #1F2937);
+  --borm: var(--ra-slate, #1F2937);
+  --accent: var(--ra-ink, #0A0E14);
+  --accent-l: var(--ra-slate, #1F2937);
+  --accent-d: var(--ra-slate, #1F2937);
+  --accent-h: var(--ra-slate, #1F2937);
+  --sky: var(--ra-steel, #6B7280);
+  --main: var(--ra-ink, #0A0E14);
+  --sub: var(--ra-slate-70, #374151);
+  --muted: var(--ra-steel, #6B7280);
+  --muted2: var(--ra-slate-70, #374151);
+  --gold: var(--ra-ink, #0A0E14);
+  --err: var(--ra-risk, #B91C1C);
+  --green: var(--ra-ok, #15803D);
+  --ra-font-brand: 'IBM Plex Sans', sans-serif;
+  --ra-font-product: 'Inter', sans-serif;
+  --page: 1120px;
+  --ph: 48px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--bg);
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg) !important;
+  color: var(--sub);
+  font-family: var(--ra-font-product) !important;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Atmosphere — kill glow / grid / navy fields */
+.bg-base, .bg-grid, .bg-field, .bg-ambient, .bg-glow,
+.bg-glow-1, .bg-glow-2, .bg-glow-3 { display: none !important; }
+
+/* ── Type ────────────────────────────────────────────────────── */
+.label, .section-label, .eyebrow, .hero-eyebrow, .pricing-tier,
+.proof-label, .card-label, .urgency-label {
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+  color: var(--muted) !important;
+}
+
+h1, h2, .hero h1, .landing-hero h1, .page-header h1,
+.urgency-quote, .pricing-name, .card-title, .section-title {
+  font-family: var(--ra-font-brand) !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
+  letter-spacing: -0.03em;
+  color: var(--main) !important;
+}
+h1 em, h2 em, .h1-highlight, .logo em, .nav-logo em, .rp-logo em {
+  font-family: inherit !important;
+  font-style: normal !important;
+  color: inherit !important;
+  font-weight: 500 !important;
+}
+
+p, .hero-sub, .sec-sub, .section-desc, .pricing-desc, .card-body {
+  color: var(--sub) !important;
+}
+
+/* ── Nav (marketing) ─────────────────────────────────────────── */
+nav, .rnav {
+  position: sticky; top: 0; z-index: 100;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--ph);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.logo, .nav-logo, .rnav-logo {
+  font-family: var(--ra-font-brand) !important;
+  font-size: 17px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.025em;
+  text-decoration: none;
+  color: var(--main) !important;
+}
+
+.nav-centre { display: flex; align-items: center; gap: 4px }
+.nav-link {
+  padding: 7px 12px !important;
+  border-radius: 0 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--muted) !important;
+  background: none !important;
+  text-decoration: none;
+}
+.nav-link:hover { color: var(--main) !important; background: none !important }
+
+.nav-right { display: flex; align-items: center; gap: 8px }
+.nav-signin, .nav-back {
+  padding: 7px 12px !important;
+  border-radius: 0 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--muted) !important;
+  background: none !important;
+  text-decoration: none;
+}
+.nav-signin:hover, .nav-back:hover { color: var(--main) !important }
+
+.nav-cta, .btn-primary, .mob-cta, .pricing-btn, .pricing-btn-primary,
+.submit, .btn-get-report, .cta-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px !important;
+  font-family: var(--ra-font-product) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  background: var(--accent) !important;
+  color: #FFFFFF !important;
+  border: 1px solid var(--accent) !important;
+  border-radius: 0 !important;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: background .12s, border-color .12s, opacity .12s;
+}
+.nav-cta:hover, .nav-cta:focus-visible,
+.btn-primary:hover, .btn-primary:focus-visible,
+.mob-cta:hover, .mob-cta:focus-visible,
+.pricing-btn:hover, .pricing-btn:focus-visible,
+.pricing-btn-primary:hover, .pricing-btn-primary:focus-visible,
+.submit:hover, .submit:focus-visible,
+.cta-btn:hover, .cta-btn:focus-visible,
+.btn-get-report:hover, .btn-get-report:focus-visible {
+  opacity: 1;
+  background: var(--accent-h, var(--ra-blurple-hover, #4434E0)) !important;
+  border-color: var(--accent-h, var(--ra-blurple-hover, #4434E0)) !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+  transform: none !important;
+  outline: none;
+}
+
+.btn-ghost, .btn-secondary, .pricing-btn-secondary, .alt-btn, .btn-consult {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px !important;
+  font-family: var(--ra-font-product) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  background: var(--bg) !important;
+  color: var(--main) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.btn-ghost:hover, .btn-ghost:focus-visible,
+.btn-secondary:hover, .btn-secondary:focus-visible,
+.pricing-btn-secondary:hover, .pricing-btn-secondary:focus-visible,
+.alt-btn:hover, .alt-btn:focus-visible,
+.btn-consult:hover, .btn-consult:focus-visible {
+  border-color: var(--accent, var(--ra-blurple, #533AFD)) !important;
+  color: var(--accent, var(--ra-blurple, #533AFD)) !important;
+  background: var(--hover, var(--ra-mist, #F6F9FC)) !important;
+  outline: none;
+}
+
+.hamburger span { background: var(--main) !important }
+.mob-menu {
+  background: var(--bg) !important;
+  border-top: 1px solid var(--border);
+  border-radius: 0 !important;
+}
+.mob-link { color: var(--sub) !important; border-radius: 0 !important }
+.mob-link:hover { color: var(--main) !important; background: none !important }
+
+/* ── Hero / sections ─────────────────────────────────────────── */
+.hero, .page-header, .landing-hero {
+  position: relative; z-index: 1;
+  background: var(--bg) !important;
+}
+.badge, .nav-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: none !important;
+  border: 1px solid var(--border) !important;
+  color: var(--muted) !important;
+  border-radius: 0 !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 6px 12px !important;
+}
+.badge-dot {
+  width: 5px; height: 5px; border-radius: 0 !important;
+  background: var(--main) !important;
+  animation: none !important;
+}
+
+.sec, .section, .trust, .feat-section, .urgency-section,
+.pricing-section, .cta-section, .close, .process, .truths, .weight {
+  background: var(--bg) !important;
+  border-color: var(--border) !important;
+}
+
+/* ── Cards / panels ──────────────────────────────────────────── */
+.product-card, .pricing-card, .form-card, .card, .info-block,
+.warning-block, .stat-panel, .faq-item, .cert-preview, .cert-valid,
+.cert-expired, .cert-invalid, .success-state, .err-box, .ok-box {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.product-card:hover, .pricing-card:hover {
+  background: var(--bg) !important;
+  border-color: var(--main) !important;
+}
+.pricing-card.featured, .pricing-card.gold-border,
+.pricing-card.featured:hover {
+  border-color: var(--main) !important;
+  background: var(--bg) !important;
+  box-shadow: none !important;
+}
+.pricing-tag {
+  position: absolute;
+  top: -1px; left: 50%; transform: translateX(-50%);
+  background: var(--bg) !important;
+  color: var(--main) !important;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 4px 12px !important;
+}
+.pricing-price, .proof-num, .pw-amount {
+  font-family: var(--ra-font-brand) !important;
+  font-weight: 500 !important;
+  color: var(--main) !important;
+  font-feature-settings: 'tnum';
+}
+.pricing-features li, .inc-item { color: var(--sub) !important }
+.pricing-divider { border-color: var(--border) !important }
+
+/* Billing toggle / compare / FAQ */
+.toggle-section, .billing-toggle, .period-toggle {
+  border: 1px solid var(--border);
+  border-radius: 0 !important;
+  background: var(--bg) !important;
+}
+.toggle-btn, .period-btn {
+  border-radius: 0 !important;
+  background: none !important;
+  color: var(--muted) !important;
+  box-shadow: none !important;
+}
+.toggle-btn.active, .period-btn.active {
+  background: var(--main) !important;
+  color: var(--bg) !important;
+}
+.compare-table, .dtable, .btable, .data-tbl, .fwlist {
+  border-color: var(--border) !important;
+  background: var(--bg) !important;
+}
+.compare-table th, .dtable th, .btable th, .data-tbl th {
+  background: var(--bg) !important;
+  color: var(--muted) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 10px !important;
+  border-color: var(--border) !important;
+}
+.compare-table td, .dtable td, .btable td, .data-tbl td {
+  border-color: var(--border) !important;
+  color: var(--sub) !important;
+}
+.ptag, .bpill, .risk-pill, .reg-badge {
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  color: var(--muted) !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0 !important;
+}
+.faq-q { color: var(--main) !important }
+.faq-a { color: var(--sub) !important }
+
+/* ── Forms (contact / login) ─────────────────────────────────── */
+.form-input, .form-select, .field input, .field select, .field textarea,
+input[type="text"], input[type="email"], input[type="password"], textarea, select {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  color: var(--main) !important;
+  font-family: var(--ra-font-product) !important;
+  color-scheme: light !important;
+  box-shadow: none !important;
+}
+.form-input:focus, .form-select:focus, .field input:focus,
+.field select:focus, .field textarea:focus {
+  border-color: var(--main) !important;
+  outline: none;
+}
+.form-label, .field label {
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500 !important;
+}
+.form-tabs, .tabs {
+  border-bottom: 1px solid var(--border);
+}
+.form-tab, .tab {
+  border-radius: 0 !important;
+  color: var(--muted) !important;
+  background: none !important;
+}
+.form-tab.active, .tab.active {
+  color: var(--main) !important;
+  border-bottom: 1px solid var(--main);
+}
+.checkbox-grid label, .portal-list, .pl-item {
+  color: var(--sub) !important;
+  border-color: var(--border) !important;
+}
+.err-box { border-color: var(--err) !important; color: var(--err) !important }
+.ok-box { border-color: var(--green) !important; color: var(--green) !important }
+
+/* ── Platform mock / methodology extras ──────────────────────── */
+.rpt-chrome, .rpt-page, .rpt-shell, .reveal, .metrics-grid, .metric {
+  background: var(--bg) !important;
+  border-color: var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.steps .step, .step-num {
+  border-color: var(--border) !important;
+  color: var(--main) !important;
+  background: var(--bg) !important;
+  border-radius: 0 !important;
+}
+.disc-sec, .disclaimer, .warning-block {
+  border-left: 2px solid var(--main);
+  background: var(--bg) !important;
+  border-radius: 0 !important;
+}
+.rights-list .right-item {
+  border-color: var(--border) !important;
+  background: var(--bg) !important;
+  border-radius: 0 !important;
+}
+
+/* ── Verify / payment-success ────────────────────────────────── */
+/* Ring only — never force square radius on circular loaders */
+.success-ring {
+  border-radius: 0 !important;
+  border-color: var(--border) !important;
+  border-top-color: var(--main) !important;
+  box-shadow: none !important;
+}
+.cert-details, .verify-header, .wrapper .card {
+  background: var(--bg) !important;
+  border-color: var(--border) !important;
+  border-radius: 0 !important;
+}
+.cert-valid { border-left: 2px solid var(--green) !important }
+.cert-expired, .cert-invalid { border-left: 2px solid var(--err) !important }
+
+/* ── Footer ──────────────────────────────────────────────────── */
+footer, .ft, .rfooter, .footer-bottom {
+  background: var(--bg) !important;
+  border-top: 1px solid var(--main) !important;
+  color: var(--muted) !important;
+}
+.f-col a, .ft-links a, .rf-links a, .footer-links a {
+  color: var(--muted) !important;
+  text-decoration: none;
+}
+.f-col a:hover, .ft-links a:hover, .rf-links a:hover { color: var(--main) !important }
+.f-brand, .rf-brand {
+  font-family: var(--ra-font-brand) !important;
+  font-weight: 500 !important;
+  color: var(--main) !important;
+}
+
+/* ── Layout helpers ──────────────────────────────────────────── */
+.pw, .page-wrap, .content { max-width: var(--page); margin-left: auto; margin-right: auto }
+
+@media (max-width: 768px) {
+  :root { --ph: 20px }
+  nav, .rnav { padding: 0 20px }
+}
