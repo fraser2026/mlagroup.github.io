@@ -128,14 +128,30 @@
       margin-bottom: 16px;
       max-width: 16em;
     }
-    /* Muted type-in slot (matches home hero grey second-line cadence) */
-    .line-rotate {
-      display: inline;
+    /* Muted type-in: sizer holds full word width so layout never expands mid-type */
+    .type-slot {
+      display: inline-block;
       position: relative;
+      vertical-align: baseline;
+      white-space: nowrap;
+    }
+    .type-slot__sizer {
+      visibility: hidden;
+      font-style: normal;
+      font-weight: 400;
+      color: var(--muted);
+      pointer-events: none;
+      user-select: none;
+    }
+    .line-rotate {
+      position: absolute;
+      left: 0;
+      top: 0;
       font-style: normal;
       font-weight: 400;
       color: var(--muted);
       white-space: nowrap;
+      margin: 0;
     }
     .line-rotate__item {
       font: inherit;
@@ -158,6 +174,8 @@
       margin: 0 0 24px;
       text-align: left;
     }
+    .hero-sub--mobile { display: none; }
+    .title-lead--mobile { display: none; }
     .hero-actions {
       display: flex;
       flex-wrap: wrap;
@@ -225,11 +243,11 @@
     .stage__viewport {
       position: relative;
       width: 100%;
-      /* JS sets --scale and height from stage width only */
+      /* Native portal aspect lock = no height jump before JS scale */
+      aspect-ratio: 1180 / 720;
       overflow: hidden;
       background: var(--bg);
       line-height: 0;
-      /* Keep iframe out of document scroll width (paired with position:absolute) */
       contain: layout paint;
     }
     .stage__viewport iframe {
@@ -351,7 +369,11 @@
         max-width: none;
         text-align: center;
       }
-      .hero-sub {
+      .title-lead--desktop { display: none; }
+      .title-lead--mobile { display: inline; }
+      .hero-sub--desktop { display: none; }
+      .hero-sub--mobile {
+        display: block;
         font-size: 1rem;
         line-height: 1.7;
         margin: 0 auto 28px;
@@ -402,8 +424,16 @@
   <div class="hero-wrap">
     <div class="hero">
       <div class="hero-copy">
-        <h1>The operating system for <em class="line-rotate" data-phrases="governance." aria-label="governance."></em></h1>
-        <p class="hero-sub">RegAnchor provides a single environment to discover AI systems, assess regulatory exposure, assign accountability, collect evidence, and maintain continuous oversight across your organisation.</p>
+        <h1>
+          <span class="title-lead title-lead--desktop">The operating system for AI </span>
+          <span class="title-lead title-lead--mobile">The OS for AI<br></span>
+          <span class="type-slot">
+            <span class="type-slot__sizer" aria-hidden="true">governance.</span>
+            <em class="line-rotate" data-phrases="governance." aria-label="governance."></em>
+          </span>
+        </h1>
+        <p class="hero-sub hero-sub--desktop">RegAnchor provides a single environment to discover AI systems, assess regulatory exposure, assign accountability, collect evidence, and maintain continuous oversight across your organisation.</p>
+        <p class="hero-sub hero-sub--mobile">Empower your organisation to inventory AI assets, map regulatory requirements, and maintain continuous oversight across your entire organisation with RegAnchor.</p>
         <div class="hero-actions">
           <button type="button" class="btn-primary" data-open-demo>
             Book demo
@@ -435,8 +465,8 @@
 </section>
 
 <section class="close-cta">
-  <h2>Get <em class="line-rotate" data-phrases="started." aria-label="started."></em></h2>
-  <p>Manage AI systems continuously through Registry, Governance, Evidence and Intelligence today.</p>
+  <h2>Get <span class="type-slot"><span class="type-slot__sizer" aria-hidden="true">started.</span><em class="line-rotate" data-phrases="started." aria-label="started."></em></span></h2>
+  <p>Govern your AI stack with confidence today.</p>
   <div class="hero-actions">
     <a href="pricing.html" class="btn-primary">
       View plans
@@ -518,12 +548,11 @@
 
   function fitPortal() {
     if (!stage || !viewport) return;
-    /* Use bounding width of stage border box; minmax(0) ancestors keep page ≤ viewport */
     var w = stage.getBoundingClientRect().width;
     if (!w || w < 40) return;
     var scale = Math.min(1, w / PW);
     viewport.style.setProperty('--scale', String(scale));
-    viewport.style.height = Math.max(1, Math.round(PH * scale)) + 'px';
+    /* Height comes from aspect-ratio; only set scale so no reflow jump */
   }
   window.addEventListener('resize', fitPortal);
   if (typeof ResizeObserver !== 'undefined') {
