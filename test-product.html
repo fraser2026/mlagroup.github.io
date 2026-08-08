@@ -70,11 +70,14 @@
     }
     .nav-signin:hover { color: var(--main); background: var(--hover); }
     .nav-cta {
+      display: inline-flex; align-items: center; gap: 8px;
       padding: 9px 18px; font-size: 0.85rem; font-weight: 500; color: #fff;
       background: var(--accent); border: 1px solid var(--accent); border-radius: 4px;
       cursor: pointer; font-family: inherit;
     }
     .nav-cta:hover { background: var(--accent-h); }
+    .nav-cta svg { transition: transform 0.18s; flex-shrink: 0; }
+    .nav-cta:hover svg { transform: translateX(3px); }
     .hamburger {
       display: none; flex-direction: column; gap: 5px; border: none; background: none; cursor: pointer;
     }
@@ -88,7 +91,10 @@
     .mob-cta {
       margin-top: 8px; padding: 13px; background: var(--accent); color: #fff;
       border: none; border-radius: 4px; font-weight: 500; cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
+    .mob-cta svg { transition: transform 0.18s; flex-shrink: 0; }
+    .mob-cta:hover svg { transform: translateX(3px); }
 
     .hero-wrap {
       max-width: 1100px; margin: 0 auto; padding: 40px 48px 64px;
@@ -103,40 +109,91 @@
       min-width: 0;
       width: 100%;
     }
-    .hero-copy { min-width: 0; max-width: 100%; }
-    /* Match index.html hero type scale (do not scale with portal) */
+    .hero-copy {
+      min-width: 0;
+      max-width: 100%;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    /* Desktop product title sits under site section scale (not home full-viewport hero) */
     .hero-copy h1 {
       font-family: var(--font-brand);
-      font-size: clamp(2.75rem, 6vw, 5rem);
+      font-size: clamp(1.9rem, 3.6vw, 2.85rem);
       font-weight: 500;
-      line-height: 1.18;
+      line-height: 1.08;
       letter-spacing: -0.03em;
       color: var(--main);
-      margin-bottom: 28px;
+      margin-bottom: 16px;
+      max-width: 16em;
+    }
+    /* Muted type-in slot (matches home hero grey second-line cadence) */
+    .line-rotate {
+      display: inline;
+      position: relative;
+      font-style: normal;
+      font-weight: 400;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .line-rotate__item {
+      font: inherit;
+      font-style: normal;
+      font-weight: inherit;
+      color: inherit;
+      letter-spacing: inherit;
+      line-height: inherit;
+    }
+    .line-rotate__item[data-state="in"] { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      .line-rotate__item { transition: none; }
     }
     .hero-sub {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: 400;
       color: var(--sub);
-      line-height: 1.7;
-      max-width: 620px;
-      margin-bottom: 44px;
+      line-height: 1.65;
+      max-width: 38em;
+      margin: 0 0 24px;
+      text-align: left;
     }
-    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: flex-start;
+      align-items: center;
+    }
     .btn-primary {
-      display: inline-flex; align-items: center; padding: 12px 22px;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 26px;
       background: var(--accent); color: #fff; border: 1px solid var(--accent);
       border-radius: 4px; font-size: 0.9rem; font-weight: 500;
-      cursor: pointer; font-family: inherit;
+      cursor: pointer; font-family: inherit; text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
     }
-    .btn-primary:hover { background: var(--accent-h); color: #fff; }
+    .btn-primary:hover,
+    .btn-primary:focus-visible {
+      background: var(--accent-h); border-color: var(--accent-h); color: #fff;
+    }
+    .btn-primary svg { transition: transform 0.18s; flex-shrink: 0; }
+    .btn-primary:hover svg { transform: translateX(3px); }
     .btn-ghost {
-      display: inline-flex; align-items: center; padding: 11px 20px;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 24px;
       border: 1px solid var(--border); border-radius: 4px;
       font-size: 0.9rem; font-weight: 500; color: var(--main);
       text-decoration: none; background: var(--bg);
+      cursor: pointer; font-family: inherit;
+      transition: border-color 0.18s, background 0.18s, color 0.18s;
     }
-    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-ghost:hover,
+    .btn-ghost:focus-visible {
+      border-color: var(--accent);
+      background: var(--hover);
+      color: var(--accent);
+    }
 
     /*
       Exact portal replica:
@@ -191,26 +248,30 @@
       line-height: 1.5;
     }
 
-    .philosophy {
-      border-top: 1px solid var(--border);
-      max-width: 1100px; margin: 0 auto; padding: 64px 48px;
-    }
-    .philosophy h2 {
-      font-family: var(--font-brand); font-size: clamp(1.45rem, 2.8vw, 2rem);
-      font-weight: 500; letter-spacing: -0.025em; color: var(--main);
-      margin-bottom: 12px; line-height: 1.15;
-    }
-    .philosophy h2 em { font-style: normal; font-weight: 400; color: var(--muted); }
-    .philosophy p { font-size: 0.92rem; color: var(--sub); max-width: 36em; line-height: 1.7; }
     .close-cta {
       border-top: 1px solid var(--border);
-      max-width: 1100px; margin: 0 auto; padding: 48px 48px 72px; text-align: center;
+      max-width: 1100px; margin: 0 auto; padding: 64px 48px 72px; text-align: center;
     }
     .close-cta h2 {
-      font-family: var(--font-brand); font-size: 1.4rem; font-weight: 500;
-      color: var(--main); margin-bottom: 8px;
+      font-family: var(--font-brand);
+      font-size: clamp(2rem, 3.4vw, 3rem);
+      font-weight: 500;
+      letter-spacing: -0.025em;
+      color: var(--main);
+      margin-bottom: 16px;
+      line-height: 1.18;
+      white-space: nowrap;
     }
-    .close-cta p { font-size: 0.88rem; color: var(--sub); margin-bottom: 20px; }
+    .close-cta h2 .line-rotate {
+      font-weight: 400;
+      color: var(--muted);
+    }
+    .close-cta p {
+      font-size: 1rem; color: var(--sub); margin: 0 auto 40px;
+      max-width: 520px; line-height: 1.75;
+      text-align: center;
+    }
+    .close-cta .hero-actions { justify-content: center; }
     footer { border-top: 1px solid var(--border); }
     .footer-inner {
       max-width: 1100px; margin: 0 auto; padding: 24px 48px;
@@ -274,25 +335,37 @@
     @media (max-width: 768px) {
       .home-chrome nav,
       .hero-wrap,
-      .philosophy,
       .close-cta,
       .footer-inner { padding-left: 20px; padding-right: 20px; }
       .hero-wrap { padding-top: 32px; padding-bottom: 48px; }
+      .hero-copy {
+        text-align: center;
+        align-items: center;
+      }
       .hero-copy h1 {
+        /* Mobile: match index home hero scale */
         font-size: clamp(2.1rem, 8vw, 3rem);
         line-height: 1.14;
         letter-spacing: -0.02em;
         margin-bottom: 20px;
+        max-width: none;
+        text-align: center;
       }
       .hero-sub {
         font-size: 1rem;
-        margin-bottom: 28px;
+        line-height: 1.7;
+        margin: 0 auto 28px;
         max-width: none;
+        text-align: center;
+      }
+      .hero-actions { justify-content: center; }
+      .close-cta h2 {
+        font-size: clamp(1.75rem, 7vw, 2.4rem);
+        white-space: normal;
       }
       .nav-right { display: none; }
       .hamburger { display: flex; }
       .fg-row { grid-template-columns: 1fr; }
-      /* Edge-to-edge portal within page padding — full usable width, never page zoom */
       .hero-stage {
         width: 100%;
         max-width: 100%;
@@ -307,7 +380,10 @@
     <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
     <div class="nav-right">
       <a href="login.html" class="nav-signin">Sign in</a>
-      <button type="button" class="nav-cta" data-open-demo>Book demo</button>
+      <button type="button" class="nav-cta" data-open-demo>
+        Book demo
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </div>
     <button type="button" class="hamburger" aria-label="Menu" onclick="toggleMob()"><span></span><span></span><span></span></button>
   </nav>
@@ -316,17 +392,23 @@
 <div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
 <div class="mob-menu" id="mobMenu">
   <a href="login.html" class="mob-link">Sign in</a>
-  <button type="button" class="mob-cta" data-open-demo>Book demo</button>
+  <button type="button" class="mob-cta" data-open-demo>
+    Book demo
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
 </div>
 
 <section>
   <div class="hero-wrap">
     <div class="hero">
       <div class="hero-copy">
-        <h1>The operating system for AI governance</h1>
+        <h1>The operating system for <em class="line-rotate" data-phrases="governance." aria-label="governance."></em></h1>
         <p class="hero-sub">RegAnchor provides a single environment to discover AI systems, assess regulatory exposure, assign accountability, collect evidence, and maintain continuous oversight across your organisation.</p>
         <div class="hero-actions">
-          <button type="button" class="btn-primary" data-open-demo>Book demo</button>
+          <button type="button" class="btn-primary" data-open-demo>
+            Book demo
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
           <a href="login.html" class="btn-ghost">Sign in</a>
         </div>
       </div>
@@ -346,23 +428,21 @@
             ></iframe>
           </div>
         </div>
-        <p class="stage-hint">Interactive portal demo. After three seconds idle, a guided walkthrough runs (registry → assessment → controls → score trend). Click anytime to explore yourself.</p>
+        <p class="stage-hint">Interactive portal demo. Click anytime to explore yourself.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="philosophy">
-  <h2>One environment.<br><em>End to end.</em></h2>
-  <p>Governance fails when inventory, ownership, assessment, and evidence live in separate spreadsheets. RegAnchor gives each AI system a single home: classified, assessed, controlled, and attested without rebuilding the story for every review.</p>
-</section>
-
 <section class="close-cta">
-  <h2>See it with your systems</h2>
-  <p>A short walkthrough against a use case that matters to your team.</p>
-  <div class="hero-actions" style="justify-content:center;">
-    <button type="button" class="btn-primary" data-open-demo>Book demo</button>
-    <a href="login.html" class="btn-ghost">Sign in</a>
+  <h2>Get <em class="line-rotate" data-phrases="started." aria-label="started."></em></h2>
+  <p>Manage AI systems continuously through Registry, Governance, Evidence and Intelligence today.</p>
+  <div class="hero-actions">
+    <a href="pricing.html" class="btn-primary">
+      View plans
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a href="contact.html" class="btn-ghost">Talk to advisory</a>
   </div>
 </section>
 
@@ -513,6 +593,99 @@
       document.getElementById('demoDone').onclick = closeDemo;
     };
   }
+
+  /*
+   * Single-phrase type-in (homepage close CTA cadence).
+   * Replays whenever the block enters the viewport (scroll up/down) or on refresh.
+   */
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var typeMs = 14;
+    var typeStartDelayMs = 200;
+    var stateMap = new WeakMap();
+
+    function normalizePhrase(s) {
+      s = String(s || '').trim();
+      if (!s) return s;
+      if (!/[.!?…]$/.test(s)) s += '.';
+      return s;
+    }
+
+    function makeItem(text) {
+      var span = document.createElement('span');
+      span.className = 'line-rotate__item';
+      span.setAttribute('data-state', 'in');
+      span.textContent = text;
+      return span;
+    }
+
+    function stopType(el) {
+      var st = stateMap.get(el);
+      if (st && st.typeTimer) clearTimeout(st.typeTimer);
+      stateMap.delete(el);
+      el.replaceChildren();
+    }
+
+    function typeInto(st, node, full) {
+      full = normalizePhrase(full);
+      if (st.typeTimer) {
+        clearTimeout(st.typeTimer);
+        st.typeTimer = null;
+      }
+      if (reduce) {
+        node.textContent = full;
+        return;
+      }
+      var i = 0;
+      node.textContent = '';
+      var tick = function () {
+        if (stateMap.get(st.el) !== st) return;
+        i += 1;
+        node.textContent = full.slice(0, i);
+        if (i < full.length) {
+          st.typeTimer = setTimeout(tick, typeMs);
+        } else {
+          st.typeTimer = null;
+        }
+      };
+      st.typeTimer = setTimeout(tick, typeStartDelayMs);
+    }
+
+    function startType(el, phrase) {
+      stopType(el);
+      phrase = normalizePhrase(phrase);
+      if (!phrase) return;
+      var first = makeItem('');
+      el.appendChild(first);
+      var st = { el: el, typeTimer: null };
+      stateMap.set(el, st);
+      typeInto(st, first, phrase);
+    }
+
+    function watchType(el, root) {
+      if (!el) return;
+      var attr = el.getAttribute('data-phrases') || '';
+      var phrase = normalizePhrase(attr.split('|')[0] || '');
+      if (!phrase) return;
+      var target = root || el;
+      if (typeof IntersectionObserver === 'undefined') {
+        startType(el, phrase);
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) startType(el, phrase);
+          else stopType(el);
+        });
+      }, { threshold: 0.35 });
+      io.observe(target);
+    }
+
+    document.querySelectorAll('.line-rotate[data-phrases]').forEach(function (el) {
+      var root = el.closest('.hero-copy') || el.closest('.close-cta') || el.closest('.hero') || el;
+      watchType(el, root);
+    });
+  })();
 })();
 </script>
 </body>
