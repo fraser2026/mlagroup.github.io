@@ -149,6 +149,7 @@ body {
 .ra-portal .state-label,
 .ra-portal .nav-badge,
 .ra-portal .filter-btn,
+.ra-portal .tab-btn,
 .ra-portal [id$="-badge"]:not(.bell-badge),
 .ra-portal [id$="-badge"]:not(.bell-badge) span {
   background: transparent !important;
@@ -156,6 +157,13 @@ body {
   background-image: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+}
+
+/* Tab active bar — flat blurple (must win over square-chrome transparent). */
+.ra-portal .tab-btn.active::after {
+  background: var(--ra-blurple) !important;
+  background-color: var(--ra-blurple) !important;
+  border-radius: 0 !important;
 }
 
 /* Unread count: small round mark is the one intentional circle. */
@@ -610,7 +618,12 @@ body {
 .btn-dl,
 .btn-unlock,
 .btn-upgrade,
-.invite-copy {
+.invite-copy,
+a.btn-topbar,
+a.btn-topbar-primary,
+a.btn-dl,
+a.btn-unlock,
+a.btn-upgrade {
   font-family: var(--ra-font-product, var(--ra-font));
   font-size: 13px;
   font-weight: 500;
@@ -619,7 +632,7 @@ body {
   padding: 8px 16px;
   border: 1px solid transparent;
   background: var(--ra-blurple);
-  color: var(--ra-white, #FFFFFF);
+  color: var(--ra-white, #FFFFFF) !important;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
@@ -631,19 +644,41 @@ body {
   box-shadow: none;
 }
 
+/* Keep label/icon white on hover — reganchor `a:hover` otherwise paints
+   the text blurple and it vanishes against the blurple fill. */
 .btn-topbar:hover,
+.btn-topbar:focus-visible,
 .btn-topbar-primary:hover,
+.btn-topbar-primary:focus-visible,
 .btn-dl:hover,
+.btn-dl:focus-visible,
 .btn-unlock:hover,
+.btn-unlock:focus-visible,
 .btn-upgrade:hover,
-.invite-copy:hover {
+.btn-upgrade:focus-visible,
+.invite-copy:hover,
+.invite-copy:focus-visible,
+a.btn-topbar:hover,
+a.btn-topbar:focus-visible,
+a.btn-topbar-primary:hover,
+a.btn-topbar-primary:focus-visible,
+a.btn-dl:hover,
+a.btn-dl:focus-visible,
+a.btn-unlock:hover,
+a.btn-unlock:focus-visible,
+a.btn-upgrade:hover,
+a.btn-upgrade:focus-visible {
   background: var(--ra-blurple-hover);
   border-color: transparent;
+  color: var(--ra-white, #FFFFFF) !important;
   opacity: 1;
+  outline: none;
 }
 
 .btn-topbar-ghost,
 .btn-topbar.btn-topbar-ghost,
+a.btn-topbar-ghost,
+a.btn-topbar.btn-topbar-ghost,
 .btn-pdf {
   font-family: var(--ra-font-product, var(--ra-font));
   font-size: 13px;
@@ -652,7 +687,7 @@ body {
   line-height: 1;
   padding: 8px 16px;
   background: var(--ra-bg);
-  color: var(--ra-text);
+  color: var(--ra-text) !important;
   border: 1px solid var(--ra-border);
   cursor: pointer;
   text-decoration: none;
@@ -669,11 +704,13 @@ body {
 .btn-topbar-ghost:focus-visible,
 .btn-topbar.btn-topbar-ghost:hover,
 .btn-topbar.btn-topbar-ghost:focus-visible,
+a.btn-topbar-ghost:hover,
+a.btn-topbar-ghost:focus-visible,
 .btn-pdf:hover,
 .btn-pdf:focus-visible {
   background: var(--ra-mist, var(--ra-bg-raised));
   border-color: var(--ra-blurple);
-  color: var(--ra-blurple);
+  color: var(--ra-blurple) !important;
   outline: none;
 }
 
@@ -700,7 +737,10 @@ a.btn-topbar-ink:hover {
 .btn-dl svg,
 .btn-pdf svg,
 .btn-unlock svg,
-.btn-upgrade svg {
+.btn-upgrade svg,
+a.btn-topbar svg,
+a.btn-topbar-primary svg,
+a.btn-dl svg {
   width: 11px; height: 11px;
   stroke: currentColor; fill: none;
   stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
@@ -801,6 +841,21 @@ a.btn-topbar-ink:hover {
   font-size: 34px; font-weight: 500;
   letter-spacing: -0.03em; line-height: 1;
   color: var(--ra-text);
+}
+
+/* Empty Latest Score — primary CTA aligns left with sibling stat metrics */
+.stat-value--cta {
+  font-size: inherit;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+}
+.stat-value--cta .btn-topbar,
+.stat-value--cta .btn-topbar-primary {
+  max-width: 100%;
 }
 
 .stat-sub { font-size: 12px; color: var(--ra-text-3); margin-top: 6px }
@@ -1274,25 +1329,38 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
    ─────────────────────────────────────────────────────────────── */
 .tab-bar { display: flex; border-bottom: 1px solid var(--ra-border); padding: 0 24px }
 
+/* Active underline = flat 2px bar under the label (same weight as sidebar rail).
+   Not border-bottom on the button — global control radius curved those ends. */
 .tab-btn {
+  position: relative;
   padding: 14px 0;
   margin-right: 28px;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
   color: var(--ra-text-3);
   font-family: var(--ra-font-product);
   font-size: 13px;
   font-weight: 400;
   cursor: pointer;
   margin-bottom: -1px;
-  transition: color .15s, border-color .15s;
+  border-radius: 0 !important;
+  transition: color .15s;
 }
 .tab-btn:hover { color: var(--ra-text) }
 .tab-btn.active {
   color: var(--ra-text);
   font-weight: 500;
-  border-bottom-color: var(--ra-blurple);
+}
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--ra-blurple) !important;
+  background-color: var(--ra-blurple) !important;
+  border-radius: 0 !important;
 }
 
 .tab-panel { display: none; padding: 24px }
@@ -1354,7 +1422,10 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
 }
 .tag:last-child { border-right: none; margin-right: 0; padding-right: 0 }
 
+/* System-detail header tags (Production / type / purpose / assess). Hidden for now —
+   values stay on Overview; re-enable with SHOW_DET_HEADER_TAGS in portal-registry.js. */
 .det-tags { display: flex; align-items: center; flex-wrap: wrap; margin-top: 10px }
+.det-tags[hidden] { display: none !important }
 
 .teaser {
   border: 1px solid var(--ra-border);
@@ -1399,7 +1470,8 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
    CONTROL / POLICY DETAIL
    ─────────────────────────────────────────────────────────────── */
 .detail-head { margin-bottom: 24px }
-.detail-head--system { margin-bottom: 20px; padding-bottom: 4px }
+/* Subtitle (Department / Owner / Added) → tabs with no tag strip between */
+.detail-head--system { margin-bottom: 16px; padding-bottom: 0 }
 .detail-head__meta {
   display: flex;
   align-items: center;

@@ -330,15 +330,25 @@ function renderOrgMaturity(gov){
 
 async function renderDashboard(paidIds){
   document.getElementById('dash-count').textContent=currentResults.length||'0';
-  document.getElementById('dash-score').textContent=currentResults.length>0?(currentResults[0].adjusted_score||0)+'%':'Not set';
+  var scoreEl=document.getElementById('dash-score');
+  if(scoreEl){
+    if(currentResults.length>0){
+      scoreEl.className='stat-value';
+      scoreEl.textContent=(currentResults[0].adjusted_score||0)+'%';
+    }else{
+      // No diagnostic yet — CTA replaces "Not set" (same primary as Add AI System)
+      scoreEl.className='stat-value stat-value--cta';
+      scoreEl.innerHTML='<a href="diagnostic.html" class="btn-topbar btn-topbar-primary">Run Diagnostic</a>';
+    }
+  }
   document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
   if(allControls.length){const g=getGovScore();document.getElementById('dash-compliance').textContent=g.score+'%';document.getElementById('dash-gov-maturity').textContent='Control coverage';renderOrgMaturity(g)}
   else{document.getElementById('dash-compliance').textContent='Not set'}
   var subEl=document.getElementById('dash-subtext');
   if(subEl&&currentOrg)subEl.textContent=currentOrg.name;
   var tierEl=document.getElementById('dash-tier-badge');
-  if(tierEl){var orgPlan=currentOrg?currentOrg.plan:'free';var planLabel='Free';
-    if(orgPlan==='essentials')planLabel='Essentials';else if(orgPlan==='professional')planLabel='Professional';
+  if(tierEl){var orgPlan=currentOrg?currentOrg.plan:'free';var planLabel='Free tier';
+    if(orgPlan==='essentials')planLabel='Essentials tier';else if(orgPlan==='professional')planLabel='Professional tier';
     tierEl.innerHTML='<span class="plan-label">'+planLabel+'</span>'+(orgPlan!=='professional'?'<button class="btn-inline" onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();">Upgrade</button>':'')}
   const feed=[];
   currentResults.forEach(r=>{const band=r.risk_band||'moderate';feed.push({time:new Date(r.created_at),html:'Diagnostic completed — <strong>'+esc(r.organisation||'Assessment')+'</strong><br>'+(BAND_LABELS[band]||band)+' · '+(r.adjusted_score||0)+'%',date:fmtDate(r.created_at),click:"navigate('reports',document.getElementById('nav-reports'))"})});
@@ -358,8 +368,8 @@ async function renderDashboard(paidIds){
 function renderReports(paidIds){
   // Diagnostic reports
   const dc=document.getElementById('reports-diagnostic');
-  if(!currentResults.length){dc.innerHTML='<div style="text-align:center;padding:20px 0;"><div style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">No diagnostic reports yet.</div><a href="diagnostic.html" class="btn-topbar btn-topbar-primary" style="display:inline-flex;text-decoration:none;">Run Diagnostic</a></div>'}
-  else{dc.innerHTML='<div class="result-list">'+currentResults.map(r=>{const band=r.risk_band||'moderate';const paid=isPaid||isPaidTier()||paidIds.has(r.id);const btn=paid?'<div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn-dl" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</button><button class="btn-pdf" id="pdf-btn-'+r.id+'" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download PDF</button></div>':'<a href="pricing.html" class="btn-unlock">Unlock — £295</a>';return '<div class="result-card"><div><div class="result-org">'+esc(r.organisation||'Diagnostic')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'</div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Exposure</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div></div>'}).join('')+'</div>'}
+  if(!currentResults.length){dc.innerHTML='<div style="text-align:center;padding:20px 0;"><div style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">No diagnostic reports yet.</div><a href="diagnostic.html" class="btn-topbar btn-topbar-primary">Run Diagnostic</a></div>'}
+  else{dc.innerHTML='<div class="result-list">'+currentResults.map(r=>{const band=r.risk_band||'moderate';const paid=isPaid||isPaidTier()||paidIds.has(r.id);const btn=paid?'<div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-topbar btn-topbar-primary" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</button><button type="button" class="btn-pdf" id="pdf-btn-'+r.id+'" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download PDF</button></div>':'<a href="pricing.html" class="btn-topbar btn-topbar-primary">Unlock — £295</a>';return '<div class="result-card"><div><div class="result-org">'+esc(r.organisation||'Diagnostic')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'</div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Exposure</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div></div>'}).join('')+'</div>'}
 }
 async function loadAssessmentReports(){
   if(!currentOrg)return;
@@ -370,7 +380,7 @@ async function loadAssessmentReports(){
   const BAND_R={high:'High Risk',medium:'Medium Risk',moderate:'Moderate Risk',lowmod:'Low-Moderate',low:'Low Risk',critical:'Critical'};
   ac.innerHTML='<div class="result-list">'+assessments.map(a=>{
     const band=a.risk_band||'medium';const sn=sysNames[a.system_id]||'AI System';
-    var reportBtn=isPaidTier()?'<a href="system-report.html?aid='+a.id+'" target="_blank" class="btn-dl" style="text-decoration:none;"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</a>':'<button onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()" class="btn-unlock" style="border:none;cursor:pointer;">Upgrade to View</button>';return '<div class="result-card"><div><div class="result-org">'+esc(sn)+'</div><div class="result-meta"><span>'+fmtDate(a.requested_at)+'</span>'+(a.sector?'<span>'+esc(a.sector)+'</span>':'')+'<span>v'+(a.questionnaire_version||'1.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(a.overall_score!==null?a.overall_score+'%':'Not set')+'</div><div class="score-lbl">Governance</div></div><div class="band-pill band-'+band+'">'+(BAND_R[band]||band)+'</div>'+reportBtn+'</div></div>';
+    var reportBtn=isPaidTier()?'<a href="system-report.html?aid='+a.id+'" target="_blank" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</a>':'<button type="button" onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()" class="btn-topbar btn-topbar-primary">Upgrade to View</button>';return '<div class="result-card"><div><div class="result-org">'+esc(sn)+'</div><div class="result-meta"><span>'+fmtDate(a.requested_at)+'</span>'+(a.sector?'<span>'+esc(a.sector)+'</span>':'')+'<span>v'+(a.questionnaire_version||'1.0.0')+'</span></div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(a.overall_score!==null?a.overall_score+'%':'Not set')+'</div><div class="score-lbl">Governance</div></div><div class="band-pill band-'+band+'">'+(BAND_R[band]||band)+'</div>'+reportBtn+'</div></div>';
   }).join('')+'</div>';
 }
  

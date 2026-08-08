@@ -78,6 +78,10 @@ async function openSystemDetail(sysId){
   subEl.className='det-subtitle';
   subEl.removeAttribute('style');
   subEl.innerHTML=metaParts.join('');
+  // Header tag strip (deployment / type / purpose / latest assess status).
+  // Same facts remain on Overview tab; strip is UI-only and is off for now.
+  // Re-enable: set SHOW_DET_HEADER_TAGS true (CSS .det-tags also un-hides when [hidden] is cleared).
+  var SHOW_DET_HEADER_TAGS=false;
   var tagParts=[];
   if(sys.deployment_status)tagParts.push(STATUS_LABELS[sys.deployment_status]||sys.deployment_status);
   if(sys.system_type)tagParts.push(TYPE_LABELS[sys.system_type]||sys.system_type);
@@ -85,7 +89,15 @@ async function openSystemDetail(sysId){
   var latestA=(assessments&&assessments.length)?assessments[0]:null;
   if(latestA)tagParts.push(ASSESS_STATUS_LABELS[latestA.status]||latestA.status);
   var tagsEl=document.getElementById('det-tags');
-  if(tagsEl)tagsEl.innerHTML=tagParts.map(function(t){return '<span class="tag">'+esc(t)+'</span>'}).join('');
+  if(tagsEl){
+    if(SHOW_DET_HEADER_TAGS){
+      tagsEl.hidden=false;
+      tagsEl.innerHTML=tagParts.map(function(t){return '<span class="tag">'+esc(t)+'</span>'}).join('');
+    }else{
+      tagsEl.hidden=true;
+      tagsEl.innerHTML='';
+    }
+  }
   // Overview
   document.getElementById('tab-overview').innerHTML='<div class="detail-desc"><div class="stat-label">Description</div><p>'+esc(sys.description||'No description provided.')+'</p></div><div class="meta-grid"><div class="meta-item"><label>System ID</label><span class="meta-id">'+esc(sys.id)+'</span></div><div class="meta-item"><label>System Type</label><span>'+esc(TYPE_LABELS[sys.system_type]||'Not set')+'</span></div><div class="meta-item"><label>Vendor</label><span>'+esc(sys.vendor||'Not set')+'</span></div><div class="meta-item"><label>Department</label><span>'+esc(sys.department||'Not set')+'</span></div><div class="meta-item"><label>System Owner</label><span>'+esc(sys.system_owner||'Not set')+'</span></div><div class="meta-item"><label>Deployment</label><span><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||'Not set')+'</span></span></div><div class="meta-item"><label>Purpose Category</label><span>'+esc(sys.purpose_category?sys.purpose_category.replace(/_/g,' '):'Not set')+'</span></div><div class="meta-item"><label>Risk Tier</label><span><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></span></div>'+(sys.risk_tier_rationale?'<div class="meta-item" style="grid-column:1/-1;"><label>Classification Rationale</label><span>'+esc(sys.risk_tier_rationale)+'</span></div>':'')+'<div class="meta-item"><label>Registered</label><span>'+fmtDate(sys.created_at)+'</span></div><div class="meta-item"><label>Last Updated</label><span>'+fmtDate(sys.updated_at)+'</span></div></div>';
   // Assessment tab
@@ -259,7 +271,7 @@ async function renderAssessmentTab(assessments){
       (a.client_notes?'<div class="notice notice--quiet">'+esc(a.client_notes)+'</div>':'')+
       (a.status==='controls_issued'?'<div class="notice"><div class="notice__label">RegAnchor Controls Issued</div>'+(a.mla_notes?'<div class="notice__body">'+esc(a.mla_notes)+'</div>':'')+'<div class="notice__meta">Completed by '+(nm[a.completed_by]||'RegAnchor')+', '+fmtDateLong(a.completed_at)+'</div></div>':'')+
       (a.status==='submitted'?'<div class="notice"><div class="notice__body">Your assessment has been submitted. RegAnchor will review this AI system and provide tailored compliance controls. You will be notified when results are ready.</div></div>':'')+
-      '<div class="assess-card__actions">'+(isPaidTier()?'<a href="system-report.html?aid='+a.id+'" class="btn-dl" target="_blank"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</a>':'<button class="btn-topbar btn-topbar-ghost" onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>Upgrade to View Report</button>')+'</div>'+
+      '<div class="assess-card__actions">'+(isPaidTier()?'<a href="system-report.html?aid='+a.id+'" class="btn-topbar btn-topbar-primary" target="_blank"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View Report</a>':'<button type="button" class="btn-topbar btn-topbar-ghost" onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>Upgrade to View Report</button>')+'</div>'+
     '</div>'}).join('');
 
   requestAnimationFrame(function(){
