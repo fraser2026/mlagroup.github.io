@@ -1481,21 +1481,23 @@
     mio.observe(root);
   })();
 
-  // Vertical line rotate — carousel for multi phrases; single accents enter once per view.
-  // Restarts whenever the observed root leaves and re-enters the viewport.
+  // Vertical line rotate — carousel for multi phrases; single lines enter once per view.
+  // Hard-settles to one line after each handoff; self-heals after freeze/tab resume.
   (function () {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const rotateState = new WeakMap();
+    /** @type {HTMLElement[]} */
+    const activeEls = [];
     const holdMs = 2800;
     const transMs = reduce ? 0 : 560;
+    const lagGapMs = 1600;
 
-    function stopRotate(el) {
-      const st = rotateState.get(el);
-      if (!st) return;
-      if (st.holdTimer) clearTimeout(st.holdTimer);
-      if (st.transTimer) clearTimeout(st.transTimer);
-      rotateState.delete(el);
-      el.innerHTML = '';
+    function track(el) {
+      if (!activeEls.includes(el)) activeEls.push(el);
+    }
+    function untrack(el) {
+      const i = activeEls.indexOf(el);
+      if (i > -1) activeEls.splice(i, 1);
     }
 
     function makeItem(text, state) {
@@ -1506,6 +1508,25 @@
       return span;
     }
 
+    /** Exactly one visible phrase — kills stacked/garbled mid-transition debris. */
+    function settle(el, phrase) {
+      el.replaceChildren(makeItem(phrase, 'in'));
+    }
+
+    function clearTimers(st) {
+      if (!st) return;
+      if (st.holdTimer) { clearTimeout(st.holdTimer); st.holdTimer = null; }
+      if (st.transTimer) { clearTimeout(st.transTimer); st.transTimer = null; }
+    }
+
+    function stopRotate(el) {
+      const st = rotateState.get(el);
+      if (st) clearTimers(st);
+      rotateState.delete(el);
+      el.replaceChildren();
+      untrack(el);
+    }
+
     function paintIn(node) {
       if (reduce) {
         node.setAttribute('data-state', 'in');
@@ -1514,56 +1535,95 @@
       void node.offsetWidth;
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          node.setAttribute('data-state', 'in');
+          if (node.isConnected) node.setAttribute('data-state', 'in');
         });
       });
+    }
+
+    /** Recover from lag/freeze/tab resume: snap to one phrase, resume loop if multi. */
+    function heal(el) {
+      const st = rotateState.get(el);
+      if (!st || !st.phrases || !st.phrases.length) return;
+      clearTimers(st);
+      const n = st.phrases.length;
+      st.index = ((st.index % n) + n) % n;
+      settle(el, st.phrases[st.index]);
+      st.busy = false;
+      if (st.multi && typeof st.advance === 'function') {
+        st.holdTimer = setTimeout(st.advance, holdMs);
+      }
+    }
+
+    function healAll() {
+      activeEls.slice().forEach(heal);
     }
 
     function startRotate(el, phrases) {
       stopRotate(el);
       if (!phrases.length) return;
 
-      let index = 0;
       const multi = phrases.length > 1 && !reduce;
+      track(el);
 
       const first = makeItem(phrases[0], reduce ? 'in' : 'enter');
       el.appendChild(first);
       paintIn(first);
 
       if (!multi) {
-        rotateState.set(el, { holdTimer: null, transTimer: null, index: 0, busy: false });
+        rotateState.set(el, {
+          phrases, index: 0, multi: false, busy: false,
+          holdTimer: null, transTimer: null, advance: null
+        });
+        // Ensure single line if enter animation was interrupted by lag
+        setTimeout(() => {
+          if (rotateState.get(el)) settle(el, phrases[0]);
+        }, transMs + 80);
         return;
       }
 
-      const st = { holdTimer: null, transTimer: null, index: 0, busy: false };
+      const st = {
+        phrases, index: 0, multi: true, busy: false,
+        holdTimer: null, transTimer: null, advance: null
+      };
       rotateState.set(el, st);
 
       const advance = () => {
-        if (!rotateState.get(el) || st.busy) return;
+        if (rotateState.get(el) !== st || st.busy) return;
         st.busy = true;
-        const nextIndex = (index + 1) % phrases.length;
+
+        // Bail if debris already stacked from a prior stall
+        if (el.querySelectorAll('.line-rotate__item').length > 2) {
+          heal(el);
+          return;
+        }
+
+        const nextIndex = (st.index + 1) % phrases.length;
+        const phrase = phrases[nextIndex];
         const outgoing = el.querySelector('.line-rotate__item[data-state="in"]');
-        const incoming = makeItem(phrases[nextIndex], 'enter');
+        const incoming = makeItem(phrase, 'enter');
         el.appendChild(incoming);
 
         void incoming.offsetWidth;
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            if (outgoing) outgoing.setAttribute('data-state', 'exit');
-            incoming.setAttribute('data-state', 'in');
+            if (rotateState.get(el) !== st) return;
+            if (outgoing && outgoing.isConnected) outgoing.setAttribute('data-state', 'exit');
+            if (incoming.isConnected) incoming.setAttribute('data-state', 'in');
           });
         });
 
         st.transTimer = setTimeout(() => {
-          if (outgoing && outgoing.parentNode === el) outgoing.remove();
-          el.querySelectorAll('.line-rotate__item[data-state="exit"]').forEach(n => n.remove());
-          index = nextIndex;
-          st.index = index;
+          if (rotateState.get(el) !== st) return;
+          // Always collapse to exactly one settled line (anti-scramble)
+          settle(el, phrase);
+          st.index = nextIndex;
           st.busy = false;
+          st.transTimer = null;
           st.holdTimer = setTimeout(advance, holdMs);
         }, transMs);
       };
 
+      st.advance = advance;
       st.holdTimer = setTimeout(advance, holdMs);
     }
 
@@ -1572,7 +1632,7 @@
       const phrases = (el.getAttribute('data-phrases') || '')
         .split('|').map(s => s.trim()).filter(Boolean);
       if (!phrases.length) return;
-      const target = root || el.closest('section') || el;
+      const target = root || el;
       const io = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) startRotate(el, phrases);
@@ -1586,6 +1646,22 @@
       const root = el.closest('.hero') || el.closest('.cta-box') || el;
       watchRotate(el, root);
     });
+
+    // Tab focus back / laptop thaw — snap any stuck handoff to a single readable line
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') healAll();
+    });
+    window.addEventListener('pageshow', healAll);
+    window.addEventListener('focus', healAll);
+
+    // Detect long freezes: if the event loop stalled hard, clean carousels on recovery
+    let lastBeat = performance.now();
+    setInterval(() => {
+      const now = performance.now();
+      const gap = now - lastBeat;
+      lastBeat = now;
+      if (gap >= lagGapMs) healAll();
+    }, 400);
   })();
 </script>
 <script src="js/fines-chart/fines-chart.js" defer></script>
