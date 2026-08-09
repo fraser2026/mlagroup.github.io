@@ -14,8 +14,8 @@ edit.
 
 | Path | What it is |
 |------|-----------|
-| `index.html`, `product.html`, `pricing.html`, `methodology.html`, `contact.html` | Marketing pages |
-| `platform.html` | Redirect shim → `product.html` (legacy URL) |
+| `index.html`, `platform.html`, `pricing.html`, `methodology.html`, `contact.html` | Marketing pages |
+| `product.html` | Redirect shim → `platform.html` (legacy URL) |
 | `privacy.html`, `terms.html`, `cookies.html` | Legal pages |
 | `diagnostic.html`, `results.html` | The AI governance diagnostic and its scored output |
 | `payment-success.html` | Post-Stripe account creation |
