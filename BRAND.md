@@ -126,11 +126,10 @@ templates (`certificate-template.html`, `report-template.html`, `generate-pdf.ht
 marketing site (`index.html` and siblings) is explicitly **not** included in this pass and needs its
 own dedicated design effort before it ships.
 
-Certificates already issued (`governance_certificates.pdf_path` set) keep their stored MLA Group
-branding forever — the portal never regenerates a cached PDF, it only re-renders when no `pdf_path`
-exists yet. New reports and certificates issued after this change render on the RegAnchor template.
-The certificate issuer, signatory line, and footer legal entity remain **MLA Group Ltd** per the
-decision rule above — only the brand chrome (fonts, colours, wordmark, layout) changed.
+Certificate **fields** (score, level, issued/expiry, ID) stay frozen at activation. Certificate
+**layout** follows the live `certificate-template.html` on every download: the portal re-renders
+via the PDF service and overwrites storage so branding upgrades ship without leaving customers on
+March-era cream/MLA PDFs. Issuer, signatory, and footer legal entity remain **MLA Group Ltd**.
 
 ---
 

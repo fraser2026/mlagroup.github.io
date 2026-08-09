@@ -49,24 +49,22 @@ async function activateCertificate(){
   await renderCertificateCard();
 }
 
+/* Cached PDFs under governance-reports keep the layout they were
+   first rendered with. Serving only pdf_path meant March 2026 cream
+   MLA PDFs outlived the RegAnchor certificate-template forever.
+   Always re-render from the current template with frozen cert fields
+   (score, level, issue dates, ID stay attestate truth). */
 function downloadCertificatePDF(){
   if(!isPaidTier()){navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();return}
   var activeCert=allCertificates.find(function(c){return c.status==='active'});
   if(!activeCert){alert('No active certificate found.');return}
-  if(activeCert.pdf_path){
-    sb.storage.from('governance-reports').createSignedUrl(activeCert.pdf_path,3600).then(function(r){
-      if(r.data&&r.data.signedUrl)window.open(r.data.signedUrl,'_blank');
-      else alert('Could not generate download link.');
-    });
-    return;
-  }
   var overlay=document.createElement('div');
   overlay.className='pdf-overlay';
   overlay.innerHTML='<div class="pdf-overlay__spinner"></div>'+
     '<div class="pdf-overlay__copy"><div class="pdf-overlay__title">Generating your certificate</div>'+
     '<div class="pdf-overlay__status" id="cert-status-msg">Connecting to certificate server...</div></div>'+
     '<div class="pdf-overlay__track"><div class="pdf-overlay__fill" id="cert-progress-bar"></div></div>'+
-    '<div class="pdf-overlay__note">This can take up to 30 seconds on first load.<br>Please keep this tab open.</div>';
+    '<div class="pdf-overlay__note">This can take up to 30 seconds.<br>Please keep this tab open.</div>';
   document.body.appendChild(overlay);
   var certMsgs=[{t:0,msg:'Connecting to certificate server...',pct:5},{t:3000,msg:'Loading certificate data...',pct:20},{t:8000,msg:'Rendering certificate layout...',pct:45},{t:15000,msg:'Generating PDF document...',pct:70},{t:22000,msg:'Almost there, finalising...',pct:88}];
   var certTimers=certMsgs.map(function(m){return setTimeout(function(){var el=document.getElementById('cert-status-msg');var bar=document.getElementById('cert-progress-bar');if(el)el.textContent=m.msg;if(bar)bar.style.width=m.pct+'%';},m.t);});
@@ -93,10 +91,14 @@ function downloadCertificatePDF(){
 }
 
 /* Seal preview — RGA-002 §05. Score, tier, Compliance Bar. No gold,
-   no serif, no cream. The gradient lives only inside the bar. */
+   no serif, no cream. The gradient lives only inside the bar.
+
+   animate:false is intentional. Attested numbers must paint at the
+   frozen score immediately. Count-up left seals stuck at "0 / 100"
+   when animateMaturity() was never called after render. */
 function certSealHTML(orgName, score, isBlurred){
   var blur=isBlurred?' cert-seal--muted':'';
-  var maturity=raMaturityBlock(score,{mini:false});
+  var maturity=raMaturityBlock(score,{mini:false,animate:false});
   return '<div class="cert-seal'+blur+'">'+
     '<div class="cert-seal__brand ra-wordmark">RegAnchor</div>'+
     '<div class="cert-seal__label">Attested governance maturity</div>'+
@@ -156,19 +158,23 @@ async function renderCertificateCard(){
   var html='';
 
   if(activeCert&&!isFree){
-    var cLevel=activeCert.certification_level;
-    var cLevelLabel=cLevel==='advanced'?'Advanced':cLevel==='structured'?'Structured':'Emerging';
     var cScore=activeCert.governance_score;
+    /* Prefer L1–L7 from the frozen score (product ladder). Legacy
+       certification_level enum is only a fallback if score is missing. */
+    var cLevelLabel=typeof raLevelText==='function'&&cScore!=null&&cScore!==''
+      ?raLevelText(cScore)
+      :(activeCert.certification_level==='advanced'?'Advanced':activeCert.certification_level==='structured'?'Structured':'Emerging');
     var cExpiry=fmtDate(activeCert.expires_at);
     var cId=activeCert.certificate_id;
     var cSys=activeCert.systems_covered||[];
+    var issuedNote=activeCert.issued_at?'Attested '+fmtDate(activeCert.issued_at)+' · ':'';
 
     html='<div class="cert-shell">'+
       '<div class="cert-shell__body">'+
         '<div class="cert-shell__head">'+
           '<div>'+
             '<div class="cert-shell__title">Governance certificate</div>'+
-            '<div class="cert-shell__sub">Organisation-wide attestation · Expires '+cExpiry+'</div>'+
+            '<div class="cert-shell__sub">'+issuedNote+'Organisation-wide attestation · Expires '+cExpiry+'</div>'+
           '</div>'+
           '<span class="state-label" style="color:var(--ra-ok);">Active</span>'+
         '</div>'+
@@ -182,7 +188,7 @@ async function renderCertificateCard(){
           '<button class="btn-topbar btn-topbar-primary" onclick="downloadCertificatePDF()">Download PDF</button>'+
           '<a class="btn-topbar btn-topbar-ghost" href="verify.html?id='+esc(cId)+'" target="_blank" style="text-decoration:none;">Verify online</a>'+
         '</div>'+
-        '<div class="cert-footer">Certificate ID · '+esc(cId)+' · Level '+esc(cLevelLabel)+' · Publicly verifiable</div>'+
+        '<div class="cert-footer">Certificate ID · '+esc(cId)+' · '+esc(cLevelLabel)+' · Publicly verifiable</div>'+
       '</div></div>';
   }
   else if(!isFree&&qualifies){
