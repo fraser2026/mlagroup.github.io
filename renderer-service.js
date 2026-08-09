@@ -167,11 +167,16 @@ app.post('/render-certificate', async (req, res) => {
  
     await page.setViewport({ width: 1122, height: 794 });
  
+    // networkidle0 can hang on Google Fonts on cold nodes; domcontentloaded + fonts.ready is enough
     await page.setContent(renderedHtml, {
-      waitUntil: 'networkidle0',
-      timeout: 30000,
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
     });
-    await page.evaluateHandle('document.fonts.ready');
+    try {
+      await page.evaluateHandle('document.fonts.ready');
+    } catch (_) { /* ignore font wait failures */ }
+    await page.waitForSelector('#certificate', { timeout: 10000 });
+    await new Promise((r) => setTimeout(r, 400));
  
     const pdfBuffer = await page.pdf({
       width: '1122px',

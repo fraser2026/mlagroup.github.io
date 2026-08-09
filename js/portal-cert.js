@@ -49,44 +49,126 @@ async function activateCertificate(){
   await renderCertificateCard();
 }
 
-/* Cached PDFs under governance-reports keep the layout they were
-   first rendered with. Serving only pdf_path meant March 2026 cream
-   MLA PDFs outlived the RegAnchor certificate-template forever.
-   Always re-render from the current template with frozen cert fields
-   (score, level, issue dates, ID stay attestate truth). */
+/* Always re-render from the current certificate template (frozen
+   score / IDs / dates). If storage upload fails, still open the
+   generated PDF so the user is not blocked on RLS / cache policies. */
 function downloadCertificatePDF(){
   if(!isPaidTier()){navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();return}
   var activeCert=allCertificates.find(function(c){return c.status==='active'});
   if(!activeCert){alert('No active certificate found.');return}
+
   var overlay=document.createElement('div');
   overlay.className='pdf-overlay';
   overlay.innerHTML='<div class="pdf-overlay__spinner"></div>'+
     '<div class="pdf-overlay__copy"><div class="pdf-overlay__title">Generating your certificate</div>'+
-    '<div class="pdf-overlay__status" id="cert-status-msg">Connecting to certificate server...</div></div>'+
+    '<div class="pdf-overlay__status" id="cert-status-msg">Connecting to certificate server…</div></div>'+
     '<div class="pdf-overlay__track"><div class="pdf-overlay__fill" id="cert-progress-bar"></div></div>'+
-    '<div class="pdf-overlay__note">This can take up to 30 seconds.<br>Please keep this tab open.</div>';
+    '<div class="pdf-overlay__note">First request after idle can take up to a minute while the PDF service wakes.<br>Please keep this tab open.</div>';
   document.body.appendChild(overlay);
-  var certMsgs=[{t:0,msg:'Connecting to certificate server...',pct:5},{t:3000,msg:'Loading certificate data...',pct:20},{t:8000,msg:'Rendering certificate layout...',pct:45},{t:15000,msg:'Generating PDF document...',pct:70},{t:22000,msg:'Almost there, finalising...',pct:88}];
-  var certTimers=certMsgs.map(function(m){return setTimeout(function(){var el=document.getElementById('cert-status-msg');var bar=document.getElementById('cert-progress-bar');if(el)el.textContent=m.msg;if(bar)bar.style.width=m.pct+'%';},m.t);});
-  var certPayload={certificate_id:activeCert.certificate_id,organisation:currentOrg.name,governance_score:activeCert.governance_score,certification_level:activeCert.certification_level,issued_at:activeCert.issued_at,expires_at:activeCert.expires_at};
-  fetch('https://mla-pdf-service.onrender.com/render-certificate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(certPayload)}).then(function(res){if(!res.ok)throw new Error('Server error: '+res.status);return res.blob()}).then(function(blob){
-    var storagePath='certificates/'+currentOrg.id+'/'+activeCert.certificate_id+'.pdf';
-    return sb.storage.from('governance-reports').upload(storagePath,blob,{contentType:'application/pdf',upsert:true}).then(function(upResult){
-      if(upResult.error)throw new Error('Upload failed: '+upResult.error.message);
-      return sb.from('governance_certificates').update({pdf_path:storagePath}).eq('id',activeCert.id).then(function(){
-        activeCert.pdf_path=storagePath;
-        return sb.storage.from('governance-reports').createSignedUrl(storagePath,3600);
-      });
-    });
-  }).then(function(signResult){
-    certTimers.forEach(function(t){clearTimeout(t);});
-    var bar=document.getElementById('cert-progress-bar');var msg=document.getElementById('cert-status-msg');
-    if(bar)bar.style.width='100%';if(msg)msg.textContent='Certificate ready - opening...';
-    setTimeout(function(){if(document.body.contains(overlay))document.body.removeChild(overlay);if(signResult.data&&signResult.data.signedUrl)window.open(signResult.data.signedUrl,'_blank');else alert('Certificate generated but could not create download link. Try again.');},800);
-  }).catch(function(err){
+
+  var certMsgs=[
+    {t:0,msg:'Connecting to certificate server…',pct:5},
+    {t:4000,msg:'Waking render service…',pct:15},
+    {t:10000,msg:'Loading certificate data…',pct:30},
+    {t:18000,msg:'Rendering certificate layout…',pct:50},
+    {t:30000,msg:'Generating PDF document…',pct:70},
+    {t:45000,msg:'Almost there, finalising…',pct:88}
+  ];
+  var certTimers=certMsgs.map(function(m){
+    return setTimeout(function(){
+      var el=document.getElementById('cert-status-msg');
+      var bar=document.getElementById('cert-progress-bar');
+      if(el)el.textContent=m.msg;
+      if(bar)bar.style.width=m.pct+'%';
+    },m.t);
+  });
+
+  function endOverlay(){
     certTimers.forEach(function(t){clearTimeout(t);});
     if(document.body.contains(overlay))document.body.removeChild(overlay);
-    alert('Certificate PDF generation failed: '+err.message);
+  }
+  function setStatus(msg,pct){
+    var el=document.getElementById('cert-status-msg');
+    var bar=document.getElementById('cert-progress-bar');
+    if(el)el.textContent=msg;
+    if(bar&&pct!=null)bar.style.width=pct+'%';
+  }
+
+  var certPayload={
+    certificate_id:activeCert.certificate_id,
+    organisation:currentOrg.name,
+    governance_score:activeCert.governance_score,
+    certification_level:activeCert.certification_level,
+    issued_at:activeCert.issued_at,
+    expires_at:activeCert.expires_at
+  };
+
+  var controller=typeof AbortController!=='undefined'?new AbortController():null;
+  var abortTimer=controller?setTimeout(function(){controller.abort();},90000):null;
+
+  fetch('https://mla-pdf-service.onrender.com/render-certificate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/pdf,application/json'},
+    body:JSON.stringify(certPayload),
+    signal:controller?controller.signal:undefined
+  }).then(async function(res){
+    if(abortTimer)clearTimeout(abortTimer);
+    var ctype=(res.headers.get('content-type')||'').toLowerCase();
+    if(!res.ok){
+      var detail='';
+      try{
+        if(ctype.indexOf('json')!==-1){
+          var j=await res.json();
+          detail=j.error||j.message||JSON.stringify(j);
+        }else{
+          detail=(await res.text()).slice(0,200);
+        }
+      }catch(e){detail='';}
+      throw new Error('Render service '+res.status+(detail?': '+detail:''));
+    }
+    if(ctype.indexOf('pdf')===-1&&ctype.indexOf('octet')===-1){
+      var bodyText=await res.text();
+      throw new Error('Unexpected response from PDF service (not a PDF). '+bodyText.slice(0,160));
+    }
+    return res.blob();
+  }).then(async function(blob){
+    if(!blob||blob.size<500)throw new Error('PDF service returned an empty file.');
+    setStatus('Saving certificate…',92);
+    var storagePath='certificates/'+currentOrg.id+'/'+activeCert.certificate_id+'.pdf';
+    var upResult=await sb.storage.from('governance-reports').upload(storagePath,blob,{contentType:'application/pdf',upsert:true});
+    if(upResult.error){
+      console.warn('[cert] storage upload failed, opening blob:',upResult.error.message);
+      setStatus('Opening PDF…',100);
+      var localUrl=URL.createObjectURL(blob);
+      setTimeout(function(){
+        endOverlay();
+        var w=window.open(localUrl,'_blank');
+        if(!w)alert('PDF ready, but the browser blocked the popup. Allow popups and try again, or check downloads.');
+      },400);
+      return null;
+    }
+    await sb.from('governance_certificates').update({pdf_path:storagePath}).eq('id',activeCert.id);
+    activeCert.pdf_path=storagePath;
+    var signResult=await sb.storage.from('governance-reports').createSignedUrl(storagePath,3600);
+    if(signResult.error||!signResult.data||!signResult.data.signedUrl){
+      var fallback=URL.createObjectURL(blob);
+      setTimeout(function(){endOverlay();window.open(fallback,'_blank');},400);
+      return null;
+    }
+    setStatus('Certificate ready — opening…',100);
+    setTimeout(function(){
+      endOverlay();
+      window.open(signResult.data.signedUrl,'_blank');
+    },500);
+    return null;
+  }).catch(function(err){
+    if(abortTimer)clearTimeout(abortTimer);
+    endOverlay();
+    var msg=err&&err.name==='AbortError'
+      ?'Timed out waiting for the PDF service (often a cold start). Wait a few seconds and try Download again.'
+      :(err&&err.message?err.message:String(err));
+    console.error('[cert] PDF generation failed:',err);
+    alert('Certificate PDF generation failed:\n\n'+msg);
   });
 }
 

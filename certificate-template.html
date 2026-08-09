@@ -508,7 +508,8 @@ body:not(.is-preview) .certificate {
 }
 </style>
 </head>
-<body class="is-preview">
+/* Puppeteer body starts clean (PDF capture). Local review adds is-preview. */
+<body>
 
 <div class="preview-note">
   Local preview at full size (1122×794). <strong>Scroll</strong> to see edges · <strong>Ctrl&nbsp;−</strong> / <strong>Ctrl&nbsp;+</strong> to zoom the whole page. Hard-refresh (<strong>Ctrl+F5</strong>) after edits.
@@ -679,9 +680,9 @@ function renderCertificate(d){
 }
 
 (function(){
-  /* Puppeteer injects CERT_DATA and should remove preview class.
-     Local open: keep is-preview + sample. */
+  /* CERT_DATA is injected by renderer-service for PDF jobs. */
   if(typeof CERT_DATA !== 'undefined'){
+    document.documentElement.classList.add('is-pdf');
     document.body.classList.remove('is-preview');
     renderCertificate(CERT_DATA);
   } else {
