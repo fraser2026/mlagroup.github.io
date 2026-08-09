@@ -15,7 +15,7 @@ Agents must follow both files.
 | Trading name | RegAnchor |
 | Company registration | 16117562 (England and Wales) |
 | ICO registration | ZB826186 |
-| Registered address | Unit 1 (Suite 121), Imperial Court, Exchange Street East, Liverpool, L2 3AB |
+| Registered address | 45 Fitzroy Street, 4th Floor, London, England, W1T 6EB |
 | Telephone | 0151 558 0162 |
 | Primary domain | reganchor.com |
 | Legacy domain | mlagroup.co.uk (redirects during transition) |
