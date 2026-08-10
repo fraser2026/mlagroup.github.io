@@ -147,10 +147,15 @@ app.post('/render-certificate', async (req, res) => {
  
     console.log(`[Renderer] Generating certificate: ${certData.certificate_id}`);
  
-    const renderedHtml = CERT_TEMPLATE_HTML.replace(
-      '/*__CERT_DATA__*/',
-      `const CERT_DATA = ${JSON.stringify(certData)};`
-    );
+    const renderedHtml = CERT_TEMPLATE_HTML
+      .replace('<html lang="en">', '<html lang="en" class="is-pdf">')
+      .replace(
+        '/*__CERT_DATA__*/',
+        `const CERT_DATA = ${JSON.stringify(certData)};`
+      )
+      // Strip local-only preview chrome so it never appears in PDF pixels
+      .replace(/<!-- Preview chrome[\s\S]*?-->\s*/,'')
+      .replace(/<div class="preview-note"[^>]*>[\s\S]*?<\/div>\s*/,'');
  
     browser = await puppeteer.launch({
       headless: 'new',
@@ -165,9 +170,8 @@ app.post('/render-certificate', async (req, res) => {
  
     const page = await browser.newPage();
  
-    await page.setViewport({ width: 1122, height: 794 });
+    await page.setViewport({ width: 1122, height: 794, deviceScaleFactor: 1 });
  
-    // networkidle0 can hang on Google Fonts on cold nodes; domcontentloaded + fonts.ready is enough
     await page.setContent(renderedHtml, {
       waitUntil: 'domcontentloaded',
       timeout: 60000,
@@ -176,6 +180,12 @@ app.post('/render-certificate', async (req, res) => {
       await page.evaluateHandle('document.fonts.ready');
     } catch (_) { /* ignore font wait failures */ }
     await page.waitForSelector('#certificate', { timeout: 10000 });
+    // Guarantee no preview chrome survived
+    await page.evaluate(() => {
+      document.querySelectorAll('.preview-note').forEach((n) => n.remove());
+      document.body.classList.remove('is-preview');
+      document.documentElement.classList.add('is-pdf');
+    });
     await new Promise((r) => setTimeout(r, 400));
  
     const pdfBuffer = await page.pdf({
@@ -183,8 +193,9 @@ app.post('/render-certificate', async (req, res) => {
       height: '794px',
       margin: { top: 0, bottom: 0, left: 0, right: 0 },
       printBackground: true,
-      preferCSSPageSize: true,
+      preferCSSPageSize: false,
       displayHeaderFooter: false,
+      pageRanges: '1',
     });
  
     await browser.close();
