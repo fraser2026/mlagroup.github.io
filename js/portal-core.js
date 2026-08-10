@@ -394,25 +394,31 @@ async function savePDF(resultId){
   var orig=btn.innerHTML;btn.innerHTML='Generating...';btn.disabled=true;
   var overlay=document.createElement('div');
   overlay.className='pdf-overlay';
-  overlay.innerHTML='<div class="pdf-overlay__spinner"></div>'+
+  var cbarHtml=(typeof raLoadCbarHTML==='function')
+    ? raLoadCbarHTML()
+    : '<div class="pdf-cbar" role="img" aria-label="Loading"><div class="pdf-cbar__row is-active"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div></div>';
+  overlay.innerHTML='<div class="pdf-overlay__visual" aria-hidden="true">'+cbarHtml+'</div>'+
     '<div class="pdf-overlay__copy"><div class="pdf-overlay__title">Generating your report</div>'+
-    '<div class="pdf-overlay__status" id="pdf-status-msg">Connecting to report server...</div></div>'+
-    '<div class="pdf-overlay__track"><div class="pdf-overlay__fill" id="pdf-progress-bar"></div></div>'+
-    '<div class="pdf-overlay__note">This can take up to 60 seconds on first generation.<br>Please keep this tab open.</div>';
+    '<div class="pdf-overlay__status" id="pdf-status-msg">Preparing report…</div></div>';
   document.body.appendChild(overlay);
-  var messages=[{t:0,msg:'Connecting to report server...',pct:5},{t:4000,msg:'Loading your governance data...',pct:20},{t:10000,msg:'Rendering report layout...',pct:38},{t:18000,msg:'Applying regulatory mappings...',pct:52},{t:26000,msg:'Compiling risk findings...',pct:65},{t:36000,msg:'Generating PDF document...',pct:78},{t:48000,msg:'Almost there, finalising...',pct:90}];
-  var timers=messages.map(function(m){return setTimeout(function(){var el=document.getElementById('pdf-status-msg');var bar=document.getElementById('pdf-progress-bar');if(el)el.textContent=m.msg;if(bar)bar.style.width=m.pct+'%';},m.t);});
+  var stopCbarLoop=(typeof raLoadCbarBreath==='function')
+    ? raLoadCbarBreath(overlay)
+    : function(){};
+  var messages=[{t:0,msg:'Preparing report…'},{t:5000,msg:'Loading governance data…'},{t:12000,msg:'Rendering layout…'},{t:22000,msg:'Mapping obligations…'},{t:34000,msg:'Writing PDF…'},{t:48000,msg:'Finalising…'}];
+  var timers=messages.map(function(m){return setTimeout(function(){var el=document.getElementById('pdf-status-msg');if(el)el.textContent=m.msg;},m.t);});
   try{
     var sd=await sb.auth.getSession();var session=sd.data.session;if(!session)throw new Error('Not authenticated');
     var res=await fetch(SUPABASE_URL+'/functions/v1/generate-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},body:JSON.stringify({response_id:resultId})});
     if(!res.ok)throw new Error('Server error: '+res.status);
     var data=await res.json();if(!data||!data.download_url)throw new Error('No URL');
     timers.forEach(function(t){clearTimeout(t);});
-    var bar=document.getElementById('pdf-progress-bar');var msg=document.getElementById('pdf-status-msg');
-    if(bar)bar.style.width='100%';if(msg)msg.textContent='Report ready - opening in new tab...';
+    stopCbarLoop();
+    var msg=document.getElementById('pdf-status-msg');
+    if(msg)msg.textContent='Report ready';
     setTimeout(function(){window.open(data.download_url,'_blank');if(document.body.contains(overlay))document.body.removeChild(overlay);},800);
   }catch(err){
     timers.forEach(function(t){clearTimeout(t);});
+    stopCbarLoop();
     if(document.body.contains(overlay))document.body.removeChild(overlay);
     alert('PDF generation failed: '+err.message);
   }finally{btn.innerHTML=orig;btn.disabled=false;}

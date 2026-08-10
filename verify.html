@@ -12,112 +12,166 @@
 <style>
 :root{
   --bg:      #FFFFFF;
+  --mist:    #F6F9FC;
   --border:  #E6EBF1;
   --main:    #0A0E14;
+  /* Secondary premium accent — same ink fill as Enterprise “Talk to advisory” */
+  --premium: #0A0E14;
   --sub:     #425466;
   --muted:   #697386;
-  --muted2:  #697386;
   --ok:      #24B47E;
   --warn:    #C45C26;
   --err:     #CD3D64;
   --blurple: #533AFD;
-  --accent-grad: #533AFD;
   --font-brand: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:var(--font-body);background:var(--bg);color:var(--sub);-webkit-font-smoothing:antialiased;overflow-x:hidden}
- 
-/* Nav */
+body{font-family:var(--font-body);background:var(--mist);color:var(--sub);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
 nav{display:flex;justify-content:space-between;align-items:center;padding:0 48px;height:64px;border-bottom:1px solid var(--border);background:var(--bg);position:relative;z-index:10}
 .nav-logo{font-family:var(--font-brand);font-size:1.05rem;font-weight:500;letter-spacing:-.025em;text-decoration:none;color:var(--main)}
 .nav-link{color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:500;transition:color .2s}
 .nav-link:hover{color:var(--main)}
- 
-/* Page */
+
 .page{position:relative;z-index:1;min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;padding:60px 24px 80px}
- 
-/* Header */
+
 .verify-header{text-align:center;margin-bottom:40px;max-width:520px}
-.verify-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-brand);font-size:.72rem;font-weight:500;letter-spacing:.03em;color:var(--muted);margin-bottom:16px}
 .verify-title{font-family:var(--font-brand);font-size:1.9rem;font-weight:500;color:var(--main);letter-spacing:-.025em;margin-bottom:10px}
 .verify-desc{font-size:.85rem;color:var(--sub);line-height:1.7}
- 
-/* Search box */
+
 .search-box{width:100%;max-width:480px;margin-bottom:40px}
 .search-row{display:flex;gap:8px}
-.search-input{flex:1;padding:14px 18px;background:var(--bg);border:1px solid var(--border);color:var(--main);font-family:var(--font-brand);font-size:.9rem;letter-spacing:.02em;outline:none;transition:border-color .2s}
-.search-input:focus{border-color:var(--main)}
+.search-input{flex:1;padding:14px 18px;background:var(--bg);border:1px solid var(--border);color:var(--main);font-family:var(--font-brand);font-size:.9rem;letter-spacing:.02em;outline:none;transition:border-color .2s;border-radius:4px}
+.search-input:focus{border-color:var(--premium)}
 .search-input::placeholder{color:var(--muted);font-family:var(--font-body);font-size:.82rem;letter-spacing:0}
 .search-btn{padding:14px 24px;background:var(--blurple);color:#fff;border:1px solid var(--blurple);font-family:var(--font-body);font-size:.82rem;font-weight:500;cursor:pointer;transition:opacity .15s;white-space:nowrap;border-radius:4px}
-.search-btn:hover{opacity:.82}
+.search-btn:hover{opacity:.88}
 .search-btn:disabled{opacity:.5;cursor:not-allowed}
 .search-hint{font-size:.72rem;color:var(--muted);margin-top:8px;text-align:center}
- 
-/* Result card */
+
 .result{width:100%;max-width:580px;display:none}
 .result.show{display:block;animation:fadeUp .4s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
- 
-/* Valid certificate */
+
+/* Valid certificate — ink premium frame accent (not gold) */
 .cert-valid{background:var(--bg);border:1px solid var(--border);position:relative}
-.cert-valid::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ok)}
+.cert-valid::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--premium)}
 .cert-valid-header{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--border)}
-.cert-check{width:40px;height:40px;background:var(--bg);border:1px solid var(--ok);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.cert-valid-title{font-family:var(--font-brand);font-size:.95rem;font-weight:600;color:var(--ok)}
+.cert-check{width:40px;height:40px;background:var(--bg);border:1.5px solid var(--premium);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cert-valid-title{font-family:var(--font-brand);font-size:.95rem;font-weight:600;color:var(--premium)}
 .cert-valid-sub{font-size:.75rem;color:var(--muted);margin-top:2px}
- 
-/* Mini certificate preview */
-.cert-preview{background:var(--bg);border:1px solid var(--border);padding:24px 28px;text-align:center;position:relative;margin:20px 24px}
-.cp-issuer{font-family:var(--font-body);font-size:10px;font-weight:500;letter-spacing:.03em;color:var(--muted);margin-bottom:10px}
-.cp-title{font-family:var(--font-body);font-size:11px;font-weight:500;letter-spacing:.02em;color:var(--muted);margin-bottom:10px}
-.cp-divider{width:40px;height:1px;background:var(--border);margin:10px auto}
-.cp-org{font-family:var(--font-brand);font-size:22px;font-weight:500;letter-spacing:-.02em;color:var(--main);margin-bottom:14px}
-.cp-meta{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:12px}
-.cp-meta-item{text-align:center}
-.cp-meta-label{font-size:9px;font-weight:500;letter-spacing:.02em;color:var(--muted);margin-bottom:4px}
-.cp-meta-value{font-family:var(--font-brand);font-size:16px;font-weight:500;color:var(--main)}
-.cp-meta-divider{width:1px;height:28px;background:var(--border)}
- 
-/* Details grid */
-.cert-details{padding:0 24px 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin-top:4px}
-.cert-detail-item label{display:block;font-size:.68rem;font-weight:500;letter-spacing:.02em;color:var(--muted);margin-bottom:4px}
-.cert-detail-item span{font-size:.8rem;color:var(--sub)}
- 
+
+/* Mini certificate preview — hybrid ledger, double frame in ink */
+.cert-preview{
+  background:var(--bg);
+  border:1.5px solid var(--premium);
+  padding:28px 28px 24px;
+  text-align:center;
+  position:relative;
+  margin:20px 24px;
+}
+.cert-preview::before{
+  content:'';
+  position:absolute;
+  inset:8px;
+  border:1px solid rgba(10,14,20,0.18);
+  pointer-events:none;
+}
+.cp-brand{font-family:var(--font-brand);font-size:11px;font-weight:500;letter-spacing:.12em;color:var(--premium);margin-bottom:8px}
+.cp-title{font-family:var(--font-body);font-size:12px;font-weight:500;letter-spacing:.01em;color:var(--sub);margin-bottom:6px}
+.cp-issuer{font-size:10px;font-weight:500;color:var(--muted);margin-bottom:12px}
+.cp-divider{width:48px;height:1.5px;background:var(--premium);margin:0 auto 16px;opacity:.85}
+.cp-org{font-family:var(--font-brand);font-size:22px;font-weight:500;letter-spacing:-.02em;color:var(--main);margin-bottom:18px;line-height:1.2}
+.cp-maturity{display:flex;align-items:center;justify-content:center;gap:16px;margin:0 auto 4px}
+/* Stock maturity bar colours (ink fade + Blurple current) — do not greyscale */
+.cp-maturity .ra-cbar{width:100px;gap:3px}
+.cp-maturity .ra-cbar__row{height:4px}
+.cp-maturity .ra-cbar__row--current{height:5px;width:108px;margin-left:-4px}
+/* Three equal columns — same type scale as ledger */
+.cp-meta{
+  display:grid;
+  grid-template-columns:1fr 1px 1fr 1px 1fr;
+  align-items:start;
+  width:100%;
+  max-width:380px;
+  margin:18px auto 0;
+  column-gap:0;
+}
+.cp-meta-item{text-align:center;padding:0 10px;min-width:0}
+.cp-meta-label{font-size:.72rem;font-weight:500;letter-spacing:.01em;color:var(--muted);margin-bottom:6px;line-height:1.2}
+.cp-meta-value{font-family:var(--font-brand);font-size:.95rem;font-weight:500;color:var(--main);font-feature-settings:'tnum';line-height:1.25;word-break:break-word}
+.cp-meta-divider{width:1px;height:100%;min-height:36px;background:var(--border);align-self:stretch}
+
+/* Ledger detail rows — paired columns, shared baseline and label scale */
+.cert-details{
+  margin:4px 28px 0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  border-top:1px solid var(--border);
+}
+.cert-details__row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:0 28px;
+  padding:13px 0;
+  border-bottom:1px solid var(--border);
+  align-items:start;
+}
+.cert-detail-item{min-width:0;text-align:left}
+.cert-detail-item label{
+  display:block;
+  font-size:.72rem;
+  font-weight:500;
+  letter-spacing:.01em;
+  color:var(--muted);
+  margin-bottom:5px;
+  line-height:1.2;
+}
+.cert-detail-item span{
+  display:block;
+  font-size:.875rem;
+  font-weight:500;
+  color:var(--main);
+  line-height:1.35;
+  font-feature-settings:'tnum';
+}
+.cert-detail-item span.is-emphasis{font-weight:600}
+
 .cert-id-row{padding:14px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:10px}
 .cert-id-text{font-family:var(--font-brand);font-size:.78rem;font-weight:500;color:var(--main);letter-spacing:.03em}
 .cert-id-lines{width:40px;height:1px;background:var(--border)}
- 
-/* Invalid certificate */
+
 .cert-invalid{background:var(--bg);border:1px solid var(--border);position:relative}
 .cert-invalid::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--err)}
 .cert-invalid-body{padding:32px 24px;text-align:center}
-.cert-invalid-icon{width:48px;height:48px;background:var(--bg);border:1px solid var(--err);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.cert-invalid-icon{width:48px;height:48px;background:var(--bg);border:1.5px solid var(--err);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
 .cert-invalid-title{font-family:var(--font-brand);font-size:.95rem;font-weight:600;color:var(--err);margin-bottom:6px}
 .cert-invalid-desc{font-size:.82rem;color:var(--muted);line-height:1.7;max-width:360px;margin:0 auto}
- 
-/* Expired certificate */
+
 .cert-expired{background:var(--bg);border:1px solid var(--border);position:relative}
 .cert-expired::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--warn)}
- 
-/* Footer */
+
 .page-footer{margin-top:auto;padding-top:60px;text-align:center}
 .page-footer p{font-size:.7rem;color:var(--muted);line-height:1.7;max-width:440px;margin:0 auto}
- 
-/* Loading */
-.loading-spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--bg);animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px}
+
+.loading-spinner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
- 
+
 @media(max-width:640px){
   nav{padding:0 20px}
   .page{padding:40px 16px 60px}
   .verify-title{font-size:1.5rem}
   .search-row{flex-direction:column}
   .search-btn{width:100%}
-  .cert-details{grid-template-columns:1fr}
-  .cp-meta{flex-wrap:wrap;gap:12px}
+  .cert-details{margin:4px 16px 0}
+  .cert-details__row{grid-template-columns:1fr;gap:14px;padding:14px 0}
+  .cp-meta{grid-template-columns:1fr;max-width:100%;row-gap:14px}
   .cp-meta-divider{display:none}
+  .cp-meta-item{padding:0}
+  .cert-preview{margin:16px}
 }
 </style>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -130,13 +184,13 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:0 48px
   <a href="index.html" class="nav-link">Back to RegAnchor</a>
 </nav>
 <div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
- 
+
 <div class="page">
   <div class="verify-header">
     <h1 class="verify-title">Verify a Governance Certificate</h1>
     <p class="verify-desc">Enter a RegAnchor certificate ID to confirm its authenticity, current status, and validity period.</p>
   </div>
- 
+
   <div class="search-box">
     <div class="search-row">
       <input type="text" class="search-input" id="cert-input" placeholder="MLA-GOV-2026-0001" spellcheck="false" autocomplete="off">
@@ -144,23 +198,44 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:0 48px
     </div>
     <div class="search-hint">Certificate IDs follow the format MLA-GOV-YYYY-NNNN</div>
   </div>
- 
+
   <div class="result" id="result-container"></div>
- 
+
   <div class="page-footer">
     <p><strong style="color:var(--main);">MLA Group Ltd</strong><br>AI Governance &amp; Risk Consultancy<br><br>
     Certificates are issued to organisations that demonstrate governance maturity through RegAnchor's assessment framework. Verification data is served directly from our governance database.</p>
   </div>
 </div>
- 
+
+<script src="js/ra-maturity.js"></script>
 <script>
 var SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
 var SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
- 
+
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):''}
- 
+
+/** Prefer L1–L7 from score; fall back to legacy emerging|structured|advanced. */
+function maturityLabel(score, legacy){
+  if(typeof raLevelText==='function' && score!==null && score!==undefined && score!==''){
+    var t=raLevelText(score);
+    if(t && t!=='Not assessed') return t;
+  }
+  var l=String(legacy||'').toLowerCase();
+  if(l==='advanced') return 'Advanced';
+  if(l==='structured') return 'Structured';
+  if(l==='emerging') return 'Emerging';
+  return legacy||'—';
+}
+
+function scoreBarHtml(score){
+  if(typeof raComplianceBar!=='function' || score===null || score===undefined || score===''){
+    return '';
+  }
+  return '<div class="cp-maturity">'+raComplianceBar(score,{animate:false})+'</div>';
+}
+
 // Auto-fill from URL params
 var params=new URLSearchParams(window.location.search);
 var idFromUrl=params.get('id')||'';
@@ -168,33 +243,31 @@ if(idFromUrl){
   document.getElementById('cert-input').value=idFromUrl;
   window.addEventListener('DOMContentLoaded',function(){setTimeout(verifyCert,300)});
 }
- 
-// Enter key triggers verify
+
 document.addEventListener('keydown',function(e){
   if(e.key==='Enter'&&document.activeElement===document.getElementById('cert-input'))verifyCert();
 });
- 
+
 async function verifyCert(){
   var input=document.getElementById('cert-input').value.trim().toUpperCase();
   var btn=document.getElementById('verify-btn');
   var container=document.getElementById('result-container');
- 
+
   if(!input){container.classList.remove('show');return}
- 
+
   btn.disabled=true;
   btn.innerHTML='<span class="loading-spinner"></span>Verifying';
   container.classList.remove('show');
- 
+
   try{
     var result=await sb.rpc('verify_certificate',{cert_id:input});
     var data=result.data;
- 
+
     if(!data||data.error){
       renderInvalid(input);
     }else if(data.valid){
       renderValid(data);
     }else{
-      // Certificate exists but not valid (expired or revoked)
       if(data.status==='expired'||data.status==='suspended'){
         renderExpired(data);
       }else if(data.status==='revoked'){
@@ -207,42 +280,51 @@ async function verifyCert(){
     console.error('Verification error:',err);
     renderInvalid(input);
   }
- 
+
   btn.disabled=false;
   btn.textContent='Verify';
   container.classList.add('show');
 }
- 
+
 function renderValid(d){
-  var levelLabel=d.certification_level==='advanced'?'Advanced':d.certification_level==='structured'?'Structured':'Emerging';
-  var systemsText=d.systems_covered===1?'1 AI system':d.systems_covered+' AI systems';
- 
+  var levelLabel=maturityLabel(d.governance_score,d.certification_level);
+  var systemsText=d.systems_covered===1?'1 AI system':(d.systems_covered||0)+' AI systems';
+  var scoreTxt=d.governance_score!=null?d.governance_score+'%':'—';
+
   document.getElementById('result-container').innerHTML=
     '<div class="cert-valid">'+
       '<div class="cert-valid-header">'+
-        '<div class="cert-check"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4 4 8-8"/></svg></div>'+
-        '<div><div class="cert-valid-title">Certificate Verified</div><div class="cert-valid-sub">This certificate is authentic and currently active.</div></div>'+
+        '<div class="cert-check"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--premium)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4 4 8-8"/></svg></div>'+
+        '<div><div class="cert-valid-title">Certificate verified</div><div class="cert-valid-sub">This certificate is authentic and currently active.</div></div>'+
       '</div>'+
       '<div class="cert-preview">'+
-        '<div class="cp-issuer">MLA Group Ltd</div>'+
+        '<div class="cp-brand">REGANCHOR</div>'+
         '<div class="cp-title">Certificate of AI Governance Compliance</div>'+
+        '<div class="cp-issuer">Issued by MLA Group Ltd</div>'+
         '<div class="cp-divider"></div>'+
         '<div class="cp-org">'+esc(d.organisation)+'</div>'+
+        scoreBarHtml(d.governance_score)+
         '<div class="cp-meta">'+
-          '<div class="cp-meta-item"><div class="cp-meta-label">Score</div><div class="cp-meta-value">'+d.governance_score+'%</div></div>'+
-          '<div class="cp-meta-divider"></div>'+
+          '<div class="cp-meta-item"><div class="cp-meta-label">Score</div><div class="cp-meta-value">'+esc(String(scoreTxt))+'</div></div>'+
+          '<div class="cp-meta-divider" aria-hidden="true"></div>'+
           '<div class="cp-meta-item"><div class="cp-meta-label">Level</div><div class="cp-meta-value">'+esc(levelLabel)+'</div></div>'+
-          '<div class="cp-meta-divider"></div>'+
-          '<div class="cp-meta-item"><div class="cp-meta-label">Systems</div><div class="cp-meta-value">'+systemsText+'</div></div>'+
+          '<div class="cp-meta-divider" aria-hidden="true"></div>'+
+          '<div class="cp-meta-item"><div class="cp-meta-label">Systems</div><div class="cp-meta-value">'+esc(systemsText)+'</div></div>'+
         '</div>'+
       '</div>'+
       '<div class="cert-details">'+
-        '<div class="cert-detail-item"><label>Organisation</label><span>'+esc(d.organisation)+'</span></div>'+
-        '<div class="cert-detail-item"><label>Certification Level</label><span>'+esc(levelLabel)+'</span></div>'+
-        '<div class="cert-detail-item"><label>Issued</label><span>'+fmtDate(d.issued_at)+'</span></div>'+
-        '<div class="cert-detail-item"><label>Valid Until</label><span>'+fmtDate(d.expires_at)+'</span></div>'+
-        '<div class="cert-detail-item"><label>Governance Score</label><span style="color:var(--main);font-weight:600;">'+d.governance_score+'%</span></div>'+
-        '<div class="cert-detail-item"><label>Systems Covered</label><span>'+systemsText+'</span></div>'+
+        '<div class="cert-details__row">'+
+          '<div class="cert-detail-item"><label>Organisation</label><span>'+esc(d.organisation)+'</span></div>'+
+          '<div class="cert-detail-item"><label>Maturity level</label><span>'+esc(levelLabel)+'</span></div>'+
+        '</div>'+
+        '<div class="cert-details__row">'+
+          '<div class="cert-detail-item"><label>Issued</label><span>'+fmtDate(d.issued_at)+'</span></div>'+
+          '<div class="cert-detail-item"><label>Valid until</label><span>'+fmtDate(d.expires_at)+'</span></div>'+
+        '</div>'+
+        '<div class="cert-details__row">'+
+          '<div class="cert-detail-item"><label>Governance score</label><span class="is-emphasis">'+esc(String(scoreTxt))+'</span></div>'+
+          '<div class="cert-detail-item"><label>Systems covered</label><span>'+esc(systemsText)+'</span></div>'+
+        '</div>'+
       '</div>'+
       '<div class="cert-id-row">'+
         '<div class="cert-id-lines"></div>'+
@@ -251,24 +333,28 @@ function renderValid(d){
       '</div>'+
     '</div>';
 }
- 
+
 function renderExpired(d){
-  var levelLabel=d.certification_level==='advanced'?'Advanced':d.certification_level==='structured'?'Structured':'Emerging';
- 
+  var levelLabel=maturityLabel(d.governance_score,d.certification_level);
+
   document.getElementById('result-container').innerHTML=
     '<div class="cert-expired">'+
       '<div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--border);">'+
-        '<div style="width:40px;height:40px;background:var(--bg);border:1px solid var(--warn);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l2.5 2.5"/></svg></div>'+
-        '<div><div style="font-family:var(--font-brand);font-size:.95rem;font-weight:600;color:var(--warn);">Certificate Expired</div><div style="font-size:.75rem;color:var(--muted);margin-top:2px;">This certificate was previously valid but has since expired.</div></div>'+
+        '<div style="width:40px;height:40px;background:var(--bg);border:1.5px solid var(--warn);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l2.5 2.5"/></svg></div>'+
+        '<div><div style="font-family:var(--font-brand);font-size:.95rem;font-weight:600;color:var(--warn);">Certificate expired</div><div style="font-size:.75rem;color:var(--muted);margin-top:2px;">This certificate was previously valid but has since expired.</div></div>'+
       '</div>'+
       '<div style="padding:20px 24px;">'+
-        '<div class="cert-details" style="padding:0;margin-top:0;">'+
-          '<div class="cert-detail-item"><label>Organisation</label><span>'+esc(d.organisation)+'</span></div>'+
-          '<div class="cert-detail-item"><label>Level</label><span>'+esc(levelLabel)+'</span></div>'+
-          '<div class="cert-detail-item"><label>Issued</label><span>'+fmtDate(d.issued_at)+'</span></div>'+
-          '<div class="cert-detail-item"><label>Expired</label><span style="color:var(--warn);">'+fmtDate(d.expires_at)+'</span></div>'+
+        '<div class="cert-details">'+
+          '<div class="cert-details__row">'+
+            '<div class="cert-detail-item"><label>Organisation</label><span>'+esc(d.organisation)+'</span></div>'+
+            '<div class="cert-detail-item"><label>Maturity level</label><span>'+esc(levelLabel)+'</span></div>'+
+          '</div>'+
+          '<div class="cert-details__row">'+
+            '<div class="cert-detail-item"><label>Issued</label><span>'+fmtDate(d.issued_at)+'</span></div>'+
+            '<div class="cert-detail-item"><label>Expired</label><span style="color:var(--warn);">'+fmtDate(d.expires_at)+'</span></div>'+
+          '</div>'+
         '</div>'+
-        '<div style="margin-top:16px;padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--warn);font-size:.78rem;color:var(--sub);line-height:1.7;">The organisation may renew this certificate by maintaining an active RegAnchor subscription and meeting governance requirements.</div>'+
+        '<div style="margin-top:16px;padding:12px 16px;background:var(--mist);border:1px solid var(--border);border-left:2px solid var(--premium);font-size:.78rem;color:var(--sub);line-height:1.7;">The organisation may renew this certificate by maintaining an active RegAnchor subscription and meeting governance requirements.</div>'+
       '</div>'+
       '<div class="cert-id-row">'+
         '<div class="cert-id-lines"></div>'+
@@ -277,24 +363,24 @@ function renderExpired(d){
       '</div>'+
     '</div>';
 }
- 
+
 function renderRevoked(d){
   document.getElementById('result-container').innerHTML=
     '<div class="cert-invalid">'+
       '<div class="cert-invalid-body">'+
         '<div class="cert-invalid-icon"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--err)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M13 7l-6 6M7 7l6 6"/></svg></div>'+
-        '<div class="cert-invalid-title">Certificate Revoked</div>'+
+        '<div class="cert-invalid-title">Certificate revoked</div>'+
         '<div class="cert-invalid-desc">This certificate has been revoked and is no longer valid. Contact RegAnchor for further information.</div>'+
       '</div>'+
     '</div>';
 }
- 
+
 function renderInvalid(input){
   document.getElementById('result-container').innerHTML=
     '<div class="cert-invalid">'+
       '<div class="cert-invalid-body">'+
         '<div class="cert-invalid-icon"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--err)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v5M10 13.5v.5"/></svg></div>'+
-        '<div class="cert-invalid-title">Certificate Not Found</div>'+
+        '<div class="cert-invalid-title">Certificate not found</div>'+
         '<div class="cert-invalid-desc">No certificate matching <strong style="color:var(--main);font-family:var(--font-brand);font-size:.8rem;">'+esc(input)+'</strong> was found in our records. Please check the ID and try again.</div>'+
       '</div>'+
     '</div>';

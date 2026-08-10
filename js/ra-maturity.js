@@ -148,6 +148,29 @@ function animateMaturity(root) {
   });
 }
 
+/* Loading stack for PDF overlays — same bar as portal/index maturity
+   (ink fade + Blurple current). CSS .ra-cbar--breathe drives continuous
+   rise/fall; raLoadCbarBreath is a no-op stop handle for callers. */
+function raLoadCbarHTML() {
+  var html = typeof raComplianceBar === 'function'
+    ? raComplianceBar(100, { animate: false })
+    : '';
+  if (html) {
+    return html.replace('class="ra-cbar"', 'class="ra-cbar ra-cbar--breathe"');
+  }
+  var rows = '';
+  for (var i = 0; i < 7; i++) {
+    var mod = i === 6 ? ' ra-cbar__row--current' : ' ra-cbar__row--achieved-' + Math.min(i + 1, 3);
+    rows += '<div class="ra-cbar__row' + mod + '" style="--ra-cbar-i:' + i + '"></div>';
+  }
+  return '<div class="ra-cbar ra-cbar--breathe" role="img" aria-label="Loading">' + rows + '</div>';
+}
+
+function raLoadCbarBreath() {
+  /* Animation is pure CSS (infinite). Returned so endOverlay can still call stop(). */
+  return function () {};
+}
+
 /* The full ladder as a scale beside the bar, current level marked.
    Used on the diagnostic result, where the reader is seeing their
    position for the first time and needs the rungs named. */

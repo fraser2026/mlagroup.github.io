@@ -59,39 +59,40 @@ function downloadCertificatePDF(){
 
   var overlay=document.createElement('div');
   overlay.className='pdf-overlay';
-  overlay.innerHTML='<div class="pdf-overlay__spinner"></div>'+
+  var cbarHtml=(typeof raLoadCbarHTML==='function')
+    ? raLoadCbarHTML()
+    : '<div class="pdf-cbar" role="img" aria-label="Loading"><div class="pdf-cbar__row is-active"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div><div class="pdf-cbar__row"></div></div>';
+  overlay.innerHTML='<div class="pdf-overlay__visual" aria-hidden="true">'+cbarHtml+'</div>'+
     '<div class="pdf-overlay__copy"><div class="pdf-overlay__title">Generating your certificate</div>'+
-    '<div class="pdf-overlay__status" id="cert-status-msg">Connecting to certificate server…</div></div>'+
-    '<div class="pdf-overlay__track"><div class="pdf-overlay__fill" id="cert-progress-bar"></div></div>'+
-    '<div class="pdf-overlay__note">First request after idle can take up to a minute while the PDF service wakes.<br>Please keep this tab open.</div>';
+    '<div class="pdf-overlay__status" id="cert-status-msg">Preparing certificate…</div></div>';
   document.body.appendChild(overlay);
 
+  var stopCbarLoop=(typeof raLoadCbarBreath==='function')
+    ? raLoadCbarBreath(overlay)
+    : function(){};
+
   var certMsgs=[
-    {t:0,msg:'Connecting to certificate server…',pct:5},
-    {t:4000,msg:'Waking render service…',pct:15},
-    {t:10000,msg:'Loading certificate data…',pct:30},
-    {t:18000,msg:'Rendering certificate layout…',pct:50},
-    {t:30000,msg:'Generating PDF document…',pct:70},
-    {t:45000,msg:'Almost there, finalising…',pct:88}
+    {t:0,msg:'Preparing certificate…'},
+    {t:5000,msg:'Assembling attestation…'},
+    {t:14000,msg:'Rendering layout…'},
+    {t:28000,msg:'Writing PDF…'},
+    {t:45000,msg:'Finalising…'}
   ];
   var certTimers=certMsgs.map(function(m){
     return setTimeout(function(){
       var el=document.getElementById('cert-status-msg');
-      var bar=document.getElementById('cert-progress-bar');
       if(el)el.textContent=m.msg;
-      if(bar)bar.style.width=m.pct+'%';
     },m.t);
   });
 
   function endOverlay(){
+    stopCbarLoop();
     certTimers.forEach(function(t){clearTimeout(t);});
     if(document.body.contains(overlay))document.body.removeChild(overlay);
   }
-  function setStatus(msg,pct){
+  function setStatus(msg){
     var el=document.getElementById('cert-status-msg');
-    var bar=document.getElementById('cert-progress-bar');
     if(el)el.textContent=msg;
-    if(bar&&pct!=null)bar.style.width=pct+'%';
   }
 
   var certPayload={
@@ -133,12 +134,12 @@ function downloadCertificatePDF(){
     return res.blob();
   }).then(async function(blob){
     if(!blob||blob.size<500)throw new Error('PDF service returned an empty file.');
-    setStatus('Saving certificate…',92);
+    setStatus('Certificate ready');
     var storagePath='certificates/'+currentOrg.id+'/'+activeCert.certificate_id+'.pdf';
     var upResult=await sb.storage.from('governance-reports').upload(storagePath,blob,{contentType:'application/pdf',upsert:true});
     if(upResult.error){
       console.warn('[cert] storage upload failed, opening blob:',upResult.error.message);
-      setStatus('Opening PDF…',100);
+      setStatus('Certificate ready');
       var localUrl=URL.createObjectURL(blob);
       setTimeout(function(){
         endOverlay();
@@ -155,7 +156,7 @@ function downloadCertificatePDF(){
       setTimeout(function(){endOverlay();window.open(fallback,'_blank');},400);
       return null;
     }
-    setStatus('Certificate ready — opening…',100);
+    setStatus('Certificate ready');
     setTimeout(function(){
       endOverlay();
       window.open(signResult.data.signedUrl,'_blank');

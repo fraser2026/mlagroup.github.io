@@ -2454,51 +2454,86 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
   line-height: 1.6;
 }
 
-/* PDF generation overlay — ink on paper, 1px ink track. No blue
-   spinner, no gradient bar, no serif headline. */
+/* PDF generation overlay — portal maturity bar (ink + Blurple fade)
+   breathing: grow bottom→top then fall back, continuous, no pause. */
 .pdf-overlay {
   position: fixed; inset: 0; z-index: 9999;
-  background: var(--ra-bg);
+  background: var(--ra-bg, #FFFFFF);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 24px;
+  gap: 36px;
 }
-.pdf-overlay__spinner {
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 50% !important;
-  border: 2px solid var(--ra-line, var(--ra-border)) !important;
-  border-top-color: var(--ra-blurple, var(--ra-ink, var(--ra-text))) !important;
-  background: transparent !important;
-  animation: spin .8s linear infinite;
-  box-sizing: border-box;
+.pdf-overlay__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
 }
-.pdf-overlay__copy { text-align: center; max-width: 320px }
+/* Same grammar as index/portal compliance bar — larger for overlay */
+.pdf-overlay .ra-cbar {
+  width: 148px;
+  gap: 5px;
+}
+.pdf-overlay .ra-cbar__row {
+  height: 7px !important;
+  border-radius: 1px;
+  /* stock ink + achieved/pending opacities from reganchor.css */
+  background: var(--ra-bar-ink, var(--ra-ink, #0A0E14));
+}
+.pdf-overlay .ra-cbar__row--current {
+  height: 8px !important;
+  width: 162px !important;
+  margin-left: -7px !important;
+  background: var(--ra-blurple, #533AFD) !important;
+  opacity: 1 !important;
+}
+/* Continuous rise & fall — phase-offset so the wave is already mid-cycle
+   on first paint (no static one-by-one “start”). */
+@keyframes ra-load-breathe {
+  0%, 100% { transform: scaleX(0.06); }
+  50% { transform: scaleX(1); }
+}
+.pdf-overlay .ra-cbar--breathe {
+  --ra-load-dur: 2.8s;
+}
+.pdf-overlay .ra-cbar--breathe .ra-cbar__row {
+  transform-origin: left center;
+  will-change: transform;
+  animation-name: ra-load-breathe;
+  animation-duration: var(--ra-load-dur);
+  animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  animation-iteration-count: infinite;
+  /* Negative delay = already in the continuous wave at t=0 */
+  animation-delay: calc(var(--ra-cbar-i, 0) * var(--ra-load-dur) / -7);
+  animation-fill-mode: both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pdf-overlay .ra-cbar--breathe .ra-cbar__row {
+    animation: none;
+    transform: none;
+  }
+}
+.pdf-overlay__copy { text-align: center; max-width: 360px; padding: 0 20px; }
 .pdf-overlay__title {
-  font-family: var(--ra-font-brand);
-  font-size: 22px; font-weight: 500;
+  font-family: var(--ra-font-brand, 'IBM Plex Sans', sans-serif);
+  font-size: 1.375rem;
+  font-weight: 500;
   letter-spacing: -0.025em;
-  color: var(--ra-text);
-  margin-bottom: 8px;
+  color: var(--ra-ink, #0A0E14);
+  margin-bottom: 10px;
+  line-height: 1.25;
 }
 .pdf-overlay__status {
-  font-size: 13px; color: var(--ra-text-3); line-height: 1.7;
+  font-family: var(--ra-font-body, Inter, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ra-text-2, #425466);
+  line-height: 1.5;
 }
-.pdf-overlay__track {
-  width: 280px; height: 1px;
-  background: var(--ra-line, var(--ra-border));
-  overflow: hidden;
-}
-.pdf-overlay__fill {
-  height: 100%; width: 0%;
-  background: var(--ra-ink, var(--ra-text));
-  transition: width 1s ease;
-}
-.pdf-overlay__note {
-  font-size: 11px; color: var(--ra-text-3);
-  text-align: center; line-height: 1.7;
-}
-@keyframes spin { to { transform: rotate(360deg) } }
+.pdf-overlay__spinner,
+.pdf-overlay__track,
+.pdf-overlay__fill,
+.pdf-overlay__note { display: none !important; }
 
 /* ───────────────────────────────────────────────────────────────
    RESPONSIVE
