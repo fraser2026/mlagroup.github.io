@@ -31,29 +31,78 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html {
-  background: #E8ECF1;
-}
-
-/* —— Local browser preview: whole certificate, scroll if needed —— */
-body.is-preview {
+/* Default = Puppeteer / download PDF. Only the certificate artboard. */
+@page {
+  size: 1122px 794px;
   margin: 0;
-  min-height: 100%;
-  background: #E8ECF1;
-  overflow-x: auto;
-  overflow-y: auto;
-  font-family: var(--font-body);
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 1122px;
+  height: 794px;
+  overflow: hidden;
+  background: var(--paper);
   -webkit-font-smoothing: antialiased;
 }
+/* Never appear in a PDF capture */
+.preview-note {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font-size: 0 !important;
+}
+.stage {
+  margin: 0;
+  padding: 0;
+  width: 1122px;
+  height: 794px;
+  max-width: 1122px;
+  overflow: hidden;
+}
+.certificate {
+  width: 1122px;
+  height: 794px;
+  background: var(--paper);
+  position: relative;
+  padding: 44px 56px 34px;
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid var(--navy);
+  box-shadow: none;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* —— Local file browser review only (body.is-preview) —— */
+body.is-preview {
+  width: auto;
+  height: auto;
+  min-height: 100%;
+  overflow: auto;
+  background: #E8ECF1;
+  font-family: var(--font-body);
+}
 body.is-preview .preview-note {
-  display: block;
-  position: sticky;
+  display: block !important;
+  visibility: visible !important;
+  position: sticky !important;
+  left: auto !important;
   top: 0;
   z-index: 50;
+  width: auto !important;
+  height: auto !important;
   background: #fff;
   border-bottom: 1px solid var(--line);
-  padding: 10px 16px;
-  font-size: 12px;
+  padding: 10px 16px !important;
+  font-size: 12px !important;
   font-weight: 500;
   color: var(--slate);
   text-align: center;
@@ -64,49 +113,14 @@ body.is-preview .stage {
   display: block;
   width: max-content;
   max-width: none;
+  height: auto;
   margin: 32px auto 48px;
   padding: 0 24px;
+  overflow: visible;
 }
 body.is-preview .certificate {
-  /* Full artboard at 1:1 — use browser zoom (Ctrl +/-) to shrink */
-  width: 1122px;
-  height: 794px;
   overflow: visible;
   box-shadow: 0 16px 48px rgba(10, 14, 20, 0.1);
-}
-
-/* —— Puppeteer / production capture —— */
-body:not(.is-preview) {
-  margin: 0;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--paper);
-  overflow: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-body:not(.is-preview) .preview-note { display: none; }
-body:not(.is-preview) .stage {
-  margin: 0;
-  padding: 0;
-}
-body:not(.is-preview) .certificate {
-  width: 1122px;
-  height: 794px;
-  overflow: hidden;
-  box-shadow: none;
-}
-
-.preview-note { display: none; }
-
-.certificate {
-  background: var(--paper);
-  position: relative;
-  padding: 44px 56px 34px;
-  display: flex;
-  flex-direction: column;
-  border: 1.5px solid var(--navy);
 }
 
 /* Double frame — does not clip content (pointer-events none) */
@@ -501,18 +515,24 @@ body:not(.is-preview) .certificate {
 }
 
 @media print {
-  body.is-preview { background: #fff; }
+  html, body {
+    width: 1122px;
+    height: 794px;
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+  }
   .preview-note { display: none !important; }
-  .stage { margin: 0; padding: 0; }
-  .certificate { box-shadow: none; }
+  .stage { margin: 0; padding: 0; width: 1122px; height: 794px; overflow: hidden; }
+  .certificate { box-shadow: none; margin: 0; }
 }
 </style>
 </head>
-/* Puppeteer body starts clean (PDF capture). Local review adds is-preview. */
 <body>
 
-<div class="preview-note">
-  Local preview at full size (1122×794). <strong>Scroll</strong> to see edges · <strong>Ctrl&nbsp;−</strong> / <strong>Ctrl&nbsp;+</strong> to zoom the whole page. Hard-refresh (<strong>Ctrl+F5</strong>) after edits.
+<!-- Preview chrome is hidden in PDF (never enabled when CERT_DATA is set). -->
+<div class="preview-note" id="preview-note" hidden>
+  Local review only — not included in downloads. Hard-refresh with Ctrl+F5 after edits.
 </div>
 
 <div class="stage">
@@ -680,13 +700,19 @@ function renderCertificate(d){
 }
 
 (function(){
-  /* CERT_DATA is injected by renderer-service for PDF jobs. */
+  /* CERT_DATA is injected by renderer-service for downloads.
+     Default DOM is PDF-clean; preview chrome only when opening the
+     HTML file locally without CERT_DATA. */
   if(typeof CERT_DATA !== 'undefined'){
     document.documentElement.classList.add('is-pdf');
     document.body.classList.remove('is-preview');
+    var note=document.getElementById('preview-note');
+    if(note){ note.hidden=true; note.setAttribute('aria-hidden','true'); note.remove(); }
     renderCertificate(CERT_DATA);
   } else {
     document.body.classList.add('is-preview');
+    var note2=document.getElementById('preview-note');
+    if(note2) note2.hidden=false;
     renderCertificate(SAMPLE_CERT);
   }
 })();
