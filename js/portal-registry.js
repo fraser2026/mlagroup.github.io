@@ -3,27 +3,114 @@ async function loadSystems(){
   if(!currentOrg)return;
   var results=await Promise.all([
     sb.from('ai_systems').select('*,system_compliance(id,status)').eq('org_id',currentOrg.id).order('updated_at',{ascending:false}),
-    sb.from('registry_assessments').select('system_id,overall_score').eq('org_id',currentOrg.id).order('created_at',{ascending:false}),
+    /* Latest assessment first — requested_at is the user-facing timeline;
+       created_at is a fallback when requested_at is null. */
+    sb.from('registry_assessments').select('system_id,overall_score,requested_at,created_at')
+      .eq('org_id',currentOrg.id)
+      .order('requested_at',{ascending:false})
+      .order('created_at',{ascending:false}),
     sb.from('control_assignments').select('system_id,status').eq('org_id',currentOrg.id)
   ]);
   allSystems=results[0].error?[]:(results[0].data||[]);
   var assessments=results[1].data||[];
+  if(results[1].error)assessments=[];
+  assessments.sort(function(a,b){
+    var ta=new Date(a.requested_at||a.created_at||0).getTime();
+    var tb=new Date(b.requested_at||b.created_at||0).getTime();
+    return tb-ta;
+  });
   var assignments=results[2].data||[];
+  if(results[2].error)assignments=[];
   var assessBySystem={};
-  for(var a=0;a<assessments.length;a++){var as=assessments[a];if(as.system_id&&!assessBySystem[as.system_id])assessBySystem[as.system_id]=as.overall_score}
+  for(var a=0;a<assessments.length;a++){
+    var as=assessments[a];
+    if(!as.system_id)continue;
+    /* First row per system is latest after sort. Keep first wins. */
+    if(Object.prototype.hasOwnProperty.call(assessBySystem,as.system_id))continue;
+    var raw=as.overall_score;
+    assessBySystem[as.system_id]=(raw===null||raw===undefined||raw==='')?null:Number(raw);
+  }
   var assignBySystem={};
-  for(var c=0;c<assignments.length;c++){var ca=assignments[c];if(ca.system_id){if(!assignBySystem[ca.system_id])assignBySystem[ca.system_id]={total:0,done:0};assignBySystem[ca.system_id].total++;if(ca.status==='implemented'||ca.status==='verified')assignBySystem[ca.system_id].done++}}
-  for(var s=0;s<allSystems.length;s++){allSystems[s]._assessScore=assessBySystem[allSystems[s].id]||null;var ca2=assignBySystem[allSystems[s].id];allSystems[s]._ctrlPct=(ca2&&ca2.total>0)?Math.round(ca2.done/ca2.total*100):null}
-  renderRegistryStats();renderSystemTable();
-  document.getElementById('dash-sys-count').textContent=allSystems.length||'0';
+  for(var c=0;c<assignments.length;c++){
+    var ca=assignments[c];
+    if(!ca.system_id)continue;
+    if(!assignBySystem[ca.system_id])assignBySystem[ca.system_id]={total:0,done:0};
+    assignBySystem[ca.system_id].total++;
+    if(ca.status==='implemented'||ca.status==='verified')assignBySystem[ca.system_id].done++;
+  }
+  for(var s=0;s<allSystems.length;s++){
+    var sid=allSystems[s].id;
+    allSystems[s]._assessScore=Object.prototype.hasOwnProperty.call(assessBySystem,sid)?assessBySystem[sid]:null;
+    var ca2=assignBySystem[sid];
+    allSystems[s]._ctrlPct=(ca2&&ca2.total>0)?Math.round(ca2.done/ca2.total*100):null;
+  }
+  renderRegistryStats();
+  renderSystemTable();
+  var dashCount=document.getElementById('dash-sys-count');
+  if(dashCount)dashCount.textContent=allSystems.length||'0';
 }
-function getCP(sys){var aScore=(sys._assessScore!==null&&sys._assessScore!==undefined)?sys._assessScore:null;var cPct=(sys._ctrlPct!==null&&sys._ctrlPct!==undefined)?sys._ctrlPct:null;var pPct=null;if(allPolicies.length){var pubPols=allPolicies.filter(function(p){return p.requires_acknowledgment&&p.published_at});if(pubPols.length){var acked=pubPols.filter(function(p){return allAcknowledgments.find(function(a){return a.policy_id===p.id&&a.version_acknowledged===p.version})}).length;pPct=Math.round(acked/pubPols.length*100)}}if(aScore===null&&cPct===null&&pPct===null){var sc=sys.system_compliance||[];if(sc.length)return Math.round(sc.filter(function(c){return c.status==='compliant'||c.status==='not_applicable'}).length/sc.length*100);return null}var blended=(aScore!==null?aScore*0.5:0)+(cPct!==null?cPct*0.35:0)+(pPct!==null?pPct*0.15:0);return Math.round(blended)}
+
+/* Maturity column = latest assessment score (RGA-002 L1–L7 ladder).
+   Do not blend with controls/policies here — incomplete weights were
+   silently half-scoring assessed systems (e.g. 84 → 42) whenever
+   policies had not loaded, and re-ordering load timing flipped the
+   ladder on refresh. Control coverage lives only on the top-line stat. */
+function systemMaturityScore(sys){
+  if(!sys)return null;
+  var a=sys._assessScore;
+  if(a===null||a===undefined||a==='')return null;
+  var n=Number(a);
+  return isNaN(n)?null:n;
+}
+
+/* Optional blended posture for other surfaces. Renormalises weights
+   so missing signals never zero-out the ones present. */
+function getCP(sys){
+  var aScore=systemMaturityScore(sys);
+  var cPct=(sys._ctrlPct!==null&&sys._ctrlPct!==undefined)?sys._ctrlPct:null;
+  var pPct=null;
+  if(allPolicies.length){
+    var pubPols=allPolicies.filter(function(p){return p.requires_acknowledgment&&p.published_at});
+    if(pubPols.length){
+      var acked=pubPols.filter(function(p){
+        return allAcknowledgments.find(function(a){return a.policy_id===p.id&&a.version_acknowledged===p.version});
+      }).length;
+      pPct=Math.round(acked/pubPols.length*100);
+    }
+  }
+  if(aScore===null&&cPct===null&&pPct===null){
+    var sc=sys.system_compliance||[];
+    if(sc.length)return Math.round(sc.filter(function(c){return c.status==='compliant'||c.status==='not_applicable'}).length/sc.length*100);
+    return null;
+  }
+  var parts=[];
+  if(aScore!==null)parts.push({v:aScore,w:0.5});
+  if(cPct!==null)parts.push({v:cPct,w:0.35});
+  if(pPct!==null)parts.push({v:pPct,w:0.15});
+  var wSum=0;
+  for(var i=0;i<parts.length;i++)wSum+=parts[i].w;
+  if(wSum<=0)return null;
+  var blended=0;
+  for(var j=0;j<parts.length;j++)blended+=parts[j].v*(parts[j].w/wSum);
+  return Math.round(blended);
+}
+
 function renderRegistryStats(){
-  document.getElementById('reg-total').textContent=allSystems.length;
-  document.getElementById('reg-high').textContent=allSystems.filter(s=>s.risk_tier==='high'||s.risk_tier==='unacceptable').length;
-  document.getElementById('reg-prod').textContent=allSystems.filter(s=>s.deployment_status==='production').length;
-  if(allControls.length){const g=getGovScore();document.getElementById('reg-compliance').textContent=g.score+'%';document.getElementById('reg-compliance-sub').textContent='Control coverage'}
-  else{document.getElementById('reg-compliance').textContent='—';document.getElementById('reg-compliance-sub').textContent='Run controls'}
+  var totalEl=document.getElementById('reg-total');
+  if(!totalEl)return;
+  totalEl.textContent=allSystems.length;
+  document.getElementById('reg-high').textContent=allSystems.filter(function(s){return s.risk_tier==='high'||s.risk_tier==='unacceptable'}).length;
+  document.getElementById('reg-prod').textContent=allSystems.filter(function(s){return s.deployment_status==='production'}).length;
+  var covEl=document.getElementById('reg-compliance');
+  var covSub=document.getElementById('reg-compliance-sub');
+  if(allControls.length&&typeof getGovScore==='function'){
+    var g=getGovScore();
+    covEl.textContent=g.score+'%';
+    if(covSub)covSub.textContent='Control coverage';
+  }else{
+    covEl.textContent='—';
+    if(covSub)covSub.textContent=allControls.length?'Control coverage':'Loading controls…';
+  }
 }
 function renderSystemTable(){
   const filtered=regFilter==='all'?allSystems:allSystems.filter(s=>s.deployment_status===regFilter);
@@ -31,12 +118,12 @@ function renderSystemTable(){
   if(!filtered.length){document.getElementById('reg-table-wrap').innerHTML='<div class="empty-state"><h4>'+(allSystems.length===0?'No systems registered yet':'No systems match this filter')+'</h4><p>'+(allSystems.length===0?'Register your first AI system.':'Try a different filter.')+'</p>'+(allSystems.length===0?'<button class="btn-dl" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register First System</button>':'')+'</div>';return}
   document.getElementById('reg-table-wrap').innerHTML='<div class="table-scroll"><table class="sys-table"><thead><tr><th>System</th><th>Risk class</th><th>Status</th><th class="col-maturity">Maturity</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{
     const tier=sys.risk_tier||'none';
-    const cp=getCP(sys);
+    const score=systemMaturityScore(sys);
     return '<tr onclick="openSystemDetail(\''+sys.id+'\')">'+
       '<td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td>'+
       '<td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td>'+
       '<td><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status)+'</span></td>'+
-      '<td class="col-maturity">'+regMaturityCell(cp)+'</td>'+
+      '<td class="col-maturity">'+regMaturityCell(score)+'</td>'+
       '<td class="col-date">'+fmtDate(sys.updated_at)+'</td>'+
     '</tr>'}).join('')+'</tbody></table></div>';
   requestAnimationFrame(function(){animateMaturity(document.getElementById('reg-table-wrap'))});
@@ -53,7 +140,7 @@ function regMaturityCell(score){
   var n=Math.round(Number(score));
   return '<div class="reg-maturity">'+
     raComplianceBar(score,{mini:true,animate:true})+
-    '<div><div class="reg-maturity__score ra-num" data-count-to="'+n+'">0</div>'+
+    '<div><div class="reg-maturity__score ra-num" data-count-to="'+n+'">'+n+'</div>'+
     '<div class="reg-maturity__level">'+lvl.code+' '+lvl.label+'</div></div>'+
   '</div>';
 }

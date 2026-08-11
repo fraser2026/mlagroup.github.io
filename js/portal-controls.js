@@ -36,6 +36,8 @@ async function loadControls(){
   ]);
   allControls=controls||[];allTasks=tasks||[];allAssignments=assignments||[];
   renderControlsList();
+  /* Keep registry top-line "Control coverage" in sync after every refresh. */
+  if(typeof renderRegistryStats==='function')renderRegistryStats();
 }
  
 function getGovScore(){

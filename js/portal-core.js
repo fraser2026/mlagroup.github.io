@@ -113,7 +113,15 @@ window.addEventListener('popstate',function(e){
     navigate(viewId,navElFor(viewId),true);
   }
 });
-async function navigateRegistry(navEl){navigate('registry',navEl);if(!currentOrg)await ensureOrg();if(!allSystems.length)await loadSystems();if(!allControls.length)await loadControls()}
+async function navigateRegistry(navEl){
+  navigate('registry',navEl);
+  if(!currentOrg)await ensureOrg();
+  /* Always reload — skipping when allSystems.length > 0 left stale
+     assessment scores after new assessments, and control-coverage
+     stats that depended on a parallel loadControls race. */
+  await Promise.all([loadSystems(), loadControls()]);
+  renderRegistryStats();
+}
 async function navigateOrg(navEl){navigate('org',navEl);if(!currentOrg)await ensureOrg();await renderOrgPage()}
 function openSidebar(){
   var overlay=document.getElementById('overlay');
@@ -198,7 +206,19 @@ async function init(){
   renderReports(paidIds);
   history.replaceState({view:'dashboard'},'','#dashboard');
   // Always provision org — subscriptions need currentOrg even when org_id is still null.
-  ensureOrg().then(()=>Promise.all([loadSystems(),loadControls(),refreshSidebarContext()])).then(()=>{renderDashboard(paidIds);loadScoreHistory();loadAssessmentReports();handleDeepLink();loadAlerts();setTimeout(()=>{checkAndCreateAlerts();loadAndRunComplianceEngine()},3000)}).catch(()=>renderDashboard(paidIds));
+  ensureOrg().then(function(){
+    return Promise.all([loadSystems(),loadControls(),refreshSidebarContext()]);
+  }).then(function(){
+    /* loadSystems may finish before loadControls; paint coverage again
+       once both are present so the top stats are stable. */
+    if(typeof renderRegistryStats==='function')renderRegistryStats();
+    renderDashboard(paidIds);
+    loadScoreHistory();
+    loadAssessmentReports();
+    handleDeepLink();
+    loadAlerts();
+    setTimeout(function(){checkAndCreateAlerts();loadAndRunComplianceEngine()},3000);
+  }).catch(function(){renderDashboard(paidIds)});
 }
 
 function showPortalSubscriptionPreview(plan){
