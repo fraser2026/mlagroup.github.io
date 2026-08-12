@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registry | RegAnchor</title>
+  <meta name="description" content="Know every AI system in your organisation. RegAnchor creates the authoritative record of your AI estate: owners, purpose, risk and governance status."/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
+  <link rel="stylesheet" href="css/product-pages.css">
+  <meta name="color-scheme" content="light">
+</head>
+<body data-product="registry">
+
+<div class="home-chrome">
+  <nav>
+    <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
+    <div class="nav-centre" aria-label="Product">
+      <a href="registry.html" class="nav-link is-active">Registry</a>
+      <a href="governance.html" class="nav-link">Governance</a>
+      <a href="intelligence.html" class="nav-link">Intelligence</a>
+    </div>
+    <div class="nav-right">
+      <a href="login.html" class="nav-signin">Sign in</a>
+      <a href="platform.html" class="nav-cta">
+        Explore the platform
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+    <button type="button" class="hamburger" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </nav>
+  <div class="home-chrome__fade" aria-hidden="true"></div>
+</div>
+<div class="mob-menu" id="mobMenu">
+  <a href="registry.html" class="mob-link is-active" onclick="closeMob()">Registry</a>
+  <a href="governance.html" class="mob-link" onclick="closeMob()">Governance</a>
+  <a href="intelligence.html" class="mob-link" onclick="closeMob()">Intelligence</a>
+  <a href="platform.html" class="mob-link" onclick="closeMob()">Platform</a>
+  <a href="login.html" class="mob-link" onclick="closeMob()">Sign in</a>
+  <a href="diagnostic.html" class="mob-cta" onclick="closeMob()">Start assessment</a>
+</div>
+<div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
+
+<section class="prod-hero">
+  <div class="wrap">
+    <div class="prod-hero__grid">
+      <div class="prod-hero__copy">
+        <h1>Know every AI system <em>in your organisation.</em></h1>
+        <p class="prod-hero__sub">RegAnchor creates a structured record of the AI systems your organisation uses, who owns them, what they do, where they operate and how they are governed.</p>
+        <div class="prod-actions">
+          <a href="platform.html" class="btn-primary">
+            Explore the platform
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="diagnostic.html" class="btn-ghost">Start assessment</a>
+        </div>
+      </div>
+      <div class="prod-hero__stage">
+        <div class="prod-stage prod-stage--portal" id="registryStage">
+          <div class="prod-stage__chrome">
+            <span class="prod-stage__dot"></span><span class="prod-stage__dot"></span><span class="prod-stage__dot"></span>
+            <span class="prod-stage__url">app.reganchor.com/registry</span>
+          </div>
+          <div class="prod-stage__viewport" id="registryViewport">
+            <iframe
+              id="registryFrame"
+              src="portal-demo-registry.html"
+              title="RegAnchor registry preview"
+              loading="eager"
+            ></iframe>
+          </div>
+        </div>
+        <p class="prod-stage-hint">Watch a system enter the registry — zoom, register, then see it appear unassessed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap reveal">
+    <h2 class="section-title">AI estates grow faster <em>than the records around them.</em></h2>
+    <p class="section-lead">AI systems enter an organisation through procurement, development teams, third party services and individual business functions. Without a central record, ownership, purpose, risk and regulatory obligations become difficult to establish.</p>
+    <p class="section-lead">RegAnchor brings those systems into one governed registry. You cannot govern what you cannot see.</p>
+    <div class="concepts">
+      <div class="concept">
+        <div class="concept__n">01</div>
+        <div class="concept__title">Visibility</div>
+        <p class="concept__body">Know what AI systems exist across the organisation, whether built, bought or embedded.</p>
+      </div>
+      <div class="concept">
+        <div class="concept__n">02</div>
+        <div class="concept__title">Ownership</div>
+        <p class="concept__body">Know who is accountable for each system when exposure or scrutiny arrives.</p>
+      </div>
+      <div class="concept">
+        <div class="concept__n">03</div>
+        <div class="concept__title">Context</div>
+        <p class="concept__body">Know how each system is used, where it operates and what obligations attach.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap reveal">
+    <div class="split">
+      <div class="split__text">
+        <h2 class="section-title">Every system has <em>a structured record.</em></h2>
+        <p class="section-lead">Each AI system is captured against the information needed to understand its role, exposure and governance status. This is not a spreadsheet row. It is the authoritative estate entry.</p>
+      </div>
+      <div class="split__visual">
+        <div class="field-grid" aria-label="Example system record fields">
+          <div class="field-item"><span class="field-item__label">System</span><span class="field-item__value">Claims triage LLM</span></div>
+          <div class="field-item"><span class="field-item__label">Owner</span><span class="field-item__value">Ops risk, M. Chen</span></div>
+          <div class="field-item"><span class="field-item__label">Business function</span><span class="field-item__value">Claims operations</span></div>
+          <div class="field-item"><span class="field-item__label">Purpose</span><span class="field-item__value">Route and prioritise claims</span></div>
+          <div class="field-item"><span class="field-item__label">Deployment status</span><span class="field-item__value">Production, live</span></div>
+          <div class="field-item"><span class="field-item__label">Risk classification</span><span class="field-item__value">High risk</span></div>
+          <div class="field-item"><span class="field-item__label">Regulatory scope</span><span class="field-item__value">EU AI Act, UK GDPR</span></div>
+          <div class="field-item"><span class="field-item__label">Assessment status</span><span class="field-item__value">Attested, L4</span></div>
+          <div class="field-item"><span class="field-item__label">Evidence</span><span class="field-item__value">12 artefacts linked</span></div>
+          <div class="field-item"><span class="field-item__label">Controls</span><span class="field-item__value">8 mapped, 2 open</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap reveal">
+    <h2 class="section-title">The Registry becomes the foundation <em>for everything that follows.</em></h2>
+    <p class="section-lead">This is not a glorified inventory. A registered system can move through assessment, controls, evidence and ongoing monitoring without creating a separate record at each stage. The registry is where governance begins, and where continuity is kept.</p>
+  </div>
+</section>
+
+<section class="close-cta">
+  <div class="wrap reveal">
+    <h2>Build the record <em>before you need the evidence.</em></h2>
+    <p>RegAnchor gives your organisation a continuously maintained view of its AI estate, ready for assessment, oversight and scrutiny.</p>
+    <div class="prod-actions">
+      <a href="diagnostic.html" class="btn-primary">
+        Start assessment
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="platform.html" class="btn-ghost">View platform</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <span>© MLA Group Ltd trading as RegAnchor</span>
+    <div>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="cookies.html">Cookies</a>
+      <a href="index.html">Home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/product-pages.js"></script>
+<script>
+(function () {
+  var PW = 1180;
+  var stage = document.getElementById('registryStage');
+  var viewport = document.getElementById('registryViewport');
+  if (!stage || !viewport) return;
+  function fitPortal() {
+    var w = stage.getBoundingClientRect().width;
+    if (!w || w < 40) return;
+    var dpr = window.devicePixelRatio || 1;
+    var raw = Math.min(1, w / PW);
+    var scale = Math.round(raw * dpr * PW) / (dpr * PW);
+    if (scale <= 0) scale = raw;
+    viewport.style.setProperty('--scale', String(scale));
+  }
+  window.addEventListener('resize', fitPortal);
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(fitPortal).observe(stage);
+  }
+  fitPortal();
+  requestAnimationFrame(fitPortal);
+  setTimeout(fitPortal, 100);
+  window.addEventListener('load', fitPortal);
+})();
+</script>
+</body>
+</html>

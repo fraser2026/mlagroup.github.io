@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Registry preview | RegAnchor</title>
+  <meta name="robots" content="noindex"/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/reganchor.css">
+  <link rel="stylesheet" href="css/portal.css">
+  <script src="js/ra-maturity.js"></script>
+  <style>
+    html, body { height: 100%; margin: 0; overflow: hidden; background: var(--ra-bg); }
+    .demo-stage {
+      position: relative;
+      width: 1180px;
+      height: 720px;
+      overflow: hidden;
+      background: var(--ra-bg);
+    }
+    .camera {
+      width: 1180px;
+      height: 720px;
+      transform-origin: 0 0;
+      will-change: transform;
+      transition: transform 1.35s cubic-bezier(0.4, 0.05, 0.2, 1);
+    }
+    .app {
+      height: 720px !important; min-height: 720px; max-height: 720px;
+      width: 1180px; position: relative;
+    }
+    .sidebar {
+      height: 720px !important;
+      max-height: 720px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-nav {
+      overflow-y: auto !important;
+      flex: 1 1 auto;
+      min-height: 0;
+      scrollbar-width: none;
+    }
+    .sidebar-nav::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    .sidebar-nav .nav-item { cursor: default; user-select: none; }
+    .sidebar-nav .nav-item.is-locked:hover { background: var(--ra-hover, rgba(17,17,17,0.028)); }
+    .sidebar-nav .nav-item.active:hover { background: transparent; }
+    .content-scroll {
+      height: calc(720px - var(--topbar-h) - 3px);
+      overflow: auto;
+      scroll-behavior: auto;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .content-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .topbar-bell-wrap {
+      display: flex; align-items: center;
+      margin-right: auto; margin-left: 8px;
+    }
+    tr.sys-row-new {
+      animation: sysRowIn .55s cubic-bezier(0.2, 0.7, 0.2, 1);
+      background: color-mix(in srgb, var(--ra-blurple) 7%, transparent);
+    }
+    @keyframes sysRowIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: none; }
+    }
+    .logo-mark { pointer-events: none; }
+    /* Keep modals inside the 1180×720 canvas — floating sheet matches portal */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      padding: 18px;
+      background: rgba(10, 14, 20, 0.22) !important;
+      -webkit-backdrop-filter: blur(7px) saturate(1.02) !important;
+      backdrop-filter: blur(7px) saturate(1.02) !important;
+    }
+    .modal {
+      max-height: min(640px, calc(100% - 12px));
+      max-width: 520px;
+      border: 1px solid var(--ra-border, #E6EBF1) !important;
+      border-radius: var(--ra-radius-control, 4px) !important;
+      box-shadow:
+        0 1px 2px rgba(10, 14, 20, 0.04),
+        0 12px 32px -10px rgba(10, 14, 20, 0.14) !important;
+    }
+    .demo-cursor {
+      position: absolute;
+      left: 0; top: 0;
+      width: 18px; height: 18px;
+      margin: -2px 0 0 -2px;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity .2s;
+      filter: drop-shadow(0 1px 2px rgba(10, 14, 20, 0.28));
+    }
+    .demo-cursor.is-on { opacity: 1; }
+    .demo-cursor.is-click { transform: scale(0.86); }
+    .demo-cursor svg { display: block; }
+    .btn-topbar-primary.is-pulse {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--ra-blurple) 45%, transparent);
+      animation: addPulse .9s ease-out 1;
+    }
+    @keyframes addPulse {
+      0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ra-blurple) 40%, transparent); }
+      100% { box-shadow: 0 0 0 12px transparent; }
+    }
+    .field-input.is-typing {
+      border-color: var(--ra-blurple) !important;
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--ra-blurple) 25%, transparent);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .camera { transition: none; }
+      tr.sys-row-new { animation: none; }
+      .btn-topbar-primary.is-pulse { animation: none; }
+    }
+  </style>
+</head>
+<body class="ra-portal">
+<div class="demo-stage" id="demoStage">
+  <div class="camera" id="camera">
+    <div class="app">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+          <span class="logo-mark ra-wordmark">RegAnchor</span>
+        </div>
+        <nav class="sidebar-nav" id="sidebarNav" aria-label="Primary">
+          <div class="nav-section-label">Overview</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Dashboard</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 7h6M5 10h4"/></svg>Reports</div>
+          <div class="nav-section-label">Governance</div>
+          <div class="nav-item active" id="nav-registry" data-nav="registry"><svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12M2 10h12"/></svg>Registry</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M2 14V4l6-2 6 2v10"/><path d="M6 14V8h4v6"/><path d="M2 7h12"/></svg>Organisation</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M4 2h6l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M6 8h4M6 11h3"/></svg>Policies</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M8 1.5l5.5 3v5c0 3.5-3 5.5-5.5 7-2.5-1.5-5.5-3.5-5.5-7v-5z"/></svg>Controls</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/><path d="M5 9l2 2 4-4"/></svg>Evidence</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M3 2h10v12H3z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Assessments</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M2 3h5l2 2h5v8H2z"/><path d="M5 9h6M5 12h4"/></svg>Documents</div>
+          <div class="nav-section-label">Intelligence</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M2 12V7M6 12V4M10 12V8M14 12V5"/></svg>Analytics</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1"/></svg>Insights</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M1 12l4-4 3 3 4-5 3 3"/></svg>Risk Trends</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M2 13h12"/><path d="M4 13V7M8 13V4M12 13V9"/></svg>Benchmarks</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M3 2h10v12H3z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Audit Log</div>
+          <div class="nav-section-label">Administration</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5"/><circle cx="12" cy="6" r="2"/><path d="M12 9.5c1.8.3 3 1.7 3 3.5"/></svg>Users</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/></svg>Settings</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="1"/><path d="M1 7h14"/></svg>Billing</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M2 4h12v9H2z"/><path d="M5 4V2h6v2"/><path d="M5 8h6"/></svg>Subscription</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M6 2v3M10 2v3M4 5h8v3a4 4 0 01-8 0V5z"/><path d="M6 11v3M10 11v3"/></svg>Integrations</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><circle cx="5" cy="8" r="2.5"/><path d="M7.2 8h7v2.5M11 8v2.5"/></svg>API Keys</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>Notifications</div>
+          <div class="nav-item is-locked" data-nav="lock"><svg viewBox="0 0 16 16"><circle cx="5" cy="6" r="2"/><circle cx="11" cy="4" r="2"/><path d="M1 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M11 8c1.7 0 3 1.3 3 3v3"/></svg>Referrals</div>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="user-tile">
+            <div class="user-avatar">JS</div>
+            <div class="user-info">
+              <div class="user-name">Jessica Smith</div>
+              <div class="user-role">Owner</div>
+            </div>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+      </aside>
+
+      <div class="main">
+        <div class="topbar">
+          <div class="topbar-title" id="topbar-title">
+            <svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12M2 10h12"/></svg>
+            Registry
+          </div>
+          <div class="topbar-bell-wrap">
+            <div class="icon-btn" style="pointer-events:none;" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--muted, var(--ra-text-3))" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <button type="button" class="btn-topbar btn-topbar-primary" id="btnAddSystem" style="pointer-events:none;">
+              <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System
+            </button>
+            <button type="button" class="btn-topbar btn-topbar-ghost" style="pointer-events:none;">Sign out</button>
+          </div>
+        </div>
+        <div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
+
+        <div class="content-scroll" id="contentScroll">
+          <div id="view-registry" class="view active">
+            <div class="page-header" id="regHeader">
+              <h2>Registry</h2>
+              <p>Document and classify your organisation's AI systems.</p>
+            </div>
+            <div class="stats-grid stats-grid-4" id="regStats">
+              <div class="stat-card">
+                <div class="stat-label">Total Systems</div>
+                <div class="stat-value" id="reg-total">12</div>
+                <div class="stat-sub">Registered</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">High Risk</div>
+                <div class="stat-value" id="reg-high">6</div>
+                <div class="stat-sub">EU AI Act tier</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">In Production</div>
+                <div class="stat-value" id="reg-prod">4</div>
+                <div class="stat-sub">Live systems</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Maturity</div>
+                <div class="stat-value" id="reg-compliance">44%</div>
+                <div class="stat-sub">Control coverage</div>
+              </div>
+            </div>
+            <div class="reg-toolbar" id="regToolbar">
+              <div class="filter-group" role="group" aria-label="Filter by status">
+                <button type="button" class="filter-btn active" data-filter="all">All</button>
+                <button type="button" class="filter-btn" data-filter="production">Production</button>
+                <button type="button" class="filter-btn" data-filter="pilot">Pilot</button>
+                <button type="button" class="filter-btn" data-filter="development">Development</button>
+                <button type="button" class="filter-btn" data-filter="planned">Planned</button>
+              </div>
+              <div class="reg-toolbar__count" id="reg-table-count">12 systems</div>
+            </div>
+            <div class="panel panel--table">
+              <div id="reg-table-wrap"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="system-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h3 id="sysmod-title">Register AI System</h3>
+          <p id="sysmod-sub">Add a new system to the governance registry</p>
+        </div>
+        <button type="button" class="modal-close" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="section-divider"><span>Identity</span></div>
+        <div class="field-group">
+          <label class="field-label">System Name <span class="req">*</span></label>
+          <input type="text" class="field-input" id="sysmod-name" placeholder="e.g. Customer Chatbot, Credit Scoring Model" autocomplete="off"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Description</label>
+          <textarea class="field-input" id="sysmod-desc" rows="3" placeholder="What does this system do?"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Vendor</label>
+            <input type="text" class="field-input" id="sysmod-vendor" placeholder="e.g. OpenAI, In-house" autocomplete="off"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">System Type</label>
+            <select class="field-input" id="sysmod-type">
+              <option value="">Select</option>
+              <option value="third_party">Third Party</option>
+              <option value="in_house">In-House</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+        </div>
+        <div class="section-divider"><span>EU AI Act Classification</span></div>
+        <div class="field-group">
+          <label class="field-label">Purpose Category</label>
+          <select class="field-input" id="sysmod-purpose">
+            <option value="">Select purpose (Annex III mapping)</option>
+            <option disabled>── High Risk (Annex III) ──</option>
+            <option value="employment_management">Employment and worker management</option>
+            <option value="essential_services_access">Access to essential services (credit, insurance)</option>
+            <option disabled>── Limited Risk ──</option>
+            <option value="customer_chatbot">Customer-facing chatbot / virtual assistant</option>
+            <option value="content_generation">Content generation (text, image, audio)</option>
+            <option disabled>── Minimal Risk ──</option>
+            <option value="internal_automation">Internal process automation</option>
+            <option value="data_analytics">Data analytics and reporting</option>
+            <option value="other">Other (classify manually)</option>
+          </select>
+          <div class="tier-suggestion" id="sysmod-tier-hint" style="display:none;"></div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Risk Tier</label>
+            <select class="field-input" id="sysmod-tier">
+              <option value="">Not classified</option>
+              <option value="unacceptable">Unacceptable</option>
+              <option value="high">High</option>
+              <option value="limited">Limited</option>
+              <option value="minimal">Minimal</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Deployment Status</label>
+            <select class="field-input" id="sysmod-status">
+              <option value="planned">Planned</option>
+              <option value="development">Development</option>
+              <option value="pilot">Pilot</option>
+              <option value="production">Production</option>
+              <option value="decommissioned">Decommissioned</option>
+            </select>
+          </div>
+        </div>
+        <div class="section-divider"><span>Governance Metadata</span></div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">System Owner <span class="req">*</span></label>
+            <input type="text" class="field-input" id="sysmod-owner" placeholder="Named accountable individual" autocomplete="off"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Department</label>
+            <input type="text" class="field-input" id="sysmod-dept" placeholder="e.g. Operations, Risk" autocomplete="off"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Notes</label>
+          <textarea class="field-input" id="sysmod-notes" rows="2" placeholder="Any additional context"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-topbar btn-topbar-ghost" id="sysmod-cancel">Cancel</button>
+        <button type="button" class="btn-topbar btn-topbar-primary" id="sysmod-submit">
+          <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg> Register System
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-cursor" id="demoCursor" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M3.2 2.4l11.2 6.4-5.2.9-2.4 5.3L3.2 2.4z" fill="#0A0E14" stroke="#fff" stroke-width="1.1" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+(function () {
+  var TIER_L = { high: 'High Risk', limited: 'Limited', minimal: 'Minimal', unacceptable: 'Unacceptable', none: 'Unclassified' };
+  var STATUS_L = { production: 'Production', pilot: 'Pilot', development: 'Development', planned: 'Planned', retired: 'Retired' };
+  var PURPOSE_TIER_MAP = {
+    employment_management: 'high',
+    essential_services_access: 'high',
+    customer_chatbot: 'limited',
+    content_generation: 'limited',
+    internal_automation: 'minimal',
+    data_analytics: 'minimal'
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function sleep(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+  function easeScroll(el, to, ms) {
+    return new Promise(function (resolve) {
+      var from = el.scrollTop;
+      var dist = to - from;
+      if (Math.abs(dist) < 1 || ms <= 0) {
+        el.scrollTop = to;
+        resolve();
+        return;
+      }
+      var t0 = performance.now();
+      function frame(now) {
+        var p = Math.min(1, (now - t0) / ms);
+        var e = 1 - Math.pow(1 - p, 3);
+        el.scrollTop = from + dist * e;
+        if (p < 1) requestAnimationFrame(frame);
+        else resolve();
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+  function waitTransition(el, prop, timeout) {
+    return new Promise(function (resolve) {
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        el.removeEventListener('transitionend', onEnd);
+        resolve();
+      }
+      function onEnd(e) {
+        if (!prop || e.propertyName === prop) finish();
+      }
+      el.addEventListener('transitionend', onEnd);
+      setTimeout(finish, timeout || 1600);
+    });
+  }
+
+  /* Estate aligned to the live demo screenshots (12 systems, pre–Legal Claims). */
+  var BASE_SPECS = [
+    { name: 'Document Intelligence Engine', desc: 'Extracts structured data from customer forms and supporting documents.', risk: 'minimal', status: 'planned', score: 65 },
+    { name: 'AML Transaction Monitoring', desc: 'Identifies unusual transaction patterns for anti-money laundering review.', risk: 'minimal', status: 'development', score: 65 },
+    { name: 'Cyber Threat Detection Model', desc: 'Detects unusual network behaviour and prioritises security alerts.', risk: 'high', status: 'pilot', score: 78 },
+    { name: 'Payment Fraud Protection', desc: 'Machine learning system that analyses payment risk in near real time.', risk: 'limited', status: 'planned', score: 76 },
+    { name: 'Marketing Personalisation Engine', desc: 'Recommends products and content based on customer engagement signals.', risk: 'minimal', status: 'production', score: 46 },
+    { name: 'Regulatory Document Classifier', desc: 'Classifies regulatory documents and identifies policy obligations.', risk: 'minimal', status: 'production', score: 44 },
+    { name: 'Call Quality Analyser', desc: 'Scores customer service calls for quality and compliance cues.', risk: 'high', status: 'production', score: 39 },
+    { name: 'Customer Risk Profiler', desc: 'Builds customer risk profiles for onboarding and ongoing monitoring.', risk: 'high', status: 'pilot', score: 42 },
+    { name: 'Employee Recruitment Screener', desc: 'Ranks applicants against role criteria with fairness monitoring requirements.', risk: 'high', status: 'development', score: 42 },
+    { name: 'Loan Application Assistant', desc: 'Supports credit decisioning with recommended actions and override logs.', risk: 'high', status: 'pilot', score: 45 },
+    { name: 'Customer Support Chatbot', desc: 'Generative assistant that drafts customer replies with human review gates.', risk: 'limited', status: 'production', score: 50 },
+    { name: 'Credit Scoring Engine', desc: 'Decision support for consumer credit eligibility with documented overrides.', risk: 'high', status: 'development', score: 69 }
+  ];
+
+  var NEW_SYSTEM = {
+    id: 'demo-sys-legal',
+    name: 'Legal Claims Classifier',
+    desc: 'Automatically categorised historical customer claims for internal processing.',
+    risk: 'minimal',
+    status: 'pilot',
+    score: null,
+    owner: 'Robert Evans',
+    dept: 'Claims',
+    vendor: 'Anthropic',
+    type: 'third_party',
+    purpose: 'internal_automation',
+    updated: '11 Aug 2026'
+  };
+
+  var FORM = {
+    name: 'Legal Claims Classifier',
+    desc: 'Automatically categorised historical customer claims for internal processing.',
+    vendor: 'Anthropic',
+    type: 'third_party',
+    purpose: 'internal_automation',
+    tier: 'minimal',
+    status: 'pilot',
+    owner: 'Robert Evans',
+    dept: 'Claims',
+    notes: 'Pilot deployment limited to internal claims teams. Outputs are advisory only and require human validation before any action is taken.'
+  };
+
+  function makeSys(spec, i) {
+    return {
+      id: 'demo-sys-' + String(i + 1).padStart(2, '0'),
+      name: spec.name,
+      desc: spec.desc,
+      risk: spec.risk,
+      status: spec.status,
+      score: spec.score,
+      owner: 'Jessica Smith',
+      dept: 'Operations',
+      updated: '11 Aug 2026'
+    };
+  }
+
+  var systems = BASE_SPECS.map(makeSys);
+  var hasNew = false;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var camera = document.getElementById('camera');
+  var scrollEl = document.getElementById('contentScroll');
+  var cursor = document.getElementById('demoCursor');
+  var modal = document.getElementById('system-modal');
+  var btnAdd = document.getElementById('btnAddSystem');
+
+  function listSystems() {
+    if (!hasNew) return systems.slice();
+    return [NEW_SYSTEM].concat(systems);
+  }
+
+  function regMaturityCell(score, animate) {
+    if (score === null || score === undefined || isNaN(Number(score))) {
+      return raComplianceBar(null, { mini: true, animate: false }) +
+        '<span class="reg-maturity__none">Not assessed</span>';
+    }
+    var lvl = raLevel(score);
+    if (!lvl) {
+      return raComplianceBar(null, { mini: true, animate: false }) +
+        '<span class="reg-maturity__none">Not assessed</span>';
+    }
+    var n = Math.round(Number(score));
+    var doAnim = !!animate;
+    return '<div class="reg-maturity">' +
+      raComplianceBar(score, { mini: true, animate: doAnim }) +
+      '<div><div class="reg-maturity__score ra-num" data-count-to="' + n + '">' +
+      (doAnim ? '0' : n) +
+      '</div>' +
+      '<div class="reg-maturity__level">' + lvl.code + ' ' + lvl.label + '</div></div></div>';
+  }
+
+  function updateStats() {
+    var list = listSystems();
+    var high = list.filter(function (s) { return s.risk === 'high' || s.risk === 'unacceptable'; }).length;
+    var prod = list.filter(function (s) { return s.status === 'production'; }).length;
+    document.getElementById('reg-total').textContent = String(list.length);
+    document.getElementById('reg-high').textContent = String(high);
+    document.getElementById('reg-prod').textContent = String(prod);
+    document.getElementById('reg-compliance').textContent = '44%';
+    document.getElementById('reg-table-count').textContent =
+      list.length + ' system' + (list.length !== 1 ? 's' : '');
+  }
+
+  function rowHtml(sys, opts) {
+    opts = opts || {};
+    var animate = !!opts.animate;
+    var rowCls = opts.highlight ? ' class="sys-row-new"' : '';
+    return '<tr data-sys="' + sys.id + '"' + rowCls + '>' +
+      '<td><div class="sys-name">' + esc(sys.name) + '</div><div class="sys-desc">' + esc(sys.desc) + '</div></td>' +
+      '<td><span class="tier-pill tier-' + sys.risk + '">' + esc(TIER_L[sys.risk] || sys.risk) + '</span></td>' +
+      '<td><span class="status-pill status-' + sys.status + '">' + esc(STATUS_L[sys.status] || sys.status) + '</span></td>' +
+      '<td class="col-maturity">' + regMaturityCell(sys.score, animate) + '</td>' +
+      '<td class="col-date">' + esc(sys.updated) + '</td></tr>';
+  }
+
+  function renderTable(opts) {
+    opts = opts || {};
+    var animate = opts.animate === true;
+    var list = listSystems();
+    var html = '<div class="table-scroll"><table class="sys-table"><thead><tr>' +
+      '<th>System</th><th>Risk class</th><th>Status</th><th class="col-maturity">Maturity</th><th>Updated</th>' +
+      '</tr></thead><tbody>';
+    list.forEach(function (sys, idx) {
+      html += rowHtml(sys, {
+        animate: animate && sys.score != null,
+        highlight: !!(opts.highlightNew && idx === 0 && hasNew)
+      });
+    });
+    html += '</tbody></table></div>';
+    var wrap = document.getElementById('reg-table-wrap');
+    wrap.innerHTML = html;
+    if (animate) {
+      requestAnimationFrame(function () { animateMaturity(wrap); });
+    }
+  }
+
+  /* Replay bars as we leave the full registry into the add-system beat */
+  function replayMaturityBars() {
+    var wrap = document.getElementById('reg-table-wrap');
+    if (!wrap || reduced) return;
+    wrap.querySelectorAll('.reg-maturity__score[data-count-to]').forEach(function (el) {
+      el.textContent = '0';
+    });
+    wrap.querySelectorAll('.ra-cbar:not(.ra-cbar--empty)').forEach(function (bar) {
+      bar.classList.add('ra-cbar--animate');
+    });
+    animateMaturity(wrap);
+  }
+
+  function insertNewSystemRow() {
+    var tbody = document.querySelector('#reg-table-wrap tbody');
+    if (!tbody) {
+      renderTable({ animate: false, highlightNew: true });
+      return;
+    }
+    tbody.insertAdjacentHTML('afterbegin', rowHtml(NEW_SYSTEM, { highlight: true, animate: false }));
+  }
+
+  function removeNewSystemRow() {
+    var tr = document.querySelector('#reg-table-wrap tr[data-sys="' + NEW_SYSTEM.id + '"]');
+    if (tr) tr.remove();
+  }
+
+  function scrollToHideFirstRow() {
+    var row = document.querySelector('#reg-table-wrap tbody tr');
+    if (!row) return Promise.resolve();
+    var sc = scrollEl.getBoundingClientRect();
+    var r = row.getBoundingClientRect();
+    /* Just enough that Legal Claims clears the top edge of the content pane */
+    var target = scrollEl.scrollTop + (r.bottom - sc.top) + 6;
+    return easeScroll(scrollEl, Math.max(0, target), reduced ? 0 : 720);
+  }
+
+  function clearForm() {
+    ['sysmod-name', 'sysmod-desc', 'sysmod-vendor', 'sysmod-owner', 'sysmod-dept', 'sysmod-notes'].forEach(function (id) {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('sysmod-type').value = '';
+    document.getElementById('sysmod-purpose').value = '';
+    document.getElementById('sysmod-tier').value = '';
+    document.getElementById('sysmod-status').value = 'planned';
+    document.getElementById('sysmod-tier-hint').style.display = 'none';
+  }
+
+  function openModal() {
+    clearForm();
+    modal.classList.add('open');
+    var body = modal.querySelector('.modal');
+    if (body) body.scrollTop = 0;
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+  }
+
+  function setCamera(mode) {
+    /* Full registry → crop left sidebar (244px).
+       transform applies scale then translate (from origin top-left). */
+    if (mode === 'list') {
+      camera.style.transform = 'translate(-292px, -12px) scale(1.2)';
+    } else {
+      camera.style.transform = 'translate(0, 0) scale(1)';
+    }
+  }
+
+  function stagePoint(el) {
+    var stage = document.getElementById('demoStage').getBoundingClientRect();
+    var r = el.getBoundingClientRect();
+    return {
+      x: r.left - stage.left + r.width * 0.55,
+      y: r.top - stage.top + r.height * 0.55
+    };
+  }
+
+  function moveCursor(x, y, ms) {
+    cursor.style.transition = 'transform ' + (ms || 420) + 'ms cubic-bezier(0.3, 0.7, 0.2, 1), opacity .2s';
+    cursor.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+    cursor.classList.add('is-on');
+    return sleep(ms || 420);
+  }
+
+  function hideCursor() {
+    cursor.classList.remove('is-on');
+  }
+
+  async function clickAt(el) {
+    var p = stagePoint(el);
+    await moveCursor(p.x, p.y, 380);
+    cursor.classList.add('is-click');
+    await sleep(90);
+    cursor.classList.remove('is-click');
+    await sleep(70);
+  }
+
+  async function typeInto(el, text, cps) {
+    el.focus();
+    el.classList.add('is-typing');
+    el.value = '';
+    var delay = cps || 28;
+    for (var i = 0; i < text.length; i++) {
+      el.value = text.slice(0, i + 1);
+      if (el.tagName === 'TEXTAREA') {
+        el.scrollTop = el.scrollHeight;
+      }
+      await sleep(delay);
+    }
+    el.classList.remove('is-typing');
+    await sleep(90);
+  }
+
+  async function selectValue(el, value) {
+    el.classList.add('is-typing');
+    el.focus();
+    await sleep(160);
+    el.value = value;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    await sleep(220);
+    el.classList.remove('is-typing');
+  }
+
+  function applyPurposeHint(purpose) {
+    var suggested = PURPOSE_TIER_MAP[purpose];
+    var hint = document.getElementById('sysmod-tier-hint');
+    var tierSel = document.getElementById('sysmod-tier');
+    if (!suggested) {
+      hint.style.display = 'none';
+      return;
+    }
+    var label = suggested.charAt(0).toUpperCase() + suggested.slice(1);
+    hint.style.display = 'block';
+    hint.textContent = 'Suggested tier: ' + label + ', based on EU AI Act Annex III.';
+    if (!tierSel.value) tierSel.value = suggested;
+  }
+
+  function scrollPastStats() {
+    var toolbar = document.getElementById('regToolbar');
+    var top = toolbar ? Math.max(0, toolbar.offsetTop - 8) : 220;
+    return easeScroll(scrollEl, top, reduced ? 0 : 900);
+  }
+
+  /* Keep the list frame pinned (filters at top) — no jump to stats */
+  function pinListFrame() {
+    var toolbar = document.getElementById('regToolbar');
+    if (!toolbar) return;
+    scrollEl.scrollTop = Math.max(0, toolbar.offsetTop - 8);
+  }
+
+  async function fillForm() {
+    var modalBody = modal.querySelector('.modal');
+    await typeInto(document.getElementById('sysmod-name'), FORM.name, 26);
+    await typeInto(document.getElementById('sysmod-desc'), FORM.desc, 18);
+    await typeInto(document.getElementById('sysmod-vendor'), FORM.vendor, 30);
+    await selectValue(document.getElementById('sysmod-type'), FORM.type);
+    if (modalBody) await easeScroll(modalBody, 140, 380);
+    await selectValue(document.getElementById('sysmod-purpose'), FORM.purpose);
+    applyPurposeHint(FORM.purpose);
+    await sleep(260);
+    await selectValue(document.getElementById('sysmod-tier'), FORM.tier);
+    await selectValue(document.getElementById('sysmod-status'), FORM.status);
+    if (modalBody) await easeScroll(modalBody, 320, 420);
+    await typeInto(document.getElementById('sysmod-owner'), FORM.owner, 28);
+    await typeInto(document.getElementById('sysmod-dept'), FORM.dept, 32);
+
+    /* Scroll notes + sticky Register footer into view before typing — no end jerk */
+    if (modalBody) {
+      var notes = document.getElementById('sysmod-notes');
+      var target = Math.max(0, notes.offsetTop - 20);
+      await easeScroll(modalBody, target, reduced ? 0 : 440);
+      await sleep(140);
+    }
+    await typeInto(document.getElementById('sysmod-notes'), FORM.notes, 14);
+  }
+
+  async function saveSystem() {
+    var submit = document.getElementById('sysmod-submit');
+    await clickAt(submit);
+    submit.textContent = 'Saving…';
+    submit.disabled = true;
+    await sleep(480);
+    closeModal();
+    submit.disabled = false;
+    submit.innerHTML = '<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg> Register System';
+    hasNew = true;
+    updateStats();
+    /* Prepend only — stay on the same list frame as before Add AI System */
+    insertNewSystemRow();
+    pinListFrame();
+    await sleep(700);
+  }
+
+  async function loopReset() {
+    /*
+      Still on list frame: scroll Legal Claims just off the top edge, drop the row
+      while hidden, then scroll up to the original full page (stats + list).
+    */
+    pinListFrame();
+    await sleep(80);
+    await scrollToHideFirstRow();
+    await sleep(160);
+    hasNew = false;
+    removeNewSystemRow();
+    updateStats();
+    await sleep(100);
+    await easeScroll(scrollEl, 0, reduced ? 0 : 820);
+    await sleep(480);
+  }
+
+  async function runLoop() {
+    while (true) {
+      /* Table already correct after first paint / loop reset — do not re-render */
+      hasNew = false;
+      scrollEl.scrollTop = 0;
+      setCamera('full');
+      hideCursor();
+      await sleep(1100);
+
+      /* 1) Zoom away from full registry + maturity bars play as we leave */
+      replayMaturityBars();
+      setCamera('list');
+      await waitTransition(camera, 'transform', 1500);
+      await sleep(380);
+
+      /* 2) Scroll stats away — table headers + list clean */
+      await scrollPastStats();
+      await sleep(420);
+
+      /* 3) Add AI System */
+      btnAdd.classList.add('is-pulse');
+      await clickAt(btnAdd);
+      btnAdd.classList.remove('is-pulse');
+      openModal();
+      await sleep(380);
+
+      /* 4) Fast form fill */
+      await fillForm();
+      await sleep(220);
+
+      /* 5) Save — new system first; background stays on list frame */
+      await saveSystem();
+      hideCursor();
+      await sleep(650);
+
+      /* 6) Slow zoom out while still on that list frame */
+      setCamera('full');
+      await waitTransition(camera, 'transform', 1700);
+      await sleep(900);
+
+      /* 7) Scroll Legal Claims away, drop it, scroll back to opening page */
+      await loopReset();
+    }
+  }
+
+  /* Locked left nav — visual only */
+  document.getElementById('sidebarNav').addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+
+  updateStats();
+  /* Settled on first paint; bars animate when leaving for Add AI System */
+  renderTable({ animate: false });
+
+  if (reduced) {
+    setCamera('full');
+  } else {
+    sleep(600).then(runLoop);
+  }
+})();
+</script>
+</body>
+</html>

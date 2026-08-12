@@ -136,8 +136,15 @@ body {
 .ra-portal a.btn-upgrade,
 .ra-portal .paywall-banner a,
 .ra-portal .dom-list .dom-row__track,
-.ra-portal .dom-list .dom-row__fill {
+.ra-portal .dom-list .dom-row__fill,
+.ra-portal .reg-search,
+.ra-portal .reg-bulk-menu {
   border-radius: var(--ra-radius-control, 4px) !important;
+}
+.ra-portal .reg-bulk-menu {
+  box-shadow:
+    0 1px 2px rgba(10, 14, 20, 0.04),
+    0 12px 32px -10px rgba(10, 14, 20, 0.14) !important;
 }
 
 /* Status / filter chrome stays square tracked labels, not capsules. */
@@ -888,6 +895,36 @@ a.btn-dl svg {
   color: var(--ra-text);
 }
 
+/* Inline contextual annotation beside the large number */
+.stat-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.stat-value-row--meta-right {
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+.stat-meta {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--ra-text-3);
+  white-space: nowrap;
+}
+.stat-meta--blurple { color: var(--ra-blurple); }
+.stat-meta--warn {
+  color: var(--ra-warn, #C45C26);
+}
+.stat-meta--muted {
+  color: var(--ra-text-3);
+}
+.stat-meta:empty { display: none; }
+
 /* Empty Latest Score — primary CTA aligns left with sibling stat metrics */
 .stat-value--cta {
   font-size: inherit;
@@ -1039,15 +1076,234 @@ a.btn-dl svg {
   margin-bottom: 14px;
 }
 .filter-group { display: flex; align-items: center; gap: 4px; flex-wrap: wrap }
-.reg-toolbar__count {
-  font-size: 12px;
-  color: var(--ra-text-3);
+.reg-toolbar__tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
   margin-left: auto;
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.reg-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 180px;
+  max-width: 280px;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control, 4px) !important;
+  background: var(--ra-bg);
+}
+.reg-search:focus-within { border-color: var(--ra-blurple) }
+.reg-search svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  stroke: var(--ra-text-3);
+  fill: none;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.reg-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  background: none;
+  box-shadow: none;
+  font-family: var(--ra-font-product, var(--ra-font));
+  font-size: 13px;
+  color: var(--ra-text);
+  outline: none;
+  border-radius: 0 !important;
+}
+.reg-search input::placeholder { color: var(--ra-text-3) }
+.reg-bulk { position: relative; flex-shrink: 0 }
+.reg-bulk .btn-topbar-ghost {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+.reg-bulk .btn-topbar-ghost[aria-pressed="true"] {
+  border-color: var(--ra-blurple);
+  color: var(--ra-blurple) !important;
+}
+.reg-bulk-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 220px;
+  padding: 6px 0;
+  background: var(--ra-bg);
+  border: 1px solid var(--ra-border, #E6EBF1);
+  border-radius: var(--ra-radius-control, 4px) !important;
+  box-shadow:
+    0 1px 2px rgba(10, 14, 20, 0.04),
+    0 12px 32px -10px rgba(10, 14, 20, 0.14);
+}
+.reg-bulk-menu__meta {
+  padding: 6px 12px 8px;
+  font-size: 11px;
+  color: var(--ra-text-3);
+  border-bottom: 1px solid var(--ra-border);
+  margin-bottom: 4px;
+}
+.ra-portal .reg-bulk-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none !important;
+  border-radius: 0 !important;
+  background: none;
+  color: var(--ra-text);
+  font-family: var(--ra-font-product, var(--ra-font));
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none;
+}
+.ra-portal .reg-bulk-menu button:hover,
+.ra-portal .reg-bulk-menu button:focus-visible {
+  background: var(--ra-hover);
+  color: var(--ra-blurple);
+  outline: none;
+}
+.ra-portal .reg-bulk-menu button.is-disabled,
+.ra-portal .reg-bulk-menu button.is-disabled:hover {
+  color: var(--ra-text-4);
+  background: none;
+  cursor: default;
+  pointer-events: none;
+}
+.ra-portal .reg-bulk-menu .reg-bulk-done {
+  margin-top: 4px;
+  border-top: 1px solid var(--ra-border) !important;
+  color: var(--ra-text-3);
+}
+.ra-portal .reg-bulk-menu .reg-bulk-done:hover,
+.ra-portal .reg-bulk-menu .reg-bulk-done:focus-visible {
+  background: var(--ra-hover);
+  color: var(--ra-blurple);
+}
+.reg-menu-panel[hidden] { display: none !important }
+.ra-portal .reg-bulk-menu .reg-menu-back {
+  color: var(--ra-text-3);
+  border-bottom: 1px solid var(--ra-border) !important;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+.ra-portal .reg-bulk-menu .reg-menu-back:hover,
+.ra-portal .reg-bulk-menu .reg-menu-back:focus-visible {
+  color: var(--ra-blurple);
+}
+.reg-menu-confirm {
+  padding: 8px 12px 10px;
+  font-size: 13px;
+  color: var(--ra-text-2);
+  line-height: 1.45;
+}
+.reg-menu-owner {
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reg-menu-owner .field-input {
+  margin: 0;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+.ra-portal .reg-menu-confirm-btn,
+.ra-portal .reg-menu-owner .btn-topbar-primary {
+  width: calc(100% - 24px);
+  margin: 0 12px 8px;
+  height: 32px;
+  font-size: 12px;
+}
+#reg-row-menu {
+  position: fixed;
+  z-index: 80;
+  min-width: 220px;
+}
+.sys-table .col-more {
+  width: 40px;
+  text-align: right;
+  vertical-align: middle;
+}
+.ra-portal .reg-row-more {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0 0 0 auto;
+  border: none !important;
+  background: none;
+  color: var(--ra-text-3);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ra-radius-control, 4px) !important;
+  box-shadow: none !important;
+}
+.ra-portal .reg-row-more:hover,
+.ra-portal .reg-row-more:focus-visible,
+.ra-portal .reg-row-more[aria-expanded="true"] {
+  color: var(--ra-blurple);
+  background: var(--ra-hover);
+  outline: none;
+}
+.reg-row-more svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+.sys-table .col-check {
+  width: 52px;
+  min-width: 52px;
+  vertical-align: middle;
+}
+.sys-table:not(.is-selecting) .col-check { display: none }
+.sys-table.is-selecting th.col-check,
+.sys-table.is-selecting td.col-check {
+  cursor: pointer;
+}
+.sys-table.is-selecting .col-check input {
+  animation: reg-check-in .18s ease;
+}
+@keyframes reg-check-in {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+.sys-table .col-check input {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--ra-blurple);
+  pointer-events: none;
 }
 .panel--table .panel-body,
 .panel--table > #reg-table-wrap { padding: 0 }
 .panel--table .sys-table th:first-child,
 .panel--table .sys-table td:first-child { padding-left: 20px }
+.panel--table .sys-table:not(.is-selecting) th:nth-child(2),
+.panel--table .sys-table:not(.is-selecting) td:nth-child(2) { padding-left: 20px }
+.panel--table .sys-table.is-selecting th.col-check,
+.panel--table .sys-table.is-selecting td.col-check {
+  padding-left: 16px !important;
+  padding-right: 14px !important;
+}
+.panel--table .sys-table.is-selecting th:nth-child(2),
+.panel--table .sys-table.is-selecting td:nth-child(2) { padding-left: 8px }
 .panel--table .sys-table th:last-child,
 .panel--table .sys-table td:last-child { padding-right: 20px }
 .panel--table .loading-state,
@@ -1081,6 +1337,7 @@ a.btn-dl svg {
 }
 @media (prefers-reduced-motion: reduce) {
   .ra-cbar--animate .ra-cbar__row { animation: none }
+  .sys-table.is-selecting .col-check input { animation: none }
 }
 
 .sys-name { font-weight: 500; color: var(--ra-text); margin-bottom: 2px }
@@ -2391,25 +2648,69 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
 }
 
 /* ───────────────────────────────────────────────────────────────
-   MODALS
+   MODALS — floating sheets
+   Soft hairline panel + slight frosted dim, 4px radius (match controls).
+   Applies to all portal .modal-overlay dialogs (system, e-sign, upgrade,
+   enterprise, etc.).
    ─────────────────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 999;
-  background: rgba(10, 14, 20, 0.45);
+  background: rgba(10, 14, 20, 0.22);
+  -webkit-backdrop-filter: blur(7px) saturate(1.02);
+  backdrop-filter: blur(7px) saturate(1.02);
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
   opacity: 0; pointer-events: none;
-  transition: opacity .2s;
+  transition: opacity .22s ease;
 }
 .modal-overlay.open { opacity: 1; pointer-events: all }
 
 .modal {
   background: var(--ra-bg);
-  border: 1px solid var(--ra-border-strong);
+  border: 1px solid var(--ra-border, #E6EBF1);
+  border-radius: var(--ra-radius-control, 4px);
+  box-shadow:
+    0 1px 2px rgba(10, 14, 20, 0.04),
+    0 12px 32px -10px rgba(10, 14, 20, 0.14);
   width: 100%; max-width: 520px; max-height: 90vh;
+  overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--ra-border) transparent;
+}
+
+/* Win over portal square-chrome + shadow-kill for floating sheets only */
+.ra-portal .modal-overlay {
+  background: rgba(10, 14, 20, 0.22) !important;
+  -webkit-backdrop-filter: blur(7px) saturate(1.02) !important;
+  backdrop-filter: blur(7px) saturate(1.02) !important;
+}
+.ra-portal .modal-overlay .modal {
+  background: var(--ra-bg) !important;
+  background-color: var(--ra-bg) !important;
+  border: 1px solid var(--ra-border, #E6EBF1) !important;
+  border-radius: var(--ra-radius-control, 4px) !important;
+  box-shadow:
+    0 1px 2px rgba(10, 14, 20, 0.04),
+    0 12px 32px -10px rgba(10, 14, 20, 0.14) !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.ra-portal .modal-overlay .modal-header {
+  border-bottom-color: var(--ra-border, #E6EBF1);
+  border-radius: var(--ra-radius-control, 4px) var(--ra-radius-control, 4px) 0 0 !important;
+}
+.ra-portal .modal-overlay .modal-footer {
+  border-top-color: var(--ra-border, #E6EBF1);
+  border-radius: 0 0 var(--ra-radius-control, 4px) var(--ra-radius-control, 4px) !important;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .modal-overlay,
+  .ra-portal .modal-overlay {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: rgba(10, 14, 20, 0.42) !important;
+  }
 }
 
 .modal-header {
@@ -2604,6 +2905,15 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
   .welcome-actions { display: none }
   .content-scroll { padding: 24px 18px }
   .topbar { padding: 0 18px }
+  .reg-toolbar__tools {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+  .reg-search {
+    max-width: none;
+    height: 36px;
+  }
+  .reg-bulk .btn-topbar-ghost { height: 36px }
 }
 
 @media (max-width: 480px) {

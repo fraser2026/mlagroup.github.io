@@ -33,10 +33,16 @@ Do not invent a parallel theme. Extend the portal language.
 | Body | `#425466` |
 | Muted | `#697386` |
 | Blurple (actions + meters only) | `#533AFD` |
+| Blurple hover | `#4434E0` |
 | Risk | `#CD3D64` |
 | Warn | `#C45C26` |
 | OK | `#24B47E` |
 | Control radius | **4px** (not pills) |
+
+**Buttons (source of truth: `index.html`):**
+- **Primary:** Blurple fill → Blurple-hover on hover; white label stays.
+- **Ghost / outline:** white (or paper) fill, ink label, hairline border → on hover **Blurple border + Blurple label**, quiet paper hover only. **Never** ink / navy solid fill on ghost hover.
+- **Menus / major actions** (bulk actions, row kebab, any list that commits a change): rest = ink label (muted grey if disabled). Hover = keep the quiet grey wash (`--ra-hover`) **and** paint the label Blurple — same signal as hovering the RegAnchor wordmark / ghost button. Disabled items stay grey and do not take the accent. Do not replace the grey wash with a solid Blurple fill.
 
 **Type:** Inter for UI/body and the live `.ra-wordmark`. Favicon / brand-mark R must match that Inter Medium R (outlined path so browsers do not need a webfont). Score numerals may use tabular figures; do not swap the public wordmark to a different family to “fix” the favicon.
 

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Intelligence | RegAnchor</title>
+  <meta name="description" content="Know where your exposure is changing. RegAnchor surfaces governance activity, system status and evidence so teams can act before risk becomes a problem."/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
+  <link rel="stylesheet" href="css/product-pages.css">
+  <meta name="color-scheme" content="light">
+</head>
+<body data-product="intelligence">
+
+<div class="home-chrome">
+  <nav>
+    <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
+    <div class="nav-centre" aria-label="Product">
+      <a href="registry.html" class="nav-link">Registry</a>
+      <a href="governance.html" class="nav-link">Governance</a>
+      <a href="intelligence.html" class="nav-link is-active">Intelligence</a>
+    </div>
+    <div class="nav-right">
+      <a href="login.html" class="nav-signin">Sign in</a>
+      <a href="platform.html" class="nav-cta">
+        Explore the platform
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+    <button type="button" class="hamburger" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </nav>
+  <div class="home-chrome__fade" aria-hidden="true"></div>
+</div>
+<div class="mob-menu" id="mobMenu">
+  <a href="registry.html" class="mob-link" onclick="closeMob()">Registry</a>
+  <a href="governance.html" class="mob-link" onclick="closeMob()">Governance</a>
+  <a href="intelligence.html" class="mob-link is-active" onclick="closeMob()">Intelligence</a>
+  <a href="platform.html" class="mob-link" onclick="closeMob()">Platform</a>
+  <a href="login.html" class="mob-link" onclick="closeMob()">Sign in</a>
+  <a href="diagnostic.html" class="mob-cta" onclick="closeMob()">Start assessment</a>
+</div>
+<div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
+
+<section class="prod-hero">
+  <div class="wrap">
+    <div class="prod-hero__grid">
+      <div class="prod-hero__copy">
+        <h1>Know where your exposure <em>is changing.</em></h1>
+        <p class="prod-hero__sub">RegAnchor continuously brings together governance activity, system status, regulatory context and evidence to show where attention is required.</p>
+        <div class="prod-actions">
+          <a href="platform.html" class="btn-primary">
+            Explore the platform
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="diagnostic.html" class="btn-ghost">Start assessment</a>
+        </div>
+      </div>
+      <div class="prod-hero__stage">
+        <div class="prod-stage" aria-hidden="true">
+          <div class="prod-stage__chrome">
+            <span class="prod-stage__dot"></span><span class="prod-stage__dot"></span><span class="prod-stage__dot"></span>
+            <span class="prod-stage__url">app.reganchor.com/intelligence</span>
+          </div>
+          <div class="prod-stage__body">
+            <div class="stat-pair">
+              <div class="stat-cell">
+                <div class="stat-cell__label">Open attention</div>
+                <div class="stat-cell__value">7</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-cell__label">Estate maturity</div>
+                <div class="stat-cell__value">L4</div>
+                <div class="i-meter" style="max-width:100%;"><span style="width:62%"></span></div>
+              </div>
+            </div>
+            <div class="prod-stage__caption">Requires attention</div>
+            <div class="attn-list" style="margin-top:0;">
+              <div class="attn-row">
+                <div>
+                  <div class="attn-row__title">Evidence expired on KYC OCR</div>
+                  <div class="attn-row__meta">Model card last reviewed 94 days ago</div>
+                </div>
+                <span class="attn-row__tag is-risk">Now</span>
+              </div>
+              <div class="attn-row">
+                <div>
+                  <div class="attn-row__title">Owner change on vendor fraud model</div>
+                  <div class="attn-row__meta">Control plan reassigned, 2 open actions</div>
+                </div>
+                <span class="attn-row__tag">Review</span>
+              </div>
+              <div class="attn-row">
+                <div>
+                  <div class="attn-row__title">Scope update on support copilot</div>
+                  <div class="attn-row__meta">New use case, reassessment suggested</div>
+                </div>
+                <span class="attn-row__tag">Watch</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap reveal">
+    <h2 class="section-title">A static record cannot show <em>a changing risk landscape.</em></h2>
+    <p class="section-lead">AI systems change. Regulations change. Ownership changes. Controls mature. Evidence expires. A registry alone is not enough, and Intelligence is not a chatbot or a generic insights layer.</p>
+    <p class="section-lead">RegAnchor connects those changes so governance teams can see what requires attention before it becomes a problem.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap reveal">
+    <h2 class="section-title">Four lenses on <em>the AI estate.</em></h2>
+    <p class="section-lead">Maturity history, alerts and regulatory context form a structured view of exposure, so teams focus on direction of change rather than raw volume of noise.</p>
+    <div class="concepts concepts--2x2">
+      <div class="concept">
+        <div class="concept__n">01</div>
+        <div class="concept__title">Exposure</div>
+        <p class="concept__body">Where risk is concentrated across systems, functions and classifications.</p>
+      </div>
+      <div class="concept">
+        <div class="concept__n">02</div>
+        <div class="concept__title">Maturity</div>
+        <p class="concept__body">How governance is progressing across the estate over time.</p>
+      </div>
+      <div class="concept">
+        <div class="concept__n">03</div>
+        <div class="concept__title">Change</div>
+        <p class="concept__body">What has shifted since the last review across systems, owners, controls and evidence.</p>
+      </div>
+      <div class="concept">
+        <div class="concept__n">04</div>
+        <div class="concept__title">Attention</div>
+        <p class="concept__body">What requires action now, with enough context to decide, assign and evidence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap reveal">
+    <h2 class="section-title">Surface what matters <em>before you are asked.</em></h2>
+    <p class="section-lead">Instead of asking what has changed, RegAnchor gives a structured view so governance teams can act with confidence.</p>
+    <div class="q-grid" aria-label="Structured attention view">
+      <div class="q-item">
+        <div class="q-item__q">What changed</div>
+        <div class="q-item__a">System, control or evidence state</div>
+      </div>
+      <div class="q-item">
+        <div class="q-item__q">Why it matters</div>
+        <div class="q-item__a">Exposure, obligation or assurance impact</div>
+      </div>
+      <div class="q-item">
+        <div class="q-item__q">Who owns it</div>
+        <div class="q-item__a">Accountable owner on the system record</div>
+      </div>
+      <div class="q-item">
+        <div class="q-item__q">What needs to happen</div>
+        <div class="q-item__a">Action, reassessment or evidence refresh</div>
+      </div>
+      <div class="q-item q-item--full">
+        <div class="q-item__q">What evidence exists</div>
+        <div class="q-item__a">Linked artefacts and last review, ready for scrutiny</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="close-cta">
+  <div class="wrap reveal">
+    <h2>Governance that <em>keeps moving.</em></h2>
+    <p>AI governance is not a one time assessment. RegAnchor maintains the relationship between systems, obligations, controls and evidence as your organisation changes.</p>
+    <div class="prod-actions">
+      <a href="diagnostic.html" class="btn-primary">
+        Start assessment
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="platform.html" class="btn-ghost">View platform</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <span>© MLA Group Ltd trading as RegAnchor</span>
+    <div>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="cookies.html">Cookies</a>
+      <a href="index.html">Home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/product-pages.js"></script>
+</body>
+</html>

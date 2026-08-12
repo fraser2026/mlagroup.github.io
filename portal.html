@@ -243,10 +243,35 @@
     <p id="reg-subtext">Document and classify your organisation's AI systems.</p>
   </div>
   <div class="stats-grid stats-grid-4">
-    <div class="stat-card"><div class="stat-label">Total Systems</div><div class="stat-value" id="reg-total">—</div><div class="stat-sub">Registered</div></div>
-    <div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value" id="reg-high">—</div><div class="stat-sub">EU AI Act tier</div></div>
-    <div class="stat-card"><div class="stat-label">In Production</div><div class="stat-value" id="reg-prod">—</div><div class="stat-sub">Live systems</div></div>
-    <div class="stat-card"><div class="stat-label">Maturity</div><div class="stat-value" id="reg-compliance">—</div><div class="stat-sub" id="reg-compliance-sub">Overall progress</div></div>
+    <div class="stat-card">
+      <div class="stat-label">Total Systems</div>
+      <div class="stat-value-row stat-value-row--meta-right">
+        <span class="stat-value" id="reg-total">—</span>
+        <span class="stat-meta stat-meta--blurple" id="reg-total-meta"></span>
+      </div>
+      <div class="stat-sub">Registered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">High Risk</div>
+      <div class="stat-value-row">
+        <span class="stat-value" id="reg-high">—</span>
+      </div>
+      <div class="stat-sub">EU AI Act tier</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">In Production</div>
+      <div class="stat-value-row">
+        <span class="stat-value" id="reg-prod">—</span>
+      </div>
+      <div class="stat-sub">Live systems</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Maturity</div>
+      <div class="stat-value-row">
+        <span class="stat-value" id="reg-compliance">—</span>
+      </div>
+      <div class="stat-sub" id="reg-compliance-sub">Control coverage</div>
+    </div>
   </div>
   <div class="reg-toolbar">
     <div class="filter-group" role="group" aria-label="Filter by status">
@@ -256,7 +281,46 @@
       <button class="filter-btn" onclick="setRegFilter('development',this)">Development</button>
       <button class="filter-btn" onclick="setRegFilter('planned',this)">Planned</button>
     </div>
-    <div class="reg-toolbar__count" id="reg-table-count"></div>
+    <div class="reg-toolbar__tools">
+      <label class="reg-search">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5.2"/><path d="M11.2 11.2L15 15"/></svg>
+        <input type="search" id="reg-search" placeholder="Search systems" aria-label="Search systems, risk class, or status" autocomplete="off" oninput="setRegSearch(this.value)">
+      </label>
+      <div class="reg-bulk">
+        <button type="button" class="btn-topbar-ghost" id="reg-bulk-btn" aria-haspopup="menu" aria-expanded="false" aria-pressed="false" onclick="toggleRegBulk(event)"><span id="reg-bulk-label">Bulk actions</span> <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5L6 8l3-3.5"/></svg></button>
+        <div class="reg-bulk-menu" id="reg-bulk-menu" hidden role="menu">
+          <div class="reg-menu-panel" data-panel="root">
+            <div class="reg-bulk-menu__meta" id="reg-bulk-meta">Select systems in the table</div>
+            <button type="button" role="menuitem" data-bulk="export" onclick="runRegBulk('export')">Export selected</button>
+            <button type="button" role="menuitem" data-bulk="assess" onclick="runRegBulk('assess')">Request assessment</button>
+            <button type="button" role="menuitem" data-bulk="status" onclick="runRegBulk('status')">Set deployment status</button>
+            <button type="button" role="menuitem" data-bulk="owner" onclick="runRegBulk('owner')">Assign owner</button>
+            <button type="button" role="menuitem" data-bulk="retire" onclick="runRegBulk('retire')">Mark decommissioned</button>
+            <button type="button" class="reg-bulk-done" onclick="event.stopPropagation();setRegSelectMode(false)">Done</button>
+          </div>
+          <div class="reg-menu-panel" data-panel="status" hidden>
+            <button type="button" class="reg-menu-back" onclick="event.stopPropagation();showRegMenuPanel('root')">Deployment status</button>
+            <button type="button" role="menuitem" onclick="applyRegStatus('planned')">Planned</button>
+            <button type="button" role="menuitem" onclick="applyRegStatus('development')">Development</button>
+            <button type="button" role="menuitem" onclick="applyRegStatus('pilot')">Pilot</button>
+            <button type="button" role="menuitem" onclick="applyRegStatus('production')">Production</button>
+          </div>
+          <div class="reg-menu-panel" data-panel="owner" hidden>
+            <button type="button" class="reg-menu-back" onclick="event.stopPropagation();showRegMenuPanel('root')">Assign owner</button>
+            <div class="reg-menu-owner">
+              <input type="text" class="field-input reg-owner-input" placeholder="Named accountable individual" autocomplete="off" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.preventDefault();applyRegOwner()}">
+              <button type="button" class="btn-topbar-primary" onclick="event.stopPropagation();applyRegOwner()">Save</button>
+            </div>
+          </div>
+          <div class="reg-menu-panel" data-panel="retire" hidden>
+            <button type="button" class="reg-menu-back" onclick="event.stopPropagation();showRegMenuPanel('root')">Mark decommissioned</button>
+            <div class="reg-menu-confirm reg-retire-copy">Decommission these systems?</div>
+            <button type="button" class="btn-topbar-primary reg-menu-confirm-btn" onclick="event.stopPropagation();applyRegRetire()">Decommission</button>
+            <button type="button" role="menuitem" onclick="event.stopPropagation();showRegMenuPanel('root')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="panel panel--table">
     <div id="reg-table-wrap"><div class="loading-state">Loading registry…</div></div>
@@ -454,4 +518,33 @@
 <script src="js/portal-cert.js"></script>
 <script>init();</script>
 
+<div class="reg-bulk-menu" id="reg-row-menu" hidden role="menu">
+  <div class="reg-menu-panel" data-panel="root">
+    <button type="button" role="menuitem" data-row-action="export" onclick="runRegRowAction('export')">Export</button>
+    <button type="button" role="menuitem" data-row-action="assess" onclick="runRegRowAction('assess')">Request assessment</button>
+    <button type="button" role="menuitem" data-row-action="status" onclick="runRegRowAction('status')">Set deployment status</button>
+    <button type="button" role="menuitem" data-row-action="owner" onclick="runRegRowAction('owner')">Assign owner</button>
+    <button type="button" role="menuitem" data-row-action="retire" onclick="runRegRowAction('retire')">Mark decommissioned</button>
+  </div>
+  <div class="reg-menu-panel" data-panel="status" hidden>
+    <button type="button" class="reg-menu-back" onclick="event.stopPropagation();showRegMenuPanel('root')">Deployment status</button>
+    <button type="button" role="menuitem" onclick="applyRegStatus('planned')">Planned</button>
+    <button type="button" role="menuitem" onclick="applyRegStatus('development')">Development</button>
+    <button type="button" role="menuitem" onclick="applyRegStatus('pilot')">Pilot</button>
+    <button type="button" role="menuitem" onclick="applyRegStatus('production')">Production</button>
+  </div>
+  <div class="reg-menu-panel" data-panel="owner" hidden>
+    <button type="button" class="reg-menu-back" onclick="event.stopPropagation();showRegMenuPanel('root')">Assign owner</button>
+    <div class="reg-menu-owner">
+      <input type="text" class="field-input reg-owner-input" placeholder="Named accountable individual" autocomplete="off" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.preventDefault();applyRegOwner()}">
+      <button type="button" class="btn-topbar-primary" onclick="event.stopPropagation();applyRegOwner()">Save</button>
+    </div>
+  </div>
+  <div class="reg-menu-panel" data-panel="retire" hidden>
+    <button type="button" class="reg-menu-back" onclick="event.stopPropagation();showRegMenuPanel('root')">Mark decommissioned</button>
+    <div class="reg-menu-confirm reg-retire-copy">Decommission this system?</div>
+    <button type="button" class="btn-topbar-primary reg-menu-confirm-btn" onclick="event.stopPropagation();applyRegRetire()">Decommission</button>
+    <button type="button" role="menuitem" onclick="event.stopPropagation();showRegMenuPanel('root')">Cancel</button>
+  </div>
+</div>
 </body></html>

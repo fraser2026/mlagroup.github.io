@@ -10,7 +10,8 @@ Full reference: [DESIGN.md](DESIGN.md). Naming/legal: [BRAND.md](BRAND.md). Toke
 ## Before changing UI
 
 1. Open `portal.html` / `css/portal.css` and match that language.
-2. Do not invent a second theme (especially dark fintech or purple-gradient startup).
+2. Open `index.html` for public marketing chrome and **button pair** behaviour.
+3. Do not invent a second theme (especially dark fintech or purple-gradient startup).
 
 ## Non-negotiables
 
@@ -21,6 +22,35 @@ Full reference: [DESIGN.md](DESIGN.md). Naming/legal: [BRAND.md](BRAND.md). Toke
 - 4px controls; ledgers over decorative cards; no glow/glass/pill clusters
 - Product copy = **RegAnchor**; certificates/legal issuer = **MLA Group Ltd**
 - PDF templates (`report-template.html`, `certificate-template.html`) stay self-contained CSS for Puppeteer
+
+## Buttons (index is the source of truth — never invent a third pair)
+
+Match `index.html` `.btn-primary` / `.btn-ghost` exactly on every new public surface.
+
+| Control | Rest | Hover / focus |
+|---------|------|----------------|
+| **Primary** | Blurple fill + white label | Blurple-hover `#4434E0`, still white label |
+| **Ghost** (white / outline) | White (or paper) fill, ink label, hairline border | **Blurple border + Blurple label** on quiet paper hover — **not** ink/dark fill |
+| **Menus / major actions** | Ink label; muted grey if disabled | Quiet grey wash **plus Blurple label** (same as ghost / wordmark). Keep the grey shader — do not fill the row Blurple. Disabled stays grey, no accent. |
+
+```css
+/* Ghost: never darken the fill on hover */
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  border-color: var(--accent); /* blurple */
+  background: var(--hover);    /* quiet paper hover only */
+  color: var(--accent);        /* blurple text — not dark ink */
+}
+
+/* Menus / major actions: grey wash stays, label goes Blurple */
+.reg-bulk-menu button:hover,
+.reg-bulk-menu button:focus-visible {
+  background: var(--ra-hover);
+  color: var(--ra-blurple);
+}
+```
+
+Reject: ghost hover that turns black/navy/ink solid, grey-only hover with no Blurple on an enabled major action, primary that greys out on hover.
 
 ## Reject these patterns
 

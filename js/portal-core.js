@@ -9,7 +9,7 @@ const TYPE_LABELS={third_party:'Third Party',in_house:'In-House',hybrid:'Hybrid'
 const MEMBER_ROLE_LABELS={owner:'Owner',admin:'Admin',editor:'Editor',viewer:'Viewer',member:'Member'};
 const PURPOSE_TIER_MAP={biometric_identification:'high',critical_infrastructure:'high',education_access:'high',employment_management:'high',essential_services_access:'high',law_enforcement:'high',migration_border:'high',justice_administration:'high',customer_chatbot:'limited',content_generation:'limited',emotion_recognition:'limited',internal_automation:'minimal',data_analytics:'minimal'};
 let currentUser=null,currentProfile=null,currentResults=[],isPaid=false;
-let currentOrg=null,allSystems=[],currentSystemId=null,regFilter='all';
+let currentOrg=null,allSystems=[],currentSystemId=null,regFilter='all',regSearchQuery='',regSelected={},regSelectMode=false,regRowMenuId=null;
 let currentMemberRole=null;
 let profilesCache={};
  

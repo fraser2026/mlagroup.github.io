@@ -98,35 +98,563 @@ function getCP(sys){
 function renderRegistryStats(){
   var totalEl=document.getElementById('reg-total');
   if(!totalEl)return;
-  totalEl.textContent=allSystems.length;
-  document.getElementById('reg-high').textContent=allSystems.filter(function(s){return s.risk_tier==='high'||s.risk_tier==='unacceptable'}).length;
-  document.getElementById('reg-prod').textContent=allSystems.filter(function(s){return s.deployment_status==='production'}).length;
+  var total=allSystems.length;
+  totalEl.textContent=total;
+
+  /* ── Total Systems: +N this month (centered next to the number) ── */
+  var now=new Date();
+  var thisMonthCount=allSystems.filter(function(s){
+    if(!s.created_at)return false;
+    var d=new Date(s.created_at);
+    return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+  }).length;
+  var totalMeta=document.getElementById('reg-total-meta');
+  if(totalMeta){
+    totalMeta.textContent=thisMonthCount>0?('+'+thisMonthCount+' this month'):'';
+  }
+
+  /* ── High Risk ── */
+  var highCount=allSystems.filter(function(s){return s.risk_tier==='high'||s.risk_tier==='unacceptable';}).length;
+  document.getElementById('reg-high').textContent=highCount;
+
+  /* ── In Production ── */
+  var prodCount=allSystems.filter(function(s){return s.deployment_status==='production';}).length;
+  document.getElementById('reg-prod').textContent=prodCount;
+
+  /* ── Maturity: same type stack as the other three ── */
   var covEl=document.getElementById('reg-compliance');
   var covSub=document.getElementById('reg-compliance-sub');
-  if(allControls.length&&typeof getGovScore==='function'){
+  if(covEl&&allControls.length&&typeof getGovScore==='function'){
     var g=getGovScore();
-    covEl.textContent=g.score+'%';
-    if(covSub)covSub.textContent='Control coverage';
-  }else{
+    var score=Math.max(0,Math.min(100,Number(g.score)||0));
+    covEl.textContent=score+'%';
+    if(covSub){
+      var lvl=typeof raLevel==='function'?raLevel(score):null;
+      covSub.textContent=lvl?lvl.code+' '+lvl.label:'Control coverage';
+    }
+  }else if(covEl){
     covEl.textContent='—';
-    if(covSub)covSub.textContent=allControls.length?'Control coverage':'Loading controls…';
+    if(covSub)covSub.textContent='Control coverage';
   }
 }
-function renderSystemTable(){
-  const filtered=regFilter==='all'?allSystems:allSystems.filter(s=>s.deployment_status===regFilter);
-  document.getElementById('reg-table-count').textContent=filtered.length+' system'+(filtered.length!==1?'s':'');
-  if(!filtered.length){document.getElementById('reg-table-wrap').innerHTML='<div class="empty-state"><h4>'+(allSystems.length===0?'No systems registered yet':'No systems match this filter')+'</h4><p>'+(allSystems.length===0?'Register your first AI system.':'Try a different filter.')+'</p>'+(allSystems.length===0?'<button class="btn-dl" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register First System</button>':'')+'</div>';return}
-  document.getElementById('reg-table-wrap').innerHTML='<div class="table-scroll"><table class="sys-table"><thead><tr><th>System</th><th>Risk class</th><th>Status</th><th class="col-maturity">Maturity</th><th>Updated</th></tr></thead><tbody>'+filtered.map(sys=>{
-    const tier=sys.risk_tier||'none';
-    const score=systemMaturityScore(sys);
-    return '<tr onclick="openSystemDetail(\''+sys.id+'\')">'+
+function visibleRegistrySystems(){
+  var list=regFilter==='all'?allSystems:allSystems.filter(function(s){return s.deployment_status===regFilter});
+  var q=(regSearchQuery||'').trim().toLowerCase();
+  if(!q)return list;
+  return list.filter(function(s){
+    var name=(s.name||'').toLowerCase();
+    var tier=(TIER_LABELS[s.risk_tier]||'Unclassified').toLowerCase();
+    var status=(STATUS_LABELS[s.deployment_status]||s.deployment_status||'').toLowerCase();
+    return name.indexOf(q)!==-1||tier.indexOf(q)!==-1||status.indexOf(q)!==-1;
+  });
+}
+function pruneRegSelected(){
+  var live={};
+  allSystems.forEach(function(s){if(regSelected[s.id])live[s.id]=true});
+  regSelected=live;
+}
+function selectedRegistrySystems(){
+  return allSystems.filter(function(s){return regSelected[s.id]});
+}
+function syncRegBulkChrome(){
+  var n=selectedRegistrySystems().length;
+  var btn=document.getElementById('reg-bulk-btn');
+  var meta=document.getElementById('reg-bulk-meta');
+  var menu=document.getElementById('reg-bulk-menu');
+  var label=document.getElementById('reg-bulk-label');
+  if(label)label.textContent=n?'Bulk actions ('+n+')':'Bulk actions';
+  if(meta)meta.textContent=n?(n+' selected'):'Select systems in the table';
+  if(menu){
+    menu.querySelectorAll('[data-bulk]').forEach(function(el){
+      el.classList.toggle('is-disabled',!n);
+    });
+  }
+  var all=document.getElementById('reg-select-all');
+  if(all){
+    var vis=visibleRegistrySystems();
+    var visSel=vis.filter(function(s){return regSelected[s.id]}).length;
+    all.checked=vis.length>0&&visSel===vis.length;
+    all.indeterminate=visSel>0&&visSel<vis.length;
+  }
+}
+function setRegSearch(q){
+  regSearchQuery=q||'';
+  applyRegistrySearch();
+  syncRegBulkChrome();
+}
+function systemSearchHaystack(sys){
+  return ((sys.name||'')+' '+(TIER_LABELS[sys.risk_tier]||'Unclassified')+' '+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status||'')).toLowerCase();
+}
+function applyRegistrySearch(){
+  var wrap=document.getElementById('reg-table-wrap');
+  if(!wrap)return;
+  var rows=wrap.querySelectorAll('tbody tr');
+  if(!rows.length)return;
+  var q=(regSearchQuery||'').trim().toLowerCase();
+  var shown=0;
+  rows.forEach(function(tr){
+    var hit=!q||(tr.getAttribute('data-haystack')||'').indexOf(q)!==-1;
+    tr.hidden=!hit;
+    if(hit)shown++;
+  });
+  var scroll=wrap.querySelector('.table-scroll');
+  var empty=document.getElementById('reg-search-empty');
+  if(scroll)scroll.hidden=!!q&&shown===0;
+  if(empty)empty.hidden=!(q&&shown===0);
+}
+function toggleRegSelect(id,on){
+  if(on)regSelected[id]=true;else delete regSelected[id];
+  syncRegBulkChrome();
+}
+function onRegCheckCell(ev,id){
+  ev.stopPropagation();
+  var input=ev.currentTarget.querySelector('.sys-check');
+  if(!input)return;
+  input.checked=!input.checked;
+  toggleRegSelect(id,input.checked);
+}
+function toggleRegSelectAll(on){
+  visibleRegistrySystems().forEach(function(s){
+    if(on)regSelected[s.id]=true;else delete regSelected[s.id];
+  });
+  document.querySelectorAll('#reg-table-wrap tbody tr:not([hidden]) .sys-check').forEach(function(el){el.checked=!!on});
+  syncRegBulkChrome();
+}
+function onRegCheckAll(ev){
+  ev.stopPropagation();
+  var input=document.getElementById('reg-select-all');
+  if(!input)return;
+  input.checked=!input.checked;
+  toggleRegSelectAll(input.checked);
+}
+function closeRegBulk(){
+  var menu=document.getElementById('reg-bulk-menu');
+  var btn=document.getElementById('reg-bulk-btn');
+  if(menu)menu.hidden=true;
+  if(btn)btn.setAttribute('aria-expanded','false');
+}
+function openRegBulkMenu(){
+  closeRegRowMenu();
+  var menu=document.getElementById('reg-bulk-menu');
+  var btn=document.getElementById('reg-bulk-btn');
+  if(menu){
+    resetRegMenuPanel(menu);
+    menu.hidden=false;
+  }
+  if(btn)btn.setAttribute('aria-expanded','true');
+  syncRegBulkChrome();
+}
+function setRegSelectMode(on){
+  regSelectMode=!!on;
+  if(!regSelectMode){
+    regSelected={};
+    closeRegBulk();
+    document.querySelectorAll('#reg-table-wrap .sys-check, #reg-select-all').forEach(function(el){
+      el.checked=false;
+      el.indeterminate=false;
+    });
+  }
+  var table=document.querySelector('#reg-table-wrap .sys-table');
+  if(table)table.classList.toggle('is-selecting',regSelectMode);
+  var btn=document.getElementById('reg-bulk-btn');
+  if(btn)btn.setAttribute('aria-pressed',regSelectMode?'true':'false');
+  syncRegBulkChrome();
+}
+function toggleRegBulk(ev){
+  if(ev)ev.stopPropagation();
+  if(!regSelectMode){
+    setRegSelectMode(true);
+    openRegBulkMenu();
+    return;
+  }
+  setRegSelectMode(false);
+}
+function csvCell(v){
+  if(v===null||v===undefined)return '';
+  var s=String(v);
+  if(/[",\n\r]/.test(s))return '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function csvPurpose(p){
+  return p?String(p).replace(/_/g,' '):'';
+}
+function csvSectionScores(ss){
+  if(!ss||typeof ss!=='object')return '';
+  return Object.keys(ss).map(function(k){
+    var v=ss[k];
+    if(v&&typeof v==='object')return (v.title||k)+': '+(v.score==null?'':v.score);
+    return k+': '+(v==null?'':v);
+  }).join('; ');
+}
+function csvCtrlStatus(st){
+  var map=(typeof CTRL_STATUS_L==='object'&&CTRL_STATUS_L)||{not_started:'Not Started',in_progress:'In Progress',implemented:'Implemented',verified:'Verified'};
+  return map[st]||st||'';
+}
+function downloadCsv(filename,lines){
+  var blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function exportFilename(rows){
+  if(rows.length===1){
+    var slug=String(rows[0].name||'system').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
+    return 'reganchor-'+(slug||'system')+'.csv';
+  }
+  return 'reganchor-register.csv';
+}
+
+/* Register extract. Columns are derived from whatever is on the
+   system row and related records, so new registry-detail fields
+   (integrations, API keys, …) appear without rewriting this list.
+
+   To attach another related table later, push onto REG_EXPORT_RELATIONS. */
+var REG_EXPORT_SKIP={
+  org_id:true,created_by:true,risk_tier_set_by:true,system_compliance:true,
+  _assessScore:true,_ctrlPct:true
+};
+var REG_EXPORT_SYS_ORDER=['id','name','description','vendor','system_type','department','system_owner','notes','purpose_category','risk_tier','risk_tier_rationale','deployment_status','created_at','updated_at'];
+var REG_EXPORT_ASSESS_SKIP={id:true,org_id:true,system_id:true,answers:true};
+var REG_EXPORT_LABELS={
+  id:'System ID',name:'System name',description:'Description',vendor:'Vendor',
+  system_type:'System type',department:'Department',system_owner:'System owner',
+  notes:'Notes',purpose_category:'Purpose category',risk_tier:'Risk class',
+  risk_tier_rationale:'Classification rationale',deployment_status:'Deployment status',
+  created_at:'Registered',updated_at:'Last updated',
+  status:'Assessment status',risk_band:'Assessment band',requested_at:'Assessment date',
+  sector:'Assessment sector',questionnaire_version:'Questionnaire version',
+  client_notes:'Assessment notes',mla_notes:'Review notes',completed_at:'Review completed',
+  section_scores:'Domain scores',tier_validation:'Tier validation'
+};
+var REG_EXPORT_RELATIONS=[
+  {table:'system_integrations',fk:'system_id',label:'Integrations',mode:'list'},
+  {table:'system_api_keys',fk:'system_id',label:'API keys',mode:'list'}
+];
+function exportLabel(key,prefix){
+  var base=REG_EXPORT_LABELS[key]||String(key).replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
+  return prefix?prefix+base:base;
+}
+function exportOrderedKeys(keys,preferred){
+  var out=[],seen={};
+  (preferred||[]).forEach(function(k){if(keys.indexOf(k)!==-1){out.push(k);seen[k]=true}});
+  keys.forEach(function(k){if(!seen[k])out.push(k)});
+  return out;
+}
+function exportCollectKeys(records,skip){
+  var keys=[],seen={};
+  (records||[]).forEach(function(r){
+    if(!r)return;
+    Object.keys(r).forEach(function(k){
+      if(skip[k]||k.charAt(0)==='_'||seen[k])return;
+      seen[k]=true;
+      keys.push(k);
+    });
+  });
+  return keys;
+}
+function exportFormatValue(key,val){
+  if(val===null||val===undefined||val==='')return '';
+  if(key==='risk_tier')return TIER_LABELS[val]||val;
+  if(key==='deployment_status')return STATUS_LABELS[val]||val;
+  if(key==='system_type')return TYPE_LABELS[val]||val;
+  if(key==='purpose_category')return csvPurpose(val);
+  if(key==='status'&&ASSESS_STATUS_LABELS[val])return ASSESS_STATUS_LABELS[val];
+  if(key==='risk_band')return ({high:'High Risk',medium:'Medium Risk',low:'Low Risk'})[val]||val;
+  if(key==='section_scores')return csvSectionScores(val);
+  if(key==='tier_validation')return val&&val.mismatch?(val.message||'Risk tier mismatch'):'';
+  if(/_at$/.test(key)||key==='created_at'||key==='updated_at')return key==='requested_at'||key==='completed_at'?fmtDateLong(val):fmtDate(val);
+  if(typeof val==='object'){
+    try{return JSON.stringify(val)}catch(e){return ''}
+  }
+  return val;
+}
+function exportSummariseRows(list){
+  return (list||[]).map(function(r){
+    var name=r.name||r.title||r.provider||r.key_name||r.label||r.id;
+    var extra=r.status||r.env||r.environment||'';
+    return extra?name+' ('+extra+')':String(name);
+  }).join('; ');
+}
+async function exportFetchRelation(rel,ids){
+  try{
+    var res=await sb.from(rel.table).select('*').in(rel.fk,ids);
+    if(res.error)return {};
+    var by={};
+    (res.data||[]).forEach(function(row){
+      var sid=row[rel.fk];
+      if(!sid)return;
+      if(!by[sid])by[sid]=[];
+      by[sid].push(row);
+    });
+    return by;
+  }catch(e){return {}}
+}
+async function exportRegistrySystems(rows){
+  if(!rows||!rows.length)return;
+  if(typeof loadControls==='function'&&!allControls.length)await loadControls();
+  var ids=rows.map(function(s){return s.id});
+  var liveRows=rows;
+  var assessBySystem={};
+  var assignRows=[];
+  var extraByTable={};
+  try{
+    var packed=await Promise.all([
+      sb.from('ai_systems').select('*').in('id',ids),
+      sb.from('registry_assessments').select('*').eq('org_id',currentOrg.id).in('system_id',ids).order('requested_at',{ascending:false}),
+      sb.from('control_assignments').select('*').eq('org_id',currentOrg.id)
+    ].concat(REG_EXPORT_RELATIONS.map(function(rel){return exportFetchRelation(rel,ids)})));
+    if(packed[0].data&&packed[0].data.length){
+      var liveMap={};
+      packed[0].data.forEach(function(r){liveMap[r.id]=r});
+      liveRows=ids.map(function(id){
+        var cached=rows.find(function(s){return s.id===id})||{};
+        var merged=Object.assign({},cached,liveMap[id]||{});
+        merged._assessScore=cached._assessScore;
+        merged._ctrlPct=cached._ctrlPct;
+        return merged;
+      });
+    }
+    (packed[1].data||[]).forEach(function(a){
+      if(!a.system_id||assessBySystem[a.system_id])return;
+      assessBySystem[a.system_id]=a;
+    });
+    assignRows=packed[2].data||[];
+    REG_EXPORT_RELATIONS.forEach(function(rel,i){extraByTable[rel.table]=packed[3+i]||{}});
+  }catch(err){}
+
+  var sysKeys=exportOrderedKeys(exportCollectKeys(liveRows,REG_EXPORT_SKIP),REG_EXPORT_SYS_ORDER);
+  var assessKeys=exportOrderedKeys(exportCollectKeys(Object.keys(assessBySystem).map(function(id){return assessBySystem[id]}),REG_EXPORT_ASSESS_SKIP),['status','risk_band','requested_at','sector','questionnaire_version','client_notes','mla_notes','completed_at','section_scores','tier_validation']);
+  var headers=sysKeys.map(function(k){return exportLabel(k)}).concat(
+    ['Maturity score','Maturity level']
+  ).concat(assessKeys.map(function(k){return exportLabel(k)})).concat(
+    ['Controls assigned','Controls implemented','Control coverage','Controls']
+  ).concat(REG_EXPORT_RELATIONS.map(function(rel){return rel.label}));
+
+  var lines=[headers.map(csvCell).join(',')];
+  liveRows.forEach(function(sys){
+    var score=systemMaturityScore(sys);
+    var lvl=typeof raLevel==='function'?raLevel(score):null;
+    var latest=assessBySystem[sys.id]||null;
+    var sysAssign=assignRows.filter(function(a){return a.system_id===sys.id});
+    if(latest){
+      assignRows.forEach(function(a){if(!a.system_id)sysAssign.push(a)});
+    }
+    var done=sysAssign.filter(function(a){return a.status==='implemented'||a.status==='verified'}).length;
+    var total=sysAssign.length;
+    var ctrlList=sysAssign.map(function(a){
+      var c=(typeof allControls!=='undefined'?allControls:[]).find(function(x){return x.id===a.control_id});
+      var num=c&&c.control_number!=null?'C'+c.control_number+' ':'';
+      var title=c?c.title:(a.control_id||'Control');
+      return num+title+' ('+csvCtrlStatus(a.status)+')';
+    }).join('; ');
+    var cells=sysKeys.map(function(k){return csvCell(exportFormatValue(k,sys[k]))});
+    cells.push(csvCell(lvl?Math.round(Number(score)):''),csvCell(lvl?lvl.code+' '+lvl.label:'Not assessed'));
+    assessKeys.forEach(function(k){cells.push(csvCell(latest?exportFormatValue(k,latest[k]):''))});
+    cells.push(csvCell(total),csvCell(done),csvCell(total?Math.round(done/total*100)+'%':''),csvCell(ctrlList));
+    REG_EXPORT_RELATIONS.forEach(function(rel){
+      var by=extraByTable[rel.table]||{};
+      cells.push(csvCell(exportSummariseRows(by[sys.id]||[])));
+    });
+    lines.push(cells.join(','));
+  });
+  downloadCsv(exportFilename(rows),lines);
+}
+async function exportSelectedSystems(){
+  await exportRegistrySystems(selectedRegistrySystems());
+  closeRegBulk();
+}
+function closeRegRowMenu(){
+  var menu=document.getElementById('reg-row-menu');
+  if(menu)menu.hidden=true;
+  document.querySelectorAll('.reg-row-more[aria-expanded="true"]').forEach(function(b){
+    b.setAttribute('aria-expanded','false');
+  });
+  regRowMenuId=null;
+}
+function positionRegRowMenu(btn){
+  var menu=document.getElementById('reg-row-menu');
+  if(!menu||!btn)return;
+  menu.hidden=false;
+  var r=btn.getBoundingClientRect();
+  var mw=menu.offsetWidth||220;
+  var mh=menu.offsetHeight;
+  var top=r.bottom+4;
+  if(top+mh>window.innerHeight-8)top=Math.max(8,r.top-mh-4);
+  var left=r.right-mw;
+  if(left<8)left=8;
+  menu.style.top=top+'px';
+  menu.style.left=left+'px';
+  menu.style.right='auto';
+}
+function toggleRegRowMenu(ev,id){
+  if(ev)ev.stopPropagation();
+  var btn=ev&&ev.currentTarget;
+  if(regRowMenuId===id){
+    closeRegRowMenu();
+    return;
+  }
+  closeRegRowMenu();
+  closeRegBulk();
+  regRowMenuId=id;
+  if(btn)btn.setAttribute('aria-expanded','true');
+  var menu=document.getElementById('reg-row-menu');
+  if(menu)resetRegMenuPanel(menu);
+  positionRegRowMenu(btn);
+}
+function requestSystemAssessment(sysId){
+  if(!sysId)return;
+  currentSystemId=sysId;
+  window.location.href='assessment.html?system_id='+encodeURIComponent(sysId);
+}
+function actionTargets(){
+  if(regRowMenuId){
+    var row=allSystems.find(function(s){return s.id===regRowMenuId});
+    return row?[row]:[];
+  }
+  return selectedRegistrySystems();
+}
+function visibleRegMenu(){
+  var row=document.getElementById('reg-row-menu');
+  if(row&&!row.hidden)return row;
+  var bulk=document.getElementById('reg-bulk-menu');
+  if(bulk&&!bulk.hidden)return bulk;
+  return null;
+}
+function resetRegMenuPanel(menu){
+  if(!menu)return;
+  menu.querySelectorAll('.reg-menu-panel').forEach(function(p){
+    p.hidden=p.getAttribute('data-panel')!=='root';
+  });
+}
+function showRegMenuPanel(name){
+  var menu=visibleRegMenu();
+  if(!menu)return;
+  menu.querySelectorAll('.reg-menu-panel').forEach(function(p){
+    p.hidden=p.getAttribute('data-panel')!==name;
+  });
+  var targets=actionTargets();
+  if(name==='owner'){
+    var input=menu.querySelector('.reg-owner-input');
+    if(input){
+      input.value=(targets[0]&&targets[0].system_owner)||'';
+      setTimeout(function(){input.focus();input.select()},0);
+    }
+  }
+  if(name==='retire'){
+    var copy=menu.querySelector('.reg-retire-copy');
+    if(copy){
+      if(targets.length===1)copy.textContent='Decommission '+targets[0].name+'? This sets deployment status to Decommissioned.';
+      else copy.textContent='Decommission '+targets.length+' systems? This sets their deployment status to Decommissioned.';
+    }
+  }
+  if(menu.id==='reg-row-menu'){
+    var more=document.querySelector('.reg-row-more[aria-expanded="true"]');
+    if(more)positionRegRowMenu(more);
+  }
+}
+function finishRegAction(){
+  closeRegBulk();
+  closeRegRowMenu();
+}
+async function applyRegSystemPatch(targets,patch){
+  if(!targets.length||!currentOrg)return false;
+  var ids=targets.map(function(s){return s.id});
+  var result=await sb.from('ai_systems').update(patch).in('id',ids).eq('org_id',currentOrg.id);
+  if(result.error)return false;
+  var now=new Date().toISOString();
+  var logs=ids.map(function(id){
+    return {org_id:currentOrg.id,user_id:currentUser.id,action:'system_updated',entity_type:'ai_system',entity_id:id,changes:{_actor_name:actorName()}};
+  });
+  await sb.from('registry_audit_log').insert(logs);
+  allSystems.forEach(function(s){
+    if(ids.indexOf(s.id)===-1)return;
+    Object.assign(s,patch);
+    s.updated_at=now;
+  });
+  renderRegistryStats();
+  var dashCount=document.getElementById('dash-sys-count');
+  if(dashCount)dashCount.textContent=allSystems.length||'0';
+  renderSystemTable({quiet:true});
+  var det=document.getElementById('view-registry-detail');
+  if(det&&det.classList.contains('active')&&currentSystemId&&ids.indexOf(currentSystemId)!==-1){
+    openSystemDetail(currentSystemId);
+  }
+  return true;
+}
+async function applyRegStatus(status){
+  var targets=actionTargets().filter(function(s){return s.deployment_status!==status});
+  finishRegAction();
+  if(!targets.length)return;
+  await applyRegSystemPatch(targets,{deployment_status:status});
+}
+async function applyRegOwner(){
+  var menu=visibleRegMenu();
+  var input=menu&&menu.querySelector('.reg-owner-input');
+  var owner=input?input.value.trim():'';
+  if(!owner){
+    if(input)input.focus();
+    return;
+  }
+  var targets=actionTargets();
+  finishRegAction();
+  if(!targets.length)return;
+  await applyRegSystemPatch(targets,{system_owner:owner});
+}
+async function applyRegRetire(){
+  var targets=actionTargets().filter(function(s){return s.deployment_status!=='decommissioned'});
+  finishRegAction();
+  if(!targets.length)return;
+  await applyRegSystemPatch(targets,{deployment_status:'decommissioned'});
+}
+function runRegRowAction(action){
+  var sys=allSystems.find(function(s){return s.id===regRowMenuId});
+  if(!sys){closeRegRowMenu();return}
+  if(action==='export'){closeRegRowMenu();exportRegistrySystems([sys]);return}
+  if(action==='assess'){closeRegRowMenu();requestSystemAssessment(sys.id);return}
+  if(action==='status'||action==='owner'||action==='retire'){showRegMenuPanel(action);return}
+}
+function runRegBulk(action){
+  var selected=selectedRegistrySystems();
+  if(!selected.length)return;
+  if(action==='export'){exportSelectedSystems();return}
+  if(action==='assess'){
+    if(selected.length===1){requestSystemAssessment(selected[0].id);return}
+    closeRegBulk();
+    return;
+  }
+  if(action==='status'||action==='owner'||action==='retire'){showRegMenuPanel(action);return}
+  closeRegBulk();
+}
+function renderSystemTable(opts){
+  pruneRegSelected();
+  closeRegRowMenu();
+  var filtered=regFilter==='all'?allSystems:allSystems.filter(function(s){return s.deployment_status===regFilter});
+  if(!filtered.length){
+    var none=allSystems.length===0;
+    document.getElementById('reg-table-wrap').innerHTML='<div class="empty-state"><h4>'+(none?'No systems registered yet':'No systems match this filter')+'</h4><p>'+(none?'Register your first AI system.':'Try a different filter.')+'</p>'+(none?'<button class="btn-dl" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Register First System</button>':'')+'</div>';
+    syncRegBulkChrome();
+    return;
+  }
+  var allOn=filtered.length&&filtered.every(function(s){return regSelected[s.id]});
+  document.getElementById('reg-table-wrap').innerHTML='<div class="table-scroll"><table class="sys-table'+(regSelectMode?' is-selecting':'')+'"><thead><tr><th class="col-check" onclick="onRegCheckAll(event)"><input type="checkbox" id="reg-select-all" aria-label="Select all systems"'+(allOn?' checked':'')+' onchange="toggleRegSelectAll(this.checked)"></th><th>System</th><th>Risk class</th><th>Status</th><th class="col-maturity">Maturity</th><th>Updated</th><th class="col-more" aria-label="Actions"></th></tr></thead><tbody>'+filtered.map(function(sys){
+    var tier=sys.risk_tier||'none';
+    var score=systemMaturityScore(sys);
+    var on=!!regSelected[sys.id];
+    return '<tr data-haystack="'+esc(systemSearchHaystack(sys))+'" onclick="openSystemDetail(\''+sys.id+'\')">'+
+      '<td class="col-check" onclick="onRegCheckCell(event,\''+sys.id+'\')"><input class="sys-check" type="checkbox" aria-label="Select '+esc(sys.name)+'"'+(on?' checked':'')+' onchange="toggleRegSelect(\''+sys.id+'\',this.checked)"></td>'+
       '<td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td>'+
       '<td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td>'+
       '<td><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status)+'</span></td>'+
-      '<td class="col-maturity">'+regMaturityCell(score)+'</td>'+
+      '<td class="col-maturity">'+regMaturityCell(score,!(opts&&opts.quiet))+'</td>'+
       '<td class="col-date">'+fmtDate(sys.updated_at)+'</td>'+
-    '</tr>'}).join('')+'</tbody></table></div>';
-  requestAnimationFrame(function(){animateMaturity(document.getElementById('reg-table-wrap'))});
+      '<td class="col-more" onclick="event.stopPropagation()"><button type="button" class="reg-row-more" aria-label="Actions for '+esc(sys.name)+'" aria-haspopup="menu" aria-expanded="false" onclick="toggleRegRowMenu(event,\''+sys.id+'\')"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3.5" r="1.35"/><circle cx="8" cy="8" r="1.35"/><circle cx="8" cy="12.5" r="1.35"/></svg></button></td>'+
+    '</tr>';
+  }).join('')+'</tbody></table></div><div class="empty-state" id="reg-search-empty" hidden><h4>No systems match this search</h4><p>Try a different name, risk class, or status.</p></div>';
+  applyRegistrySearch();
+  syncRegBulkChrome();
+  if(!(opts&&opts.quiet))requestAnimationFrame(function(){animateMaturity(document.getElementById('reg-table-wrap'))});
 }
 
 /* The registry's signature column. A row of these read down the page
@@ -134,13 +662,14 @@ function renderSystemTable(){
    single number, which is what makes an outlier system findable in a
    registry of forty. Rule 04 still applies, so the level travels with
    the bar rather than the bar standing alone. */
-function regMaturityCell(score){
+function regMaturityCell(score,animate){
   var lvl=raLevel(score);
-  if(!lvl)return raComplianceBar(null,{mini:true,animate:true})+'<span class="reg-maturity__none">Not assessed</span>';
+  var doAnim=animate!==false;
+  if(!lvl)return raComplianceBar(null,{mini:true,animate:doAnim})+'<span class="reg-maturity__none">Not assessed</span>';
   var n=Math.round(Number(score));
   return '<div class="reg-maturity">'+
-    raComplianceBar(score,{mini:true,animate:true})+
-    '<div><div class="reg-maturity__score ra-num" data-count-to="'+n+'">'+n+'</div>'+
+    raComplianceBar(score,{mini:true,animate:doAnim})+
+    '<div><div class="reg-maturity__score ra-num"'+(doAnim?' data-count-to="'+n+'"':'')+'>'+n+'</div>'+
     '<div class="reg-maturity__level">'+lvl.code+' '+lvl.label+'</div></div>'+
   '</div>';
 }
@@ -398,4 +927,27 @@ async function submitSystem(){
     else{payload.created_by=currentUser.id;const{error}=await sb.from('ai_systems').insert(payload);if(error)throw error}
     closeSystemModal();await loadSystems();if(editId)openSystemDetail(editId);
   }catch(err){errEl.textContent='Error: '+err.message;errEl.style.display='block'}finally{btn.innerHTML=origH;btn.disabled=false}}
+
+document.addEventListener('click',function(e){
+  var onBulk=e.target.closest('.reg-bulk');
+  var onCheck=e.target.closest('.sys-table .col-check');
+  var onRowMenu=e.target.closest('#reg-row-menu');
+  var onMore=e.target.closest('.reg-row-more');
+  if(regSelectMode&&!onBulk&&!onCheck&&!onRowMenu&&!onMore)setRegSelectMode(false);
+  if(!onRowMenu&&!onMore)closeRegRowMenu();
+},true);
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape')return;
+  var menu=visibleRegMenu();
+  if(menu){
+    var sub=menu.querySelector('.reg-menu-panel:not([hidden])');
+    if(sub&&sub.getAttribute('data-panel')!=='root'){
+      showRegMenuPanel('root');
+      return;
+    }
+  }
+  closeRegRowMenu();
+  if(regSelectMode)setRegSelectMode(false);
+});
+document.addEventListener('scroll',function(){closeRegRowMenu()},true);
  
