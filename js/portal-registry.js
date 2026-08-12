@@ -168,6 +168,15 @@ function syncRegBulkChrome(){
     menu.querySelectorAll('[data-bulk]').forEach(function(el){
       el.classList.toggle('is-disabled',!n);
     });
+    // Update retire panel text if it's currently visible
+    var retirePanel=menu.querySelector('[data-panel="retire"]:not([hidden])');
+    if(retirePanel){
+      var copy=retirePanel.querySelector('.reg-retire-copy');
+      if(copy){
+        if(n===1)copy.textContent='Decommission 1 system? This sets its deployment status to Decommissioned.';
+        else copy.textContent='Decommission '+n+' systems? This sets their deployment status to Decommissioned.';
+      }
+    }
   }
   var all=document.getElementById('reg-select-all');
   if(all){

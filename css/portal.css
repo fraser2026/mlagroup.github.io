@@ -553,9 +553,9 @@ body {
   cursor: pointer;
   transition: border-color .15s;
 }
-.icon-btn:hover { border-color: var(--ra-text) }
+.icon-btn:hover { border-color: var(--ra-blurple) }
 .icon-btn svg { stroke: var(--ra-text-3); transition: stroke .15s }
-.icon-btn:hover svg { stroke: var(--ra-text) }
+.icon-btn:hover svg { stroke: var(--ra-blurple) }
 
 /* Unread count. One of the few places a fill is warranted: it has to
    read as an interruption. JS sets display:flex when non-zero. */
@@ -1228,6 +1228,20 @@ a.btn-dl svg {
   margin: 0 12px 8px;
   height: 32px;
   font-size: 12px;
+}
+.ra-portal .reg-bulk-menu .btn-topbar-primary,
+.ra-portal .reg-bulk-menu .reg-menu-confirm-btn {
+  background: var(--ra-blurple) !important;
+  color: var(--ra-white, #FFFFFF) !important;
+  text-align: center;
+  padding: 8px 16px;
+}
+.ra-portal .reg-bulk-menu .btn-topbar-primary:hover,
+.ra-portal .reg-bulk-menu .btn-topbar-primary:focus-visible,
+.ra-portal .reg-bulk-menu .reg-menu-confirm-btn:hover,
+.ra-portal .reg-bulk-menu .reg-menu-confirm-btn:focus-visible {
+  background: var(--ra-blurple-hover) !important;
+  color: var(--ra-white, #FFFFFF) !important;
 }
 #reg-row-menu {
   position: fixed;
