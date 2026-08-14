@@ -1582,6 +1582,23 @@ a.btn-dl svg {
   .users-invite { grid-template-columns: 1fr }
 }
 
+.billing-actions { margin-top: 16px }
+.billing-inline-error {
+  display: none;
+  margin-top: 12px;
+}
+.billing-inline-error:not([hidden]) { display: block }
+.billing-table tbody tr { cursor: default }
+.billing-table tbody tr:hover { background: transparent }
+.billing-table__act { text-align: right; white-space: nowrap }
+.billing-status.is-ok { color: var(--ra-ok) }
+.billing-status.is-warn { color: var(--ra-warn) }
+.billing-status.is-risk { color: var(--ra-risk) }
+.billing-status.is-muted { color: var(--ra-text-3) }
+@media (max-width: 720px) {
+  .billing-actions .btn-topbar { width: 100%; justify-content: center }
+}
+
 /* Dashboard header — functional context, not a greeting. */
 .dash-header {
   display: flex;
@@ -1668,6 +1685,7 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
 .field-group .field-input { margin-bottom: 0 }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
 .field-error { font-size: 12px; color: var(--ra-risk); margin-top: 5px; display: none }
+.billing-inline-error:not([hidden]) { display: block; margin-top: 12px }
 
 .tier-suggestion {
   font-size: 12px;

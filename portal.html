@@ -102,7 +102,7 @@
       <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/></svg>
       Settings
     </div>
-    <div class="nav-item" id="nav-billing" data-nav="billing" onclick="navigate('billing',this)">
+    <div class="nav-item" id="nav-billing" data-nav="billing" onclick="navigateBilling(this)">
       <svg viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="1"/><path d="M1 7h14"/></svg>
       Billing
     </div>
@@ -213,8 +213,8 @@
   <div id="users-page"><div class="loading-state">Loading members…</div></div>
 </div>
 <div id="view-billing" class="view">
-  <div class="page-header"><h2>Billing</h2><p>Invoices, payment methods, and billing contacts.</p></div>
-  <div class="placeholder-panel"><div class="placeholder-panel__title">Coming soon</div><div class="placeholder-panel__desc">Billing will cover invoices and payment methods. Plan selection lives under Subscription.</div></div>
+  <div class="page-header"><h2>Billing</h2><p>Manage your RegAnchor subscription and payment details.</p></div>
+  <div id="billing-page"><div class="loading-state">Loading billing…</div></div>
 </div>
 <div id="view-integrations" class="view">
   <div class="page-header"><h2>Integrations</h2><p>Connect RegAnchor to your existing stack.</p></div>
@@ -532,6 +532,7 @@
 <script src="js/portal-policies.js"></script>
 <script src="js/portal-alerts.js"></script>
 <script src="js/portal-plans.js"></script>
+<script src="js/portal-billing.js"></script>
 <script src="js/portal-cert.js"></script>
 <script>init();</script>
 

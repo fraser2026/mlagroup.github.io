@@ -368,6 +368,7 @@ function applyPortalHash(raw, skipHistory){
   if(h==='registry'&&typeof navigateRegistry==='function'){navigateRegistry(document.getElementById('nav-registry'));return}
   if(h==='org'&&typeof navigateOrg==='function'){navigateOrg(document.getElementById('nav-org'));return}
   if(h==='users'&&typeof navigateUsers==='function'){navigateUsers(document.getElementById('nav-users'));return}
+  if(h==='billing'&&typeof navigateBilling==='function'){navigateBilling(document.getElementById('nav-billing'));return}
   if(h==='controls'&&typeof navigateControls==='function'){navigateControls(document.getElementById('nav-controls'));return}
   if(h==='policies'&&typeof navigatePolicies==='function'){navigatePolicies(document.getElementById('nav-policies'));return}
   if(h==='alerts'&&typeof navigateAlerts==='function'){navigateAlerts();return}

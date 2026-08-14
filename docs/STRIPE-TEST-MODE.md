@@ -40,6 +40,8 @@ var TEST_PK = 'pk_test_…'; // paste here
 
 - URL: `https://hueftewwenjaiagdoqmb.supabase.co/functions/v1/subscription-webhook`
 - Events: `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`, `customer.subscription.deleted`
+
+Customer Portal (Billing page): enable [Customer portal](https://dashboard.stripe.com/test/settings/billing/portal) in the same mode as `STRIPE_SECRET_KEY`. Return URL is `SITE_URL/portal.html#billing`.
 - Copy signing secret → `STRIPE_SUBSCRIPTION_WEBHOOK_SECRET` (or keep a separate secret name if you already use one for live)
 
 5. Deploy/push the frontend. You should see a black **Stripe test mode** bar on pricing.
