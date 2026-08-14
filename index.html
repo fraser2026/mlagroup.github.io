@@ -172,16 +172,22 @@
     .mob-cta:hover svg { transform:translateX(3px); }
 
     /* ── HERO ── */
+    .hero-block {
+      min-height: calc(100vh - 64px);
+      display: flex;
+      flex-direction: column;
+    }
     .hero {
       position:relative; z-index:1;
       max-width:900px; margin:0 auto;
-      padding: 48px;
+      padding: 48px 48px 0;
       text-align:center;
-      min-height: calc(100vh - 64px);
+      flex: 1 0 auto;
       display:flex; flex-direction:column; justify-content:center; align-items:center;
       overflow-x:clip;
       max-width:min(900px, 100%);
       box-sizing:border-box;
+      width: 100%;
     }
 
     .badge {
@@ -327,6 +333,86 @@
 
     .hero-actions { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; }
     .hero-compliance { margin-top:20px; font-size:0.75rem; color:var(--muted); letter-spacing:0.01em; font-weight:400; }
+
+    /* Provider marquee — full-bleed, edge-faded, pauses on hover */
+    .provider-marquee {
+      width: 100%;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 40px 0 0;
+    }
+    .provider-marquee__viewport {
+      overflow: hidden;
+      width: 100%;
+      transform: translateZ(0);
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 5.5rem, #000 calc(100% - 5.5rem), transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0, #000 5.5rem, #000 calc(100% - 5.5rem), transparent 100%);
+    }
+    .provider-marquee__track {
+      display: flex;
+      width: max-content;
+      animation: provider-marquee 50s linear infinite;
+    }
+    .provider-marquee:hover .provider-marquee__track,
+    .provider-marquee:focus-within .provider-marquee__track {
+      animation-play-state: paused;
+    }
+    .provider-marquee__list {
+      display: flex;
+      align-items: center;
+      gap: 56px;
+      list-style: none;
+      flex-shrink: 0;
+      margin: 0;
+      padding: 0 56px 0 0;
+    }
+    .provider-marquee__item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .provider-marquee__item img {
+      display: block;
+      width: clamp(96px, 13vh, 136px);
+      height: clamp(96px, 13vh, 136px);
+      opacity: 0.48;
+      filter: grayscale(1);
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.22s ease, filter 0.22s ease;
+    }
+    .provider-marquee__item:hover img,
+    .provider-marquee__item:focus-visible img {
+      opacity: 1;
+      filter: none;
+    }
+    @keyframes provider-marquee {
+      from { transform: translate3d(-50%, 0, 0); }
+      to { transform: translate3d(0, 0, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .provider-marquee__track {
+        animation: none;
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+        row-gap: 20px;
+        padding: 0 24px;
+      }
+      .provider-marquee__list[aria-hidden="true"] { display: none; }
+      .provider-marquee__list {
+        padding-right: 0;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .provider-marquee__viewport {
+        -webkit-mask-image: none;
+        mask-image: none;
+        overflow: visible;
+      }
+    }
 
     .btn-primary {
       display:inline-flex; align-items:center; gap:8px;
@@ -565,6 +651,7 @@
     section { position:relative; z-index:1; }
     .wrap { max-width:1100px; margin:0 auto; padding:0 48px; }
     .section-pad { padding-top:96px; padding-bottom:96px; }
+    .fines-band > .section-pad { padding-top: 40px; }
     .eyebrow { font-family:var(--font-brand); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.14em; color:var(--accent); display:flex; align-items:center; gap:10px; margin-bottom:18px; }
     h2 { font-family:var(--font-brand); font-size:clamp(2rem, 3.4vw, 3rem); font-weight:500; line-height:1.12; letter-spacing:-0.025em; color:var(--main); }
     h2 em { font-style:normal; font-weight:400; color:var(--muted); }
@@ -783,12 +870,21 @@
       .mob-menu { padding:16px 20px 20px; }
       .nav-right { display:none; }
       .hamburger { display:flex; }
-      .hero { padding:64px 20px 56px; min-height:auto; }
+      .hero-block { min-height: auto; }
+      .hero { padding:64px 20px 0; }
+      .provider-marquee { padding: 32px 0 0; }
+      .provider-marquee__viewport {
+        -webkit-mask-image: linear-gradient(to right, transparent 0, #000 2.5rem, #000 calc(100% - 2.5rem), transparent 100%);
+        mask-image: linear-gradient(to right, transparent 0, #000 2.5rem, #000 calc(100% - 2.5rem), transparent 100%);
+      }
+      .provider-marquee__list { gap: 40px; padding-right: 40px; }
+      .provider-marquee__item img { width: 72px; height: 72px; }
       h1 { font-size:clamp(2.1rem,8vw,3rem); line-height:1.14; letter-spacing:-0.02em; }
       .hero-sub { font-size:1rem; }
       .badge { font-size:0.68rem; padding:6px 12px; white-space:normal; text-align:left; }
       .wrap { padding:0 20px; }
       .section-pad { padding-top:56px; padding-bottom:56px; }
+      .fines-band > .section-pad { padding-top: 32px; }
       .fines-chips { display:none; }
       /* Maturity strip: keep full bar/glass size, pack + center so glass never hangs off */
       .system-section { overflow-x:clip; }
@@ -893,8 +989,8 @@
 </div>
 
 <!-- 1. HERO -->
-<section>
-  <div class="hero fade">
+<section class="hero-block fade">
+  <div class="hero">
     <h1>Evidence your<br>AI Governance.<br><span class="hero-type-line"><span class="hero-type-line__sizer" aria-hidden="true">Before scrutiny arrives.</span><span class="line-rotate" data-phrases="Before regulation lands.|Before exposure begins.|Before gaps show up.|Before rivals get ahead.|Before scrutiny arrives.|Before the audit lands.|Before deadlines hit.|Before the fines land.|Before the board asks.|Before it's guesswork." aria-live="polite" aria-label="Before regulation lands. Before exposure begins. Before gaps show up. Before rivals get ahead. Before scrutiny arrives. Before the audit lands. Before deadlines hit. Before the fines land. Before the board asks. Before it's guesswork."></span></span></h1>
     <p class="hero-sub">Register AI systems, map regulatory obligations, and build audit-ready evidence for your board and regulators</p>
     <div class="hero-actions">
@@ -905,6 +1001,45 @@
       <a href="methodology.html" class="btn-ghost">View Methodology</a>
     </div>
     <p class="hero-compliance">Aligned with FCA DP5/22, ICO guidance, and the EU AI Act.</p>
+  </div>
+  <!-- Icons: Lobe Icons (MIT) — lobehub.com/icons. Duplicate list is for a seamless loop. -->
+  <div class="provider-marquee" role="region" aria-label="AI providers RegAnchor clients integrate with">
+    <div class="provider-marquee__viewport">
+      <div class="provider-marquee__track">
+        <ul class="provider-marquee__list">
+          <li class="provider-marquee__item"><img src="assets/providers/anthropic-color.svg" alt="Anthropic" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/openai-color.svg" alt="OpenAI" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/google-color.svg" alt="Google" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/gemini-color.svg" alt="Gemini" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/deepmind-color.svg" alt="Google DeepMind" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/googlecloud-color.svg" alt="Google Cloud" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/microsoft-color.svg" alt="Microsoft" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/azureai-color.svg" alt="Azure AI" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/bedrock-color.svg" alt="Amazon Bedrock" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/cohere-color.svg" alt="Cohere" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/groq-color.svg" alt="Groq" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/cerebras-color.svg" alt="Cerebras" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/meta-color.svg" alt="Meta" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/huggingface-color.svg" alt="Hugging Face" width="64" height="64" decoding="async" draggable="false"></li>
+        </ul>
+        <ul class="provider-marquee__list" aria-hidden="true">
+          <li class="provider-marquee__item"><img src="assets/providers/anthropic-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/openai-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/google-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/gemini-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/deepmind-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/googlecloud-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/microsoft-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/azureai-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/bedrock-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/cohere-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/groq-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/cerebras-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/meta-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+          <li class="provider-marquee__item"><img src="assets/providers/huggingface-color.svg" alt="" width="64" height="64" decoding="async" draggable="false"></li>
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 
