@@ -86,10 +86,10 @@
 <div class="page">
 <header class="site-chrome" id="siteChrome">
   <nav class="site-nav">
-    <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
+    <a href="portal.html#dashboard" class="logo ra-wordmark">RegAnchor</a>
     <div class="nav-right">
       <span class="flow-step" id="progressCount" hidden>1 of 8</span>
-      <a href="portal.html" class="nav-signin">Back to portal</a>
+      <a href="portal.html#dashboard" class="nav-signin" id="assess-back">Back to portal</a>
     </div>
   </nav>
   <div class="scroll-progress scroll-progress--step" id="progressWrap" aria-hidden="true">
@@ -122,6 +122,15 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 // ═══ GET SYSTEM ID FROM URL ══════════════════════════════════
 const params=new URLSearchParams(window.location.search);
 const SYSTEM_ID=params.get('system_id');
+(function(){
+  var back=document.getElementById('assess-back');
+  var ret='#dashboard';
+  try{
+    var stored=sessionStorage.getItem('ra_portal_return');
+    if(stored&&stored.charAt(0)==='#'&&stored.indexOf('index')===-1)ret=stored;
+  }catch(e){}
+  if(back)back.setAttribute('href','portal.html'+ret);
+})();
 let currentUser=null,currentOrg=null,systemData=null;
 function isPaidTier(){return currentOrg&&(currentOrg.plan==='essentials'||currentOrg.plan==='professional')&&currentOrg.subscription_status==='active'}
 

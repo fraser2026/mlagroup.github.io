@@ -1222,12 +1222,31 @@ a.btn-dl svg {
   padding: 7px 10px;
   font-size: 13px;
 }
-.ra-portal .reg-menu-confirm-btn,
-.ra-portal .reg-menu-owner .btn-topbar-primary {
+.ra-portal .reg-bulk-menu .btn-topbar-primary,
+.ra-portal .reg-bulk-menu .reg-menu-confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: calc(100% - 24px);
-  margin: 0 12px 8px;
+  margin: 8px 12px 10px;
   height: 32px;
+  padding: 0 12px;
   font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  background: var(--ra-blurple) !important;
+  border: 1px solid var(--ra-blurple) !important;
+  border-radius: var(--ra-radius-control, 4px) !important;
+  color: var(--ra-white, #FFFFFF) !important;
+  box-shadow: none;
+}
+.ra-portal .reg-bulk-menu .btn-topbar-primary:hover,
+.ra-portal .reg-bulk-menu .btn-topbar-primary:focus-visible,
+.ra-portal .reg-bulk-menu .reg-menu-confirm-btn:hover,
+.ra-portal .reg-bulk-menu .reg-menu-confirm-btn:focus-visible {
+  background: var(--ra-blurple-hover, #4434E0) !important;
+  border-color: var(--ra-blurple-hover, #4434E0) !important;
+  color: var(--ra-white, #FFFFFF) !important;
 }
 #reg-row-menu {
   position: fixed;
@@ -1267,11 +1286,12 @@ a.btn-dl svg {
   fill: currentColor;
 }
 .sys-table .col-check {
-  width: 52px;
-  min-width: 52px;
+  width: 72px;
+  min-width: 72px;
   vertical-align: middle;
 }
 .sys-table:not(.is-selecting) .col-check { display: none }
+.sys-table.is-selecting tbody tr { cursor: pointer; }
 .sys-table.is-selecting th.col-check,
 .sys-table.is-selecting td.col-check {
   cursor: pointer;
@@ -1300,7 +1320,7 @@ a.btn-dl svg {
 .panel--table .sys-table.is-selecting th.col-check,
 .panel--table .sys-table.is-selecting td.col-check {
   padding-left: 16px !important;
-  padding-right: 14px !important;
+  padding-right: 18px !important;
 }
 .panel--table .sys-table.is-selecting th:nth-child(2),
 .panel--table .sys-table.is-selecting td:nth-child(2) { padding-left: 8px }
@@ -1473,7 +1493,8 @@ a.btn-dl svg {
 
 /* .state-label shares the hairline status treatment with .tier-pill. */
 
-.btn-sm { padding: 5px 12px; font-size: 12px; flex-shrink: 0 }
+.btn-sm { padding: 5px 12px; font-size: 12px; flex-shrink: 0; height: auto; min-height: 28px }
+.row-item .btn-topbar { flex-shrink: 0; }
 
 .plan-label {
   font-size: 12px;
@@ -1532,7 +1553,20 @@ a.btn-dl svg {
 }
 .member-info { flex: 1; min-width: 0 }
 .member-name { font-size: 13px; font-weight: 500; color: var(--ra-text) }
-.member-email { font-size: 11px; color: var(--ra-text-3); margin-top: 1px }
+.users-invite {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+.users-invite .field-input { margin-bottom: 0 }
+.users-invite-actions { padding-bottom: 2px }
+.users-copy { font-size: 13px; color: var(--ra-text-2); line-height: 1.5; margin: 0 0 8px }
+.users-roles .users-copy { margin-bottom: 10px }
+.users-role-select { width: auto; min-width: 120px; margin: 0; padding: 6px 10px }
+@media (max-width: 800px) {
+  .users-invite { grid-template-columns: 1fr }
+}
 
 /* Dashboard header — functional context, not a greeting. */
 .dash-header {
@@ -1575,14 +1609,26 @@ a.btn-dl svg {
   font-family: var(--ra-font-product);
   font-size: 13px;
   outline: none;
-  transition: border-color .15s;
+  transition: border-color .12s, background .12s, box-shadow .12s;
   -webkit-appearance: none;
   margin-bottom: 14px;
 }
 
 .field-input:focus,
+.field-input:focus-visible,
 .obligation-select:focus,
-.obligation-evidence:focus { border-color: var(--ra-blurple) }
+.obligation-select:focus-visible,
+.obligation-evidence:focus,
+.obligation-evidence:focus-visible {
+  border-color: var(--ra-blurple);
+  background: rgba(83, 58, 253, 0.04);
+  box-shadow: 0 0 0 3px rgba(83, 58, 253, 0.12);
+}
+.field-input:not(:placeholder-shown):not(:focus),
+.obligation-evidence:not(:placeholder-shown):not(:focus) {
+  border-color: var(--ra-blurple);
+  background: rgba(83, 58, 253, 0.04);
+}
 
 /* Enterprise inquiry modal only — lighter placeholders (match contact.html) */
 #enterprise-modal .field-input::placeholder {
@@ -2729,6 +2775,60 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
 }
 .modal-close:hover { color: var(--ra-text) }
 
+.modal--success { position: relative; }
+.modal--success .modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+}
+.modal-success {
+  padding: 36px 28px 28px;
+  text-align: center;
+}
+.modal-success__tick {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 16px;
+  border: 1px solid rgba(83, 58, 253, 0.22);
+  background: rgba(83, 58, 253, 0.06);
+  border-radius: var(--ra-radius-control, 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-success__tick svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--ra-blurple);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.modal-success h3 {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  color: var(--ra-text);
+  margin: 0 0 8px;
+}
+.modal-success p {
+  font-size: 13px;
+  color: var(--ra-text-3);
+  line-height: 1.6;
+  margin: 0 0 22px;
+}
+.modal-success__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal-success__actions .btn-topbar,
+.modal-success__actions .btn-topbar-primary,
+.modal-success__actions .btn-topbar-ghost {
+  width: 100%;
+}
 .modal-body { padding: 22px 24px }
 .modal-footer {
   padding: 16px 24px;

@@ -7,6 +7,9 @@ const STATUS_LABELS={planned:'Planned',development:'Development',pilot:'Pilot',p
 const PLAN_LABELS={essentials:'Essentials',professional:'Professional',enterprise:'Enterprise'};
 const TYPE_LABELS={third_party:'Third Party',in_house:'In-House',hybrid:'Hybrid'};
 const MEMBER_ROLE_LABELS={owner:'Owner',admin:'Admin',editor:'Editor',viewer:'Viewer',member:'Member'};
+function canManageMembers(){return currentMemberRole==='owner'||currentMemberRole==='admin'}
+function canWriteRegistry(){return currentMemberRole==='owner'||currentMemberRole==='admin'||currentMemberRole==='editor'||currentMemberRole==='member'}
+function orgSeatLimit(plan){var p=(plan||'free').toLowerCase();if(p==='professional')return 5;if(p==='enterprise')return 50;return 1}
 const PURPOSE_TIER_MAP={biometric_identification:'high',critical_infrastructure:'high',education_access:'high',employment_management:'high',essential_services_access:'high',law_enforcement:'high',migration_border:'high',justice_administration:'high',customer_chatbot:'limited',content_generation:'limited',emotion_recognition:'limited',internal_automation:'minimal',data_analytics:'minimal'};
 let currentUser=null,currentProfile=null,currentResults=[],isPaid=false;
 let currentOrg=null,allSystems=[],currentSystemId=null,regFilter='all',regSearchQuery='',regSelected={},regSelectMode=false,regRowMenuId=null;
@@ -20,21 +23,85 @@ async function signOut(){await sb.auth.signOut();window.location.href='login.htm
 function actorName(){return currentProfile?.full_name||currentUser?.email?.split('@')[0]||'Unknown'} function isPaidTier(){return currentOrg&&(currentOrg.plan==='essentials'||currentOrg.plan==='professional')&&currentOrg.subscription_status==='active'}
  
 // ═══ AUDIT FORMATTING ═════════════════════════════════════════
-function fmtAudit(entry,namesMap){
+const AUDIT_FIELD_LABELS={
+  name:'name',description:'description',vendor:'vendor',system_type:'system type',
+  purpose_category:'purpose',risk_tier:'risk class',risk_tier_rationale:'classification rationale',
+  deployment_status:'deployment status',system_owner:'owner',department:'department',notes:'notes'
+};
+function fmtAuditValue(field,value){
+  if(value==null||value==='')return 'not set';
+  if(field==='deployment_status')return STATUS_LABELS[value]||value;
+  if(field==='risk_tier')return TIER_LABELS[value]||value;
+  if(field==='system_type')return TYPE_LABELS[value]||value;
+  return String(value);
+}
+function fmtSystemUpdated(c,opts){
+  opts=opts||{};
+  var name=c._system_name||(typeof c.name==='string'?c.name:(c.name&&c.name.new))||'';
+  var nameHtml=name?'<strong>'+esc(name)+'</strong>':'this system';
+  var skipName=!!opts.omitSystemName;
+  var ofName=skipName?'':' of '+nameHtml;
+  var forName=skipName?'':' for '+nameHtml;
+  var parts=[];
+  var status=c.deployment_status;
+  if(status&&typeof status==='object'&&('new' in status||'old' in status)){
+    var neu=fmtAuditValue('deployment_status',status.new);
+    var old=status.old!=null&&status.old!==''?fmtAuditValue('deployment_status',status.old):null;
+    if(status.new==='decommissioned'){
+      parts.push((skipName?'Marked as decommissioned':'Decommissioned '+nameHtml)+(old?' (was '+esc(old)+')':''));
+    }else if(old){
+      parts.push('Changed deployment status'+ofName+' from '+esc(old)+' to <strong>'+esc(neu)+'</strong>');
+    }else{
+      parts.push('Set deployment status'+ofName+' to <strong>'+esc(neu)+'</strong>');
+    }
+  }
+  var owner=c.system_owner;
+  if(owner&&typeof owner==='object'&&('new' in owner||'old' in owner)){
+    var ownNew=esc(fmtAuditValue('system_owner',owner.new));
+    var ownOld=owner.old?esc(fmtAuditValue('system_owner',owner.old)):null;
+    if(ownOld)parts.push('Reassigned owner'+ofName+' from '+ownOld+' to <strong>'+ownNew+'</strong>');
+    else parts.push('Assigned owner'+ofName+' to <strong>'+ownNew+'</strong>');
+  }
+  var tier=c.risk_tier;
+  if(tier&&typeof tier==='object'&&('new' in tier||'old' in tier)){
+    var tNew=esc(fmtAuditValue('risk_tier',tier.new));
+    var tOld=tier.old?esc(fmtAuditValue('risk_tier',tier.old)):'Unclassified';
+    if(skipName)parts.push('Reclassified from '+tOld+' to <strong>'+tNew+'</strong>');
+    else parts.push('Reclassified '+nameHtml+' from '+tOld+' to <strong>'+tNew+'</strong>');
+  }
+  Object.keys(c).forEach(function(k){
+    if(k.charAt(0)==='_'||k==='deployment_status'||k==='system_owner'||k==='risk_tier')return;
+    var d=c[k];
+    if(!d||typeof d!=='object'||!(('old' in d)||('new' in d)))return;
+    var label=AUDIT_FIELD_LABELS[k]||k.replace(/_/g,' ');
+    var from=fmtAuditValue(k,d.old);
+    var to=fmtAuditValue(k,d.new);
+    if(from===to)return;
+    parts.push('Updated '+label+forName+' from '+esc(from)+' to <strong>'+esc(to)+'</strong>');
+  });
+  if(parts.length)return parts.join('. ');
+  return skipName?'Updated system details':'Updated system details'+(name?' for '+nameHtml:'');
+}
+function fmtAudit(entry,namesMap,opts){
   const c=entry.changes||{};const who=(namesMap||{})[entry.user_id]||c._actor_name||'System';
   let text='';
   switch(entry.action){
     case 'system_created':text=`Registered new AI system: <strong>${esc(c.name||'')}</strong>`;break;
-    case 'system_updated':text='Updated system details';break;
+    case 'system_updated':text=fmtSystemUpdated(c,opts);break;
     case 'risk_tier_set':text=`Classified as <strong>${TIER_LABELS[c.risk_tier?.new]||c.risk_tier?.new||''}</strong> under EU AI Act`;break;
     case 'risk_tier_changed':text=`Reclassified from ${TIER_LABELS[c.risk_tier?.old]||'Unclassified'} to <strong>${TIER_LABELS[c.risk_tier?.new]||''}</strong>`;break;
     case 'compliance_status_updated':text=`Updated compliance status across ${c.obligation_count||c.updated_count||'multiple'} obligations`;break;
     case 'assessment_submitted':text='Submitted an assessment for review by RegAnchor';break;
+    case 'assessment_requested':text='Requested an assessment of <strong>'+esc(c._system_name||'an AI system')+'</strong>';break;
     case 'control_updated':text='Updated progress on <strong>'+esc(c.control||'')+'</strong>';break;
     case 'control_implemented':text='Marked <strong>'+esc(c.control||'')+'</strong> as implemented';break;
     case 'mla_review_updated':text='RegAnchor updated assessment status to <strong>'+(c.status==='controls_issued'?'Controls Issued':c.status==='in_review'?'Under Review':c.status||'')+'</strong>';break;
     case 'control_assigned':text='Assigned <strong>'+esc(c.control||'')+'</strong> to <strong>'+esc(c.assigned_to_name||'a team member')+'</strong>'+(c.due_date?' — due '+c.due_date:'');break;     case 'policy_adopted':text='Adopted policy <strong>'+esc(c.policy||'')+'</strong>';break;     case 'policy_acknowledged':text='Acknowledged policy <strong>'+esc(c.policy||'')+'</strong> (v'+esc(c.version||'')+')';break;     case 'policy_esigned':text='E-signed policy <strong>'+esc(c.policy||'')+'</strong> (v'+esc(c.version||'')+')';break;     case 'support_requested':text='Requested RegAnchor expert help on <strong>'+esc(c.control||'')+'</strong>';break;
     case 'support_responded':text='RegAnchor responded to support request on <strong>'+esc(c.control||'')+'</strong>';break;
+    case 'member_invited':text='Invited <strong>'+esc(c.email||'a colleague')+'</strong> as '+(MEMBER_ROLE_LABELS[c.role]||c.role||'member');break;
+    case 'member_joined':text='Joined the organisation as '+(MEMBER_ROLE_LABELS[c.role]||c.role||'member');break;
+    case 'member_role_changed':text='Changed a member role from '+(MEMBER_ROLE_LABELS[c.old]||c.old||'')+' to <strong>'+(MEMBER_ROLE_LABELS[c.new]||c.new||'')+'</strong>';break;
+    case 'member_removed':text='Removed a member'+(c.role?' ('+(MEMBER_ROLE_LABELS[c.role]||c.role)+')':'');break;
     default:text=entry.action.replace(/_/g,' ');
   }
   // Override actor name for RegAnchor-side actions
@@ -89,6 +156,19 @@ function navElFor(viewId){
 }
 
 let navHistory=[];
+function hashForView(viewId){
+  if(viewId==='registry-detail'&&currentSystemId)return '#registry-detail-'+currentSystemId;
+  if(viewId==='control-detail'&&typeof currentControlId!=='undefined'&&currentControlId)return '#control-detail-'+currentControlId;
+  if(viewId==='policy-detail'&&typeof currentPolicyId!=='undefined'&&currentPolicyId)return '#policy-detail-'+currentPolicyId;
+  return '#'+viewId;
+}
+function rememberPortalReturn(){
+  try{
+    var h=location.hash||'#dashboard';
+    if(h.charAt(0)!=='#')h='#dashboard';
+    sessionStorage.setItem('ra_portal_return', h);
+  }catch(e){}
+}
 function navigate(viewId,navEl,skipHistory){
   const view=document.getElementById('view-'+viewId);
   if(!view)return;
@@ -100,18 +180,20 @@ function navigate(viewId,navEl,skipHistory){
   const t=topbarTitles[viewId];
   if(t)document.getElementById('topbar-title').innerHTML=`<svg viewBox="0 0 16 16" style="width:15px;height:15px;stroke:var(--ra-text);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;">${t.icon}</svg>${t.label}`;
   const tr=document.getElementById('topbar-right');
-  if(viewId==='registry')tr.innerHTML='<button class="btn-topbar btn-topbar-primary" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
+  var addSys=canWriteRegistry()?'<button class="btn-topbar btn-topbar-primary" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button>':'';
+  if(viewId==='users'&&canManageMembers())tr.innerHTML='<button class="btn-topbar btn-topbar-primary" onclick="document.getElementById(\'invite-email\')&&document.getElementById(\'invite-email\').focus()">Invite colleague</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
+  else if(viewId==='registry')tr.innerHTML=addSys+'<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   else if(viewId==='registry-detail'||viewId==='org'||viewId==='controls'||viewId==='control-detail')tr.innerHTML='<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
-  else tr.innerHTML='<button onclick="openAddSystem()" class="btn-topbar btn-topbar-primary"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
+  else tr.innerHTML=addSys+'<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   closeSidebar();
   window.scrollTo(0,0);
-  if(!skipHistory){history.pushState({view:viewId},'','#'+viewId);navHistory.push(viewId)}
+  var hash=hashForView(viewId);
+  if(!skipHistory){history.pushState({view:viewId,hash:hash},'',hash);navHistory.push(viewId)}
+  else history.replaceState({view:viewId,hash:hash},'',hash);
 }
 window.addEventListener('popstate',function(e){
-  if(e.state&&e.state.view){
-    const viewId=e.state.view;
-    navigate(viewId,navElFor(viewId),true);
-  }
+  if(e.state&&e.state.hash)applyPortalHash(e.state.hash,true);
+  else if(e.state&&e.state.view)applyPortalHash('#'+e.state.view,true);
 });
 async function navigateRegistry(navEl){
   navigate('registry',navEl);
@@ -123,6 +205,7 @@ async function navigateRegistry(navEl){
   renderRegistryStats();
 }
 async function navigateOrg(navEl){navigate('org',navEl);if(!currentOrg)await ensureOrg();await renderOrgPage()}
+async function navigateUsers(navEl){navigate('users',navEl);if(!currentOrg)await ensureOrg();if(typeof renderUsersPage==='function')await renderUsersPage()}
 function openSidebar(){
   var overlay=document.getElementById('overlay');
   document.getElementById('sidebar').classList.add('open');
@@ -204,9 +287,11 @@ async function init(){
   currentResults=results||[];
   document.getElementById('paywall-banner').style.display=(isPaid||isPaidTier())?'none':'flex'; document.getElementById('tier-banner').style.display=isPaidTier()?'none':'flex'; document.getElementById('controls-tier-banner').style.display=isPaidTier()?'none':'flex';
   renderReports(paidIds);
-  history.replaceState({view:'dashboard'},'','#dashboard');
+  var bootHash=window.location.hash||'#dashboard';
   // Always provision org — subscriptions need currentOrg even when org_id is still null.
-  ensureOrg().then(function(){
+  consumePendingInvite().then(function(){
+    return ensureOrg();
+  }).then(function(){
     return Promise.all([loadSystems(),loadControls(),refreshSidebarContext()]);
   }).then(function(){
     /* loadSystems may finish before loadControls; paint coverage again
@@ -215,7 +300,7 @@ async function init(){
     renderDashboard(paidIds);
     loadScoreHistory();
     loadAssessmentReports();
-    handleDeepLink();
+    handleDeepLink(bootHash);
     loadAlerts();
     setTimeout(function(){checkAndCreateAlerts();loadAndRunComplianceEngine()},3000);
   }).catch(function(){renderDashboard(paidIds)});
@@ -262,7 +347,38 @@ async function refreshSidebarContext(){
   if(roleEl)roleEl.textContent=MEMBER_ROLE_LABELS[role]||(role.charAt(0).toUpperCase()+role.slice(1));
   if(subEl)subEl.textContent=currentOrg.name;
 }
-function handleDeepLink(){
+function applyPortalHash(raw, skipHistory){
+  var h=String(raw||'').replace(/^#/,'');
+  if(!h||h==='dashboard'){
+    navigate('dashboard',document.getElementById('nav-dashboard'),!!skipHistory);
+    return;
+  }
+  if(h.indexOf('registry-detail-')===0){
+    var sysId=h.slice('registry-detail-'.length);
+    if(sysId&&typeof openSystemDetail==='function'){openSystemDetail(sysId);return}
+  }
+  if(h.indexOf('control-detail-')===0){
+    var ctrlId=h.slice('control-detail-'.length);
+    if(ctrlId&&typeof openControlDetail==='function'){openControlDetail(ctrlId);return}
+  }
+  if(h.indexOf('policy-detail-')===0){
+    var polId=h.slice('policy-detail-'.length);
+    if(polId&&typeof openPolicyDetail==='function'){openPolicyDetail(polId);return}
+  }
+  if(h==='registry'&&typeof navigateRegistry==='function'){navigateRegistry(document.getElementById('nav-registry'));return}
+  if(h==='org'&&typeof navigateOrg==='function'){navigateOrg(document.getElementById('nav-org'));return}
+  if(h==='users'&&typeof navigateUsers==='function'){navigateUsers(document.getElementById('nav-users'));return}
+  if(h==='controls'&&typeof navigateControls==='function'){navigateControls(document.getElementById('nav-controls'));return}
+  if(h==='policies'&&typeof navigatePolicies==='function'){navigatePolicies(document.getElementById('nav-policies'));return}
+  if(h==='alerts'&&typeof navigateAlerts==='function'){navigateAlerts();return}
+  if(h==='plans'){
+    navigate('plans',document.getElementById('nav-plans'),!!skipHistory);
+    if(typeof updatePortalPricing==='function')updatePortalPricing();
+    return;
+  }
+  if(document.getElementById('view-'+h))navigate(h,navElFor(h),!!skipHistory);
+}
+function handleDeepLink(bootHash){
   var urlParams=new URLSearchParams(window.location.search);
   var goto=urlParams.get('goto');
   if(goto==='plans'){
@@ -280,24 +396,37 @@ function handleDeepLink(){
   if(goto&&goto.startsWith('system-controls-')){
     var scId=goto.replace('system-controls-','');
     if(scId){
-      history.replaceState(null,'',window.location.pathname);
       openSystemDetail(scId).then(function(){
         switchDetailTab('sys-controls',document.querySelectorAll('#view-registry-detail .tab-btn')[2]);
       });
       return;
     }
   }
-  if(urlParams.get('subscription')==='success'){history.replaceState(null,'',window.location.pathname+'#dashboard');setTimeout(function(){var sb2=document.getElementById('cert-card-panel');if(sb2)sb2.scrollIntoView({behavior:'smooth'})},2000)}
-  var h=window.location.hash;
-  if(h==='#controls'){navigateControls(document.getElementById('nav-controls'));window.location.hash='';return}
-  if(h==='#policies'){navigatePolicies(document.getElementById('nav-policies'));window.location.hash='';return}
-  if(h==='#registry'){navigateRegistry(document.getElementById('nav-registry'));window.location.hash='';return}
-  if(h.startsWith('#registry-detail-')){var sysId=h.replace('#registry-detail-','');if(sysId)openSystemDetail(sysId);window.location.hash=''}
+  if(urlParams.get('subscription')==='success'){
+    navigate('dashboard',document.getElementById('nav-dashboard'),true);
+    setTimeout(function(){var sb2=document.getElementById('cert-card-panel');if(sb2)sb2.scrollIntoView({behavior:'smooth'})},2000);
+    return;
+  }
+  applyPortalHash(bootHash||window.location.hash,true);
 }
  
 // ═══ AUTO-PROVISIONING ════════════════════════════════════════
 async function ensureOrg(){
   if(currentOrg)return currentOrg;
+  const{data:membership}=await sb.from('org_members').select('org_id,role').eq('user_id',currentUser.id).limit(1).maybeSingle();
+  if(membership&&membership.org_id){
+    const{data:fromMem}=await sb.from('organisations').select('*').eq('id',membership.org_id).maybeSingle();
+    if(fromMem){
+      currentOrg=fromMem;
+      currentMemberRole=membership.role||'viewer';
+      if(!currentProfile)currentProfile={};
+      if(currentProfile.org_id!==fromMem.id){
+        await sb.from('profiles').update({org_id:fromMem.id}).eq('id',currentUser.id);
+        currentProfile.org_id=fromMem.id;
+      }
+      return fromMem;
+    }
+  }
   if(currentProfile?.org_id){const{data}=await sb.from('organisations').select('*').eq('id',currentProfile.org_id).maybeSingle();if(data){currentOrg=data;return data}}
   const{data:existing}=await sb.from('organisations').select('*').eq('created_by',currentUser.id).limit(1).maybeSingle();
   if(existing){currentOrg=existing;if(!currentProfile)currentProfile={};if(!currentProfile.org_id){await sb.from('profiles').update({org_id:existing.id}).eq('id',currentUser.id);currentProfile.org_id=existing.id}return existing}
@@ -327,7 +456,8 @@ async function renderOrgPage(){
   const profMap={};(memberProfiles||[]).forEach(p=>{profMap[p.id]=p});
   const sysByUser={};allSystems.forEach(s=>{sysByUser[s.created_by]=(sysByUser[s.created_by]||0)+1});
   document.getElementById('org-members-wrap').innerHTML=members.map(m=>{const p=profMap[m.user_id]||{};const name=p.full_name||'Unknown';const email=p.email||'Not set';const init=name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();const sc=sysByUser[m.user_id]||0;
-    return '<div class="member-row"><div class="member-avatar">'+esc(init)+'</div><div class="member-info"><div class="member-name">'+esc(name)+'</div><div class="member-email">'+esc(email)+'</div></div><div style="font-size:.72rem;color:var(--muted);text-align:right;min-width:70px;">'+sc+' system'+(sc!==1?'s':'')+'</div><span class="role-chip role-'+(m.role||'viewer')+'">'+(m.role||'viewer')+'</span></div>'}).join('');
+    return '<div class="member-row"><div class="member-avatar">'+esc(init)+'</div><div class="member-info"><div class="member-name">'+esc(name)+'</div><div class="member-email">'+esc(email)+'</div></div><div style="font-size:.72rem;color:var(--muted);text-align:right;min-width:70px;">'+sc+' system'+(sc!==1?'s':'')+'</div><span class="role-chip role-'+(m.role||'viewer')+'">'+(MEMBER_ROLE_LABELS[m.role]||m.role||'viewer')+'</span></div>'}).join('')+
+    (canManageMembers()?'<div class="member-row"><button type="button" class="btn-topbar btn-topbar-primary" onclick="navigateUsers(document.getElementById(\'nav-users\'))">Manage access</button></div>':'');
 }
  
 // ═══ DASHBOARD ════════════════════════════════════════════════

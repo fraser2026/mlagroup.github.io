@@ -1,7 +1,7 @@
 // ═══ ACTIVITY CLICK ROUTING ═══════════════════════════════════
 function getActivityClick(entry){
   var et=entry.entity_type;var eid=entry.entity_id;var act=entry.action;
-  if(act==='system_created'||act==='system_updated'||act==='risk_tier_set'||act==='risk_tier_changed'||act==='assessment_submitted'||act==='mla_review_updated'){
+  if(act==='system_created'||act==='system_updated'||act==='risk_tier_set'||act==='risk_tier_changed'||act==='assessment_submitted'||act==='assessment_requested'||act==='mla_review_updated'){
     return "openSystemDetail('"+eid+"')";
   }
   if(act==='compliance_status_updated'){
@@ -23,6 +23,9 @@ function getActivityClick(entry){
   }
   if(act==='policy_adopted'||act==='policy_acknowledged'||act==='policy_esigned'){
     return "openPolicyDetail('"+eid+"')";
+  }
+  if(act==='member_invited'||act==='member_joined'||act==='member_role_changed'||act==='member_removed'){
+    return "navigateUsers(document.getElementById('nav-users'))";
   }
   return null;
 }
@@ -118,22 +121,53 @@ async function saveAssignment(){
 }
  
 async function renderMyTasks(){
-  if(!currentUser||!allAssignments.length||!allControls.length)return;
-  var myTasks=allAssignments.filter(function(a){
+  var panel=document.getElementById('my-tasks-panel');
+  if(!panel||!currentUser)return;
+  panel.style.display='block';
+  var myTasks=(allAssignments||[]).filter(function(a){
     return a.assigned_to===currentUser.id&&a.status!=='implemented'&&a.status!=='verified';
   });
-  var panel=document.getElementById('my-tasks-panel');
-  if(!panel)return;
-  if(!myTasks.length){panel.style.display='none';return}
-  panel.style.display='block';
-  document.getElementById('my-tasks-count').textContent=myTasks.length+' task'+(myTasks.length!==1?'s':'');
+  var assessTasks=[];
+  if(currentOrg){
+    var logResult=await sb.from('registry_audit_log').select('id,action,entity_id,created_at,changes,user_id').eq('org_id',currentOrg.id).in('action',['assessment_requested','assessment_submitted']).order('created_at',{ascending:false}).limit(200);
+    var latest={};
+    (logResult.data||[]).forEach(function(entry){
+      var sid=entry.entity_id;
+      if(!sid||latest[sid])return;
+      latest[sid]=entry;
+    });
+    Object.keys(latest).forEach(function(sid){
+      var entry=latest[sid];
+      if(entry.action!=='assessment_requested')return;
+      var sys=allSystems.find(function(s){return s.id===sid});
+      assessTasks.push({
+        id:entry.id,
+        system_id:sid,
+        name:(entry.changes&&entry.changes._system_name)||(sys&&sys.name)||'AI system',
+        created_at:entry.created_at
+      });
+    });
+  }
+  if(!myTasks.length&&!assessTasks.length){
+    document.getElementById('my-tasks-count').textContent='None assigned to you';
+    document.getElementById('my-tasks-body').innerHTML='<div class="empty-inline">Requested assessments and control work assigned to you appear here.</div>';
+    return;
+  }
+  var total=myTasks.length+assessTasks.length;
+  document.getElementById('my-tasks-count').textContent=total+' task'+(total!==1?'s':'');
   var sysNames={};allSystems.forEach(function(s){sysNames[s.id]=s.name});
   var PRIORITY_C={low:'var(--ra-text-3)',medium:'var(--ra-text-2)',high:'var(--ra-warn)',critical:'var(--ra-risk)'};
   var PRIORITY_L={low:'Low',medium:'Medium',high:'High',critical:'Critical'};
   var today=new Date().toISOString().split('T')[0];
+  var assessHtml=assessTasks.sort(function(a,b){return String(b.created_at||'').localeCompare(String(a.created_at||''))}).map(function(t){
+    return '<div class="row-item">' +
+      '<div class="row-marker row-marker--icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg></div>' +
+      '<div class="row-main"><div class="row-title">'+esc(t.name)+'</div><div class="row-meta"><span>Requested '+fmtDate(t.created_at)+'</span></div></div>' +
+      '<button type="button" class="btn-topbar btn-topbar-primary btn-sm" onclick="openQueuedAssessment(\''+t.system_id+'\')">Run assessment</button>' +
+    '</div>';
+  }).join('');
   var body=document.getElementById('my-tasks-body');
-  body.innerHTML=myTasks.sort(function(a,b){
-    // Sort: overdue first, then by due date, then by priority
+  var controlHtml=myTasks.sort(function(a,b){
     var aOverdue=a.due_date&&a.due_date<today?1:0;
     var bOverdue=b.due_date&&b.due_date<today?1:0;
     if(bOverdue!==aOverdue)return bOverdue-aOverdue;
@@ -154,6 +188,7 @@ async function renderMyTasks(){
       '<span class="state-label" style="color:'+CTRL_STATUS_C[a.status]+';">'+CTRL_STATUS_L[a.status]+'</span>' +
     '</div>';
   }).join('');
+  body.innerHTML=assessHtml+controlHtml;
 }
  
 // ═══ DASHBOARD: NEXT STEPS ════════════════════════════════════

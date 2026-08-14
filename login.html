@@ -17,13 +17,12 @@
       --main:     var(--ra-text, #0A2540);
       --sub:      var(--ra-text-2, #425466);
       --muted:    var(--ra-text-3, #697386);
-      --muted2:   var(--ra-text-2, #425466);
       --accent:   var(--ra-blurple, #533AFD);
       --accent-h: var(--ra-blurple-hover, #4434E0);
       --ok:       var(--ra-ok, #24B47E);
       --err:      var(--ra-risk, #CD3D64);
-      --font-brand: var(--ra-font-brand, var(--ra-font), 'Inter', sans-serif);
-      --font-body:  var(--ra-font-product, var(--ra-font), 'Inter', sans-serif);
+      --font-brand: var(--ra-font-brand, 'Inter', sans-serif);
+      --font-body:  var(--ra-font-product, 'Inter', sans-serif);
     }
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     html { font-size:16px; }
@@ -62,12 +61,6 @@
       padding:72px 64px; border-right:1px solid var(--border);
       display:flex; flex-direction:column; justify-content:center;
     }
-    .left-eyebrow {
-      font-family:var(--font-brand); font-size:0.72rem; font-weight:500; text-transform:uppercase;
-      letter-spacing:0.14em; color:var(--muted);
-      display:flex; align-items:center; gap:10px; margin-bottom:22px;
-    }
-    .left-eyebrow::before { content:''; width:20px; height:1px; background:var(--border-h); }
     h1 {
       font-family:var(--font-brand);
       font-size:clamp(2.2rem,3.8vw,3.2rem); font-weight:500;
@@ -102,7 +95,7 @@
       border-color:rgba(83,58,253,0.4);
       background:rgba(83,58,253,0.12);
     }
-    .pl-text h4 { font-size:0.85rem; font-weight:600; color:var(--main); margin-bottom:2px; }
+    .pl-text h4 { font-size:0.85rem; font-weight:500; color:var(--main); margin-bottom:2px; }
     .pl-text p  { font-size:0.77rem; color:var(--muted); line-height:1.5; }
 
     /* RIGHT */
@@ -111,6 +104,14 @@
       display:flex; flex-direction:column; justify-content:center;
     }
     .form-wrap { max-width:380px; width:100%; }
+    .auth-panels { display:grid; }
+    .auth-panel { grid-area:1 / 1; }
+    .auth-panel.is-hidden {
+      visibility:hidden;
+      pointer-events:none;
+      z-index:0;
+    }
+    .auth-panel:not(.is-hidden) { z-index:1; }
 
     .form-title { font-family:var(--font-brand); font-size:1.4rem; font-weight:500; letter-spacing:-0.025em; margin-bottom:6px; color:var(--main); }
     .form-hint { font-size:0.85rem; color:var(--muted); margin-bottom:32px; }
@@ -127,33 +128,55 @@
 
     .field { margin-bottom:18px; }
     .field-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
-    label { display:block; font-family:var(--font-brand); font-size:0.72rem; font-weight:500; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
+    label { display:block; font-family:var(--font-body); font-size:0.75rem; font-weight:500; letter-spacing:-0.01em; text-transform:none; color:var(--muted); }
     .forgot { font-size:0.76rem; color:var(--accent); text-decoration:none; }
     .forgot:hover { color:var(--accent-h); }
 
     input[type="text"], input[type="email"], input[type="password"] {
       width:100%; padding:11px 13px;
       background:var(--bg); border:1px solid var(--border);
-      border-radius: var(--ra-radius-control, 4px);
+      border-radius:4px;
       color:var(--main);
       font-family:var(--font-body); font-size:0.9rem;
-      outline:none; transition:border-color 0.18s;
+      outline:none;
+      transition:border-color 0.12s, background 0.12s, box-shadow 0.12s;
     }
-    input::placeholder { color:var(--muted); }
-    input:focus { border-color:var(--accent); }
-    input.err { border-color:var(--err); }
+    input[type="text"]::placeholder,
+    input[type="email"]::placeholder,
+    input[type="password"]::placeholder { color:var(--muted); }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="text"]:focus-visible,
+    input[type="email"]:focus-visible,
+    input[type="password"]:focus-visible,
+    input[type="text"]:not(:placeholder-shown),
+    input[type="email"]:not(:placeholder-shown),
+    input[type="password"]:not(:placeholder-shown) {
+      border-color:var(--accent);
+      background:rgba(83, 58, 253, 0.04);
+      box-shadow:0 0 0 3px rgba(83, 58, 253, 0.12);
+    }
+    input[type="text"]:not(:placeholder-shown):not(:focus),
+    input[type="email"]:not(:placeholder-shown):not(:focus),
+    input[type="password"]:not(:placeholder-shown):not(:focus) {
+      box-shadow:none;
+    }
+    input[type="text"].err,
+    input[type="email"].err,
+    input[type="password"].err { border-color:var(--err); box-shadow:none; background:var(--bg); }
 
     .submit {
       width:100%; padding:12px 16px; margin-top:6px;
-      background:var(--accent); color:#FFFFFF; border:1px solid transparent;
-      border-radius: var(--ra-radius-control, 4px);
+      background:var(--accent); color:#FFFFFF; border:1px solid var(--accent);
+      border-radius:4px;
       font-family:var(--font-body); font-size:0.9rem; font-weight:500;
       letter-spacing:-0.01em;
       cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
-      transition:background 0.15s ease;
+      transition:background 0.15s ease, border-color 0.15s ease;
       box-shadow:none;
     }
-    .submit:hover { background:var(--accent-h); }
+    .submit:hover, .submit:focus-visible { background:var(--accent-h); border-color:var(--accent-h); color:#FFFFFF; }
     .submit:disabled { opacity:0.45; cursor:not-allowed; }
     .submit .spin {
       width:15px; height:15px; border-radius:50%;
@@ -162,30 +185,58 @@
     }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    .divider { display:flex; align-items:center; gap:12px; margin:22px 0; }
-    .div-line { flex:1; height:1px; background:var(--border); }
-    .div-txt { font-size:0.73rem; color:var(--muted); }
-
-    .alt-btn {
-      display:block; width:100%; padding:12px; text-align:center;
-      background:var(--bg); border:1px solid var(--border);
-      border-radius: var(--ra-radius-control, 4px);
-      color:var(--main); font-family:var(--font-body);
-      font-size:0.88rem; font-weight:500; text-decoration:none;
-      transition:background 0.12s ease, border-color 0.12s ease;
+    .sso-stack { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+    .sso-btn {
+      width:100%; padding:11px 16px;
+      background:var(--bg); color:var(--main);
+      border:1px solid var(--border);
+      border-radius:4px;
+      font-family:var(--font-body); font-size:0.88rem; font-weight:500;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+      transition:border-color 0.18s, color 0.18s, background 0.18s;
     }
-    .alt-btn:hover,
-    .alt-btn:focus-visible {
-      background:var(--ra-mist, var(--hover));
-      border-color:var(--accent, var(--ra-blurple, #533AFD));
-      color:var(--accent, var(--ra-blurple, #533AFD));
-      outline:none;
+    .sso-btn:hover, .sso-btn:focus-visible {
+      border-color:var(--accent); color:var(--accent); background:var(--hover);
     }
+    .sso-btn svg { width:18px; height:18px; flex-shrink:0; }
+    .sso-btn svg:not(.g-icon) { fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+    .remember {
+      display:flex; align-items:center; gap:8px;
+      margin:2px 0 14px;
+      font-size:0.82rem; font-weight:400; color:var(--sub); cursor:pointer; user-select:none;
+    }
+    .remember input {
+      width:14px; height:14px; margin:0; flex-shrink:0;
+      accent-color:var(--accent);
+    }
+    .sso-panel { display:none; }
+    .sso-panel.is-open { display:block; }
+    .sso-kicker {
+      font-size:0.75rem; font-weight:500; color:var(--muted);
+      letter-spacing:-0.01em; margin-bottom:8px;
+    }
+    .sso-title {
+      font-family:var(--font-brand); font-size:1.4rem; font-weight:500;
+      letter-spacing:-0.025em; color:var(--main); margin-bottom:8px;
+    }
+    .sso-lead { font-size:0.85rem; color:var(--muted); margin-bottom:28px; line-height:1.55; }
+    .sso-back {
+      display:inline-flex; align-items:center; gap:6px;
+      margin-top:18px; background:none; border:none; padding:0;
+      font-family:inherit; font-size:0.84rem; color:var(--accent); cursor:pointer;
+    }
+    .sso-back:hover { color:var(--accent-h); }
+    .sso-back svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .sso-note {
+      display:none; margin-top:14px; padding:10px 12px;
+      border:1px solid var(--border); font-size:0.82rem; color:var(--sub); line-height:1.5;
+    }
+    .sso-note.is-on { display:block; }
 
-    .form-foot { margin-top:32px; padding-top:20px; border-top:1px solid var(--border); }
+    .form-foot { margin-top:28px; padding-top:22px; border-top:1px solid var(--border); }
     .form-foot p { font-size:0.73rem; color:var(--muted); line-height:1.6; }
-    .form-foot a { color:var(--sub); text-decoration:none; }
-    .form-foot a:hover { color:var(--main); }
+    .form-foot a { color:var(--accent); text-decoration:none; }
+    .form-foot a:hover { color:var(--accent-h); }
 
     .form-tabs {
       display:flex; gap:0; margin-bottom:26px;
@@ -232,25 +283,25 @@
   <!-- LEFT -->
   <div class="left">
     <h1>Welcome<br><em>back.</em></h1>
-    <p class="left-p">Access your AI governance assessments, download board-ready reports, and track your organisation's risk position over time.</p>
+    <p class="left-p">RegAnchor provides the structure, evidence, and controls required to deploy enterprise AI with confidence.</p>
 
     <div class="portal-list">
       <div class="pl-item">
         <div class="pl-icon">
-          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v5c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 10v5c0 1.657 4.03 3 9 3s9-1.343 9-3v-5"/></svg>
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
         </div>
         <div class="pl-text">
-          <h4>Assessment History</h4>
-          <p>All completed diagnostics saved and accessible from your dashboard.</p>
+          <h4>Live System Mapping</h4>
+          <p>Classify, track and manage all internal and third-party AI assets in real time.</p>
         </div>
       </div>
       <div class="pl-item">
         <div class="pl-icon">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
         </div>
         <div class="pl-text">
-          <h4>Download PDF Reports</h4>
-          <p>Regenerate and download your governance reports at any time.</p>
+          <h4>Risk &amp; Supervisory Control</h4>
+          <p>Execute policy checks and maintain a dynamic, audit-ready record of compliance.</p>
         </div>
       </div>
       <div class="pl-item">
@@ -258,8 +309,8 @@
           <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         </div>
         <div class="pl-text">
-          <h4>Secure &amp; Confidential</h4>
-          <p>Your assessment data is private to your account and never shared.</p>
+          <h4>Total Data Sovereignty</h4>
+          <p>Protect organisational data with tenant-isolated security and precise seat permissions.</p>
         </div>
       </div>
     </div>
@@ -269,20 +320,21 @@
   <div class="right">
     <div class="form-wrap">
 
+      <div id="auth-main">
       <!-- TABS -->
       <div class="form-tabs">
-        <button class="form-tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
-        <button class="form-tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+        <button class="form-tab active" id="tab-signin" onclick="switchTab('signin')">Sign in</button>
+        <button class="form-tab" id="tab-signup" onclick="switchTab('signup')">Create account</button>
       </div>
 
       <div class="err-box" id="errBox"></div>
       <div class="ok-box"  id="okBox"></div>
 
-      <!-- SIGN IN -->
-      <div id="form-signin">
+      <div class="auth-panels">
+      <div id="form-signin" class="auth-panel">
         <div class="field">
           <label for="signin-email">Work email</label>
-          <input type="email" id="signin-email" placeholder="you@organisation.com" autocomplete="email"/>
+          <input type="email" id="signin-email" placeholder="you@organisation.com" autocomplete="username"/>
         </div>
         <div class="field">
           <div class="field-row">
@@ -291,19 +343,36 @@
           </div>
           <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password"/>
         </div>
+        <label class="remember">
+          <input type="checkbox" id="signin-remember" checked>
+          Remember me on this device
+        </label>
         <button class="submit" id="signin-btn" onclick="signIn()">
           <span id="signin-txt">Sign in to Portal</span>
           <div class="spin" id="signin-spin"></div>
         </button>
+        <div class="sso-stack">
+          <button class="sso-btn" type="button" onclick="signInGoogle()">
+            <svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.79 2.73v2.27h2.9c1.7-1.56 2.69-3.87 2.69-6.64z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.27c-.81.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.34C2.44 15.98 5.48 18 9 18z"/><path fill="#FBBC05" d="M3.95 10.69A5.41 5.41 0 013.66 9c0-.59.1-1.16.29-1.69V4.97H.96A8.99 8.99 0 000 9c0 1.45.35 2.82.96 4.03l2.99-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.97l2.99 2.34C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+            Continue with Google
+          </button>
+          <button class="sso-btn" type="button" onclick="showSsoPanel()">
+            <svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="6" cy="6" r="2.2"/><circle cx="12" cy="6.5" r="1.8"/><path d="M2.2 14c.4-2.2 2-3.4 3.8-3.4S9.4 11.8 9.8 14"/><path d="M10.2 13.2c.35-1.5 1.5-2.3 2.8-2.3 1.5 0 2.6.9 2.9 2.5"/></svg>
+            Continue with SAML SSO
+          </button>
+        </div>
+        <div class="form-foot">
+          <p>By continuing you agree to our <a href="terms.html">Terms of Use</a>, <a href="privacy.html">Privacy Policy</a>, and <a href="security.html">Security</a> practices. This portal is for authorised professional use only.</p>
+        </div>
       </div>
 
       <!-- SIGN UP -->
-      <div id="form-signup" style="display:none">
+      <div id="form-signup" class="auth-panel is-hidden">
         <div class="field">
           <label for="signup-name">Full name</label>
           <input type="text" id="signup-name" placeholder="Jane Smith" autocomplete="name"/>
         </div>
-        <div class="field">
+        <div class="field" id="signup-org-wrap">
           <label for="signup-org">Organisation</label>
           <input type="text" id="signup-org" placeholder="Acme Ltd"/>
         </div>
@@ -316,21 +385,44 @@
           <input type="password" id="signup-password" placeholder="Minimum 8 characters" autocomplete="new-password"/>
         </div>
         <button class="submit" id="signup-btn" onclick="signUp()">
-          <span id="signup-txt">Create Account</span>
+          <span id="signup-txt">Create account</span>
           <div class="spin" id="signup-spin"></div>
         </button>
+        <div class="sso-stack">
+          <button class="sso-btn" type="button" onclick="signInGoogle()">
+            <svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.79 2.73v2.27h2.9c1.7-1.56 2.69-3.87 2.69-6.64z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.27c-.81.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.34C2.44 15.98 5.48 18 9 18z"/><path fill="#FBBC05" d="M3.95 10.69A5.41 5.41 0 013.66 9c0-.59.1-1.16.29-1.69V4.97H.96A8.99 8.99 0 000 9c0 1.45.35 2.82.96 4.03l2.99-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.97l2.99 2.34C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+            Continue with Google
+          </button>
+          <button class="sso-btn" type="button" onclick="showSsoPanel()">
+            <svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="6" cy="6" r="2.2"/><circle cx="12" cy="6.5" r="1.8"/><path d="M2.2 14c.4-2.2 2-3.4 3.8-3.4S9.4 11.8 9.8 14"/><path d="M10.2 13.2c.35-1.5 1.5-2.3 2.8-2.3 1.5 0 2.6.9 2.9 2.5"/></svg>
+            Continue with SAML SSO
+          </button>
+        </div>
+        <div class="form-foot">
+          <p>By continuing you agree to our <a href="terms.html">Terms of Use</a>, <a href="privacy.html">Privacy Policy</a>, and <a href="security.html">Security</a> practices. This portal is for authorised professional use only.</p>
+        </div>
+      </div>
+      </div>
       </div>
 
-      <div class="divider">
-        <div class="div-line"></div>
-        <span class="div-txt">or</span>
-        <div class="div-line"></div>
-      </div>
-
-      <a href="diagnostic.html" class="alt-btn">Start a New Diagnostic</a>
-
-      <div class="form-foot">
-        <p>By continuing you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>. This portal is for authorised professional use only.</p>
+      <div id="auth-sso" class="sso-panel">
+        <div class="sso-kicker">Single sign-on</div>
+        <div class="sso-title">Continue with SSO</div>
+        <p class="sso-lead">Enter your work email. We will route you to your organisation’s identity provider.</p>
+        <div class="err-box" id="ssoErr"></div>
+        <div class="field">
+          <label for="sso-email">Work email</label>
+          <input type="email" id="sso-email" placeholder="you@organisation.com" autocomplete="username"/>
+        </div>
+        <button class="submit" type="button" id="sso-btn" onclick="continueSaml()">Continue with SSO</button>
+        <div class="sso-note" id="ssoNote">SAML SSO for this organisation is not connected yet. Your administrator can enable it with RegAnchor. Until then, sign in with Google or email.</div>
+        <button class="sso-back" type="button" onclick="hideSsoPanel()">
+          <svg viewBox="0 0 14 14"><path d="M9 2L4 7l5 5"/></svg>
+          Back to standard login
+        </button>
+        <div class="form-foot">
+          <p>By continuing you agree to our <a href="terms.html">Terms of Use</a>, <a href="privacy.html">Privacy Policy</a>, and <a href="security.html">Security</a> practices. This portal is for authorised professional use only.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -340,25 +432,64 @@
 <script>
   const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  function makeClient(remember) {
+    return window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        persistSession: !!remember,
+        storage: remember ? window.localStorage : window.sessionStorage,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+  }
+  var remembered = localStorage.getItem('ra_remember') !== '0';
+  var sb = makeClient(remembered);
 
-  // Redirect if already logged in
-  sb.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.href = 'portal.html';
+  const params = new URLSearchParams(window.location.search);
+  var inviteToken = params.get('invite');
+  if (inviteToken) localStorage.setItem('ra_invite', inviteToken);
+
+  function portalUrl() {
+    var q = inviteToken ? ('?invite=' + encodeURIComponent(inviteToken)) : '';
+    return 'portal.html' + q;
+  }
+
+  sb.auth.getSession().then(function (r) {
+    if (r.data && r.data.session) postAuthRedirect();
   });
 
-  // Handle ?after=diagnostic or ?mode=register
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('mode') === 'register' || params.get('after') === 'diagnostic') {
+  (function restoreRemember() {
+    var box = document.getElementById('signin-remember');
+    if (box) box.checked = remembered;
+    var saved = localStorage.getItem('ra_email');
+    var emailEl = document.getElementById('signin-email');
+    if (saved && emailEl) emailEl.value = saved;
+  })();
+
+  function applyRemember() {
+    var box = document.getElementById('signin-remember');
+    var remember = !box || box.checked;
+    localStorage.setItem('ra_remember', remember ? '1' : '0');
+    var email = (document.getElementById('signin-email').value || '').trim();
+    if (remember && email) localStorage.setItem('ra_email', email);
+    else localStorage.removeItem('ra_email');
+    sb = makeClient(remember);
+  }
+
+  if (params.get('mode') === 'register' || params.get('after') === 'diagnostic' || inviteToken) {
     switchTab('signup');
     if (params.get('after') === 'diagnostic') {
       showOk('Your diagnostic is complete — create a free account to access your full report.');
+    } else if (inviteToken) {
+      showOk('You were invited to join an organisation. Sign in or create an account with the invited work email.');
+      var orgWrap = document.getElementById('signup-org-wrap');
+      if (orgWrap) orgWrap.style.display = 'none';
     }
   }
 
   function switchTab(tab) {
-    document.getElementById('form-signin').style.display = tab === 'signin' ? 'block' : 'none';
-    document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+    document.getElementById('form-signin').classList.toggle('is-hidden', tab !== 'signin');
+    document.getElementById('form-signup').classList.toggle('is-hidden', tab !== 'signup');
     document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
     document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
     hideErr(); hideOk();
@@ -382,7 +513,7 @@
     var txt  = document.getElementById(form + '-txt');
     var spin = document.getElementById(form + '-spin');
     btn.disabled = on;
-    txt.textContent = on ? (form === 'signin' ? 'Signing in...' : 'Creating account...') : (form === 'signin' ? 'Sign in to Portal' : 'Create Account');
+    txt.textContent = on ? (form === 'signin' ? 'Signing in...' : 'Creating account...') : (form === 'signin' ? 'Sign in to Portal' : 'Create account');
     spin.style.display = on ? 'block' : 'none';
   }
 
@@ -398,7 +529,48 @@
       window.location.href = 'pricing.html' + (q.length ? '?' + q.join('&') : '');
       return;
     }
-    window.location.href = 'portal.html';
+    window.location.href = portalUrl();
+  }
+
+  function showSsoPanel() {
+    hideErr(); hideOk();
+    var from = (document.getElementById('signin-email').value || document.getElementById('signup-email').value || '').trim();
+    document.getElementById('sso-email').value = from;
+    document.getElementById('auth-main').style.display = 'none';
+    document.getElementById('auth-sso').classList.add('is-open');
+    document.getElementById('ssoNote').classList.remove('is-on');
+    document.getElementById('ssoErr').style.display = 'none';
+    setTimeout(function () { document.getElementById('sso-email').focus(); }, 0);
+  }
+  function hideSsoPanel() {
+    document.getElementById('auth-sso').classList.remove('is-open');
+    document.getElementById('auth-main').style.display = 'block';
+    document.getElementById('ssoNote').classList.remove('is-on');
+  }
+  function continueSaml() {
+    var email = document.getElementById('sso-email').value.trim();
+    var err = document.getElementById('ssoErr');
+    var note = document.getElementById('ssoNote');
+    err.style.display = 'none';
+    if (!email || email.indexOf('@') < 1) {
+      err.textContent = 'Enter your work email to continue.';
+      err.style.display = 'block';
+      document.getElementById('sso-email').focus();
+      return;
+    }
+    note.classList.add('is-on');
+  }
+
+  async function signInGoogle() {
+    hideErr();
+    applyRemember();
+    if (inviteToken) localStorage.setItem('ra_invite', inviteToken);
+    var redirectTo = location.origin + location.pathname + (inviteToken ? ('?invite=' + encodeURIComponent(inviteToken)) : '');
+    var result = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: redirectTo }
+    });
+    if (result.error) showErr(result.error.message || 'Google sign-in is not enabled yet.');
   }
 
   async function signIn() {
@@ -406,6 +578,7 @@
     var email = document.getElementById('signin-email').value.trim();
     var pass  = document.getElementById('signin-password').value;
     if (!email || !pass) { showErr('Please enter your email and password.'); return; }
+    applyRemember();
     setLoading('signin', true);
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) {
@@ -448,16 +621,12 @@
 
   document.addEventListener('keydown', function(e) {
     if (e.key !== 'Enter') return;
-    const signinVisible = document.getElementById('form-signin').style.display !== 'none';
-    if (signinVisible) signIn(); else signUp();
-  });
-
-  // If already signed in (e.g. came from portal), skip the form and continue checkout.
-  sb.auth.getSession().then(function(r){
-    if(r.data&&r.data.session){
-      var p=new URLSearchParams(window.location.search);
-      if(p.get('redirect')==='pricing') postAuthRedirect();
+    if (document.getElementById('auth-sso').classList.contains('is-open')) {
+      continueSaml();
+      return;
     }
+    const signinVisible = !document.getElementById('form-signin').classList.contains('is-hidden');
+    if (signinVisible) signIn(); else signUp();
   });
 </script>
 </body>

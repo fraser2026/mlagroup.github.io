@@ -202,16 +202,30 @@ function applyRegistrySearch(){
   if(scroll)scroll.hidden=!!q&&shown===0;
   if(empty)empty.hidden=!(q&&shown===0);
 }
-function toggleRegSelect(id,on){
-  if(on)regSelected[id]=true;else delete regSelected[id];
-  syncRegBulkChrome();
-}
 function onRegCheckCell(ev,id){
   ev.stopPropagation();
   var input=ev.currentTarget.querySelector('.sys-check');
   if(!input)return;
   input.checked=!input.checked;
   toggleRegSelect(id,input.checked);
+}
+function toggleRegSelect(id,on){
+  if(on)regSelected[id]=true;else delete regSelected[id];
+  syncRegBulkChrome();
+}
+function onRegRowClick(ev,id){
+  if(ev.target.closest('.reg-row-more,.col-more,#reg-row-menu'))return;
+  if(regSelectMode){
+    ev.preventDefault();
+    ev.stopPropagation();
+    var row=ev.currentTarget;
+    var input=row&&row.querySelector('.sys-check');
+    if(!input)return;
+    input.checked=!input.checked;
+    toggleRegSelect(id,input.checked);
+    return;
+  }
+  openSystemDetail(id);
 }
 function toggleRegSelectAll(on){
   visibleRegistrySystems().forEach(function(s){
@@ -504,9 +518,76 @@ function toggleRegRowMenu(ev,id){
   positionRegRowMenu(btn);
 }
 function requestSystemAssessment(sysId){
+  var sys=allSystems.find(function(s){return s.id===sysId});
+  requestRegistryAssessments(sys?[sys]:[]);
+}
+function openQueuedAssessment(sysId){
   if(!sysId)return;
+  if(typeof rememberPortalReturn==='function')rememberPortalReturn();
   currentSystemId=sysId;
   window.location.href='assessment.html?system_id='+encodeURIComponent(sysId);
+}
+async function requestRegistryAssessments(systems){
+  if(!systems||!systems.length||!currentOrg||!currentUser)return;
+  var existing=await sb.from('registry_audit_log').select('action,entity_id,created_at').eq('org_id',currentOrg.id).in('action',['assessment_requested','assessment_submitted']).in('entity_id',systems.map(function(s){return s.id})).order('created_at',{ascending:false}).limit(200);
+  var latest={};
+  (existing.data||[]).forEach(function(entry){
+    if(!entry.entity_id||latest[entry.entity_id])return;
+    latest[entry.entity_id]=entry.action;
+  });
+  var rows=systems.filter(function(s){return latest[s.id]!=='assessment_requested'}).map(function(s){
+    return {
+      org_id:currentOrg.id,
+      user_id:currentUser.id,
+      action:'assessment_requested',
+      entity_type:'ai_system',
+      entity_id:s.id,
+      changes:{_actor_name:actorName(),_system_name:s.name}
+    };
+  });
+  if(rows.length){
+    var ins=await sb.from('registry_audit_log').insert(rows);
+    if(ins.error){
+      finishRegAction();
+      return;
+    }
+  }
+  finishRegAction();
+  if(typeof renderMyTasks==='function')renderMyTasks();
+  showAssessQueuedCard(systems, rows.length);
+}
+function showAssessQueuedCard(systems, added){
+  var modal=document.getElementById('assess-queued-modal');
+  var title=document.getElementById('assess-queued-title');
+  var copy=document.getElementById('assess-queued-copy');
+  if(!modal||!title||!copy)return;
+  var n=systems.length;
+  var name=n===1&&systems[0]?systems[0].name:'';
+  if(added){
+    title.textContent='Added to My Tasks';
+    copy.textContent=n===1
+      ? 'Assessment for '+name+' is on your dashboard under My Tasks.'
+      : n+' assessment requests were added to My Tasks.';
+  }else{
+    title.textContent='Already in My Tasks';
+    copy.textContent=n===1
+      ? 'Assessment for '+name+' is already on your dashboard under My Tasks.'
+      : 'These assessment requests are already in My Tasks.';
+  }
+  modal.classList.add('open');
+}
+function closeAssessQueuedCard(){
+  var modal=document.getElementById('assess-queued-modal');
+  if(modal)modal.classList.remove('open');
+}
+function openMyTasksFromQueue(){
+  closeAssessQueuedCard();
+  var nav=document.getElementById('nav-dashboard');
+  if(typeof navigate==='function')navigate('dashboard', nav);
+  setTimeout(function(){
+    var panel=document.getElementById('my-tasks-panel');
+    if(panel)panel.scrollIntoView({behavior:'smooth',block:'start'});
+  }, 80);
 }
 function actionTargets(){
   if(regRowMenuId){
@@ -564,8 +645,12 @@ async function applyRegSystemPatch(targets,patch){
   var result=await sb.from('ai_systems').update(patch).in('id',ids).eq('org_id',currentOrg.id);
   if(result.error)return false;
   var now=new Date().toISOString();
-  var logs=ids.map(function(id){
-    return {org_id:currentOrg.id,user_id:currentUser.id,action:'system_updated',entity_type:'ai_system',entity_id:id,changes:{_actor_name:actorName()}};
+  var logs=targets.map(function(s){
+    var changes={_actor_name:actorName(),_system_name:s.name};
+    Object.keys(patch).forEach(function(k){
+      changes[k]={old:s[k]==null?'':s[k],new:patch[k]};
+    });
+    return {org_id:currentOrg.id,user_id:currentUser.id,action:'system_updated',entity_type:'ai_system',entity_id:s.id,changes:changes};
   });
   await sb.from('registry_audit_log').insert(logs);
   allSystems.forEach(function(s){
@@ -612,16 +697,17 @@ function runRegRowAction(action){
   var sys=allSystems.find(function(s){return s.id===regRowMenuId});
   if(!sys){closeRegRowMenu();return}
   if(action==='export'){closeRegRowMenu();exportRegistrySystems([sys]);return}
-  if(action==='assess'){closeRegRowMenu();requestSystemAssessment(sys.id);return}
+  if(typeof canWriteRegistry==='function'&&!canWriteRegistry()){closeRegRowMenu();return}
+  if(action==='assess'){closeRegRowMenu();requestRegistryAssessments([sys]);return}
   if(action==='status'||action==='owner'||action==='retire'){showRegMenuPanel(action);return}
 }
 function runRegBulk(action){
   var selected=selectedRegistrySystems();
   if(!selected.length)return;
+  if(action!=='export'&&typeof canWriteRegistry==='function'&&!canWriteRegistry())return;
   if(action==='export'){exportSelectedSystems();return}
   if(action==='assess'){
-    if(selected.length===1){requestSystemAssessment(selected[0].id);return}
-    closeRegBulk();
+    requestRegistryAssessments(selected);
     return;
   }
   if(action==='status'||action==='owner'||action==='retire'){showRegMenuPanel(action);return}
@@ -642,7 +728,7 @@ function renderSystemTable(opts){
     var tier=sys.risk_tier||'none';
     var score=systemMaturityScore(sys);
     var on=!!regSelected[sys.id];
-    return '<tr data-haystack="'+esc(systemSearchHaystack(sys))+'" onclick="openSystemDetail(\''+sys.id+'\')">'+
+    return '<tr data-haystack="'+esc(systemSearchHaystack(sys))+'" onclick="onRegRowClick(event,\''+sys.id+'\')">'+
       '<td class="col-check" onclick="onRegCheckCell(event,\''+sys.id+'\')"><input class="sys-check" type="checkbox" aria-label="Select '+esc(sys.name)+'"'+(on?' checked':'')+' onchange="toggleRegSelect(\''+sys.id+'\',this.checked)"></td>'+
       '<td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td>'+
       '<td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td>'+
@@ -723,7 +809,7 @@ async function openSystemDetail(sysId){
   // Audit with names
   const logs=auditLog||[];
   if(!logs.length)document.getElementById('tab-audit').innerHTML='<div class="empty-state" style="padding:28px 0;"><h4>No audit entries</h4><p>Entries are created automatically on system changes.</p></div>';
-  else{const nm=await loadNames(logs.map(e=>e.user_id));document.getElementById('tab-audit').innerHTML='<div class="audit-timeline">'+logs.map((entry,i)=>{const a=fmtAudit(entry,nm);return '<div class="audit-item"><div class="audit-line"><div class="audit-node"></div>'+(i<logs.length-1?'<div class="audit-connector"></div>':'')+'</div><div class="audit-content"><div class="audit-action">'+a.text+'</div><div class="audit-meta">'+esc(a.who)+' · '+a.time+'</div></div></div>'}).join('')+'</div>'}
+    else{const nm=await loadNames(logs.map(e=>e.user_id));document.getElementById('tab-audit').innerHTML='<div class="audit-timeline">'+logs.map((entry,i)=>{const a=fmtAudit(entry,nm,{omitSystemName:true});return '<div class="audit-item"><div class="audit-line"><div class="audit-node"></div>'+(i<logs.length-1?'<div class="audit-connector"></div>':'')+'</div><div class="audit-content"><div class="audit-action">'+a.text+'</div><div class="audit-meta">'+esc(a.who)+' · '+a.time+'</div></div></div>'}).join('')+'</div>'}
   // Reset tabs
   document.querySelectorAll('#view-registry-detail .tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('#view-registry-detail .tab-btn')[0].classList.add('active');
   document.querySelectorAll('#view-registry-detail .tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-overview').classList.add('active');
@@ -784,6 +870,7 @@ async function renderSystemControlsTab(sysId){
 // Assessment modal → now redirects to assessment.html
 function openAssessmentModal(){
   if(!currentSystemId)return;
+  if(typeof rememberPortalReturn==='function')rememberPortalReturn();
   window.location.href='assessment.html?system_id='+currentSystemId;
 }
 function closeAssessmentModal(){}
@@ -909,7 +996,7 @@ function switchDetailTab(id,btn){
 }
  
 // ═══ ADD/EDIT SYSTEM ══════════════════════════════════════════
-function openAddSystem(){var orgPlan=currentOrg?currentOrg.plan:'free';var sysLimit=(orgPlan==='professional')?999:1;if(allSystems.length>=sysLimit){var sysMsg='';if(orgPlan==='essentials')sysMsg='You have reached your Essentials plan limit of 1 AI system. Upgrade for unlimited systems, multi-user access, and more.';else if(orgPlan==='professional')sysMsg='Need more from your governance platform? Enterprise includes unlimited users, dedicated advisory, and more.';else sysMsg='You have reached your free plan limit of 1 AI system. Subscribe to unlock more systems, governance certification, and more.';openUpgradeModal(sysMsg);return}document.getElementById('sysmod-id').value='';document.getElementById('sysmod-title').textContent='Register AI System';document.getElementById('sysmod-sub').textContent='Add a new system to the governance registry';document.getElementById('sysmod-submit').innerHTML='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg> Register System';clearSystemForm();document.getElementById('system-modal').classList.add('open')}
+function openAddSystem(){if(typeof canWriteRegistry==='function'&&!canWriteRegistry())return;var orgPlan=currentOrg?currentOrg.plan:'free';var sysLimit=(orgPlan==='professional')?999:1;if(allSystems.length>=sysLimit){var sysMsg='';if(orgPlan==='essentials')sysMsg='You have reached your Essentials plan limit of 1 AI system. Upgrade for unlimited systems, multi-user access, and more.';else if(orgPlan==='professional')sysMsg='Need more from your governance platform? Enterprise includes unlimited users, dedicated advisory, and more.';else sysMsg='You have reached your free plan limit of 1 AI system. Subscribe to unlock more systems, governance certification, and more.';openUpgradeModal(sysMsg);return}document.getElementById('sysmod-id').value='';document.getElementById('sysmod-title').textContent='Register AI System';document.getElementById('sysmod-sub').textContent='Add a new system to the governance registry';document.getElementById('sysmod-submit').innerHTML='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg> Register System';clearSystemForm();document.getElementById('system-modal').classList.add('open')}
 function openEditSystem(){const sys=allSystems.find(s=>s.id===currentSystemId);if(!sys)return;document.getElementById('sysmod-id').value=sys.id;document.getElementById('sysmod-title').textContent='Edit System';document.getElementById('sysmod-sub').textContent=sys.name;document.getElementById('sysmod-submit').innerHTML='Save Changes';document.getElementById('sysmod-name').value=sys.name||'';document.getElementById('sysmod-desc').value=sys.description||'';document.getElementById('sysmod-vendor').value=sys.vendor||'';document.getElementById('sysmod-type').value=sys.system_type||'';document.getElementById('sysmod-purpose').value=sys.purpose_category||'';document.getElementById('sysmod-tier').value=sys.risk_tier||'';document.getElementById('sysmod-status').value=sys.deployment_status||'planned';document.getElementById('sysmod-rationale').value=sys.risk_tier_rationale||'';document.getElementById('sysmod-owner').value=sys.system_owner||'';document.getElementById('sysmod-dept').value=sys.department||'';document.getElementById('sysmod-notes').value=sys.notes||'';onPurposeChange();document.getElementById('system-modal').classList.add('open')}
 function clearSystemForm(){['sysmod-name','sysmod-desc','sysmod-vendor','sysmod-rationale','sysmod-owner','sysmod-dept','sysmod-notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('sysmod-type').value='';document.getElementById('sysmod-purpose').value='';document.getElementById('sysmod-tier').value='';document.getElementById('sysmod-status').value='planned';document.getElementById('sysmod-tier-hint').style.display='none';document.getElementById('sysmod-rationale-wrap').style.display='none';document.getElementById('sysmod-error').style.display='none'}
 function closeSystemModal(){document.getElementById('system-modal').classList.remove('open')}
@@ -923,7 +1010,16 @@ async function submitSystem(){
   const payload={org_id:currentOrg.id,name,description:document.getElementById('sysmod-desc').value.trim()||null,vendor:document.getElementById('sysmod-vendor').value.trim()||null,system_type:document.getElementById('sysmod-type').value||null,purpose_category:document.getElementById('sysmod-purpose').value||null,risk_tier:document.getElementById('sysmod-tier').value||null,risk_tier_rationale:document.getElementById('sysmod-rationale').value.trim()||null,risk_tier_set_by:document.getElementById('sysmod-tier').value?currentUser.id:null,deployment_status:document.getElementById('sysmod-status').value,system_owner:owner,department:document.getElementById('sysmod-dept').value.trim()||null,notes:document.getElementById('sysmod-notes').value.trim()||null};
   const editId=document.getElementById('sysmod-id').value;
   if(!editId){var sysLimit=1;var orgPlan=currentOrg?currentOrg.plan:'free';if(orgPlan==='professional')sysLimit=999;if(allSystems.length>=sysLimit){errEl.textContent='Your '+(orgPlan||'free')+' plan allows '+(sysLimit>=999?'unlimited':sysLimit)+' AI system'+(sysLimit!==1?'s':'')+'. Upgrade to Professional for unlimited systems.';errEl.style.display='block';btn.innerHTML=origH;btn.disabled=false;return}}
-  try{if(editId){const{error}=await sb.from('ai_systems').update(payload).eq('id',editId);if(error)throw error;await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'system_updated',entity_type:'ai_system',entity_id:editId,changes:{_actor_name:actorName()}})}
+  try{if(editId){const{error}=await sb.from('ai_systems').update(payload).eq('id',editId);if(error)throw error;
+      var prev=allSystems.find(function(s){return s.id===editId})||{};
+      var changes={_actor_name:actorName(),_system_name:payload.name||prev.name};
+      Object.keys(payload).forEach(function(k){
+        if(k==='org_id'||k==='created_by'||k==='risk_tier_set_by')return;
+        var oldVal=prev[k]==null?'':prev[k];
+        var newVal=payload[k]==null?'':payload[k];
+        if(String(oldVal)!==String(newVal))changes[k]={old:oldVal,new:newVal};
+      });
+      await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'system_updated',entity_type:'ai_system',entity_id:editId,changes:changes})}
     else{payload.created_by=currentUser.id;const{error}=await sb.from('ai_systems').insert(payload);if(error)throw error}
     closeSystemModal();await loadSystems();if(editId)openSystemDetail(editId);
   }catch(err){errEl.textContent='Error: '+err.message;errEl.style.display='block'}finally{btn.innerHTML=origH;btn.disabled=false}}
@@ -933,7 +1029,8 @@ document.addEventListener('click',function(e){
   var onCheck=e.target.closest('.sys-table .col-check');
   var onRowMenu=e.target.closest('#reg-row-menu');
   var onMore=e.target.closest('.reg-row-more');
-  if(regSelectMode&&!onBulk&&!onCheck&&!onRowMenu&&!onMore)setRegSelectMode(false);
+  var onTable=e.target.closest('#reg-table-wrap,.sys-table');
+  if(regSelectMode&&!onBulk&&!onCheck&&!onTable&&!onRowMenu&&!onMore)setRegSelectMode(false);
   if(!onRowMenu&&!onMore)closeRegRowMenu();
 },true);
 document.addEventListener('keydown',function(e){
