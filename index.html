@@ -686,20 +686,9 @@
     h2 em { font-style:normal; font-weight:400; color:var(--muted); }
     .section-sub { font-size:1rem; font-weight:400; color:var(--sub); line-height:1.75; max-width:520px; }
 
-    /* ── FEATURES (pinned heading + stacked deck) ── */
-    #features {
-      --feat-pin-head: 96px;
-      --feat-pin-card: 96px;
-      --feat-runway: min(28vh, 240px);
-    }
+    /* ── FEATURES (disclosure ledger) ── */
     .feat-layout { display:grid; grid-template-columns:1fr 1fr; gap:72px; align-items:start; }
-    .feat-sticky {
-      position:sticky;
-      top: var(--feat-pin-head);
-      z-index: 20;
-      align-self: start;
-      background: var(--bg);
-    }
+    .feat-sticky { align-self: start; }
     .feat-sticky h2 { margin-bottom:18px; }
     .feat-sticky p { margin-bottom:0; }
     .feat-cta {
@@ -719,67 +708,150 @@
     .feat-cta:hover::after,
     .feat-cta:focus-visible::after,
     .feat-cta:active::after { transform:translateX(3px); }
-    .feat-list {
-      display:flex;
-      flex-direction:column;
-      position: relative;
-      z-index: 1;
-    }
-    .feat-item {
-      position: sticky;
-      top: var(--feat-pin-card);
-      z-index: 1;
-      margin-bottom: var(--feat-runway);
-    }
-    .feat-item:nth-child(1) { z-index: 1; }
-    .feat-item:nth-child(2) { z-index: 2; }
-    .feat-item:nth-child(3) { z-index: 3; }
-    .feat-item:nth-child(4) { z-index: 4; }
-    .feat-item:nth-child(5) { z-index: 5; }
-    .feat-item:last-child { margin-bottom: min(8vh, 64px); }
-    .feat-item__face {
-      display:flex; gap:18px;
-      padding: 24px;
-      min-height: 168px;
-      position: relative;
-      background: var(--bg);
+    .feat-accordion {
       border: 1px solid var(--border);
       border-radius: 4px;
-      box-shadow: 0 1px 2px rgba(6, 27, 49, 0.04);
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .feat-row {
+      border-bottom: 1px solid var(--border);
+    }
+    .feat-row:last-child { border-bottom: none; }
+    .feat-row__trigger {
+      display: flex;
+      align-items: stretch;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      transition: background 0.15s ease;
+    }
+    .feat-row__trigger:hover,
+    .feat-row__trigger:focus-visible {
+      background: var(--hover);
+    }
+    .feat-row__trigger:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    .feat-row.is-open > .feat-row__trigger {
+      background: var(--hover);
+    }
+    .feat-row__lead {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      align-items: stretch;
+    }
+    .feat-row__meter {
+      width: 2px;
+      flex-shrink: 0;
+      background: transparent;
+      transform: scaleY(0);
       transform-origin: top center;
-      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease, box-shadow 0.35s ease;
+      transition:
+        background 0.22s ease,
+        transform 0.42s cubic-bezier(0.34, 1.45, 0.64, 1);
     }
-    .feat-item.is-behind .feat-item__face {
-      transform: scale(0.95) translateY(-8px);
-      opacity: 0.55;
-      box-shadow: none;
+    .feat-row.is-open .feat-row__meter {
+      background: var(--accent);
+      transform: scaleY(1);
     }
-    .feat-item:hover .feat-icon {
-      border-color: rgba(83,58,253,0.4);
-      background: rgba(83,58,253,0.12);
+    .feat-row__head {
+      flex: 1;
+      min-width: 0;
+      padding: 18px 16px 18px 18px;
     }
-    .feat-icon {
-      width:36px; height:36px; min-width:36px;
-      border:1px solid rgba(83,58,253,0.22);
-      background: rgba(83,58,253,0.06);
-      border-radius: 4px;
-      display:flex; align-items:center; justify-content:center;
-      transition: border-color 0.15s, background 0.15s;
+    .feat-row__title {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--main);
+      letter-spacing: -0.01em;
+      line-height: 1.35;
+      transition: color 0.15s ease;
     }
-    .feat-icon svg { width:16px; height:16px; stroke:var(--accent); fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
-    .feat-title { font-size:0.92rem; font-weight:600; color:var(--main); margin-bottom:6px; }
-    .feat-p { font-size:0.82rem; color:var(--sub); line-height:1.7; margin:0; }
+    .feat-row__trigger:hover .feat-row__title,
+    .feat-row__trigger:focus-visible .feat-row__title,
+    .feat-row.is-open .feat-row__title {
+      color: var(--accent);
+    }
+    .feat-row__teaser {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: var(--muted);
+      line-height: 1.45;
+      transition: opacity 0.2s ease, max-height 0.32s ease, margin 0.32s ease;
+      max-height: 3em;
+      overflow: hidden;
+    }
+    .feat-row.is-open .feat-row__teaser {
+      opacity: 0;
+      max-height: 0;
+      margin-top: 0;
+    }
+    .feat-row__chev {
+      display: flex;
+      align-items: flex-start;
+      flex-shrink: 0;
+      padding: 20px 20px 0 8px;
+      color: var(--muted);
+      transition: color 0.15s ease;
+    }
+    .feat-row__trigger:hover .feat-row__chev,
+    .feat-row__trigger:focus-visible .feat-row__chev,
+    .feat-row.is-open .feat-row__chev {
+      color: var(--accent);
+    }
+    .feat-row__chev-icon {
+      display: block;
+      transition: transform 0.42s cubic-bezier(0.34, 1.45, 0.64, 1);
+    }
+    .feat-row__trigger:hover .feat-row__chev-icon {
+      transform: translateY(2px);
+    }
+    .feat-row.is-open .feat-row__chev-icon {
+      transform: rotate(180deg);
+    }
+    .feat-row.is-open .feat-row__trigger:hover .feat-row__chev-icon {
+      transform: rotate(180deg) translateY(-2px);
+    }
+    .feat-row__panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.42s cubic-bezier(0.34, 1.15, 0.64, 1);
+    }
+    .feat-row.is-open .feat-row__panel {
+      grid-template-rows: 1fr;
+    }
+    .feat-row__panel-inner {
+      overflow: hidden;
+    }
+    .feat-row__body {
+      margin: 0;
+      padding: 2px 20px 20px 20px;
+      font-size: 0.82rem;
+      color: var(--sub);
+      line-height: 1.75;
+    }
     @media (prefers-reduced-motion: reduce) {
-      #features .feat-item { position: static; margin-bottom: 12px; }
-      #features .feat-item:last-child { margin-bottom: 0; }
-      #features .feat-item__face {
-        transform: none !important;
-        opacity: 1 !important;
-        min-height: 0;
-        transition: none;
-        box-shadow: 0 1px 2px rgba(6, 27, 49, 0.04) !important;
+      .feat-row__meter,
+      .feat-row__chev-icon,
+      .feat-row__panel,
+      .feat-row__teaser {
+        transition: none !important;
       }
-      #features .feat-item__face::after { display: none; }
+      .feat-row.is-open .feat-row__chev-icon {
+        transform: rotate(180deg);
+      }
     }
 
     /* ── ENFORCEMENT (FINES CHART) ── */
@@ -995,71 +1067,10 @@
     /* ── RESPONSIVE ── */
     @media (max-width:1024px) {
       .nav-centre { display:none; }
-      #features {
-        --feat-pin-head: 64px;
-        --feat-pin-card: 280px;
-        --feat-runway: 0px;
-        --feat-stack-step: 78px;
-      }
-      .feat-layout { grid-template-columns:1fr; gap:20px; }
-      .feat-sticky {
-        background: var(--bg);
-        padding-top: 12px;
-        padding-bottom: 24px;
-        box-shadow: none;
-      }
-      /* Full-bleed paper behind the sticky intro — seals cards at the sides */
-      .feat-sticky::before,
-      .feat-sticky::after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        translate: -50% 0;
-        width: 100vw;
-        background: var(--bg);
-        pointer-events: none;
-      }
-      .feat-sticky::before {
-        bottom: 100%;
-        height: 96px;
-      }
-      .feat-sticky::after {
-        top: 0;
-        bottom: 0;
-        z-index: -1;
-      }
-      .feat-list {
-        align-items: stretch;
-        padding-bottom: min(36vh, 280px);
-      }
-      .feat-stack-spacer {
-        height: min(36vh, 280px);
-        flex-shrink: 0;
-        pointer-events: none;
-      }
-      .feat-item {
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .feat-item__face {
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .feat-item:last-child { margin-bottom: 0; }
-      /* Stepped sticky pins — each card peeks above the next (Stripe-style) */
-      .feat-item:nth-child(1) { top: var(--feat-pin-card); }
-      .feat-item:nth-child(2) { top: calc(var(--feat-pin-card) + var(--feat-stack-step)); }
-      .feat-item:nth-child(3) { top: calc(var(--feat-pin-card) + (2 * var(--feat-stack-step))); }
-      .feat-item:nth-child(4) { top: calc(var(--feat-pin-card) + (3 * var(--feat-stack-step))); }
-      .feat-item:nth-child(5) { top: calc(var(--feat-pin-card) + (4 * var(--feat-stack-step))); }
-      .feat-item__face { min-height: 0; }
-      /* Peek comes from stepped sticky tops + z-index — keep full card height in flow */
-      .feat-item.is-behind .feat-item__face {
-        box-shadow: none;
-        transform: none;
-        opacity: 1;
-      }
-      .feat-item:not(.is-behind) .feat-item__face { box-shadow: none; }
+      .feat-layout { grid-template-columns:1fr; gap:28px; }
+      .feat-row__head { padding: 16px 12px 16px 16px; }
+      .feat-row__body { padding: 2px 16px 18px 16px; }
+      .feat-row__chev { padding: 18px 16px 0 4px; }
       .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:56px 32px 28px; }
       .fines-band__top { grid-template-columns:1fr; gap:28px; }
       .system-head {
@@ -1338,55 +1349,104 @@
     <div class="feat-layout">
       <div class="feat-sticky">
         <h2 class="fade">Built to withstand<br><em>scrutiny.</em></h2>
-        <p class="section-sub fade">Every element of the platform is designed for organisations operating under active UK and EU regulatory oversight, from assessment logic through to reporting.</p>
+        <p class="section-sub fade">Built for organisations operating under active UK and EU regulatory oversight, with capability from system inventory through controls, evidence and maturity reporting.</p>
       </div>
-      <div class="feat-list">
-        <div class="feat-item">
-          <div class="feat-item__face">
-            <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M3 21h18"/><circle cx="8" cy="14" r="3"/><circle cx="16" cy="14" r="3"/></svg></div>
-            <div class="feat-body">
-              <div class="feat-title">Precise Regulatory Mapping</div>
-              <p class="feat-p">Every finding consistently references its specific regulatory backing, such as EU AI Act Article 14 on human oversight, linking directly to the relevant article, ICO guidance paragraph, or FCA expectation.</p>
+      <div class="feat-accordion fade" role="presentation">
+        <div class="feat-row is-open">
+          <button type="button" class="feat-row__trigger" id="feat-trigger-1" aria-expanded="true" aria-controls="feat-panel-1">
+            <span class="feat-row__lead">
+              <span class="feat-row__meter" aria-hidden="true"></span>
+              <span class="feat-row__head">
+                <span class="feat-row__title">Precise Regulatory Mapping</span>
+                <span class="feat-row__teaser">Every finding tied to article, guidance, or FCA expectation</span>
+              </span>
+            </span>
+            <span class="feat-row__chev" aria-hidden="true">
+              <svg class="feat-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
+          <div class="feat-row__panel" id="feat-panel-1" role="region" aria-labelledby="feat-trigger-1">
+            <div class="feat-row__panel-inner">
+              <p class="feat-row__body">Every finding consistently references its specific regulatory backing, such as EU AI Act Article 14 on human oversight, linking directly to the relevant article, ICO guidance paragraph, or FCA expectation.</p>
             </div>
           </div>
         </div>
-        <div class="feat-item">
-          <div class="feat-item__face">
-            <div class="feat-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v5c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 10v5c0 1.657 4.03 3 9 3s9-1.343 9-3v-5"/></svg></div>
-            <div class="feat-body">
-              <div class="feat-title">Sector Exposure Adjustment</div>
-              <p class="feat-p">Your maturity score is adjusted by a sector-specific multiplier, so a financial services deployment and a public sector one are held to different baselines.</p>
+        <div class="feat-row">
+          <button type="button" class="feat-row__trigger" id="feat-trigger-2" aria-expanded="false" aria-controls="feat-panel-2">
+            <span class="feat-row__lead">
+              <span class="feat-row__meter" aria-hidden="true"></span>
+              <span class="feat-row__head">
+                <span class="feat-row__title">Sector Exposure Adjustment</span>
+                <span class="feat-row__teaser">Maturity scores adjusted by sector-specific multiplier</span>
+              </span>
+            </span>
+            <span class="feat-row__chev" aria-hidden="true">
+              <svg class="feat-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
+          <div class="feat-row__panel" id="feat-panel-2" role="region" aria-labelledby="feat-trigger-2" hidden>
+            <div class="feat-row__panel-inner">
+              <p class="feat-row__body">Your maturity score is adjusted by a sector-specific multiplier, so a financial services deployment and a public sector one are held to different baselines.</p>
             </div>
           </div>
         </div>
-        <div class="feat-item">
-          <div class="feat-item__face">
-            <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6l-8-4z"/></svg></div>
-            <div class="feat-body">
-              <div class="feat-title">EU AI Act Annex III Detection</div>
-              <p class="feat-p">Automatic identification of high-risk AI categories under Annex III, providing conformity assessment flags and Article 14 human oversight obligations mapped directly from your responses.</p>
+        <div class="feat-row">
+          <button type="button" class="feat-row__trigger" id="feat-trigger-3" aria-expanded="false" aria-controls="feat-panel-3">
+            <span class="feat-row__lead">
+              <span class="feat-row__meter" aria-hidden="true"></span>
+              <span class="feat-row__head">
+                <span class="feat-row__title">EU AI Act Annex III Detection</span>
+                <span class="feat-row__teaser">High-risk categories and conformity flags from your responses</span>
+              </span>
+            </span>
+            <span class="feat-row__chev" aria-hidden="true">
+              <svg class="feat-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
+          <div class="feat-row__panel" id="feat-panel-3" role="region" aria-labelledby="feat-trigger-3" hidden>
+            <div class="feat-row__panel-inner">
+              <p class="feat-row__body">Automatic identification of high-risk AI categories under Annex III, providing conformity assessment flags and Article 14 human oversight obligations mapped directly from your responses.</p>
             </div>
           </div>
         </div>
-        <div class="feat-item">
-          <div class="feat-item__face">
-            <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
-            <div class="feat-body">
-              <div class="feat-title">Board and Auditor-Ready Output</div>
-              <p class="feat-p">Designed for professional audiences, the generated report includes an executive summary, risk band narrative, domain-by-domain findings, prioritised recommendations, and a regulatory framework appendix.</p>
+        <div class="feat-row">
+          <button type="button" class="feat-row__trigger" id="feat-trigger-4" aria-expanded="false" aria-controls="feat-panel-4">
+            <span class="feat-row__lead">
+              <span class="feat-row__meter" aria-hidden="true"></span>
+              <span class="feat-row__head">
+                <span class="feat-row__title">Board and Audit Ready Output</span>
+                <span class="feat-row__teaser">Exportable governance documentation for board and audit audiences</span>
+              </span>
+            </span>
+            <span class="feat-row__chev" aria-hidden="true">
+              <svg class="feat-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
+          <div class="feat-row__panel" id="feat-panel-4" role="region" aria-labelledby="feat-trigger-4" hidden>
+            <div class="feat-row__panel-inner">
+              <p class="feat-row__body">Designed for board, audit and regulatory audiences. Reports include an executive summary, risk band narrative, findings by domain, prioritised recommendations, a regulatory framework appendix, and ongoing governance reporting across your AI estate.</p>
             </div>
           </div>
         </div>
-        <div class="feat-item">
-          <div class="feat-item__face">
-            <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-            <div class="feat-body">
-              <div class="feat-title">Secure Client Portal</div>
-              <p class="feat-p">Every AI system, control, and certificate lives in your organisation’s private account, not ours to share. Come back any time to check status, pull a report, or see how your posture has moved since the last review.</p>
+        <div class="feat-row">
+          <button type="button" class="feat-row__trigger" id="feat-trigger-5" aria-expanded="false" aria-controls="feat-panel-5">
+            <span class="feat-row__lead">
+              <span class="feat-row__meter" aria-hidden="true"></span>
+              <span class="feat-row__head">
+                <span class="feat-row__title">Central Governance Environment</span>
+                <span class="feat-row__teaser">Registry, controls, evidence and accountability in one organisation wide environment</span>
+              </span>
+            </span>
+            <span class="feat-row__chev" aria-hidden="true">
+              <svg class="feat-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </button>
+          <div class="feat-row__panel" id="feat-panel-5" role="region" aria-labelledby="feat-trigger-5" hidden>
+            <div class="feat-row__panel-inner">
+              <p class="feat-row__body">Your organisation’s AI systems, assessments, governance controls, evidence, audit history and maturity reporting are maintained in one continuous environment. Teams work from a central inventory with clear ownership, assigned actions and a governance record that stands up to board scrutiny, internal audit and regulatory oversight.</p>
             </div>
           </div>
         </div>
-        <div class="feat-stack-spacer" aria-hidden="true"></div>
       </div>
     </div>
   </div>
@@ -1405,7 +1465,7 @@
         <a href="diagnostic.html" class="entry-cta">Start Assessment</a>
       </div>
       <div class="entry-card fade">
-        <div class="entry-name">Full Report</div>
+        <div class="entry-name">Full Risk Report</div>
         <p class="entry-desc">Complete regulatory analysis and workspace.</p>
         <p class="entry-note">One-time fee.</p>
         <a href="diagnostic.html" class="entry-cta">Get Full Report</a>
@@ -1454,9 +1514,8 @@
     <div class="f-col">
       <h4>Product</h4>
       <ul>
-        <li><a href="contact.html">Platform</a></li>
         <li><a href="diagnostic.html">Risk Diagnostic</a></li>
-        <li><a href="login.html">Client Portal</a></li>
+        <li><a href="login.html">Platform</a></li>
         <li><a href="pricing.html">Pricing</a></li>
         <li><a href="verify.html">Verify Certificate</a></li>
         <li><a href="methodology.html">Methodology</a></li>
@@ -1522,68 +1581,50 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // Feature deck: pure CSS sticky stack (Stripe-style). JS only sets pin offset
-  // and toggles is-behind for the clipped peek on covered cards.
+  // Features disclosure ledger — one row open at a time
   (function () {
-    const section = document.getElementById('features');
-    if (!section) return;
-    const head = section.querySelector('.feat-sticky');
-    const items = Array.prototype.slice.call(section.querySelectorAll('.feat-item'));
-    if (!head || !items.length) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const compact = window.matchMedia('(max-width: 1024px)');
-    const NAV = 64;
+    const accordion = document.querySelector('.feat-accordion');
+    if (!accordion) return;
+    const rows = Array.prototype.slice.call(accordion.querySelectorAll('.feat-row'));
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    function pinVars() {
-      if (!compact.matches) {
-        section.style.setProperty('--feat-pin-head', '96px');
-        section.style.setProperty('--feat-pin-card', '96px');
+    function closeRow(row, instant) {
+      const panel = row.querySelector('.feat-row__panel');
+      const trigger = row.querySelector('.feat-row__trigger');
+      if (!row.classList.contains('is-open')) return;
+      row.classList.remove('is-open');
+      trigger.setAttribute('aria-expanded', 'false');
+      if (instant || reduce) {
+        panel.hidden = true;
         return;
       }
-      section.style.setProperty('--feat-pin-head', NAV + 'px');
-      section.style.setProperty('--feat-pin-card', (NAV + head.offsetHeight) + 'px');
+      function onEnd(e) {
+        if (e.propertyName !== 'grid-template-rows') return;
+        panel.hidden = true;
+        panel.removeEventListener('transitionend', onEnd);
+      }
+      panel.addEventListener('transitionend', onEnd);
     }
 
-    function stack() {
-      if (reduce.matches) {
-        items.forEach(function (el) { el.classList.remove('is-behind'); });
-        return;
-      }
-      items.forEach(function (item, i) {
-        const next = items[i + 1];
-        if (!next) {
-          item.classList.remove('is-behind');
-          return;
-        }
-        const a = item.getBoundingClientRect();
-        const b = next.getBoundingClientRect();
-        item.classList.toggle('is-behind', b.top <= a.top + 12);
+    function openRow(row) {
+      rows.forEach(function (r) {
+        if (r !== row) closeRow(r, reduce);
       });
-    }
-
-    let ticking = false;
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
+      const panel = row.querySelector('.feat-row__panel');
+      const trigger = row.querySelector('.feat-row__trigger');
+      panel.hidden = false;
       requestAnimationFrame(function () {
-        stack();
-        ticking = false;
+        row.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
       });
     }
 
-    pinVars();
-    stack();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', function () {
-      pinVars();
-      stack();
-    }, { passive: true });
-    if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(function () {
-        pinVars();
-        stack();
-      }).observe(head);
-    }
+    rows.forEach(function (row) {
+      row.querySelector('.feat-row__trigger').addEventListener('click', function () {
+        if (row.classList.contains('is-open')) closeRow(row, reduce);
+        else openRow(row);
+      });
+    });
   })();
 
   // Sticky nav scroll fade (same behaviour as assessment chrome)
