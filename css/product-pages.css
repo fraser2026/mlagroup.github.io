@@ -846,6 +846,17 @@ footer { border-top: 1px solid var(--border); background: var(--bg); }
   .prod-hero__copy h1 { margin-left: auto; margin-right: auto; }
   .prod-hero__sub { margin-left: auto; margin-right: auto; }
   .prod-actions { justify-content: center; }
+  .prod-actions,
+  .close-cta .prod-actions {
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .prod-actions .btn-primary,
+  .prod-actions .btn-ghost {
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
   .section { padding: 48px 0; }
   .field-grid,
   .q-grid { grid-template-columns: 1fr; }

@@ -1000,7 +1000,7 @@
         --feat-pin-card: 280px;
         /* Extreme tighten — mobile scroll is fast; keep the stack compact */
         --feat-runway: 14px;
-        --feat-stack-step: 12px;
+        --feat-stack-step: 34px;
       }
       .feat-layout { grid-template-columns:1fr; gap:20px; }
       .feat-sticky {
@@ -1033,31 +1033,42 @@
       .feat-list {
         padding-bottom: 28px;
       }
-      .feat-item:last-child { margin-bottom: 20px; }
-      /* Visible stack: each card latches a step lower so prior cards peek */
+      .feat-item:last-child { margin-bottom: 12px; }
+      /* Visible stack: each card latches a step lower so prior title tabs peek */
       .feat-item:nth-child(1) { top: var(--feat-pin-card); }
       .feat-item:nth-child(2) { top: calc(var(--feat-pin-card) + var(--feat-stack-step)); }
       .feat-item:nth-child(3) { top: calc(var(--feat-pin-card) + (2 * var(--feat-stack-step))); }
       .feat-item:nth-child(4) { top: calc(var(--feat-pin-card) + (3 * var(--feat-stack-step))); }
       .feat-item:nth-child(5) { top: calc(var(--feat-pin-card) + (4 * var(--feat-stack-step))); }
       .feat-item__face { min-height: 0; }
-      /* Mobile: contained depth only — no outer blur (bleeds past sticky intro) */
+      /* Mobile stack: collapse covered cards to title strip only (no shader/shadow) */
       .feat-item.is-behind .feat-item__face {
+        overflow: hidden;
+        max-height: var(--feat-stack-step);
+        padding: 8px 16px;
+        gap: 10px;
+        align-items: center;
+        box-shadow: none;
         transform: none;
         opacity: 1;
-        box-shadow: none;
       }
-      .feat-item.is-behind .feat-item__face::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        background: rgba(6, 27, 49, 0.055);
-        pointer-events: none;
+      .feat-item.is-behind .feat-item__face::after { display: none; }
+      .feat-item.is-behind .feat-p { display: none; }
+      .feat-item.is-behind .feat-icon {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
       }
-      .feat-item:not(.is-behind) .feat-item__face {
-        box-shadow: none;
+      .feat-item.is-behind .feat-icon svg { width: 14px; height: 14px; }
+      .feat-item.is-behind .feat-title {
+        margin: 0;
+        font-size: 0.82rem;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
+      .feat-item:not(.is-behind) .feat-item__face { box-shadow: none; }
       .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:56px 32px 28px; }
       .fines-band__top { grid-template-columns:1fr; gap:28px; }
       .system-head {
@@ -1090,6 +1101,19 @@
       .provider-marquee__item img { width: 72px; height: 72px; }
       h1 { font-size:clamp(2.1rem,8vw,3rem); line-height:1.14; letter-spacing:-0.02em; }
       .hero-sub { font-size:1rem; }
+      .hero-actions,
+      .cta-actions {
+        flex-wrap: nowrap;
+        gap: 10px;
+      }
+      .hero-actions .btn-primary,
+      .hero-actions .btn-ghost,
+      .cta-actions .btn-primary,
+      .cta-actions .btn-ghost {
+        padding: 12px 14px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+      }
       .badge { font-size:0.68rem; padding:6px 12px; white-space:normal; text-align:left; }
       .wrap { padding:0 20px; }
       .section-pad { padding-top:56px; padding-bottom:56px; }

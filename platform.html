@@ -419,7 +419,23 @@
         max-width: none;
         text-align: center;
       }
-      .hero-actions { justify-content: center; }
+      .hero-actions {
+        justify-content: center;
+        flex-wrap: nowrap;
+        gap: 10px;
+      }
+      .close-cta .hero-actions {
+        flex-wrap: nowrap;
+        gap: 10px;
+      }
+      .hero-actions .btn-primary,
+      .hero-actions .btn-ghost,
+      .close-cta .hero-actions .btn-primary,
+      .close-cta .hero-actions .btn-ghost {
+        padding: 12px 14px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+      }
       .close-cta h2 {
         font-size: clamp(1.75rem, 7vw, 2.4rem);
         white-space: normal;
