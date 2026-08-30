@@ -1008,7 +1008,6 @@
         padding-top: 12px;
         padding-bottom: 24px;
         box-shadow: none;
-        will-change: top;
       }
       /* Full-bleed paper behind the sticky intro — seals cards at the sides */
       .feat-sticky::before,
@@ -1033,7 +1032,15 @@
       .feat-list {
         /* Room for last card + stacked tabs to rise under the nav */
         padding-bottom: min(55vh, 420px);
-        will-change: transform;
+      }
+      .feat-deck-spacer {
+        height: 0;
+        pointer-events: none;
+      }
+      .feat-layout.is-deck-locked {
+        background: var(--bg);
+        z-index: 15;
+        box-sizing: border-box;
       }
       .feat-item:last-child { margin-bottom: min(28vh, 220px); }
       /* Stripe-style stepped pins — prior cards peek as title + opening line */
@@ -1525,55 +1532,120 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // Feature deck: sticky heading + stepped cards. On mobile, once the full stack
-  // is latched (last card front, others behind), further scroll translates the
-  // whole list up under the nav — cards move together, not just the front card.
+  // Feature deck: stepped sticky cards, then — once the last card seats in its
+  // stack slot — fix the whole block (title + cards) and scroll it up together.
   (function () {
     const section = document.getElementById('features');
     if (!section) return;
+    const layout = section.querySelector('.feat-layout');
     const head = section.querySelector('.feat-sticky');
     const list = section.querySelector('.feat-list');
     const items = Array.prototype.slice.call(section.querySelectorAll('.feat-item'));
-    if (!head || !list || !items.length) return;
+    if (!layout || !head || !list || !items.length) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     const compact = window.matchMedia('(max-width: 1024px)');
     const NAV = 64;
-    let latchScrollY = null;
+    const last = items[items.length - 1];
+    let spacer = section.querySelector('.feat-deck-spacer');
+    if (!spacer) {
+      spacer = document.createElement('div');
+      spacer.className = 'feat-deck-spacer';
+      spacer.setAttribute('aria-hidden', 'true');
+      layout.insertAdjacentElement('afterend', spacer);
+    }
+    let locked = false;
+    let latchScrollY = 0;
+    let lockTop = 0;
+    let lockLeft = 0;
+    let lockWidth = 0;
+    let riseSpan = 0;
+
+    function stackStep() {
+      const v = getComputedStyle(section).getPropertyValue('--feat-stack-step').trim();
+      return parseFloat(v) || 78;
+    }
+
+    function pinCardY() {
+      return NAV + head.offsetHeight;
+    }
+
+    function lastSeatY() {
+      return pinCardY() + (items.length - 1) * stackStep();
+    }
+
+    function stackComplete() {
+      const seat = lastSeatY();
+      const lastTop = last.getBoundingClientRect().top;
+      const prev = items[items.length - 2];
+      // Seat the last card in its stack slot — not after it has slid under the intro
+      return (
+        prev.classList.contains('is-behind') &&
+        lastTop <= seat + 8 &&
+        lastTop >= seat - 12
+      );
+    }
+
+    function layoutBox() {
+      const r = layout.getBoundingClientRect();
+      return { top: r.top, left: r.left, width: r.width, height: r.height };
+    }
+
+    function lockDeck() {
+      if (locked || reduce.matches) return;
+      const box = layoutBox();
+      locked = true;
+      latchScrollY = window.scrollY;
+      lockTop = box.top;
+      lockLeft = box.left;
+      lockWidth = box.width;
+      riseSpan = Math.max(0, pinCardY() - (NAV + 10));
+      layout.classList.add('is-deck-locked');
+      layout.style.position = 'fixed';
+      layout.style.top = lockTop + 'px';
+      layout.style.left = lockLeft + 'px';
+      layout.style.width = lockWidth + 'px';
+      spacer.style.height = (box.height + riseSpan) + 'px';
+    }
+
+    function unlockDeck() {
+      if (!locked) return;
+      locked = false;
+      layout.classList.remove('is-deck-locked');
+      layout.style.position = '';
+      layout.style.top = '';
+      layout.style.left = '';
+      layout.style.width = '';
+      spacer.style.height = '0';
+    }
 
     function pinVars() {
       if (!compact.matches) {
-        latchScrollY = null;
-        head.style.top = '';
-        list.style.transform = '';
-        list.classList.remove('is-stack-locked');
+        unlockDeck();
         section.style.setProperty('--feat-pin-head', '96px');
         section.style.setProperty('--feat-pin-card', '96px');
         return;
       }
 
-      const headPin = NAV;
-      const underHead = headPin + head.offsetHeight;
-      const underNav = headPin + 10;
-      const riseSpan = Math.max(0, underHead - underNav);
+      section.style.setProperty('--feat-pin-head', NAV + 'px');
+      section.style.setProperty('--feat-pin-card', pinCardY() + 'px');
 
-      section.style.setProperty('--feat-pin-head', headPin + 'px');
-      section.style.setProperty('--feat-pin-card', underHead + 'px');
+      if (reduce.matches) return;
 
-      const allStacked = items.slice(0, -1).every(function (el) {
-        return el.classList.contains('is-behind');
-      });
+      if (!locked) {
+        if (stackComplete()) lockDeck();
+        return;
+      }
 
-      if (allStacked) {
-        list.classList.add('is-stack-locked');
-        if (latchScrollY === null) latchScrollY = window.scrollY;
-        const rise = Math.min(riseSpan, Math.max(0, window.scrollY - latchScrollY));
-        list.style.transform = rise ? ('translate3d(0,' + (-rise) + 'px,0)') : '';
-        head.style.top = (headPin - rise) + 'px';
-      } else {
-        latchScrollY = null;
-        list.classList.remove('is-stack-locked');
-        list.style.transform = '';
-        head.style.top = '';
+      if (window.scrollY < latchScrollY - 8) {
+        unlockDeck();
+        return;
+      }
+
+      const rise = Math.min(riseSpan, Math.max(0, window.scrollY - latchScrollY));
+      layout.style.top = (lockTop - rise) + 'px';
+
+      if (rise >= riseSpan) {
+        unlockDeck();
       }
     }
 
@@ -1609,13 +1681,18 @@
     pinVars();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', function () {
-      latchScrollY = null;
+      if (locked) {
+        const box = layoutBox();
+        lockLeft = box.left;
+        lockWidth = box.width;
+        layout.style.left = lockLeft + 'px';
+        layout.style.width = lockWidth + 'px';
+      }
       stack();
       pinVars();
     }, { passive: true });
     if (typeof ResizeObserver !== 'undefined') {
       new ResizeObserver(function () {
-        latchScrollY = null;
         stack();
         pinVars();
       }).observe(head);
