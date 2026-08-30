@@ -1033,6 +1033,7 @@
       .feat-list {
         /* Room for last card + stacked tabs to rise under the nav */
         padding-bottom: min(55vh, 420px);
+        will-change: transform;
       }
       .feat-item:last-child { margin-bottom: min(28vh, 220px); }
       /* Stripe-style stepped pins — prior cards peek as title + opening line */
@@ -1524,25 +1525,27 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // Feature deck: sticky heading + stepped cards. On mobile, after the last
-  // card latches, further scroll raises the whole stack under the nav (Stripe-
-  // style) while the intro heading slides away. No GSAP.
+  // Feature deck: sticky heading + stepped cards. On mobile, once the full stack
+  // is latched (last card front, others behind), further scroll translates the
+  // whole list up under the nav — cards move together, not just the front card.
   (function () {
     const section = document.getElementById('features');
     if (!section) return;
     const head = section.querySelector('.feat-sticky');
+    const list = section.querySelector('.feat-list');
     const items = Array.prototype.slice.call(section.querySelectorAll('.feat-item'));
-    if (!head || !items.length) return;
+    if (!head || !list || !items.length) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     const compact = window.matchMedia('(max-width: 1024px)');
     const NAV = 64;
-    const last = items[items.length - 1];
     let latchScrollY = null;
 
     function pinVars() {
       if (!compact.matches) {
         latchScrollY = null;
         head.style.top = '';
+        list.style.transform = '';
+        list.classList.remove('is-stack-locked');
         section.style.setProperty('--feat-pin-head', '96px');
         section.style.setProperty('--feat-pin-card', '96px');
         return;
@@ -1552,23 +1555,25 @@
       const underHead = headPin + head.offsetHeight;
       const underNav = headPin + 10;
       const riseSpan = Math.max(0, underHead - underNav);
-      const lastTop = last.getBoundingClientRect().top;
-      // Last card has latched under the intro when it sits at (or above) underHead
-      const latched = lastTop <= underHead + 2;
 
-      if (latched) {
+      section.style.setProperty('--feat-pin-head', headPin + 'px');
+      section.style.setProperty('--feat-pin-card', underHead + 'px');
+
+      const allStacked = items.slice(0, -1).every(function (el) {
+        return el.classList.contains('is-behind');
+      });
+
+      if (allStacked) {
+        list.classList.add('is-stack-locked');
         if (latchScrollY === null) latchScrollY = window.scrollY;
         const rise = Math.min(riseSpan, Math.max(0, window.scrollY - latchScrollY));
-        const pinCard = underHead - rise;
-        section.style.setProperty('--feat-pin-head', headPin + 'px');
-        section.style.setProperty('--feat-pin-card', pinCard + 'px');
-        // Slide intro up with the stack so the last card can finish under the nav
+        list.style.transform = rise ? ('translate3d(0,' + (-rise) + 'px,0)') : '';
         head.style.top = (headPin - rise) + 'px';
       } else {
         latchScrollY = null;
+        list.classList.remove('is-stack-locked');
+        list.style.transform = '';
         head.style.top = '';
-        section.style.setProperty('--feat-pin-head', headPin + 'px');
-        section.style.setProperty('--feat-pin-card', underHead + 'px');
       }
     }
 
@@ -1594,25 +1599,25 @@
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(function () {
-        pinVars();
         stack();
+        pinVars();
         ticking = false;
       });
     }
 
-    pinVars();
     stack();
+    pinVars();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', function () {
       latchScrollY = null;
-      pinVars();
       stack();
+      pinVars();
     }, { passive: true });
     if (typeof ResizeObserver !== 'undefined') {
       new ResizeObserver(function () {
         latchScrollY = null;
-        pinVars();
         stack();
+        pinVars();
       }).observe(head);
     }
   })();
