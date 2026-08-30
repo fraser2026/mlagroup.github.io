@@ -18,7 +18,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--sub);-web
 .app{display:flex;height:100vh;position:relative;z-index:1}
 .sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh}
 .sidebar-logo{height:var(--topbar-h);display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--border);flex-shrink:0}
-.logo-mark{font-size:.92rem;font-weight:600;letter-spacing:-.02em;color:var(--main);text-decoration:none}.logo-mark em{font-family:'Instrument Serif',serif;font-style:italic;color:var(--red)}
+.logo-mark{font-size:.92rem;font-weight:600;letter-spacing:-.02em;color:var(--main);text-decoration:none;display:inline-flex;align-items:center;line-height:0}.logo-mark img{display:block;height:26px;width:auto}.logo-mark em{font-family:'Instrument Serif',serif;font-style:italic;color:var(--red)}
 .logo-badge{margin-left:auto;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--red);background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);padding:2px 7px;border-radius:100px}
 .sidebar-nav{flex:1;overflow-y:auto;padding:14px 10px}
 .nav-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--muted2);padding:0 8px;margin:16px 0 6px}.nav-label:first-child{margin-top:0}
@@ -73,7 +73,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="bg-ambient"></div>
 <div class="app">
 <aside class="sidebar">
-<div class="sidebar-logo"><a href="index.html" class="logo-mark ra-wordmark">RegAnchor</a><span class="logo-badge">Admin</span></div>
+<div class="sidebar-logo"><a href="index.html" class="logo-mark ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a><span class="logo-badge">Admin</span></div>
 <nav class="sidebar-nav">
 <div class="nav-label">Overview</div>
 <div class="nav-item active" onclick="showView('dashboard',this)"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>

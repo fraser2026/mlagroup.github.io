@@ -70,7 +70,7 @@ body {
 nav {
   position: relative;
   z-index: 1;
-  height: 56px;
+  height: 64px;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 var(--ph);
   border-bottom: 1px solid transparent;
@@ -127,6 +127,14 @@ body:not(.results-page) > nav {
   letter-spacing: -0.02em;
   text-decoration: none; color: var(--main);
   -webkit-font-smoothing: antialiased;
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+.logo img, .nav-logo img {
+  display: block;
+  height: 36px;
+  width: auto;
 }
 .logo em, .nav-logo em {
   font-family: inherit; font-style: normal; font-weight: 500;
@@ -134,13 +142,13 @@ body:not(.results-page) > nav {
 }
 
 .nav-right { display: flex; align-items: center; gap: 8px }
-.nav-signin, .nav-back {
+.nav-back {
   font-size: 13px; font-weight: 500;
   color: var(--muted); text-decoration: none;
   padding: 7px 12px;
   transition: color .12s;
 }
-.nav-signin:hover, .nav-back:hover { color: var(--main) }
+.nav-back:hover { color: var(--main) }
 
 /* Primary / secondary button chrome lives in reganchor.css */
 .btn-get-report:disabled, .btn-primary:disabled {
@@ -161,7 +169,7 @@ body:not(.results-page) > nav {
   height: auto;
   padding: 12px var(--ph);
   flex-direction: column; align-items: stretch;
-  position: sticky; top: 56px; z-index: 99;
+  position: sticky; top: 64px; z-index: 99;
 }
 
 /* Flow quiz chrome — nav + single accent progress bar (no step label row) */

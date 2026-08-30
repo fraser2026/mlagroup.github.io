@@ -52,9 +52,8 @@ body {
 .home-chrome.is-scrolled { border-bottom-color: var(--border); }
 .home-chrome nav {
   height: 64px;
-  max-width: 1100px;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -86,6 +85,18 @@ body {
   text-decoration: none;
   color: var(--main);
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+}
+.logo img {
+  display: block;
+  height: 36px;
+  width: auto;
+  transition: height 0.22s ease;
+}
+.home-chrome.is-scrolled .logo img { height: 26px; }
+@media (prefers-reduced-motion: reduce) {
+  .logo img { transition: none; }
 }
 
 .nav-centre {
@@ -119,19 +130,39 @@ body {
   flex-shrink: 0;
 }
 .nav-signin {
-  padding: 7px 16px;
-  font-size: 0.85rem;
-  color: var(--muted);
-  text-decoration: none;
-}
-.nav-signin:hover { color: var(--main); background: var(--hover); }
-.nav-cta {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  box-sizing: border-box;
   padding: 9px 18px;
   font-size: 0.85rem;
   font-weight: 500;
+  line-height: 1;
+  border: 1px solid var(--border);
+  color: var(--main);
+  border-radius: 4px;
+  text-decoration: none;
+  background: var(--bg);
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+.nav-signin:hover,
+.nav-signin:focus-visible {
+  border-color: var(--accent);
+  background: var(--hover);
+  color: var(--accent);
+  outline: none;
+}
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 9px 18px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
   color: #fff;
   background: var(--accent);
   border: 1px solid var(--accent);
@@ -290,7 +321,9 @@ body {
 .btn-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  box-sizing: border-box;
   padding: 14px 26px;
   background: var(--accent);
   color: #FFFFFF;
@@ -298,6 +331,7 @@ body {
   border-radius: 4px;
   font-size: 0.9rem;
   font-weight: 500;
+  line-height: 1;
   text-decoration: none;
   font-family: inherit;
   transition: background 0.15s, border-color 0.15s;
@@ -318,13 +352,16 @@ body {
 .btn-ghost {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 13px 24px;
+  box-sizing: border-box;
+  padding: 14px 26px;
   border: 1px solid var(--border);
   color: var(--main);
   border-radius: 4px;
   font-size: 0.9rem;
   font-weight: 500;
+  line-height: 1;
   text-decoration: none;
   font-family: inherit;
   background: var(--bg);

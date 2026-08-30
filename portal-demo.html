@@ -196,7 +196,9 @@
       font-family: var(--ra-font-brand, 'IBM Plex Sans', sans-serif);
       font-size: 15px; font-weight: 500; color: var(--ra-text);
       letter-spacing: -0.02em; text-decoration: none;
+      display: inline-flex; align-items: center; line-height: 0;
     }
+    .flow-stage__logo img { display: block; height: 26px; width: auto; }
     .flow-stage__nav-right {
       display: flex; align-items: center; gap: 14px;
       font-size: 13px;
@@ -841,7 +843,7 @@
 <div class="app" id="portalApp">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <a href="#" class="logo-mark ra-wordmark" id="logoHome">RegAnchor</a>
+      <a href="#" class="logo-mark ra-wordmark" id="logoHome" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
     </div>
     <nav class="sidebar-nav" aria-label="Primary">
       <div class="nav-section-label">Overview</div>
@@ -1141,7 +1143,7 @@
   <div class="flow-stage" id="flowStage" aria-hidden="true">
     <div class="flow-stage__chrome">
       <div class="flow-stage__nav">
-        <span class="flow-stage__logo ra-wordmark">RegAnchor</span>
+        <span class="flow-stage__logo ra-wordmark"><img src="brand/wordmark-text.svg" alt="RegAnchor" width="193" height="36" decoding="async"></span>
         <div class="flow-stage__nav-right">
           <span class="flow-stage__step" id="flowStepLbl">1 of 8</span>
           <span class="flow-stage__back">Back to portal</span>
@@ -1204,7 +1206,7 @@
   <!-- Full-stage system report -->
   <div class="report-stage" id="reportStage" aria-hidden="true">
     <div class="report-stage__nav">
-      <span class="flow-stage__logo ra-wordmark">RegAnchor</span>
+      <span class="flow-stage__logo ra-wordmark"><img src="brand/wordmark-text.svg" alt="RegAnchor" width="193" height="36" decoding="async"></span>
       <span class="btn-topbar btn-topbar-primary" style="pointer-events:none;font-size:13px;padding:8px 14px;">Back to Portal</span>
     </div>
     <div class="report-stage__body" id="reportBody"></div>

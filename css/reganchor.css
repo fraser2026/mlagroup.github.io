@@ -228,6 +228,7 @@ table.ra-table,
   cursor: not-allowed;
 }
 
+.btn-ghost,
 .btn-secondary,
 .btn-consult {
   display: inline-flex;
@@ -250,6 +251,8 @@ table.ra-table,
   box-shadow: none !important;
 }
 
+.btn-ghost:hover,
+.btn-ghost:focus-visible,
 .btn-secondary:hover,
 .btn-secondary:focus-visible,
 .btn-consult:hover,
@@ -332,9 +335,252 @@ table.ra-table,
   font-feature-settings: var(--ra-font-features);
 }
 
+.ra-wordmark:has(> img) {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.ra-wordmark img {
+  display: block;
+  height: 36px;
+  width: auto;
+  transition: height 0.22s ease;
+}
+
+.home-chrome.is-scrolled .ra-wordmark img,
+.site-chrome.is-scrolled .ra-wordmark img,
+.rnav.is-scrolled .ra-wordmark img,
+nav.is-scrolled .ra-wordmark img,
+header.is-scrolled .ra-wordmark img {
+  height: 26px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ra-wordmark img { transition: none; }
+}
+
+.sidebar-logo .ra-wordmark img,
+.logo-mark.ra-wordmark img,
+.flow-stage__logo.ra-wordmark img {
+  height: 26px;
+  transition: none;
+}
+
+/* Public Sign in — ghost colours, header CTA size (not hero) */
+a.nav-signin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 9px 18px;
+  border: 1px solid var(--ra-border, #E6EBF1);
+  color: var(--ra-ink, #061B31);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  background: var(--ra-canvas, #FFFFFF);
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+a.nav-signin:hover,
+a.nav-signin:focus-visible {
+  border-color: var(--ra-blurple, #533AFD);
+  background: var(--ra-hover, rgba(6, 27, 49, 0.04));
+  color: var(--ra-blurple, #533AFD);
+  outline: none;
+}
+
+/* Dark marketing footer */
+.site-footer {
+  --footer-ink: #0A0E14;
+  --footer-text: rgba(255,255,255,0.9);
+  --footer-muted: rgba(255,255,255,0.7);
+  --footer-subtle: rgba(255,255,255,0.58);
+  --footer-border: rgba(255,255,255,0.1);
+  position: relative;
+  color: var(--footer-text);
+  background: var(--footer-ink);
+}
+.site-footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(83, 58, 253, 0.38) 22%, rgba(83, 58, 253, 0.38) 78%, transparent 100%);
+  pointer-events: none;
+}
+.site-footer .footer-top {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 56px 48px 36px;
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  gap: 40px 48px;
+}
+.site-footer .f-brand .footer-logo {
+  margin-bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
+}
+.site-footer .f-brand .footer-logo img {
+  display: block;
+  height: 36px;
+  width: auto;
+}
+.site-footer .f-brand p {
+  font-size: 0.75rem;
+  color: var(--footer-muted);
+  line-height: 1.7;
+  max-width: 260px;
+  margin: 0;
+}
+.site-footer .f-col h4 {
+  font-family: var(--ra-font);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #FFFFFF;
+  margin: 0 0 12px;
+  text-transform: none;
+}
+.site-footer .f-col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.site-footer .f-col a {
+  font-size: 0.75rem;
+  color: var(--footer-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.site-footer .f-col a:hover { color: #FFFFFF; }
+.site-footer .footer-bottom {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 48px 28px;
+  border-top: 1px solid var(--footer-border);
+  text-align: center;
+}
+.site-footer .footer-bottom__legal {
+  font-size: 0.7rem;
+  color: var(--footer-subtle);
+  line-height: 1.6;
+}
+
+/* Light short footer (legal + brief public pages) */
+.rfooter {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 36px 60px;
+  border-top: 1px solid var(--ra-ink, #061B31);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  background: #FFFFFF;
+}
+.rfooter .rf-logo {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  text-decoration: none;
+}
+.rfooter .rf-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.rfooter .rf-links a {
+  font-size: 0.75rem;
+  color: var(--ra-muted, #697386);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.rfooter .rf-links a:hover { color: var(--ra-ink, #061B31); }
+.rfooter-legal {
+  flex: 1 0 100%;
+  font-size: 0.72rem;
+  color: var(--ra-muted, #697386);
+}
+
+@media (max-width: 768px) {
+  .site-footer .footer-top { grid-template-columns: 1fr 1fr; padding: 40px 20px 28px; gap: 28px 32px; }
+  .site-footer .footer-bottom { padding: 16px 20px 24px; }
+  .rfooter { padding: 28px 20px; flex-direction: column; text-align: center; }
+  .rfooter .rf-links { justify-content: center; }
+}
+
 .ra-wordmark--display { letter-spacing: -0.03em; }
 .ra-wordmark--small { letter-spacing: -0.01em; }
 .ra-wordmark--r::after { content: 'R'; }
+
+/* Sharp SVG — supersampled render for tapered marks on dark ink */
+.ra-svg-sharp {
+  display: block;
+  line-height: 0;
+  overflow: hidden;
+  width: calc(var(--ra-svg-w, 66) * 1px);
+  height: calc(var(--ra-svg-h, 32) * 1px);
+}
+
+.ra-svg-sharp--fluid {
+  width: 100%;
+  height: 100%;
+}
+
+.ra-svg-sharp > svg,
+.ra-svg-sharp > img,
+.ra-svg-sharp > object {
+  display: block;
+  pointer-events: none;
+  shape-rendering: geometricPrecision;
+  border: none;
+}
+
+/* Fixed-size: 4× intrinsic, scale down (works with object/img — no JS required) */
+.ra-svg-sharp:not(.ra-svg-sharp--fluid) > svg,
+.ra-svg-sharp:not(.ra-svg-sharp--fluid) > img,
+.ra-svg-sharp:not(.ra-svg-sharp--fluid) > object {
+  width: calc(var(--ra-svg-w, 66) * var(--ra-svg-scale, 4) * 1px);
+  height: calc(var(--ra-svg-h, 32) * var(--ra-svg-scale, 4) * 1px);
+  transform: scale(calc(1 / var(--ra-svg-scale, 4)));
+  transform-origin: 0 0;
+}
+
+/* Fluid / responsive: parent sets size; anchor bottom-left for footer deco */
+.ra-svg-sharp--fluid > svg,
+.ra-svg-sharp--fluid > img,
+.ra-svg-sharp--fluid > object {
+  width: calc(var(--ra-svg-scale, 4) * 100%);
+  height: calc(var(--ra-svg-scale, 4) * 100%);
+  transform: scale(calc(1 / var(--ra-svg-scale, 4)));
+  transform-origin: bottom left;
+}
+
+/* Micro-blur softens sub-pixel taper tips against --ra-ink / footer */
+.ra-svg-sharp--on-dark > svg,
+.ra-svg-sharp--on-dark > img,
+.ra-svg-sharp--on-dark > object {
+  filter: blur(0.35px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ra-svg-sharp--on-dark > svg,
+  .ra-svg-sharp--on-dark > img,
+  .ra-svg-sharp--on-dark > object {
+    filter: none;
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    PRIMITIVE — ANCHOR LINE

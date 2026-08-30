@@ -49,9 +49,9 @@
     }
     .home-chrome.is-scrolled { border-bottom-color: var(--border); }
     .home-chrome nav {
-      height: 64px; max-width: 1100px; margin: 0 auto;
+      height: 64px; width: 100%; margin: 0;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 48px; position: relative;
+      padding: 0 48px; position: relative; box-sizing: border-box;
     }
     .home-chrome__fade {
       position: absolute; left: 0; right: 0; top: 100%; height: 48px; pointer-events: none;
@@ -62,15 +62,26 @@
     .logo {
       font-family: var(--font-brand); font-size: 1.05rem; font-weight: 500;
       letter-spacing: -0.025em; text-decoration: none; color: var(--main);
+      display: inline-flex; align-items: center;
     }
+    .logo img { display: block; height: 36px; width: auto; transition: height 0.22s ease; }
+    .home-chrome.is-scrolled .logo img { height: 26px; }
     .nav-right { display: flex; align-items: center; gap: 8px; }
     .nav-signin {
-      padding: 7px 16px; font-size: 0.85rem; color: var(--muted); text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      box-sizing: border-box;
+      padding: 9px 18px; font-size: 0.85rem; font-weight: 500; line-height: 1;
+      border: 1px solid var(--border); color: var(--main); border-radius: 4px;
+      text-decoration: none; background: var(--bg);
+      transition: border-color 0.18s, background 0.18s, color 0.18s;
     }
-    .nav-signin:hover { color: var(--main); background: var(--hover); }
+    .nav-signin:hover, .nav-signin:focus-visible {
+      border-color: var(--accent); background: var(--hover); color: var(--accent); outline: none;
+    }
     .nav-cta {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 9px 18px; font-size: 0.85rem; font-weight: 500; color: #fff;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      box-sizing: border-box;
+      padding: 9px 18px; font-size: 0.85rem; font-weight: 500; line-height: 1; color: #fff;
       background: var(--accent); border: 1px solid var(--accent); border-radius: 4px;
       cursor: pointer; font-family: inherit;
     }
@@ -183,10 +194,11 @@
       align-items: center;
     }
     .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      box-sizing: border-box;
       padding: 14px 26px;
       background: var(--accent); color: #fff; border: 1px solid var(--accent);
-      border-radius: 4px; font-size: 0.9rem; font-weight: 500;
+      border-radius: 4px; font-size: 0.9rem; font-weight: 500; line-height: 1;
       cursor: pointer; font-family: inherit; text-decoration: none;
       transition: background 0.15s, border-color 0.15s;
     }
@@ -197,10 +209,11 @@
     .btn-primary svg { transition: transform 0.18s; flex-shrink: 0; }
     .btn-primary:hover svg { transform: translateX(3px); }
     .btn-ghost {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 13px 24px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      box-sizing: border-box;
+      padding: 14px 26px;
       border: 1px solid var(--border); border-radius: 4px;
-      font-size: 0.9rem; font-weight: 500; color: var(--main);
+      font-size: 0.9rem; font-weight: 500; line-height: 1; color: var(--main);
       text-decoration: none; background: var(--bg);
       cursor: pointer; font-family: inherit;
       transition: border-color 0.18s, background 0.18s, color 0.18s;
@@ -425,7 +438,7 @@
 
 <header class="home-chrome" id="homeChrome">
   <nav>
-  <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
+  <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
   <div class="nav-right">
     <a href="login.html" class="nav-signin">Sign in</a>
       <button type="button" class="nav-cta" data-open-demo>

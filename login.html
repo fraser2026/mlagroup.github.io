@@ -41,7 +41,8 @@
       padding:0 48px; border-bottom:1px solid var(--border);
       background:var(--bg);
     }
-    .logo { font-family:var(--font-brand); font-size:1.05rem; font-weight:500; letter-spacing:-0.025em; text-decoration:none; color:var(--main); }
+    .logo { font-family:var(--font-brand); font-size:1.05rem; font-weight:500; letter-spacing:-0.025em; text-decoration:none; color:var(--main); display:inline-flex; align-items:center; }
+    .logo img { display:block; height:36px; width:auto; transition:height 0.22s ease; }
     .nav-back {
       display:inline-flex; align-items:center; gap:6px;
       font-size:0.82rem; color:var(--muted); text-decoration:none; transition:color 0.18s;
@@ -270,7 +271,7 @@
 <body>
 
 <nav>
-  <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
+  <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
   <a href="index.html" class="nav-back">
     <svg viewBox="0 0 14 14"><path d="M9 2L4 7l5 5"/></svg>
     Back to site
@@ -629,5 +630,6 @@
     if (signinVisible) signIn(); else signUp();
   });
 </script>
+<script src="js/ra-chrome.js"></script>
 </body>
 </html>

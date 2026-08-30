@@ -43,15 +43,25 @@
       padding:0 var(--ph); border-bottom:1px solid var(--border);
       background:var(--bg);
     }
-    .logo { font-family:var(--font-brand); font-size:1.05rem; font-weight:500; letter-spacing:-0.025em; text-decoration:none; color:var(--main); flex-shrink:0; }
+    .logo { font-family:var(--font-brand); font-size:1.05rem; font-weight:500; letter-spacing:-0.025em; text-decoration:none; color:var(--main); flex-shrink:0; display:inline-flex; align-items:center; }
+    .logo img { display:block; height:36px; width:auto; }
     .nav-centre { display:flex; align-items:center; gap:4px; position:absolute; left:50%; transform:translateX(-50%); }
     .nav-link { padding:7px 14px; font-size:0.84rem; font-weight:400; color:var(--muted); text-decoration:none; transition:color .15s,background .15s; white-space:nowrap; }
     .nav-link:hover { color:var(--main); background:var(--hover); }
     .nav-link.active { color:var(--main); font-weight:500; box-shadow:inset 0 -1px 0 var(--main); }
     .nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-    .nav-signin { padding:7px 16px; font-size:0.84rem; font-weight:400; color:var(--muted); text-decoration:none; transition:color .15s; }
-    .nav-signin:hover { color:var(--main); }
-    .nav-cta { padding:9px 18px; font-size:0.84rem; font-weight:500; color:var(--bg); background:var(--main); border:1px solid var(--main); text-decoration:none; transition:opacity .15s; }
+    .nav-signin {
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      box-sizing:border-box;
+      padding:9px 18px; font-size:0.85rem; font-weight:500; line-height:1;
+      border:1px solid var(--border); color:var(--main); border-radius:4px;
+      text-decoration:none; background:var(--bg);
+      transition:border-color .18s, background .18s, color .18s;
+    }
+    .nav-signin:hover, .nav-signin:focus-visible {
+      border-color:var(--accent, #533AFD); background:var(--hover); color:var(--accent, #533AFD); outline:none;
+    }
+    .nav-cta { display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; padding:9px 18px; font-size:0.85rem; font-weight:500; line-height:1; color:var(--bg); background:var(--main); border:1px solid var(--main); text-decoration:none; transition:opacity .15s; }
     .nav-cta:hover { opacity:.82; }
     .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:4px; }
     .hamburger span { display:block; width:20px; height:1.5px; background:var(--main); }
@@ -205,22 +215,6 @@
     .btn-apply:hover { opacity:.82; }
     .btn-apply svg { width:13px; height:13px; stroke:var(--bg); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 
-    /* FOOTER — match index.html */
-    footer { border-top:1px solid var(--main); background:var(--bg); position:relative; z-index:1; }
-    .footer-top { max-width:1100px; margin:0 auto; padding:48px 48px 36px; display:grid; grid-template-columns:1.8fr 1fr 1fr 1fr; gap:40px; }
-    .f-brand .footer-logo { font-family:var(--font-brand); font-size:1rem; font-weight:500; margin-bottom:10px; color:var(--main); }
-    .f-brand p { font-size:0.75rem; color:var(--muted); line-height:1.65; max-width:220px; }
-    .f-col h4 {
-      font-family:var(--font-brand); font-size:0.78rem; font-weight:500;
-      letter-spacing:-0.01em; color:var(--main); margin-bottom:12px;
-      text-transform:none;
-    }
-    .f-col ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
-    .f-col a { font-size:0.75rem; color:var(--muted); text-decoration:none; transition:color 0.15s; }
-    .f-col a:hover { color:var(--sub); }
-    .footer-bottom { max-width:1100px; margin:0 auto; padding:16px 48px 24px; border-top:1px solid var(--border); text-align:center; }
-    .footer-bottom span { font-size:0.7rem; color:var(--muted); line-height:1.55; display:block; }
-
     /* RESPONSIVE */
     @media(max-width:1024px){
       .nav-centre { display:none; }
@@ -228,7 +222,6 @@
       .header-grid { grid-template-columns:1fr; gap:24px; }
       .meta-panel { text-align:left; }
       .meta-rule  { margin-right:auto; margin-left:0; }
-      .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:40px 32px 28px; }
       .bcta-inner { flex-direction:column; align-items:flex-start; gap:28px; }
     }
     @media(max-width:768px){
@@ -241,10 +234,6 @@
       .dtable td, .dtable th, .btable td, .btable th { padding:11px 12px; }
       .disc-inner { grid-template-columns:1fr; gap:14px; }
       .prop-list .prop-copy { grid-template-columns:1fr; gap:4px; }
-      .footer-top { grid-template-columns:1fr 1fr; gap:22px 20px; padding:28px 20px 20px; }
-      .f-brand { grid-column:1 / -1; margin-bottom:4px; }
-      .f-brand p { max-width:none; }
-      .footer-bottom { padding:14px 20px 20px; }
       .step { grid-template-columns:28px 1fr; gap:14px; }
     }
   </style>
@@ -253,7 +242,7 @@
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
+  <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
   <div class="nav-right">
     <a href="login.html" class="nav-signin">Sign in</a>
     <a href="diagnostic.html" class="nav-cta">Get Started</a>
@@ -675,15 +664,18 @@
 <!-- ═══════════════════════════════════════════════
      FOOTER
 ════════════════════════════════════════════════ -->
-<footer>
+<footer class="site-footer">
   <div class="footer-top">
     <div class="f-brand">
-      <div class="footer-logo ra-wordmark">RegAnchor</div>
+      <a href="index.html" class="footer-logo" aria-label="RegAnchor">
+        <img src="brand/wordmark-text-light.svg?v=a3" alt="" width="193" height="36" decoding="async">
+      </a>
       <p>AI governance risk advisory for regulated industries. Defensible frameworks, audit-ready reporting, and sector-specific regulatory alignment.</p>
     </div>
     <div class="f-col">
       <h4>Product</h4>
       <ul>
+        <li><a href="contact.html">Platform</a></li>
         <li><a href="diagnostic.html">Risk Diagnostic</a></li>
         <li><a href="login.html">Client Portal</a></li>
         <li><a href="pricing.html">Pricing</a></li>
@@ -705,17 +697,19 @@
       <ul>
         <li><a href="#">About RegAnchor</a></li>
         <li><a href="contact.html">Contact</a></li>
+        <li><a href="security.html">Security</a></li>
         <li><a href="privacy.html">Privacy Policy</a></li>
-        <li><a href="terms.html">Terms of Use</a></li>
+        <li><a href="terms.html">Terms &amp; Conditions</a></li>
         <li><a href="cookies.html">Cookies</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562). &copy; All rights reserved.</span>
+    <span class="footer-bottom__legal">RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562). &copy; All rights reserved.</span>
   </div>
 </footer>
 
+<script src="js/ra-chrome.js"></script>
 <script>
   function toggleMob() { document.getElementById('mobMenu').classList.toggle('open'); }
   function closeMob()  { document.getElementById('mobMenu').classList.remove('open'); }

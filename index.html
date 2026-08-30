@@ -51,10 +51,11 @@
       font-family: var(--font-body);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
+      /* clip (not hidden) — hidden forces overflow-y:auto and breaks position:sticky */
+      overflow-x: clip;
       padding-top: 64px;
     }
-    html { overflow-x: hidden; }
+    html { overflow-x: clip; }
 
     /* ── NAV + SCROLL FADE (same veil behaviour as assessment) ── */
     .home-chrome {
@@ -77,9 +78,8 @@
       position: relative;
       z-index: 2;
       height: 64px;
-      max-width: 1100px;
       width: 100%;
-      margin: 0 auto;
+      margin: 0;
       display: flex; align-items:center; justify-content:space-between;
       padding: 0 48px;
       box-sizing: border-box;
@@ -95,6 +95,20 @@
       font-family: var(--font-brand);
       font-size: 1.05rem; font-weight: 500; letter-spacing: -0.025em;
       text-decoration: none; color: var(--main); flex-shrink:0;
+      display: inline-flex;
+      align-items: center;
+    }
+    .logo img {
+      display: block;
+      height: 36px;
+      width: auto;
+      transition: height 0.22s ease;
+    }
+    .home-chrome.is-scrolled .logo img {
+      height: 26px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .logo img { transition: none; }
     }
 
     .nav-centre {
@@ -111,15 +125,27 @@
 
     .nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
     .nav-signin {
-      padding: 7px 16px;
-      font-size: 0.85rem; font-weight:400; color: var(--muted);
-      text-decoration:none; transition: color 0.18s, background 0.18s;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      box-sizing: border-box;
+      padding: 9px 18px;
+      font-size: 0.85rem; font-weight:500; line-height: 1;
+      border:1px solid var(--border); color:var(--main);
+      border-radius: 4px;
+      text-decoration:none; background:var(--bg);
+      transition: border-color 0.18s, background 0.18s, color 0.18s;
     }
-    .nav-signin:hover { color:var(--main); background:var(--hover); }
+    .nav-signin:hover,
+    .nav-signin:focus-visible {
+      border-color: var(--accent);
+      background: var(--hover);
+      color: var(--accent);
+      outline: none;
+    }
     .nav-cta {
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      box-sizing: border-box;
       padding: 9px 18px;
-      font-size: 0.85rem; font-weight:500; color:#FFFFFF;
+      font-size: 0.85rem; font-weight:500; line-height: 1; color:#FFFFFF;
       background: var(--accent); text-decoration:none; border:1px solid var(--accent);
       border-radius: 4px;
       transition: background 0.15s, border-color 0.15s;
@@ -340,7 +366,8 @@
       flex: 0 0 auto;
       display: flex;
       align-items: center;
-      padding: 60px 0 20px;
+      /* Top pad + 40px fines-band section-pad ≈ bottom pad for even visual cushion */
+      padding: 56px 0 16px;
     }
     .provider-marquee__viewport {
       overflow: hidden;
@@ -415,11 +442,12 @@
     }
 
     .btn-primary {
-      display:inline-flex; align-items:center; gap:8px;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      box-sizing: border-box;
       padding:14px 26px;
       background:var(--accent); color:#FFFFFF; border:1px solid var(--accent);
       border-radius: 4px;
-      font-size:0.9rem; font-weight:500; text-decoration:none;
+      font-size:0.9rem; font-weight:500; line-height:1; text-decoration:none;
       transition: background 0.15s, border-color 0.15s;
     }
     .btn-primary:hover,
@@ -430,11 +458,12 @@
     .btn-primary:hover svg { transform:translateX(3px); }
 
     .btn-ghost {
-      display:inline-flex; align-items:center; gap:8px;
-      padding:13px 24px;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      box-sizing: border-box;
+      padding:14px 26px;
       border:1px solid var(--border); color:var(--main);
       border-radius: 4px;
-      font-size:0.9rem; font-weight:500; text-decoration:none;
+      font-size:0.9rem; font-weight:500; line-height:1; text-decoration:none;
       background:var(--bg);
       transition: border-color 0.18s, background 0.18s, color 0.18s;
     }
@@ -657,11 +686,22 @@
     h2 em { font-style:normal; font-weight:400; color:var(--muted); }
     .section-sub { font-size:1rem; font-weight:400; color:var(--sub); line-height:1.75; max-width:520px; }
 
-    /* ── FEATURES ── */
+    /* ── FEATURES (pinned heading + stacked deck) ── */
+    #features {
+      --feat-pin-head: 96px;
+      --feat-pin-card: 96px;
+      --feat-runway: min(28vh, 240px);
+    }
     .feat-layout { display:grid; grid-template-columns:1fr 1fr; gap:72px; align-items:start; }
-    .feat-sticky { position:sticky; top:96px; }
+    .feat-sticky {
+      position:sticky;
+      top: var(--feat-pin-head);
+      z-index: 20;
+      align-self: start;
+      background: var(--bg);
+    }
     .feat-sticky h2 { margin-bottom:18px; }
-    .feat-sticky p { margin-bottom:32px; }
+    .feat-sticky p { margin-bottom:0; }
     .feat-cta {
       display:inline-flex; align-items:center; width:fit-content;
       font-size:0.85rem; font-weight:500; color:var(--accent); text-decoration:none;
@@ -679,9 +719,40 @@
     .feat-cta:hover::after,
     .feat-cta:focus-visible::after,
     .feat-cta:active::after { transform:translateX(3px); }
-    .feat-list { display:flex; flex-direction:column; }
-    .feat-item { display:flex; gap:18px; padding:26px 0; border-bottom:1px solid var(--border); }
-    .feat-item:first-child { border-top:1px solid var(--border); }
+    .feat-list {
+      display:flex;
+      flex-direction:column;
+      position: relative;
+      z-index: 1;
+    }
+    .feat-item {
+      position: sticky;
+      top: var(--feat-pin-card);
+      z-index: 1;
+      margin-bottom: var(--feat-runway);
+    }
+    .feat-item:nth-child(1) { z-index: 1; }
+    .feat-item:nth-child(2) { z-index: 2; }
+    .feat-item:nth-child(3) { z-index: 3; }
+    .feat-item:nth-child(4) { z-index: 4; }
+    .feat-item:nth-child(5) { z-index: 5; }
+    .feat-item:last-child { margin-bottom: min(14vh, 120px); }
+    .feat-item__face {
+      display:flex; gap:18px;
+      padding: 24px;
+      min-height: 168px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(6, 27, 49, 0.04);
+      transform-origin: top center;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease, box-shadow 0.35s ease;
+    }
+    .feat-item.is-behind .feat-item__face {
+      transform: scale(0.95) translateY(-8px);
+      opacity: 0.55;
+      box-shadow: none;
+    }
     .feat-item:hover .feat-icon {
       border-color: rgba(83,58,253,0.4);
       background: rgba(83,58,253,0.12);
@@ -696,7 +767,17 @@
     }
     .feat-icon svg { width:16px; height:16px; stroke:var(--accent); fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
     .feat-title { font-size:0.92rem; font-weight:600; color:var(--main); margin-bottom:6px; }
-    .feat-p { font-size:0.82rem; color:var(--sub); line-height:1.7; }
+    .feat-p { font-size:0.82rem; color:var(--sub); line-height:1.7; margin:0; }
+    @media (prefers-reduced-motion: reduce) {
+      #features .feat-item { position: static; margin-bottom: 12px; }
+      #features .feat-item:last-child { margin-bottom: 0; }
+      #features .feat-item__face {
+        transform: none !important;
+        opacity: 1 !important;
+        min-height: 0;
+        transition: none;
+      }
+    }
 
     /* ── ENFORCEMENT (FINES CHART) ── */
     .fines-band {
@@ -814,31 +895,95 @@
     .entry-cta:active::after { transform:translateX(3px); }
 
     /* ── CTA ── */
-    .cta-box { border:1px solid var(--border); background:var(--card); padding:80px 64px; text-align:center; position:relative; }
+    .cta-box {
+      border:1px solid var(--border);
+      background:var(--card);
+      padding:80px 64px;
+      text-align:center;
+      position:relative;
+    }
     .cta-box h2 { margin-bottom:16px; }
     .cta-box p { font-size:1rem; color:var(--sub); font-weight:400; max-width:480px; margin:0 auto 40px; line-height:1.75; }
     .cta-actions { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; }
 
-    /* ── FOOTER (compact, Stripe-scale type) ── */
-    footer { border-top:1px solid var(--border); background:var(--bg); }
-    .footer-top { max-width:1100px; margin:0 auto; padding:48px 48px 36px; display:grid; grid-template-columns:1.8fr 1fr 1fr 1fr; gap:40px; }
-    .f-brand .footer-logo { font-family:var(--font-brand); font-size:1rem; font-weight:500; margin-bottom:10px; color:var(--main); }
-    .f-brand p { font-size:0.75rem; color:var(--muted); line-height:1.65; max-width:220px; }
-    /* Column labels: sentence case, slightly stronger than links, never as strong as RegAnchor */
+    /* ── FOOTER — solid dark block, 4-column top + bar ── */
+    .site-footer {
+      --footer-ink: #0A0E14;
+      --footer-text: rgba(255,255,255,0.9);
+      --footer-muted: rgba(255,255,255,0.7);
+      --footer-subtle: rgba(255,255,255,0.58);
+      --footer-border: rgba(255,255,255,0.1);
+      position: relative;
+      color: var(--footer-text);
+      background: var(--footer-ink);
+    }
+    .site-footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(83, 58, 253, 0.38) 22%, rgba(83, 58, 253, 0.38) 78%, transparent 100%);
+      pointer-events: none;
+    }
+    .footer-top {
+      max-width:1100px;
+      margin:0 auto;
+      padding:56px 48px 36px;
+      display:grid;
+      grid-template-columns:1.8fr 1fr 1fr 1fr;
+      gap:40px 48px;
+    }
+    .f-brand .footer-logo {
+      margin-bottom: 12px;
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      line-height: 0;
+      flex-shrink: 0;
+    }
+    .f-brand .footer-logo img {
+      display: block;
+      height: 36px;
+      width: auto;
+    }
+    .f-brand p {
+      font-size:0.75rem;
+      color:var(--footer-muted);
+      line-height:1.7;
+      max-width:260px;
+      margin:0;
+    }
     .f-col h4 {
       font-family:var(--font-brand);
       font-size:0.8rem;
       font-weight:500;
       text-transform:none;
       letter-spacing:-0.01em;
-      color:var(--sub);
-      margin-bottom:10px;
+      color:#FFFFFF;
+      margin:0 0 12px;
     }
-    .f-col ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
-    .f-col a { font-size:0.75rem; color:var(--muted); text-decoration:none; transition:color 0.15s; }
-    .f-col a:hover { color:var(--sub); }
-    .footer-bottom { max-width:1100px; margin:0 auto; padding:16px 48px 24px; border-top:1px solid var(--border); text-align:center; }
-    .footer-bottom span { font-size:0.7rem; color:var(--muted); line-height:1.55; display:block; }
+    .f-col ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+    .f-col a {
+      font-size:0.75rem;
+      color:var(--footer-muted);
+      text-decoration:none;
+      transition:color 0.15s;
+    }
+    .f-col a:hover { color:#FFFFFF; }
+    .footer-bottom {
+      max-width:1100px;
+      margin:0 auto;
+      padding:20px 48px 28px;
+      border-top:1px solid var(--footer-border);
+      text-align:center;
+    }
+    .footer-bottom__legal {
+      font-size:0.7rem;
+      color:var(--footer-subtle);
+      line-height:1.6;
+    }
 
     /* ── ANIMATIONS ── */
     .fade { opacity:0; transform:translateY(16px); transition:opacity 0.6s ease, transform 0.6s ease; }
@@ -847,9 +992,43 @@
     /* ── RESPONSIVE ── */
     @media (max-width:1024px) {
       .nav-centre { display:none; }
-      .feat-layout { grid-template-columns:1fr; gap:40px; }
-      .feat-sticky { position:static; }
-      .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:40px 32px 28px; }
+      #features {
+        --feat-pin-head: 64px;
+        --feat-pin-card: 280px;
+        /* Longer runway so later cards don't get shoved up into the intro gap */
+        --feat-runway: min(50vh, 400px);
+      }
+      .feat-layout { grid-template-columns:1fr; gap:28px; }
+      .feat-sticky {
+        background: var(--bg);
+        /* Flush under nav (no peek window); bottom pad = stable air above cards */
+        padding-top: 14px;
+        padding-bottom: 48px;
+        box-shadow: none;
+      }
+      /* Opaque veil from sticky title up under the fixed chrome */
+      .feat-sticky::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        translate: -50% 0;
+        bottom: 100%;
+        width: 100vw;
+        height: 96px;
+        background: var(--bg);
+        pointer-events: none;
+      }
+      .feat-list {
+        /* Keep card stickies constrained until the stack has fully cleared */
+        padding-bottom: 100vh;
+      }
+      .feat-item:last-child { margin-bottom: min(24vh, 200px); }
+      .feat-item__face { min-height: 0; }
+      /* Don't lift covered cards into the heading gap on narrow viewports */
+      .feat-item.is-behind .feat-item__face {
+        transform: scale(0.97);
+      }
+      .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:56px 32px 28px; }
       .fines-band__top { grid-template-columns:1fr; gap:28px; }
       .system-head {
         grid-template-columns:1fr;
@@ -872,7 +1051,7 @@
       .hamburger { display:flex; }
       .hero-block { min-height: auto; }
       .hero { padding:64px 20px 0; }
-      .provider-marquee { padding: 32px 0 0; }
+      .provider-marquee { padding: 40px 0 8px; }
       .provider-marquee__viewport {
         -webkit-mask-image: linear-gradient(to right, transparent 0, #000 2.5rem, #000 calc(100% - 2.5rem), transparent 100%);
         mask-image: linear-gradient(to right, transparent 0, #000 2.5rem, #000 calc(100% - 2.5rem), transparent 100%);
@@ -952,14 +1131,14 @@
       .entry-card:nth-child(n+3) { border-bottom:1px solid var(--border); }
       .entry-card:last-child { border-bottom:none; }
       .cta-box { padding:48px 20px; }
-      .footer-top { grid-template-columns:1fr 1fr; gap:22px 20px; padding:28px 20px 20px; }
+      .footer-top { grid-template-columns:1fr 1fr; gap:22px 20px; padding:40px 20px 20px; }
       .f-brand { grid-column:1 / -1; margin-bottom:4px; }
       .f-brand p { max-width:none; }
       .f-col h4 { margin-bottom:8px; font-size:0.78rem; }
       .f-col ul { gap:5px; }
       .f-col a { font-size:0.72rem; }
-      .footer-bottom { padding:14px 20px 20px; }
-      .footer-bottom span { font-size:0.65rem; }
+      .footer-bottom { padding:16px 20px 24px; }
+      .footer-bottom__legal { font-size:0.65rem; }
     }
   </style>
 </head>
@@ -968,7 +1147,9 @@
 <!-- NAV -->
 <header class="home-chrome" id="homeChrome">
   <nav>
-    <a href="index.html" class="logo ra-wordmark">RegAnchor</a>
+    <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor">
+      <img src="brand/wordmark-text.svg?v=a3" alt="" width="193" height="36" decoding="async">
+    </a>
     <div class="nav-right">
       <a href="login.html" class="nav-signin">Sign in</a>
       <a href="diagnostic.html" class="nav-cta">Get started</a>
@@ -1115,39 +1296,49 @@
         <p class="section-sub fade">Every element of the platform is designed for organisations operating under active UK and EU regulatory oversight, from assessment logic through to reporting.</p>
       </div>
       <div class="feat-list">
-        <div class="feat-item fade">
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M3 21h18"/><circle cx="8" cy="14" r="3"/><circle cx="16" cy="14" r="3"/></svg></div>
-          <div class="feat-body">
-            <div class="feat-title">Precise Regulatory Mapping</div>
-            <p class="feat-p">Every finding consistently references its specific regulatory backing, such as EU AI Act Article 14 on human oversight, linking directly to the relevant article, ICO guidance paragraph, or FCA expectation.</p>
+        <div class="feat-item">
+          <div class="feat-item__face">
+            <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M3 21h18"/><circle cx="8" cy="14" r="3"/><circle cx="16" cy="14" r="3"/></svg></div>
+            <div class="feat-body">
+              <div class="feat-title">Precise Regulatory Mapping</div>
+              <p class="feat-p">Every finding consistently references its specific regulatory backing, such as EU AI Act Article 14 on human oversight, linking directly to the relevant article, ICO guidance paragraph, or FCA expectation.</p>
+            </div>
           </div>
         </div>
-        <div class="feat-item fade">
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v5c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 10v5c0 1.657 4.03 3 9 3s9-1.343 9-3v-5"/></svg></div>
-          <div class="feat-body">
-            <div class="feat-title">Sector Exposure Adjustment</div>
-            <p class="feat-p">Your maturity score is adjusted by a sector-specific multiplier, so a financial services deployment and a public sector one are held to different baselines.</p>
+        <div class="feat-item">
+          <div class="feat-item__face">
+            <div class="feat-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v5c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 10v5c0 1.657 4.03 3 9 3s9-1.343 9-3v-5"/></svg></div>
+            <div class="feat-body">
+              <div class="feat-title">Sector Exposure Adjustment</div>
+              <p class="feat-p">Your maturity score is adjusted by a sector-specific multiplier, so a financial services deployment and a public sector one are held to different baselines.</p>
+            </div>
           </div>
         </div>
-        <div class="feat-item fade">
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6l-8-4z"/></svg></div>
-          <div class="feat-body">
-            <div class="feat-title">EU AI Act Annex III Detection</div>
-            <p class="feat-p">Automatic identification of high-risk AI categories under Annex III, providing conformity assessment flags and Article 14 human oversight obligations mapped directly from your responses.</p>
+        <div class="feat-item">
+          <div class="feat-item__face">
+            <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6l-8-4z"/></svg></div>
+            <div class="feat-body">
+              <div class="feat-title">EU AI Act Annex III Detection</div>
+              <p class="feat-p">Automatic identification of high-risk AI categories under Annex III, providing conformity assessment flags and Article 14 human oversight obligations mapped directly from your responses.</p>
+            </div>
           </div>
         </div>
-        <div class="feat-item fade">
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
-          <div class="feat-body">
-            <div class="feat-title">Board and Auditor-Ready Output</div>
-            <p class="feat-p">Designed for professional audiences, the generated report includes an executive summary, risk band narrative, domain-by-domain findings, prioritised recommendations, and a regulatory framework appendix.</p>
+        <div class="feat-item">
+          <div class="feat-item__face">
+            <div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
+            <div class="feat-body">
+              <div class="feat-title">Board and Auditor-Ready Output</div>
+              <p class="feat-p">Designed for professional audiences, the generated report includes an executive summary, risk band narrative, domain-by-domain findings, prioritised recommendations, and a regulatory framework appendix.</p>
+            </div>
           </div>
         </div>
-        <div class="feat-item fade">
-          <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-          <div class="feat-body">
-            <div class="feat-title">Secure Client Portal</div>
-            <p class="feat-p">Every AI system, control, and certificate lives in your organisation’s private account, not ours to share. Come back any time to check status, pull a report, or see how your posture has moved since the last review.</p>
+        <div class="feat-item">
+          <div class="feat-item__face">
+            <div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+            <div class="feat-body">
+              <div class="feat-title">Secure Client Portal</div>
+              <p class="feat-p">Every AI system, control, and certificate lives in your organisation’s private account, not ours to share. Come back any time to check status, pull a report, or see how your posture has moved since the last review.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -1206,10 +1397,12 @@
 </section>
 
 <!-- FOOTER -->
-<footer>
+<footer class="site-footer">
   <div class="footer-top">
     <div class="f-brand">
-      <div class="footer-logo ra-wordmark">RegAnchor</div>
+      <a href="index.html" class="footer-logo" aria-label="RegAnchor">
+        <img src="brand/wordmark-text-light.svg?v=a3" alt="" width="193" height="36" decoding="async">
+      </a>
       <p>AI governance risk advisory for regulated industries. Defensible frameworks, audit-ready reporting, and sector-specific regulatory alignment.</p>
     </div>
     <div class="f-col">
@@ -1239,13 +1432,13 @@
         <li><a href="contact.html">Contact</a></li>
         <li><a href="security.html">Security</a></li>
         <li><a href="privacy.html">Privacy Policy</a></li>
-        <li><a href="terms.html">Terms of Use</a></li>
+        <li><a href="terms.html">Terms &amp; Conditions</a></li>
         <li><a href="cookies.html">Cookies</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562). &copy; All rights reserved.</span>
+    <span class="footer-bottom__legal">RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562). &copy; All rights reserved.</span>
   </div>
 </footer>
 
@@ -1282,6 +1475,64 @@
     });
   }, { threshold: 0.1 });
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
+
+  // Feature deck: CSS sticky pins the heading + cards; this only marks
+  // covered cards so the one underneath can scale/dim. No GSAP.
+  (function () {
+    const section = document.getElementById('features');
+    if (!section) return;
+    const head = section.querySelector('.feat-sticky');
+    const items = Array.prototype.slice.call(section.querySelectorAll('.feat-item'));
+    if (!head || !items.length) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const compact = window.matchMedia('(max-width: 1024px)');
+    const NAV = 64;
+
+    function pinVars() {
+      if (compact.matches) {
+        // Flush under fixed chrome — a gap above the sticky title lets cards flash through
+        const headPin = NAV;
+        // Visual gap lives in sticky padding-bottom; latch cards at the pad edge
+        section.style.setProperty('--feat-pin-head', headPin + 'px');
+        section.style.setProperty('--feat-pin-card', (headPin + head.offsetHeight) + 'px');
+      } else {
+        section.style.setProperty('--feat-pin-head', '96px');
+        section.style.setProperty('--feat-pin-card', '96px');
+      }
+    }
+
+    function stack() {
+      if (reduce.matches) {
+        items.forEach(function (el) { el.classList.remove('is-behind'); });
+        return;
+      }
+      items.forEach(function (item, i) {
+        const next = items[i + 1];
+        if (!next) {
+          item.classList.remove('is-behind');
+          return;
+        }
+        const a = item.getBoundingClientRect();
+        const b = next.getBoundingClientRect();
+        item.classList.toggle('is-behind', b.top <= a.top + 12);
+      });
+    }
+
+    let ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () { stack(); ticking = false; });
+    }
+
+    pinVars();
+    stack();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () { pinVars(); stack(); }, { passive: true });
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(function () { pinVars(); stack(); }).observe(head);
+    }
+  })();
 
   // Sticky nav scroll fade (same behaviour as assessment chrome)
   const homeChrome = document.getElementById('homeChrome');

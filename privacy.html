@@ -15,7 +15,7 @@
   --hover:var(--ra-hover,rgba(17,17,17,0.028));
   --text-1:var(--ra-ink,#0A0E14);--text-2:var(--ra-slate-70,#374151);--text-3:var(--ra-steel,#6B7280);
   --font-brand:var(--ra-font-brand,'IBM Plex Sans',sans-serif);--font-body:var(--ra-font-product,'Inter',sans-serif);
-  --nav-h:60px;
+  --nav-h:64px;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -105,7 +105,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 <body>
 
 <nav class="rnav">
-  <a href="index.html" class="rnav-logo ra-wordmark">RegAnchor</a>
+  <a href="index.html" class="rnav-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
   <a href="index.html" class="nav-back">Back to site</a>
 </nav>
 <div class="ra-anchor-line ra-anchor-line--entrance" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:99;"><div class="ra-anchor-line__seg"></div></div>
@@ -294,14 +294,15 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 </div>
 
 <footer class="rfooter">
-  <a href="index.html" class="rf-logo ra-wordmark">RegAnchor</a>
+  <a href="index.html" class="rf-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
   <div class="rf-links">
     <a href="privacy.html">Privacy Policy</a>
+    <a href="security.html">Security</a>
     <a href="cookies.html">Cookie Policy</a>
     <a href="terms.html">Terms &amp; Conditions</a>
     <a href="index.html">Home</a>
   </div>
-  <div style="flex:1 0 100%;font-size:.72rem;color:inherit;opacity:.7;">RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562).</div>
+  <p class="rfooter-legal">RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562).</p>
 </footer>
 
 <script>
@@ -327,5 +328,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webk
 })();
 </script>
 
+<script src="js/ra-chrome.js"></script>
 </body>
 </html>
