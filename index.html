@@ -998,19 +998,19 @@
       #features {
         --feat-pin-head: 64px;
         --feat-pin-card: 280px;
-        /* Extreme tighten — mobile scroll is fast; keep the stack compact */
-        --feat-runway: 14px;
-        --feat-stack-step: 34px;
+        /* Compact runway between cards; peek = title + first sentence */
+        --feat-runway: 16px;
+        --feat-stack-step: 78px;
       }
       .feat-layout { grid-template-columns:1fr; gap:20px; }
       .feat-sticky {
         background: var(--bg);
-        /* Flush under nav (no peek window); bottom pad = stable air above cards */
         padding-top: 12px;
-        padding-bottom: 28px;
+        padding-bottom: 24px;
         box-shadow: none;
+        will-change: top;
       }
-      /* Full-bleed paper behind the sticky intro — seals cards/shadows at the sides */
+      /* Full-bleed paper behind the sticky intro — seals cards at the sides */
       .feat-sticky::before,
       .feat-sticky::after {
         content: '';
@@ -1031,42 +1031,36 @@
         z-index: -1;
       }
       .feat-list {
-        padding-bottom: 28px;
+        /* Room for last card + stacked tabs to rise under the nav */
+        padding-bottom: min(55vh, 420px);
       }
-      .feat-item:last-child { margin-bottom: 12px; }
-      /* Visible stack: each card latches a step lower so prior title tabs peek */
+      .feat-item:last-child { margin-bottom: min(28vh, 220px); }
+      /* Stripe-style stepped pins — prior cards peek as title + opening line */
       .feat-item:nth-child(1) { top: var(--feat-pin-card); }
       .feat-item:nth-child(2) { top: calc(var(--feat-pin-card) + var(--feat-stack-step)); }
       .feat-item:nth-child(3) { top: calc(var(--feat-pin-card) + (2 * var(--feat-stack-step))); }
       .feat-item:nth-child(4) { top: calc(var(--feat-pin-card) + (3 * var(--feat-stack-step))); }
       .feat-item:nth-child(5) { top: calc(var(--feat-pin-card) + (4 * var(--feat-stack-step))); }
       .feat-item__face { min-height: 0; }
-      /* Mobile stack: collapse covered cards to title strip only (no shader/shadow) */
+      /* Covered cards: clip to title + first sentence (icon may partially clip) */
       .feat-item.is-behind .feat-item__face {
         overflow: hidden;
         max-height: var(--feat-stack-step);
-        padding: 8px 16px;
-        gap: 10px;
-        align-items: center;
+        padding: 14px 18px;
+        gap: 14px;
+        align-items: flex-start;
         box-shadow: none;
         transform: none;
         opacity: 1;
       }
       .feat-item.is-behind .feat-item__face::after { display: none; }
-      .feat-item.is-behind .feat-p { display: none; }
-      .feat-item.is-behind .feat-icon {
-        width: 28px;
-        height: 28px;
-        min-width: 28px;
-      }
-      .feat-item.is-behind .feat-icon svg { width: 14px; height: 14px; }
-      .feat-item.is-behind .feat-title {
-        margin: 0;
-        font-size: 0.82rem;
-        line-height: 1.2;
-        white-space: nowrap;
+      .feat-item.is-behind .feat-title { margin-bottom: 4px; }
+      .feat-item.is-behind .feat-p {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
         overflow: hidden;
-        text-overflow: ellipsis;
       }
       .feat-item:not(.is-behind) .feat-item__face { box-shadow: none; }
       .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:56px 32px 28px; }
@@ -1530,8 +1524,9 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // Feature deck: CSS sticky pins the heading + cards; this only marks
-  // covered cards so the one underneath can scale/dim. No GSAP.
+  // Feature deck: sticky heading + stepped cards. On mobile, after the last
+  // card latches, further scroll raises the whole stack under the nav (Stripe-
+  // style) while the intro heading slides away. No GSAP.
   (function () {
     const section = document.getElementById('features');
     if (!section) return;
@@ -1541,17 +1536,39 @@
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     const compact = window.matchMedia('(max-width: 1024px)');
     const NAV = 64;
+    const last = items[items.length - 1];
+    let latchScrollY = null;
 
     function pinVars() {
-      if (compact.matches) {
-        // Flush under fixed chrome — a gap above the sticky title lets cards flash through
-        const headPin = NAV;
-        // Visual gap lives in sticky padding-bottom; latch cards at the pad edge
-        section.style.setProperty('--feat-pin-head', headPin + 'px');
-        section.style.setProperty('--feat-pin-card', (headPin + head.offsetHeight) + 'px');
-      } else {
+      if (!compact.matches) {
+        latchScrollY = null;
+        head.style.top = '';
         section.style.setProperty('--feat-pin-head', '96px');
         section.style.setProperty('--feat-pin-card', '96px');
+        return;
+      }
+
+      const headPin = NAV;
+      const underHead = headPin + head.offsetHeight;
+      const underNav = headPin + 10;
+      const riseSpan = Math.max(0, underHead - underNav);
+      const lastTop = last.getBoundingClientRect().top;
+      // Last card has latched under the intro when it sits at (or above) underHead
+      const latched = lastTop <= underHead + 2;
+
+      if (latched) {
+        if (latchScrollY === null) latchScrollY = window.scrollY;
+        const rise = Math.min(riseSpan, Math.max(0, window.scrollY - latchScrollY));
+        const pinCard = underHead - rise;
+        section.style.setProperty('--feat-pin-head', headPin + 'px');
+        section.style.setProperty('--feat-pin-card', pinCard + 'px');
+        // Slide intro up with the stack so the last card can finish under the nav
+        head.style.top = (headPin - rise) + 'px';
+      } else {
+        latchScrollY = null;
+        head.style.top = '';
+        section.style.setProperty('--feat-pin-head', headPin + 'px');
+        section.style.setProperty('--feat-pin-card', underHead + 'px');
       }
     }
 
@@ -1576,15 +1593,27 @@
     function onScroll() {
       if (ticking) return;
       ticking = true;
-      requestAnimationFrame(function () { stack(); ticking = false; });
+      requestAnimationFrame(function () {
+        pinVars();
+        stack();
+        ticking = false;
+      });
     }
 
     pinVars();
     stack();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', function () { pinVars(); stack(); }, { passive: true });
+    window.addEventListener('resize', function () {
+      latchScrollY = null;
+      pinVars();
+      stack();
+    }, { passive: true });
     if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(function () { pinVars(); stack(); }).observe(head);
+      new ResizeObserver(function () {
+        latchScrollY = null;
+        pinVars();
+        stack();
+      }).observe(head);
     }
   })();
 
