@@ -998,7 +998,7 @@
       #features {
         --feat-pin-head: 64px;
         --feat-pin-card: 280px;
-        --feat-runway: 16px;
+        --feat-runway: 0px;
         --feat-stack-step: 78px;
       }
       .feat-layout { grid-template-columns:1fr; gap:20px; }
@@ -1029,54 +1029,35 @@
         z-index: -1;
       }
       .feat-list {
-        /* Room for last card + stacked tabs to rise under the nav */
-        padding-bottom: min(55vh, 420px);
+        align-items: stretch;
+        padding-bottom: min(36vh, 280px);
       }
-      .feat-deck-spacer {
-        height: 0;
+      .feat-stack-spacer {
+        height: min(36vh, 280px);
+        flex-shrink: 0;
         pointer-events: none;
       }
-      .feat-layout.is-deck-locked {
-        background: var(--bg);
-        z-index: 15;
+      .feat-item {
+        width: 100%;
         box-sizing: border-box;
       }
-      .feat-layout.is-deck-locked .feat-sticky,
-      .feat-layout.is-deck-locked .feat-item {
-        position: absolute;
-        margin: 0;
+      .feat-item__face {
+        width: 100%;
+        box-sizing: border-box;
       }
-      .feat-item:last-child { margin-bottom: min(28vh, 220px); }
+      .feat-item:last-child { margin-bottom: 0; }
       /* Stepped sticky pins — each card peeks above the next (Stripe-style) */
       .feat-item:nth-child(1) { top: var(--feat-pin-card); }
       .feat-item:nth-child(2) { top: calc(var(--feat-pin-card) + var(--feat-stack-step)); }
       .feat-item:nth-child(3) { top: calc(var(--feat-pin-card) + (2 * var(--feat-stack-step))); }
       .feat-item:nth-child(4) { top: calc(var(--feat-pin-card) + (3 * var(--feat-stack-step))); }
-      /* Last card shares penultimate pin — offset down so it cannot scroll past it */
-      .feat-item:nth-child(5) {
-        top: calc(var(--feat-pin-card) + (3 * var(--feat-stack-step)));
-        transform: translateY(var(--feat-stack-step));
-      }
+      .feat-item:nth-child(5) { top: calc(var(--feat-pin-card) + (4 * var(--feat-stack-step))); }
       .feat-item__face { min-height: 0; }
-      /* Covered cards: clip to title + first sentence (icon may partially clip) */
+      /* Peek comes from stepped sticky tops + z-index — keep full card height in flow */
       .feat-item.is-behind .feat-item__face {
-        overflow: hidden;
-        max-height: var(--feat-stack-step);
-        padding: 14px 18px;
-        gap: 14px;
-        align-items: flex-start;
         box-shadow: none;
         transform: none;
         opacity: 1;
-      }
-      .feat-item.is-behind .feat-item__face::after { display: none; }
-      .feat-item.is-behind .feat-title { margin-bottom: 4px; }
-      .feat-item.is-behind .feat-p {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 1;
-        line-clamp: 1;
-        overflow: hidden;
       }
       .feat-item:not(.is-behind) .feat-item__face { box-shadow: none; }
       .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:56px 32px 28px; }
@@ -1405,6 +1386,7 @@
             </div>
           </div>
         </div>
+        <div class="feat-stack-spacer" aria-hidden="true"></div>
       </div>
     </div>
   </div>
@@ -1540,147 +1522,26 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // Feature deck: stepped sticky cards. Hard rule — last card must never pass
-  // the penultimate card. When seated, freeze and scroll the whole block up.
+  // Feature deck: pure CSS sticky stack (Stripe-style). JS only sets pin offset
+  // and toggles is-behind for the clipped peek on covered cards.
   (function () {
     const section = document.getElementById('features');
     if (!section) return;
-    const layout = section.querySelector('.feat-layout');
     const head = section.querySelector('.feat-sticky');
-    const list = section.querySelector('.feat-list');
     const items = Array.prototype.slice.call(section.querySelectorAll('.feat-item'));
-    if (!layout || !head || !list || !items.length) return;
+    if (!head || !items.length) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     const compact = window.matchMedia('(max-width: 1024px)');
     const NAV = 64;
-    const penultimate = items[items.length - 2];
-    const last = items[items.length - 1];
-    const freezeEls = [head].concat(items);
-    let spacer = section.querySelector('.feat-deck-spacer');
-    if (!spacer) {
-      spacer = document.createElement('div');
-      spacer.className = 'feat-deck-spacer';
-      spacer.setAttribute('aria-hidden', 'true');
-      layout.insertAdjacentElement('afterend', spacer);
-    }
-    let locked = false;
-    let latchScrollY = 0;
-    let lockTop = 0;
-    let lockLeft = 0;
-    let lockWidth = 0;
-    let riseSpan = 0;
-
-    function stackStep() {
-      const v = getComputedStyle(section).getPropertyValue('--feat-stack-step').trim();
-      return parseFloat(v) || 78;
-    }
-
-    function pinCardY() {
-      return NAV + head.offsetHeight;
-    }
-
-    function penTop() {
-      return penultimate.getBoundingClientRect().top;
-    }
-
-    function lastSeatY() {
-      return penTop() + stackStep();
-    }
-
-    function lastPassedPenultimate() {
-      return last.getBoundingClientRect().top < penTop() - 1;
-    }
-
-    function stackComplete() {
-      if (!penultimate.classList.contains('is-behind')) return false;
-      if (lastPassedPenultimate()) return true;
-      const seat = lastSeatY();
-      const lastTop = last.getBoundingClientRect().top;
-      return lastTop <= seat + 6 && lastTop >= seat - 10;
-    }
-
-    function layoutBox() {
-      const r = layout.getBoundingClientRect();
-      return { top: r.top, left: r.left, width: r.width, height: r.height };
-    }
-
-    function freezeLayout(box) {
-      freezeEls.forEach(function (el) {
-        const r = el.getBoundingClientRect();
-        el.style.top = (r.top - box.top) + 'px';
-        el.style.left = (r.left - box.left) + 'px';
-        el.style.width = r.width + 'px';
-      });
-      layout.style.height = box.height + 'px';
-    }
-
-    function thawLayout() {
-      layout.style.height = '';
-      freezeEls.forEach(function (el) {
-        el.style.top = '';
-        el.style.left = '';
-        el.style.width = '';
-      });
-    }
-
-    function lockDeck() {
-      if (locked || reduce.matches) return;
-      const box = layoutBox();
-      locked = true;
-      latchScrollY = window.scrollY;
-      lockTop = box.top;
-      lockLeft = box.left;
-      lockWidth = box.width;
-      riseSpan = Math.max(0, pinCardY() - (NAV + 10));
-      layout.classList.add('is-deck-locked');
-      layout.style.position = 'relative';
-      layout.style.height = box.height + 'px';
-      freezeLayout(box);
-      layout.style.position = 'fixed';
-      layout.style.top = lockTop + 'px';
-      layout.style.left = lockLeft + 'px';
-      layout.style.width = lockWidth + 'px';
-      spacer.style.height = (box.height + riseSpan) + 'px';
-    }
-
-    function unlockDeck() {
-      if (!locked) return;
-      locked = false;
-      layout.classList.remove('is-deck-locked');
-      layout.style.position = '';
-      layout.style.top = '';
-      layout.style.left = '';
-      layout.style.width = '';
-      layout.style.height = '';
-      thawLayout();
-      spacer.style.height = '0';
-    }
 
     function pinVars() {
       if (!compact.matches) {
-        unlockDeck();
         section.style.setProperty('--feat-pin-head', '96px');
         section.style.setProperty('--feat-pin-card', '96px');
         return;
       }
-
       section.style.setProperty('--feat-pin-head', NAV + 'px');
-      section.style.setProperty('--feat-pin-card', pinCardY() + 'px');
-
-      if (reduce.matches) return;
-
-      if (!locked) {
-        if (lastPassedPenultimate() || stackComplete()) lockDeck();
-        return;
-      }
-
-      if (window.scrollY < latchScrollY - 8) {
-        unlockDeck();
-        return;
-      }
-
-      const rise = Math.min(riseSpan, Math.max(0, window.scrollY - latchScrollY));
-      layout.style.top = (lockTop - rise) + 'px';
+      section.style.setProperty('--feat-pin-card', (NAV + head.offsetHeight) + 'px');
     }
 
     function stack() {
@@ -1688,7 +1549,6 @@
         items.forEach(function (el) { el.classList.remove('is-behind'); });
         return;
       }
-      if (locked) return;
       items.forEach(function (item, i) {
         const next = items[i + 1];
         if (!next) {
@@ -1697,12 +1557,7 @@
         }
         const a = item.getBoundingClientRect();
         const b = next.getBoundingClientRect();
-        if (next === last) {
-          const seat = a.top + stackStep();
-          item.classList.toggle('is-behind', b.top <= seat + 8);
-        } else {
-          item.classList.toggle('is-behind', b.top <= a.top + 12);
-        }
+        item.classList.toggle('is-behind', b.top <= a.top + 12);
       });
     }
 
@@ -1712,24 +1567,21 @@
       ticking = true;
       requestAnimationFrame(function () {
         stack();
-        pinVars();
         ticking = false;
       });
     }
 
-    stack();
     pinVars();
+    stack();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', function () {
-      if (locked) unlockDeck();
-      stack();
       pinVars();
+      stack();
     }, { passive: true });
     if (typeof ResizeObserver !== 'undefined') {
       new ResizeObserver(function () {
-        if (locked) unlockDeck();
-        stack();
         pinVars();
+        stack();
       }).observe(head);
     }
   })();
