@@ -179,21 +179,8 @@ body {
 .nav-cta svg { flex-shrink: 0; transition: transform 0.18s; }
 .nav-cta:hover svg { transform: translateX(3px); }
 
-.hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  padding: 0;
-}
-.hamburger span {
-  display: block;
-  width: 20px;
-  height: 1.5px;
-  background: var(--main);
-}
+/* hamburger → see css/reganchor.css */
+
 .mob-menu {
   display: none;
   flex-direction: column;
@@ -837,7 +824,6 @@ footer { border-top: 1px solid var(--border); background: var(--bg); }
 @media (max-width: 768px) {
   .nav-centre { display: none; }
   .nav-right { display: none; }
-  .hamburger { display: flex; }
   .home-chrome nav,
   .wrap,
   .footer-inner { padding-left: 20px; padding-right: 20px; }

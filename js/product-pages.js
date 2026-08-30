@@ -2,17 +2,6 @@
 (function () {
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
-  function toggleMob() {
-    var m = document.getElementById('mobMenu');
-    if (m) m.classList.toggle('open');
-  }
-  function closeMob() {
-    var m = document.getElementById('mobMenu');
-    if (m) m.classList.remove('open');
-  }
-  window.toggleMob = toggleMob;
-  window.closeMob = closeMob;
-
   var chrome = document.querySelector('.home-chrome');
   function onScroll() {
     if (!chrome) return;

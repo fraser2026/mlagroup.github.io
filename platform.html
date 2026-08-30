@@ -88,10 +88,7 @@
     .nav-cta:hover { background: var(--accent-h); }
     .nav-cta svg { transition: transform 0.18s; flex-shrink: 0; }
     .nav-cta:hover svg { transform: translateX(3px); }
-    .hamburger {
-      display: none; flex-direction: column; gap: 5px; border: none; background: none; cursor: pointer;
-    }
-    .hamburger span { width: 20px; height: 1.5px; background: var(--main); display: block; }
+    /* hamburger → see css/reganchor.css */
     .mob-menu {
       display: none; flex-direction: column; position: fixed; top: 64px; left: 0; right: 0;
       z-index: 99; background: var(--bg); border-bottom: 1px solid var(--border); padding: 16px 24px;
@@ -441,7 +438,6 @@
         white-space: normal;
       }
       .nav-right { display: none; }
-      .hamburger { display: flex; }
       .fg-row { grid-template-columns: 1fr; }
       .hero-stage {
         width: 100%;
@@ -462,7 +458,7 @@
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
   </div>
-    <button type="button" class="hamburger" aria-label="Menu" onclick="toggleMob()"><span></span><span></span><span></span></button>
+    <button type="button" class="hamburger" id="ham" aria-label="Menu" aria-expanded="false" aria-controls="mobMenu" onclick="toggleMob()"><span></span><span></span><span></span></button>
 </nav>
   <div class="home-chrome__fade" aria-hidden="true"></div>
 </header>
@@ -585,15 +581,13 @@
   </div>
 </div>
 
+<script src="js/nav-mobile.js"></script>
 <script>
 (function () {
   var chromeEl = document.getElementById('homeChrome');
   window.addEventListener('scroll', function () {
     chromeEl.classList.toggle('is-scrolled', window.scrollY > 12);
   }, { passive: true });
-  window.toggleMob = function () {
-    document.getElementById('mobMenu').classList.toggle('open');
-  };
 
   /* Scale portal canvas to stage width only — never touches root font-size */
   var PW = 1180;

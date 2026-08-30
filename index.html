@@ -156,12 +156,7 @@
     }
     .nav-cta svg { stroke:#FFFFFF; flex-shrink:0; }
 
-    .hamburger {
-      display:none; flex-direction:column; gap:5px; cursor:pointer;
-      padding:0; margin:0; border:none; background:none;
-      width:20px;
-    }
-    .hamburger span { display:block; width:20px; height:1.5px; background:var(--main); transition:0.25s; }
+    /* hamburger → see css/reganchor.css */
 
     /* FIX 1: position:fixed so it always appears below the nav regardless of scroll position */
     .mob-menu {
@@ -174,6 +169,11 @@
       align-items:center; text-align:center;
     }
     .mob-menu.open { display:flex; }
+    .mob-menu .btn-ghost {
+      width: 100%;
+      padding: 13px;
+      margin-bottom: 8px;
+    }
     .mob-link {
       width:100%; padding:12px 12px;
       font-size:0.9rem; font-weight:400; color:var(--sub);
@@ -1091,7 +1091,6 @@
       .home-chrome nav { padding:0 20px; }
       .mob-menu { padding:16px 20px 20px; }
       .nav-right { display:none; }
-      .hamburger { display:flex; }
       .hero-block { min-height: auto; }
       .hero { padding:64px 20px 0; }
       .provider-marquee { padding: 40px 0 8px; }
@@ -1210,16 +1209,16 @@
       <a href="login.html" class="nav-signin">Sign in</a>
       <a href="diagnostic.html" class="nav-cta">Get started</a>
     </div>
-    <div class="hamburger" id="ham" onclick="toggleMob()">
+    <button type="button" class="hamburger" id="ham" aria-label="Menu" aria-expanded="false" aria-controls="mobMenu" onclick="toggleMob()">
       <span></span><span></span><span></span>
-    </div>
+    </button>
   </nav>
   <div class="home-chrome__fade" aria-hidden="true"></div>
 </header>
 <div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
 <div class="mob-menu" id="mobMenu">
-  <a href="login.html" class="mob-link">Sign in</a>
-  <a href="diagnostic.html" class="mob-cta">
+  <a href="login.html" class="btn-ghost" onclick="closeMob()">Sign in</a>
+  <a href="diagnostic.html" class="mob-cta" onclick="closeMob()">
     Get started
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
@@ -1547,6 +1546,7 @@
   </div>
 </footer>
 
+<script src="js/nav-mobile.js"></script>
 <script src="js/ra-maturity.js"></script>
 <script>
   // FIX 3: Disable browser scroll restoration so refresh always goes to top
@@ -1554,22 +1554,6 @@
     history.scrollRestoration = 'manual';
   }
   window.addEventListener('beforeunload', () => window.scrollTo(0, 0));
-
-  function toggleMob() {
-    document.getElementById('mobMenu').classList.toggle('open');
-  }
-  function closeMob() {
-    document.getElementById('mobMenu').classList.remove('open');
-  }
-
-  // Close menu if user clicks outside it
-  document.addEventListener('click', (e) => {
-    const menu = document.getElementById('mobMenu');
-    const ham  = document.getElementById('ham');
-    if (menu.classList.contains('open') && !menu.contains(e.target) && !ham.contains(e.target)) {
-      menu.classList.remove('open');
-    }
-  });
 
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e, i) => {

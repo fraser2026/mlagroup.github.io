@@ -191,7 +191,10 @@ nav, .rnav {
   outline: none;
 }
 
-.hamburger span { background: var(--main) !important }
+.hamburger { color: var(--main, var(--ra-ink, #061B31)) !important; }
+.hamburger span { background: currentColor !important; }
+.hamburger:hover,
+.hamburger:focus-visible { color: var(--accent, var(--ra-blurple, #533AFD)) !important; }
 .mob-menu {
   background: var(--bg) !important;
   border-top: 1px solid var(--border);
