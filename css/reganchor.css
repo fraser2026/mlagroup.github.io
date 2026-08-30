@@ -263,6 +263,143 @@ table.ra-table,
   outline: none;
 }
 
+.btn-primary:focus,
+.btn-ghost:focus,
+.btn-secondary:focus,
+.btn-consult:focus,
+.nav-cta:focus,
+.mob-cta:focus,
+[data-open-demo]:focus {
+  outline: none;
+}
+
+/* ── Demo modal — Blurple field focus (platform + index) ── */
+.modal .fg input,
+.modal .fg select,
+.modal .fg textarea {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.modal .fg input:focus,
+.modal .fg select:focus,
+.modal .fg textarea:focus {
+  outline: none;
+  border-color: var(--accent, var(--ra-blurple, #533AFD));
+  box-shadow: 0 0 0 2px rgba(83, 58, 253, 0.2);
+}
+.modal__x:focus {
+  outline: none;
+}
+.modal__x:focus-visible {
+  outline: 2px solid var(--accent, var(--ra-blurple, #533AFD));
+  outline-offset: 2px;
+  color: var(--accent, var(--ra-blurple, #533AFD));
+}
+
+/* ── Back to site nav link ── */
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ra-muted, #697386);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.nav-back::before {
+  content: '←';
+  display: inline-block;
+  line-height: 1;
+  transition: transform 0.42s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+.nav-back:has(svg)::before {
+  content: none;
+  display: none;
+}
+.nav-back svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  transition: transform 0.42s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+.nav-back:hover,
+.nav-back:focus-visible {
+  color: var(--accent, var(--ra-blurple, #533AFD));
+}
+.nav-back:focus {
+  outline: none;
+}
+.nav-back:focus-visible {
+  outline: 2px solid var(--accent, var(--ra-blurple, #533AFD));
+  outline-offset: 3px;
+}
+.nav-back:hover::before,
+.nav-back:focus-visible::before,
+.nav-back:active::before,
+.nav-back:hover svg,
+.nav-back:focus-visible svg,
+.nav-back:active svg {
+  transform: translateX(-3px);
+}
+.sso-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--accent, var(--ra-blurple, #533AFD));
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.sso-back:hover,
+.sso-back:focus-visible {
+  color: var(--accent-h, var(--ra-blurple-hover, #4434E0));
+}
+.sso-back:focus {
+  outline: none;
+}
+.sso-back:focus-visible {
+  outline: 2px solid var(--accent, var(--ra-blurple, #533AFD));
+  outline-offset: 3px;
+}
+.sso-back svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  transition: transform 0.42s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+.sso-back:hover svg,
+.sso-back:focus-visible svg,
+.sso-back:active svg {
+  transform: translateX(-3px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-back::before,
+  .nav-back svg,
+  .sso-back svg {
+    transition: none !important;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    BADGES — tight radius, not capsules
    ═══════════════════════════════════════════════════════════════ */

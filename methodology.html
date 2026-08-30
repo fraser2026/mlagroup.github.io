@@ -95,9 +95,7 @@
     /* PAGE HEADER */
     .page-header { position:relative; z-index:1; padding:88px 0 64px; border-bottom:1px solid var(--border); }
     .header-grid { display:grid; grid-template-columns:1fr 220px; gap:56px; align-items:end; }
-    .return-link { font-size:.79rem; font-weight:500; color:var(--muted); text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-bottom:24px; transition:color .15s; }
-    .return-link:hover { color:var(--main); }
-    .return-link svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+    .return-link { margin-bottom:24px; }
     .framing {
       margin-top:28px; padding:20px 24px;
       border-left:2px solid var(--main);
@@ -260,7 +258,7 @@
   <div class="pw">
     <div class="header-grid">
       <div>
-        <a href="index.html" class="return-link">
+        <a href="index.html" class="nav-back return-link">
           <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4"/></svg>
           Return
         </a>

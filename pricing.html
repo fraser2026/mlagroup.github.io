@@ -351,18 +351,104 @@ h1 {
 .plan-table__y { color:var(--main); font-weight:500; text-align:center; }
 .plan-table__n { color:var(--ra-text-4, var(--muted)); text-align:center; }
  
-/* FAQ — match public card feature scale */
+/* FAQ — disclosure ledger (index features pattern, no left meter) */
 .faq-section { position:relative; z-index:1; max-width:640px; margin:0 auto; padding:52px 24px 0; }
 .faq-section h2 { font-family:var(--font-brand); font-size:clamp(1.5rem,2.6vw,1.8rem); font-weight:500; color:var(--main); text-align:center; margin-bottom:28px; }
-.qi { border:1px solid var(--border); margin-bottom:8px; overflow:hidden; transition:border-color 0.2s; }
-.qi:hover { border-color:var(--border-h); }
-.qq { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; cursor:pointer; font-size:0.88rem; font-weight:500; color:var(--main); user-select:none; letter-spacing:-0.01em; }
-.qq:hover { background:var(--hover); }
-.qa { max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s; }
-.qi.open .qa { max-height:220px; padding:0 18px 14px; }
-.qa p { font-size:0.88rem; color:var(--sub); line-height:1.65; font-weight:400; }
-.qarr { width:12px; height:12px; stroke:var(--muted); fill:none; stroke-width:2; stroke-linecap:round; transition:transform 0.25s; flex-shrink:0; }
-.qi.open .qarr { transform:rotate(180deg); }
+.faq-accordion {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.faq-row { border-bottom: 1px solid var(--border); }
+.faq-row:last-child { border-bottom: none; }
+.faq-row__trigger {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.faq-row__trigger:hover,
+.faq-row__trigger:focus-visible,
+.faq-row.is-open > .faq-row__trigger {
+  background: var(--hover);
+}
+.faq-row__trigger:focus-visible {
+  outline: 2px solid var(--ra-blurple, #533AFD);
+  outline-offset: -2px;
+}
+.faq-row__head {
+  flex: 1;
+  min-width: 0;
+  padding: 18px 8px 18px 18px;
+}
+.faq-row__title {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--main);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+.faq-row__chev {
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+  padding: 20px 20px 0 8px;
+  color: var(--ra-blurple, #533AFD);
+}
+.faq-row__chev-icon {
+  display: block;
+  transition: transform 0.42s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+.faq-row__trigger:hover .faq-row__chev-icon {
+  transform: translateY(2px);
+}
+.faq-row.is-open .faq-row__chev-icon {
+  transform: rotate(180deg);
+}
+.faq-row.is-open .faq-row__trigger:hover .faq-row__chev-icon {
+  transform: rotate(180deg) translateY(-2px);
+}
+.faq-row__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.42s cubic-bezier(0.34, 1.15, 0.64, 1);
+}
+.faq-row.is-open .faq-row__panel {
+  grid-template-rows: 1fr;
+}
+.faq-row__panel-inner { overflow: hidden; }
+.faq-row__body {
+  margin: 0;
+  padding: 2px 20px 20px 20px;
+  font-size: 0.82rem;
+  color: var(--sub);
+  line-height: 1.75;
+}
+.faq-row__body a {
+  color: var(--ra-blurple, #533AFD);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(83, 58, 253, 0.28);
+}
+.faq-row__body a:hover,
+.faq-row__body a:focus-visible {
+  color: var(--ra-blurple-hover, #4434E0);
+  border-bottom-color: var(--ra-blurple-hover, #4434E0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-row__chev-icon,
+  .faq-row__panel { transition: none !important; }
+  .faq-row.is-open .faq-row__chev-icon { transform: rotate(180deg); }
+}
  
 /* CTA — match index hero btn-primary / btn-ghost (4px radius) */
 .cta-section { position:relative; z-index:1; border-top:1px solid var(--border); }
@@ -705,12 +791,98 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
  
 <div class="faq-section">
   <h2>Frequently <em>asked.</em></h2>
-  <div class="qi" onclick="toggleFaq(this)"><div class="qq">Can I start free and upgrade later?<svg class="qarr" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg></div><div class="qa"><p>Yes. Your governance data, control progress, and assessments are preserved when you upgrade. Move to Essentials or Professional at any time from your portal dashboard.</p></div></div>
-  <div class="qi" onclick="toggleFaq(this)"><div class="qq">What qualifies me for a governance certificate?<svg class="qarr" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg></div><div class="qa"><p>An active Essentials or Professional subscription, a governance score of 70% or above, at least one registered AI system with a completed assessment, and all published policies acknowledged. Your portal tracks qualification progress in real time.</p></div></div>
-  <div class="qi" onclick="toggleFaq(this)"><div class="qq">What happens if I cancel?<svg class="qarr" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg></div><div class="qa"><p>Your portal access and governance data remain intact. Your certificate will expire, public verification will be deactivated, and PDF reports will be locked. Resubscribe at any time to reinstate.</p></div></div>
-  <div class="qi" onclick="toggleFaq(this)"><div class="qq">Is the certificate publicly verifiable?<svg class="qarr" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg></div><div class="qa"><p>Yes. Every active certificate has a unique ID and can be verified by anyone on our <a href="verify.html">public verification page</a>. The page confirms the organisation, level, score, and validity period.</p></div></div>
-  <div class="qi" onclick="toggleFaq(this)"><div class="qq">Can I switch between monthly and annual?<svg class="qarr" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg></div><div class="qa"><p>Yes. Contact us to switch your billing period. Annual plans save approximately 17% compared to monthly.</p></div></div>
-  <div class="qi" onclick="toggleFaq(this)"><div class="qq">Which regulatory frameworks are covered?<svg class="qarr" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg></div><div class="qa"><p>The EU AI Act, UK GDPR, FCA DP5/22, ICO AI Guidance, and ISO/IEC 42001. Every finding includes specific article references and regulatory citations.</p></div></div>
+  <div class="faq-accordion" role="presentation">
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-1" aria-expanded="false" aria-controls="faq-panel-1">
+        <span class="faq-row__head">
+          <span class="faq-row__title">Can I start free and upgrade later?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-1" role="region" aria-labelledby="faq-trigger-1" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">Yes. Your governance data, control progress, and assessments are preserved when you upgrade. Move to Essentials or Professional at any time from your portal dashboard.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-2" aria-expanded="false" aria-controls="faq-panel-2">
+        <span class="faq-row__head">
+          <span class="faq-row__title">What qualifies me for a governance certificate?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-2" role="region" aria-labelledby="faq-trigger-2" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">An active Essentials or Professional subscription, a governance score of 70% or above, at least one registered AI system with a completed assessment, and all published policies acknowledged. Your portal tracks qualification progress in real time.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-3" aria-expanded="false" aria-controls="faq-panel-3">
+        <span class="faq-row__head">
+          <span class="faq-row__title">What happens if I cancel?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-3" role="region" aria-labelledby="faq-trigger-3" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">Your portal access and governance data remain intact. Your certificate will expire, public verification will be deactivated, and PDF reports will be locked. Resubscribe at any time to reinstate.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-4" aria-expanded="false" aria-controls="faq-panel-4">
+        <span class="faq-row__head">
+          <span class="faq-row__title">Is the certificate publicly verifiable?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-4" role="region" aria-labelledby="faq-trigger-4" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">Yes. Every active certificate has a unique ID and can be verified by anyone on our <a href="verify.html">public verification page</a>. The page confirms the organisation, level, score, and validity period.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-5" aria-expanded="false" aria-controls="faq-panel-5">
+        <span class="faq-row__head">
+          <span class="faq-row__title">Can I switch between monthly and annual?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-5" role="region" aria-labelledby="faq-trigger-5" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">Yes. Contact us to switch your billing period. Annual plans save approximately 17% compared to monthly.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-6" aria-expanded="false" aria-controls="faq-panel-6">
+        <span class="faq-row__head">
+          <span class="faq-row__title">Which regulatory frameworks are covered?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-6" role="region" aria-labelledby="faq-trigger-6" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">The EU AI Act, UK GDPR, FCA DP5/22, ICO AI Guidance, and ISO/IEC 42001. Every finding includes specific article references and regulatory citations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
  
 <section class="cta-section">
@@ -853,7 +1025,50 @@ function toggleCompare(){
   if(!el)return;
   el.hidden=!el.hidden;
 }
-function toggleFaq(el){var w=el.classList.contains('open');document.querySelectorAll('.qi').forEach(function(i){i.classList.remove('open')});if(!w)el.classList.add('open')}
+(function () {
+  var accordion = document.querySelector('.faq-accordion');
+  if (!accordion) return;
+  var rows = Array.prototype.slice.call(accordion.querySelectorAll('.faq-row'));
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function closeRow(row, instant) {
+    var panel = row.querySelector('.faq-row__panel');
+    var trigger = row.querySelector('.faq-row__trigger');
+    if (!row.classList.contains('is-open')) return;
+    row.classList.remove('is-open');
+    trigger.setAttribute('aria-expanded', 'false');
+    if (instant || reduce) {
+      panel.hidden = true;
+      return;
+    }
+    function onEnd(e) {
+      if (e.propertyName !== 'grid-template-rows') return;
+      panel.hidden = true;
+      panel.removeEventListener('transitionend', onEnd);
+    }
+    panel.addEventListener('transitionend', onEnd);
+  }
+
+  function openRow(row) {
+    rows.forEach(function (r) {
+      if (r !== row) closeRow(r, reduce);
+    });
+    var panel = row.querySelector('.faq-row__panel');
+    var trigger = row.querySelector('.faq-row__trigger');
+    panel.hidden = false;
+    requestAnimationFrame(function () {
+      row.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+    });
+  }
+
+  rows.forEach(function (row) {
+    row.querySelector('.faq-row__trigger').addEventListener('click', function () {
+      if (row.classList.contains('is-open')) closeRow(row, reduce);
+      else openRow(row);
+    });
+  });
+})();
 
 function closePricingCheckout(){
   var c=document.getElementById('pricing-checkout-container');
