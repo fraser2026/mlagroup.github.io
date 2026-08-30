@@ -736,11 +736,12 @@
     .feat-item:nth-child(3) { z-index: 3; }
     .feat-item:nth-child(4) { z-index: 4; }
     .feat-item:nth-child(5) { z-index: 5; }
-    .feat-item:last-child { margin-bottom: min(14vh, 120px); }
+    .feat-item:last-child { margin-bottom: min(8vh, 64px); }
     .feat-item__face {
       display:flex; gap:18px;
       padding: 24px;
       min-height: 168px;
+      position: relative;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 4px;
@@ -776,7 +777,9 @@
         opacity: 1 !important;
         min-height: 0;
         transition: none;
+        box-shadow: 0 1px 2px rgba(6, 27, 49, 0.04) !important;
       }
+      #features .feat-item__face::after { display: none; }
     }
 
     /* ── ENFORCEMENT (FINES CHART) ── */
@@ -995,15 +998,15 @@
       #features {
         --feat-pin-head: 64px;
         --feat-pin-card: 280px;
-        /* Longer runway so later cards don't get shoved up into the intro gap */
-        --feat-runway: min(50vh, 400px);
+        /* Extreme tighten — mobile scroll is fast; keep the stack compact */
+        --feat-runway: 14px;
       }
-      .feat-layout { grid-template-columns:1fr; gap:28px; }
+      .feat-layout { grid-template-columns:1fr; gap:20px; }
       .feat-sticky {
         background: var(--bg);
         /* Flush under nav (no peek window); bottom pad = stable air above cards */
-        padding-top: 14px;
-        padding-bottom: 48px;
+        padding-top: 12px;
+        padding-bottom: 28px;
         box-shadow: none;
       }
       /* Opaque veil from sticky title up under the fixed chrome */
@@ -1019,14 +1022,28 @@
         pointer-events: none;
       }
       .feat-list {
-        /* Keep card stickies constrained until the stack has fully cleared */
-        padding-bottom: 100vh;
+        padding-bottom: 28px;
       }
-      .feat-item:last-child { margin-bottom: min(24vh, 200px); }
+      .feat-item:last-child { margin-bottom: 20px; }
       .feat-item__face { min-height: 0; }
-      /* Don't lift covered cards into the heading gap on narrow viewports */
+      /* Mobile: stack + subtle depth shader (no flat scale/fade) */
       .feat-item.is-behind .feat-item__face {
-        transform: scale(0.97);
+        transform: none;
+        opacity: 1;
+        box-shadow: none;
+      }
+      .feat-item.is-behind .feat-item__face::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: rgba(6, 27, 49, 0.045);
+        pointer-events: none;
+      }
+      .feat-item:not(.is-behind) .feat-item__face {
+        box-shadow:
+          0 1px 2px rgba(6, 27, 49, 0.05),
+          0 8px 20px rgba(6, 27, 49, 0.08);
       }
       .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:56px 32px 28px; }
       .fines-band__top { grid-template-columns:1fr; gap:28px; }
