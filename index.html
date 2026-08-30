@@ -770,7 +770,7 @@
     .feat-title { font-size:0.92rem; font-weight:600; color:var(--main); margin-bottom:6px; }
     .feat-p { font-size:0.82rem; color:var(--sub); line-height:1.7; margin:0; }
     @media (prefers-reduced-motion: reduce) {
-      #features .feat-item { position: static; margin-bottom: 12px; }
+      #features .feat-item { position: static; margin-bottom: 12px; transform: none !important; }
       #features .feat-item:last-child { margin-bottom: 0; }
       #features .feat-item__face {
         transform: none !important;
@@ -998,9 +998,9 @@
       #features {
         --feat-pin-head: 64px;
         --feat-pin-card: 280px;
-        /* Compact runway between cards; peek = title + first sentence */
         --feat-runway: 16px;
-        --feat-stack-step: 78px;
+        --feat-stack-step: 78px; /* clipped peek height (title + first line) */
+        --feat-tab-step: 36px;   /* vertical gap between stacked peeks */
       }
       .feat-layout { grid-template-columns:1fr; gap:20px; }
       .feat-sticky {
@@ -1043,12 +1043,12 @@
         box-sizing: border-box;
       }
       .feat-item:last-child { margin-bottom: min(28vh, 220px); }
-      /* Stripe-style stepped pins — prior cards peek as title + opening line */
-      .feat-item:nth-child(1) { top: var(--feat-pin-card); }
-      .feat-item:nth-child(2) { top: calc(var(--feat-pin-card) + var(--feat-stack-step)); }
-      .feat-item:nth-child(3) { top: calc(var(--feat-pin-card) + (2 * var(--feat-stack-step))); }
-      .feat-item:nth-child(4) { top: calc(var(--feat-pin-card) + (3 * var(--feat-stack-step))); }
-      .feat-item:nth-child(5) { top: calc(var(--feat-pin-card) + (4 * var(--feat-stack-step))); }
+      /* All cards share one sticky pin — incoming card stacks in place, never slides through */
+      .feat-item { top: var(--feat-pin-card); }
+      .feat-item.is-behind {
+        transform: translateY(calc(-1 * var(--peek-lift, 0px)));
+        transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      }
       .feat-item__face { min-height: 0; }
       /* Covered cards: clip to title + first sentence (icon may partially clip) */
       .feat-item.is-behind .feat-item__face {
@@ -1560,29 +1560,22 @@
     let lockWidth = 0;
     let riseSpan = 0;
 
-    function stackStep() {
-      const v = getComputedStyle(section).getPropertyValue('--feat-stack-step').trim();
-      return parseFloat(v) || 78;
+    function tabStep() {
+      const v = getComputedStyle(section).getPropertyValue('--feat-tab-step').trim();
+      return parseFloat(v) || 36;
     }
 
     function pinCardY() {
       return NAV + head.offsetHeight;
     }
 
-    function lastSeatY() {
-      return pinCardY() + (items.length - 1) * stackStep();
-    }
-
     function stackComplete() {
-      const seat = lastSeatY();
+      const pin = pinCardY();
+      const allBehind = items.slice(0, -1).every(function (el) {
+        return el.classList.contains('is-behind');
+      });
       const lastTop = last.getBoundingClientRect().top;
-      const prev = items[items.length - 2];
-      // Seat the last card in its stack slot — not after it has slid under the intro
-      return (
-        prev.classList.contains('is-behind') &&
-        lastTop <= seat + 8 &&
-        lastTop >= seat - 12
-      );
+      return allBehind && Math.abs(lastTop - pin) < 12;
     }
 
     function layoutBox() {
@@ -1651,9 +1644,13 @@
 
     function stack() {
       if (reduce.matches) {
-        items.forEach(function (el) { el.classList.remove('is-behind'); });
+        items.forEach(function (el) {
+          el.classList.remove('is-behind');
+          el.style.setProperty('--peek-lift', '0');
+        });
         return;
       }
+
       items.forEach(function (item, i) {
         const next = items[i + 1];
         if (!next) {
@@ -1663,6 +1660,23 @@
         const a = item.getBoundingClientRect();
         const b = next.getBoundingClientRect();
         item.classList.toggle('is-behind', b.top <= a.top + 12);
+      });
+
+      var front = items.length - 1;
+      for (var f = items.length - 1; f >= 0; f--) {
+        if (!items[f].classList.contains('is-behind')) {
+          front = f;
+          break;
+        }
+      }
+
+      var step = tabStep();
+      items.forEach(function (item, i) {
+        if (item.classList.contains('is-behind')) {
+          item.style.setProperty('--peek-lift', ((front - i) * step) + 'px');
+        } else {
+          item.style.setProperty('--peek-lift', '0');
+        }
       });
     }
 
