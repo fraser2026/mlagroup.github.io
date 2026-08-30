@@ -1000,6 +1000,7 @@
         --feat-pin-card: 280px;
         /* Extreme tighten — mobile scroll is fast; keep the stack compact */
         --feat-runway: 14px;
+        --feat-stack-step: 12px;
       }
       .feat-layout { grid-template-columns:1fr; gap:20px; }
       .feat-sticky {
@@ -1009,24 +1010,38 @@
         padding-bottom: 28px;
         box-shadow: none;
       }
-      /* Opaque veil from sticky title up under the fixed chrome */
-      .feat-sticky::before {
+      /* Full-bleed paper behind the sticky intro — seals cards/shadows at the sides */
+      .feat-sticky::before,
+      .feat-sticky::after {
         content: '';
         position: absolute;
         left: 50%;
         translate: -50% 0;
-        bottom: 100%;
         width: 100vw;
-        height: 96px;
         background: var(--bg);
         pointer-events: none;
+      }
+      .feat-sticky::before {
+        bottom: 100%;
+        height: 96px;
+      }
+      .feat-sticky::after {
+        top: 0;
+        bottom: 0;
+        z-index: -1;
       }
       .feat-list {
         padding-bottom: 28px;
       }
       .feat-item:last-child { margin-bottom: 20px; }
+      /* Visible stack: each card latches a step lower so prior cards peek */
+      .feat-item:nth-child(1) { top: var(--feat-pin-card); }
+      .feat-item:nth-child(2) { top: calc(var(--feat-pin-card) + var(--feat-stack-step)); }
+      .feat-item:nth-child(3) { top: calc(var(--feat-pin-card) + (2 * var(--feat-stack-step))); }
+      .feat-item:nth-child(4) { top: calc(var(--feat-pin-card) + (3 * var(--feat-stack-step))); }
+      .feat-item:nth-child(5) { top: calc(var(--feat-pin-card) + (4 * var(--feat-stack-step))); }
       .feat-item__face { min-height: 0; }
-      /* Mobile: stack + subtle depth shader (no flat scale/fade) */
+      /* Mobile: contained depth only — no outer blur (bleeds past sticky intro) */
       .feat-item.is-behind .feat-item__face {
         transform: none;
         opacity: 1;
@@ -1037,13 +1052,11 @@
         position: absolute;
         inset: 0;
         border-radius: inherit;
-        background: rgba(6, 27, 49, 0.045);
+        background: rgba(6, 27, 49, 0.055);
         pointer-events: none;
       }
       .feat-item:not(.is-behind) .feat-item__face {
-        box-shadow:
-          0 1px 2px rgba(6, 27, 49, 0.05),
-          0 8px 20px rgba(6, 27, 49, 0.08);
+        box-shadow: none;
       }
       .footer-top { grid-template-columns:1fr 1fr; gap:28px 32px; padding:56px 32px 28px; }
       .fines-band__top { grid-template-columns:1fr; gap:28px; }
