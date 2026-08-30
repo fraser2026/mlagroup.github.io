@@ -1052,7 +1052,11 @@
       .feat-item:nth-child(2) { top: calc(var(--feat-pin-card) + var(--feat-stack-step)); }
       .feat-item:nth-child(3) { top: calc(var(--feat-pin-card) + (2 * var(--feat-stack-step))); }
       .feat-item:nth-child(4) { top: calc(var(--feat-pin-card) + (3 * var(--feat-stack-step))); }
-      .feat-item:nth-child(5) { top: calc(var(--feat-pin-card) + (4 * var(--feat-stack-step))); }
+      /* Last card shares penultimate pin — offset down so it cannot scroll past it */
+      .feat-item:nth-child(5) {
+        top: calc(var(--feat-pin-card) + (3 * var(--feat-stack-step)));
+        transform: translateY(var(--feat-stack-step));
+      }
       .feat-item__face { min-height: 0; }
       /* Covered cards: clip to title + first sentence (icon may partially clip) */
       .feat-item.is-behind .feat-item__face {
@@ -1536,8 +1540,8 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // Feature deck: stepped sticky cards. When the last card seats in the stack,
-  // freeze the layout snapshot and scroll the whole block (title + cards) up.
+  // Feature deck: stepped sticky cards. Hard rule — last card must never pass
+  // the penultimate card. When seated, freeze and scroll the whole block up.
   (function () {
     const section = document.getElementById('features');
     if (!section) return;
@@ -1549,6 +1553,7 @@
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     const compact = window.matchMedia('(max-width: 1024px)');
     const NAV = 64;
+    const penultimate = items[items.length - 2];
     const last = items[items.length - 1];
     const freezeEls = [head].concat(items);
     let spacer = section.querySelector('.feat-deck-spacer');
@@ -1574,18 +1579,24 @@
       return NAV + head.offsetHeight;
     }
 
+    function penTop() {
+      return penultimate.getBoundingClientRect().top;
+    }
+
     function lastSeatY() {
-      return pinCardY() + (items.length - 1) * stackStep();
+      return penTop() + stackStep();
+    }
+
+    function lastPassedPenultimate() {
+      return last.getBoundingClientRect().top < penTop() - 1;
     }
 
     function stackComplete() {
-      const allBehind = items.slice(0, -1).every(function (el) {
-        return el.classList.contains('is-behind');
-      });
-      if (!allBehind) return false;
+      if (!penultimate.classList.contains('is-behind')) return false;
+      if (lastPassedPenultimate()) return true;
       const seat = lastSeatY();
       const lastTop = last.getBoundingClientRect().top;
-      return lastTop <= seat + 10 && lastTop >= seat - 14;
+      return lastTop <= seat + 6 && lastTop >= seat - 10;
     }
 
     function layoutBox() {
@@ -1659,7 +1670,7 @@
       if (reduce.matches) return;
 
       if (!locked) {
-        if (stackComplete()) lockDeck();
+        if (lastPassedPenultimate() || stackComplete()) lockDeck();
         return;
       }
 
@@ -1686,7 +1697,12 @@
         }
         const a = item.getBoundingClientRect();
         const b = next.getBoundingClientRect();
-        item.classList.toggle('is-behind', b.top <= a.top + 12);
+        if (next === last) {
+          const seat = a.top + stackStep();
+          item.classList.toggle('is-behind', b.top <= seat + 8);
+        } else {
+          item.classList.toggle('is-behind', b.top <= a.top + 12);
+        }
       });
     }
 
