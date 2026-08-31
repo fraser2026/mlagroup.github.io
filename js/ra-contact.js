@@ -3,8 +3,8 @@
  *
  * Outbound mail is sent by third parties configured outside this repo:
  *   • EmailJS  (https://dashboard.emailjs.com) — browser SDK, template HTML/branding
- *       (demo modal, contact form, portal alerts, admin/enterprise notify)
- *   • FormSubmit (https://formsubmit.co) — diagnostic lead ping; contact fallback
+ *       (demo modal, portal alerts, admin/enterprise notify; contact form fallback)
+ *   • FormSubmit (https://formsubmit.co) — diagnostic lead ping + contact form
  *       (must re-confirm new address)
  *
  * Changing RA_CONTACT.ops requires:

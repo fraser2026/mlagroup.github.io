@@ -179,7 +179,7 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
   <div class="form-side fade">
     <div class="form-card">
 
-      <!-- Delivered via EmailJS ops template (FormSubmit fallback) — see js/ra-contact.js -->
+      <!-- Delivered via FormSubmit to RA_CONTACT.ops (EmailJS ops template fallback) — see js/ra-contact.js -->
       <form name="contact" method="POST" id="contactForm">
         <p class="hp" aria-hidden="true" style="position:absolute;left:-9999px;height:0;overflow:hidden">
           <label>Don't fill this out: <input type="text" name="bot-field" tabindex="-1" autocomplete="off"></label>
@@ -305,7 +305,8 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
   }, {threshold: 0.1});
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // Contact form → EmailJS ops template (same path as demo modal), FormSubmit fallback.
+  // Contact form → FormSubmit to info@ (same path as diagnostic lead ping).
+  // EmailJS ops template is the fallback (same path as the demo modal).
   // Site is GitHub Pages; Netlify Forms cannot deliver here.
   const form = document.getElementById('contactForm');
   const btn = document.getElementById('submitBtn');
@@ -343,6 +344,25 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
     ].join('\n');
   }
 
+  async function sendViaFormSubmit(payload) {
+    var C = window.RA_CONTACT || {};
+    var url = (C.formSubmitUrl && C.formSubmitUrl()) || ('https://formsubmit.co/' + (C.ops || 'info@reganchor.com'));
+    var fd = new FormData();
+    fd.append('_subject', payload.title);
+    fd.append('_captcha', 'false');
+    fd.append('_replyto', payload.email);
+    fd.append('First name', payload.first);
+    fd.append('Last name', payload.last);
+    fd.append('Email', payload.email);
+    fd.append('Phone', payload.phone || '—');
+    fd.append('Organisation', payload.org || '—');
+    fd.append('Sector', payload.sector || '—');
+    fd.append('Interest', payload.interests);
+    fd.append('Message', payload.message);
+    var res = await fetch(url, { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error('FormSubmit HTTP ' + res.status);
+  }
+
   async function sendViaEmailJS(payload) {
     var C = window.RA_CONTACT || {};
     var ej = C.emailjs || {};
@@ -355,24 +375,6 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
       alert_body: payload.body,
       reply_to: payload.email
     });
-  }
-
-  async function sendViaFormSubmit(payload) {
-    var C = window.RA_CONTACT || {};
-    var url = (C.formSubmitUrl && C.formSubmitUrl()) || ('https://formsubmit.co/' + (C.ops || 'info@reganchor.com'));
-    var fd = new FormData();
-    fd.append('_subject', payload.title);
-    fd.append('_captcha', 'false');
-    fd.append('First name', payload.first);
-    fd.append('Last name', payload.last);
-    fd.append('Email', payload.email);
-    fd.append('Phone', payload.phone || '—');
-    fd.append('Organisation', payload.org || '—');
-    fd.append('Sector', payload.sector || '—');
-    fd.append('Interest', payload.interests);
-    fd.append('Message', payload.message);
-    var res = await fetch(url, { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
-    if (!res.ok) throw new Error('FormSubmit HTTP ' + res.status);
   }
 
   form.addEventListener('submit', async function (e) {
@@ -412,10 +414,10 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
 
     try {
       try {
-        await sendViaEmailJS(payload);
-      } catch (ejErr) {
-        console.warn('EmailJS contact send failed, trying FormSubmit', ejErr);
         await sendViaFormSubmit(payload);
+      } catch (fsErr) {
+        console.warn('FormSubmit contact send failed, trying EmailJS', fsErr);
+        await sendViaEmailJS(payload);
       }
       showSuccess();
     } catch (err) {

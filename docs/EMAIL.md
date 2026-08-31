@@ -4,8 +4,8 @@ The site does **not** send mail from your own SMTP. Two browser-side third parti
 
 | Provider | Role | Config lives |
 |----------|------|--------------|
-| [EmailJS](https://www.emailjs.com/) | Client diagnostic summary; portal alerts; admin support ping; enterprise inquiry; **contact form** | Dashboard: service + template HTML |
-| [FormSubmit](https://formsubmit.co/) | Silent lead form when someone finishes diagnostic; contact form fallback | Address in `js/ra-contact.js` → `ops` |
+| [EmailJS](https://www.emailjs.com/) | Client diagnostic summary; portal alerts; admin support ping; enterprise inquiry; contact form fallback | Dashboard: service + template HTML |
+| [FormSubmit](https://formsubmit.co/) | Silent lead form when someone finishes diagnostic; **contact form** | Address in `js/ra-contact.js` → `ops` |
 
 Public keys and service IDs also live in `js/ra-contact.js` (and were previously hardcoded).
 
@@ -50,4 +50,4 @@ For branded, reliable mail: Supabase Edge + Resend/Postmark/SendGrid, templates 
 1. `mailto:` links open `info@reganchor.com` on results / payment-success.
 2. Finish diagnostic on staging / live → check client EmailJS + FormSubmit lead.
 3. Portal: trigger an alert (or admin support reply) → template arrives branded.
-4. `contact.html`: submit the form → EmailJS ops mail to `info@` (FormSubmit fallback if EmailJS fails).
+4. `contact.html`: submit the form → FormSubmit to `info@` (EmailJS ops fallback if FormSubmit fails).
