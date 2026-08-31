@@ -550,12 +550,16 @@ async function loadAdminNames(ids){
 async function sendClientEmail(toEmail, toName, title, body){
   try{
     if(typeof (window.RA_CONTACT||{}).sendMail!=='function')return;
+    // admin-reply is JWT-gated (mla_admin); attach the admin session token.
+    var sessResult=await sb.auth.getSession();
+    var accessToken=sessResult.data.session&&sessResult.data.session.access_token;
+    if(!accessToken){console.error('Mail error: admin session missing');return}
     await RA_CONTACT.sendMail('admin-reply',{
       to_email:toEmail,
       to_name:toName||'there',
       alert_title:title,
       alert_body:body
-    });
+    }, accessToken);
     console.log('Support reply email sent to '+toEmail);
   }catch(err){
     console.error('Mail error:',err);

@@ -1,0 +1,25 @@
+# RegAnchor Edge Function JWT gateway flags.
+# GitHub Pages merge does NOT deploy functions — deploy explicitly after merge.
+
+[functions.send-mail]
+# Public contact / demo / enterprise / diagnostic forms have no user JWT.
+# Kind-specific auth runs inside the function (portal-alert, admin-reply).
+verify_jwt = false
+
+[functions.link-diagnostic]
+# Requires signed-in user; body user_id is ignored (JWT sub).
+verify_jwt = true
+
+[functions.link-subscription]
+# Requires signed-in user; body user_id is ignored (JWT sub).
+verify_jwt = true
+
+[functions.get-buy-context]
+verify_jwt = false
+
+[functions.create-billing-portal-session]
+# Validates JWT inside the function (org owner/admin).
+verify_jwt = false
+
+[functions.get-billing-overview]
+verify_jwt = false

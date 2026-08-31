@@ -303,18 +303,28 @@
   }
 
   // ── Call link-diagnostic edge function (the single source of truth) ──
-  async function callLinkDiagnostic(userId) {
+  // Requires a signed-in session. Server binds to JWT sub (ignores body user_id)
+  // and checks Stripe customer email against the account email.
+  async function callLinkDiagnostic() {
     if (!STRIPE_SESSION_ID) {
       console.warn('[payment-success] No session_id in URL — skipping link-diagnostic');
       return null;
     }
     try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session || !session.access_token) {
+        console.error('[payment-success] link-diagnostic requires a signed-in session');
+        return null;
+      }
       const res = await fetch(SUPABASE_URL + '/functions/v1/link-diagnostic', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token,
+          'apikey': SUPABASE_KEY
+        },
         body: JSON.stringify({
           session_id: STRIPE_SESSION_ID,
-          user_id: userId,
           result_id: STORED_RESULT_ID,
         })
       });
@@ -479,8 +489,8 @@
         const diagData  = getDiagnosticData();
         await populateProfile(userId, diagData, null);
 
-        // Call the server-side linker — this is the fix
-        await callLinkDiagnostic(userId);
+        // Call the server-side linker — JWT sub + Stripe email match
+        await callLinkDiagnostic();
 
         // Poll until the portal will actually show the report
         await waitForActivation(userId);
@@ -516,18 +526,24 @@
       const fullName = (first + ' ' + last).trim();
       const diagData = getDiagnosticData();
 
-      // 1. Create the account
+      // 1. Create the account (must yield a session — link-diagnostic needs JWT)
       const { data, error } = await sb.auth.signUp({ email, password });
       if (error) throw error;
       const userId = data.user?.id;
       if (!userId) throw new Error('Account created but user ID missing.');
+      if (!data.session?.access_token) {
+        const { data: sessData } = await sb.auth.getSession();
+        if (!sessData.session?.access_token) {
+          throw new Error('Sign in required to activate your report. Check your email if confirmation is needed, then use Sign in instead.');
+        }
+      }
 
       // 2. Set profile (name, org, paid)
       await populateProfile(userId, diagData, fullName);
 
       // 3. Call link-diagnostic — does EVERYTHING server-side atomically
-      //    Links diagnostic, sets paid, creates/updates entitlement
-      await callLinkDiagnostic(userId);
+      //    Links diagnostic, sets paid, creates/updates entitlement (JWT-bound)
+      await callLinkDiagnostic();
 
       // 4. Poll until portal will show the report
       await waitForActivation(userId);

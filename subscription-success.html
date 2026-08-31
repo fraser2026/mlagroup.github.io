@@ -215,13 +215,18 @@ async function loadSessionInfo(){
   }catch(e){return null}
 }
 
-async function callLinkSubscription(userId, fields){
+async function callLinkSubscription(fields){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session||!session.access_token)throw new Error('Sign in required to link subscription');
   const res=await fetch(SUPABASE_URL+'/functions/v1/link-subscription',{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_KEY,'apikey':SUPABASE_KEY},
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+session.access_token,
+      'apikey':SUPABASE_KEY
+    },
     body:JSON.stringify({
       session_id:STRIPE_SESSION_ID,
-      user_id:userId,
       organisation:fields.organisation||'',
       full_name:fields.full_name||'',
       job_title:fields.job_title||''
@@ -232,10 +237,10 @@ async function callLinkSubscription(userId, fields){
   return json;
 }
 
-async function finishForUser(userId, fields){
+async function finishForUser(fields){
   show('state-loading');
   try{
-    const linked=await callLinkSubscription(userId, fields||{});
+    const linked=await callLinkSubscription(fields||{});
     document.getElementById('success-copy').textContent=
       'Your '+planLabel(linked.plan||PLAN)+' plan is linked to your organisation.';
     show('state-success');
@@ -263,6 +268,12 @@ async function doSignup(){
     const{data,error}=await sb.auth.signUp({email,password:pass});
     if(error)throw error;
     if(!data.user)throw new Error('Check your email to confirm the account, then sign in.');
+    if(!data.session?.access_token){
+      const{data:sessData}=await sb.auth.getSession();
+      if(!sessData.session?.access_token){
+        throw new Error('Check your email to confirm the account, then sign in.');
+      }
+    }
     await sb.from('profiles').insert({
       id:data.user.id,
       email:email,
@@ -270,7 +281,7 @@ async function doSignup(){
       organisation:org,
       job_title:title||null
     });
-    await finishForUser(data.user.id,{organisation:org,full_name:name,job_title:title});
+    await finishForUser({organisation:org,full_name:name,job_title:title});
   }catch(e){
     err.textContent=e.message||'Could not create account.';
     err.style.display='block';
@@ -289,7 +300,8 @@ async function doSignin(){
   try{
     const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
     if(error)throw error;
-    await finishForUser(data.user.id,{});
+    if(!data.session?.access_token)throw new Error('Sign in required to link subscription');
+    await finishForUser({});
   }catch(e){
     err.textContent=e.message||'Could not sign in.';
     err.style.display='block';
@@ -335,7 +347,7 @@ window.addEventListener('load', async function(){
 
   try{
     const{data:{session}}=await sb.auth.getSession();
-    if(session){await finishForUser(session.user.id,{});return}
+    if(session){await finishForUser({});return}
     show('state-signup');
   }catch(e){
     show('state-signup');
