@@ -1402,7 +1402,7 @@ a.btn-dl svg {
 .result-card:last-child { border-bottom: 1px solid var(--ra-border) }
 
 /* One-time traveling blurple stroke on a recently purchased Exposure Report.
-   Wraps the whole row as a rounded box; SVG overlay is pointer-events:none. */
+   Overlay-only: do not change padding/margin/grid — buttons stay put. */
 #reports-diagnostic,
 #reports-diagnostic .result-list {
   overflow: visible;
@@ -1410,33 +1410,26 @@ a.btn-dl svg {
 .result-card.result-card--pulse {
   position: relative;
   z-index: 1;
-  margin: 8px 2px;
-  padding: 16px 14px;
-  border-top-color: transparent;
   overflow: visible;
 }
-.result-card.result-card--pulse:last-child {
-  border-bottom-color: transparent;
-}
 .ra-portal .result-card.result-card--pulse {
-  border-radius: 8px !important;
   overflow: visible !important;
 }
 .result-card__pulse {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  inset: -2px;
+  width: auto;
+  height: auto;
   overflow: visible;
   pointer-events: none;
   z-index: 2;
 }
 .result-card__pulse rect {
   fill: none;
-  x: 1.5px;
-  y: 1.5px;
-  width: calc(100% - 3px);
-  height: calc(100% - 3px);
+  x: 1px;
+  y: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
   rx: 8px;
   ry: 8px;
   stroke: var(--ra-blurple, #533AFD);
