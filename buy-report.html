@@ -257,12 +257,16 @@ async function init() {
   const rid = new URLSearchParams(window.location.search).get('rid') || '';
   if (!UUID_RE.test(rid)) {
     showState('stateMissing');
+    const navCta = document.getElementById('navCheckout');
+    if (navCta) navCta.hidden = true;
     return;
   }
 
   const ctx = await loadBuyContext(rid);
   if (!ctx || !ctx.result_id) {
     showState('stateMissing');
+    const navCta = document.getElementById('navCheckout');
+    if (navCta) navCta.hidden = true;
     return;
   }
 
@@ -270,8 +274,14 @@ async function init() {
   localStorage.setItem('mla_result_id', ctx.result_id);
   sessionStorage.setItem('pending_result_id', ctx.result_id);
 
+  const navCta = document.getElementById('navCheckout');
+
   if (ctx.paid) {
     showState('statePaid');
+    if (navCta) {
+      navCta.textContent = 'Sign in';
+      navCta.setAttribute('href', 'login.html?after=payment');
+    }
     return;
   }
 
@@ -286,7 +296,6 @@ async function init() {
 
   showState('buyContent');
 
-  const navCta = document.getElementById('navCheckout');
   if (navCta) {
     navCta.addEventListener('click', function (e) {
       e.preventDefault();
