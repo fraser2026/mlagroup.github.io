@@ -1,0 +1,26 @@
+# Supabase project config for Edge Function JWT gates.
+# Project ref: hueftewwenjaiagdoqmb
+#
+# generate-report must reject anonymous callers at the gateway AND inside the
+# function (entitlement check). Deploy without --no-verify-jwt:
+#   supabase functions deploy generate-report --project-ref hueftewwenjaiagdoqmb
+
+[functions.generate-report]
+verify_jwt = true
+
+# Public / webhook callers — keep JWT verification off at the gateway; these
+# functions implement their own auth (Stripe signature, public lookup, etc.).
+[functions.get-buy-context]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.link-diagnostic]
+verify_jwt = false
+
+[functions.create-checkout-session]
+verify_jwt = false
+
+[functions.send-mail]
+verify_jwt = false

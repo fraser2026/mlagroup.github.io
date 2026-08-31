@@ -560,7 +560,11 @@ async function savePDF(resultId){
   try{
     var sd=await sb.auth.getSession();var session=sd.data.session;if(!session)throw new Error('Not authenticated');
     var res=await fetch(SUPABASE_URL+'/functions/v1/generate-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_KEY},body:JSON.stringify({response_id:resultId})});
-    if(!res.ok)throw new Error('Server error: '+res.status);
+    if(!res.ok){
+      if(res.status===401)throw new Error('Not authenticated — sign in again.');
+      if(res.status===403)throw new Error('No paid entitlement for this diagnostic.');
+      throw new Error('Server error: '+res.status);
+    }
     var data=await res.json();if(!data||!data.download_url)throw new Error('No URL');
     timers.forEach(function(t){clearTimeout(t);});
     stopCbarLoop();
