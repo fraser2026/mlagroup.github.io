@@ -335,19 +335,18 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
     btn.disabled = true;
     btn.textContent = 'Sending…';
 
-    const parts = [];
-    if (message) parts.push(message);
-    if (interests.length) parts.push('Interested in: ' + interests.join(', '));
-    if (sector) parts.push('Sector: ' + sector);
-    if (phone) parts.push('Phone: ' + phone);
-
     try {
       await RA_CONTACT.sendMail('contact', {
-        email: email,
+        first: first || undefined,
+        last: last || undefined,
         name: [first, last].filter(Boolean).join(' ').trim() || undefined,
+        email: email,
+        phone: phone || undefined,
         organisation: organisation || undefined,
         company: organisation || undefined,
-        message: parts.join('\n\n') || undefined
+        sector: sector || undefined,
+        interests: interests.length ? interests : undefined,
+        message: message || undefined
       });
       form.style.display = 'none';
       success.style.display = 'block';

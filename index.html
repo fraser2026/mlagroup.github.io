@@ -1693,7 +1693,10 @@
       var first = document.getElementById('d-first').value.trim();
       var last = document.getElementById('d-last').value.trim();
       var email = document.getElementById('d-email').value.trim();
+      var phone = document.getElementById('d-phone').value.trim();
       var company = document.getElementById('d-company').value.trim();
+      var industry = document.getElementById('d-industry').value.trim();
+      var message = document.getElementById('d-note').value.trim();
       if (!first || !last || !email || !company) {
         err.textContent = 'Please complete the required fields.';
         err.classList.add('is-on');
@@ -1702,7 +1705,15 @@
       var C = window.RA_CONTACT || {};
       try {
         if (typeof C.sendMail === 'function') {
-          await C.sendMail('demo', { first: first, last: last, email: email, company: company });
+          await C.sendMail('demo', {
+            first: first,
+            last: last,
+            email: email,
+            phone: phone || undefined,
+            company: company,
+            industry: industry || undefined,
+            message: message || undefined
+          });
         }
       } catch (x) { console.warn(x); }
       demoBody.innerHTML =
