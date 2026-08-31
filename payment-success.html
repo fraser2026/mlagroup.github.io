@@ -74,15 +74,6 @@
     h1 em { font-style: normal; font-weight: 400; color: var(--muted); }
     .subtext { font-size: 0.85rem; color: var(--sub); line-height: 1.7; opacity: 0; animation: fadeUp 0.5s ease 0.7s forwards; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .includes { margin: 26px 0; opacity: 0; animation: fadeUp 0.5s ease 0.8s forwards; border: 1px solid var(--border); }
-    .includes-label { font-family: var(--font-brand); font-size: 0.64rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); padding: 12px 14px 0; }
-    .include-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 0.82rem; color: var(--sub); }
-    .include-item:last-child { border-bottom: none; }
-    .inc-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--ra-radius-control, 4px); background: var(--bg); }
-    .inc-icon svg { width: 13px; height: 13px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke: var(--main); }
-    .inc-text { flex: 1; }
-    .inc-title { font-weight: 600; color: var(--main); font-size: 0.82rem; }
-    .inc-sub   { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
     .divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; font-size: 0.7rem; color: var(--muted); }
     .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
     .form-section { opacity: 0; animation: fadeUp 0.5s ease 0.85s forwards; }
@@ -174,7 +165,7 @@
       </div>
 
       <!-- SUCCESS -->
-      <div id="state-success" style="display:none;">
+      <div id="state-success" style="display:none;text-align:center;">
         <div class="success-ring">
           <svg class="ring" viewBox="0 0 68 68" fill="none">
             <circle cx="34" cy="34" r="32" stroke="var(--border)" stroke-width="1.5"/>
@@ -187,30 +178,10 @@
             <path class="check-path" d="M7 13.5l4.5 4.5 7.5-9" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <div class="eyebrow">Report Unlocked</div>
-        <h1>Your report is<br><em>ready to download.</em></h1>
-        <p class="subtext">Full AI Governance Risk Report — 12 pages, board-ready PDF. Permanent access from your portal.</p>
-        <div class="includes">
-          <div class="includes-label">What's included</div>
-          <div class="include-item">
-            <div class="inc-icon inc-blue"><svg viewBox="0 0 14 14"><path d="M7 1v6M4 4l3-3 3 3M2 10h10M3 10v2h8v-2"/></svg></div>
-            <div class="inc-text"><div class="inc-title">12-page PDF report</div><div class="inc-sub">Instant download · Yours to keep permanently</div></div>
-          </div>
-          <div class="include-item">
-            <div class="inc-icon inc-purple"><svg viewBox="0 0 14 14"><path d="M1 7h12M7 1l6 6-6 6"/></svg></div>
-            <div class="inc-text"><div class="inc-title">Regulatory article mapping</div><div class="inc-sub">EU AI Act · UK GDPR · FCA · ICO</div></div>
-          </div>
-          <div class="include-item">
-            <div class="inc-icon inc-amber"><svg viewBox="0 0 14 14"><path d="M7 1l1.5 4.5H13l-3.75 2.75L10.5 13 7 10.25 3.5 13l1.25-4.75L1 5.5h4.5z"/></svg></div>
-            <div class="inc-text"><div class="inc-title">Priority remediation roadmap</div><div class="inc-sub">Sequenced actions ranked by regulatory impact</div></div>
-          </div>
-          <div class="include-item">
-            <div class="inc-icon inc-green"><svg viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><path d="M4 7h6M4 4.5h6M4 9.5h4"/></svg></div>
-            <div class="inc-text"><div class="inc-title">Full portal access</div><div class="inc-sub">Download again any time · All future diagnostics included</div></div>
-          </div>
-        </div>
-        <a href="portal.html" class="btn-primary">
-          Open my portal
+        <h1>You're in.</h1>
+        <p class="subtext">Your first assessment is ready in the workspace.</p>
+        <a href="portal.html#reports" class="btn-primary" style="margin-top:28px;">
+          Open report
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
         </a>
         <div class="footer-note">Questions or issues? <a href="mailto:info@reganchor.com">info@reganchor.com</a></div>
@@ -270,7 +241,7 @@
         <div style="font-family:var(--font-brand);font-weight:500;letter-spacing:-0.02em;font-size:1.35rem;color:var(--main);margin-bottom:10px;">Something went wrong</div>
         <p style="font-size:0.83rem;color:var(--sub);margin-bottom:0;">We couldn't activate your access automatically. Contact us and we'll resolve it within the hour.</p>
         <a href="mailto:info@reganchor.com?subject=Payment%20Issue" class="btn-primary" style="margin-top:24px;">Contact support</a>
-        <a href="portal.html" class="btn-ghost">Try the portal anyway</a>
+        <a href="portal.html#reports" class="btn-ghost">Try the portal anyway</a>
       </div>
 
     </div>
