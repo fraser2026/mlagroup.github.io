@@ -1401,6 +1401,67 @@ a.btn-dl svg {
 }
 .result-card:last-child { border-bottom: 1px solid var(--ra-border) }
 
+/* One-time traveling blurple stroke on a recently purchased Exposure Report.
+   Wraps the whole row as a rounded box; SVG overlay is pointer-events:none. */
+#reports-diagnostic,
+#reports-diagnostic .result-list {
+  overflow: visible;
+}
+.result-card.result-card--pulse {
+  position: relative;
+  z-index: 1;
+  margin: 8px 2px;
+  padding: 16px 14px;
+  border-top-color: transparent;
+  overflow: visible;
+}
+.result-card.result-card--pulse:last-child {
+  border-bottom-color: transparent;
+}
+.ra-portal .result-card.result-card--pulse {
+  border-radius: 8px !important;
+  overflow: visible !important;
+}
+.result-card__pulse {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+.result-card__pulse rect {
+  fill: none;
+  x: 1.5px;
+  y: 1.5px;
+  width: calc(100% - 3px);
+  height: calc(100% - 3px);
+  rx: 8px;
+  ry: 8px;
+  stroke: var(--ra-blurple, #533AFD);
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  /* ~20% comet of pathLength=100 */
+  stroke-dasharray: 20 80;
+  stroke-dashoffset: 0;
+  animation: ra-report-pulse-travel 2.8s linear infinite;
+  filter: drop-shadow(0 0 2.5px color-mix(in srgb, var(--ra-blurple, #533AFD) 50%, transparent));
+}
+@keyframes ra-report-pulse-travel {
+  to { stroke-dashoffset: -100; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .result-card__pulse rect {
+    animation: none;
+    stroke-dasharray: 22 78;
+    stroke-dashoffset: -8;
+    opacity: 0.85;
+  }
+}
+
 .result-org {
   font-size: 14px;
   font-weight: 500;

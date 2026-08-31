@@ -41,6 +41,10 @@ let currentUser=null,currentProfile=null,currentResults=[],isPaid=false;
 let currentOrg=null,allSystems=[],currentSystemId=null,regFilter='all',regSearchQuery='',regSelected={},regSelectMode=false,regRowMenuId=null;
 let currentMemberRole=null;
 let profilesCache={};
+/* diagnostic_id → entitlement created_at (ISO) for one-time report pulse */
+let entitlementCreatedAt=new Map();
+const RA_REPORT_SEEN_PREFIX='ra-report-seen:';
+const RA_PULSE_MAX_AGE_MS=14*24*60*60*1000;
  
 function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}
 function fmtDateLong(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Not set'}
@@ -279,7 +283,7 @@ async function init(){
   // auth signup without a successful profiles insert).
   const[{data:profile},{data:entitlements}]=await Promise.all([
     sb.from('profiles').select('full_name,organisation,paid,org_id,email').eq('id',currentUser.id).maybeSingle(),
-    sb.from('entitlements').select('id,diagnostic_id,status').eq('user_id',currentUser.id).eq('status','active')
+    sb.from('entitlements').select('id,diagnostic_id,status,created_at').eq('user_id',currentUser.id).eq('status','active')
   ]);
   currentProfile=profile;
   if(!currentProfile){
@@ -300,7 +304,15 @@ async function init(){
     }
   }
   isPaid=(entitlements&&entitlements.length>0)||currentProfile?.paid===true;
-  const paidIds=new Set((entitlements||[]).map(e=>e.diagnostic_id).filter(Boolean));
+  entitlementCreatedAt=new Map();
+  (entitlements||[]).forEach(function(e){
+    if(!e.diagnostic_id)return;
+    var prev=entitlementCreatedAt.get(e.diagnostic_id);
+    if(prev==null||(e.created_at&&(!prev||e.created_at>prev))){
+      entitlementCreatedAt.set(e.diagnostic_id,e.created_at||null);
+    }
+  });
+  const paidIds=new Set(entitlementCreatedAt.keys());
   const fullName=currentProfile?.full_name||currentUser.email.split('@')[0];
   const initials=fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
   profilesCache[currentUser.id]=fullName;
@@ -543,11 +555,51 @@ async function renderDashboard(paidIds){
 }
  
 // ═══ REPORTS ══════════════════════════════════════════════════
+function isReportPulseSeen(id){
+  try{return!!localStorage.getItem(RA_REPORT_SEEN_PREFIX+id);}catch(e){return false;}
+}
+function shouldShowReportPulse(diagnosticId){
+  if(!diagnosticId||!entitlementCreatedAt.has(diagnosticId))return false;
+  if(isReportPulseSeen(diagnosticId))return false;
+  var created=entitlementCreatedAt.get(diagnosticId);
+  if(created){
+    var t=Date.parse(created);
+    if(!isNaN(t)&&(Date.now()-t)>RA_PULSE_MAX_AGE_MS)return false;
+  }
+  return true;
+}
+function dismissReportPulse(id){
+  if(!id)return;
+  try{localStorage.setItem(RA_REPORT_SEEN_PREFIX+id,'1');}catch(e){}
+  var nodes=document.querySelectorAll('.result-card--pulse');
+  for(var i=0;i<nodes.length;i++){
+    if(nodes[i].getAttribute('data-diagnostic-id')===id){
+      nodes[i].classList.remove('result-card--pulse');
+      var svg=nodes[i].querySelector('.result-card__pulse');
+      if(svg)svg.remove();
+    }
+  }
+}
 function renderReports(paidIds){
   // Diagnostic reports
   const dc=document.getElementById('reports-diagnostic');
-  if(!currentResults.length){dc.innerHTML='<div style="text-align:center;padding:20px 0;"><div style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">No diagnostic reports yet.</div><a href="diagnostic.html" class="btn-topbar btn-topbar-primary">Run Diagnostic</a></div>'}
-  else{dc.innerHTML='<div class="result-list">'+currentResults.map(r=>{const band=r.risk_band||'moderate';const paid=isPaid||isPaidTier()||paidIds.has(r.id);const btn=paid?'<div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-topbar btn-topbar-primary" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</button><button type="button" class="btn-pdf" id="pdf-btn-'+r.id+'" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download</button></div>':'<a href="pricing.html" class="btn-topbar btn-topbar-primary">Unlock — £295</a>';return '<div class="result-card"><div><div class="result-org">'+esc(r.organisation||'Diagnostic')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'</div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Exposure</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div></div>'}).join('')+'</div>'}
+  if(!currentResults.length){
+    dc.innerHTML='<div style="text-align:center;padding:20px 0;"><div style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">No diagnostic reports yet.</div><a href="diagnostic.html" class="btn-topbar btn-topbar-primary">Run Diagnostic</a></div>';
+    return;
+  }
+  dc.innerHTML='<div class="result-list">'+currentResults.map(function(r){
+    var band=r.risk_band||'moderate';
+    var paid=isPaid||isPaidTier()||paidIds.has(r.id);
+    /* Pulse only for a recent entitled diagnostic that has not been opened yet — never Unlock rows. */
+    var pulse=!!paid&&shouldShowReportPulse(r.id);
+    var btn=paid
+      ? '<div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-topbar btn-topbar-primary" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</button><button type="button" class="btn-pdf" id="pdf-btn-'+r.id+'" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download</button></div>'
+      : '<a href="pricing.html" class="btn-topbar btn-topbar-primary">Unlock — £295</a>';
+    var pulseSvg=pulse
+      ? '<svg class="result-card__pulse" aria-hidden="true" focusable="false"><rect pathLength="100"/></svg>'
+      : '';
+    return '<div class="result-card'+(pulse?' result-card--pulse':'')+'"'+(pulse?' data-diagnostic-id="'+r.id+'"':'')+'><div><div class="result-org">'+esc(r.organisation||'Diagnostic')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'</div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Exposure</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div>'+pulseSvg+'</div>';
+  }).join('')+'</div>';
 }
 async function loadAssessmentReports(){
   if(!currentOrg)return;
@@ -566,8 +618,9 @@ async function loadAssessmentReports(){
 async function saveProfile(){const first=document.getElementById('set-first').value.trim();const last=document.getElementById('set-last').value.trim();const org=document.getElementById('set-org').value.trim();const full=(first+' '+last).trim();const{error}=await sb.from('profiles').upsert({id:currentUser.id,full_name:full,organisation:org},{onConflict:'id'});if(!error){document.getElementById('sidebar-name').textContent=full||currentUser.email.split('@')[0];const ini=full.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();document.getElementById('sidebar-avatar').textContent=ini;if(currentOrg&&org!==currentOrg.name){await sb.from('organisations').update({name:org}).eq('id',currentOrg.id);currentOrg.name=org;refreshSidebarContext();var orgGrid=document.getElementById('org-profile-grid');if(orgGrid){orgGrid.innerHTML='<div class="meta-item"><label>Organisation Name</label><span>'+esc(currentOrg.name)+'</span></div><div class="meta-item"><label>Sector</label><span>'+esc(currentOrg.sector||'Not set')+'</span></div><div class="meta-item"><label>Organisation Size</label><span>'+esc(currentOrg.org_size||'Not set')+'</span></div><div class="meta-item"><label>Organisation ID</label><span class="meta-id">'+esc(currentOrg.id)+'</span></div>'}}alert('Profile saved.')}else alert('Error saving.')}
 async function changePassword(){const pw=document.getElementById('set-pw').value;const pw2=document.getElementById('set-pw2').value;const msg=document.getElementById('set-pw-msg');msg.style.display='block';if(pw.length<8){msg.style.color='var(--ra-risk)';msg.textContent='Min. 8 characters.';return}if(pw!==pw2){msg.style.color='var(--ra-risk)';msg.textContent='Passwords do not match.';return}const{error}=await sb.auth.updateUser({password:pw});if(error){msg.style.color='var(--ra-risk)';msg.textContent=error.message}else{msg.style.color='var(--ra-ok)';msg.textContent='Password updated.';document.getElementById('set-pw').value='';document.getElementById('set-pw2').value=''}}
 function copyReferral(){const link=document.getElementById('referral-link').textContent;navigator.clipboard.writeText('https://'+link).then(()=>{const btn=document.querySelector('.invite-copy');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy link',2000)})}
-function downloadReport(id){window.open('report.html?rid='+id,'_blank')}
+function downloadReport(id){dismissReportPulse(id);window.open('report.html?rid='+id,'_blank')}
 async function savePDF(resultId){
+  dismissReportPulse(resultId);
   var btn=document.getElementById('pdf-btn-'+resultId);if(!btn)return;
   var orig=btn.innerHTML;btn.innerHTML='Generating...';btn.disabled=true;
   var overlay=document.createElement('div');
