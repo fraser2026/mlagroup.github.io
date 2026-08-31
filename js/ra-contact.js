@@ -3,12 +3,15 @@
  *
  * Outbound mail is sent by third parties configured outside this repo:
  *   • EmailJS  (https://dashboard.emailjs.com) — browser SDK, template HTML/branding
- *   • FormSubmit (https://formsubmit.co) — diagnostic lead ping (must re-confirm new address)
+ *       (demo modal, contact form, portal alerts, admin/enterprise notify)
+ *   • FormSubmit (https://formsubmit.co) — diagnostic lead ping; contact fallback
+ *       (must re-confirm new address)
  *
  * Changing RA_CONTACT.ops requires:
  *   1. Mailbox exists (or forwards) at that address
  *   2. FormSubmit re-confirmation email approved for that address
- *   3. EmailJS templates updated: from-name, reply-to, logo, footer → RegAnchor / reganchor.com
+ *   3. EmailJS templates updated: {{to_email}}, from-name RegAnchor (not mlagroup.co.uk),
+ *      reply-to / logo / footer → RegAnchor / reganchor.com
  */
 (function (global) {
   var INFO = 'info@reganchor.com';

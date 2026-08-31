@@ -7,6 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/reganchor.css">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="js/ra-contact.js"></script>
 <style>
 :root{
   --bg:#FFFFFF;
@@ -177,10 +179,11 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
   <div class="form-side fade">
     <div class="form-card">
 
-      <!-- Netlify Forms: data-netlify="true" handles everything automatically -->
-      <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="contactForm">
-        <input type="hidden" name="form-name" value="contact">
-        <p style="display:none"><label>Don't fill this out: <input name="bot-field"></label></p>
+      <!-- Delivered via EmailJS ops template (FormSubmit fallback) — see js/ra-contact.js -->
+      <form name="contact" method="POST" id="contactForm">
+        <p class="hp" aria-hidden="true" style="position:absolute;left:-9999px;height:0;overflow:hidden">
+          <label>Don't fill this out: <input type="text" name="bot-field" tabindex="-1" autocomplete="off"></label>
+        </p>
 
         <div class="form-row">
           <div>
@@ -302,28 +305,123 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
   }, {threshold: 0.1});
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // Handle form submission with Netlify
+  // Contact form → EmailJS ops template (same path as demo modal), FormSubmit fallback.
+  // Site is GitHub Pages; Netlify Forms cannot deliver here.
   const form = document.getElementById('contactForm');
   const btn = document.getElementById('submitBtn');
   const success = document.getElementById('successState');
   const infoSide = document.getElementById('infoSide');
+  const submitBtnHtml = 'Send message <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-  form.addEventListener('submit', async e => {
+  function showSuccess() {
+    form.style.display = 'none';
+    success.style.display = 'block';
+    if (infoSide) infoSide.classList.add('is-success');
+  }
+
+  function resetBtn() {
+    btn.disabled = false;
+    btn.innerHTML = submitBtnHtml;
+  }
+
+  function collectInterests() {
+    return Array.prototype.slice.call(form.querySelectorAll('input[name="interest"]:checked'))
+      .map(function (el) { return el.value; })
+      .join(', ') || '—';
+  }
+
+  function buildAlertBody(first, last, email, phone, org, sector, interests, message) {
+    return [
+      first + ' ' + last,
+      'Email: ' + email,
+      'Phone: ' + (phone || '—'),
+      'Organisation: ' + (org || '—'),
+      'Sector: ' + (sector || '—'),
+      'Interest: ' + interests,
+      '',
+      message
+    ].join('\n');
+  }
+
+  async function sendViaEmailJS(payload) {
+    var C = window.RA_CONTACT || {};
+    var ej = C.emailjs || {};
+    if (typeof emailjs === 'undefined') throw new Error('EmailJS unavailable');
+    emailjs.init(ej.publicKey || 'vxitc5LFJHMfNcmUL');
+    await emailjs.send(ej.opsService || 'service_umdte26', ej.opsTemplate || 'template_o6h9et7', {
+      to_name: 'RegAnchor',
+      to_email: C.ops || 'info@reganchor.com',
+      alert_title: payload.title,
+      alert_body: payload.body,
+      reply_to: payload.email
+    });
+  }
+
+  async function sendViaFormSubmit(payload) {
+    var C = window.RA_CONTACT || {};
+    var url = (C.formSubmitUrl && C.formSubmitUrl()) || ('https://formsubmit.co/' + (C.ops || 'info@reganchor.com'));
+    var fd = new FormData();
+    fd.append('_subject', payload.title);
+    fd.append('_captcha', 'false');
+    fd.append('First name', payload.first);
+    fd.append('Last name', payload.last);
+    fd.append('Email', payload.email);
+    fd.append('Phone', payload.phone || '—');
+    fd.append('Organisation', payload.org || '—');
+    fd.append('Sector', payload.sector || '—');
+    fd.append('Interest', payload.interests);
+    fd.append('Message', payload.message);
+    var res = await fetch(url, { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error('FormSubmit HTTP ' + res.status);
+  }
+
+  form.addEventListener('submit', async function (e) {
     e.preventDefault();
+
+    // Honeypot: bots fill bot-field; pretend success without sending.
+    var honey = form.querySelector('[name="bot-field"]');
+    if (honey && honey.value) {
+      showSuccess();
+      return;
+    }
+
+    var first = document.getElementById('firstName').value.trim();
+    var last = document.getElementById('lastName').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var phone = document.getElementById('phone').value.trim();
+    var org = document.getElementById('organisation').value.trim();
+    var sector = document.getElementById('sector').value;
+    var message = document.getElementById('message').value.trim();
+    var interests = collectInterests();
+    var title = 'Contact: ' + first + ' ' + last + (org ? ' — ' + org : '');
+    var payload = {
+      title: title,
+      body: buildAlertBody(first, last, email, phone, org, sector, interests, message),
+      first: first,
+      last: last,
+      email: email,
+      phone: phone,
+      org: org,
+      sector: sector,
+      interests: interests,
+      message: message
+    };
+
     btn.disabled = true;
     btn.textContent = 'Sending…';
 
-    const data = new FormData(form);
-
     try {
-      await fetch('/', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: new URLSearchParams(data).toString()});
-      form.style.display = 'none';
-      success.style.display = 'block';
-      if (infoSide) infoSide.classList.add('is-success');
-    } catch(err) {
-      btn.disabled = false;
-      btn.innerHTML = 'Send message <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      alert('Something went wrong. Please try again.');
+      try {
+        await sendViaEmailJS(payload);
+      } catch (ejErr) {
+        console.warn('EmailJS contact send failed, trying FormSubmit', ejErr);
+        await sendViaFormSubmit(payload);
+      }
+      showSuccess();
+    } catch (err) {
+      console.error('Contact form delivery failed', err);
+      resetBtn();
+      alert('Something went wrong. Please email info@reganchor.com or try again.');
     }
   });
 </script>
