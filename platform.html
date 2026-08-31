@@ -9,7 +9,6 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/reganchor.css">
   <meta name="color-scheme" content="light">
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="js/ra-contact.js"></script>
 <style>
     :root {
@@ -659,16 +658,9 @@
         return;
       }
       var C = window.RA_CONTACT || {};
-      var ej = C.emailjs || {};
       try {
-        if (typeof emailjs !== 'undefined') {
-          emailjs.init(ej.publicKey || 'vxitc5LFJHMfNcmUL');
-          await emailjs.send(ej.opsService || 'service_umdte26', ej.opsTemplate || 'template_o6h9et7', {
-            to_name: 'RegAnchor',
-            to_email: C.ops || 'info@reganchor.com',
-            alert_title: 'Demo request: ' + company,
-            alert_body: first + ' ' + last + ' | ' + email + ' | ' + company
-          });
+        if (typeof C.sendMail === 'function') {
+          await C.sendMail('demo', { first: first, last: last, email: email, company: company });
         }
       } catch (x) { console.warn(x); }
       demoBody.innerHTML =

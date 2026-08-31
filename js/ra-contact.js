@@ -1,17 +1,44 @@
 /**
  * RegAnchor public & ops contact surface — single source of truth.
  *
- * Outbound mail is sent by third parties configured outside this repo:
- *   • EmailJS  (https://dashboard.emailjs.com) — browser SDK, template HTML/branding
- *   • FormSubmit (https://formsubmit.co) — diagnostic lead ping (must re-confirm new address)
- *
- * Changing RA_CONTACT.ops requires:
- *   1. Mailbox exists (or forwards) at that address
- *   2. FormSubmit re-confirmation email approved for that address
- *   3. EmailJS templates updated: from-name, reply-to, logo, footer → RegAnchor / reganchor.com
+ * Outbound mail: POST to the deployed Supabase Edge Function `send-mail`
+ * (no JWT, no client API keys). From is locked server-side to
+ * RegAnchor <info@reganchor.com>. Pass only `kind` + form fields —
+ * never a From address or an arbitrary ops To.
  */
 (function (global) {
   var INFO = 'info@reganchor.com';
+  var SEND_MAIL_URL =
+    'https://hueftewwenjaiagdoqmb.supabase.co/functions/v1/send-mail';
+
+  /**
+   * POST { kind, ...payload } to send-mail.
+   * Resolves with the JSON body ({ ok, id } or { error }).
+   * Rejects on network failure or non-OK HTTP with an Error whose
+   * message is the server error string when available.
+   */
+  function sendMail(kind, payload) {
+    var body = Object.assign({}, payload || {}, { kind: kind });
+    return fetch(SEND_MAIL_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.json().catch(function () {
+        return {};
+      }).then(function (data) {
+        if (!res.ok || data.error) {
+          var err = new Error(
+            (data && data.error) || ('Mail failed (' + res.status + ')')
+          );
+          err.status = res.status;
+          err.data = data;
+          throw err;
+        }
+        return data;
+      });
+    });
+  }
 
   global.RA_CONTACT = {
     /** Legal + general inbox (terms, privacy, public footers) */
@@ -20,25 +47,11 @@
     support: INFO,
     /** Sales / enterprise mailto */
     sales: INFO,
-    /**
-     * Where FormSubmit and enterprise lead emails are delivered.
-     * Prefer a real inbox you check; aliases (ops@ / fraser@) can replace later.
-     */
+    /** Ops / lead delivery (function routes by kind; inbox stays info@) */
     ops: INFO,
 
-    emailjs: {
-      publicKey: 'vxitc5LFJHMfNcmUL',
-      /** Client post-diagnostic summary (goes to prospect) */
-      clientService: 'service_amfeqty',
-      clientTemplate: 'template_xczn8bt',
-      /** Alerts, admin support replies, enterprise notify (server/human style) */
-      opsService: 'service_umdte26',
-      opsTemplate: 'template_o6h9et7'
-    },
-
-    formSubmitUrl: function () {
-      return 'https://formsubmit.co/' + this.ops;
-    },
+    sendMailUrl: SEND_MAIL_URL,
+    sendMail: sendMail,
 
     mailto: function (kind, subject) {
       var addr = this[kind] || this.info;

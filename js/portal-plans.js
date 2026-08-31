@@ -263,15 +263,17 @@ async function submitEnterpriseInquiry(){
   try{
     await sb.from('enterprise_inquiries').insert({org_id:currentOrg?currentOrg.id:null,user_id:currentUser?currentUser.id:null,full_name:name,email:email,organisation:orgName,role_title:role||null,system_count:systems||null,requirements:reqs.length?reqs:null,message:message||null});
     try{
-      if(typeof emailjs!=='undefined'){
-        var C=window.RA_CONTACT||{};
-        var ej=C.emailjs||{};
-        emailjs.init(ej.publicKey||'vxitc5LFJHMfNcmUL');
-        await emailjs.send(ej.opsService||'service_umdte26',ej.opsTemplate||'template_o6h9et7',{
-          to_name:'RegAnchor',
-          to_email:C.ops||'info@reganchor.com',
-          alert_title:'Enterprise inquiry: '+name,
-          alert_body:'Name: '+name+' | Role: '+(role||'Not specified')+' | Email: '+email+' | Organisation: '+orgName+' | AI Systems: '+(systems||'Not specified')+' | Requirements: '+(reqs.length?reqs.join(', '):'None selected')+' | Message: '+(message||'No message')
+      if(typeof (window.RA_CONTACT||{}).sendMail==='function'){
+        await RA_CONTACT.sendMail('enterprise',{
+          name:name,
+          email:email,
+          role:role||undefined,
+          organisation:orgName,
+          company:orgName,
+          systems:systems||undefined,
+          system_count:systems||undefined,
+          requirements:reqs.length?reqs:undefined,
+          message:message||undefined
         });
       }
     }catch(eml){console.log('Email notification skipped')}

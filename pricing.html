@@ -977,7 +977,6 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="js/ra-contact.js"></script>
 <script>
 var SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
@@ -1245,15 +1244,17 @@ async function submitEnterpriseInquiry(){
       requirements:reqs.length?reqs:null,message:message||null
     });
     try{
-      if(typeof emailjs!=='undefined'){
-        var C=window.RA_CONTACT||{};
-        var ej=C.emailjs||{};
-        emailjs.init(ej.publicKey||'vxitc5LFJHMfNcmUL');
-        await emailjs.send(ej.opsService||'service_umdte26',ej.opsTemplate||'template_o6h9et7',{
-          to_name:'RegAnchor',
-          to_email:C.ops||'info@reganchor.com',
-          alert_title:'Enterprise Inquiry (pricing): '+name,
-          alert_body:'Name: '+name+' | Role: '+(role||'Not specified')+' | Email: '+email+' | Organisation: '+orgName+' | AI Systems: '+(systems||'Not specified')+' | Requirements: '+(reqs.length?reqs.join(', '):'None selected')+' | Message: '+(message||'No message')
+      if(typeof (window.RA_CONTACT||{}).sendMail==='function'){
+        await RA_CONTACT.sendMail('enterprise',{
+          name:name,
+          email:email,
+          role:role||undefined,
+          organisation:orgName,
+          company:orgName,
+          systems:systems||undefined,
+          system_count:systems||undefined,
+          requirements:reqs.length?reqs:undefined,
+          message:message||undefined
         });
       }
     }catch(eml){console.log('Email notification skipped')}
