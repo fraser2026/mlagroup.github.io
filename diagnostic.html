@@ -6,9 +6,7 @@
   <meta name="color-scheme" content="light">
   <title>AI Governance Risk Diagnostic | RegAnchor</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="js/ra-contact.js"></script>
-  <script>emailjs.init((window.RA_CONTACT&&RA_CONTACT.emailjs.publicKey)||'vxitc5LFJHMfNcmUL');</script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/reganchor.css">
   <link rel="stylesheet" href="css/reganchor-flow.css">
@@ -922,43 +920,34 @@ function sendEmails() {
   const recText    = allRecs.map(r => '- ' + r).join('\n');
 
   const C = window.RA_CONTACT || {};
-  const ej = C.emailjs || {};
-  const opsEmail = C.ops || 'info@reganchor.com';
-  const templateParams = {
-    email, to_email:email, client_name:name, risk_band:band, risk_score:score,
-    risk_summary:summary, recommendations:recText, flags:flagText,
-    report_date:today, organisation:org, client_role:role, sector, org_size:size,
-    fraser_email:opsEmail, reply_to:opsEmail, support_email:C.support||opsEmail,
-    framework_version:RESULTS.frameworkVersion
+  const payload = {
+    email,
+    client_name: name,
+    name,
+    organisation: org,
+    client_role: role,
+    role,
+    sector,
+    org_size: size,
+    risk_band: band,
+    risk_score: score,
+    risk_summary: summary,
+    recommendations: recText,
+    flags: flagText,
+    report_date: today,
+    framework_version: RESULTS.frameworkVersion,
+    weighted_score: RESULTS.weightedScore != null ? RESULTS.weightedScore + '%' : undefined,
+    multiplier: RESULTS.multiplier != null ? Math.round(RESULTS.multiplier * 100) + '%' : undefined
   };
 
-  emailjs.send(ej.clientService||'service_amfeqty', ej.clientTemplate||'template_xczn8bt', templateParams)
-    .then(()=>console.log('Client email sent')).catch(e=>console.log('Email error:',e));
-
-  // Lead notification via FormSubmit (ops inbox — re-confirm address in FormSubmit if changed)
-  const form = document.createElement('form');
-  form.action = (C.formSubmitUrl && C.formSubmitUrl()) || ('https://formsubmit.co/'+opsEmail);
-  form.method = 'POST'; form.style.display = 'none';
-  const fields = {
-    '_subject':   'New RegAnchor diagnostic: ' + band + ' - ' + org,
-    '_captcha':   'false',
-    '_next':      location.origin + '/results.html',
-    'Full Name':  name, 'Email': email, 'Organisation': org, 'Role': role,
-    'Sector':     sector, 'Org Size': size, 'Risk Band': band,
-    'Adjusted Score': score,
-    'Weighted Score': RESULTS.weightedScore + '%',
-    'Sector Multiplier': Math.round(RESULTS.multiplier * 100) + '%',
-    'Flags': flagText, 'Recommendations': recText,
-    'Framework Version': RESULTS.frameworkVersion, 'Date': today
-  };
-  Object.entries(fields).forEach(([k,v])=>{
-    const i = document.createElement('input');
-    i.type='hidden'; i.name=k; i.value=v; form.appendChild(i);
-  });
-  document.body.appendChild(form);
-  fetch(form.action,{method:'POST',body:new FormData(form)})
-    .then(()=>console.log('Lead notification sent')).catch(e=>console.log('FormSubmit error:',e));
-  document.body.removeChild(form);
+  if (typeof C.sendMail === 'function') {
+    C.sendMail('diagnostic-ack', payload)
+      .then(() => console.log('Client email sent'))
+      .catch(e => console.log('Ack email error:', e));
+    C.sendMail('diagnostic-lead', payload)
+      .then(() => console.log('Lead notification sent'))
+      .catch(e => console.log('Lead email error:', e));
+  }
 }
 
 // Sticky chrome fade: same behaviour as results.html

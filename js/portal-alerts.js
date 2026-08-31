@@ -189,16 +189,14 @@ async function maybeCreateAlert(type,severity,title,body,refId,refType){
 
 async function sendAlertEmail(title,body){
   try{
-    if(typeof emailjs==='undefined')return;
-    var ej=(window.RA_CONTACT&&RA_CONTACT.emailjs)||{};
-    emailjs.init(ej.publicKey||'vxitc5LFJHMfNcmUL');
-    await emailjs.send(ej.opsService||'service_umdte26',ej.opsTemplate||'template_o6h9et7',{
-      to_name:currentProfile?.full_name?.split(' ')[0]||'there',
+    if(typeof (window.RA_CONTACT||{}).sendMail!=='function')return;
+    await RA_CONTACT.sendMail('portal-alert',{
       to_email:currentUser.email,
+      to_name:currentProfile?.full_name?.split(' ')[0]||'there',
       alert_title:title,
       alert_body:body
     });
-  }catch(err){console.error('EmailJS send error:',err)}
+  }catch(err){console.error('Mail send error:',err)}
 }
 
 async function loadAlerts(){

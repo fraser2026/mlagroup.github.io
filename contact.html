@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/reganchor.css">
+<script src="js/ra-contact.js"></script>
 <style>
 :root{
   --bg:#FFFFFF;
@@ -177,10 +178,8 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
   <div class="form-side fade">
     <div class="form-card">
 
-      <!-- Netlify Forms: data-netlify="true" handles everything automatically -->
-      <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="contactForm">
-        <input type="hidden" name="form-name" value="contact">
-        <p style="display:none"><label>Don't fill this out: <input name="bot-field"></label></p>
+      <form name="contact" method="POST" id="contactForm" novalidate>
+        <p style="display:none" aria-hidden="true"><label>Don't fill this out: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
 
         <div class="form-row">
           <div>
@@ -302,28 +301,61 @@ textarea{resize:vertical;min-height:130px;line-height:1.6}
   }, {threshold: 0.1});
   document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-  // Handle form submission with Netlify
   const form = document.getElementById('contactForm');
   const btn = document.getElementById('submitBtn');
   const success = document.getElementById('successState');
   const infoSide = document.getElementById('infoSide');
+  const btnHtml = btn.innerHTML;
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    btn.disabled = true;
-    btn.textContent = 'Sending…';
-
-    const data = new FormData(form);
-
-    try {
-      await fetch('/', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: new URLSearchParams(data).toString()});
+    // Honeypot: silent success, no send
+    if ((form.querySelector('[name="bot-field"]') || {}).value) {
       form.style.display = 'none';
       success.style.display = 'block';
       if (infoSide) infoSide.classList.add('is-success');
-    } catch(err) {
+      return;
+    }
+
+    const first = (document.getElementById('firstName').value || '').trim();
+    const last = (document.getElementById('lastName').value || '').trim();
+    const email = (document.getElementById('email').value || '').trim();
+    const phone = (document.getElementById('phone').value || '').trim();
+    const organisation = (document.getElementById('organisation').value || '').trim();
+    const sector = (document.getElementById('sector').value || '').trim();
+    const message = (document.getElementById('message').value || '').trim();
+    const interests = [];
+    form.querySelectorAll('input[name="interest"]:checked').forEach(c => interests.push(c.value));
+
+    if (!email) {
+      alert('Please enter your work email.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const parts = [];
+    if (message) parts.push(message);
+    if (interests.length) parts.push('Interested in: ' + interests.join(', '));
+    if (sector) parts.push('Sector: ' + sector);
+    if (phone) parts.push('Phone: ' + phone);
+
+    try {
+      await RA_CONTACT.sendMail('contact', {
+        email: email,
+        name: [first, last].filter(Boolean).join(' ').trim() || undefined,
+        organisation: organisation || undefined,
+        company: organisation || undefined,
+        message: parts.join('\n\n') || undefined
+      });
+      form.style.display = 'none';
+      success.style.display = 'block';
+      if (infoSide) infoSide.classList.add('is-success');
+    } catch (err) {
       btn.disabled = false;
-      btn.innerHTML = 'Send message <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      alert('Something went wrong. Please try again.');
+      btn.innerHTML = btnHtml;
+      alert('Something went wrong. Please try again or email info@reganchor.com.');
     }
   });
 </script>
