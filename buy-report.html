@@ -278,10 +278,7 @@ async function init() {
 
   if (ctx.paid) {
     showState('statePaid');
-    if (navCta) {
-      navCta.textContent = 'Sign in';
-      navCta.setAttribute('href', 'login.html?after=payment');
-    }
+    if (navCta) navCta.hidden = true;
     return;
   }
 
