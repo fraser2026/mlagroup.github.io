@@ -392,6 +392,51 @@
     catch(e) { return {}; }
   }
 
+  async function loadCheckoutSessionInfo() {
+    if (!STRIPE_SESSION_ID) return null;
+    try {
+      const res = await fetch(SUPABASE_URL + '/functions/v1/checkout-session-info', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'apikey': SUPABASE_KEY
+        },
+        body: JSON.stringify({ session_id: STRIPE_SESSION_ID })
+      });
+      const json = await res.json();
+      if (!res.ok) return null;
+      return json;
+    } catch (e) {
+      console.warn('[payment-success] checkout-session-info failed:', e);
+      return null;
+    }
+  }
+
+  function prefillSignup(diagData, sessionInfo) {
+    // Prefer same-tab diagnostic session; fall back to Stripe customer details
+    // for email/other-device clickers who never had mla_diagnostic_result.
+    let first = '';
+    let last = '';
+    let email = '';
+
+    if (diagData.respondent_name) {
+      const parts = diagData.respondent_name.trim().split(/\s+/);
+      first = parts[0] || '';
+      last = parts.slice(1).join(' ') || '';
+    } else if (sessionInfo && sessionInfo.name) {
+      const parts = String(sessionInfo.name).trim().split(/\s+/);
+      first = parts[0] || '';
+      last = parts.slice(1).join(' ') || '';
+    }
+
+    email = diagData.respondent_email || (sessionInfo && sessionInfo.email) || '';
+
+    if (first) document.getElementById('su-first').value = first;
+    if (last) document.getElementById('su-last').value = last;
+    if (email) document.getElementById('su-email').value = email;
+  }
+
   async function populateProfile(userId, diagData, fullName) {
     await sb.from('profiles').upsert({
       id: userId, paid: true,
@@ -442,14 +487,9 @@
       } else {
         // ── Not logged in: show signup form ──
         const diagData = getDiagnosticData();
-        if (diagData.respondent_name) {
-          const parts = diagData.respondent_name.trim().split(' ');
-          document.getElementById('su-first').value = parts[0] || '';
-          document.getElementById('su-last').value  = parts.slice(1).join(' ') || '';
-        }
-        if (diagData.respondent_email) {
-          document.getElementById('su-email').value = diagData.respondent_email;
-        }
+        const hasSessionDiag = !!(diagData.respondent_name || diagData.respondent_email);
+        const sessionInfo = hasSessionDiag ? null : await loadCheckoutSessionInfo();
+        prefillSignup(diagData, sessionInfo);
         show('state-signup');
       }
     } catch(e) {

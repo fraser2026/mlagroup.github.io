@@ -18,6 +18,7 @@ edit.
 | `product.html` | Redirect shim → `platform.html` (legacy URL) |
 | `privacy.html`, `terms.html`, `cookies.html` | Legal pages |
 | `diagnostic.html`, `results.html` | The AI governance diagnostic and its scored output |
+| `buy-report.html` | Email deep-link paywall (`?rid=<uuid>`) — embedded Stripe checkout, no score preview |
 | `payment-success.html` | Post-Stripe account creation |
 | `login.html`, `portal.html` | Client portal, with logic split across `js/portal-*.js` |
 | `admin.html` | Internal assessment queue and support console |

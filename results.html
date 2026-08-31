@@ -385,7 +385,7 @@ async function startCheckout() {
       body: JSON.stringify({
         result_id: resultId,
         user_id: session?.user?.id || '',
-        email: session?.user?.email || '',
+        email: session?.user?.email || result.respondent_email || '',
       })
     });
 
