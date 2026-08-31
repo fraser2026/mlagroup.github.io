@@ -892,8 +892,42 @@ footer {
 .ft-links a:hover { color: var(--main) }
 
 .no-data { position: relative; z-index: 1; min-height: 60vh; display: flex; align-items: center; justify-content: center }
-.no-data[hidden], #resultsContent[hidden], .flags-locked[hidden] { display: none !important }
+.no-data[hidden], #resultsContent[hidden], #buyContent[hidden], .flags-locked[hidden] { display: none !important }
 .no-data-inner { text-align: center; padding: 60px 24px; max-width: 420px }
+.no-data-inner a:not(.btn-primary):not(.btn-ghost) { color: var(--accent); text-decoration: none }
+.no-data-inner a:not(.btn-primary):not(.btn-ghost):hover { text-decoration: underline }
+
+/* buy-report.html — paywall as a full page (no score preview) */
+.buy-report-page .pw-grid {
+  grid-template-columns: 1fr;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.buy-report-page .paywall-sec { padding: 48px 0 72px; border-top: none; }
+.buy-report-page .pw-copy h2 {
+  font-size: clamp(26px, 3vw, 30px);
+  margin-bottom: 12px;
+  max-width: 18ch;
+}
+.buy-report-page .pw-context {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+}
+.buy-report-page .pw-offer { max-width: none; }
+.buy-paid-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 24px;
+}
+.buy-paid-actions .btn-primary,
+.buy-paid-actions .btn-ghost {
+  min-width: 140px;
+  justify-content: center;
+}
 
 /* ── Questionnaire (diagnostic / assessment) ─────────────────── */
 .page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column }

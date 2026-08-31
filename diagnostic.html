@@ -839,14 +839,26 @@ function calcResults() {
     respondent_email:    document.getElementById('ps-email')?.value || ''
   }));
 
-  // ── FIRE EMAILS (non-blocking) ──────────────────────────────────
-  setTimeout(() => sendEmails(), 200);
-
-  // ── SAVE TO SUPABASE → THEN REDIRECT ───────────────────────────
-  saveToSupabase().then(() => {
+  // ── SAVE TO SUPABASE → THEN MAIL (with result_id) → REDIRECT ───
+  // Ack must wait for the insert UUID so the email CTA can deep-link
+  // to buy-report.html?rid=<uuid>. Mail used to race the insert.
+  saveToSupabase().then(async (resultId) => {
+    try {
+      await Promise.race([
+        sendEmails(resultId),
+        new Promise((resolve) => setTimeout(resolve, 8000))
+      ]);
+    } catch (e) {}
     window.location.href = 'results.html';
-  }).catch(() => {
-    // Even if Supabase fails, results are in sessionStorage: proceed
+  }).catch(async () => {
+    // Even if Supabase fails, results are in sessionStorage: proceed.
+    // Still notify ops; skip prospect ack without a result_id.
+    try {
+      await Promise.race([
+        sendEmails(null),
+        new Promise((resolve) => setTimeout(resolve, 8000))
+      ]);
+    } catch (e) {}
     window.location.href = 'results.html';
   });
 }
@@ -877,6 +889,11 @@ async function saveToSupabase() {
       .select('id')
       .single();
 
+    if (error) {
+      console.log('Supabase save error:', error);
+      throw error;
+    }
+
     if (data?.id) {
       // Update sessionStorage result with the real DB id for portal linking
       try {
@@ -884,9 +901,11 @@ async function saveToSupabase() {
         existing.id = data.id;
         sessionStorage.setItem('mla_diagnostic_result', JSON.stringify(existing));
         sessionStorage.setItem('pending_result_id', data.id);
+        localStorage.setItem('mla_result_id', data.id);
       } catch(e) {}
+      return data.id;
     }
-    if (error) console.log('Supabase save error:', error);
+    throw new Error('No result id returned');
   } catch(e) {
     console.log('Save error:', e);
     throw e;
@@ -894,8 +913,9 @@ async function saveToSupabase() {
 }
 
 // ─── EMAIL DISPATCH ───────────────────────────────────────────────
-// NOTE: reads from RESULTS directly: does NOT depend on DOM render
-function sendEmails() {
+// NOTE: reads from RESULTS directly: does NOT depend on DOM render.
+// Ack is slim (buy-report CTA needs result_id). Lead keeps the full dump.
+function sendEmails(resultId) {
   const name   = document.getElementById('ps-name').value;
   const email  = document.getElementById('ps-email').value;
   const org    = document.getElementById('ps-org').value;
@@ -920,7 +940,7 @@ function sendEmails() {
   const recText    = allRecs.map(r => '- ' + r).join('\n');
 
   const C = window.RA_CONTACT || {};
-  const payload = {
+  const base = {
     email,
     client_name: name,
     name,
@@ -931,23 +951,41 @@ function sendEmails() {
     org_size: size,
     risk_band: band,
     risk_score: score,
-    risk_summary: summary,
-    recommendations: recText,
-    flags: flagText,
     report_date: today,
     framework_version: RESULTS.frameworkVersion,
     weighted_score: RESULTS.weightedScore != null ? RESULTS.weightedScore + '%' : undefined,
     multiplier: RESULTS.multiplier != null ? Math.round(RESULTS.multiplier * 100) + '%' : undefined
   };
+  if (resultId) base.result_id = resultId;
 
-  if (typeof C.sendMail === 'function') {
-    C.sendMail('diagnostic-ack', payload)
-      .then(() => console.log('Client email sent'))
-      .catch(e => console.log('Ack email error:', e));
-    C.sendMail('diagnostic-lead', payload)
-      .then(() => console.log('Lead notification sent'))
-      .catch(e => console.log('Lead email error:', e));
+  // Prospect ack: identity + score band + result_id for buy CTA. Flags/recs stay in the paid report.
+  const ackPayload = Object.assign({}, base);
+
+  // Ops lead: full dump including flags / recommendations / summary.
+  const leadPayload = Object.assign({}, base, {
+    risk_summary: summary,
+    recommendations: recText,
+    flags: flagText
+  });
+
+  if (typeof C.sendMail !== 'function') return Promise.resolve();
+
+  const jobs = [];
+  if (resultId) {
+    jobs.push(
+      C.sendMail('diagnostic-ack', ackPayload)
+        .then(() => console.log('Client email sent'))
+        .catch(e => console.log('Ack email error:', e))
+    );
+  } else {
+    console.log('Skipping diagnostic-ack — no result_id yet');
   }
+  jobs.push(
+    C.sendMail('diagnostic-lead', leadPayload)
+      .then(() => console.log('Lead notification sent'))
+      .catch(e => console.log('Lead email error:', e))
+  );
+  return Promise.all(jobs);
 }
 
 // Sticky chrome fade: same behaviour as results.html

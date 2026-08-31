@@ -49,6 +49,18 @@ Their source is not in this repo — check each one.
 The one-off report flow returns to `payment-success.html?session_id=...`, so the success
 URL must point at `https://reganchor.com/payment-success.html`.
 
+Email clickers use `buy-report.html?rid=<uuid>` (apex, never www). That page calls
+`get-buy-context` then the existing `create-checkout-session`. Deploy
+`supabase/functions/get-buy-context` with `verify_jwt` off on project
+`hueftewwenjaiagdoqmb` — this repo is not the live source of truth for purchase
+functions. Live `send-mail` still needs a separate deploy to put `result_id` on the
+diagnostic-ack CTA (`https://reganchor.com/buy-report.html?rid=…`); the site now
+sends that id in the ack payload.
+
+Verified (do not change in this repo unless a copy lands here): live
+`create-checkout-session` still accepts a missing `result_id`, and `stripe-webhook`
+falls back to the latest unlinked diagnostic by email when metadata is empty.
+
 ### Certificate ID prefix
 New certificates should be issued as `RGA-GOV-`; existing `MLA-GOV-` IDs stay valid.
 

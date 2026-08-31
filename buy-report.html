@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Get Full Report | RegAnchor</title>
+  <meta name="color-scheme" content="light">
+  <meta name="robots" content="noindex">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="js/stripe-config.js"></script>
+  <link rel="stylesheet" href="css/reganchor.css">
+  <link rel="stylesheet" href="css/reganchor-flow.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body class="results-page buy-report-page">
+
+<header class="site-chrome" id="siteChrome">
+  <nav class="site-nav">
+    <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg?v=a3" alt="" width="193" height="36" decoding="async"></a>
+    <div class="nav-right">
+      <a href="login.html" class="nav-signin">Sign in</a>
+      <a href="#paywall" class="nav-cta" id="navCheckout">Get Full Report</a>
+    </div>
+  </nav>
+  <div class="scroll-progress" aria-hidden="true">
+    <div class="scroll-progress__fill" id="scrollProgress"></div>
+  </div>
+  <div class="site-chrome__fade" aria-hidden="true"></div>
+</header>
+
+<div class="no-data" id="stateLoading">
+  <div class="no-data-inner">
+    <span class="eyebrow-label">Full report</span>
+    <h2>Loading your assessment…</h2>
+    <p>One moment while we prepare secure checkout.</p>
+  </div>
+</div>
+
+<div class="no-data" id="stateMissing" hidden>
+  <div class="no-data-inner">
+    <span class="eyebrow-label">Full report</span>
+    <h2>We could not find this assessment.</h2>
+    <p>The link may be incomplete or expired. Contact <a href="mailto:info@reganchor.com">info@reganchor.com</a> and we will help.</p>
+  </div>
+</div>
+
+<div class="no-data" id="statePaid" hidden>
+  <div class="no-data-inner">
+    <span class="eyebrow-label">Full report</span>
+    <h2>This report is already unlocked.</h2>
+    <p>Sign in to open it in the portal, or contact <a href="mailto:info@reganchor.com">info@reganchor.com</a> if you need help.</p>
+    <div class="buy-paid-actions">
+      <a href="login.html?after=payment" class="btn-primary">Sign in</a>
+      <a href="portal.html" class="btn-ghost">Go to portal</a>
+    </div>
+  </div>
+</div>
+
+<div id="buyContent" hidden>
+
+<section class="paywall-sec" id="paywall">
+  <div class="pw">
+    <div class="pw-grid">
+      <div class="pw-copy">
+        <span class="eyebrow-label">Full report</span>
+        <h2>Unlock the complete assessment</h2>
+        <p class="pw-context" id="buyContext" hidden></p>
+        <div class="pw-offer">
+          <div class="pw-offer__price">
+            <div class="pw-price">
+              <span class="pw-currency">£</span>
+              <span class="pw-amount">295</span>
+            </div>
+            <p class="pw-offer__meta">One purchase. Instant access.</p>
+          </div>
+          <ul class="includes-list includes-list--compact">
+            <li class="inc-item"><span class="inc-tick">✓</span> Domain findings and exposure score</li>
+            <li class="inc-item"><span class="inc-tick">✓</span> Regulatory mapping and remediation plan</li>
+            <li class="inc-item"><span class="inc-tick">✓</span> Board-ready report for audits and procurement</li>
+          </ul>
+          <button type="button" class="btn-primary btn-get-report" id="checkoutBtn" onclick="startCheckout()">
+            Get Full Report
+          </button>
+          <p class="secure-note">Secure checkout. 30-day refund.</p>
+        </div>
+        <div id="checkout-loading">Loading secure checkout…</div>
+        <div id="checkout-container"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="ft-row">
+    <span>RegAnchor is a trading name of MLA Group Ltd (No. 16117562). This assessment is not legal advice.</span>
+    <div class="ft-links">
+      <a href="methodology.html">Methodology</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const stripe = Stripe(window.RA_STRIPE.publishableKey());
+const CTA_LABEL = 'Get Full Report';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+let buyCtx = null;
+let checkoutInstance = null;
+
+function showState(id) {
+  ['stateLoading', 'stateMissing', 'statePaid', 'buyContent'].forEach(function (elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.hidden = elId !== id;
+  });
+}
+
+function bindScrollChrome() {
+  const chrome = document.getElementById('siteChrome');
+  const fill = document.getElementById('scrollProgress');
+  if (!chrome || !fill) return;
+  let ticking = false;
+  const update = () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    fill.style.transform = 'scaleX(' + p + ')';
+    chrome.classList.toggle('is-scrolled', window.scrollY > 12);
+    ticking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(update); ticking = true; }
+  }, { passive: true });
+  window.addEventListener('resize', update, { passive: true });
+  update();
+}
+
+async function loadBuyContext(rid) {
+  // Preferred: public edge function (service role, checkout fields only).
+  try {
+    const res = await fetch(SUPABASE_URL + '/functions/v1/get-buy-context', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'apikey': SUPABASE_KEY
+      },
+      body: JSON.stringify({ result_id: rid })
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.result_id) return json;
+      if (json && json.error === 'not_found') return null;
+    }
+  } catch (e) {
+    console.warn('[buy-report] get-buy-context unavailable, trying thin client select', e);
+  }
+
+  // Fallback only if the edge function is not deployed yet: select checkout
+  // columns only — never scores, flags, or raw answers.
+  const { data, error } = await sb
+    .from('diagnostic_results')
+    .select('id, organisation, respondent_name, respondent_email')
+    .eq('id', rid)
+    .maybeSingle();
+  if (error || !data) return null;
+
+  let paid = false;
+  try {
+    const { data: ent } = await sb
+      .from('entitlements')
+      .select('id')
+      .eq('diagnostic_id', rid)
+      .eq('status', 'active')
+      .limit(1);
+    paid = !!(ent && ent.length);
+  } catch (e) { /* entitlements may be RLS-gated for anon */ }
+
+  return {
+    result_id: data.id,
+    organisation: data.organisation || '',
+    respondent_name: data.respondent_name || '',
+    respondent_email: data.respondent_email || '',
+    paid: paid
+  };
+}
+
+async function startCheckout() {
+  if (!buyCtx || !buyCtx.result_id) return;
+
+  const btn = document.getElementById('checkoutBtn');
+  const loadEl = document.getElementById('checkout-loading');
+  const contEl = document.getElementById('checkout-container');
+
+  if (contEl.style.display === 'block') {
+    contEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Loading checkout…';
+  loadEl.style.display = 'block';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(SUPABASE_URL + '/functions/v1/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (session?.access_token || SUPABASE_KEY),
+        'apikey': SUPABASE_KEY
+      },
+      body: JSON.stringify({
+        result_id: buyCtx.result_id,
+        user_id: session?.user?.id || '',
+        email: session?.user?.email || buyCtx.respondent_email || '',
+      })
+    });
+
+    const json = await res.json();
+    if (!res.ok || json.error) throw new Error(json.error || 'Failed to create session');
+
+    if (checkoutInstance) checkoutInstance.destroy();
+    checkoutInstance = await stripe.initEmbeddedCheckout({ clientSecret: json.clientSecret });
+
+    loadEl.style.display = 'none';
+    contEl.style.display = 'block';
+    checkoutInstance.mount('#checkout-container');
+    setTimeout(() => contEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+
+    btn.disabled = false;
+    btn.textContent = 'Hide checkout';
+    btn.onclick = () => {
+      contEl.style.display = 'none';
+      btn.textContent = CTA_LABEL;
+      btn.onclick = startCheckout;
+    };
+  } catch (err) {
+    loadEl.style.display = 'none';
+    btn.disabled = false;
+    btn.textContent = CTA_LABEL;
+    console.error(err);
+    alert('Could not load checkout. Please try again.');
+  }
+}
+
+async function init() {
+  bindScrollChrome();
+
+  const rid = new URLSearchParams(window.location.search).get('rid') || '';
+  if (!UUID_RE.test(rid)) {
+    showState('stateMissing');
+    return;
+  }
+
+  const ctx = await loadBuyContext(rid);
+  if (!ctx || !ctx.result_id) {
+    showState('stateMissing');
+    return;
+  }
+
+  buyCtx = ctx;
+  localStorage.setItem('mla_result_id', ctx.result_id);
+  sessionStorage.setItem('pending_result_id', ctx.result_id);
+
+  if (ctx.paid) {
+    showState('statePaid');
+    return;
+  }
+
+  const bits = [];
+  if (ctx.organisation) bits.push(ctx.organisation);
+  if (ctx.respondent_name) bits.push(ctx.respondent_name);
+  const ctxEl = document.getElementById('buyContext');
+  if (bits.length) {
+    ctxEl.textContent = bits.join(' · ');
+    ctxEl.hidden = false;
+  }
+
+  showState('buyContent');
+
+  const navCta = document.getElementById('navCheckout');
+  if (navCta) {
+    navCta.addEventListener('click', function (e) {
+      e.preventDefault();
+      startCheckout();
+    });
+  }
+}
+
+init();
+</script>
+</body>
+</html>
