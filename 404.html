@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page not found | RegAnchor</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/reganchor.css">
+<style>
+:root{
+  --bg:#FFFFFF;
+  --border:var(--ra-line,#E4E7EC);--border-md:var(--ra-ink,#0A0E14);
+  --hover:var(--ra-hover,rgba(17,17,17,0.028));
+  --text-1:var(--ra-ink,#0A0E14);--text-2:var(--ra-slate-70,#374151);--text-3:var(--ra-steel,#6B7280);
+  --font-brand:var(--ra-font-brand,'IBM Plex Sans',sans-serif);--font-body:var(--ra-font-product,'Inter',sans-serif);
+  --nav-h:64px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text-2);-webkit-font-smoothing:antialiased;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+.rnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:100}
+.rnav-logo{font-family:var(--font-brand);font-size:.95rem;font-weight:500;letter-spacing:-.025em;color:var(--text-1);text-decoration:none}
+.hero{padding:calc(var(--nav-h) + 88px) 60px 72px;max-width:900px;margin:0 auto;flex:1}
+.hero-title{font-family:var(--font-brand);font-size:2.4rem;font-weight:500;line-height:1.15;letter-spacing:-.02em;color:var(--text-1);margin-bottom:18px}
+.hero-lede{font-size:.94rem;color:var(--text-2);line-height:1.8;max-width:36em;margin-bottom:32px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.rfooter{max-width:900px;margin:0 auto;padding:36px 60px;border-top:1px solid var(--text-1);display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;width:100%}
+.rf-logo{font-family:var(--font-brand);font-size:.88rem;font-weight:500;color:var(--text-1);text-decoration:none;letter-spacing:-.02em}
+.rf-links{display:flex;gap:20px;flex-wrap:wrap}
+.rf-links a{font-size:.75rem;color:var(--text-3);text-decoration:none;transition:color .2s}
+.rf-links a:hover{color:var(--text-1)}
+@media(max-width:768px){
+  .rnav{padding:0 20px}
+  .hero{padding:calc(var(--nav-h) + 56px) 20px 56px}
+  .rfooter{padding:28px 20px;flex-direction:column;text-align:center}
+  .rf-links{justify-content:center}
+  .hero-actions{flex-direction:column;align-items:stretch}
+  .hero-actions .btn-primary,
+  .hero-actions .btn-ghost{width:100%;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<nav class="rnav">
+  <a href="/index.html" class="rnav-logo ra-wordmark" aria-label="RegAnchor"><img src="/brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+  <a href="/index.html" class="nav-back">Back to site</a>
+</nav>
+<div class="ra-anchor-line ra-anchor-line--entrance" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:99;"><div class="ra-anchor-line__seg"></div></div>
+
+<main class="hero">
+  <h1 class="hero-title">Page not found</h1>
+  <p class="hero-lede">This address is not part of RegAnchor. Return home for the product, methodology, and portal — or contact us if you expected a page here.</p>
+  <div class="hero-actions">
+    <a href="/index.html" class="btn-primary">Back to home</a>
+    <a href="/contact.html" class="btn-ghost">Contact</a>
+  </div>
+</main>
+
+<footer class="rfooter">
+  <a href="/index.html" class="rf-logo ra-wordmark" aria-label="RegAnchor"><img src="/brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+  <div class="rf-links">
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/security.html">Security</a>
+    <a href="/cookies.html">Cookie Policy</a>
+    <a href="/terms.html">Terms &amp; Conditions</a>
+    <a href="/index.html">Home</a>
+  </div>
+  <p class="rfooter-legal">RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562).</p>
+</footer>
+
+<script src="/js/ra-chrome.js"></script>
+</body>
+</html>
