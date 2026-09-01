@@ -580,6 +580,111 @@ function dismissReportPulse(id){
     }
   }
 }
+/* θ path: View + Download rounded outlines joined by a vertical gap spine.
+   Stroke centreline inset by half the 2px stroke so the outer edge is flush
+   with each button; 4px quarter-turns onto the spine. */
+function buildReportPulsePath(Wv,Wd,H,gap,radius,strokeW){
+  var hs=strokeW/2;
+  var r=Math.max(0.01,radius-hs);
+  var sx=Wv+gap/2;
+  var L=hs,T=hs,Rv=Wv-hs,B=H-hs;
+  var DL=Wv+gap+hs,DT=hs,DR=Wv+gap+Wd-hs,DB=H-hs;
+  var t=Math.min(radius,Math.max(0.5,sx-Rv),Math.max(0.5,DL-sx),(B-T)/2);
+  var d='';
+  /* UP spine → left onto View → CCW around View → DOWN spine → CW around Download */
+  d+='M '+sx+' '+(B-t);
+  d+=' L '+sx+' '+(T+t);
+  d+=' A '+t+' '+t+' 0 0 0 '+(sx-t)+' '+T;
+  d+=' L '+(L+r)+' '+T;
+  d+=' A '+r+' '+r+' 0 0 0 '+L+' '+(T+r);
+  d+=' L '+L+' '+(B-r);
+  d+=' A '+r+' '+r+' 0 0 0 '+(L+r)+' '+B;
+  d+=' L '+(Rv-r)+' '+B;
+  d+=' A '+r+' '+r+' 0 0 0 '+Rv+' '+(B-r);
+  d+=' L '+Rv+' '+(T+r);
+  d+=' A '+r+' '+r+' 0 0 0 '+(Rv-r)+' '+T;
+  d+=' L '+(sx-t)+' '+T;
+  d+=' A '+t+' '+t+' 0 0 1 '+sx+' '+(T+t);
+  d+=' L '+sx+' '+(DB-t);
+  d+=' A '+t+' '+t+' 0 0 0 '+(sx+t)+' '+DB;
+  d+=' L '+(DR-r)+' '+DB;
+  d+=' A '+r+' '+r+' 0 0 0 '+DR+' '+(DB-r);
+  d+=' L '+DR+' '+(DT+r);
+  d+=' A '+r+' '+r+' 0 0 0 '+(DR-r)+' '+DT;
+  d+=' L '+(DL+r)+' '+DT;
+  d+=' A '+r+' '+r+' 0 0 0 '+DL+' '+(DT+r);
+  d+=' L '+DL+' '+(DB-r);
+  d+=' A '+r+' '+r+' 0 0 0 '+(DL+r)+' '+DB;
+  d+=' L '+(sx+t)+' '+DB;
+  d+=' A '+t+' '+t+' 0 0 0 '+sx+' '+(DB-t);
+  return d;
+}
+function reportPulseControlRadius(el){
+  var raw=window.getComputedStyle(el).borderRadius||'4px';
+  var n=parseFloat(raw);
+  return isNaN(n)?4:n;
+}
+function layoutReportPulse(wrap){
+  if(!wrap)return;
+  var viewBtn=wrap.querySelector('.btn-topbar-primary');
+  var dlBtn=wrap.querySelector('.btn-pdf');
+  var host=wrap.querySelector('.result-card__pulse');
+  if(!viewBtn||!dlBtn||!host)return;
+  var wr=wrap.getBoundingClientRect();
+  var vr=viewBtn.getBoundingClientRect();
+  var dr=dlBtn.getBoundingClientRect();
+  /* Side-by-side only — skip if flex-wrap stacked the pair. */
+  if(Math.abs(vr.top-dr.top)>2){host.innerHTML='';return;}
+  var Wv=vr.width;
+  var Wd=dr.width;
+  var H=Math.max(vr.height,dr.height);
+  var gap=Math.max(0,dr.left-vr.right);
+  var W=Wv+gap+Wd;
+  if(W<8||H<8){host.innerHTML='';return;}
+  var strokeW=2;
+  var radius=reportPulseControlRadius(viewBtn);
+  var d=buildReportPulsePath(Wv,Wd,H,gap,radius,strokeW);
+  var uid=wrap.getAttribute('data-pulse-id')||'pulse';
+  var clipView='ra-pulse-view-'+uid;
+  var clipRest='ra-pulse-rest-'+uid;
+  /* Position overlay over the measured pair (not score/badge). */
+  host.style.left=(vr.left-wr.left)+'px';
+  host.style.top=(vr.top-wr.top)+'px';
+  host.style.width=W+'px';
+  host.style.height=H+'px';
+  host.style.right='auto';
+  host.style.bottom='auto';
+  host.innerHTML=
+    '<svg focusable="false" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+      '<defs>'+
+        '<clipPath id="'+clipView+'"><rect x="0" y="0" width="'+Wv+'" height="'+H+'" rx="'+radius+'" ry="'+radius+'"/></clipPath>'+
+        '<clipPath id="'+clipRest+'"><rect x="'+Wv+'" y="0" width="'+(gap+Wd)+'" height="'+H+'"/></clipPath>'+
+      '</defs>'+
+      '<path class="ra-pulse-on-view" clip-path="url(#'+clipView+')" pathLength="100" d="'+d+'"/>'+
+      '<path class="ra-pulse-off-view" clip-path="url(#'+clipRest+')" pathLength="100" d="'+d+'"/>'+
+    '</svg>';
+  /* Comet ≥ half View width; keep ~20% floor from live. */
+  var paths=host.querySelectorAll('path');
+  if(paths.length){
+    var total=paths[0].getTotalLength()||1;
+    var dashPct=Math.max(20,(Wv*0.5)/total*100);
+    var gapPct=Math.max(0,100-dashPct);
+    var dash=dashPct+' '+gapPct;
+    for(var i=0;i<paths.length;i++)paths[i].style.strokeDasharray=dash;
+  }
+}
+function layoutReportPulses(){
+  var wraps=document.querySelectorAll('#reports-diagnostic .result-actions--pulse');
+  for(var i=0;i<wraps.length;i++)layoutReportPulse(wraps[i]);
+}
+var _raPulseResizeTimer=null;
+function scheduleLayoutReportPulses(){
+  if(_raPulseResizeTimer)clearTimeout(_raPulseResizeTimer);
+  _raPulseResizeTimer=setTimeout(layoutReportPulses,50);
+}
+if(typeof window!=='undefined'){
+  window.addEventListener('resize',scheduleLayoutReportPulses);
+}
 function renderReports(paidIds){
   // Diagnostic reports
   const dc=document.getElementById('reports-diagnostic');
@@ -592,14 +697,19 @@ function renderReports(paidIds){
     var paid=isPaid||isPaidTier()||paidIds.has(r.id);
     /* Pulse only for a recent entitled diagnostic that has not been opened yet — never Unlock rows. */
     var pulse=!!paid&&shouldShowReportPulse(r.id);
-    var btn=paid
-      ? '<div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-topbar btn-topbar-primary" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</button><button type="button" class="btn-pdf" id="pdf-btn-'+r.id+'" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download</button></div>'
-      : '<a href="pricing.html" class="btn-topbar btn-topbar-primary">Unlock — £295</a>';
     var pulseSvg=pulse
-      ? '<div class="result-card__pulse" aria-hidden="true"><svg focusable="false" width="100%" height="100%"><rect pathLength="100"/></svg></div>'
+      ? '<div class="result-card__pulse" aria-hidden="true"></div>'
       : '';
-    return '<div class="result-card'+(pulse?' result-card--pulse':'')+'"'+(pulse?' data-diagnostic-id="'+r.id+'"':'')+'><div><div class="result-org">'+esc(r.organisation||'Diagnostic')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'</div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Exposure</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div>'+pulseSvg+'</div>';
+    var btn=paid
+      ? '<div class="result-actions'+(pulse?' result-actions--pulse':'')+'"'+(pulse?' data-pulse-id="'+esc(r.id)+'"':'')+'><button type="button" class="btn-topbar btn-topbar-primary" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</button><button type="button" class="btn-pdf" id="pdf-btn-'+r.id+'" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download</button>'+pulseSvg+'</div>'
+      : '<a href="pricing.html" class="btn-topbar btn-topbar-primary">Unlock — £295</a>';
+    return '<div class="result-card'+(pulse?' result-card--pulse':'')+'"'+(pulse?' data-diagnostic-id="'+r.id+'"':'')+'><div><div class="result-org">'+esc(r.organisation||'Diagnostic')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'</div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Exposure</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div></div>';
   }).join('')+'</div>';
+  layoutReportPulses();
+  if(window.ResizeObserver&&!window._raPulseRO){
+    window._raPulseRO=new ResizeObserver(scheduleLayoutReportPulses);
+    window._raPulseRO.observe(dc);
+  }
 }
 async function loadAssessmentReports(){
   if(!currentOrg)return;

@@ -1401,17 +1401,20 @@ a.btn-dl svg {
 }
 .result-card:last-child { border-bottom: 1px solid var(--ra-border) }
 
-/* One-time traveling blurple stroke on a recently purchased Exposure Report.
-   Overlay-only: do not change padding/margin/grid — buttons stay put.
-   Wrapper fills the card; SVG is 100%×100% so iOS Safari does not keep a
-   ~300×150 intrinsic box. 2px stroke centred on hairlines/edges (half outside). */
+/* One-time traveling stroke on View + Download only (not the whole card).
+   Overlay-only: do not change .result-card padding/margin/grid.
+   SVG is sized to the button pair with an explicit viewBox (Safari-safe). */
+.result-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  position: relative;
+}
 #reports-diagnostic,
 #reports-diagnostic .result-list {
   overflow: visible;
 }
 .result-card.result-card--pulse {
-  position: relative;
-  z-index: 1;
   overflow: visible;
 }
 .ra-portal .result-card.result-card--pulse {
@@ -1419,7 +1422,8 @@ a.btn-dl svg {
 }
 .result-card__pulse {
   position: absolute;
-  inset: -1px;
+  left: 0;
+  top: 0;
   overflow: visible;
   pointer-events: none;
   z-index: 2;
@@ -1430,30 +1434,28 @@ a.btn-dl svg {
   height: 100%;
   overflow: visible;
 }
-.result-card__pulse rect {
+.result-card__pulse path {
   fill: none;
-  x: 0;
-  y: 0;
-  width: 100%;
-  height: 100%;
-  rx: 0;
-  ry: 0;
-  stroke: var(--ra-blurple, #533AFD);
   stroke-width: 2px;
   stroke-linecap: round;
-  stroke-linejoin: miter;
+  stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
-  /* ~20% comet of pathLength=100 */
+  /* ~20% comet of pathLength=100; JS may lengthen to ≥ half View width */
   stroke-dasharray: 20 80;
   stroke-dashoffset: 0;
   animation: ra-report-pulse-travel 2.8s linear infinite;
-  filter: drop-shadow(0 0 2.5px color-mix(in srgb, var(--ra-blurple, #533AFD) 50%, transparent));
+}
+.result-card__pulse path.ra-pulse-on-view {
+  stroke: #FFFFFF;
+}
+.result-card__pulse path.ra-pulse-off-view {
+  stroke: var(--ra-blurple, #533AFD);
 }
 @keyframes ra-report-pulse-travel {
   to { stroke-dashoffset: -100; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .result-card__pulse rect {
+  .result-card__pulse path {
     animation: none;
     stroke-dasharray: 22 78;
     stroke-dashoffset: -8;
