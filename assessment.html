@@ -541,8 +541,10 @@ async function saveAssessment(result){
     });
     // Trigger governance controls based on responses
     var triggered=await triggerControls(result.responses,assessId);
+    // Mint linked policies for triggered controls (idempotent)
+    var minted=await mintLinkedPolicies(triggered||[]);
     // Show results screen
-    showResultsScreen(result,triggered||[],assessId);
+    showResultsScreen(result,triggered||[],assessId,minted||[]);
   }catch(err){
     document.getElementById('calcOverlay').classList.remove('active');
     alert('Error saving assessment: '+err.message);
@@ -591,8 +593,69 @@ async function triggerControls(responses,assessId){
     return triggered;
   }catch(err){console.error('Trigger controls error:',err);return[]}
 }
+
+// For each triggered control with an active policy template (linked_control_number),
+// insert a published policy_documents row if the org does not already have one.
+// Idempotent: skip existing (by linked_control_id or title); unique-violation is success.
+async function mintLinkedPolicies(triggered){
+  if(!triggered||!triggered.length||!currentOrg)return[];
+  try{
+    var numbers=triggered.map(function(c){return c.control_number});
+    var{data:templates}=await sb.from('policy_templates').select('*').eq('is_active',true).in('linked_control_number',numbers);
+    if(!templates||!templates.length)return[];
+    var{data:existing}=await sb.from('policy_documents').select('id,title,linked_control_id').eq('org_id',currentOrg.id).eq('is_active',true);
+    existing=existing||[];
+    var byControl={},byTitle={};
+    existing.forEach(function(p){
+      if(p.linked_control_id)byControl[p.linked_control_id]=true;
+      if(p.title)byTitle[p.title]=true;
+    });
+    var ctrlByNum={};
+    triggered.forEach(function(c){ctrlByNum[c.control_number]=c});
+    var orgName=currentOrg.name||'Our Organisation';
+    var meta=currentUser.user_metadata||{};
+    var actor=meta.full_name||meta.name||(currentUser.email?currentUser.email.split('@')[0]:'Unknown');
+    var minted=[];
+    for(var i=0;i<templates.length;i++){
+      var tpl=templates[i];
+      var ctrl=ctrlByNum[tpl.linked_control_number];
+      if(!ctrl)continue;
+      if(byControl[ctrl.id]||byTitle[tpl.title])continue;
+      var content=(tpl.content_template||'').replace(/\{\{org_name\}\}/g,orgName);
+      var result=await sb.from('policy_documents').insert({
+        org_id:currentOrg.id,
+        title:tpl.title,
+        description:tpl.description,
+        content:content,
+        version:'1.0',
+        category:tpl.category,
+        requires_acknowledgment:true,
+        acknowledgment_frequency:'on_update',
+        linked_control_id:ctrl.id,
+        published_at:new Date().toISOString(),
+        created_by:currentUser.id
+      }).select().single();
+      if(result.error){
+        if(result.error.code==='23505')continue;
+        console.error('Policy mint error:',tpl.title,result.error);
+        continue;
+      }
+      if(result.data){
+        byControl[ctrl.id]=true;
+        byTitle[tpl.title]=true;
+        minted.push(result.data);
+        await sb.from('registry_audit_log').insert({
+          org_id:currentOrg.id,user_id:currentUser.id,
+          action:'policy_adopted',entity_type:'policy',entity_id:result.data.id,
+          changes:{_actor_name:actor,policy:tpl.title}
+        });
+      }
+    }
+    return minted;
+  }catch(err){console.error('Mint policies error:',err);return[]}
+}
  
-function showResultsScreen(result, triggered, assessId) {
+function showResultsScreen(result, triggered, assessId, minted) {
   document.getElementById('calcOverlay').classList.remove('active');
   document.getElementById('siteChrome')?.classList.remove('has-steps');
   document.querySelector('.page')?.classList.remove('in-quiz');
@@ -621,6 +684,7 @@ function showResultsScreen(result, triggered, assessId) {
       '</div>';
   }).join('');
 
+  minted = minted || [];
   var ctrlHtml = '';
   if (triggered.length) {
     ctrlHtml = '' +
@@ -643,6 +707,18 @@ function showResultsScreen(result, triggered, assessId) {
       '<div style="margin-top:28px;padding:16px 0;border-top:1px solid var(--border);text-align:left;">' +
         '<div style="font-size:14px;font-weight:500;color:var(--main);margin-bottom:4px;">No controls triggered</div>' +
         '<div style="font-size:13px;color:var(--muted);">This system scored well across all governance domains.</div>' +
+      '</div>';
+  }
+  if (minted.length) {
+    ctrlHtml += '' +
+      '<div style="margin-top:20px;text-align:left;padding-top:16px;border-top:1px solid var(--border);">' +
+        '<div style="font-size:14px;font-weight:500;color:var(--main);margin-bottom:4px;">' +
+          minted.length + ' governance polic' + (minted.length !== 1 ? 'ies' : 'y') + ' created' +
+        '</div>' +
+        '<div style="font-size:13px;color:var(--muted);line-height:1.6;">' +
+          minted.map(function (p) { return esc(p.title); }).join(', ') +
+          '. Review and acknowledge them in Policies.' +
+        '</div>' +
       '</div>';
   }
 
