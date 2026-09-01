@@ -23,3 +23,27 @@ verify_jwt = false
 
 [functions.get-billing-overview]
 verify_jwt = false
+
+[functions.stripe-webhook]
+# Stripe signature verified inside the function.
+verify_jwt = false
+
+[functions.subscription-webhook]
+# Stripe signature verified inside the function.
+verify_jwt = false
+
+[functions.create-checkout-session]
+# Public guest diagnostic checkout (buy-report / results).
+verify_jwt = false
+
+[functions.create-subscription-session]
+# guest=true public; signed-in path checks JWT inside.
+verify_jwt = false
+
+[functions.checkout-session-info]
+# Post-pay signup; session_id is the capability.
+verify_jwt = false
+
+[functions.generate-report]
+# Gateway JWT required — do NOT deploy with --no-verify-jwt.
+verify_jwt = true
