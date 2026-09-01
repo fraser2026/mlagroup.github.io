@@ -1,15 +1,20 @@
 /**
  * RegAnchor — Puppeteer Renderer Service
- * 
+ *
  * Lightweight Express server that accepts report data via POST
  * and returns a rendered PDF. Deploy on Render, Railway, Fly.io,
  * or any Node.js host with headless Chrome support.
- * 
+ *
  * POST /render
  * Body: Report data JSON (same structure as diagnostic response)
  * Returns: application/pdf
- * 
- * Health check: GET /health
+ *
+ * POST /render-certificate
+ * Body: Certificate data JSON
+ * Returns: application/pdf
+ *
+ * Keep-alive: GET /healthcheck  → plain text "OK" (no Puppeteer / DB / storage)
+ * Legacy:     GET /health       → JSON status
  */
 
 import express from 'express';
@@ -34,7 +39,64 @@ const SITE_DOMAIN = process.env.SITE_DOMAIN || 'reganchor.com';
 // Pre-load template
 const TEMPLATE_HTML = readFileSync(TEMPLATE_PATH, 'utf-8');   const CERT_TEMPLATE_PATH = join(__dirname, 'certificate-template.html'); const CERT_TEMPLATE_HTML = readFileSync(CERT_TEMPLATE_PATH, 'utf-8');
 
-// ── Health check ──
+const LAUNCH_OPTS = {
+  headless: 'new',
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--font-render-hinting=none',
+  ],
+};
+
+// ── Process-wide Puppeteer browser singleton ──
+// Reused across PDF requests. Pages are opened/closed per request; the browser stays open.
+let browserInstance = null;
+let browserLaunchPromise = null;
+
+async function getBrowser() {
+  if (browserInstance && browserInstance.connected) {
+    return browserInstance;
+  }
+
+  if (!browserLaunchPromise) {
+    browserLaunchPromise = (async () => {
+      try {
+        console.log('[Renderer] Launching Puppeteer browser…');
+        const browser = await puppeteer.launch(LAUNCH_OPTS);
+        browserInstance = browser;
+        browser.on('disconnected', () => {
+          console.warn('[Renderer] Browser disconnected; will relaunch on next PDF request');
+          browserInstance = null;
+          browserLaunchPromise = null;
+        });
+        console.log('[Renderer] Puppeteer browser ready');
+        return browser;
+      } catch (err) {
+        browserInstance = null;
+        browserLaunchPromise = null;
+        throw err;
+      }
+    })();
+  }
+
+  const browser = await browserLaunchPromise;
+  // If the process died between launch and use, clear and relaunch once.
+  if (!browser.connected) {
+    browserInstance = null;
+    browserLaunchPromise = null;
+    return getBrowser();
+  }
+  return browser;
+}
+
+// ── Keep-alive health check (cheap: no Puppeteer, DB, or Supabase) ──
+app.get('/healthcheck', (req, res) => {
+  res.status(200).type('text/plain').send('OK');
+});
+
+// ── Legacy health check ──
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'mla-report-renderer', version: '1.0.0' });
 });
@@ -42,7 +104,7 @@ app.get('/health', (req, res) => {
 // ── Render endpoint ──
 app.post('/render', async (req, res) => {
   const startTime = Date.now();
-  let browser;
+  let page;
 
   try {
     const reportData = req.body;
@@ -58,19 +120,8 @@ app.post('/render', async (req, res) => {
       `const REPORT_DATA = ${JSON.stringify(reportData)};`
     );
 
-    // Launch Puppeteer
-    browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--font-render-hinting=none',
-      ],
-    });
-
-    const page = await browser.newPage();
+    const browser = await getBrowser();
+    page = await browser.newPage();
 
     // Set content and wait for fonts
     await page.setContent(renderedHtml, {
@@ -113,9 +164,6 @@ app.post('/render', async (req, res) => {
       footerTemplate,
     });
 
-    await browser.close();
-    browser = null;
-
     const elapsed = Date.now() - startTime;
     console.log(`[Renderer] Complete: ${(pdfBuffer.length / 1024).toFixed(0)} KB in ${elapsed}ms`);
 
@@ -129,24 +177,27 @@ app.post('/render', async (req, res) => {
 
   } catch (err) {
     console.error(`[Renderer] Error: ${err.message}`);
-    if (browser) await browser.close();
     res.status(500).json({ error: err.message });
+  } finally {
+    if (page) {
+      try { await page.close(); } catch (_) { /* ignore */ }
+    }
   }
 });
 
-  // ── Certificate render endpoint ──
+// ── Certificate render endpoint ──
 app.post('/render-certificate', async (req, res) => {
   const startTime = Date.now();
-  let browser;
- 
+  let page;
+
   try {
     const certData = req.body;
     if (!certData || !certData.certificate_id) {
       return res.status(400).json({ error: 'Invalid certificate data' });
     }
- 
+
     console.log(`[Renderer] Generating certificate: ${certData.certificate_id}`);
- 
+
     const renderedHtml = CERT_TEMPLATE_HTML
       .replace('<html lang="en">', '<html lang="en" class="is-pdf">')
       .replace(
@@ -156,22 +207,12 @@ app.post('/render-certificate', async (req, res) => {
       // Strip local-only preview chrome so it never appears in PDF pixels
       .replace(/<!-- Preview chrome[\s\S]*?-->\s*/,'')
       .replace(/<div class="preview-note"[^>]*>[\s\S]*?<\/div>\s*/,'');
- 
-    browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--font-render-hinting=none',
-      ],
-    });
- 
-    const page = await browser.newPage();
- 
+
+    const browser = await getBrowser();
+    page = await browser.newPage();
+
     await page.setViewport({ width: 1122, height: 794, deviceScaleFactor: 1 });
- 
+
     await page.setContent(renderedHtml, {
       waitUntil: 'domcontentloaded',
       timeout: 60000,
@@ -187,7 +228,7 @@ app.post('/render-certificate', async (req, res) => {
       document.documentElement.classList.add('is-pdf');
     });
     await new Promise((r) => setTimeout(r, 400));
- 
+
     const pdfBuffer = await page.pdf({
       width: '1122px',
       height: '794px',
@@ -197,27 +238,31 @@ app.post('/render-certificate', async (req, res) => {
       displayHeaderFooter: false,
       pageRanges: '1',
     });
- 
-    await browser.close();
-    browser = null;
- 
+
     const elapsed = Date.now() - startTime;
     console.log(`[Renderer] Certificate complete: ${(pdfBuffer.length / 1024).toFixed(0)} KB in ${elapsed}ms`);
- 
+
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Length': pdfBuffer.length,
       'Cache-Control': 'no-store',
     });
     res.send(pdfBuffer);
- 
+
   } catch (err) {
     console.error(`[Renderer] Certificate error: ${err.message}`);
-    if (browser) await browser.close();
     res.status(500).json({ error: err.message });
+  } finally {
+    if (page) {
+      try { await page.close(); } catch (_) { /* ignore */ }
+    }
   }
 });
- 
+
 app.listen(PORT, () => {
   console.log(`[Renderer] MLA Report Renderer listening on port ${PORT}`);
+  // Warm the browser at boot so the first PDF is not cold-start Chromium.
+  getBrowser().catch((err) => {
+    console.error(`[Renderer] Browser warm-up failed (will retry on next PDF): ${err.message}`);
+  });
 });
