@@ -187,6 +187,24 @@ serve(async (req) => {
       })
       .eq('id', response_id)
 
+    // Immutable audit row — mint succeeded; do not fail the download if this write fails
+    const frameworkVersion = response.framework_version || '2.0.0'
+    const { error: auditError } = await supabase
+      .from('report_audit_log')
+      .insert({
+        response_id,
+        report_id: reportId,
+        action: 'generated',
+        snapshot_hash: snapshotHash,
+        generated_at: generatedAt,
+        generator_version: '1.0.0',
+        framework_version: frameworkVersion,
+      })
+
+    if (auditError) {
+      console.error('[generate-report] report_audit_log insert failed:', auditError.message)
+    }
+
     return json({
       success: true,
       report_id: reportId,
