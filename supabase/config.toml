@@ -33,7 +33,8 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.create-checkout-session]
-# Public guest diagnostic checkout (buy-report / results).
+# Guest diagnostic purchase (buy-report / results) has no user JWT — anon key only.
+# Function validates result_id against diagnostic_results before calling Stripe.
 verify_jwt = false
 
 [functions.create-subscription-session]
