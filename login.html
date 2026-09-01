@@ -340,9 +340,9 @@
           <div class="spin" id="signin-spin"></div>
         </button>
         <div class="sso-stack">
-          <button class="sso-btn" type="button" onclick="signInGoogle()">
+          <button class="sso-btn google-sso-btn" type="button" onclick="signInGoogle()">
             <svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.79 2.73v2.27h2.9c1.7-1.56 2.69-3.87 2.69-6.64z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.27c-.81.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.34C2.44 15.98 5.48 18 9 18z"/><path fill="#FBBC05" d="M3.95 10.69A5.41 5.41 0 013.66 9c0-.59.1-1.16.29-1.69V4.97H.96A8.99 8.99 0 000 9c0 1.45.35 2.82.96 4.03l2.99-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.97l2.99 2.34C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
-            Continue with Google
+            <span class="google-sso-label">Continue with Google</span>
           </button>
           <button class="sso-btn" type="button" onclick="showSsoPanel()">
             <svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="6" cy="6" r="2.2"/><circle cx="12" cy="6.5" r="1.8"/><path d="M2.2 14c.4-2.2 2-3.4 3.8-3.4S9.4 11.8 9.8 14"/><path d="M10.2 13.2c.35-1.5 1.5-2.3 2.8-2.3 1.5 0 2.6.9 2.9 2.5"/></svg>
@@ -377,9 +377,9 @@
           <div class="spin" id="signup-spin"></div>
         </button>
         <div class="sso-stack">
-          <button class="sso-btn" type="button" onclick="signInGoogle()">
+          <button class="sso-btn google-sso-btn" type="button" onclick="signInGoogle()">
             <svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.79 2.73v2.27h2.9c1.7-1.56 2.69-3.87 2.69-6.64z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.27c-.81.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.34C2.44 15.98 5.48 18 9 18z"/><path fill="#FBBC05" d="M3.95 10.69A5.41 5.41 0 013.66 9c0-.59.1-1.16.29-1.69V4.97H.96A8.99 8.99 0 000 9c0 1.45.35 2.82.96 4.03l2.99-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.97l2.99 2.34C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
-            Continue with Google
+            <span class="google-sso-label">Continue with Google</span>
           </button>
           <button class="sso-btn" type="button" onclick="showSsoPanel()">
             <svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="6" cy="6" r="2.2"/><circle cx="12" cy="6.5" r="1.8"/><path d="M2.2 14c.4-2.2 2-3.4 3.8-3.4S9.4 11.8 9.8 14"/><path d="M10.2 13.2c.35-1.5 1.5-2.3 2.8-2.3 1.5 0 2.6.9 2.9 2.5"/></svg>
@@ -443,8 +443,78 @@
     return 'portal.html' + q + hash;
   }
 
-  sb.auth.getSession().then(function (r) {
-    if (r.data && r.data.session) postAuthRedirect();
+  /** Preserve deep-link query params through the OAuth round trip. */
+  function oauthRedirectUrl() {
+    var p = new URLSearchParams(window.location.search);
+    p.delete('code');
+    p.delete('error');
+    p.delete('error_description');
+    p.delete('error_code');
+    var qs = p.toString();
+    return location.origin + location.pathname + (qs ? ('?' + qs) : '');
+  }
+
+  /** Wait for Supabase to hydrate session from storage or OAuth callback URL. */
+  function getAuthSession(timeoutMs) {
+    return sb.auth.getSession().then(function (r) {
+      if (r.data && r.data.session) return r.data.session;
+      return new Promise(function (resolve) {
+        var done = false;
+        var finish = function (session) {
+          if (done) return;
+          done = true;
+          try { sub.unsubscribe(); } catch (e) {}
+          clearTimeout(timer);
+          resolve(session || null);
+        };
+        var timer = setTimeout(function () { finish(null); }, timeoutMs || 5000);
+        var sub = sb.auth.onAuthStateChange(function (event, session) {
+          if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || session) finish(session);
+        }).data.subscription;
+      });
+    });
+  }
+
+  var authRedirectStarted = false;
+
+  async function bootstrapAuthProfile(user) {
+    if (!user) return;
+    var meta = user.user_metadata || {};
+    var fullName = meta.full_name || meta.name || user.email.split('@')[0];
+    var { data: existing } = await sb.from('profiles').select('id').eq('id', user.id).maybeSingle();
+    if (!existing) {
+      await sb.from('profiles').insert({
+        id: user.id,
+        email: user.email,
+        full_name: fullName
+      });
+    }
+    var pendingId = sessionStorage.getItem('pending_result_id');
+    if (pendingId) {
+      await sb.from('diagnostic_results').update({ user_id: user.id }).eq('id', pendingId);
+      sessionStorage.removeItem('pending_result_id');
+    }
+  }
+
+  async function finishAuthSession(session) {
+    if (authRedirectStarted || !session) return;
+    authRedirectStarted = true;
+    try {
+      await bootstrapAuthProfile(session.user);
+    } catch (e) {
+      authRedirectStarted = false;
+      showErr('Signed in, but account setup failed. Please try again.');
+      return;
+    }
+    postAuthRedirect();
+  }
+
+  getAuthSession().then(function (session) {
+    if (session) finishAuthSession(session);
+  });
+
+  sb.auth.onAuthStateChange(function (event, session) {
+    if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) finishAuthSession(session);
   });
 
   (function restoreRemember() {
@@ -497,6 +567,11 @@
   }
   function hideOk() { document.getElementById('okBox').style.display = 'none'; }
 
+  (function showOAuthReturnError() {
+    var err = params.get('error_description') || params.get('error');
+    if (err) showErr(decodeURIComponent(String(err).replace(/\+/g, ' ')));
+  })();
+
   function setLoading(form, on) {
     var btn  = document.getElementById(form + '-btn');
     var txt  = document.getElementById(form + '-txt');
@@ -508,6 +583,16 @@
 
   function postAuthRedirect() {
     var p = new URLSearchParams(window.location.search);
+    var ret = p.get('return');
+    if (ret) {
+      try {
+        var back = new URL(ret, location.origin);
+        if (back.origin === location.origin) {
+          window.location.href = back.pathname + back.search + back.hash;
+          return;
+        }
+      } catch (e) {}
+    }
     var redirect = p.get('redirect');
     if (redirect === 'pricing') {
       var plan = p.get('plan') || '';
@@ -519,6 +604,14 @@
       return;
     }
     window.location.href = portalUrl();
+  }
+
+  function setGoogleLoading(on) {
+    document.querySelectorAll('.google-sso-btn').forEach(function (btn) {
+      btn.disabled = on;
+      var label = btn.querySelector('.google-sso-label');
+      if (label) label.textContent = on ? 'Redirecting to Google…' : 'Continue with Google';
+    });
   }
 
   function showSsoPanel() {
@@ -554,12 +647,18 @@
     hideErr();
     applyRemember();
     if (inviteToken) localStorage.setItem('ra_invite', inviteToken);
-    var redirectTo = location.origin + location.pathname + (inviteToken ? ('?invite=' + encodeURIComponent(inviteToken)) : '');
+    setGoogleLoading(true);
     var result = await sb.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: redirectTo }
+      options: {
+        redirectTo: oauthRedirectUrl(),
+        queryParams: { prompt: 'select_account' }
+      }
     });
-    if (result.error) showErr(result.error.message || 'Google sign-in is not enabled yet.');
+    if (result.error) {
+      setGoogleLoading(false);
+      showErr(result.error.message || 'Google sign-in is not enabled yet.');
+    }
   }
 
   async function signIn() {
@@ -569,12 +668,12 @@
     if (!email || !pass) { showErr('Please enter your email and password.'); return; }
     applyRemember();
     setLoading('signin', true);
-    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) {
       showErr(error.message);
       setLoading('signin', false);
-    } else {
-      postAuthRedirect();
+    } else if (data.session) {
+      await finishAuthSession(data.session);
     }
   }
 
@@ -594,18 +693,20 @@
       return;
     }
     if (data.user) {
-      // Insert-only profile bootstrap. Do not set role/paid from the client.
-      await sb.from('profiles').insert({
-        id: data.user.id, email, full_name: name, organisation: org
-      });
-      const pendingId = sessionStorage.getItem('pending_result_id');
-      if (pendingId) {
-        await sb.from('diagnostic_results').update({ user_id: data.user.id }).eq('id', pendingId);
-        sessionStorage.removeItem('pending_result_id');
+      await bootstrapAuthProfile(data.user);
+      if (name || org) {
+        await sb.from('profiles').update({
+          full_name: name || undefined,
+          organisation: org || undefined
+        }).eq('id', data.user.id);
       }
     }
     showOk('Account created! Redirecting…');
-    setTimeout(postAuthRedirect, 1500);
+    setTimeout(async function () {
+      var session = (await sb.auth.getSession()).data.session;
+      if (session) await finishAuthSession(session);
+      else postAuthRedirect();
+    }, 1500);
   }
 
   document.addEventListener('keydown', function(e) {
