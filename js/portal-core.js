@@ -575,8 +575,8 @@ function dismissReportPulse(id){
   for(var i=0;i<nodes.length;i++){
     if(nodes[i].getAttribute('data-diagnostic-id')===id){
       nodes[i].classList.remove('result-card--pulse');
-      var svg=nodes[i].querySelector('.result-card__pulse');
-      if(svg)svg.remove();
+      var pulseEl=nodes[i].querySelector('.result-card__pulse');
+      if(pulseEl)pulseEl.remove();
     }
   }
 }
@@ -596,7 +596,7 @@ function renderReports(paidIds){
       ? '<div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-topbar btn-topbar-primary" onclick="downloadReport(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>View</button><button type="button" class="btn-pdf" id="pdf-btn-'+r.id+'" onclick="savePDF(\''+r.id+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v7M3 5l3 3 3-3M1 10h10"/></svg>Download</button></div>'
       : '<a href="pricing.html" class="btn-topbar btn-topbar-primary">Unlock — £295</a>';
     var pulseSvg=pulse
-      ? '<svg class="result-card__pulse" aria-hidden="true" focusable="false"><rect pathLength="100"/></svg>'
+      ? '<div class="result-card__pulse" aria-hidden="true"><svg focusable="false" width="100%" height="100%"><rect pathLength="100"/></svg></div>'
       : '';
     return '<div class="result-card'+(pulse?' result-card--pulse':'')+'"'+(pulse?' data-diagnostic-id="'+r.id+'"':'')+'><div><div class="result-org">'+esc(r.organisation||'Diagnostic')+'</div><div class="result-meta"><span>'+fmtDate(r.created_at)+'</span>'+(r.sector?'<span>'+esc(r.sector)+'</span>':'')+'</div></div><div class="result-right"><div class="score-badge"><div class="score-num score-'+band+'">'+(r.adjusted_score||0)+'%</div><div class="score-lbl">Exposure</div></div><div class="band-pill band-'+band+'">'+(BAND_LABELS[band]||band)+'</div>'+btn+'</div>'+pulseSvg+'</div>';
   }).join('')+'</div>';
