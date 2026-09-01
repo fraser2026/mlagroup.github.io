@@ -1402,7 +1402,9 @@ a.btn-dl svg {
 .result-card:last-child { border-bottom: 1px solid var(--ra-border) }
 
 /* One-time traveling blurple stroke on a recently purchased Exposure Report.
-   Overlay-only: do not change padding/margin/grid — buttons stay put. */
+   Overlay-only: do not change padding/margin/grid — buttons stay put.
+   Wrapper fills the card; SVG is 100%×100% so iOS Safari does not keep a
+   ~300×150 intrinsic box. 2px stroke centred on hairlines/edges (half outside). */
 #reports-diagnostic,
 #reports-diagnostic .result-list {
   overflow: visible;
@@ -1417,25 +1419,29 @@ a.btn-dl svg {
 }
 .result-card__pulse {
   position: absolute;
-  inset: -2px;
-  width: auto;
-  height: auto;
+  inset: -1px;
   overflow: visible;
   pointer-events: none;
   z-index: 2;
 }
+.result-card__pulse svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
 .result-card__pulse rect {
   fill: none;
-  x: 1px;
-  y: 1px;
-  width: calc(100% - 2px);
-  height: calc(100% - 2px);
-  rx: 8px;
-  ry: 8px;
+  x: 0;
+  y: 0;
+  width: 100%;
+  height: 100%;
+  rx: 0;
+  ry: 0;
   stroke: var(--ra-blurple, #533AFD);
   stroke-width: 2px;
   stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-linejoin: miter;
   vector-effect: non-scaling-stroke;
   /* ~20% comet of pathLength=100 */
   stroke-dasharray: 20 80;
