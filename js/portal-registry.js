@@ -1106,6 +1106,9 @@ const Q_LABELS={yes:'Yes',no:'No',unsure:'Unsure'};
 const PROVIDER_CONN_STATUS_LABELS={pending:'Not connected',connected:'Connected',error:'Connection error',revoked:'Revoked'};
 
 async function invokeProviderFn(name,body){
+  if(location.protocol==='file:'){
+    throw new Error('Open the portal at https://reganchor.com/portal.html — file:// blocks provider actions (CORS).');
+  }
   var sd=await sb.auth.getSession();
   var session=sd.data.session;
   if(!session)throw new Error('Sign in required.');
@@ -1313,6 +1316,7 @@ function renderProviderConnectionPanel(sys,connection){
   var adminDocs='<a href="'+esc(PROVIDER_ADMIN_DOCS_URL)+'" target="_blank" rel="noopener">Admin API docs</a>';
   var html='<div class="provider-connection-panel"><div class="provider-connection-head"><div class="stat-label">Provider connection</div><span class="conn-gov-tier '+tierCls+'">'+esc(tierLabel)+'</span></div>'+
     '<p class="provider-connection-copy">Connect a runtime API key to verify this asset, then add a Governance Admin key to unlock usage, cost, and workspace monitoring. Credentials are encrypted in Vault and never shown again.</p>'+
+    (location.protocol==='file:'?'<p class="provider-connection-copy" style="color:var(--ra-risk)">You opened this page as a local file. Use https://reganchor.com/portal.html or provider actions will fail.</p>':'')+
     renderProviderCapabilityList(connection)+
     (profile&&profile.encouragement?'<p class="provider-connection-encourage">'+esc(profile.encouragement)+'</p>':'')+
     (profile&&profile.limitations&&profile.limitations.length?'<div class="provider-connection-notes">'+profile.limitations.map(function(note){return '<p>'+esc(note)+'</p>'}).join('')+'</div>':'')+
