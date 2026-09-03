@@ -48,3 +48,15 @@ verify_jwt = false
 [functions.generate-report]
 # Gateway JWT required — do NOT deploy with --no-verify-jwt.
 verify_jwt = true
+
+[functions.provider-connect]
+verify_jwt = true
+
+[functions.provider-test]
+verify_jwt = true
+
+[functions.provider-revoke]
+verify_jwt = true
+
+[functions.provider-insights]
+verify_jwt = true

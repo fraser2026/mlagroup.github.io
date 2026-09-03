@@ -77,6 +77,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="nav-label">Overview</div>
 <div class="nav-item active" onclick="showView('dashboard',this)"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Dashboard</div>
 <div class="nav-item" onclick="showView('queue',this)"><svg viewBox="0 0 16 16"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3"/></svg>Assessment Queue<span class="nav-badge" id="queue-badge" style="display:none;">0</span></div>
+<div class="nav-item" onclick="showView('delete-queue',this)"><svg viewBox="0 0 16 16"><path d="M4 2h8v2H4zM3 4h10l-1 10H4L3 4z"/><path d="M6 7v5M10 7v5"/></svg>Deletion Requests<span class="nav-badge" id="delete-queue-badge" style="display:none;">0</span></div>
 <div class="nav-item" onclick="showView('support',this)"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/><path d="M5.5 6a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5M8 12.5v.01"/></svg>Support Requests<span class="nav-badge" id="support-badge" style="display:none;">0</span></div>
 <div class="nav-item" onclick="showView('policies-admin',this)"><svg viewBox="0 0 16 16"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Policies<span class="nav-badge" id="policies-badge" style="display:none;">0</span></div>
 <div class="nav-label">Clients</div>
@@ -106,6 +107,11 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="page-header"><h2>Assessment Queue</h2><p>Submitted assessments awaiting RegAnchor review and control delivery.</p></div>
 <div id="queue-list"><div class="loading">Loading…</div></div>
 </div>
+
+<div id="view-delete-queue" class="view">
+<div class="page-header"><h2>Deletion Requests</h2><p>Registry assets with governance history that require RegAnchor approval before removal.</p></div>
+<div id="delete-queue-list"><div class="loading">Loading…</div></div>
+</div>
  
 <div id="view-clients" class="view">
 <div class="page-header"><h2>All Clients</h2><p>Organisations registered on the RegAnchor platform.</p></div>
@@ -115,6 +121,11 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div id="view-assessment-detail" class="view">
 <button style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;padding:0 0 16px;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;" onclick="showView('queue',document.querySelectorAll('.nav-item')[1])"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L4 6l4 4"/></svg>Back to Queue</button>
 <div id="assess-detail-content"><div class="loading">Loading…</div></div>
+</div>
+
+<div id="view-delete-detail" class="view">
+<button style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;padding:0 0 16px;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;" onclick="showView('delete-queue',document.querySelector('[onclick*=delete-queue]'))"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L4 6l4 4"/></svg>Back to Deletion Requests</button>
+<div id="delete-detail-content"><div class="loading">Loading…</div></div>
 </div>
  
 <div id="view-support" class="view">
@@ -304,7 +315,7 @@ const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
  
 let currentUser=null;
-let allOrgs=[],allSystems=[],allAssessments=[],allSupport=[],allControlsAdmin=[];
+let allOrgs=[],allSystems=[],allAssessments=[],allSupport=[],allControlsAdmin=[],allDeleteRequests=[];
 let allPoliciesAdmin=[],allAcksAdmin=[],allTemplatesAdmin=[];
  
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -324,7 +335,7 @@ function showView(id,navEl){
   if(navEl)navEl.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+id).classList.add('active');
-  var titles={dashboard:'Admin Dashboard',queue:'Assessment Queue',clients:'All Clients','assessment-detail':'Assessment Detail',support:'Support Requests','support-detail':'Support Detail','policies-admin':'Client Policies','policy-admin-detail':'Policy Detail',devtools:'Dev Tools'};
+  var titles={dashboard:'Admin Dashboard',queue:'Assessment Queue','delete-queue':'Deletion Requests',clients:'All Clients','assessment-detail':'Assessment Detail','delete-detail':'Deletion Request',support:'Support Requests','support-detail':'Support Detail','policies-admin':'Client Policies','policy-admin-detail':'Policy Detail',devtools:'Dev Tools'};
   document.getElementById('topbar-title').textContent=titles[id]||'Admin';
 }
  
@@ -346,13 +357,14 @@ async function init(){
 async function loadData(){
   var results=await Promise.all([
     sb.from('organisations').select('*').order('created_at',{ascending:false}),
-    sb.from('ai_systems').select('id,name,org_id,risk_tier,deployment_status,system_owner,vendor,description').order('created_at',{ascending:false}),
+    sb.from('ai_systems').select('id,name,org_id,asset_kind,risk_tier,deployment_status,system_owner,vendor,description').order('created_at',{ascending:false}),
     sb.from('registry_assessments').select('*').order('requested_at',{ascending:false}),
     sb.from('support_requests').select('*').order('requested_at',{ascending:false}),
     sb.from('governance_controls').select('id,control_number,title,control_type').eq('is_active',true),
     sb.from('policy_documents').select('*').order('created_at',{ascending:false}),
     sb.from('policy_acknowledgments').select('*').order('acknowledged_at',{ascending:false}),
-    sb.from('policy_templates').select('*').eq('is_active',true).order('display_order')
+    sb.from('policy_templates').select('*').eq('is_active',true).order('display_order'),
+    sb.from('registry_delete_requests').select('*').eq('status','pending').order('requested_at',{ascending:false})
   ]);
   allOrgs=results[0].data||[];
   allSystems=results[1].data||[];
@@ -362,6 +374,7 @@ async function loadData(){
   allPoliciesAdmin=results[5].data||[];
   allAcksAdmin=results[6].data||[];
   allTemplatesAdmin=results[7].data||[];
+  allDeleteRequests=results[8].data||[];
   
   // Stats
   var pending=allAssessments.filter(function(a){return a.status==='submitted'});
@@ -380,6 +393,7 @@ async function loadData(){
   
   renderDashRecent();
   renderQueue();
+  renderDeleteQueue();
   renderClients();
   renderSupportList();
   renderPoliciesAdmin();
@@ -406,6 +420,69 @@ function renderQueue(){
     var band=a.risk_band||'medium';
     return '<tr onclick="openAssessmentDetail(\''+a.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(a.org_id))+'</td><td>'+esc(getSysName(a.system_id))+'</td><td style="font-weight:600;color:'+(BAND_C[band]||'var(--muted)')+';">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</td><td><span class="pill '+(band==='high'?'pill-pending':band==='low'?'pill-done':'pill-review')+'">'+(BAND_L[band]||band)+'</span></td><td><span class="pill '+(STATUS_P[a.status]||'')+'">'+(STATUS_L[a.status]||a.status)+'</span></td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(a.requested_at)+'</td></tr>';
   }).join('')+'</tbody></table></div>';
+}
+
+function renderDeleteQueue(){
+  var badge=document.getElementById('delete-queue-badge');
+  if(allDeleteRequests.length){
+    badge.textContent=allDeleteRequests.length;
+    badge.style.display='inline-flex';
+  }else if(badge){
+    badge.style.display='none';
+  }
+  if(!allDeleteRequests.length){
+    document.getElementById('delete-queue-list').innerHTML='<div class="panel"><div class="empty">No deletion requests awaiting review.</div></div>';
+    return;
+  }
+  document.getElementById('delete-queue-list').innerHTML='<div class="panel"><table class="tbl"><thead><tr><th>Organisation</th><th>AI System</th><th>Governance</th><th>Requested</th></tr></thead><tbody>'+
+  allDeleteRequests.map(function(r){
+    var g=r.governance_summary||{};
+    var govBits=[];
+    if(g.assessments)govBits.push(g.assessments+' assessment'+(g.assessments===1?'':'s'));
+    if(g.controls_active)govBits.push(g.controls_active+' active control'+(g.controls_active===1?'':'s'));
+    if(g.evidence)govBits.push(g.evidence+' evidence');
+    if(g.support_requests)govBits.push(g.support_requests+' support');
+    return '<tr onclick="openDeleteRequestDetail(\''+r.id+'\')"><td style="font-weight:600;color:var(--main);">'+esc(getOrgName(r.org_id))+'</td><td>'+esc(getSysName(r.system_id))+'</td><td style="font-size:.72rem;color:var(--muted);">'+esc(govBits.join(' · ')||'Governance history')+'</td><td style="font-size:.72rem;color:var(--muted);">'+fmtDate(r.requested_at)+'</td></tr>';
+  }).join('')+'</tbody></table></div>';
+}
+
+function openDeleteRequestDetail(requestId){
+  var r=allDeleteRequests.find(function(x){return x.id===requestId});
+  if(!r)return;
+  var sys=allSystems.find(function(s){return s.id===r.system_id})||{};
+  var g=r.governance_summary||{};
+  var el=document.getElementById('delete-detail-content');
+  el.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;"><div><div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">'+esc(getOrgName(r.org_id))+'</div><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.5rem;font-weight:400;color:var(--main);">'+esc(sys.name||'AI System')+'</h2><div style="font-size:.78rem;color:var(--muted);margin-top:8px;">Requested '+fmtDateLong(r.requested_at)+'</div></div></div>'+
+    '<div class="detail-card"><div class="detail-label">Client reason</div><div class="detail-val">'+esc(r.reason||'—')+'</div></div>'+
+    '<div class="detail-card"><div class="meta-grid"><div><div class="detail-label">Assessments</div><div class="detail-val">'+(g.assessments||0)+'</div></div><div><div class="detail-label">Controls</div><div class="detail-val">'+(g.controls||0)+' ('+(g.controls_active||0)+' active)</div></div><div><div class="detail-label">Evidence</div><div class="detail-val">'+(g.evidence||0)+'</div></div><div><div class="detail-label">Support requests</div><div class="detail-val">'+(g.support_requests||0)+'</div></div></div></div>'+
+    '<div class="panel" style="margin-top:20px;"><div class="panel-header"><div class="panel-title">RegAnchor decision</div></div><div style="padding:20px;"><label class="field-label">Review notes (optional)</label><textarea class="field-input" id="dd-notes" placeholder="Notes recorded in the audit log"></textarea><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-primary" onclick="approveDeleteRequest(\''+r.id+'\')">Approve deletion</button><button class="btn btn-ghost" onclick="rejectDeleteRequest(\''+r.id+'\')">Decline</button></div><div id="dd-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div></div></div>';
+  showView('delete-detail',null);
+}
+
+async function approveDeleteRequest(requestId){
+  var msg=document.getElementById('dd-msg');
+  var notes=document.getElementById('dd-notes').value.trim();
+  msg.style.display='block';msg.style.color='var(--muted)';msg.textContent='Approving…';
+  var result=await sb.rpc('approve_registry_delete_request',{p_request_id:requestId,p_review_notes:notes||null});
+  if(result.error){msg.style.color='var(--red)';msg.textContent='Error: '+result.error.message;return;}
+  var data=result.data||{};
+  if(!data.ok){msg.style.color='var(--red)';msg.textContent=data.error||'Approval failed.';return;}
+  msg.style.color='#4ade80';msg.textContent='Asset deleted and archived.';
+  await loadData();
+  setTimeout(function(){showView('delete-queue',document.querySelector('[onclick*=delete-queue]'));},800);
+}
+
+async function rejectDeleteRequest(requestId){
+  var msg=document.getElementById('dd-msg');
+  var notes=document.getElementById('dd-notes').value.trim();
+  msg.style.display='block';msg.style.color='var(--muted)';msg.textContent='Saving…';
+  var result=await sb.rpc('reject_registry_delete_request',{p_request_id:requestId,p_review_notes:notes||null});
+  if(result.error){msg.style.color='var(--red)';msg.textContent='Error: '+result.error.message;return;}
+  var data=result.data||{};
+  if(!data.ok){msg.style.color='var(--red)';msg.textContent=data.error||'Decline failed.';return;}
+  msg.style.color='#4ade80';msg.textContent='Deletion request declined.';
+  await loadData();
+  setTimeout(function(){showView('delete-queue',document.querySelector('[onclick*=delete-queue]'));},800);
 }
  
 function renderClients(){

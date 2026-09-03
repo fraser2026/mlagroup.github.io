@@ -107,6 +107,27 @@ This matches the pattern already used in your own design work: `reganchorsystem.
 
 ---
 
+## AI governance terminology (registry, dossier, audit copy)
+
+RegAnchor uses distinct terms for the AI value chain. Do not collapse them into "platform".
+
+| Term | Use for | Example |
+|------|---------|---------|
+| **Provider** | Third party that develops or places a general-purpose AI model on the market (EU AI Act Art. 3(3)). Registry field: `provider_slug`. UI label: **Provider**. | Anthropic, OpenAI, Google |
+| **Model** | Specific model identifier under that provider. Registry field: `model_name`. | Claude Haiku 4.5 |
+| **Vendor** | Who supplies or built the AI capability for the organisation (may be in-house or a systems integrator). Registry field: `vendor`. | In-house, Accenture |
+| **Deployer** | The RegAnchor customer's legal role when they **use** a third-party AI system in a professional context (EU AI Act Art. 3(4)). Dossier and assessment copy, not a registry column. | The law firm running the agent |
+| **Provider connection** | Live API integration (runtime + admin keys, usage insights) between a registered asset and its model provider. UI tab: **Connection**. | Anthropic Admin API snapshot |
+| **Platform** | RegAnchor the product, or marketing "explore the platform". **Never** for Anthropic/OpenAI in the registry. | "Governance platform" |
+
+**Audit answer:** In an EU AI Act sense, Anthropic is the **provider** of the foundation model. Your customer is the **deployer** of that model in their agent or system. They may also be **provider** of their own branded AI system if they place it on the market under their name, but that is a separate classification from `provider_slug`.
+
+Vanta and similar trust/GRC tools use **vendor** for third-party AI risk questionnaires; RegAnchor aligns with that for procurement (`vendor`) and with the AI Act for the model layer (`provider`).
+
+Backend identifiers stay `provider_slug`, `provider_connections`, `provider_catalog` — already correct.
+
+---
+
 ## Deferred, not part of phase one
 
 | Item | Current | Reason for deferral |

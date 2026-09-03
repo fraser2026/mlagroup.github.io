@@ -6,9 +6,11 @@ const TIER_LABELS={unacceptable:'Unacceptable',high:'High Risk',limited:'Limited
 const STATUS_LABELS={planned:'Planned',development:'Development',pilot:'Pilot',production:'Production',decommissioned:'Decommissioned'};
 const PLAN_LABELS={free:'Free',essentials:'Essentials',professional:'Professional',enterprise:'Enterprise'};
 const TYPE_LABELS={third_party:'Third Party',in_house:'In-House',hybrid:'Hybrid'};
+const ASSET_KIND_LABELS={system:'System',agent:'Agent'};
 const MEMBER_ROLE_LABELS={owner:'Owner',admin:'Admin',editor:'Editor',viewer:'Viewer',member:'Member'};
 function canManageMembers(){return currentMemberRole==='owner'||currentMemberRole==='admin'}
 function canWriteRegistry(){return currentMemberRole==='owner'||currentMemberRole==='admin'||currentMemberRole==='editor'||currentMemberRole==='member'}
+function canDeleteRegistry(){return currentMemberRole==='owner'||currentMemberRole==='admin'}
 function orgSeatLimit(plan){var p=(plan||'free').toLowerCase();if(p==='professional')return 5;if(p==='enterprise')return 50;return 1}
 /* Paid plan badge only when subscription is live; DB default plan=essentials + status=none must read Free. */
 function hasLiveSubscription(org){
@@ -52,13 +54,16 @@ function actorName(){return currentProfile?.full_name||currentUser?.email?.split
 const AUDIT_FIELD_LABELS={
   name:'name',description:'description',vendor:'vendor',system_type:'system type',
   purpose_category:'purpose',risk_tier:'risk class',risk_tier_rationale:'classification rationale',
-  deployment_status:'deployment status',system_owner:'owner',department:'department',notes:'notes'
+  deployment_status:'deployment status',system_owner:'owner',department:'department',notes:'notes',
+  asset_kind:'asset type',provider_slug:'provider',model_name:'model'
 };
 function fmtAuditValue(field,value){
   if(value==null||value==='')return 'not set';
   if(field==='deployment_status')return STATUS_LABELS[value]||value;
   if(field==='risk_tier')return TIER_LABELS[value]||value;
   if(field==='system_type')return TYPE_LABELS[value]||value;
+  if(field==='asset_kind')return ASSET_KIND_LABELS[value]||value;
+  if(field==='provider_slug'||field==='model_name')return String(value);
   return String(value);
 }
 function fmtSystemUpdated(c,opts){
@@ -112,8 +117,17 @@ function fmtAudit(entry,namesMap,opts){
   const c=entry.changes||{};const who=(namesMap||{})[entry.user_id]||c._actor_name||'System';
   let text='';
   switch(entry.action){
-    case 'system_created':text=`Registered new AI system: <strong>${esc(c.name||'')}</strong>`;break;
+    case 'system_created':{
+      var createdKind=(c.asset_kind&&c.asset_kind.new)||c.asset_kind||'system';
+      text=createdKind==='agent'?`Registered new AI agent: <strong>${esc(c.name||'')}</strong>`:`Registered new AI system: <strong>${esc(c.name||'')}</strong>`;
+      break;
+    }
     case 'system_updated':text=fmtSystemUpdated(c,opts);break;
+    case 'system_deleted':text='Removed <strong>'+esc(c._system_name||'an AI asset')+'</strong> from the registry';break;
+    case 'delete_requested':text='Requested deletion of <strong>'+esc(c._system_name||'an AI asset')+'</strong> — pending RegAnchor review';break;
+    case 'delete_approved':text='RegAnchor approved deletion of <strong>'+esc(c._system_name||'an AI asset')+'</strong>';break;
+    case 'delete_rejected':text='RegAnchor declined deletion of <strong>'+esc(c._system_name||'an AI asset')+'</strong>';break;
+    case 'system_restored':text='Restored <strong>'+esc(c._system_name||'an AI asset')+'</strong> to the registry';break;
     case 'risk_tier_set':text=`Classified as <strong>${TIER_LABELS[c.risk_tier?.new]||c.risk_tier?.new||''}</strong> under EU AI Act`;break;
     case 'risk_tier_changed':text=`Reclassified from ${TIER_LABELS[c.risk_tier?.old]||'Unclassified'} to <strong>${TIER_LABELS[c.risk_tier?.new]||''}</strong>`;break;
     case 'compliance_status_updated':text=`Updated compliance status across ${c.obligation_count||c.updated_count||'multiple'} obligations`;break;
@@ -128,6 +142,14 @@ function fmtAudit(entry,namesMap,opts){
     case 'member_joined':text='Joined the organisation as '+(MEMBER_ROLE_LABELS[c.role]||c.role||'member');break;
     case 'member_role_changed':text='Changed a member role from '+(MEMBER_ROLE_LABELS[c.old]||c.old||'')+' to <strong>'+(MEMBER_ROLE_LABELS[c.new]||c.new||'')+'</strong>';break;
     case 'member_removed':text='Removed a member'+(c.role?' ('+(MEMBER_ROLE_LABELS[c.role]||c.role)+')':'');break;
+    case 'provider_connected':text='Connected <strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> runtime API key for <strong>'+esc(c._system_name||'an AI asset')+'</strong>';break;
+    case 'provider_admin_connected':text='Connected <strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> governance admin key for <strong>'+esc(c._system_name||'an AI asset')+'</strong>';break;
+    case 'provider_verified':
+      text=(c.verification_ok===false?'Live API check failed for ':'Live API check passed for ')+'<strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> on <strong>'+esc(c._system_name||'an AI asset')+'</strong>';
+      break;
+    case 'provider_revoked':text='Revoked <strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> connection for <strong>'+esc(c._system_name||'an AI asset')+'</strong>';break;
+    case 'provider_admin_revoked':text='Revoked <strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> governance admin key for <strong>'+esc(c._system_name||'an AI asset')+'</strong>';break;
+    case 'provider_insights_refreshed':text='Refreshed governance insights for <strong>'+esc(c._system_name||'an AI asset')+'</strong> ('+esc(String(c.window_days||30))+'-day window)';break;
     default:text=entry.action.replace(/_/g,' ');
   }
   // Override actor name for RegAnchor-side actions
@@ -206,7 +228,7 @@ function navigate(viewId,navEl,skipHistory){
   const t=topbarTitles[viewId];
   if(t)document.getElementById('topbar-title').innerHTML=`<svg viewBox="0 0 16 16" style="width:15px;height:15px;stroke:var(--ra-text);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;">${t.icon}</svg>${t.label}`;
   const tr=document.getElementById('topbar-right');
-  var addSys=canWriteRegistry()?'<button class="btn-topbar btn-topbar-primary" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI System</button>':'';
+  var addSys=canWriteRegistry()?'<button class="btn-topbar btn-topbar-primary" onclick="openAddSystem()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Add AI asset</button>':'';
   if(viewId==='users'&&canManageMembers())tr.innerHTML='<button class="btn-topbar btn-topbar-primary" onclick="document.getElementById(\'invite-email\')&&document.getElementById(\'invite-email\').focus()">Invite colleague</button><button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   else if(viewId==='registry')tr.innerHTML=addSys+'<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
   else if(viewId==='registry-detail'||viewId==='org'||viewId==='controls'||viewId==='control-detail')tr.innerHTML='<button class="btn-topbar btn-topbar-ghost" onclick="signOut()">Sign out</button>';
@@ -224,6 +246,7 @@ window.addEventListener('popstate',function(e){
 async function navigateRegistry(navEl){
   navigate('registry',navEl);
   if(!currentOrg)await ensureOrg();
+  await loadProviderCatalog();
   /* Always reload — skipping when allSystems.length > 0 left stale
      assessment scores after new assessments, and control-coverage
      stats that depended on a parallel loadControls race. */
@@ -424,7 +447,7 @@ function handleDeepLink(bootHash){
     var scId=goto.replace('system-controls-','');
     if(scId){
       openSystemDetail(scId).then(function(){
-        switchDetailTab('sys-controls',document.querySelectorAll('#view-registry-detail .tab-btn')[2]);
+        switchDetailTab('sys-controls',document.querySelector('#view-registry-detail .tab-btn[data-tab="sys-controls"]'));
       });
       return;
     }
@@ -475,7 +498,7 @@ async function renderOrgPage(){
   const plan=orgMembershipTierLabel(currentOrg);
   const subSt=currentOrg.subscription_status==='active'?'Active':currentOrg.subscription_status==='trialing'?'Trial':currentOrg.subscription_status==='none'?'Not subscribed':currentOrg.subscription_status||'Not set';
   document.getElementById('org-profile-grid').innerHTML='<div class="meta-item"><label>Organisation Name</label><span>'+esc(currentOrg.name)+'</span></div><div class="meta-item"><label>Sector</label><span>'+esc(currentOrg.sector||'Not set')+'</span></div><div class="meta-item"><label>Organisation Size</label><span>'+esc(currentOrg.org_size||'Not set')+'</span></div><div class="meta-item"><label>Organisation ID</label><span class="meta-id">'+esc(currentOrg.id)+'</span></div>';
-  document.getElementById('org-sub-grid').innerHTML='<div class="meta-item"><label>Registry Phase</label><span>Phase 1</span></div><div class="meta-item"><label>Membership Tier</label><span>'+esc(plan)+'</span></div><div class="meta-item"><label>Subscription Status</label><span>'+esc(subSt)+'</span></div><div class="meta-item"><label>AI Systems Registered</label><span>'+allSystems.length+'</span></div>';
+  document.getElementById('org-sub-grid').innerHTML='<div class="meta-item"><label>Registry Phase</label><span>Phase 1</span></div><div class="meta-item"><label>Membership Tier</label><span>'+esc(plan)+'</span></div><div class="meta-item"><label>Subscription Status</label><span>'+esc(subSt)+'</span></div><div class="meta-item"><label>AI assets registered</label><span>'+allSystems.length+'</span></div>';
   const{data:members}=await sb.from('org_members').select('*').eq('org_id',currentOrg.id).order('created_at',{ascending:true});
   if(!members||!members.length){document.getElementById('org-members-wrap').innerHTML='<div class="empty-state" style="padding:24px 0;"><p>No members found.</p></div>';return}
   document.getElementById('org-member-count').textContent=members.length+' member'+(members.length!==1?'s':'');
@@ -610,6 +633,79 @@ async function savePDF(resultId){
     if(document.body.contains(overlay))document.body.removeChild(overlay);
     alert('PDF generation failed: '+err.message);
   }finally{btn.innerHTML=orig;btn.disabled=false;}
+}
+
+/* ── Async action buttons (live API calls) ─────────────────── */
+function btnAsyncHtml(label,attrs){
+  attrs=attrs||{};
+  var id=attrs.id?' id="'+esc(attrs.id)+'"':'';
+  var onclick=attrs.onclick?' onclick="'+attrs.onclick+'"':'';
+  return '<button type="button" class="btn-topbar btn-topbar-ghost btn-async"'+id+onclick+' data-state="idle" aria-live="polite">'+
+    '<span class="btn-async__frame">'+
+      '<span class="btn-async__label">'+esc(label)+'</span>'+
+      '<span class="btn-async__indicator" aria-hidden="true">'+
+        '<span class="btn-async__spinner">'+
+          '<span></span><span></span><span></span><span></span>'+
+          '<span></span><span></span><span></span><span></span>'+
+        '</span>'+
+        '<svg class="btn-async__mark btn-async__mark--ok" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.25 8.25 6.25 11.25 12.75 4.75"/></svg>'+
+        '<svg class="btn-async__mark btn-async__mark--no" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 5 11 11"/><path d="M11 5 5 11"/></svg>'+
+      '</span>'+
+    '</span></button>';
+}
+function initAsyncBtn(btn){
+  if(!btn||btn.dataset.asyncReady)return;
+  var rect=btn.getBoundingClientRect();
+  var w=Math.ceil(rect.width);
+  var h=Math.ceil(rect.height);
+  if(w>0)btn.style.width=w+'px';
+  if(h>0)btn.style.height=h+'px';
+  btn.style.flexShrink='0';
+  btn.dataset.asyncReady='1';
+}
+function initAsyncBtns(root){
+  var scope=root||document;
+  scope.querySelectorAll('.btn-async').forEach(function(btn){
+    btn.dataset.asyncReady='';
+    btn.style.width='';
+    btn.style.height='';
+    initAsyncBtn(btn);
+  });
+}
+function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);})}
+async function runAsyncBtn(btn,fn,opts){
+  opts=opts||{};
+  if(!btn||btn.dataset.state==='loading')return;
+  initAsyncBtn(btn);
+  var labelEl=btn.querySelector('.btn-async__label');
+  var idleLabel=labelEl?labelEl.textContent:'';
+  var lockEl=opts.lock?document.querySelector(opts.lock):null;
+  btn.dataset.state='loading';
+  btn.disabled=true;
+  btn.setAttribute('aria-busy','true');
+  if(opts.busyLabel)btn.setAttribute('aria-label',opts.busyLabel);
+  if(lockEl)lockEl.disabled=true;
+  try{
+    await fn();
+    btn.dataset.state='success';
+    btn.setAttribute('aria-busy','false');
+    btn.setAttribute('aria-label','Done');
+    await sleep(opts.successMs!=null?opts.successMs:1400);
+  }catch(err){
+    btn.dataset.state='error';
+    btn.setAttribute('aria-busy','false');
+    btn.setAttribute('aria-label','Failed');
+    if(lockEl)lockEl.disabled=false;
+    await sleep(opts.errorMs!=null?opts.errorMs:2000);
+    throw err;
+  }finally{
+    if(!btn.isConnected)return;
+    btn.dataset.state='idle';
+    btn.disabled=false;
+    btn.removeAttribute('aria-busy');
+    btn.setAttribute('aria-label',idleLabel);
+    if(lockEl)lockEl.disabled=false;
+  }
 }
  
 
