@@ -3666,6 +3666,52 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
     height: 36px;
   }
   .reg-bulk .btn-topbar-ghost { height: 36px }
+
+  /* Registry asset detail — scrollable tabs, contained panel */
+  #view-registry-detail {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+  #view-registry-detail > .panel {
+    overflow: hidden;
+  }
+  #view-registry-detail .tab-bar {
+    padding: 0 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+  #view-registry-detail .tab-bar::-webkit-scrollbar {
+    display: none;
+  }
+  #view-registry-detail .tab-btn {
+    flex-shrink: 0;
+    margin-right: 22px;
+    white-space: nowrap;
+  }
+  #view-registry-detail .tab-btn:last-child {
+    margin-right: 0;
+  }
+  #view-registry-detail .tab-panel {
+    padding: 18px;
+  }
+  #view-registry-detail .detail-head--system > div:first-of-type {
+    width: 100%;
+  }
+  #view-registry-detail .meta-item span,
+  #view-registry-detail .meta-item-with-action {
+    min-width: 0;
+  }
+  #view-registry-detail .meta-id {
+    word-break: break-all;
+    overflow-wrap: anywhere;
+  }
+  #view-registry-detail .provider-insights-actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
