@@ -4,7 +4,9 @@
  */
 import {
   applyGovernanceInsights,
+  applyRuntimeAttribution,
   assertOrgAdmin,
+  attributionFromConnection,
   connectionHasSlot,
   corsHeaders,
   getAuthedUser,
@@ -15,7 +17,7 @@ import {
   readConnectionSecret,
   writeAudit,
 } from '../_shared/provider-connection.ts'
-import { fetchProviderGovernanceInsights } from '../_shared/providers/index.ts'
+import { fetchProviderGovernanceInsights, resolveProviderRuntimeAttribution } from '../_shared/providers/index.ts'
 
 function parseWindowDays(value: unknown): number {
   const days = Number(value)
@@ -43,7 +45,7 @@ Deno.serve(async (req) => {
 
     await loadCatalogProvider(supabase, providerSlug)
 
-    const { data: connection, error: connError } = await supabase
+    let { data: connection, error: connError } = await supabase
       .from('provider_connections')
       .select('*')
       .eq('asset_id', asset.id)
@@ -64,7 +66,17 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'No governance admin credential stored.' }, 404)
     }
 
-    const insights = await fetchProviderGovernanceInsights(providerSlug, adminSecret, windowDays)
+    let attribution = attributionFromConnection(connection)
+    const apiSecret = await readConnectionSecret(supabase, connection.id, 'api')
+    if (apiSecret) {
+      const resolved = await resolveProviderRuntimeAttribution(providerSlug, adminSecret, apiSecret)
+      if (resolved) {
+        connection = await applyRuntimeAttribution(supabase, connection, resolved)
+        attribution = resolved
+      }
+    }
+
+    const insights = await fetchProviderGovernanceInsights(providerSlug, adminSecret, windowDays, attribution)
     if (!insights) {
       return json({ ok: false, error: 'Insights are not available for this platform yet.' }, 400)
     }
@@ -81,6 +93,8 @@ Deno.serve(async (req) => {
         provider_slug: providerSlug,
         connection_id: connection.id,
         window_days: insights.window_days,
+        scope: insights.scope,
+        api_key_id: insights.api_key_id || null,
         total_tokens: insights.usage.total_tokens,
         total_cost_usd: insights.cost.total_usd,
         partial: !!(insights.errors && insights.errors.length),

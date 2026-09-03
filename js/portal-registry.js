@@ -1198,7 +1198,7 @@ function renderProviderTokenMix(usage){
   ];
   var inputTotal=(Number(usage.uncached_input_tokens)||0)+(Number(usage.cache_read_input_tokens)||0)+(Number(usage.cache_creation_tokens)||0);
   rows.push({label:'Input total',value:fmtProviderTokens(inputTotal)});
-  return renderProviderInsightsLedger('Token mix','How org-wide usage splits by token type.',rows);
+  return renderProviderInsightsLedger('Token mix','How this asset\'s usage splits by token type.',rows);
 }
 
 function renderProviderWorkspaceCost(cost){
@@ -1207,7 +1207,7 @@ function renderProviderWorkspaceCost(cost){
     var label=row.workspace_id?row.workspace_id:'Default workspace';
     return {label:label,value:fmtProviderUsd(row.amount_usd)};
   });
-  return renderProviderInsightsLedger('Cost by workspace','Org-wide spend in USD for this window.',rows);
+  return renderProviderInsightsLedger('Cost by workspace','Spend in USD for this window.',rows);
 }
 
 function renderProviderInsightsPanel(connection,canManage){
@@ -1229,7 +1229,8 @@ function renderProviderInsightsPanel(connection,canManage){
     return html;
   }
   var windowDays=insights.window_days||30;
-  html+='<p class="provider-insights-meta">Last refreshed '+esc(fmtDateLong(insights.refreshed_at))+' · '+windowDays+'-day window · org-wide</p>';
+  var scoped=insights.scope==='asset';
+  html+='<p class="provider-insights-meta">Last refreshed '+esc(fmtDateLong(insights.refreshed_at))+' · '+windowDays+'-day window · '+(scoped?'this asset':'organisation')+'</p>';
   html+='<div class="provider-insights-grid">';
   html+='<div class="provider-insight-stat"><div class="provider-insight-label">Tokens</div><div class="provider-insight-value ra-num">'+esc(fmtProviderTokens(insights.usage&&insights.usage.total_tokens))+'</div></div>';
   html+='<div class="provider-insight-stat"><div class="provider-insight-label">Cost (USD)</div><div class="provider-insight-value ra-num">'+esc(fmtProviderUsd(insights.cost&&insights.cost.total_usd))+'</div></div>';
@@ -1244,9 +1245,12 @@ function renderProviderInsightsPanel(connection,canManage){
     });
     html+='</ul></div>';
   }else if(insights.usage&&(insights.usage.total_tokens||0)>0){
-    html+='<p class="provider-insights-note">Usage was recorded org-wide, but no model breakdown is available for this window yet.</p>';
+    html+='<p class="provider-insights-note">Usage was recorded, but no model breakdown is available for this window yet.</p>';
   }else{
-    html+='<p class="provider-insights-note">No org-wide model usage in this window yet. After API calls, wait a few minutes and refresh insights.</p>';
+    html+='<p class="provider-insights-note">'+(scoped?'No usage for this asset\'s runtime key in this window yet. After API calls with that key, wait a few minutes and refresh.':'No organisation usage in this window yet. After API calls, wait a few minutes and refresh.')+'</p>';
+  }
+  if(!scoped){
+    html+='<p class="provider-insights-note">Figures are for the Anthropic organisation until this asset\'s runtime key is matched. Connect both keys and run a live check, then refresh.</p>';
   }
   if(insights.cost&&Number(insights.cost.total_usd||0)===0&&(insights.usage&&insights.usage.total_tokens||0)>0){
     html+='<p class="provider-insights-note">Cost may stay at $0.00 on credits or until Anthropic publishes cost rows — usage can appear first.</p>';

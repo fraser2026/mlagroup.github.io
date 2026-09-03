@@ -78,6 +78,8 @@ Deno.serve(async (req) => {
           status: 'revoked',
           last_error: null,
           admin_last_error: null,
+          runtime_api_key_id: null,
+          runtime_workspace_id: null,
           updated_at: now,
           metadata: {},
         })
@@ -86,6 +88,20 @@ Deno.serve(async (req) => {
         .single()
       updated = revoked || updated
     } else {
+      if (slot === 'api' || slot === 'all') {
+        const { data: cleared } = await supabase
+          .from('provider_connections')
+          .update({
+            runtime_api_key_id: null,
+            runtime_workspace_id: null,
+            metadata: { ...(updated.metadata || {}), attribution: null },
+            updated_at: now,
+          })
+          .eq('id', connection.id)
+          .select('*')
+          .single()
+        updated = cleared || updated
+      }
       const apiSecret = await readConnectionSecret(supabase, connection.id, 'api')
       const adminSecret = await readConnectionSecret(supabase, connection.id, 'admin')
       const profile = await probeProviderCapabilities(providerSlug, apiSecret, adminSecret)

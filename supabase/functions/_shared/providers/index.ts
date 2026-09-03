@@ -1,6 +1,7 @@
 import {
   fetchAnthropicGovernanceInsights,
   probeAnthropicCapabilities,
+  resolveAnthropicRuntimeAttribution,
   verifyAnthropicAdminKey,
   verifyAnthropicApiKey,
 } from './anthropic.ts'
@@ -8,6 +9,7 @@ import type {
   CredentialSlot,
   ProviderCapabilityProfile,
   ProviderGovernanceInsights,
+  ProviderRuntimeAttribution,
   ProviderVerifyResult,
 } from './types.ts'
 
@@ -19,7 +21,9 @@ export type {
   ProviderCapabilityProfile,
   ProviderGovernanceInsights,
   ProviderInsightsModelRow,
+  ProviderInsightsScope,
   ProviderInsightsWorkspaceCost,
+  ProviderRuntimeAttribution,
   ProviderVerifyErrorCode,
   ProviderVerifyResult,
 } from './types.ts'
@@ -54,13 +58,25 @@ export async function probeProviderCapabilities(
   return null
 }
 
+export async function resolveProviderRuntimeAttribution(
+  providerSlug: string,
+  adminKey: string,
+  runtimeKey: string,
+): Promise<ProviderRuntimeAttribution | null> {
+  if (providerSlug === 'anthropic') {
+    return resolveAnthropicRuntimeAttribution(adminKey, runtimeKey)
+  }
+  return null
+}
+
 export async function fetchProviderGovernanceInsights(
   providerSlug: string,
   adminKey: string,
   windowDays?: number,
+  attribution?: ProviderRuntimeAttribution | null,
 ): Promise<ProviderGovernanceInsights | null> {
   if (providerSlug === 'anthropic') {
-    return fetchAnthropicGovernanceInsights(adminKey, windowDays)
+    return fetchAnthropicGovernanceInsights(adminKey, windowDays, attribution)
   }
   return null
 }

@@ -3,6 +3,7 @@ import type {
   ProviderGovernanceInsights,
   ProviderInsightsModelRow,
   ProviderInsightsWorkspaceCost,
+  ProviderRuntimeAttribution,
   ProviderVerifyResult,
 } from './types.ts'
 
@@ -476,31 +477,88 @@ function costTotalsFromBody(body: Record<string, unknown> | undefined) {
   return { total_usd, currency, by_workspace, cost_buckets: buckets.length, cost_result_rows }
 }
 
+function secretMatchesPartialHint(secret: string, hint: string | null | undefined): boolean {
+  if (!hint) return false
+  const s = secret.trim()
+  const h = hint.trim()
+  if (!s || !h) return false
+  const split = h.indexOf('...')
+  if (split === -1) return s === h || s.endsWith(h)
+  const start = h.slice(0, split)
+  const end = h.slice(split + 3)
+  return (!start || s.startsWith(start)) && (!end || s.endsWith(end))
+}
+
+function workspaceIdFromApiKey(row: Record<string, unknown>): string | null {
+  const scope = row.scope as { type?: string; workspace_id?: string } | undefined
+  if (scope?.type === 'workspace' && scope.workspace_id) return scope.workspace_id
+  if (typeof row.workspace_id === 'string' && row.workspace_id) return row.workspace_id
+  return null
+}
+
+async function listAnthropicApiKeys(adminKey: string): Promise<Record<string, unknown>[]> {
+  const keys: Record<string, unknown>[] = []
+  let afterId: string | null = null
+  for (let i = 0; i < 10; i++) {
+    const params = new URLSearchParams()
+    params.set('limit', '1000')
+    params.set('status', 'active')
+    if (afterId) params.set('after_id', afterId)
+    const res = await anthropicFetch(`/v1/organizations/api_keys?${params.toString()}`, adminKey, INSIGHTS_TIMEOUT_MS)
+    if (!res.ok || !res.body) break
+    const data = Array.isArray(res.body.data) ? (res.body.data as Record<string, unknown>[]) : []
+    keys.push(...data)
+    if (!res.body.has_more) break
+    afterId = typeof res.body.last_id === 'string' ? res.body.last_id : null
+    if (!afterId) break
+  }
+  return keys
+}
+
+export async function resolveAnthropicRuntimeAttribution(
+  adminKey: string,
+  runtimeKey: string,
+): Promise<ProviderRuntimeAttribution | null> {
+  const secret = runtimeKey.trim()
+  if (!secret || !adminKey.trim()) return null
+  const keys = await listAnthropicApiKeys(adminKey)
+  const matches = keys.filter((row) =>
+    secretMatchesPartialHint(secret, typeof row.partial_key_hint === 'string' ? row.partial_key_hint : null),
+  )
+  if (matches.length !== 1) return null
+  const id = typeof matches[0].id === 'string' ? matches[0].id : ''
+  if (!id) return null
+  return { api_key_id: id, workspace_id: workspaceIdFromApiKey(matches[0]) }
+}
+
 function buildUsagePath(
   startingAt: string,
   endingAt: string,
-  opts: { groupByModel?: boolean; bucketWidth?: '1d' | '1h' } = {},
+  opts: { groupByModel?: boolean; bucketWidth?: '1d' | '1h'; apiKeyId?: string | null } = {},
 ): string {
   const params = new URLSearchParams()
   params.set('starting_at', startingAt)
   params.set('ending_at', endingAt)
   params.set('bucket_width', opts.bucketWidth || '1d')
   if (opts.groupByModel) params.append('group_by[]', 'model')
+  if (opts.apiKeyId) params.append('api_key_ids[]', opts.apiKeyId)
   return `/v1/organizations/usage_report/messages?${params.toString()}`
 }
 
-function buildCostPath(startingAt: string, endingAt: string): string {
+function buildCostPath(startingAt: string, endingAt: string, apiKeyId?: string | null): string {
   const params = new URLSearchParams()
   params.set('starting_at', startingAt)
   params.set('ending_at', endingAt)
   params.set('bucket_width', '1d')
   params.append('group_by[]', 'workspace_id')
+  if (apiKeyId) params.append('api_key_ids[]', apiKeyId)
   return `/v1/organizations/cost_report?${params.toString()}`
 }
 
 export async function fetchAnthropicGovernanceInsights(
   adminKey: string,
   windowDays = 30,
+  attribution?: ProviderRuntimeAttribution | null,
 ): Promise<ProviderGovernanceInsights> {
   const days = Math.min(90, Math.max(1, Math.floor(windowDays || 30)))
   // Daily buckets need day-aligned exclusive ending_at (tomorrow UTC) or today's spend is dropped.
@@ -510,15 +568,24 @@ export async function fetchAnthropicGovernanceInsights(
   const errors: string[] = []
   const key = adminKey.trim()
 
+  const apiKeyId = attribution?.api_key_id || null
   const recentStart = isoHoursAgoUtc(48)
   const recentEnd = new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
-  const [usageTotalRes, usageByModelRes, usageHourlyRes, costRes] = await Promise.all([
-    anthropicFetchPaged(buildUsagePath(starting_at, ending_at, { bucketWidth: '1d' }), key),
-    anthropicFetchPaged(buildUsagePath(starting_at, ending_at, { bucketWidth: '1d', groupByModel: true }), key),
-    anthropicFetchPaged(buildUsagePath(recentStart, recentEnd, { bucketWidth: '1h', groupByModel: true }), key),
-    anthropicFetchPaged(buildCostPath(starting_at, ending_at), key),
+  const [usageTotalRes, usageByModelRes, usageHourlyRes, costFirst] = await Promise.all([
+    anthropicFetchPaged(buildUsagePath(starting_at, ending_at, { bucketWidth: '1d', apiKeyId }), key),
+    anthropicFetchPaged(buildUsagePath(starting_at, ending_at, { bucketWidth: '1d', groupByModel: true, apiKeyId }), key),
+    anthropicFetchPaged(buildUsagePath(recentStart, recentEnd, { bucketWidth: '1h', groupByModel: true, apiKeyId }), key),
+    anthropicFetchPaged(buildCostPath(starting_at, ending_at, apiKeyId), key),
   ])
+
+  let costRes = costFirst
+  if (!costRes.ok && apiKeyId && (costRes.status === 400 || costRes.status === 422)) {
+    costRes = await anthropicFetchPaged(buildCostPath(starting_at, ending_at), key)
+    if (costRes.ok) {
+      errors.push('Cost report does not filter by API key; cost below is organisation or workspace spend, not this asset alone.')
+    }
+  }
 
   if (!usageTotalRes.ok && !usageByModelRes.ok && !usageHourlyRes.ok) {
     errors.push(
@@ -580,8 +647,13 @@ export async function fetchAnthropicGovernanceInsights(
 
   if (usage.total_tokens === 0 && (usageTotalRes.ok || usageByModelRes.ok || usageHourlyRes.ok)) {
     errors.push(
-      'Admin usage report returned no token rows yet. Console Usage can appear before the Admin API; wait and refresh again.',
+      apiKeyId
+        ? 'No token rows for this asset runtime key yet. After API calls with that key, wait a few minutes and refresh.'
+        : 'Admin usage report returned no token rows yet. Console Usage can appear before the Admin API; wait and refresh again.',
     )
+  }
+  if (!apiKeyId) {
+    errors.push('Usage is organisation-wide until this asset runtime key can be matched to an Anthropic API key id. Connect both keys, then run a live check or refresh.')
   }
 
   return {
@@ -590,6 +662,9 @@ export async function fetchAnthropicGovernanceInsights(
     window_days: days,
     starting_at,
     ending_at,
+    scope: apiKeyId ? 'asset' : 'organization',
+    api_key_id: apiKeyId,
+    workspace_id: attribution?.workspace_id || null,
     usage,
     cost,
     ...(errors.length ? { errors } : {}),

@@ -62,12 +62,22 @@ export type ProviderInsightsWorkspaceCost = {
   amount_usd: string
 }
 
+export type ProviderInsightsScope = 'asset' | 'organization'
+
+export type ProviderRuntimeAttribution = {
+  api_key_id: string
+  workspace_id: string | null
+}
+
 export type ProviderGovernanceInsights = {
   provider_slug: string
   refreshed_at: string
   window_days: number
   starting_at: string
   ending_at: string
+  scope: ProviderInsightsScope
+  api_key_id?: string | null
+  workspace_id?: string | null
   usage: {
     total_tokens: number
     uncached_input_tokens: number

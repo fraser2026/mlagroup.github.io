@@ -5,6 +5,7 @@
 import {
   applyCapabilityProfile,
   applyProviderVerification,
+  applyRuntimeAttribution,
   assertOrgMember,
   connectionHasSlot,
   corsHeaders,
@@ -17,7 +18,7 @@ import {
   readConnectionSecret,
   writeAudit,
 } from '../_shared/provider-connection.ts'
-import { probeProviderCapabilities, verifyProviderCredential } from '../_shared/providers/index.ts'
+import { probeProviderCapabilities, resolveProviderRuntimeAttribution, verifyProviderCredential } from '../_shared/providers/index.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -85,6 +86,10 @@ Deno.serve(async (req) => {
     const profile = await probeProviderCapabilities(providerSlug, apiSecret, adminSecret)
     if (profile) {
       updated = await applyCapabilityProfile(supabase, updated, profile)
+    }
+    if (apiSecret && adminSecret) {
+      const attribution = await resolveProviderRuntimeAttribution(providerSlug, adminSecret, apiSecret)
+      updated = await applyRuntimeAttribution(supabase, updated, attribution)
     }
 
     await writeAudit(supabase, {

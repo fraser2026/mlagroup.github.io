@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2'
-import type { ProviderCapabilityProfile, ProviderGovernanceInsights, ProviderVerifyResult } from './providers/types.ts'
+import type { ProviderCapabilityProfile, ProviderGovernanceInsights, ProviderRuntimeAttribution, ProviderVerifyResult } from './providers/types.ts'
 import type { CredentialSlot } from './providers/types.ts'
 
 export const corsHeaders = {
@@ -299,6 +299,50 @@ export async function applyCapabilityProfile(
     throw new Response(JSON.stringify({ ok: false, error: error?.message || 'Could not save capabilities.' }), { status: 500 })
   }
   return data
+}
+
+export async function applyRuntimeAttribution(
+  supabase: SupabaseClient,
+  connection: { id: string; metadata?: Record<string, unknown> | null },
+  attribution: ProviderRuntimeAttribution | null,
+) {
+  const now = new Date().toISOString()
+  const metadata = {
+    ...(connection.metadata || {}),
+    attribution: attribution
+      ? {
+        api_key_id: attribution.api_key_id,
+        workspace_id: attribution.workspace_id,
+        matched_at: now,
+      }
+      : null,
+  }
+  const { data, error } = await supabase
+    .from('provider_connections')
+    .update({
+      runtime_api_key_id: attribution?.api_key_id || null,
+      runtime_workspace_id: attribution?.workspace_id || null,
+      metadata,
+      updated_at: now,
+    })
+    .eq('id', connection.id)
+    .select('id,status,provider_slug,connected_at,last_verified_at,last_error,admin_last_verified_at,admin_last_error,credential_secret_id,admin_credential_secret_id,runtime_api_key_id,runtime_workspace_id,metadata')
+    .single()
+
+  if (error || !data) {
+    throw new Response(JSON.stringify({ ok: false, error: error?.message || 'Could not save key attribution.' }), { status: 500 })
+  }
+  return data
+}
+
+export function attributionFromConnection(
+  connection: { runtime_api_key_id?: string | null; runtime_workspace_id?: string | null },
+): ProviderRuntimeAttribution | null {
+  if (!connection.runtime_api_key_id) return null
+  return {
+    api_key_id: connection.runtime_api_key_id,
+    workspace_id: connection.runtime_workspace_id || null,
+  }
 }
 
 export async function applyGovernanceInsights(
