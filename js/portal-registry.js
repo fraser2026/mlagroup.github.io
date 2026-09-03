@@ -1320,20 +1320,24 @@ function renderProviderConnectionPanel(sys,connection){
   if(canManage){
     html+='<div class="provider-slot"><div class="provider-slot-head"><span class="provider-slot-title">Runtime API key</span>'+(hasApi?'<span class="provider-slot-state is-on">Connected</span>':'<span class="provider-slot-state">Not connected</span>')+'</div>'+
       '<p class="provider-slot-copy">Verifies this asset can authenticate to '+esc(providerCatalogName(sys.provider_slug))+'. Required for live API checks.'+(docs?' '+docs:'')+'</p>';
-    if(!hasApi){
-      html+=providerSecretFieldHtml('provider-api-key','API key (sk-ant-api…)','Paste runtime API key')+
-        '<button type="button" class="btn-dl" id="provider-connect-api-btn" onclick="connectProvider(\'api\')"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Connect runtime key</button>';
-    }else{
-      html+='<div class="provider-connection-actions"><button type="button" class="btn-topbar btn-topbar-ghost" onclick="revokeProviderConnection(\'api\')">Revoke runtime key</button></div>';
+    if(hasApi){
+      html+='<p class="provider-slot-copy">Stored key is never shown. Paste a new key below to replace it, or revoke to remove it.</p>';
     }
+    html+=providerSecretFieldHtml('provider-api-key','API key (sk-ant-api…)','Paste runtime API key')+
+      '<div class="provider-connection-actions">'+
+      '<button type="button" class="btn-dl" id="provider-connect-api-btn" onclick="connectProvider(\'api\')"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>'+(hasApi?'Replace runtime key':'Connect runtime key')+'</button>'+
+      (hasApi?'<button type="button" class="btn-topbar btn-topbar-ghost" id="provider-revoke-api-btn" onclick="revokeProviderConnection(\'api\')">Revoke</button>':'')+
+      '</div>';
     html+='</div><div class="provider-slot provider-slot--admin"><div class="provider-slot-head"><span class="provider-slot-title">Governance admin key</span>'+(hasAdmin?'<span class="provider-slot-state is-on">Connected</span>':'<span class="provider-slot-state is-rec">Recommended</span>')+'</div>'+
       '<p class="provider-slot-copy">Unlocks usage monitoring, cost reporting, and workspace visibility.</p><p class="provider-slot-copy provider-slot-docs">'+adminDocs+'</p>';
-    if(!hasAdmin){
-      html+=providerSecretFieldHtml('provider-admin-key','Admin API key (sk-ant-admin…)','Paste governance admin key')+
-        '<button type="button" class="btn-dl" id="provider-connect-admin-btn" onclick="connectProvider(\'admin\')"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Connect admin key</button>';
-    }else{
-      html+='<div class="provider-connection-actions"><button type="button" class="btn-topbar btn-topbar-ghost" onclick="revokeProviderConnection(\'admin\')">Revoke admin key</button></div>';
+    if(hasAdmin){
+      html+='<p class="provider-slot-copy">Stored key is never shown. Paste a new key below to replace it, or revoke to remove it.</p>';
     }
+    html+=providerSecretFieldHtml('provider-admin-key','Admin API key (sk-ant-admin…)','Paste governance admin key')+
+      '<div class="provider-connection-actions">'+
+      '<button type="button" class="btn-dl" id="provider-connect-admin-btn" onclick="connectProvider(\'admin\')"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>'+(hasAdmin?'Replace admin key':'Connect admin key')+'</button>'+
+      (hasAdmin?'<button type="button" class="btn-topbar btn-topbar-ghost" id="provider-revoke-admin-btn" onclick="revokeProviderConnection(\'admin\')">Revoke</button>':'')+
+      '</div>';
     html+='</div>';
     if(hasApi||hasAdmin){
       html+='<div class="provider-connection-actions provider-connection-actions--foot">'+btnAsyncHtml('Run live check',{id:'provider-test-btn',onclick:'testProviderConnection()'})+'</div>';
@@ -1356,14 +1360,18 @@ async function connectProvider(slot){
   var apiKey=keyEl?keyEl.value.trim():'';
   if(!apiKey){setProviderConnectionError('API key is required.');return}
   var btn=document.getElementById(btnId);
-  if(btn){btn.disabled=true;btn.textContent='Verifying with Anthropic…'}
+  var replacing=!!(btn&&/Replace/i.test(btn.textContent||''));
+  var idleLabel='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>'+(replacing
+    ?(slot==='admin'?'Replace admin key':'Replace runtime key')
+    :(slot==='admin'?'Connect admin key':'Connect runtime key'));
+  if(btn){btn.disabled=true;btn.textContent=replacing?'Replacing with Anthropic…':'Verifying with Anthropic…'}
   try{
     await invokeProviderFn('provider-connect',{asset_id:sys.id,provider_slug:sys.provider_slug,api_key:apiKey,credential_slot:slot});
     if(keyEl)keyEl.value='';
     await openSystemDetail(sys.id,{tab:'connection'});
   }catch(e){
     setProviderConnectionError(e.message||'Could not connect.');
-    if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Connect '+(slot==='admin'?'admin':'runtime')+' key'}
+    if(btn){btn.disabled=false;btn.innerHTML=idleLabel}
   }
 }
 
@@ -1409,11 +1417,20 @@ async function revokeProviderConnection(slot){
   var label=slot==='admin'?'governance admin key':'runtime API key';
   if(!confirm('Revoke the '+label+' for '+sys.name+'? The stored credential will be deleted.'))return;
   setProviderConnectionError('');
+  var btn=document.getElementById(slot==='admin'?'provider-revoke-admin-btn':'provider-revoke-api-btn');
   try{
-    await invokeProviderFn('provider-revoke',{asset_id:sys.id,provider_slug:sys.provider_slug,credential_slot:slot});
+    if(typeof runAsyncBtn==='function'&&btn){
+      await runAsyncBtn(btn,function(){
+        return invokeProviderFn('provider-revoke',{asset_id:sys.id,provider_slug:sys.provider_slug,credential_slot:slot});
+      },{busyLabel:'Revoking',successMs:900,errorMs:2200});
+    }else{
+      if(btn){btn.disabled=true;btn.textContent='Revoking…'}
+      await invokeProviderFn('provider-revoke',{asset_id:sys.id,provider_slug:sys.provider_slug,credential_slot:slot});
+    }
     await openSystemDetail(sys.id,{tab:'connection'});
   }catch(e){
     setProviderConnectionError(e.message||'Could not revoke connection.');
+    if(btn){btn.disabled=false;btn.textContent='Revoke'}
   }
 }
  
