@@ -1137,14 +1137,23 @@ const PROVIDER_GOV_TIER_LABELS={none:'Not connected',verification:'Connected for
 const PROVIDER_ADMIN_DOCS_URL='https://platform.claude.com/docs/en/api/administration-api';
 
 function providerSecretFieldHtml(id,label,placeholder){
-  return '<div class="field-group"><label for="'+id+'">'+esc(label)+'</label><div class="field-secret-wrap"><input type="password" id="'+id+'" class="field-input field-secret-input" autocomplete="off" placeholder="'+esc(placeholder)+'"><button type="button" class="field-secret-toggle" aria-label="Show API key" aria-pressed="false" onclick="toggleProviderSecretVisibility(\''+id+'\',this)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3C4.5 3 1.7 5.4 1 8c.7 2.6 3.5 5 7 5s6.3-2.4 7-5c-.7-2.6-3.5-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg></button></div></div>';
+  // type=text + CSS masking: password-type inputs trigger browser password managers.
+  return '<div class="field-group provider-secret-field"><label for="'+id+'">'+esc(label)+'</label>'+
+    '<div class="field-secret-wrap">'+
+    '<input type="text" id="'+id+'" class="field-input field-secret-input" '+
+    'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" '+
+    'data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" '+
+    'name="ra-provider-'+id+'" inputmode="text" placeholder="'+esc(placeholder)+'">'+
+    '<button type="button" class="field-secret-toggle" aria-label="Show API key" aria-pressed="false" onclick="toggleProviderSecretVisibility(\''+id+'\',this)">'+
+    '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3C4.5 3 1.7 5.4 1 8c.7 2.6 3.5 5 7 5s6.3-2.4 7-5c-.7-2.6-3.5-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg></button>'+
+    '</div></div>';
 }
 
 function toggleProviderSecretVisibility(inputId,btn){
   var input=document.getElementById(inputId);
   if(!input||!btn)return;
-  var show=input.type==='password';
-  input.type=show?'text':'password';
+  var show=!input.classList.contains('is-revealed');
+  input.classList.toggle('is-revealed',show);
   btn.setAttribute('aria-label',show?'Hide API key':'Show API key');
   btn.setAttribute('aria-pressed',show?'true':'false');
   btn.innerHTML=show

@@ -2399,6 +2399,13 @@ textarea.field-input, .obligation-evidence { resize: vertical; min-height: 80px 
 .field-secret-input {
   width: 100%;
   padding-right: 40px;
+  /* Mask like a secret without type=password (avoids password-manager autofill). */
+  -webkit-text-security: disc;
+  text-security: disc;
+}
+.field-secret-input.is-revealed {
+  -webkit-text-security: none;
+  text-security: none;
 }
 .field-secret-toggle {
   position: absolute;
