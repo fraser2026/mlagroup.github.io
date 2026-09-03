@@ -86,6 +86,10 @@ export type ProviderGovernanceInsights = {
     output_tokens: number
     by_model: ProviderInsightsModelRow[]
   }
+  /** Org-wide usage when scope is asset, for context when Console/other keys differ. */
+  organization_usage?: {
+    total_tokens: number
+  } | null
   cost: {
     total_usd: string
     currency: string
@@ -102,6 +106,7 @@ export type ProviderGovernanceInsights = {
     usage_pages: number
     cost_pages: number
     provider_request_id?: string
+    organization_total_tokens?: number
   }
   enterprise_analytics_path?: boolean
 }

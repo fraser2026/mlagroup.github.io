@@ -1249,6 +1249,9 @@ function renderProviderInsightsPanel(connection,canManage){
   }else{
     html+='<p class="provider-insights-note">'+(scoped?'No usage for this asset\'s runtime key in this window yet. After API calls with that key, wait a few minutes and refresh.':'No organisation usage in this window yet. After API calls, wait a few minutes and refresh.')+'</p>';
   }
+  if(scoped&&insights.organization_usage&&(insights.organization_usage.total_tokens||0)>0&&!(insights.usage&&insights.usage.total_tokens)){
+    html+='<p class="provider-insights-note">Organisation total is '+esc(fmtProviderTokens(insights.organization_usage.total_tokens))+' tokens in this window. Claude Console / playground usage and other API keys are not attributed to this asset.</p>';
+  }
   if(!scoped){
     html+='<p class="provider-insights-note">Figures are for the Anthropic organisation until this asset\'s runtime key is matched. Connect both keys and run a live check, then refresh.</p>';
   }

@@ -572,11 +572,15 @@ export async function fetchAnthropicGovernanceInsights(
   const recentStart = isoHoursAgoUtc(48)
   const recentEnd = new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
-  const [usageTotalRes, usageByModelRes, usageHourlyRes, costFirst] = await Promise.all([
+  const [usageTotalRes, usageByModelRes, usageHourlyRes, costFirst, orgUsageRes] = await Promise.all([
     anthropicFetchPaged(buildUsagePath(starting_at, ending_at, { bucketWidth: '1d', apiKeyId }), key),
     anthropicFetchPaged(buildUsagePath(starting_at, ending_at, { bucketWidth: '1d', groupByModel: true, apiKeyId }), key),
     anthropicFetchPaged(buildUsagePath(recentStart, recentEnd, { bucketWidth: '1h', groupByModel: true, apiKeyId }), key),
     anthropicFetchPaged(buildCostPath(starting_at, ending_at, apiKeyId), key),
+    // When filtering to one key, also pull org totals so Console / other-key usage is visible.
+    apiKeyId
+      ? anthropicFetchPaged(buildUsagePath(starting_at, ending_at, { bucketWidth: '1d' }), key)
+      : Promise.resolve({ ok: false, status: 0, body: null, pages: 0 } as Awaited<ReturnType<typeof anthropicFetchPaged>>),
   ])
 
   let costRes = costFirst
@@ -645,12 +649,23 @@ export async function fetchAnthropicGovernanceInsights(
     throw new Error(errors[0] || 'Could not fetch governance insights.')
   }
 
+  const orgUsageParsed = orgUsageRes.ok ? usageTotalsFromBody(orgUsageRes.body) : null
+  const organization_usage = apiKeyId && orgUsageParsed
+    ? { total_tokens: orgUsageParsed.total_tokens }
+    : null
+
   if (usage.total_tokens === 0 && (usageTotalRes.ok || usageByModelRes.ok || usageHourlyRes.ok)) {
-    errors.push(
-      apiKeyId
-        ? 'No token rows for this asset runtime key yet. After API calls with that key, wait a few minutes and refresh.'
-        : 'Admin usage report returned no token rows yet. Console Usage can appear before the Admin API; wait and refresh again.',
-    )
+    if (apiKeyId && organization_usage && organization_usage.total_tokens > 0) {
+      errors.push(
+        `Organisation has ${organization_usage.total_tokens} tokens in this window, but none on this asset's runtime key. Claude Console / playground usage and other API keys are not counted here.`,
+      )
+    } else {
+      errors.push(
+        apiKeyId
+          ? 'No token rows for this asset runtime key yet. After API calls with that key, wait a few minutes and refresh.'
+          : 'Admin usage report returned no token rows yet. Console Usage can appear before the Admin API; wait and refresh again.',
+      )
+    }
   }
   if (!apiKeyId) {
     errors.push('Usage is organisation-wide until this asset runtime key can be matched to an Anthropic API key id. Connect both keys, then run a live check or refresh.')
@@ -666,6 +681,7 @@ export async function fetchAnthropicGovernanceInsights(
     api_key_id: apiKeyId,
     workspace_id: attribution?.workspace_id || null,
     usage,
+    organization_usage,
     cost,
     ...(errors.length ? { errors } : {}),
     diagnostics: {
@@ -685,6 +701,7 @@ export async function fetchAnthropicGovernanceInsights(
       ),
       cost_buckets: costParsed?.cost_buckets || 0,
       cost_result_rows: costParsed?.cost_result_rows || 0,
+      ...(organization_usage ? { organization_total_tokens: organization_usage.total_tokens } : {}),
       usage_pages: Math.max(
         usageTotalRes.pages || 0,
         usageByModelRes.pages || 0,
