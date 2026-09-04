@@ -263,8 +263,12 @@ export async function probeAnthropicCapabilities(
     const cost = await anthropicFetch(costPath, adminKey!.trim())
     costOk = cost.ok
 
-    const workspaces = await anthropicFetch('/v1/workspaces', adminKey!.trim())
+    const workspaces = await anthropicFetch('/v1/organizations/workspaces', adminKey!.trim())
     workspaceOk = workspaces.ok
+    if (workspaces.ok && Array.isArray((workspaces.body as { data?: unknown[] })?.data)) {
+      // Treat an empty list as still capable — endpoint access is what matters.
+      workspaceOk = true
+    }
   }
 
   const capabilities: ProviderCapabilityProfile['capabilities'] = [
