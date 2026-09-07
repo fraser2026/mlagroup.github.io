@@ -478,20 +478,46 @@
 <div id="view-policy-detail" class="view">
   <button class="breadcrumb" onclick="navigate('policies',document.getElementById('nav-policies'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Policies</button>
   <header class="detail-head">
-    <div class="detail-head__meta">
-      <span id="pd-category-badge" class="tag"></span>
-      <span id="pd-version-badge" class="tag"></span>
-      <span id="pd-ack-status-badge" class="state-label"></span>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="min-width:0;flex:1;">
+        <div class="detail-head__meta">
+          <span id="pd-category-badge" class="tag"></span>
+          <span id="pd-version-badge" class="tag"></span>
+          <span id="pd-ack-status-badge" class="state-label"></span>
+        </div>
+        <h2 class="detail-title" id="pd-title">—</h2>
+        <p class="detail-head__desc" id="pd-desc"></p>
+      </div>
+      <div id="pd-head-actions" style="display:flex;align-items:center;gap:8px;flex-shrink:0;"></div>
     </div>
-    <h2 class="detail-title" id="pd-title">—</h2>
-    <p class="detail-head__desc" id="pd-desc"></p>
   </header>
   <div id="pd-ack-section" class="detail-ack"></div>
-  <div class="panel panel--policy">
+  <div class="panel panel--policy" id="pd-content-panel">
     <div class="panel-header"><div class="panel-title">Policy content</div><div class="panel-sub" id="pd-updated"></div></div>
     <div class="panel-body policy-content" id="pd-content"></div>
   </div>
-  <div class="panel">
+  <div class="panel" id="pd-edit-panel" hidden>
+    <div class="panel-header"><div class="panel-title">Edit policy</div><div class="panel-sub">Changes bump the version and require re-acknowledgment</div></div>
+    <div class="panel-body">
+      <div class="field-group">
+        <label class="field-label" for="pd-edit-title">Title <span class="req">*</span></label>
+        <input type="text" class="field-input" id="pd-edit-title" placeholder="Policy title">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="pd-edit-desc">Description</label>
+        <textarea class="field-input" id="pd-edit-desc" rows="2" placeholder="Short summary for the policy list"></textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="pd-edit-content">Content (Markdown)</label>
+        <textarea class="field-input" id="pd-edit-content" rows="16" placeholder="Policy body in Markdown" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;line-height:1.6;white-space:pre-wrap;"></textarea>
+      </div>
+      <div class="detail-actions" style="padding:0;margin-top:8px;">
+        <button type="button" class="btn-topbar btn-topbar-primary" id="pd-save-btn" onclick="savePolicyEdit()">Save changes</button>
+        <button type="button" class="btn-topbar btn-topbar-ghost" onclick="cancelPolicyEdit()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="pd-ack-history-panel">
     <div class="panel-header"><div class="panel-title">Acknowledgment history</div><div class="panel-sub" id="pd-ack-count"></div></div>
     <div class="panel-body" id="pd-ack-history"><div class="empty-inline">No acknowledgments yet.</div></div>
   </div>
