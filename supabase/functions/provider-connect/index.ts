@@ -1,6 +1,6 @@
 /**
- * RegAnchor — Provider Connect (Phase 4a)
- * Dual credential slots: runtime API key + governance Admin API key.
+ * RegAnchor — Provider Connect
+ * Asset runtime API key only (Phase 3b: Admin lives at Organisation → Providers).
  */
 import {
   applyCapabilityProfile,
@@ -16,6 +16,7 @@ import {
   parseCredentialSlot,
   parseUuid,
   readConnectionSecret,
+  resolveAdminSecret,
   storeConnectionSecret,
   writeAudit,
 } from '../_shared/provider-connection.ts'
@@ -33,6 +34,13 @@ Deno.serve(async (req) => {
     const apiKey = String(body.api_key || '').trim()
     if (!apiKey) return json({ ok: false, error: 'API key is required.' }, 400)
 
+    if (slot === 'admin') {
+      return json({
+        ok: false,
+        error: 'Governance Admin keys are managed once per provider under Organisation → Providers.',
+      }, 400)
+    }
+
     const asset = await loadAsset(supabase, assetId)
     await assertOrgAdmin(supabase, user.id, asset.org_id)
 
@@ -46,14 +54,14 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'This platform does not use API key authentication yet.' }, 400)
     }
 
-    const verification = await verifyProviderCredential(providerSlug, slot, apiKey)
+    const verification = await verifyProviderCredential(providerSlug, 'api', apiKey)
     if (!verification.ok) {
       return json({
         ok: false,
         error: verification.error || 'API key could not be verified with the provider.',
         error_code: verification.error_code,
         mode: verification.mode,
-        credential_slot: slot,
+        credential_slot: 'api',
       }, verification.error_code === 'rate_limited' ? 429 : 400)
     }
 
@@ -65,17 +73,14 @@ Deno.serve(async (req) => {
       user.id,
     )
 
-    await storeConnectionSecret(supabase, connection.id, apiKey, slot)
+    await storeConnectionSecret(supabase, connection.id, apiKey, 'api')
 
     const now = new Date().toISOString()
-    const connectPatch: Record<string, unknown> = { updated_at: now }
-    if (slot === 'api') {
-      connectPatch.connected_by = user.id
-      connectPatch.connected_at = now
-    } else {
-      connectPatch.admin_connected_at = now
-    }
-    await supabase.from('provider_connections').update(connectPatch).eq('id', connection.id)
+    await supabase.from('provider_connections').update({
+      connected_by: user.id,
+      connected_at: now,
+      updated_at: now,
+    }).eq('id', connection.id)
 
     const refreshed = await supabase
       .from('provider_connections')
@@ -84,10 +89,15 @@ Deno.serve(async (req) => {
       .single()
 
     const conn = refreshed.data || connection
-    let updated = await applyProviderVerification(supabase, conn, verification, slot)
+    let updated = await applyProviderVerification(supabase, conn, verification, 'api')
 
     const apiSecret = await readConnectionSecret(supabase, connection.id, 'api')
-    const adminSecret = await readConnectionSecret(supabase, connection.id, 'admin')
+    const { secret: adminSecret } = await resolveAdminSecret(
+      supabase,
+      asset.org_id,
+      providerSlug,
+      updated,
+    )
     const profile = await probeProviderCapabilities(providerSlug, apiSecret, adminSecret)
     if (profile) {
       updated = await applyCapabilityProfile(supabase, updated, profile)
@@ -100,23 +110,24 @@ Deno.serve(async (req) => {
     await writeAudit(supabase, {
       org_id: asset.org_id,
       user_id: user.id,
-      action: slot === 'admin' ? 'provider_admin_connected' : 'provider_connected',
+      action: 'provider_connected',
       entity_id: asset.id,
       changes: {
         _system_name: asset.name,
         provider_slug: providerSlug,
         connection_id: connection.id,
-        credential_slot: slot,
+        credential_slot: 'api',
         verification_mode: verification.mode,
         governance_tier: profile?.governance_tier || null,
         provider_request_id: verification.provider_request_id || null,
+        admin_source: adminSecret ? 'resolved' : null,
       },
     })
 
     return json({
       ok: true,
       mode: verification.mode,
-      credential_slot: slot,
+      credential_slot: 'api',
       governance_tier: profile?.governance_tier || null,
       capabilities: profile?.capabilities || null,
       connection: updated,

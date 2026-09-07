@@ -1,6 +1,6 @@
 /**
- * RegAnchor — Provider Revoke (Phase 4a)
- * Revokes runtime API key, governance admin key, or both.
+ * RegAnchor — Provider Revoke
+ * Revokes asset runtime API key only (Phase 3b: Admin revoke via org-provider-revoke).
  */
 import {
   applyCapabilityProfile,
@@ -15,6 +15,7 @@ import {
   parseCredentialSlot,
   parseUuid,
   readConnectionSecret,
+  resolveAdminSecret,
   writeAudit,
 } from '../_shared/provider-connection.ts'
 import { probeProviderCapabilities } from '../_shared/providers/index.ts'
@@ -27,7 +28,15 @@ Deno.serve(async (req) => {
     const { user, supabase } = await getAuthedUser(req)
     const body = await req.json().catch(() => ({}))
     const assetId = parseUuid(body.asset_id, 'Asset')
-    const slotParam = String(body.credential_slot || 'all').trim().toLowerCase()
+    const slotParam = String(body.credential_slot || 'api').trim().toLowerCase()
+
+    if (slotParam === 'admin') {
+      return json({
+        ok: false,
+        error: 'Revoke Governance Admin keys under Organisation → Providers.',
+      }, 400)
+    }
+
     const slot = slotParam === 'all' ? 'all' : parseCredentialSlot(slotParam)
 
     const asset = await loadAsset(supabase, assetId)
@@ -52,13 +61,15 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'No active provider connection for this asset.' }, 404)
     }
 
+    // Phase 3b: asset revoke only touches runtime (api). Legacy asset admin left intact
+    // until org Admin is managed separately; "all" means runtime + clear asset-local admin.
     if (slot === 'all') {
       await deleteConnectionSecret(supabase, connection.id, 'all')
     } else {
-      if (!connectionHasSlot(connection, slot)) {
-        return json({ ok: false, error: `No ${slot} credential is stored for this connection.` }, 404)
+      if (!connectionHasSlot(connection, 'api')) {
+        return json({ ok: false, error: 'No runtime API key is stored for this connection.' }, 404)
       }
-      await deleteConnectionSecret(supabase, connection.id, slot)
+      await deleteConnectionSecret(supabase, connection.id, 'api')
     }
 
     const refreshed = await supabase
@@ -88,22 +99,26 @@ Deno.serve(async (req) => {
         .single()
       updated = revoked || updated
     } else {
-      if (slot === 'api' || slot === 'all') {
-        const { data: cleared } = await supabase
-          .from('provider_connections')
-          .update({
-            runtime_api_key_id: null,
-            runtime_workspace_id: null,
-            metadata: { ...(updated.metadata || {}), attribution: null },
-            updated_at: now,
-          })
-          .eq('id', connection.id)
-          .select('*')
-          .single()
-        updated = cleared || updated
-      }
+      const { data: cleared } = await supabase
+        .from('provider_connections')
+        .update({
+          runtime_api_key_id: null,
+          runtime_workspace_id: null,
+          metadata: { ...(updated.metadata || {}), attribution: null },
+          updated_at: now,
+        })
+        .eq('id', connection.id)
+        .select('*')
+        .single()
+      updated = cleared || updated
+
       const apiSecret = await readConnectionSecret(supabase, connection.id, 'api')
-      const adminSecret = await readConnectionSecret(supabase, connection.id, 'admin')
+      const { secret: adminSecret } = await resolveAdminSecret(
+        supabase,
+        asset.org_id,
+        providerSlug,
+        updated,
+      )
       const profile = await probeProviderCapabilities(providerSlug, apiSecret, adminSecret)
       if (profile) {
         updated = await applyCapabilityProfile(supabase, updated, profile)
@@ -117,20 +132,20 @@ Deno.serve(async (req) => {
     await writeAudit(supabase, {
       org_id: asset.org_id,
       user_id: user.id,
-      action: slot === 'admin' ? 'provider_admin_revoked' : 'provider_revoked',
+      action: 'provider_revoked',
       entity_id: asset.id,
       changes: {
         _system_name: asset.name,
         provider_slug: providerSlug,
         connection_id: connection.id,
-        credential_slot: slot,
+        credential_slot: slot === 'all' ? 'all' : 'api',
       },
     })
 
     return json({
       ok: true,
       mode: hasAny ? 'partial' : 'revoked',
-      credential_slot: slot,
+      credential_slot: slot === 'all' ? 'all' : 'api',
       connection: updated,
     })
   } catch (err) {

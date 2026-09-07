@@ -144,6 +144,11 @@ function fmtAudit(entry,namesMap,opts){
     case 'member_removed':text='Removed a member'+(c.role?' ('+(MEMBER_ROLE_LABELS[c.role]||c.role)+')':'');break;
     case 'provider_connected':text='Connected <strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> runtime API key for <strong>'+esc(c._system_name||'an AI asset')+'</strong>';break;
     case 'provider_admin_connected':text='Connected <strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> governance admin key for <strong>'+esc(c._system_name||'an AI asset')+'</strong>';break;
+    case 'org_provider_admin_connected':text='Connected organisation <strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> governance Admin key';break;
+    case 'org_provider_admin_verified':
+      text=(c.verification_ok===false?'Organisation Admin key check failed for ':'Organisation Admin key verified for ')+'<strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong>';
+      break;
+    case 'org_provider_admin_revoked':text='Revoked organisation <strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> governance Admin key';break;
     case 'provider_verified':
       text=(c.verification_ok===false?'Live API check failed for ':'Live API check passed for ')+'<strong>'+esc(typeof providerCatalogName==='function'?providerCatalogName(c.provider_slug):c.provider_slug||'provider')+'</strong> on <strong>'+esc(c._system_name||'an AI asset')+'</strong>';
       break;
@@ -168,7 +173,9 @@ async function loadNames(userIds){
 const NAV_PARENT={
   'registry-detail':'registry',
   'control-detail':'controls',
-  'policy-detail':'policies'
+  'policy-detail':'policies',
+  'mcp-device':'integrations',
+  'mcp-oauth':'integrations'
 };
 const topbarTitles={
   dashboard:{label:'Dashboard',icon:'<rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>'},
@@ -184,6 +191,8 @@ const topbarTitles={
   assessments:{label:'Assessments',icon:'<path d="M3 2h10v12H3z"/><path d="M6 5h4M6 8h4M6 11h2"/>'},
   documents:{label:'Documents',icon:'<path d="M2 3h5l2 2h5v8H2z"/><path d="M5 9h6M5 12h4"/>'},
   analytics:{label:'Analytics',icon:'<path d="M2 12V7M6 12V4M10 12V8M14 12V5"/>'},
+  'mcp-device':{label:'Approve MCP login',icon:'<path d="M6 2v3M10 2v3M4 5h8v3a4 4 0 01-8 0V5z"/><path d="M6 11v3M10 11v3"/>'},
+  'mcp-oauth':{label:'Authorise MCP client',icon:'<path d="M6 2v3M10 2v3M4 5h8v3a4 4 0 01-8 0V5z"/><path d="M6 11v3M10 11v3"/>'},
   insights:{label:'Insights',icon:'<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1"/>'},
   'risk-trends':{label:'Risk Trends',icon:'<path d="M1 12l4-4 3 3 4-5 3 3"/>'},
   benchmarks:{label:'Benchmarks',icon:'<path d="M2 13h12"/><path d="M4 13V7M8 13V4M12 13V9"/>'},
@@ -238,6 +247,7 @@ function navigate(viewId,navEl,skipHistory){
   var hash=hashForView(viewId);
   if(!skipHistory){history.pushState({view:viewId,hash:hash},'',hash);navHistory.push(viewId)}
   else history.replaceState({view:viewId,hash:hash},'',hash);
+  if(viewId==='analytics')return;
 }
 window.addEventListener('popstate',function(e){
   if(e.state&&e.state.hash)applyPortalHash(e.state.hash,true);
@@ -294,7 +304,7 @@ async function init(){
       showPortalSubscriptionPreview(urlPreview.get('plan')||'essentials');
       return;
     }
-    window.location.href='login.html';
+    window.location.href='login.html'+window.location.search+window.location.hash;
     return;
   }
   currentUser=session.user;
@@ -337,6 +347,13 @@ async function init(){
   document.getElementById('paywall-banner').style.display=(isPaid||isPaidTier())?'none':'flex'; document.getElementById('tier-banner').style.display=isPaidTier()?'none':'flex'; document.getElementById('controls-tier-banner').style.display=isPaidTier()?'none':'flex';
   renderReports(paidIds);
   var bootHash=window.location.hash||'#dashboard';
+  var oauthParams=new URLSearchParams(window.location.search);
+  var oauthPending=oauthParams.get('mcp_oauth')==='1';
+  if(oauthPending&&typeof prepareMcpOAuthPage==='function'){
+    // Show consent modal immediately — do not wait for registry/dashboard loads.
+    history.replaceState(null,'',window.location.pathname+'#mcp-oauth');
+    prepareMcpOAuthPage('mcp-oauth?'+oauthParams.toString());
+  }
   // Always provision org — subscriptions need currentOrg even when org_id is still null.
   consumePendingInvite().then(function(){
     return ensureOrg();
@@ -349,7 +366,7 @@ async function init(){
     renderDashboard(paidIds);
     loadScoreHistory();
     loadAssessmentReports();
-    handleDeepLink(bootHash);
+    if(!oauthPending)handleDeepLink(bootHash);
     loadAlerts();
     setTimeout(function(){checkAndCreateAlerts();loadAndRunComplianceEngine()},3000);
   }).catch(function(){renderDashboard(paidIds)});
@@ -414,6 +431,20 @@ function applyPortalHash(raw, skipHistory){
     var polId=h.slice('policy-detail-'.length);
     if(polId&&typeof openPolicyDetail==='function'){openPolicyDetail(polId);return}
   }
+  if(h.indexOf('mcp-device')===0){
+    navigate('mcp-device',document.getElementById('nav-integrations')||document.getElementById('nav-org'),!!skipHistory);
+    if(typeof prepareMcpDevicePage==='function')prepareMcpDevicePage(h);
+    return;
+  }
+  if(h.indexOf('mcp-oauth')===0){
+    if(typeof prepareMcpOAuthPage==='function')prepareMcpOAuthPage(h);
+    return;
+  }
+  if(h==='integrations'){
+    navigate('integrations',document.getElementById('nav-integrations')||document.getElementById('nav-org'),!!skipHistory);
+    if(typeof loadMcpSessions==='function')loadMcpSessions();
+    return;
+  }
   if(h==='registry'&&typeof navigateRegistry==='function'){navigateRegistry(document.getElementById('nav-registry'));return}
   if(h==='org'&&typeof navigateOrg==='function'){navigateOrg(document.getElementById('nav-org'));return}
   if(h==='users'&&typeof navigateUsers==='function'){navigateUsers(document.getElementById('nav-users'));return}
@@ -430,6 +461,12 @@ function applyPortalHash(raw, skipHistory){
 }
 function handleDeepLink(bootHash){
   var urlParams=new URLSearchParams(window.location.search);
+  if(urlParams.get('mcp_oauth')==='1'){
+    var oauthHash='mcp-oauth?'+urlParams.toString();
+    history.replaceState(null,'',window.location.pathname+'#mcp-oauth');
+    if(typeof prepareMcpOAuthPage==='function')prepareMcpOAuthPage(oauthHash);
+    return;
+  }
   var goto=urlParams.get('goto');
   if(goto==='plans'){
     history.replaceState(null,'',window.location.pathname+'#plans');
@@ -499,6 +536,7 @@ async function renderOrgPage(){
   const subSt=currentOrg.subscription_status==='active'?'Active':currentOrg.subscription_status==='trialing'?'Trial':currentOrg.subscription_status==='none'?'Not subscribed':currentOrg.subscription_status||'Not set';
   document.getElementById('org-profile-grid').innerHTML='<div class="meta-item"><label>Organisation Name</label><span>'+esc(currentOrg.name)+'</span></div><div class="meta-item"><label>Sector</label><span>'+esc(currentOrg.sector||'Not set')+'</span></div><div class="meta-item"><label>Organisation Size</label><span>'+esc(currentOrg.org_size||'Not set')+'</span></div><div class="meta-item"><label>Organisation ID</label><span class="meta-id">'+esc(currentOrg.id)+'</span></div>';
   document.getElementById('org-sub-grid').innerHTML='<div class="meta-item"><label>Registry Phase</label><span>Phase 1</span></div><div class="meta-item"><label>Membership Tier</label><span>'+esc(plan)+'</span></div><div class="meta-item"><label>Subscription Status</label><span>'+esc(subSt)+'</span></div><div class="meta-item"><label>AI assets registered</label><span>'+allSystems.length+'</span></div>';
+  if(typeof renderOrgProvidersPanel==='function')await renderOrgProvidersPanel();
   const{data:members}=await sb.from('org_members').select('*').eq('org_id',currentOrg.id).order('created_at',{ascending:true});
   if(!members||!members.length){document.getElementById('org-members-wrap').innerHTML='<div class="empty-state" style="padding:24px 0;"><p>No members found.</p></div>';return}
   document.getElementById('org-member-count').textContent=members.length+' member'+(members.length!==1?'s':'');

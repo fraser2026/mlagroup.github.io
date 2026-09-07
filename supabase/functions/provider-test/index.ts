@@ -1,9 +1,10 @@
 /**
- * RegAnchor — Provider Test (Phase 4a)
- * Live verification + capability probe for runtime and admin credential slots.
+ * RegAnchor — Provider Test
+ * Live verification + capability probe. Runtime from asset; Admin from org (legacy asset fallback).
  */
 import {
   applyCapabilityProfile,
+  applyOrgProviderVerification,
   applyProviderVerification,
   applyRuntimeAttribution,
   assertOrgMember,
@@ -13,9 +14,13 @@ import {
   json,
   loadAsset,
   loadCatalogProvider,
+  loadOrgProviderCredential,
+  orgCredentialHasAdmin,
   parseCredentialSlot,
   parseUuid,
   readConnectionSecret,
+  readOrgProviderSecret,
+  resolveAdminSecret,
   writeAudit,
 } from '../_shared/provider-connection.ts'
 import { probeProviderCapabilities, resolveProviderRuntimeAttribution, verifyProviderCredential } from '../_shared/providers/index.ts'
@@ -39,7 +44,7 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'No platform set on this asset.' }, 400)
     }
 
-    const provider = await loadCatalogProvider(supabase, providerSlug)
+    await loadCatalogProvider(supabase, providerSlug)
 
     const { data: connection, error: connError } = await supabase
       .from('provider_connections')
@@ -53,36 +58,82 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'No active provider connection for this asset.' }, 404)
     }
 
-    const slotsToTest = probeAll
-      ? (['api', 'admin'] as const).filter((s) => connectionHasSlot(connection, s))
-      : [slot]
+    const orgCredential = await loadOrgProviderCredential(supabase, asset.org_id, providerSlug)
+    const hasOrgAdmin = orgCredentialHasAdmin(orgCredential)
+    const hasAssetAdmin = connectionHasSlot(connection, 'admin')
+    const hasApi = connectionHasSlot(connection, 'api')
 
-    if (!slotsToTest.length) {
-      return json({ ok: false, error: 'No stored credentials to verify for this slot.' }, 404)
+    if (probeAll) {
+      if (!hasApi && !hasOrgAdmin && !hasAssetAdmin) {
+        return json({ ok: false, error: 'No stored credentials to verify.' }, 404)
+      }
+    } else if (slot === 'admin') {
+      if (!hasOrgAdmin && !hasAssetAdmin) {
+        return json({ ok: false, error: 'No Admin credential stored. Connect one under Organisation → Providers.' }, 404)
+      }
+    } else if (!hasApi) {
+      return json({ ok: false, error: 'No runtime API key stored for this asset.' }, 404)
     }
 
     let updated = connection
     let lastVerificationOk = true
     let lastError: string | undefined
+    let orgUpdated = orgCredential
 
-    for (const testSlot of slotsToTest) {
-      const secret = await readConnectionSecret(supabase, connection.id, testSlot)
-      if (!secret) {
-        lastVerificationOk = false
-        lastError = `No ${testSlot} credential stored.`
-        continue
+    if (probeAll || slot === 'api') {
+      if (hasApi) {
+        const secret = await readConnectionSecret(supabase, connection.id, 'api')
+        if (!secret) {
+          lastVerificationOk = false
+          lastError = 'No api credential stored.'
+        } else {
+          const verification = await verifyProviderCredential(providerSlug, 'api', secret)
+          updated = await applyProviderVerification(supabase, updated, verification, 'api')
+          if (!verification.ok) {
+            lastVerificationOk = false
+            lastError = verification.error
+          }
+        }
       }
+    }
 
-      const verification = await verifyProviderCredential(providerSlug, testSlot, secret)
-      updated = await applyProviderVerification(supabase, updated, verification, testSlot)
-      if (!verification.ok) {
-        lastVerificationOk = false
-        lastError = verification.error
+    if (probeAll || slot === 'admin') {
+      if (hasOrgAdmin && orgCredential) {
+        const secret = await readOrgProviderSecret(supabase, orgCredential.id)
+        if (!secret) {
+          lastVerificationOk = false
+          lastError = 'No organisation Admin credential stored.'
+        } else {
+          const verification = await verifyProviderCredential(providerSlug, 'admin', secret)
+          orgUpdated = await applyOrgProviderVerification(supabase, orgCredential, verification)
+          if (!verification.ok) {
+            lastVerificationOk = false
+            lastError = verification.error
+          }
+        }
+      } else if (hasAssetAdmin) {
+        const secret = await readConnectionSecret(supabase, connection.id, 'admin')
+        if (!secret) {
+          lastVerificationOk = false
+          lastError = 'No admin credential stored.'
+        } else {
+          const verification = await verifyProviderCredential(providerSlug, 'admin', secret)
+          updated = await applyProviderVerification(supabase, updated, verification, 'admin')
+          if (!verification.ok) {
+            lastVerificationOk = false
+            lastError = verification.error
+          }
+        }
       }
     }
 
     const apiSecret = await readConnectionSecret(supabase, connection.id, 'api')
-    const adminSecret = await readConnectionSecret(supabase, connection.id, 'admin')
+    const { secret: adminSecret } = await resolveAdminSecret(
+      supabase,
+      asset.org_id,
+      providerSlug,
+      updated,
+    )
     const profile = await probeProviderCapabilities(providerSlug, apiSecret, adminSecret)
     if (profile) {
       updated = await applyCapabilityProfile(supabase, updated, profile)
@@ -104,6 +155,7 @@ Deno.serve(async (req) => {
         credential_slot: probeAll ? 'all' : slot,
         verification_ok: lastVerificationOk,
         governance_tier: profile?.governance_tier || null,
+        admin_source: adminSecret ? (hasOrgAdmin ? 'org' : 'asset') : null,
       },
     })
 
@@ -112,6 +164,7 @@ Deno.serve(async (req) => {
         ok: false,
         error: lastError || 'Provider verification failed.',
         connection: updated,
+        org_credential: orgUpdated,
         capabilities: profile,
         governance_tier: profile?.governance_tier || null,
       }, 400)
@@ -121,6 +174,7 @@ Deno.serve(async (req) => {
       ok: true,
       mode: 'live_api',
       connection: updated,
+      org_credential: orgUpdated,
       capabilities: profile,
       governance_tier: profile?.governance_tier || null,
     })

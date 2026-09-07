@@ -1107,7 +1107,7 @@ const PROVIDER_CONN_STATUS_LABELS={pending:'Not connected',connected:'Connected'
 
 async function invokeProviderFn(name,body){
   if(location.protocol==='file:'){
-    throw new Error('Open the portal at https://reganchor.com/portal.html — file:// blocks provider actions (CORS).');
+    throw new Error('Open the portal at https://reganchor.com/portal.html or a local http:// server. Opening as a file blocks provider actions.');
   }
   var sd=await sb.auth.getSession();
   var session=sd.data.session;
@@ -1219,13 +1219,20 @@ function renderProviderWorkspaceCost(cost){
     var label=row.workspace_id?row.workspace_id:'Default workspace';
     return {label:label,value:fmtProviderUsd(row.amount_usd)};
   });
-  return renderProviderInsightsLedger('Cost by workspace','Spend in USD for this window.',rows);
+  return renderProviderInsightsLedger('Cost by workspace','Organisation spend in USD for this window, not per-asset billing.',rows);
 }
 
-function renderProviderInsightsPanel(connection,canManage){
-  if(!connection||!connection.admin_credential_secret_id)return '';
+function insightsUsageFetchFailed(insights){
+  var errs=(insights&&insights.errors)||[];
+  return errs.some(function(note){
+    return /Could not fetch usage report|Usage report is not available|Zero tokens are not confirmed usage/i.test(String(note||''));
+  });
+}
+
+function renderProviderInsightsPanel(connection,canManage,hasOrgAdmin){
+  if(!connection||!(hasOrgAdmin||connection.admin_credential_secret_id))return '';
   var insights=connection.metadata&&connection.metadata.insights;
-  var html='<div class="provider-insights"><div class="provider-insights-head"><div class="stat-label">Governance insights</div>';
+  var html='<div class="provider-insights"><div class="provider-insights-head"><div class="stat-label">Runtime usage (this asset)</div>';
   if(canManage){
     html+='<div class="provider-insights-actions"><select id="provider-insights-window" class="field-input provider-insights-window" aria-label="Insights window">';
     [7,30,90].forEach(function(d){
@@ -1233,25 +1240,45 @@ function renderProviderInsightsPanel(connection,canManage){
       if(!insights&&d===30)sel=' selected';
       html+='<option value="'+d+'"'+sel+'>'+d+' days</option>';
     });
-    html+='</select>'+btnAsyncHtml('Refresh insights',{id:'provider-insights-btn',onclick:'refreshProviderInsights()'})+'</div>';
+    html+='</select>'+btnAsyncHtml('Refresh',{id:'provider-insights-btn',onclick:'refreshProviderInsights()'})+'</div>';
   }
   html+='</div>';
+  html+='<p class="provider-insights-lead">Anthropic Admin usage for this asset\'s runtime key only. This can lag Claude Console, and Console screens can disagree with each other. Gateway calls for this asset are under Gateway usage below.</p>';
   if(!insights){
-    html+='<p class="provider-insights-lead">No snapshot yet. Refresh insights to pull usage and cost from the Admin API.</p></div>';
+    html+='<p class="provider-insights-note">No Admin snapshot yet. Refresh after the runtime key is connected and has recent traffic.</p></div>';
     return html;
   }
   var windowDays=insights.window_days||30;
   var scoped=insights.scope==='asset';
-  html+='<p class="provider-insights-meta">Last refreshed '+esc(fmtDateLong(insights.refreshed_at))+' · '+windowDays+'-day window · '+(scoped?'this asset':'organisation')+'</p>';
+  var usageFailed=insightsUsageFetchFailed(insights);
+  html+='<p class="provider-insights-meta">Last refreshed '+esc(fmtDateLong(insights.refreshed_at))+'. '+windowDays+'-day window.</p>';
+  if(!scoped){
+    html+='<p class="provider-insights-note">This asset\'s runtime key is not matched yet, so Admin usage for other keys is not shown here. Run a live check, make a call with this runtime key, wait a few minutes, then refresh.</p>';
+    if(insights.errors&&insights.errors.length){
+      html+='<div class="provider-connection-notes">'+insights.errors.map(function(note){return '<p>'+esc(note)+'</p>'}).join('')+'</div>';
+    }
+    html+='</div>';
+    return html;
+  }
+  if(usageFailed&&!(insights.usage&&(insights.usage.total_tokens||0)>0)){
+    html+='<p class="provider-insights-note">Admin usage is temporarily unavailable. RegAnchor is not showing zero as confirmed usage. Try Refresh again shortly. Gateway usage below still reflects Messages calls through RegAnchor for this asset.</p>';
+    if(insights.errors&&insights.errors.length){
+      html+='<div class="provider-connection-notes">'+insights.errors.map(function(note){return '<p>'+esc(note)+'</p>'}).join('')+'</div>';
+    }
+    html+='</div>';
+    return html;
+  }
   html+='<div class="provider-insights-grid">';
-  html+='<div class="provider-insight-stat"><div class="provider-insight-label">Tokens</div><div class="provider-insight-value ra-num">'+esc(fmtProviderTokens(insights.usage&&insights.usage.total_tokens))+'</div></div>';
-  html+='<div class="provider-insight-stat"><div class="provider-insight-label">Cost (USD)</div><div class="provider-insight-value ra-num">'+esc(fmtProviderUsd(insights.cost&&insights.cost.total_usd))+'</div></div>';
+  html+='<div class="provider-insight-stat"><div class="provider-insight-label">Tokens (this asset)</div><div class="provider-insight-value ra-num">'+esc(fmtProviderTokens(insights.usage&&insights.usage.total_tokens))+'</div></div>';
+  if(insights.estimated_asset_usd!=null&&insights.estimated_asset_usd!==''){
+    html+='<div class="provider-insight-stat"><div class="provider-insight-label">Estimated asset spend</div><div class="provider-insight-value ra-num">'+esc(fmtProviderUsd(insights.estimated_asset_usd))+'</div></div>';
+  }
   html+='</div>';
+  html+='<p class="provider-insights-note">Estimated spend uses list prices as a leakage signal only, not billing.</p>';
   html+=renderProviderTokenMix(insights.usage);
-  html+=renderProviderWorkspaceCost(insights.cost);
   if(insights.usage&&insights.usage.by_model&&insights.usage.by_model.length){
     html+='<div class="provider-insights-models"><div class="provider-insight-label">Models with usage</div>';
-    html+='<p class="provider-insights-note">Token usage by model in the last '+windowDays+' days.</p><ul>';
+    html+='<p class="provider-insights-note">Token usage by model in the last '+windowDays+' days for this runtime key.</p><ul>';
     insights.usage.by_model.slice(0,5).forEach(function(row){
       html+='<li><span>'+esc(row.model)+'</span><span>'+esc(fmtProviderTokens(row.total_tokens))+'</span></li>';
     });
@@ -1259,16 +1286,7 @@ function renderProviderInsightsPanel(connection,canManage){
   }else if(insights.usage&&(insights.usage.total_tokens||0)>0){
     html+='<p class="provider-insights-note">Usage was recorded, but no model breakdown is available for this window yet.</p>';
   }else{
-    html+='<p class="provider-insights-note">'+(scoped?'No usage for this asset\'s runtime key in this window yet. After API calls with that key, wait a few minutes and refresh.':'No organisation usage in this window yet. After API calls, wait a few minutes and refresh.')+'</p>';
-  }
-  if(scoped&&insights.organization_usage&&(insights.organization_usage.total_tokens||0)>0&&!(insights.usage&&insights.usage.total_tokens)){
-    html+='<p class="provider-insights-note">Organisation total is '+esc(fmtProviderTokens(insights.organization_usage.total_tokens))+' tokens in this window. Claude Console / playground usage and other API keys are not attributed to this asset.</p>';
-  }
-  if(!scoped){
-    html+='<p class="provider-insights-note">Figures are for the Anthropic organisation until this asset\'s runtime key is matched. Connect both keys and run a live check, then refresh.</p>';
-  }
-  if(insights.cost&&Number(insights.cost.total_usd||0)===0&&(insights.usage&&insights.usage.total_tokens||0)>0){
-    html+='<p class="provider-insights-note">Cost may stay at $0.00 on credits or until Anthropic publishes cost rows — usage can appear first.</p>';
+    html+='<p class="provider-insights-note">No Admin usage for this asset\'s runtime key in this window yet. After API calls with that key, wait a few minutes and refresh.</p>';
   }
   if(insights.errors&&insights.errors.length){
     html+='<div class="provider-connection-notes">'+insights.errors.map(function(note){return '<p>'+esc(note)+'</p>'}).join('')+'</div>';
@@ -1295,6 +1313,181 @@ function providerOverviewValue(sys,providerLabel){
   return '<span class="meta-item-with-action"><span>'+esc(providerLabel)+'</span><button type="button" class="btn-inline" onclick="switchDetailTabById(\'connection\')">Connection</button></span>';
 }
 
+function renderProviderCliPanel(sys,hasApi){
+  var assetId=String(sys&&sys.id||'');
+  var provider=String(sys&&sys.provider_slug||'anthropic');
+  var keyEnv=provider==='openai'?'OPENAI_API_KEY':provider==='google'?'GEMINI_API_KEY':'ANTHROPIC_API_KEY';
+  var commands=[
+    {label:hasApi?'Replace runtime key':'Connect runtime key',value:'.\\cli\\ra.ps1 connect --asset '+assetId+' --provider '+provider+' --key $env:'+keyEnv},
+    {label:'Check connection',value:'.\\cli\\ra.ps1 check --asset '+assetId},
+    {label:'Run smoke check',value:'.\\cli\\ra.ps1 smoke --asset '+assetId},
+    {label:'Refresh insights',value:'.\\cli\\ra.ps1 insights --asset '+assetId+' --days 30'}
+  ];
+  return '<div class="provider-cli"><div class="provider-cli-head"><div><div class="stat-label">CLI</div>'+
+    '<p>From the repo root in PowerShell. Set REGANCHOR_ANON_KEY and REGANCHOR_ACCESS_TOKEN first (see cli/README.md in the repo, not in the browser).</p></div></div>'+
+    '<div class="provider-cli-ledger">'+commands.map(function(command){
+      return '<div class="provider-cli-row"><div><span class="provider-cli-label">'+esc(command.label)+'</span>'+
+        '<code>'+esc(command.value)+'</code></div>'+
+        '<button type="button" class="provider-cli-copy" onclick="copyProviderCliCommand(this)">Copy</button></div>';
+    }).join('')+'</div></div>';
+}
+
+async function copyProviderCliCommand(btn){
+  var row=btn&&btn.closest('.provider-cli-row');
+  var code=row&&row.querySelector('code');
+  if(!btn||!code)return;
+  var command=code.textContent||'';
+  try{
+    if(navigator.clipboard&&window.isSecureContext){
+      await navigator.clipboard.writeText(command);
+    }else{
+      var area=document.createElement('textarea');
+      area.value=command;
+      area.setAttribute('readonly','');
+      area.style.position='fixed';
+      area.style.opacity='0';
+      document.body.appendChild(area);
+      area.select();
+      if(!document.execCommand('copy'))throw new Error('Copy was blocked.');
+      area.remove();
+    }
+    btn.textContent='Copied';
+    setTimeout(function(){btn.textContent='Copy'},1400);
+  }catch(e){
+    setProviderConnectionError('Could not copy the command. Select it and copy manually.');
+  }
+}
+
+function providerRuntimeKeyHint(providerSlug){
+  if(providerSlug==='openai')return {label:'API key (sk-proj-...)',placeholder:'Paste OpenAI API key'};
+  if(providerSlug==='google')return {label:'Gemini API key',placeholder:'Paste Google Gemini API key'};
+  return {label:'API key (sk-ant-api...)',placeholder:'Paste runtime API key'};
+}
+
+function renderGatewayTokenList(tokens){
+  var active=(tokens||[]).filter(function(token){return !token.revoked_at});
+  if(!active.length)return '<p class="gateway-token-empty">No active gateway tokens.</p>';
+  return '<div class="gateway-token-ledger">'+active.map(function(token){
+    return '<div class="gateway-token-row"><div><span class="gateway-token-label">'+esc(token.label)+'</span>'+
+      '<span class="gateway-token-meta">Created '+esc(fmtDateLong(token.created_at))+'</span></div>'+
+      '<button type="button" class="btn-topbar btn-topbar-ghost" onclick="revokeGatewayToken(\''+esc(token.id)+'\')">Revoke</button></div>';
+  }).join('')+'</div>';
+}
+
+function renderGatewayUsageSummary(events){
+  var rows=events||[];
+  var inputTotal=0,outputTotal=0;
+  rows.forEach(function(row){
+    inputTotal+=Number(row.input_tokens)||0;
+    outputTotal+=Number(row.output_tokens)||0;
+  });
+  var html='<div class="gateway-usage-summary">'+
+    '<div class="gateway-usage-stat"><span class="gateway-usage-label">Input</span><span class="gateway-usage-value ra-num">'+esc(fmtProviderTokens(inputTotal))+'</span></div>'+
+    '<div class="gateway-usage-stat"><span class="gateway-usage-label">Output</span><span class="gateway-usage-value ra-num">'+esc(fmtProviderTokens(outputTotal))+'</span></div>'+
+    '<div class="gateway-usage-stat"><span class="gateway-usage-label">Calls</span><span class="gateway-usage-value ra-num">'+esc(String(rows.length))+'</span></div>'+
+    '</div>';
+  if(!rows.length){
+    html+='<p class="gateway-token-empty">No gateway calls for this asset in the last 30 days.</p>';
+    return html;
+  }
+  html+='<div class="gateway-usage-ledger">'+rows.slice(0,8).map(function(row){
+    var tokens=(Number(row.input_tokens)||0)+(Number(row.output_tokens)||0);
+    return '<div class="gateway-usage-row"><div><span class="gateway-usage-model">'+esc(row.model||'Unknown model')+'</span>'+
+      '<span class="gateway-usage-meta">'+esc(fmtDateLong(row.created_at))+'</span></div>'+
+      '<span class="gateway-usage-tokens ra-num">'+esc(fmtProviderTokens(tokens))+' tokens</span></div>';
+  }).join('')+'</div>';
+  return html;
+}
+
+function renderGatewayPanel(sys,hasApi,canManage){
+  if(!sys||sys.provider_slug!=='anthropic'||!canManage)return '';
+  return '<div class="provider-gateway"><div class="provider-gateway-head"><div class="stat-label">Governed gateway</div>'+
+    '<p class="provider-connection-copy">Route Anthropic Messages traffic through RegAnchor. Metering is for this asset only. Prompt content is not stored.</p></div>'+
+    '<code class="provider-gateway-endpoint">https://gateway.reganchor.com/v1/messages</code>'+
+    (hasApi
+      ?'<div class="provider-gateway-mint"><input type="text" id="gateway-token-label" class="field-input" maxlength="80" placeholder="Token label (for example, Production)">'+
+        '<button type="button" class="btn-dl" id="gateway-token-mint-btn" onclick="mintGatewayToken()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Mint token</button></div>'
+      :'<p class="provider-connection-copy">Connect the Anthropic runtime API key before minting a gateway token.</p>')+
+    '<div id="gateway-token-once"></div><div id="gateway-token-list" class="gateway-token-list"><p class="gateway-token-empty">Loading tokens...</p></div>'+
+    '<div class="gateway-usage"><div class="gateway-usage-head"><div class="stat-label">Gateway usage</div>'+
+    '<p class="provider-connection-copy">Immediate metering for Messages calls through RegAnchor for this asset.</p></div>'+
+    '<div id="gateway-usage-body"><p class="gateway-token-empty">Loading usage...</p></div></div></div>';
+}
+
+async function loadGatewayTokensPanel(){
+  if(!currentSystemId||!canDeleteRegistry())return;
+  var sys=allSystems.find(function(item){return item.id===currentSystemId});
+  if(!sys||sys.provider_slug!=='anthropic'||!document.getElementById('gateway-token-list'))return;
+  var list=document.getElementById('gateway-token-list');
+  try{
+    var data=await invokeProviderFn('asset-gateway-token',{action:'list',asset_id:sys.id});
+    if(list)list.innerHTML=renderGatewayTokenList(data.tokens||[]);
+  }catch(e){
+    if(list)list.innerHTML='<p class="gateway-token-empty">'+esc(e.message||'Could not load gateway tokens.')+'</p>';
+  }
+}
+
+async function loadGatewayUsagePanel(){
+  if(!currentSystemId)return;
+  var body=document.getElementById('gateway-usage-body');
+  if(!body)return;
+  var sys=allSystems.find(function(item){return item.id===currentSystemId});
+  if(!sys||sys.provider_slug!=='anthropic')return;
+  try{
+    var since=new Date(Date.now()-30*24*60*60*1000).toISOString();
+    var{data,error}=await sb.from('asset_usage_events')
+      .select('input_tokens,output_tokens,model,created_at')
+      .eq('asset_id',sys.id)
+      .gte('created_at',since)
+      .order('created_at',{ascending:false})
+      .limit(40);
+    if(error)throw error;
+    body.innerHTML=renderGatewayUsageSummary(data||[]);
+  }catch(e){
+    body.innerHTML='<p class="gateway-token-empty">'+esc(e.message||'Could not load gateway usage.')+'</p>';
+  }
+}
+
+async function mintGatewayToken(){
+  if(!currentSystemId)return;
+  var labelEl=document.getElementById('gateway-token-label');
+  var label=labelEl?labelEl.value.trim():'';
+  if(!label){setProviderConnectionError('Add a label for the gateway token.');return}
+  var btn=document.getElementById('gateway-token-mint-btn');
+  try{
+    if(btn){btn.disabled=true;btn.textContent='Minting…'}
+    var data=await invokeProviderFn('asset-gateway-token',{action:'mint',asset_id:currentSystemId,label:label});
+    var once=document.getElementById('gateway-token-once');
+    if(once)once.innerHTML='<div class="gateway-token-once"><span>Copy this token now. It will not be shown again.</span>'+
+      '<code>'+esc(data.token)+'</code><button type="button" class="provider-cli-copy" onclick="copyGatewayToken(this)">Copy token</button></div>';
+    if(labelEl)labelEl.value='';
+    await loadGatewayTokensPanel();
+  }catch(e){
+    setProviderConnectionError(e.message||'Could not mint gateway token.');
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Mint token'}
+  }
+}
+
+async function copyGatewayToken(btn){
+  var code=btn&&btn.parentElement&&btn.parentElement.querySelector('code');
+  if(!code)return;
+  try{
+    if(!navigator.clipboard||!window.isSecureContext)throw new Error('Clipboard unavailable');
+    await navigator.clipboard.writeText(code.textContent||'');
+    btn.textContent='Copied';
+    setTimeout(function(){btn.textContent='Copy token'},1400);
+  }catch(e){setProviderConnectionError('Could not copy the token. Select it and copy manually.')}
+}
+
+async function revokeGatewayToken(tokenId){
+  if(!currentSystemId||!confirm('Revoke this gateway token? Clients using it will immediately lose access.'))return;
+  try{
+    await invokeProviderFn('asset-gateway-token',{action:'revoke',asset_id:currentSystemId,token_id:tokenId});
+    await loadGatewayTokensPanel();
+  }catch(e){setProviderConnectionError(e.message||'Could not revoke gateway token.')}
+}
+
 function renderAssetOverview(sys,tier){
   var assetKind=sys.asset_kind||'system';
   var providerLabel=providerCatalogName(sys.provider_slug)||'Not set';
@@ -1302,84 +1495,227 @@ function renderAssetOverview(sys,tier){
   return '<div class="detail-desc"><div class="stat-label">Description</div><p>'+esc(sys.description||'No description provided.')+'</p></div><div class="meta-grid"><div class="meta-item"><label>Asset ID</label><span class="meta-id">'+esc(sys.id)+'</span></div><div class="meta-item"><label>Type</label><span><span class="kind-pill kind-'+assetKind+'">'+(ASSET_KIND_LABELS[assetKind]||assetKind)+'</span></span></div><div class="meta-item"><label>Provider</label><span>'+providerOverviewValue(sys,providerLabel)+'</span></div><div class="meta-item"><label>Model</label><span>'+esc(modelLabel)+'</span></div><div class="meta-item"><label>Vendor</label><span>'+esc(sys.vendor||'In-house')+'</span></div><div class="meta-item"><label>Department</label><span>'+esc(sys.department||'Not set')+'</span></div><div class="meta-item"><label>Owner</label><span>'+esc(sys.system_owner||'Not set')+'</span></div><div class="meta-item"><label>Deployment</label><span><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||'Not set')+'</span></span></div><div class="meta-item"><label>Purpose category</label><span>'+esc(sys.purpose_category?sys.purpose_category.replace(/_/g,' '):'Not set')+'</span></div><div class="meta-item"><label>Risk tier</label><span><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></span></div>'+(sys.risk_tier_rationale?'<div class="meta-item" style="grid-column:1/-1;"><label>Classification rationale</label><span>'+esc(sys.risk_tier_rationale)+'</span></div>':'')+'<div class="meta-item"><label>Registered</label><span>'+fmtDate(sys.created_at)+'</span></div><div class="meta-item"><label>Last updated</label><span>'+fmtDate(sys.updated_at)+'</span></div></div>';
 }
 
-function renderProviderConnectionTab(sys,connection){
+function renderProviderConnectionTab(sys,connection,orgCredential){
   if(!sys)return '';
   if(!providerConnectorAvailable(sys.provider_slug)){
     var providerName=providerCatalogName(sys.provider_slug)||sys.provider_slug||'this provider';
     return '<div class="empty-state" style="padding:28px 0;"><h4>No connector yet</h4><p style="max-width:42ch;margin:0 auto;">Live provider connections are not available for '+esc(providerName)+'. Registry metadata is still recorded on Overview.</p></div>';
   }
-  return renderProviderConnectionPanel(sys,connection);
+  return renderProviderConnectionPanel(sys,connection,orgCredential);
 }
 
-function renderProviderConnectionPanel(sys,connection){
+function renderProviderConnectionPanel(sys,connection,orgCredential){
   if(!sys||!providerConnectorAvailable(sys.provider_slug))return '';
   var provider=providerCatalogRow(sys.provider_slug);
   var canManage=typeof canDeleteRegistry==='function'&&canDeleteRegistry();
+  var supportsAdmin=sys.provider_slug==='anthropic';
   var hasApi=!!(connection&&connection.credential_secret_id);
-  var hasAdmin=!!(connection&&connection.admin_credential_secret_id);
+  var hasOrgAdmin=supportsAdmin&&!!(orgCredential&&orgCredential.admin_credential_secret_id);
+  var hasLegacyAdmin=supportsAdmin&&!!(connection&&connection.admin_credential_secret_id);
+  var hasAdmin=hasOrgAdmin||hasLegacyAdmin;
   var profile=connection&&connection.metadata&&connection.metadata.capabilities;
   var tier=(profile&&profile.governance_tier)||(hasApi&&!hasAdmin?'verification':hasApi&&hasAdmin?'full':hasAdmin?'verification':'none');
   var tierLabel=PROVIDER_GOV_TIER_LABELS[tier]||tier;
   var tierCls=tier==='full'?'is-full':(tier==='verification'?'is-partial':'');
   var docs=provider&&provider.docs_url?'<a href="'+esc(provider.docs_url)+'" target="_blank" rel="noopener">Runtime API docs</a>':'';
-  var adminDocs='<a href="'+esc(PROVIDER_ADMIN_DOCS_URL)+'" target="_blank" rel="noopener">Admin API docs</a>';
+  var adminStatus=hasOrgAdmin
+    ?('<span class="provider-slot-state is-on">Connected</span>')
+    :(hasLegacyAdmin
+      ?'<span class="provider-slot-state is-on">Connected (legacy on asset)</span>'
+      :'<span class="provider-slot-state is-rec">Connect once for the organisation</span>');
+  var adminMeta='';
+  if(hasOrgAdmin&&orgCredential){
+    if(orgCredential.last_verified_at)adminMeta='Last verified '+esc(fmtDateLong(orgCredential.last_verified_at))+'.';
+    else if(orgCredential.connected_at)adminMeta='Connected '+esc(fmtDateLong(orgCredential.connected_at))+'.';
+  }
   var html='<div class="provider-connection-panel"><div class="provider-connection-head"><div class="stat-label">Provider connection</div><span class="conn-gov-tier '+tierCls+'">'+esc(tierLabel)+'</span></div>'+
-    '<p class="provider-connection-copy">Connect a runtime API key to verify this asset, then add a Governance Admin key to unlock usage, cost, and workspace monitoring. Credentials are encrypted in Vault and never shown again.</p>'+
-    (location.protocol==='file:'?'<p class="provider-connection-copy" style="color:var(--ra-risk)">You opened this page as a local file. Use https://reganchor.com/portal.html or provider actions will fail.</p>':'')+
+    '<p class="provider-connection-copy">Connect a runtime API key for this asset. '+(supportsAdmin?'Governance Admin keys are managed once per provider under Organisation → Providers. ':'')+'Credentials are encrypted in Vault and never shown again.</p>'+
+    (location.protocol==='file:'?'<p class="provider-connection-copy" style="color:var(--ra-risk)">You opened this page as a local file. Use https://reganchor.com/portal.html or a local http:// server. Opening as a file blocks provider actions.</p>':'')+
     renderProviderCapabilityList(connection)+
     (profile&&profile.encouragement?'<p class="provider-connection-encourage">'+esc(profile.encouragement)+'</p>':'')+
     (profile&&profile.limitations&&profile.limitations.length?'<div class="provider-connection-notes">'+profile.limitations.map(function(note){return '<p>'+esc(note)+'</p>'}).join('')+'</div>':'')+
-    (hasAdmin?renderProviderInsightsPanel(connection,canManage):'');
+    (hasAdmin?renderProviderInsightsPanel(connection,canManage,hasAdmin):'');
+  if(supportsAdmin){
+    html+='<div class="provider-slot provider-slot--admin"><div class="provider-slot-head"><span class="provider-slot-title">Organisation Admin key</span>'+adminStatus+'</div>'+
+      '<p class="provider-slot-copy">Usage, cost, and workspace monitoring for all '+esc(providerCatalogName(sys.provider_slug)||'provider')+' assets use one Admin key at organisation level.</p>'+
+      (adminMeta?'<p class="provider-slot-copy">'+adminMeta+'</p>':'')+
+      '<div class="provider-connection-actions"><button type="button" class="btn-topbar btn-topbar-ghost" onclick="navigateOrg(document.getElementById(\'nav-org\'))">'+(hasOrgAdmin||hasLegacyAdmin?'Manage at Organisation':'Connect at Organisation')+'</button></div></div>';
+  }
   if(canManage){
+    var keyHint=providerRuntimeKeyHint(sys.provider_slug);
     html+='<div class="provider-slot"><div class="provider-slot-head"><span class="provider-slot-title">Runtime API key</span>'+(hasApi?'<span class="provider-slot-state is-on">Connected</span>':'<span class="provider-slot-state">Not connected</span>')+'</div>'+
-      '<p class="provider-slot-copy">Verifies this asset can authenticate to '+esc(providerCatalogName(sys.provider_slug))+'. Required for live API checks.'+(docs?' '+docs:'')+'</p>';
+      '<p class="provider-slot-copy">Verifies this asset can authenticate to '+esc(providerCatalogName(sys.provider_slug))+'. Use the same key in Cursor, apps, and CLI for accurate attribution.'+(docs?' '+docs:'')+'</p>';
     if(hasApi){
       html+='<p class="provider-slot-copy">Stored key is never shown. Paste a new key below to replace it, or revoke to remove it.</p>';
     }
-    html+=providerSecretFieldHtml('provider-api-key','API key (sk-ant-api…)','Paste runtime API key')+
+    html+=providerSecretFieldHtml('provider-api-key',keyHint.label,keyHint.placeholder)+
       '<div class="provider-connection-actions">'+
       '<button type="button" class="btn-dl" id="provider-connect-api-btn" onclick="connectProvider(\'api\')"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>'+(hasApi?'Replace runtime key':'Connect runtime key')+'</button>'+
       (hasApi?'<button type="button" class="btn-topbar btn-topbar-ghost" id="provider-revoke-api-btn" onclick="revokeProviderConnection(\'api\')">Revoke</button>':'')+
-      '</div>';
-    html+='</div><div class="provider-slot provider-slot--admin"><div class="provider-slot-head"><span class="provider-slot-title">Governance admin key</span>'+(hasAdmin?'<span class="provider-slot-state is-on">Connected</span>':'<span class="provider-slot-state is-rec">Recommended</span>')+'</div>'+
-      '<p class="provider-slot-copy">Unlocks usage monitoring, cost reporting, and workspace visibility.</p><p class="provider-slot-copy provider-slot-docs">'+adminDocs+'</p>';
-    if(hasAdmin){
-      html+='<p class="provider-slot-copy">Stored key is never shown. Paste a new key below to replace it, or revoke to remove it.</p>';
-    }
-    html+=providerSecretFieldHtml('provider-admin-key','Admin API key (sk-ant-admin…)','Paste governance admin key')+
-      '<div class="provider-connection-actions">'+
-      '<button type="button" class="btn-dl" id="provider-connect-admin-btn" onclick="connectProvider(\'admin\')"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>'+(hasAdmin?'Replace admin key':'Connect admin key')+'</button>'+
-      (hasAdmin?'<button type="button" class="btn-topbar btn-topbar-ghost" id="provider-revoke-admin-btn" onclick="revokeProviderConnection(\'admin\')">Revoke</button>':'')+
-      '</div>';
-    html+='</div>';
+      '</div></div>';
     if(hasApi||hasAdmin){
       html+='<div class="provider-connection-actions provider-connection-actions--foot">'+btnAsyncHtml('Run live check',{id:'provider-test-btn',onclick:'testProviderConnection()'})+'</div>';
     }
   }else if(!hasApi&&!hasAdmin){
     html+='<p class="provider-connection-copy">Only organisation owners and admins can manage provider connections.</p>';
   }
+  html+=renderGatewayPanel(sys,hasApi,canManage);
+  html+=renderProviderCliPanel(sys,hasApi);
   html+='<div id="provider-connection-error" class="provider-connection-error" role="alert"></div></div>';
   return html;
 }
 
+async function maybePromptOrgProviderAdmin(providerSlug){
+  if(!currentOrg||providerSlug!=='anthropic'||!canDeleteRegistry())return;
+  var{data}=await sb.from('org_provider_credentials')
+    .select('id,admin_credential_secret_id')
+    .eq('org_id',currentOrg.id)
+    .eq('provider_slug',providerSlug)
+    .neq('status','revoked')
+    .maybeSingle();
+  if(data&&data.admin_credential_secret_id)return;
+  var name=providerCatalogName(providerSlug)||providerSlug;
+  if(confirm('Connect a '+name+' Governance Admin key for this organisation? One Admin key unlocks usage and cost monitoring for every '+name+' asset. You can also do this later under Organisation → Providers.')){
+    navigateOrg(document.getElementById('nav-org'));
+  }
+}
+
+async function renderOrgProvidersPanel(){
+  var wrap=document.getElementById('org-providers-wrap');
+  if(!wrap||!currentOrg)return;
+  if(!providerCatalog.length)await loadProviderCatalog();
+  var connectors=providerCatalog.filter(function(p){return p.connector_available&&p.slug==='anthropic'});
+  if(!connectors.length){
+    wrap.innerHTML='<div class="empty-state" style="padding:24px 0;"><p>No provider Admin connectors available yet.</p></div>';
+    return;
+  }
+  var{data:creds,error}=await sb.from('org_provider_credentials')
+    .select('id,provider_slug,status,admin_credential_secret_id,connected_at,last_verified_at,last_error,metadata')
+    .eq('org_id',currentOrg.id)
+    .neq('status','revoked');
+  if(error){
+    wrap.innerHTML='<div class="empty-state" style="padding:24px 0;"><p>Unable to load provider credentials right now.</p></div>';
+    return;
+  }
+  var bySlug={};
+  (creds||[]).forEach(function(c){bySlug[c.provider_slug]=c});
+  var canManage=typeof canDeleteRegistry==='function'&&canDeleteRegistry();
+  var html='<div class="org-providers"><p class="org-providers-lead">Connect a Governance Admin key once per AI provider. AI assets then attach only a runtime key on their Connection tab.</p>';
+  if(location.protocol==='file:'){
+    html+='<p class="provider-connection-copy" style="color:var(--ra-risk)">Open the portal via https://reganchor.com or a local http:// server. Opening as a file blocks provider actions.</p>';
+  }
+  connectors.forEach(function(p){
+    var cred=bySlug[p.slug]||null;
+    var hasAdmin=!!(cred&&cred.admin_credential_secret_id);
+    var inputId='org-provider-admin-key-'+p.slug;
+    html+='<div class="provider-slot provider-slot--admin org-provider-row" data-provider="'+esc(p.slug)+'">';
+    html+='<div class="provider-slot-head"><span class="provider-slot-title">'+esc(p.name)+'</span>'+(hasAdmin?'<span class="provider-slot-state is-on">Connected</span>':'<span class="provider-slot-state is-rec">Recommended</span>')+'</div>';
+    html+='<p class="provider-slot-copy">Unlocks usage monitoring, cost reporting, and workspace visibility for every '+esc(p.name)+' asset in this organisation.</p>';
+    html+='<p class="provider-slot-copy provider-slot-docs"><a href="'+esc(PROVIDER_ADMIN_DOCS_URL)+'" target="_blank" rel="noopener">Admin API docs</a></p>';
+    if(hasAdmin){
+      html+='<p class="provider-slot-copy">'+(cred.last_verified_at?'Last verified '+esc(fmtDateLong(cred.last_verified_at))+'. ':'')+(cred.connected_at?'Connected '+esc(fmtDateLong(cred.connected_at))+'. ':'')+'Stored key is never shown.</p>';
+      if(cred.last_error)html+='<p class="provider-slot-copy" style="color:var(--ra-risk)">'+esc(cred.last_error)+'</p>';
+    }
+    if(canManage){
+      html+=providerSecretFieldHtml(inputId,'Admin API key (sk-ant-admin...)','Paste governance admin key');
+      html+='<div class="provider-connection-actions">';
+      html+='<button type="button" class="btn-dl" id="org-provider-connect-'+esc(p.slug)+'" onclick="connectOrgProvider(\''+esc(p.slug)+'\')"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>'+(hasAdmin?'Replace Admin key':'Connect Admin key')+'</button>';
+      if(hasAdmin){
+        html+=btnAsyncHtml('Verify',{id:'org-provider-test-'+p.slug,onclick:'testOrgProvider(\''+p.slug+'\')'});
+        html+='<button type="button" class="btn-topbar btn-topbar-ghost" id="org-provider-revoke-'+esc(p.slug)+'" onclick="revokeOrgProvider(\''+esc(p.slug)+'\')">Revoke</button>';
+      }
+      html+='</div>';
+    }else if(!hasAdmin){
+      html+='<p class="provider-slot-copy">Only organisation owners and admins can manage provider Admin keys.</p>';
+    }
+    html+='</div>';
+  });
+  html+='<div id="org-providers-error" class="provider-connection-error" role="alert"></div></div>';
+  wrap.innerHTML=html;
+}
+
+function setOrgProvidersError(msg){
+  var el=document.getElementById('org-providers-error');
+  if(!el)return;
+  if(msg){el.textContent=msg;el.classList.add('is-visible')}
+  else{el.textContent='';el.classList.remove('is-visible')}
+}
+
+async function connectOrgProvider(providerSlug){
+  if(!currentOrg||!providerSlug)return;
+  setOrgProvidersError('');
+  var keyEl=document.getElementById('org-provider-admin-key-'+providerSlug);
+  var apiKey=keyEl?keyEl.value.trim():'';
+  if(!apiKey){setOrgProvidersError('Admin API key is required.');return}
+  var btn=document.getElementById('org-provider-connect-'+providerSlug);
+  var replacing=!!(btn&&/Replace/i.test(btn.textContent||''));
+  var idleLabel='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>'+(replacing?'Replace Admin key':'Connect Admin key');
+  if(btn){btn.disabled=true;btn.textContent=replacing?'Replacing with Anthropic…':'Verifying with Anthropic…'}
+  try{
+    await invokeProviderFn('org-provider-connect',{org_id:currentOrg.id,provider_slug:providerSlug,api_key:apiKey});
+    if(keyEl)keyEl.value='';
+    await renderOrgProvidersPanel();
+  }catch(e){
+    setOrgProvidersError(e.message||'Could not connect Admin key.');
+    if(btn){btn.disabled=false;btn.innerHTML=idleLabel}
+  }
+}
+
+async function testOrgProvider(providerSlug){
+  if(!currentOrg||!providerSlug)return;
+  setOrgProvidersError('');
+  var btn=document.getElementById('org-provider-test-'+providerSlug);
+  try{
+    await runAsyncBtn(btn,function(){
+      return invokeProviderFn('org-provider-test',{org_id:currentOrg.id,provider_slug:providerSlug});
+    },{busyLabel:'Verifying',successMs:1500,errorMs:2200});
+    await renderOrgProvidersPanel();
+  }catch(e){
+    setOrgProvidersError(e.message||'Verification failed.');
+  }
+}
+
+async function revokeOrgProvider(providerSlug){
+  if(!currentOrg||!providerSlug)return;
+  var name=providerCatalogName(providerSlug)||providerSlug;
+  if(!confirm('Revoke the organisation Governance Admin key for '+name+'? Usage monitoring for all '+name+' assets will pause until a new Admin key is connected.'))return;
+  setOrgProvidersError('');
+  var btn=document.getElementById('org-provider-revoke-'+providerSlug);
+  try{
+    if(typeof runAsyncBtn==='function'&&btn){
+      await runAsyncBtn(btn,function(){
+        return invokeProviderFn('org-provider-revoke',{org_id:currentOrg.id,provider_slug:providerSlug});
+      },{busyLabel:'Revoking',successMs:900,errorMs:2200});
+    }else{
+      if(btn){btn.disabled=true;btn.textContent='Revoking…'}
+      await invokeProviderFn('org-provider-revoke',{org_id:currentOrg.id,provider_slug:providerSlug});
+    }
+    await renderOrgProvidersPanel();
+  }catch(e){
+    setOrgProvidersError(e.message||'Could not revoke.');
+    if(btn){btn.disabled=false;btn.textContent='Revoke'}
+  }
+}
+
 async function connectProvider(slot){
   if(!currentSystemId)return;
+  if(slot==='admin'){
+    setProviderConnectionError('Governance Admin keys are managed under Organisation → Providers.');
+    return;
+  }
   var sys=allSystems.find(function(s){return s.id===currentSystemId});
   if(!sys)return;
   setProviderConnectionError('');
-  var keyId=slot==='admin'?'provider-admin-key':'provider-api-key';
-  var btnId=slot==='admin'?'provider-connect-admin-btn':'provider-connect-api-btn';
-  var keyEl=document.getElementById(keyId);
+  var keyEl=document.getElementById('provider-api-key');
   var apiKey=keyEl?keyEl.value.trim():'';
   if(!apiKey){setProviderConnectionError('API key is required.');return}
-  var btn=document.getElementById(btnId);
+  var btn=document.getElementById('provider-connect-api-btn');
   var replacing=!!(btn&&/Replace/i.test(btn.textContent||''));
-  var idleLabel='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>'+(replacing
-    ?(slot==='admin'?'Replace admin key':'Replace runtime key')
-    :(slot==='admin'?'Connect admin key':'Connect runtime key'));
-  if(btn){btn.disabled=true;btn.textContent=replacing?'Replacing with Anthropic…':'Verifying with Anthropic…'}
+  var idleLabel='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>'+(replacing?'Replace runtime key':'Connect runtime key');
+  var providerName=providerCatalogName(sys.provider_slug)||'provider';
+  if(btn){btn.disabled=true;btn.textContent=replacing?'Replacing with '+providerName+'…':'Verifying with '+providerName+'…'}
   try{
-    await invokeProviderFn('provider-connect',{asset_id:sys.id,provider_slug:sys.provider_slug,api_key:apiKey,credential_slot:slot});
+    await invokeProviderFn('provider-connect',{asset_id:sys.id,provider_slug:sys.provider_slug,api_key:apiKey,credential_slot:'api'});
     if(keyEl)keyEl.value='';
     await openSystemDetail(sys.id,{tab:'connection'});
   }catch(e){
@@ -1416,7 +1752,7 @@ async function refreshProviderInsights(){
   try{
     await runAsyncBtn(btn,function(){
       return invokeProviderFn('provider-insights',{asset_id:sys.id,provider_slug:sys.provider_slug,window_days:windowDays});
-    },{busyLabel:'Refreshing insights',lock:'#provider-insights-window',successMs:1500,errorMs:2200});
+    },{busyLabel:'Refreshing',lock:'#provider-insights-window',successMs:1500,errorMs:2200});
     await openSystemDetail(sys.id,{tab:'connection'});
   }catch(e){
     setProviderConnectionError(e.message||'Could not refresh insights.');
@@ -1425,20 +1761,23 @@ async function refreshProviderInsights(){
 
 async function revokeProviderConnection(slot){
   if(!currentSystemId)return;
+  if(slot==='admin'){
+    setProviderConnectionError('Revoke Governance Admin keys under Organisation → Providers.');
+    return;
+  }
   var sys=allSystems.find(function(s){return s.id===currentSystemId});
   if(!sys)return;
-  var label=slot==='admin'?'governance admin key':'runtime API key';
-  if(!confirm('Revoke the '+label+' for '+sys.name+'? The stored credential will be deleted.'))return;
+  if(!confirm('Revoke the runtime API key for '+sys.name+'? The stored credential will be deleted.'))return;
   setProviderConnectionError('');
-  var btn=document.getElementById(slot==='admin'?'provider-revoke-admin-btn':'provider-revoke-api-btn');
+  var btn=document.getElementById('provider-revoke-api-btn');
   try{
     if(typeof runAsyncBtn==='function'&&btn){
       await runAsyncBtn(btn,function(){
-        return invokeProviderFn('provider-revoke',{asset_id:sys.id,provider_slug:sys.provider_slug,credential_slot:slot});
+        return invokeProviderFn('provider-revoke',{asset_id:sys.id,provider_slug:sys.provider_slug,credential_slot:'api'});
       },{busyLabel:'Revoking',successMs:900,errorMs:2200});
     }else{
       if(btn){btn.disabled=true;btn.textContent='Revoking…'}
-      await invokeProviderFn('provider-revoke',{asset_id:sys.id,provider_slug:sys.provider_slug,credential_slot:slot});
+      await invokeProviderFn('provider-revoke',{asset_id:sys.id,provider_slug:sys.provider_slug,credential_slot:'api'});
     }
     await openSystemDetail(sys.id,{tab:'connection'});
   }catch(e){
@@ -1456,13 +1795,19 @@ async function openSystemDetail(sysId,opts){
   }
   currentSystemId=sysId;const sys=allSystems.find(s=>s.id===sysId);if(!sys)return;
   if(!providerCatalog.length)await loadProviderCatalog();
-  const[{data:assessments},{data:auditLog},{data:providerConn}]=await Promise.all([
+  const connectorReady=providerConnectorAvailable(sys.provider_slug);
+  const[{data:assessments},{data:auditLog},connRes,orgCredRes]=await Promise.all([
     sb.from('registry_assessments').select('*').eq('system_id',sysId).order('requested_at',{ascending:false}),
     sb.from('registry_audit_log').select('*').eq('entity_id',sysId).order('created_at',{ascending:false}),
-    providerConnectorAvailable(sys.provider_slug)
+    connectorReady
       ? sb.from('provider_connections').select('id,status,provider_slug,connected_at,last_verified_at,last_error,credential_secret_id,admin_credential_secret_id,admin_connected_at,admin_last_verified_at,admin_last_error,metadata').eq('asset_id',sysId).eq('provider_slug',sys.provider_slug).neq('status','revoked').maybeSingle()
-      : Promise.resolve({data:null})
+      : Promise.resolve({data:null,error:null}),
+    (connectorReady&&currentOrg)
+      ? sb.from('org_provider_credentials').select('id,provider_slug,status,admin_credential_secret_id,connected_at,last_verified_at,last_error,metadata').eq('org_id',currentOrg.id).eq('provider_slug',sys.provider_slug).neq('status','revoked').maybeSingle()
+      : Promise.resolve({data:null,error:null})
   ]);
+  var providerConn=connRes&&!connRes.error?connRes.data:null;
+  var orgProviderCred=orgCredRes&&!orgCredRes.error?orgCredRes.data:null;
   const tier=sys.risk_tier||'none';
   document.getElementById('det-name').textContent=sys.name;
   document.getElementById('det-tier-badge').innerHTML='<span class="tier-pill tier-'+tier+'">'+esc(TIER_LABELS[tier]||'Unclassified')+'</span>';
@@ -1496,7 +1841,11 @@ async function openSystemDetail(sysId,opts){
   }
   // Overview
   document.getElementById('tab-overview').innerHTML=renderAssetOverview(sys,tier);
-  document.getElementById('tab-connection').innerHTML=renderProviderConnectionTab(sys,providerConn);
+  document.getElementById('tab-connection').innerHTML=renderProviderConnectionTab(sys,providerConn,orgProviderCred);
+  if(connectorReady&&sys.provider_slug==='anthropic'){
+    if(canDeleteRegistry())loadGatewayTokensPanel();
+    loadGatewayUsagePanel();
+  }
   // Assessment tab
   renderAssessmentTab(assessments||[]);
   // System controls tab
@@ -1695,6 +2044,13 @@ function switchDetailTab(id,btn){
   }
   if(id==='connection'){
     requestAnimationFrame(function(){initAsyncBtns(panel);});
+    if(currentSystemId){
+      var connSys=allSystems.find(function(item){return item.id===currentSystemId});
+      if(connSys&&connSys.provider_slug==='anthropic'){
+        if(canDeleteRegistry())loadGatewayTokensPanel();
+        loadGatewayUsagePanel();
+      }
+    }
   }
 }
  
@@ -1730,7 +2086,11 @@ async function submitSystem(){
         if(String(oldVal)!==String(newVal))changes[k]={old:oldVal,new:newVal};
       });
       await sb.from('registry_audit_log').insert({org_id:currentOrg.id,user_id:currentUser.id,action:'system_updated',entity_type:'ai_system',entity_id:editId,changes:changes})}
-    else{payload.created_by=currentUser.id;const{error}=await sb.from('ai_systems').insert(payload);if(error)throw error}
+    else{payload.created_by=currentUser.id;const{error}=await sb.from('ai_systems').insert(payload);if(error)throw error;
+      if(providerConnectorAvailable(platform)&&typeof maybePromptOrgProviderAdmin==='function'){
+        try{await maybePromptOrgProviderAdmin(platform)}catch(_e){}
+      }
+    }
     closeSystemModal();await loadSystems();if(editId)openSystemDetail(editId);
   }catch(err){errEl.textContent='Error: '+err.message;errEl.style.display='block'}finally{btn.innerHTML=origH;btn.disabled=false}}
 

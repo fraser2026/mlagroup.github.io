@@ -6,6 +6,10 @@ _shot-*.png
 
 .env
 .env.local
+mcp/.local/
+
+# Workspace MCP config often holds short-lived Bearer tokens
+.cursor/mcp.json
 .DS_Store
 
 # Local edge-function deploy scratch (MCP/CLI payloads from agent sessions)
@@ -29,6 +33,18 @@ tools/_preflight-*
 tools/_normalize-*
 tools/_check-*
 tools/_verify-*
+tools/_idx_*
+tools/_pc-*
+tools/_pi_*
+tools/_pt-*
+tools/_agt*
+tools/_deploy*
+tools/_invoke*
+tools/_load-*
+tools/_remap*
+tools/_validate*
+tools/.agt-*
 tools/*-deploy.json
 tools/*-deploy-*.json
+tools/single-file-deploys/
 tools/render-tests/

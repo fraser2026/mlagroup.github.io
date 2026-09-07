@@ -71,7 +71,7 @@
     </div>
 
     <div class="nav-section-label">Intelligence</div>
-    <div class="nav-item" id="nav-analytics" data-nav="analytics" onclick="navigate('analytics',this)">
+    <div class="nav-item" id="nav-analytics" data-nav="analytics" hidden aria-hidden="true">
       <svg viewBox="0 0 16 16"><path d="M2 12V7M6 12V4M10 12V8M14 12V5"/></svg>
       Analytics
     </div>
@@ -175,8 +175,8 @@
 <div id="view-referral" class="view"><div class="page-header"><h2>Referrals</h2><p>Refer colleagues and earn credit.</p></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;"><div class="stat-card"><div class="stat-label">Referrals Sent</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Converted</div><div class="stat-value">0</div></div><div class="stat-card"><div class="stat-label">Credit Earned</div><div class="stat-value">£0</div></div></div><div class="panel" style="margin-bottom:16px;"><div class="panel-header"><div class="panel-title">Your Referral Link</div></div><div class="panel-body"><p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Share this link with colleagues. When they purchase a report you'll both receive credit.</p><div class="invite-box"><div class="invite-url" id="referral-link">Loading…</div><button class="invite-copy" onclick="copyReferral()">Copy link</button></div></div></div></div>
  
 <div id="view-analytics" class="view">
-  <div class="page-header"><h2>Analytics</h2><p>Usage, engagement, and governance activity across your organisation.</p></div>
-  <div class="placeholder-panel"><div class="placeholder-panel__title">Coming soon</div><div class="placeholder-panel__desc">Analytics will surface report views, assessment activity, and team engagement in a single operating view.</div></div>
+  <div class="page-header"><h2>Analytics</h2><p>Organisation monitoring for governed AI usage, cost signals, and control posture.</p></div>
+  <div class="placeholder-panel"><div class="placeholder-panel__title">Coming later</div><div class="placeholder-panel__desc">Analytics will return when it can show governance outcomes that Registry and Connection do not already cover. For now, asset metering lives on each asset Connection tab.</div></div>
 </div>
 
 <div id="view-evidence" class="view">
@@ -216,8 +216,87 @@
   <div id="billing-page"><div class="loading-state">Loading billing…</div></div>
 </div>
 <div id="view-integrations" class="view">
-  <div class="page-header"><h2>Integrations</h2><p>Connect RegAnchor to your existing stack.</p></div>
-  <div class="placeholder-panel"><div class="placeholder-panel__title">Coming soon</div><div class="placeholder-panel__desc">Integrations will support SSO, ticketing, cloud storage, and other enterprise connectors without a new top-level nav domain.</div></div>
+  <div class="page-header"><h2>Integrations</h2><p>Connect RegAnchor to agents and your existing stack.</p></div>
+
+  <div class="panel" style="max-width:720px;margin-bottom:20px;">
+    <div class="panel-header">
+      <div class="panel-title">Agent MCP</div>
+      <div class="panel-sub">Cursor, Codex, and other MCP hosts — not the Claude Messages gateway</div>
+    </div>
+    <div class="panel-body">
+      <p class="provider-connection-copy" style="margin-top:0;">
+        Issue a short-lived access token for your account, then paste the config into your IDE.
+        No Supabase or ops steps. Tokens expire in one hour; refresh from here or reconnect.
+      </p>
+      <div class="field-group">
+        <label class="field-label" for="mcp-connect-client">Client</label>
+        <select class="field-input" id="mcp-connect-client" style="margin-bottom:0;">
+          <option value="cursor">Cursor</option>
+          <option value="codex">Codex / OpenAI</option>
+          <option value="claude-desktop">Claude Desktop</option>
+          <option value="other">Other MCP host</option>
+        </select>
+      </div>
+      <div class="provider-connection-actions" style="margin-top:14px;">
+        <button type="button" class="btn-dl" id="mcp-connect-issue-btn" onclick="issueMcpPortalConnect()">
+          <svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>
+          Connect
+        </button>
+        <button type="button" class="btn-topbar btn-topbar-ghost" onclick="loadMcpSessions()">Refresh sessions</button>
+      </div>
+      <div id="mcp-connect-error" class="provider-connection-error" role="alert"></div>
+      <div id="mcp-connect-result" style="display:none;margin-top:16px;">
+        <div class="notice notice--warn">
+          <div class="notice__label">Access token shown once</div>
+          <div class="notice__body">Copy into your MCP host now. RegAnchor stores only a hash.</div>
+        </div>
+        <div class="field-group" style="margin-top:12px;">
+          <label class="field-label" for="mcp-connect-snippet">Config snippet</label>
+          <textarea class="field-input" id="mcp-connect-snippet" rows="12" readonly style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;"></textarea>
+        </div>
+        <div class="provider-connection-actions">
+          <button type="button" class="btn-topbar btn-topbar-ghost" onclick="copyMcpConnectSnippet()">Copy snippet</button>
+        </div>
+      </div>
+      <div style="margin-top:20px;border-top:1px solid var(--ra-border);padding-top:16px;">
+        <div class="panel-title" style="margin-bottom:8px;">Active sessions</div>
+        <div id="mcp-sessions-list" class="provider-connection-copy">Loading…</div>
+      </div>
+      <p class="provider-connection-copy" style="margin-top:16px;margin-bottom:0;">
+        Approving a code from a CLI? Use <a href="#mcp-device" onclick="navigate('mcp-device',document.getElementById('nav-integrations'));return false;">Approve MCP login</a>.
+        Docs: <code>docs/MCP-CONNECT.md</code>.
+      </p>
+    </div>
+  </div>
+
+  <div class="placeholder-panel"><div class="placeholder-panel__title">Coming later</div><div class="placeholder-panel__desc">SSO, ticketing, and cloud storage connectors will land here without a new top-level nav domain.</div></div>
+</div>
+
+<div id="view-mcp-device" class="view">
+  <div class="page-header"><h2>Approve MCP login</h2><p>Link Cursor or another MCP host to your RegAnchor account with a short device code.</p></div>
+  <div class="panel" style="max-width:480px;">
+    <div class="panel-header"><div class="panel-title">Device code</div><div class="panel-sub">From <code>node mcp/login.mjs</code> or your MCP client</div></div>
+    <div class="panel-body">
+      <div class="field-group">
+        <label class="field-label" for="mcp-device-code">Code</label>
+        <input type="text" class="field-input" id="mcp-device-code" maxlength="9" placeholder="ABCD-EFGH" autocomplete="off" spellcheck="false">
+      </div>
+      <p class="provider-connection-copy" style="margin-top:0;">This grants agent tools for your registry under your permissions. It does not create a Claude gateway token.</p>
+      <div class="provider-connection-actions">
+        <button type="button" class="btn-topbar btn-topbar-primary" id="mcp-device-approve-btn" onclick="approveMcpDeviceLogin()">Approve</button>
+      </div>
+      <div id="mcp-device-error" class="provider-connection-error" role="alert"></div>
+      <div id="mcp-device-ok" class="notice notice--quiet" style="display:none;margin-top:12px;"><div class="notice__label">Approved</div><div class="notice__body">Return to the terminal or MCP client. It will finish login automatically.</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="view-mcp-oauth" class="view">
+  <div class="page-header"><h2>Authorise MCP client</h2><p>Complete the consent dialog to continue.</p></div>
+  <div class="notice notice--quiet">
+    <div class="notice__label">Waiting for decision</div>
+    <div class="notice__body">If the dialog is closed, reopen Authenticate from your MCP host.</div>
+  </div>
 </div>
 <div id="view-api-keys" class="view">
   <div class="page-header"><h2>API Keys</h2><p>Programmatic access for approved workflows.</p></div>
@@ -328,7 +407,7 @@
  
 <div id="view-registry-detail" class="view"><button class="breadcrumb" onclick="navigate('registry',document.getElementById('nav-registry'))"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg>Registry</button><div class="detail-head detail-head--system"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;"><div style="display:flex;align-items:center;gap:12px;"><h2 class="detail-title" id="det-name"></h2></div><div style="display:flex;align-items:center;gap:8px;"><span id="det-tier-badge"></span><button class="btn-topbar btn-topbar-primary" onclick="openAssessmentModal()"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg>Run Assessment</button><button class="btn-topbar btn-topbar-ghost" onclick="openEditSystem()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button></div></div><div id="det-subtitle" class="det-subtitle"></div><!-- Header tags kept for re-enable: set SHOW_DET_HEADER_TAGS in portal-registry.js --><div id="det-tags" class="det-tags" hidden></div></div><div class="panel"><div class="tab-bar"><button class="tab-btn active" data-tab="overview" onclick="switchDetailTab('overview',this)">Overview</button><button class="tab-btn" data-tab="assessment" onclick="switchDetailTab('assessment',this)">Assessment</button><button class="tab-btn" data-tab="sys-controls" onclick="switchDetailTab('sys-controls',this)">Controls</button><button class="tab-btn" data-tab="connection" onclick="switchDetailTab('connection',this)">Connection</button><button class="tab-btn" data-tab="audit" onclick="switchDetailTab('audit',this)">Audit log</button></div><div class="tab-panel active" id="tab-overview"></div><div class="tab-panel" id="tab-assessment"></div><div class="tab-panel" id="tab-sys-controls"></div><div class="tab-panel" id="tab-connection"></div><div class="tab-panel" id="tab-audit"></div></div></div>
  
-<div id="view-org" class="view"><div class="page-header"><h2>Organisation</h2><p>Entity profile, membership and access management.</p></div><div class="two-col"><div class="panel"><div class="panel-header"><div class="panel-title">Organisation Profile</div></div><div class="panel-body"><div class="meta-grid" id="org-profile-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Subscription</div></div><div class="panel-body"><div class="meta-grid" id="org-sub-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Members</div><div class="panel-sub" id="org-member-count"></div></div><div id="org-members-wrap"><div class="loading-state">Loading members…</div></div></div></div>
+<div id="view-org" class="view"><div class="page-header"><h2>Organisation</h2><p>Entity profile, provider credentials, membership and access management.</p></div><div class="two-col"><div class="panel"><div class="panel-header"><div class="panel-title">Organisation Profile</div></div><div class="panel-body"><div class="meta-grid" id="org-profile-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Subscription</div></div><div class="panel-body"><div class="meta-grid" id="org-sub-grid"><div class="loading-state" style="padding:10px 0;">Loading…</div></div></div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Providers</div><div class="panel-sub">Governance Admin keys, once per provider</div></div><div id="org-providers-wrap"><div class="loading-state">Loading providers…</div></div></div><div class="panel"><div class="panel-header"><div class="panel-title">Members</div><div class="panel-sub" id="org-member-count"></div></div><div id="org-members-wrap"><div class="loading-state">Loading members…</div></div></div></div>
 
 <!-- ALERTS -->
 <div id="view-alerts" class="view">
@@ -498,6 +577,28 @@
 <!-- Mobile drawer dimmer: outside .app so fixed positioning is not trapped by the flex shell. -->
 <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()" hidden></div>
 
+<div class="modal-overlay" id="mcp-oauth-modal" role="dialog" aria-modal="true" aria-labelledby="mcp-oauth-title">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <div>
+        <h3 id="mcp-oauth-title">Authorise MCP client</h3>
+        <p>Allow this host to use RegAnchor tools as you.</p>
+      </div>
+      <button type="button" class="modal-close" onclick="consentMcpOAuth(true)" aria-label="Deny and close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-inset modal-inset--label" id="mcp-oauth-client-name">MCP client</div>
+      <p class="provider-connection-copy" style="margin:14px 0 0;" id="mcp-oauth-summary">
+        This client can list assets, connection status, controls, and manage gateway token lifecycle under your permissions. Access tokens expire in one hour.
+      </p>
+      <div id="mcp-oauth-error" class="provider-connection-error" role="alert"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-topbar btn-topbar-ghost" id="mcp-oauth-deny-btn" onclick="consentMcpOAuth(true)">Deny</button>
+      <button type="button" class="btn-topbar btn-topbar-primary" id="mcp-oauth-allow-btn" onclick="consentMcpOAuth(false)">Allow</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="esign-modal"><div class="modal" style="max-width:480px;"><div class="modal-header"><div><h3>E-Signature Required</h3><p>This policy requires a legally binding electronic signature.</p></div><button class="modal-close" onclick="closeESignModal()">✕</button></div><div class="modal-body"><div class="modal-inset modal-inset--label" id="esign-policy-info"></div><div class="modal-inset" id="esign-declaration"></div><div class="field-group"><label class="field-label">Full Legal Name <span class="req">*</span></label><input type="text" class="field-input" id="esign-name" placeholder="Type your full legal name exactly as it appears on official documents" style="margin-bottom:0;"></div><div class="field-group" style="margin-top:12px;"><label class="field-label">Email Address</label><input type="email" class="field-input" id="esign-email" disabled style="margin-bottom:0;opacity:.6;"></div><div style="font-size:.68rem;color:var(--muted);line-height:1.6;margin-top:12px;">By typing your name and clicking Sign below, you are creating a legally binding electronic signature under the Electronic Communications Act 2000 and eIDAS Regulation. This signature, along with the timestamp, your IP address, and a cryptographic hash of the document content, will be stored as evidence of your acknowledgment.</div><div id="esign-error" style="font-size:.75rem;color:var(--red);margin-top:8px;display:none;"></div></div><div class="modal-footer"><button class="btn-topbar btn-topbar-ghost" onclick="closeESignModal()">Cancel</button><button class="btn-topbar btn-topbar-primary" id="esign-submit-btn" onclick="submitESignature()">Sign &amp; Acknowledge</button></div></div></div>   <div class="modal-overlay" id="upgrade-modal"><div class="modal" id="upgrade-modal-inner" style="max-width:720px;"><div class="modal-header"><div><h3 id="upgrade-modal-title">Upgrade Your Plan</h3><p id="upgrade-modal-msg"></p></div><button class="modal-close" onclick="closeUpgradeModal()">&#10005;</button></div><div class="modal-body" id="upgrade-modal-cards"></div><div class="modal-footer" style="justify-content:center;border-top:none;padding-top:0;"><a href="#" id="upgrade-modal-compare" onclick="closeUpgradeModal();navigate('plans',document.getElementById('nav-plans'));updatePortalPricing();setTimeout(function(){var t=document.getElementById('portal-comp-table');if(!t)return;if(t.style.maxHeight==='0px'||!t.style.maxHeight){togglePortalCompare()}setTimeout(function(){t.scrollIntoView({behavior:'smooth',block:'start'})},100)},300);return false;" style="font-size:.78rem;color:var(--sky);text-decoration:none;">View full plan comparison</a></div></div></div> <div class="modal-overlay" id="enterprise-modal"><div class="modal" style="max-width:560px;"><div class="modal-header"><div><h3>Enterprise Inquiry</h3><p>Tell us about your organisation and requirements.</p></div><button class="modal-close" onclick="closeEnterpriseModal()">&#10005;</button></div><div class="modal-body"><div class="modal-inset">Enterprise plans include unlimited users, multi-department portals, dedicated advisory, on-site sessions, and custom SLA. We respond within 24 hours.</div><div class="field-row"><div class="field-group"><label class="field-label">Full Name</label><input type="text" class="field-input" id="ent-name" placeholder="Your full name"></div><div class="field-group"><label class="field-label">Role / Title</label><input type="text" class="field-input" id="ent-role" placeholder="e.g. Head of Risk, CTO"></div></div><div class="field-row"><div class="field-group"><label class="field-label">Email</label><input type="email" class="field-input" id="ent-email" disabled style="opacity:.6;"></div><div class="field-group"><label class="field-label">Organisation</label><input type="text" class="field-input" id="ent-org" disabled style="opacity:.6;"></div></div><div class="field-group"><label class="field-label">Number of AI Systems</label><select class="field-input" id="ent-systems"><option value="">Select</option><option value="1-5">1 — 5 systems</option><option value="6-20">6 — 20 systems</option><option value="20-50">20 — 50 systems</option><option value="50+">50+ systems</option></select></div><div class="field-group"><label class="field-label">What are you looking for?</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;" id="ent-reqs"><label style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Multi-department portal" style="accent-color:var(--accent);width:15px;height:15px;">Multi-department portal</label><label style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Dedicated advisory lead" style="accent-color:var(--accent);width:15px;height:15px;">Dedicated advisory lead</label><label style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="API access" style="accent-color:var(--accent);width:15px;height:15px;">API access</label><label style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Custom integrations" style="accent-color:var(--accent);width:15px;height:15px;">Custom integrations</label><label style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="On-site validation" style="accent-color:var(--accent);width:15px;height:15px;">On-site validation</label><label style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="ISO 42001 alignment" style="accent-color:var(--accent);width:15px;height:15px;">ISO 42001 alignment</label><label style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Quarterly benchmarking" style="accent-color:var(--accent);width:15px;height:15px;">Quarterly benchmarking</label><label style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Other" style="accent-color:var(--accent);width:15px;height:15px;">Other</label></div></div><div class="field-group"><label class="field-label">Tell us more about your requirements</label><textarea class="field-input" id="ent-message" rows="3" placeholder="Describe your governance needs, number of departments, jurisdictions, or any specific requirements..."></textarea></div><div id="ent-error" style="font-size:.75rem;color:var(--red);margin-bottom:8px;display:none;"></div></div><div class="modal-footer"><button class="btn-topbar btn-topbar-ghost" onclick="closeEnterpriseModal()">Cancel</button><button class="btn-topbar btn-topbar-primary" id="ent-submit-btn" onclick="submitEnterpriseInquiry()">Submit Inquiry</button></div></div></div> <div class="modal-overlay" id="assess-queued-modal">
   <div class="modal modal--success" style="max-width:400px;">
     <button type="button" class="modal-close" onclick="closeAssessQueuedCard()" aria-label="Close">✕</button>
@@ -527,6 +628,8 @@
 <script src="js/portal-core.js"></script>
 <script src="js/portal-users.js"></script>
 <script src="js/portal-registry.js"></script>
+<script src="js/portal-analytics.js"></script>
+<script src="js/portal-mcp.js"></script>
 <script src="js/portal-dashboard.js"></script>
 <script src="js/portal-controls.js"></script>
 <script src="js/portal-policies.js"></script>

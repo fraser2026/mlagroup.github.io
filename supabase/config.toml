@@ -60,3 +60,36 @@ verify_jwt = true
 
 [functions.provider-insights]
 verify_jwt = true
+
+[functions.provider-insights-sync]
+# Accepts a dedicated cron/service secret or validates an org-admin JWT in-function.
+verify_jwt = false
+
+[functions.org-provider-connect]
+verify_jwt = true
+
+[functions.org-provider-test]
+verify_jwt = true
+
+[functions.org-provider-revoke]
+verify_jwt = true
+
+[functions.asset-gateway-token]
+# Signed-in organisation owner/admin; authorization is checked in-function.
+verify_jwt = true
+
+[functions.gateway-anthropic]
+# Authenticates a RegAnchor asset gateway capability, not a Supabase JWT.
+verify_jwt = false
+
+[functions.mcp-auth]
+# Device start/token are public; approve validates the portal user JWT in-function.
+verify_jwt = false
+
+[functions.mcp-oauth]
+# OAuth AS + DCR + token; consent validates portal user JWT in-function.
+verify_jwt = false
+
+[functions.mcp]
+# Authenticates RegAnchor MCP access tokens (ra_mcp_at_…), not Supabase JWTs.
+verify_jwt = false

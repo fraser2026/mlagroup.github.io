@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shield render test — RegAnchor</title>
+  <link rel="stylesheet" href="../css/reganchor.css">
+  <style>
+    body { margin: 0; font-family: Inter, sans-serif; background: #f4f4f4; color: #0A0E14; }
+    h1 { font-size: 15px; font-weight: 500; margin: 24px 24px 8px; }
+    p.lead { margin: 0 24px 20px; font-size: 13px; color: #5c6570; max-width: 52rem; line-height: 1.55; }
+    .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 0 24px 24px; }
+    .panel { padding: 20px; border-radius: 4px; }
+    .panel.dark { background: #0A0E14; }
+    .panel.white { background: #fff; border: 1px solid #E6EBF1; }
+    .panel h2 { margin: 0 0 4px; font-size: 12px; font-weight: 500; }
+    .panel p { margin: 0 0 16px; font-size: 11px; opacity: 0.65; line-height: 1.45; }
+    .panel.dark h2, .panel.dark p { color: rgba(255,255,255,0.86); }
+    .stack { display: flex; flex-direction: column; gap: 20px; }
+    .sizes { display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+    .sizes figure { margin: 0; }
+    .sizes figcaption { font-size: 10px; opacity: 0.55; margin-top: 6px; }
+    .panel.dark .sizes figcaption { color: rgba(255,255,255,0.52); }
+    .broken img { display: block; height: 32px; width: auto; }
+    .broken.lg img { height: 64px; }
+    .fixed-32 { --ra-svg-w: 66; --ra-svg-h: 32; }
+    .fixed-64 { --ra-svg-w: 132; --ra-svg-h: 64; }
+    .fixed-120 { --ra-svg-w: 248; --ra-svg-h: 120; }
+  </style>
+</head>
+<body>
+  <h1>mark-shield.svg — browser render fix</h1>
+  <p class="lead">Plain <code>&lt;img&gt;</code> at small CSS size aliases the tapered swoosh tips on dark ink. <code>.ra-svg-sharp</code> supersamples 4× then scales down; <code>--on-dark</code> adds a 0.35px blur. Open this file via a local server (or GitHub Pages) so the fetch script can load the SVG.</p>
+
+  <div class="row">
+    <div class="panel dark">
+      <h2>Broken — plain img @ 32px</h2>
+      <p>Jagged tips where swooshes taper (browser sub-pixel aliasing).</p>
+      <div class="stack broken">
+        <img src="../brand/mark-shield.svg" alt="" height="32">
+        <img src="../brand/mark-shield.svg" alt="" height="64" class="lg">
+      </div>
+    </div>
+
+    <div class="panel dark">
+      <h2>Fixed — ra-svg-sharp on dark</h2>
+      <p>4× supersample + clipped viewBox + micro-blur.</p>
+      <div class="sizes">
+        <figure>
+          <div class="ra-svg-sharp ra-svg-sharp--on-dark fixed-32" data-ra-svg-sharp="../brand/mark-shield.svg" role="img" aria-label="RegAnchor shield 32px"></div>
+          <figcaption>32px</figcaption>
+        </figure>
+        <figure>
+          <div class="ra-svg-sharp ra-svg-sharp--on-dark fixed-64" data-ra-svg-sharp="../brand/mark-shield.svg" role="img" aria-label="RegAnchor shield 64px"></div>
+          <figcaption>64px</figcaption>
+        </figure>
+        <figure>
+          <div class="ra-svg-sharp ra-svg-sharp--on-dark fixed-120" data-ra-svg-sharp="../brand/mark-shield.svg" role="img" aria-label="RegAnchor shield 120px"></div>
+          <figcaption>120px (footer deco scale)</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="panel white">
+      <h2>Fixed — ra-svg-sharp on white</h2>
+      <p>No blur variant; same supersampling.</p>
+      <div class="sizes">
+        <figure>
+          <div class="ra-svg-sharp fixed-32" data-ra-svg-sharp="../brand/mark-shield.svg" role="img" aria-label="RegAnchor shield"></div>
+          <figcaption>32px</figcaption>
+        </figure>
+        <figure>
+          <div class="ra-svg-sharp fixed-64" data-ra-svg-sharp="../brand/mark-shield.svg" role="img" aria-label="RegAnchor shield"></div>
+          <figcaption>64px</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/ra-svg-sharp.js"></script>
+</body>
+</html>

@@ -95,6 +95,8 @@ export type ProviderGovernanceInsights = {
     currency: string
     by_workspace: ProviderInsightsWorkspaceCost[]
   }
+  /** Rough token × list-price estimate for asset-scoped leakage detection, not billing. */
+  estimated_asset_usd?: string
   errors?: string[]
   diagnostics?: {
     usage_status: number

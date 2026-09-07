@@ -1,0 +1,22 @@
+{
+  "name": "@reganchor/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RLS-aware MCP server for the RegAnchor AI asset registry",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "login": "node login.mjs",
+    "check": "node --check server.mjs && node --check login.mjs && node --check smoke-test.mjs",
+    "test": "node smoke-test.mjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@supabase/supabase-js": "^2.57.4",
+    "zod": "^3.25.76"
+  }
+}

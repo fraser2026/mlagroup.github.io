@@ -5,6 +5,10 @@ import {
   verifyAnthropicAdminKey,
   verifyAnthropicApiKey,
 } from './anthropic.ts'
+import { probeAzureCapabilities, verifyAzureCredential } from './azure.ts'
+import { probeBedrockCapabilities, verifyBedrockCredential } from './bedrock.ts'
+import { probeGeminiCapabilities, verifyGeminiApiKey } from './gemini.ts'
+import { probeOpenAICapabilities, verifyOpenAIApiKey } from './openai.ts'
 import type {
   CredentialSlot,
   ProviderCapabilityProfile,
@@ -33,15 +37,29 @@ export async function verifyProviderCredential(
   slot: CredentialSlot,
   apiKey: string,
 ): Promise<ProviderVerifyResult> {
-  if (providerSlug === 'anthropic') {
-    return slot === 'admin'
-      ? verifyAnthropicAdminKey(apiKey)
-      : verifyAnthropicApiKey(apiKey)
+  switch (providerSlug) {
+    case 'anthropic':
+      return slot === 'admin'
+        ? verifyAnthropicAdminKey(apiKey)
+        : verifyAnthropicApiKey(apiKey)
+    case 'openai':
+      if (slot === 'api') return verifyOpenAIApiKey(apiKey)
+      break
+    case 'google':
+    case 'gemini':
+      if (slot === 'api') return verifyGeminiApiKey(apiKey)
+      break
+    case 'bedrock':
+      return verifyBedrockCredential(apiKey)
+    case 'azure':
+      return verifyAzureCredential(apiKey)
   }
   return {
     ok: false,
     mode: 'live_api',
-    error: 'Live verification is not available for this platform yet.',
+    error: slot === 'admin'
+      ? 'This provider does not expose an Anthropic-style Admin key connector.'
+      : 'Live verification is not available for this platform yet.',
     error_code: 'unsupported',
     checked_at: new Date().toISOString(),
   }
@@ -52,8 +70,18 @@ export async function probeProviderCapabilities(
   apiKey: string | null,
   adminKey: string | null,
 ): Promise<ProviderCapabilityProfile | null> {
-  if (providerSlug === 'anthropic') {
-    return probeAnthropicCapabilities(apiKey, adminKey)
+  switch (providerSlug) {
+    case 'anthropic':
+      return probeAnthropicCapabilities(apiKey, adminKey)
+    case 'openai':
+      return probeOpenAICapabilities(apiKey, adminKey)
+    case 'google':
+    case 'gemini':
+      return probeGeminiCapabilities(apiKey, adminKey)
+    case 'bedrock':
+      return probeBedrockCapabilities()
+    case 'azure':
+      return probeAzureCapabilities()
   }
   return null
 }

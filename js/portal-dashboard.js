@@ -27,6 +27,12 @@ function getActivityClick(entry){
   if(act==='member_invited'||act==='member_joined'||act==='member_role_changed'||act==='member_removed'){
     return "navigateUsers(document.getElementById('nav-users'))";
   }
+  if(act==='org_provider_admin_connected'||act==='org_provider_admin_verified'||act==='org_provider_admin_revoked'||act==='enterprise_inquiry'){
+    return "navigateOrg(document.getElementById('nav-org'))";
+  }
+  if(act==='provider_connected'||act==='provider_verified'||act==='provider_revoked'||act==='provider_insights_refreshed'||act==='provider_admin_connected'||act==='provider_admin_revoked'){
+    return "openSystemDetail('"+eid+"',{tab:'connection'})";
+  }
   return null;
 }
  

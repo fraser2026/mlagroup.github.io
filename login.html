@@ -438,9 +438,18 @@
   if (inviteToken) localStorage.setItem('ra_invite', inviteToken);
 
   function portalUrl() {
-    var q = inviteToken ? ('?invite=' + encodeURIComponent(inviteToken)) : '';
-    var hash = params.get('after') === 'payment' ? '#reports' : '';
-    return 'portal.html' + q + hash;
+    var p = new URLSearchParams();
+    if (inviteToken) p.set('invite', inviteToken);
+    // Preserve MCP OAuth consent params through sign-in.
+    if (params.get('mcp_oauth') === '1') {
+      ['mcp_oauth', 'client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method', 'state', 'resource', 'scope', 'client_name'].forEach(function (k) {
+        var v = params.get(k);
+        if (v) p.set(k, v);
+      });
+    }
+    var q = p.toString();
+    var hash = params.get('after') === 'payment' ? '#reports' : (params.get('mcp_oauth') === '1' ? '#mcp-oauth' : '');
+    return 'portal.html' + (q ? ('?' + q) : '') + hash;
   }
 
   /** Preserve deep-link query params through the OAuth round trip. */

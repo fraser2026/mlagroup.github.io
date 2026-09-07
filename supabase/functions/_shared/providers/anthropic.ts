@@ -328,7 +328,7 @@ export async function probeAnthropicCapabilities(
   }
 
   const encouragement = !hasAdmin
-    ? 'Add a Governance Admin API key (sk-ant-admin…) to unlock usage monitoring, cost reporting, and full agent governance for this asset.'
+    ? 'Add a Governance Admin API key (sk-ant-admin…) under Organisation → Providers to unlock usage monitoring, cost reporting, and full agent governance.'
     : governance_tier === 'full'
     ? 'Full governance is enabled for this asset.'
     : undefined
@@ -375,6 +375,26 @@ function centsToUsd(amount: string | number | undefined): string {
 
 function addUsd(a: string, b: string): string {
   return (Number(a) + Number(b)).toFixed(2)
+}
+
+/**
+ * Leakage signal only: Sonnet-class list-price ballpark in USD per million
+ * tokens (input $3, cache read $0.30, cache write $3.75, output $15).
+ * Provider invoices remain the source of truth for organisation cost.
+ */
+function estimateAssetUsd(usage: {
+  uncached_input_tokens: number
+  cache_read_input_tokens: number
+  cache_creation_tokens: number
+  output_tokens: number
+}): string {
+  const usd =
+    (usage.uncached_input_tokens * 3 +
+      usage.cache_read_input_tokens * 0.3 +
+      usage.cache_creation_tokens * 3.75 +
+      usage.output_tokens * 15) /
+    1_000_000
+  return usd.toFixed(6)
 }
 
 type UsageResult = {
@@ -584,7 +604,7 @@ export async function fetchAnthropicGovernanceInsights(
     // When filtering to one key, also pull org totals so Console / other-key usage is visible.
     apiKeyId
       ? anthropicFetchPaged(buildUsagePath(starting_at, ending_at, { bucketWidth: '1d' }), key)
-      : Promise.resolve({ ok: false, status: 0, body: null, pages: 0 } as Awaited<ReturnType<typeof anthropicFetchPaged>>),
+      : Promise.resolve({ ok: false, status: 0, pages: 0, merged_data: [] } as Awaited<ReturnType<typeof anthropicFetchPaged>>),
   ])
 
   let costRes = costFirst
@@ -657,6 +677,7 @@ export async function fetchAnthropicGovernanceInsights(
   const organization_usage = apiKeyId && orgUsageParsed
     ? { total_tokens: orgUsageParsed.total_tokens }
     : null
+  const estimated_asset_usd = apiKeyId ? estimateAssetUsd(usage) : undefined
 
   if (usage.total_tokens === 0 && (usageTotalRes.ok || usageByModelRes.ok || usageHourlyRes.ok)) {
     if (apiKeyId && organization_usage && organization_usage.total_tokens > 0) {
@@ -687,6 +708,7 @@ export async function fetchAnthropicGovernanceInsights(
     usage,
     organization_usage,
     cost,
+    ...(estimated_asset_usd !== undefined ? { estimated_asset_usd } : {}),
     ...(errors.length ? { errors } : {}),
     diagnostics: {
       usage_status: usageTotalRes.ok

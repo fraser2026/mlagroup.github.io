@@ -4,7 +4,7 @@ import type { CredentialSlot } from './providers/types.ts'
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 }
 
 export function json(body: unknown, status = 200) {
@@ -372,6 +372,181 @@ export async function applyGovernanceInsights(
   return data
 }
 
+export type OrgProviderCredential = {
+  id: string
+  org_id: string
+  provider_slug: string
+  status: string
+  admin_credential_secret_id?: string | null
+  connected_by?: string | null
+  connected_at?: string | null
+  last_verified_at?: string | null
+  last_error?: string | null
+  metadata?: Record<string, unknown> | null
+}
+
+export async function getOrCreateOrgProviderCredential(
+  supabase: SupabaseClient,
+  orgId: string,
+  providerSlug: string,
+  userId: string,
+): Promise<OrgProviderCredential> {
+  const { data: existing } = await supabase
+    .from('org_provider_credentials')
+    .select('*')
+    .eq('org_id', orgId)
+    .eq('provider_slug', providerSlug)
+    .neq('status', 'revoked')
+    .maybeSingle()
+
+  if (existing) return existing as OrgProviderCredential
+
+  const { data, error } = await supabase
+    .from('org_provider_credentials')
+    .insert({
+      org_id: orgId,
+      provider_slug: providerSlug,
+      status: 'pending',
+      connected_by: userId,
+    })
+    .select('*')
+    .single()
+
+  if (error || !data) {
+    throw new Response(JSON.stringify({ ok: false, error: error?.message || 'Could not create organisation provider credential.' }), { status: 500 })
+  }
+  return data as OrgProviderCredential
+}
+
+export async function loadOrgProviderCredential(
+  supabase: SupabaseClient,
+  orgId: string,
+  providerSlug: string,
+): Promise<OrgProviderCredential | null> {
+  const { data, error } = await supabase
+    .from('org_provider_credentials')
+    .select('*')
+    .eq('org_id', orgId)
+    .eq('provider_slug', providerSlug)
+    .neq('status', 'revoked')
+    .maybeSingle()
+
+  if (error) {
+    throw new Response(JSON.stringify({ ok: false, error: error.message }), { status: 500 })
+  }
+  return (data as OrgProviderCredential) || null
+}
+
+export async function storeOrgProviderSecret(
+  supabase: SupabaseClient,
+  credentialId: string,
+  secret: string,
+) {
+  const { error } = await supabase.rpc('org_provider_store_secret', {
+    p_credential_id: credentialId,
+    p_secret: secret,
+  })
+  if (error) {
+    throw new Response(JSON.stringify({ ok: false, error: error.message }), { status: 500 })
+  }
+}
+
+export async function readOrgProviderSecret(
+  supabase: SupabaseClient,
+  credentialId: string,
+): Promise<string | null> {
+  const { data, error } = await supabase.rpc('org_provider_read_secret', {
+    p_credential_id: credentialId,
+  })
+  if (error) {
+    throw new Response(JSON.stringify({ ok: false, error: error.message }), { status: 500 })
+  }
+  return data ? String(data) : null
+}
+
+export async function deleteOrgProviderSecret(
+  supabase: SupabaseClient,
+  credentialId: string,
+) {
+  const { error } = await supabase.rpc('org_provider_delete_secret', {
+    p_credential_id: credentialId,
+  })
+  if (error) {
+    throw new Response(JSON.stringify({ ok: false, error: error.message }), { status: 500 })
+  }
+}
+
+export function orgCredentialHasAdmin(
+  credential: { admin_credential_secret_id?: string | null } | null | undefined,
+): boolean {
+  return !!(credential && credential.admin_credential_secret_id)
+}
+
+/** Prefer org-level Admin; fall back to legacy asset connection admin slot. */
+export async function resolveAdminSecret(
+  supabase: SupabaseClient,
+  orgId: string,
+  providerSlug: string,
+  assetConnection?: { id: string; admin_credential_secret_id?: string | null } | null,
+): Promise<{
+  secret: string | null
+  source: 'org' | 'asset' | null
+  orgCredential: OrgProviderCredential | null
+}> {
+  const orgCredential = await loadOrgProviderCredential(supabase, orgId, providerSlug)
+  if (orgCredentialHasAdmin(orgCredential)) {
+    const secret = await readOrgProviderSecret(supabase, orgCredential!.id)
+    if (secret) {
+      return { secret, source: 'org', orgCredential }
+    }
+  }
+
+  if (assetConnection?.admin_credential_secret_id) {
+    const secret = await readConnectionSecret(supabase, assetConnection.id, 'admin')
+    if (secret) {
+      return { secret, source: 'asset', orgCredential }
+    }
+  }
+
+  return { secret: null, source: null, orgCredential }
+}
+
+export async function applyOrgProviderVerification(
+  supabase: SupabaseClient,
+  credential: OrgProviderCredential,
+  result: ProviderVerifyResult,
+) {
+  const now = result.checked_at || new Date().toISOString()
+  const metadata = {
+    ...(credential.metadata || {}),
+    admin_verification: {
+      mode: result.mode,
+      ok: result.ok,
+      at: now,
+      error_code: result.error_code || null,
+      provider_request_id: result.provider_request_id || null,
+    },
+  }
+
+  const { data, error } = await supabase
+    .from('org_provider_credentials')
+    .update({
+      metadata,
+      last_verified_at: result.ok ? now : null,
+      last_error: result.ok ? null : (result.error || 'Verification failed.'),
+      status: result.ok ? 'connected' : 'error',
+      updated_at: now,
+    })
+    .eq('id', credential.id)
+    .select('*')
+    .single()
+
+  if (error || !data) {
+    throw new Response(JSON.stringify({ ok: false, error: error?.message || 'Could not update organisation provider credential.' }), { status: 500 })
+  }
+  return data as OrgProviderCredential
+}
+
 export async function writeAudit(
   supabase: SupabaseClient,
   payload: {
@@ -379,6 +554,7 @@ export async function writeAudit(
     user_id: string
     action: string
     entity_id: string
+    entity_type?: string
     changes: Record<string, unknown>
   },
 ) {
@@ -386,7 +562,7 @@ export async function writeAudit(
     org_id: payload.org_id,
     user_id: payload.user_id,
     action: payload.action,
-    entity_type: 'ai_system',
+    entity_type: payload.entity_type || 'ai_system',
     entity_id: payload.entity_id,
     changes: payload.changes,
   })

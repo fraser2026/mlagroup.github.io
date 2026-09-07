@@ -1,0 +1,13 @@
+name = "reganchor-mcp-host"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# After deploy, attach custom domain mcp.reganchor.com in Cloudflare dashboard
+# (Workers → reganchor-mcp-host → Custom Domains → Add).
+
+[vars]
+SUPABASE_URL = "https://hueftewwenjaiagdoqmb.supabase.co"
+PUBLIC_MCP_RESOURCE = "https://mcp.reganchor.com/mcp"
+PUBLIC_OAUTH_ISSUER = "https://mcp.reganchor.com"
+
+# Set once: npx wrangler secret put SUPABASE_ANON_KEY
