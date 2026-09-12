@@ -1,0 +1,101 @@
+.wrap {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+  overflow: hidden;
+}
+
+.flush {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.flush .row {
+  padding-left: 0;
+  padding-right: 0;
+  /* Flat detail lists: no per-row hairlines (page/tab rules stay). */
+  border-bottom: 0;
+}
+
+.flush .head {
+  padding-left: 0;
+  padding-right: 0;
+  background: transparent;
+}
+
+.head {
+  display: grid;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--ra-border);
+  background: var(--ra-mist);
+}
+
+.headCell {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ra-text-3);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--ra-border);
+  background: transparent;
+  color: inherit;
+  cursor: default;
+}
+
+button.row {
+  cursor: pointer;
+}
+
+button.row:hover {
+  background: var(--ra-hover);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
+.desc {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  letter-spacing: -0.01em;
+}
+
+.meta {
+  flex-shrink: 0;
+}
+
+.trailing {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

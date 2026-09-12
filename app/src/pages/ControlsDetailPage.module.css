@@ -1,0 +1,501 @@
+/* Control detail — portal vertical rhythm + Registry form / panel language. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 720px;
+}
+
+.block {
+  padding-bottom: 0;
+}
+
+.pageMeta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pageMetaAsset {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+}
+
+/* Overview — lock with RegistryDetailPage */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 40px;
+  align-items: start;
+  max-width: 720px;
+}
+
+.field,
+.fieldWide {
+  min-width: 0;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+  margin-bottom: 10px;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+  margin-bottom: 4px;
+}
+
+.value {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--ra-ink);
+  word-break: break-word;
+  max-width: 68ch;
+}
+
+/* Soft work surface — Registry panel, portal 20px inset */
+.work {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+  max-width: 720px;
+}
+
+.workHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.workTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.015em;
+  color: var(--ra-ink);
+  line-height: 1.3;
+}
+
+.workSub {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+}
+
+.workHint {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+  color: var(--ra-text-2);
+  max-width: 68ch;
+}
+
+/* Assignment — portal 3-col grid */
+.assignGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+
+.fieldControl {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.fieldControl > span {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+}
+
+.fieldControl input,
+.fieldControl textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1px solid var(--ra-border-field);
+  border-radius: var(--ra-radius-control);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  background: var(--ra-canvas);
+  outline: none;
+  transition:
+    border-color 0.12s,
+    background 0.12s,
+    box-shadow 0.12s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fieldControl input {
+  height: 38px;
+}
+
+.fieldControl textarea {
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.fieldControl input::placeholder,
+.fieldControl textarea::placeholder {
+  color: var(--ra-text-3);
+  opacity: 0.85;
+}
+
+.fieldControl input:focus,
+.fieldControl input:focus-visible,
+.fieldControl textarea:focus,
+.fieldControl textarea:focus-visible {
+  border-color: var(--ra-blurple);
+  background: var(--ra-focus-fill);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.fieldControlNarrow {
+  max-width: 420px;
+}
+
+.fieldControlWide {
+  max-width: 560px;
+}
+
+.saveNote {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+  line-height: 1.4;
+}
+
+.saveNoteOk {
+  color: var(--ra-ok);
+}
+
+.saveNoteErr {
+  color: var(--ra-risk);
+}
+
+/* Tasks progress — asset Controls */
+.progress {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 4px;
+  max-width: 520px;
+}
+
+.progressRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pct {
+  font-family: var(--ra-font-num);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ra-ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.progressNote {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+  line-height: 1.3;
+}
+
+.flag {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-blurple-fg);
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+}
+
+.task {
+  display: grid;
+  gap: 12px;
+  padding: 18px 0;
+  border-top: 1px solid var(--ra-border);
+}
+
+.task:first-child {
+  border-top: 0;
+  padding-top: 4px;
+}
+
+.task:last-child {
+  padding-bottom: 4px;
+}
+
+.taskHead {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.marker {
+  flex: 0 0 auto;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  display: grid;
+  place-items: center;
+  font-family: var(--ra-font-num);
+  font-size: 11px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  background: var(--ra-canvas);
+}
+
+.taskTitle {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  line-height: 1.35;
+}
+
+.taskDesc {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+  line-height: 1.45;
+  max-width: 68ch;
+}
+
+/* Align controls under title past marker (22 + 12) */
+.taskBody {
+  padding-left: 34px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  cursor: pointer;
+}
+
+.checkRow input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--ra-blurple);
+  flex-shrink: 0;
+}
+
+.fieldGroup {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.empty {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+  line-height: 1.45;
+}
+
+/* Evidence */
+.evidenceList {
+  display: flex;
+  flex-direction: column;
+}
+
+.evidenceRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-top: 1px solid var(--ra-border);
+}
+
+.evidenceRow:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.evidenceName {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+}
+
+.evidenceDate {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+}
+
+.upload {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 18px;
+  border: 1px dashed var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-canvas);
+}
+
+.uploadNote {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+  line-height: 1.4;
+}
+
+.hiddenFile {
+  display: none;
+}
+
+.linkBtn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-blurple-fg);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.linkBtn:hover {
+  color: var(--ra-blurple);
+}
+
+/* Support thread */
+.supportList {
+  display: flex;
+  flex-direction: column;
+}
+
+.supportItem {
+  display: grid;
+  gap: 8px;
+  padding: 16px 0;
+  border-top: 1px solid var(--ra-border);
+}
+
+.supportItem:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.supportMsg {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.supportReply {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.supportWhen {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+}
+
+@media (max-width: 900px) {
+  .assignGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldGroup {
+    grid-template-columns: 1fr;
+  }
+
+  .taskBody {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .work {
+    padding: 16px;
+  }
+
+  .fieldControlNarrow,
+  .fieldControlWide {
+    max-width: none;
+  }
+}

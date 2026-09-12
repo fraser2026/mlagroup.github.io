@@ -71,7 +71,8 @@ verify_jwt = true
 [functions.org-provider-test]
 verify_jwt = true
 
-[functions.org-provider-revoke]
+[functions.org-env]
+# Signed-in org member (list) / owner-admin (writes); auth checked in-function.
 verify_jwt = true
 
 [functions.asset-gateway-token]

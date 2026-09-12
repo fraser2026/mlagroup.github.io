@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing</title>
+<meta name="description" content="AI governance plans aligned to EU AI Act, UK GDPR, and FCA standards. Certification, evidence, and compliance lifecycle management.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="js/stripe-config.js"></script>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/reganchor.css">
+<style>
+:root {
+  --bg:       #FFFFFF;
+  --border:   var(--ra-line, #E4E7EC);
+  --border-h: var(--ra-ink, #0A0E14);
+  --hover:    var(--ra-hover, rgba(17,17,17,0.028));
+  --main:     var(--ra-ink, #0A0E14);
+  --sub:      var(--ra-slate-70, #374151);
+  --muted:    var(--ra-steel, #6B7280);
+  --muted2:   var(--ra-slate-70, #374151);
+  --green:    #15803D;
+  --font-brand: var(--ra-font-brand, 'IBM Plex Sans', sans-serif);
+  --font-body:  var(--ra-font-product, 'Inter', sans-serif);
+}
+ 
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--sub);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+ 
+/* Nav — matching homepage exactly */
+nav {
+  position: sticky; top:0; z-index:100;
+  height: 64px;
+  display: flex; align-items:center; justify-content:space-between;
+  padding: 0 48px;
+  background: var(--bg);
+}
+.logo {
+  font-family: var(--font-brand);
+  font-size: 1.05rem; font-weight: 500; letter-spacing: -0.025em;
+  text-decoration: none; color: var(--main); flex-shrink:0;
+  display: inline-flex; align-items: center;
+}
+.logo img { display: block; height: 36px; width: auto; }
+.nav-centre {
+  display: flex; align-items:center; gap:4px;
+  position: absolute; left:50%; transform:translateX(-50%);
+}
+.nav-link {
+  padding: 7px 14px;
+  font-size: 0.85rem; font-weight:400; color: var(--muted);
+  text-decoration:none; transition: color 0.18s, background 0.18s;
+}
+.nav-link:hover { color:var(--main); background:var(--hover); }
+.nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.nav-signin {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  box-sizing: border-box;
+  padding: 9px 18px;
+  font-size: 0.85rem; font-weight: 500; line-height: 1;
+  border: 1px solid var(--border); color: var(--main);
+  border-radius: 4px;
+  text-decoration: none; background: var(--bg);
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+.nav-signin:hover,
+.nav-signin:focus-visible {
+  border-color: var(--ra-blurple, #533AFD);
+  background: var(--hover);
+  color: var(--ra-blurple, #533AFD);
+  outline: none;
+}
+.nav-cta {
+  padding: 9px 18px;
+  font-size: 0.85rem; font-weight:500; color:var(--bg);
+  background: var(--main); text-decoration:none; border:1px solid var(--main);
+  transition: opacity 0.15s;
+}
+.nav-cta:hover { opacity:0.82; }
+ 
+h1 em, h2 em { font-style:normal; font-weight:400; color:var(--muted); }
+ 
+h2 {
+  font-family: var(--font-brand);
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  font-weight:500; line-height:1.12; letter-spacing:-0.025em;
+  color:var(--main);
+}
+ 
+/* Hero — homepage scale */
+.hero {
+  position:relative; z-index:1;
+  max-width:900px; margin:0 auto;
+  padding: 120px 48px 36px;
+  text-align:center;
+}
+h1 {
+  font-family: var(--font-brand);
+  font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+  line-height: 1.1; font-weight:500; letter-spacing:-0.03em;
+  margin-bottom: 22px; color:var(--main);
+}
+.hero-sub {
+  font-size: 1.05rem; font-weight:400; color:var(--sub);
+  line-height: 1.7; max-width:520px; margin:0 auto;
+}
+ 
+/* Frameworks — matching homepage trust strip */
+.frameworks {
+  position:relative; z-index:1;
+  border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  background:var(--bg);
+}
+.frameworks-inner {
+  max-width:900px; margin:0 auto; padding:28px 48px;
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+}
+.fw-label { font-family:var(--font-brand); font-size:0.68rem; font-weight:500; text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
+.fw-items { display:flex; gap:40px; row-gap:12px; flex-wrap:wrap; justify-content:center; align-items:center; }
+.fw-item { font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--sub); transition:color 0.18s; cursor:default; }
+.fw-item:hover { color:var(--main); }
+ 
+/* Period toggle — portal Subscription surface */
+.toggle-section {
+  position:relative; z-index:1;
+  padding: 52px 24px 32px;
+}
+.plan-period {
+  display:flex; align-items:center; justify-content:center;
+  gap:14px; flex-wrap:wrap;
+}
+.plan-period__lbl {
+  font-size:0.8125rem; font-weight:400;
+  color:var(--ra-text-3, var(--muted)); cursor:pointer;
+  background:none; border:none; padding:0;
+  font-family:var(--font-body);
+}
+.plan-period__lbl.is-active { color:var(--ra-text, var(--main)); font-weight:500; }
+.plan-period__tog {
+  width:44px; height:24px;
+  border:1px solid var(--ra-border, var(--border));
+  background:var(--bg);
+  position:relative; cursor:pointer;
+  border-radius:999px;
+  transition:border-color .15s, background .15s;
+}
+.plan-period__tog::after {
+  content:'';
+  position:absolute; top:3px; left:3px;
+  width:16px; height:16px;
+  background:var(--ra-blurple, #533AFD);
+  border-radius:999px;
+  transition:transform .18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.plan-period__tog.is-annual {
+  border-color:rgba(83, 58, 253, 0.35);
+  background:rgba(83, 58, 253, 0.06);
+}
+.plan-period__tog.is-annual::after { transform:translateX(20px); }
+.plan-period .state-label {
+  font-size:0.75rem; font-weight:500;
+  color:var(--ra-ok, #24B47E);
+  letter-spacing:-0.01em; text-transform:none;
+}
+
+/* Cards — portal layout, public type scale */
+.cards-section { position:relative; z-index:1; }
+.cards-wrap { max-width:1020px; margin:0 auto; padding:0 48px; }
+.plan-grid {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:16px;
+  align-items:stretch;
+}
+.plan-card {
+  border:1px solid var(--ra-border, var(--border));
+  background:var(--bg);
+  padding:28px 24px;
+  display:flex; flex-direction:column;
+  position:relative;
+}
+.plan-card__head {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; margin-bottom:10px; min-height:1.5em;
+}
+.plan-card__flag {
+  flex-shrink:0;
+  font-size:0.75rem; font-weight:500;
+  letter-spacing:-0.01em; text-transform:none;
+  color:var(--ra-text-3, var(--muted));
+  border:1px solid var(--ra-border, var(--border));
+  padding:3px 8px;
+}
+.plan-card__tier {
+  font-size:0.75rem; font-weight:500;
+  letter-spacing:-0.01em; text-transform:none;
+  color:var(--ra-text-3, var(--muted));
+  margin:0;
+}
+.plan-card__name {
+  font-family:var(--font-brand);
+  font-size:22px; font-weight:500;
+  letter-spacing:-0.025em;
+  color:var(--main); margin-bottom:8px;
+}
+.plan-card__desc {
+  font-size:0.88rem; color:var(--ra-text-3, var(--muted));
+  line-height:1.55; margin-bottom:20px; min-height:40px;
+}
+.plan-card__price {
+  display:flex; align-items:baseline; gap:3px; margin-bottom:4px;
+}
+.plan-card__currency { font-size:16px; font-weight:500; color:var(--main); }
+.plan-card__num {
+  font-family:var(--font-brand);
+  font-size:36px; font-weight:500;
+  letter-spacing:-0.03em; color:var(--main);
+  font-feature-settings:'tnum';
+}
+.plan-card__per { font-size:0.88rem; color:var(--ra-text-3, var(--muted)); }
+.plan-card__save { font-size:0.75rem; color:var(--ra-text-3, var(--muted)); margin-top:2px; min-height:18px; }
+.plan-card__rule {
+  height:1px; background:var(--ra-border, var(--border));
+  margin:18px 0;
+}
+.plan-card__feats {
+  display:flex; flex-direction:column; gap:8px;
+  margin-bottom:22px; flex:1;
+}
+.plan-feat {
+  display:flex; align-items:flex-start; gap:8px;
+  font-size:0.88rem; color:var(--ra-text-2, var(--sub));
+}
+.plan-feat--strong { color:var(--main); font-weight:500; }
+.plan-feat__mark {
+  color:var(--main); font-size:0.75rem; font-weight:500;
+  width:14px; flex-shrink:0; line-height:1.5;
+}
+.plan-card__cta {
+  display:block; width:100%; padding:11px 16px;
+  text-align:center; font-family:var(--font-body);
+  font-size:0.9rem; font-weight:500; text-decoration:none;
+  transition:background 0.15s, border-color 0.15s, opacity 0.15s;
+  cursor:pointer; border:1px solid var(--ra-blurple, #533AFD);
+  background:var(--ra-blurple, #533AFD); color:#FFFFFF;
+  border-radius:4px;
+  white-space:nowrap;
+}
+.plan-card__cta:hover { background:var(--ra-blurple-hover, #4434E0); border-color:var(--ra-blurple-hover, #4434E0); }
+.plan-card__cta--ink {
+  background:var(--main); color:var(--bg); border-color:var(--main);
+}
+.plan-card__cta--ink:hover { opacity:0.82; background:var(--main); border-color:var(--main); }
+.plan-card__cta:disabled { opacity:0.55; cursor:not-allowed; }
+
+/* Embedded checkout — same Stripe products as portal subscriptions */
+#pricing-checkout-loading,
+#pricing-checkout-container {
+  display: none;
+  max-width: 480px;
+  margin: 28px auto 0;
+  border: 1px solid var(--border);
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+#pricing-checkout-loading { padding: 24px; }
+#pricing-checkout-container { padding: 0; overflow: hidden; text-align: left; }
+.pricing-checkout__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--main);
+}
+.pricing-checkout__cancel {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.pricing-checkout__cancel:hover { border-color: var(--main); color: var(--main); }
+
+/* Free line */
+.free-line {
+  text-align:center; padding:36px 24px 0;
+  font-size:0.88rem; color:var(--sub); position:relative; z-index:1;
+}
+.free-line a {
+  color:var(--ra-blurple, #533AFD);
+  text-decoration:none; font-weight:500;
+}
+.free-line a:hover { color:var(--ra-blurple-hover, #4434E0); }
+
+/* Compare — portal plan-table, public type scale */
+.plan-compare-wrap { text-align:center; margin-top:28px; position:relative; z-index:1; padding:0 24px; }
+.plan-compare-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 18px;
+  font-family:var(--font-body); font-size:0.88rem; font-weight:500;
+  color:var(--main); background:var(--bg);
+  border:1px solid var(--border); border-radius:4px;
+  cursor:pointer; transition:border-color 0.15s, background 0.15s, color 0.15s;
+}
+.plan-compare-btn:hover {
+  border-color:var(--ra-blurple, #533AFD);
+  background:var(--hover);
+  color:var(--ra-blurple, #533AFD);
+}
+.plan-compare { margin-top:20px; max-width:1020px; margin-left:auto; margin-right:auto; padding:0 48px; }
+.plan-compare[hidden] { display:none; }
+.table-scroll { overflow-x:auto; }
+.plan-table {
+  width:100%; border-collapse:collapse; font-size:0.88rem;
+  background:var(--bg); border:1px solid var(--border);
+}
+.plan-table th {
+  padding:12px 16px; font-size:0.75rem; font-weight:500;
+  letter-spacing:-0.01em; text-transform:none;
+  color:var(--muted); text-align:center;
+  border-bottom:1px solid var(--border);
+}
+.plan-table td {
+  padding:11px 16px; text-align:center;
+  border-bottom:1px solid var(--border); color:var(--sub);
+}
+.plan-table th:first-child, .plan-table td:first-child { text-align:left; color:var(--main); }
+.plan-table__section td {
+  font-size:0.75rem; font-weight:500;
+  letter-spacing:-0.01em; text-transform:none;
+  color:var(--ra-text-3, var(--muted));
+  background:var(--bg) !important;
+  padding-top:16px !important;
+}
+.plan-table__y { color:var(--main); font-weight:500; text-align:center; }
+.plan-table__n { color:var(--ra-text-4, var(--muted)); text-align:center; }
+ 
+/* FAQ — disclosure ledger (index features pattern, no left meter) */
+.faq-section { position:relative; z-index:1; max-width:640px; margin:0 auto; padding:52px 24px 0; }
+.faq-section h2 { font-family:var(--font-brand); font-size:clamp(1.5rem,2.6vw,1.8rem); font-weight:500; color:var(--main); text-align:center; margin-bottom:28px; }
+.faq-accordion {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.faq-row { border-bottom: 1px solid var(--border); }
+.faq-row:last-child { border-bottom: none; }
+.faq-row__trigger {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.faq-row__trigger:hover,
+.faq-row__trigger:focus-visible,
+.faq-row.is-open > .faq-row__trigger {
+  background: var(--hover);
+}
+.faq-row__trigger:focus-visible {
+  outline: 2px solid var(--ra-blurple, #533AFD);
+  outline-offset: -2px;
+}
+.faq-row__head {
+  flex: 1;
+  min-width: 0;
+  padding: 18px 8px 18px 18px;
+}
+.faq-row__title {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--main);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+.faq-row__chev {
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+  padding: 20px 20px 0 8px;
+  color: var(--ra-blurple, #533AFD);
+}
+.faq-row__chev-icon {
+  display: block;
+  transition: transform 0.42s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+.faq-row__trigger:hover .faq-row__chev-icon {
+  transform: translateY(2px);
+}
+.faq-row.is-open .faq-row__chev-icon {
+  transform: rotate(180deg);
+}
+.faq-row.is-open .faq-row__trigger:hover .faq-row__chev-icon {
+  transform: rotate(180deg) translateY(-2px);
+}
+.faq-row__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.42s cubic-bezier(0.34, 1.15, 0.64, 1);
+}
+.faq-row.is-open .faq-row__panel {
+  grid-template-rows: 1fr;
+}
+.faq-row__panel-inner { overflow: hidden; }
+.faq-row__body {
+  margin: 0;
+  padding: 2px 20px 20px 20px;
+  font-size: 0.82rem;
+  color: var(--sub);
+  line-height: 1.75;
+}
+.faq-row__body a {
+  color: var(--ra-blurple, #533AFD);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(83, 58, 253, 0.28);
+}
+.faq-row__body a:hover,
+.faq-row__body a:focus-visible {
+  color: var(--ra-blurple-hover, #4434E0);
+  border-bottom-color: var(--ra-blurple-hover, #4434E0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-row__chev-icon,
+  .faq-row__panel { transition: none !important; }
+  .faq-row.is-open .faq-row__chev-icon { transform: rotate(180deg); }
+}
+ 
+/* CTA — match index hero btn-primary / btn-ghost (4px radius) */
+.cta-section { position:relative; z-index:1; border-top:1px solid var(--border); }
+.cta-wrap { max-width:1020px; margin:0 auto; padding:96px 48px; }
+.cta-box {
+  border:1px solid var(--border);
+  padding:76px 64px; text-align:center; position:relative;
+}
+.cta-box h2 { margin-bottom:16px; }
+.cta-box p { font-size:1rem; color:var(--sub); font-weight:400; max-width:480px; margin:0 auto 40px; line-height:1.75; }
+.cta-actions { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; }
+.btn-primary {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  box-sizing:border-box;
+  padding:14px 26px;
+  background:var(--ra-blurple, #533AFD); color:#FFFFFF; border:1px solid var(--ra-blurple, #533AFD);
+  border-radius:4px;
+  font-size:0.9rem; font-weight:500; line-height:1; text-decoration:none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background:var(--ra-blurple-hover, #4434E0);
+  border-color:var(--ra-blurple-hover, #4434E0);
+  color:#FFFFFF;
+}
+.btn-primary svg { transition:transform 0.18s; stroke:#FFFFFF; }
+.btn-primary:hover svg { transform:translateX(3px); }
+.btn-ghost {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  box-sizing:border-box;
+  padding:14px 26px;
+  border:1px solid var(--border); color:var(--main);
+  border-radius:4px;
+  font-size:0.9rem; font-weight:500; line-height:1; text-decoration:none;
+  background:var(--bg);
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  border-color:var(--ra-blurple, #533AFD);
+  background:var(--hover);
+  color:var(--ra-blurple, #533AFD);
+  outline:none;
+}
+ 
+/* Footer — matching homepage */
+footer { border-top:1px solid var(--main); background:var(--bg); position:relative; z-index:1; }
+.footer-bottom {
+  max-width:1020px; margin:0 auto; padding:24px 48px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.footer-bottom span { font-size:0.75rem; color:var(--muted); }
+.footer-legal { display:flex; gap:20px; }
+.footer-legal a { font-size:0.75rem; color:var(--muted); text-decoration:none; transition:color 0.15s; }
+.footer-legal a:hover { color:var(--main); }
+
+/* Enterprise inquiry modal — same floating sheet as portal */
+.modal-overlay {
+  position:fixed; inset:0; z-index:999;
+  background:rgba(10,14,20,0.22);
+  -webkit-backdrop-filter:blur(7px) saturate(1.02);
+  backdrop-filter:blur(7px) saturate(1.02);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  opacity:0; pointer-events:none;
+  transition:opacity .22s ease;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--bg);
+  border:1px solid var(--border, #E6EBF1);
+  border-radius:4px;
+  box-shadow:
+    0 1px 2px rgba(10, 14, 20, 0.04),
+    0 12px 32px -10px rgba(10, 14, 20, 0.14);
+  width:100%; max-width:560px; max-height:90vh;
+  overflow-x:hidden;
+  overflow-y:auto;
+  scrollbar-width:thin;
+}
+.modal-header {
+  padding:22px 24px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:flex-start; justify-content:space-between;
+  position:sticky; top:0; background:var(--bg); z-index:2;
+  border-radius:4px 4px 0 0;
+}
+.modal-header h3 {
+  font-family:var(--font-brand);
+  font-size:1.125rem; font-weight:500;
+  letter-spacing:-0.025em; color:var(--main); margin-bottom:4px;
+}
+.modal-header p { font-size:0.8125rem; color:var(--muted); }
+.modal-close {
+  background:none; border:none; color:var(--muted);
+  cursor:pointer; font-size:15px; line-height:1; padding:2px;
+  border-radius:4px;
+}
+.modal-close:hover { color:var(--main); }
+.modal-body { padding:22px 24px; }
+.modal-footer {
+  padding:16px 24px;
+  border-top:1px solid var(--border);
+  display:flex; gap:10px; justify-content:flex-end;
+  position:sticky; bottom:0; background:var(--bg); z-index:2;
+  border-radius:0 0 4px 4px;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .modal-overlay {
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+    background:rgba(10,14,20,0.42);
+  }
+}
+.modal-inset {
+  border:1px solid var(--border);
+  background:var(--bg);
+  padding:14px 16px; margin-bottom:16px;
+  font-size:0.8125rem; color:var(--sub); line-height:1.65;
+}
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.field-group { margin-bottom:16px; }
+.field-label {
+  display:block; font-size:0.75rem; font-weight:500;
+  color:var(--muted); margin-bottom:6px; letter-spacing:-0.01em;
+}
+.field-input {
+  width:100%; padding:10px 12px;
+  border:1px solid var(--border); background:var(--bg);
+  color:var(--main); font-family:var(--font-body); font-size:0.88rem;
+  outline:none;
+}
+.field-input:focus { border-color:var(--main); }
+textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
+/* Enterprise modal only — lighter placeholders (match contact.html) */
+#enterprise-modal .field-input::placeholder {
+  color:var(--ra-slate-30,#A3ACB9);
+  opacity:1;
+}
+#enterprise-modal select.field-input:has(option[value=""]:checked) {
+  color:var(--ra-slate-30,#A3ACB9);
+}
+#enterprise-modal select.field-input option {
+  color:var(--main);
+}
+.modal-btn {
+  padding:10px 18px; font-family:var(--font-body);
+  font-size:0.88rem; font-weight:500; cursor:pointer;
+  border-radius:4px; border:1px solid var(--border);
+  background:var(--bg); color:var(--main);
+}
+.modal-btn:hover { border-color:var(--main); }
+.modal-btn--primary {
+  background:var(--main); color:var(--bg); border-color:var(--main);
+}
+.modal-btn--primary:hover { opacity:0.88; }
+.modal-btn:disabled { opacity:0.55; cursor:not-allowed; }
+.ent-success { text-align:center; padding:40px 0 20px; }
+.ent-success h4 {
+  font-family:var(--font-brand); font-size:1.15rem; font-weight:500;
+  color:var(--main); margin-bottom:10px;
+}
+.ent-success p { font-size:0.9rem; color:var(--sub); line-height:1.65; }
+@media(max-width:560px){
+  .field-row { grid-template-columns:1fr; }
+}
+ 
+/* Animations */
+.fade { opacity:0; transform:translateY(16px); transition:opacity 0.6s ease, transform 0.6s ease; }
+.fade.in { opacity:1; transform:translateY(0); }
+ 
+@media (max-width:768px) {
+  nav { padding:0 20px; }
+  .nav-centre { display:none; }
+  .hero { padding:64px 20px 28px; }
+  h1 { font-size:clamp(2rem,8vw,2.8rem); line-height:1.16; }
+  .cards-wrap { padding:0 20px; }
+  .plan-grid { grid-template-columns:1fr; }
+  .frameworks-inner { padding:20px 20px; gap:12px; }
+  .fw-items { gap:24px; }
+  .cta-wrap { padding:64px 20px; }
+  .cta-box { padding:44px 20px; }
+  .cta-actions {
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .cta-actions .btn-primary,
+  .cta-actions .btn-ghost {
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .plan-compare { padding:0 20px; }
+  .footer-bottom { flex-direction:column; text-align:center; gap:12px; padding:20px 20px; }
+}
+@media (max-width:480px) {
+  .nav-signin { display:none; }
+  .nav-cta { padding:8px 14px; font-size:0.8rem; }
+}
+</style>
+</head>
+<body>
+ 
+<nav>
+  <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+  <div class="nav-right">
+    <a href="login.html" class="nav-signin">Sign in</a>
+  </div>
+</nav>
+<div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
+ 
+<section>
+  <div class="hero fade">
+    <h1>Understand, control,<br>and evidence your<br><em>AI risk.</em></h1>
+    <p class="hero-sub">Choose the right governance tier for your organisation</p>
+  </div>
+</section>
+ 
+<div class="toggle-section fade">
+  <div class="plan-period">
+    <button type="button" class="plan-period__lbl is-active" id="lm" onclick="setPeriod('monthly')">Monthly</button>
+    <div class="plan-period__tog" id="tog" onclick="togglePeriod()" role="switch" aria-label="Billing period"></div>
+    <button type="button" class="plan-period__lbl" id="la" onclick="setPeriod('annual')">Annual</button>
+    <span class="state-label">Save 17%</span>
+  </div>
+</div>
+ 
+<div class="cards-section">
+  <div class="cards-wrap">
+    <div class="plan-grid">
+
+      <div class="plan-card fade">
+        <div class="plan-card__head">
+          <div class="plan-card__tier">Essentials</div>
+          <div class="plan-card__flag">Recommended</div>
+        </div>
+        <div class="plan-card__name">Governance</div>
+        <div class="plan-card__desc">Certified governance maturity with a publicly verifiable certificate.</div>
+        <div class="plan-card__price"><span class="plan-card__currency">&pound;</span><span class="plan-card__num" id="pe">129</span><span class="plan-card__per" id="ppe">/month</span></div>
+        <div class="plan-card__save" id="pse"></div>
+        <div class="plan-card__rule"></div>
+        <div class="plan-card__feats">
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Governance Certificate</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Public verification page</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Assessment reports</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Full governance framework</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Email support</div>
+        </div>
+        <button type="button" class="plan-card__cta" onclick="subscribe('essentials')">Get started</button>
+      </div>
+
+      <div class="plan-card fade">
+        <div class="plan-card__head">
+          <div class="plan-card__tier">Professional</div>
+        </div>
+        <div class="plan-card__name">Compliance</div>
+        <div class="plan-card__desc">Operational governance across every system. Audit-ready at scale.</div>
+        <div class="plan-card__price"><span class="plan-card__currency">&pound;</span><span class="plan-card__num" id="pp">249</span><span class="plan-card__per" id="ppp">/month</span></div>
+        <div class="plan-card__save" id="psp"></div>
+        <div class="plan-card__rule"></div>
+        <div class="plan-card__feats">
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Unlimited AI systems</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Multi-user access (5 seats)</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Organisation-wide certification</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Compliance automation</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Priority support</div>
+        </div>
+        <button type="button" class="plan-card__cta" onclick="subscribe('professional')">Upgrade to Professional</button>
+      </div>
+
+      <div class="plan-card fade">
+        <div class="plan-card__head">
+          <div class="plan-card__tier">Enterprise</div>
+        </div>
+        <div class="plan-card__name">Governance OS</div>
+        <div class="plan-card__desc">Bespoke governance infrastructure for multi-jurisdiction obligations.</div>
+        <div class="plan-card__price"><span class="plan-card__num" style="font-size:28px;">Bespoke</span></div>
+        <div class="plan-card__save">Tailored to your organisation</div>
+        <div class="plan-card__rule"></div>
+        <div class="plan-card__feats">
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Everything in Professional</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Unlimited users</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Dedicated advisory lead</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>On-site sessions &amp; benchmarking</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Custom SLA</div>
+        </div>
+        <button type="button" class="plan-card__cta plan-card__cta--ink" onclick="openEnterpriseModal()">Talk to advisory</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="pricing-checkout-loading">Loading secure checkout…</div>
+<div id="pricing-checkout-container"></div>
+ 
+<div class="free-line fade">Not ready to commit? <a href="diagnostic.html">Start with a free assessment</a>. No card required.</div>
+ 
+<div class="plan-compare-wrap fade">
+  <button type="button" class="plan-compare-btn" id="comp-btn" onclick="toggleCompare()">Compare all features</button>
+  <div id="comp-table" class="plan-compare" hidden>
+    <div class="table-scroll">
+      <table class="plan-table">
+        <thead><tr><th>Feature</th><th>Free</th><th>Essentials</th><th>Professional</th><th>Enterprise</th></tr></thead>
+        <tbody>
+          <tr class="plan-table__section"><td colspan="5">Diagnostics &amp; Assessment</td></tr>
+          <tr><td>Governance diagnostic</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Maturity score &amp; risk band</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>7-domain system assessment</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Assessment reports</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr class="plan-table__section"><td colspan="5">Registry &amp; Systems</td></tr>
+          <tr><td>AI systems in registry</td><td>1</td><td>1</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>EU AI Act risk classification</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Compliance framework tracking</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr class="plan-table__section"><td colspan="5">Governance Controls</td></tr>
+          <tr><td>12 governance controls</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Task management &amp; evidence</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>RegAnchor expert support</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td>Priority</td><td>Dedicated</td></tr>
+          <tr><td>Compliance automation engine</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr class="plan-table__section"><td colspan="5">Certification</td></tr>
+          <tr><td>Governance certificate</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Certificate PDF download</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Public verification page</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Governance dossier export</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr class="plan-table__section"><td colspan="5">Team &amp; Organisation</td></tr>
+          <tr><td>Users</td><td>1</td><td>1</td><td>Up to 5</td><td>Unlimited</td></tr>
+          <tr><td>Policy management</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>E-signatures</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Audit trail</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td>Advanced</td><td>Advanced</td></tr>
+          <tr class="plan-table__section"><td colspan="5">Support</td></tr>
+          <tr><td>Support channel</td><td>In-portal</td><td>Email</td><td>Priority</td><td>Dedicated lead</td></tr>
+          <tr><td>On-site sessions</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Quarterly benchmarking</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+ 
+<div class="faq-section">
+  <h2>Frequently <em>asked.</em></h2>
+  <div class="faq-accordion" role="presentation">
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-1" aria-expanded="false" aria-controls="faq-panel-1">
+        <span class="faq-row__head">
+          <span class="faq-row__title">Can I start free and upgrade later?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-1" role="region" aria-labelledby="faq-trigger-1" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">Yes. Your governance data, control progress, and assessments are preserved when you upgrade. Move to Essentials or Professional at any time from your portal dashboard.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-2" aria-expanded="false" aria-controls="faq-panel-2">
+        <span class="faq-row__head">
+          <span class="faq-row__title">What qualifies me for a governance certificate?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-2" role="region" aria-labelledby="faq-trigger-2" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">An active Essentials or Professional subscription, a governance score of 70% or above, at least one registered AI system with a completed assessment, and all published policies acknowledged. Your portal tracks qualification progress in real time.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-3" aria-expanded="false" aria-controls="faq-panel-3">
+        <span class="faq-row__head">
+          <span class="faq-row__title">What happens if I cancel?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-3" role="region" aria-labelledby="faq-trigger-3" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">Your portal access and governance data remain intact. Your certificate will expire, public verification will be deactivated, and PDF reports will be locked. Resubscribe at any time to reinstate.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-4" aria-expanded="false" aria-controls="faq-panel-4">
+        <span class="faq-row__head">
+          <span class="faq-row__title">Is the certificate publicly verifiable?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-4" role="region" aria-labelledby="faq-trigger-4" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">Yes. Every active certificate has a unique ID and can be verified by anyone on our <a href="verify.html">public verification page</a>. The page confirms the organisation, level, score, and validity period.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-5" aria-expanded="false" aria-controls="faq-panel-5">
+        <span class="faq-row__head">
+          <span class="faq-row__title">Can I switch between monthly and annual?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-5" role="region" aria-labelledby="faq-trigger-5" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">Yes. Contact us to switch your billing period. Annual plans save approximately 17% compared to monthly.</p>
+        </div>
+      </div>
+    </div>
+    <div class="faq-row">
+      <button type="button" class="faq-row__trigger" id="faq-trigger-6" aria-expanded="false" aria-controls="faq-panel-6">
+        <span class="faq-row__head">
+          <span class="faq-row__title">Which regulatory frameworks are covered?</span>
+        </span>
+        <span class="faq-row__chev" aria-hidden="true">
+          <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="faq-row__panel" id="faq-panel-6" role="region" aria-labelledby="faq-trigger-6" hidden>
+        <div class="faq-row__panel-inner">
+          <p class="faq-row__body">The EU AI Act, UK GDPR, FCA DP5/22, ICO AI Guidance, and ISO/IEC 42001. Every finding includes specific article references and regulatory citations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<section class="cta-section">
+  <div class="cta-wrap">
+    <div class="cta-box fade">
+      <h2>Evidence your governance.<br><em>Before they ask.</em></h2>
+      <p>Start with a free diagnostic. Upgrade when you need certification.</p>
+      <div class="cta-actions">
+        <a href="diagnostic.html" class="btn-primary">Start Free Diagnostic <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a href="login.html" class="btn-ghost">Sign in to Portal</a>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<footer class="rfooter">
+  <a href="index.html" class="rf-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+  <div class="rf-links">
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="security.html">Security</a>
+    <a href="cookies.html">Cookie Policy</a>
+    <a href="terms.html">Terms &amp; Conditions</a>
+    <a href="index.html">Home</a>
+  </div>
+  <p class="rfooter-legal">RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562).</p>
+</footer>
+
+<div class="modal-overlay" id="enterprise-modal" role="dialog" aria-modal="true" aria-labelledby="ent-modal-title">
+  <div class="modal" id="enterprise-modal-inner">
+    <div class="modal-header">
+      <div>
+        <h3 id="ent-modal-title">Enterprise inquiry</h3>
+        <p>Tell us about your organisation and requirements.</p>
+      </div>
+      <button type="button" class="modal-close" onclick="closeEnterpriseModal()" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="modal-body" id="ent-modal-body">
+      <div class="modal-inset">Enterprise plans include unlimited users, multi-department portals, dedicated advisory, on-site sessions, and custom SLA. We respond within 24 hours.</div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" for="ent-name">Full name</label>
+          <input type="text" class="field-input" id="ent-name" placeholder="Your full name" autocomplete="name">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="ent-role">Role / title</label>
+          <input type="text" class="field-input" id="ent-role" placeholder="e.g. Head of Risk, CTO" autocomplete="organization-title">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" for="ent-email">Email</label>
+          <input type="email" class="field-input" id="ent-email" placeholder="you@yourfirm.co.uk" autocomplete="email">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="ent-org">Organisation</label>
+          <input type="text" class="field-input" id="ent-org" placeholder="Organisation name" autocomplete="organization">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="ent-systems">Number of AI systems</label>
+        <select class="field-input" id="ent-systems">
+          <option value="">Select</option>
+          <option value="1-5">1 — 5 systems</option>
+          <option value="6-20">6 — 20 systems</option>
+          <option value="20-50">20 — 50 systems</option>
+          <option value="50+">50+ systems</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">What are you looking for?</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="ent-reqs">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Multi-department portal" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Multi-department portal</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Dedicated advisory lead" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Dedicated advisory lead</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="API access" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">API access</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Custom integrations" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Custom integrations</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="On-site validation" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">On-site validation</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="ISO 42001 alignment" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">ISO 42001 alignment</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Quarterly benchmarking" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Quarterly benchmarking</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Other" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Other</label>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="ent-message">Tell us more about your requirements</label>
+        <textarea class="field-input" id="ent-message" rows="3" placeholder="Describe your governance needs, number of departments, jurisdictions, or any specific requirements..."></textarea>
+      </div>
+      <div id="ent-error" style="font-size:0.75rem;color:#B91C1C;margin-bottom:8px;display:none;"></div>
+    </div>
+    <div class="modal-footer" id="ent-modal-footer">
+      <button type="button" class="modal-btn" onclick="closeEnterpriseModal()">Cancel</button>
+      <button type="button" class="modal-btn modal-btn--primary" id="ent-submit-btn" onclick="submitEnterpriseInquiry()">Submit inquiry</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/ra-contact.js"></script>
+<script>
+var SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
+var SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+var isAnnual=false;
+var pricingStripe=null;
+var pricingCheckoutInstance=null;
+function priceIdFor(plan){
+  return window.RA_STRIPE.priceId(plan, isAnnual?'annual':'monthly');
+}
+function stripePk(){
+  var k=window.RA_STRIPE.publishableKey();
+  if(!k)alert('Stripe publishable key is missing. Check mode and keys in js/stripe-config.js');
+  return k;
+}
+
+function togglePeriod(){isAnnual=!isAnnual;closePricingCheckout();updatePrices()}
+function setPeriod(p){isAnnual=(p==='annual');closePricingCheckout();updatePrices()}
+
+function updatePrices(){
+  var t=document.getElementById('tog'),m=document.getElementById('lm'),a=document.getElementById('la');
+  if(t)t.classList.toggle('is-annual',isAnnual);
+  if(m)m.classList.toggle('is-active',!isAnnual);
+  if(a)a.classList.toggle('is-active',isAnnual);
+  if(isAnnual){
+    document.getElementById('pe').textContent='1,290';
+    document.getElementById('ppe').textContent='/year';
+    document.getElementById('pse').textContent='Save £258/yr';
+    document.getElementById('pp').textContent='2,490';
+    document.getElementById('ppp').textContent='/year';
+    document.getElementById('psp').textContent='Save £498/yr';
+  }else{
+    document.getElementById('pe').textContent='129';
+    document.getElementById('ppe').textContent='/month';
+    document.getElementById('pse').textContent='';
+    document.getElementById('pp').textContent='249';
+    document.getElementById('ppp').textContent='/month';
+    document.getElementById('psp').textContent='';
+  }
+}
+
+function toggleCompare(){
+  var el=document.getElementById('comp-table');
+  if(!el)return;
+  el.hidden=!el.hidden;
+}
+(function () {
+  var accordion = document.querySelector('.faq-accordion');
+  if (!accordion) return;
+  var rows = Array.prototype.slice.call(accordion.querySelectorAll('.faq-row'));
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function closeRow(row, instant) {
+    var panel = row.querySelector('.faq-row__panel');
+    var trigger = row.querySelector('.faq-row__trigger');
+    if (!row.classList.contains('is-open')) return;
+    row.classList.remove('is-open');
+    trigger.setAttribute('aria-expanded', 'false');
+    if (instant || reduce) {
+      panel.hidden = true;
+      return;
+    }
+    function onEnd(e) {
+      if (e.propertyName !== 'grid-template-rows') return;
+      panel.hidden = true;
+      panel.removeEventListener('transitionend', onEnd);
+    }
+    panel.addEventListener('transitionend', onEnd);
+  }
+
+  function openRow(row) {
+    rows.forEach(function (r) {
+      if (r !== row) closeRow(r, reduce);
+    });
+    var panel = row.querySelector('.faq-row__panel');
+    var trigger = row.querySelector('.faq-row__trigger');
+    panel.hidden = false;
+    requestAnimationFrame(function () {
+      row.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+    });
+  }
+
+  rows.forEach(function (row) {
+    row.querySelector('.faq-row__trigger').addEventListener('click', function () {
+      if (row.classList.contains('is-open')) closeRow(row, reduce);
+      else openRow(row);
+    });
+  });
+})();
+
+function closePricingCheckout(){
+  var c=document.getElementById('pricing-checkout-container');
+  var l=document.getElementById('pricing-checkout-loading');
+  if(pricingCheckoutInstance){pricingCheckoutInstance.destroy();pricingCheckoutInstance=null}
+  if(c){c.style.display='none';c.innerHTML=''}
+  if(l)l.style.display='none';
+}
+
+/** Wait for Supabase to hydrate session from storage (avoids false login redirects). */
+function getAuthSession(timeoutMs){
+  return sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session)return r.data.session;
+    return new Promise(function(resolve){
+      var done=false;
+      var finish=function(session){
+        if(done)return;
+        done=true;
+        try{sub.unsubscribe()}catch(e){}
+        clearTimeout(timer);
+        resolve(session||null);
+      };
+      var timer=setTimeout(function(){finish(null)},timeoutMs||3000);
+      var sub=sb.auth.onAuthStateChange(function(event,session){
+        if(event==='INITIAL_SESSION'||event==='SIGNED_IN'||session)finish(session);
+      }).data.subscription;
+    });
+  });
+}
+
+async function ensurePricingOrg(session){
+  var userId=session.user.id;
+  var pr=await sb.from('profiles').select('org_id,organisation,full_name').eq('id',userId).maybeSingle();
+  if(!pr.data){
+    await sb.from('profiles').insert({
+      id:userId,
+      email:session.user.email,
+      full_name:session.user.user_metadata&&session.user.user_metadata.full_name||session.user.email.split('@')[0]
+    });
+    pr=await sb.from('profiles').select('org_id,organisation,full_name').eq('id',userId).maybeSingle();
+  }
+  if(pr.data&&pr.data.org_id){
+    var byId=await sb.from('organisations').select('id,name,plan,subscription_status').eq('id',pr.data.org_id).maybeSingle();
+    if(byId.data)return byId.data;
+  }
+  var existing=await sb.from('organisations').select('id,name,plan,subscription_status').eq('created_by',userId).limit(1).maybeSingle();
+  if(existing.data){
+    await sb.from('profiles').update({org_id:existing.data.id}).eq('id',userId);
+    return existing.data;
+  }
+  var orgName=(pr.data&&pr.data.organisation)||'My Organisation';
+  var created=await sb.from('organisations').insert({name:orgName,created_by:userId}).select('id,name,plan,subscription_status').maybeSingle();
+  if(created.error||!created.data)throw new Error(created.error&&created.error.message||'Could not create organisation');
+  await sb.from('org_members').insert({org_id:created.data.id,user_id:userId,role:'owner',accepted_at:new Date().toISOString()});
+  await sb.from('profiles').update({org_id:created.data.id}).eq('id',userId);
+  return created.data;
+}
+
+async function subscribe(plan){
+  var priceId=priceIdFor(plan);
+  if(!priceId)return;
+  var pk=stripePk();
+  if(!pk)return;
+
+  var loadEl=document.getElementById('pricing-checkout-loading');
+  var contEl=document.getElementById('pricing-checkout-container');
+  if(contEl.style.display==='block'){contEl.scrollIntoView({behavior:'smooth',block:'start'});return}
+
+  loadEl.style.display='block';
+  contEl.style.display='none';
+  if(!pricingStripe)pricingStripe=Stripe(pk);
+
+  try{
+    // Public pricing always uses pay-first guest checkout; portal handles logged-in upgrades.
+    var payload={price_id:priceId,embedded:true,guest:true};
+    var authHeader=SUPABASE_KEY;
+
+    var res=await fetch(SUPABASE_URL+'/functions/v1/create-subscription-session',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+authHeader,
+        'apikey':SUPABASE_KEY
+      },
+      body:JSON.stringify(payload)
+    });
+    var data=await res.json();
+    if(data.error){
+      loadEl.style.display='none';
+      if(data.existing){alert('Active subscription exists.');window.location.href='portal.html';return}
+      alert(data.error);return;
+    }
+    if(!data.clientSecret){loadEl.style.display='none';alert('Could not load checkout.');return}
+
+    if(pricingCheckoutInstance)pricingCheckoutInstance.destroy();
+    pricingCheckoutInstance=await pricingStripe.initEmbeddedCheckout({clientSecret:data.clientSecret});
+    loadEl.style.display='none';
+    contEl.innerHTML='<div class="pricing-checkout__head"><span>Complete your '+(plan==='professional'?'Professional':'Essentials')+' subscription</span><button type="button" class="pricing-checkout__cancel" onclick="closePricingCheckout()">Cancel</button></div><div id="pricing-checkout-mount"></div>';
+    contEl.style.display='block';
+    pricingCheckoutInstance.mount('#pricing-checkout-mount');
+    setTimeout(function(){contEl.scrollIntoView({behavior:'smooth',block:'start'})},100);
+  }catch(e){
+    loadEl.style.display='none';
+    console.error(e);
+    alert(e.message||'Could not load checkout. Please try again.');
+  }
+}
+
+function escHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+var ENT_FORM_HTML=null;
+function cacheEntForm(){
+  if(!ENT_FORM_HTML){
+    var body=document.getElementById('ent-modal-body');
+    var foot=document.getElementById('ent-modal-footer');
+    var head=document.querySelector('#enterprise-modal .modal-header');
+    if(body&&foot&&head){
+      ENT_FORM_HTML={header:head.innerHTML,body:body.innerHTML,footer:foot.innerHTML};
+    }
+  }
+}
+
+function openEnterpriseModal(){
+  cacheEntForm();
+  var modal=document.getElementById('enterprise-modal');
+  if(ENT_FORM_HTML){
+    document.querySelector('#enterprise-modal .modal-header').innerHTML=ENT_FORM_HTML.header;
+    document.getElementById('ent-modal-body').innerHTML=ENT_FORM_HTML.body;
+    document.getElementById('ent-modal-footer').innerHTML=ENT_FORM_HTML.footer;
+  }
+  var nameEl=document.getElementById('ent-name');
+  if(nameEl)nameEl.value='';
+  ['ent-role','ent-email','ent-org','ent-systems','ent-message'].forEach(function(id){
+    var el=document.getElementById(id); if(el)el.value='';
+  });
+  document.querySelectorAll('#ent-reqs input[type=checkbox]').forEach(function(c){c.checked=false});
+  var err=document.getElementById('ent-error');
+  if(err)err.style.display='none';
+  var btn=document.getElementById('ent-submit-btn');
+  if(btn){btn.textContent='Submit inquiry';btn.disabled=false}
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeEnterpriseModal(){
+  var modal=document.getElementById('enterprise-modal');
+  if(modal)modal.classList.remove('open');
+  document.body.style.overflow='';
+}
+
+async function submitEnterpriseInquiry(){
+  var name=(document.getElementById('ent-name').value||'').trim();
+  var role=(document.getElementById('ent-role').value||'').trim();
+  var email=(document.getElementById('ent-email').value||'').trim();
+  var orgName=(document.getElementById('ent-org').value||'').trim();
+  var systems=document.getElementById('ent-systems').value||'';
+  var message=(document.getElementById('ent-message').value||'').trim();
+  var errEl=document.getElementById('ent-error');
+  var btn=document.getElementById('ent-submit-btn');
+  if(!name){errEl.textContent='Please enter your name.';errEl.style.display='block';return}
+  if(!email||email.indexOf('@')<0){errEl.textContent='Please enter a valid email.';errEl.style.display='block';return}
+  if(!orgName){errEl.textContent='Please enter your organisation.';errEl.style.display='block';return}
+  errEl.style.display='none';
+  btn.textContent='Submitting…';btn.disabled=true;
+  var reqs=[];
+  document.querySelectorAll('#ent-reqs input[type=checkbox]:checked').forEach(function(c){reqs.push(c.value)});
+  try{
+    await sb.from('enterprise_inquiries').insert({
+      org_id:null,user_id:null,
+      full_name:name,email:email,organisation:orgName,
+      role_title:role||null,system_count:systems||null,
+      requirements:reqs.length?reqs:null,message:message||null
+    });
+    try{
+      if(typeof (window.RA_CONTACT||{}).sendMail==='function'){
+        await RA_CONTACT.sendMail('enterprise',{
+          name:name,
+          email:email,
+          role:role||undefined,
+          organisation:orgName,
+          company:orgName,
+          systems:systems||undefined,
+          system_count:systems||undefined,
+          requirements:reqs.length?reqs:undefined,
+          message:message||undefined
+        });
+      }
+    }catch(eml){console.log('Email notification skipped')}
+    document.querySelector('#enterprise-modal .modal-header').innerHTML='<div></div><button type="button" class="modal-close" onclick="closeEnterpriseModal()" aria-label="Close">&#10005;</button>';
+    document.getElementById('ent-modal-body').innerHTML='<div class="ent-success"><h4>Inquiry received</h4><p>Thank you, '+escHtml(name.split(' ')[0])+'. A RegAnchor governance specialist will be in touch within 24 hours.</p></div>';
+    document.getElementById('ent-modal-footer').innerHTML='<button type="button" class="modal-btn modal-btn--primary" onclick="closeEnterpriseModal()">Close</button>';
+  }catch(err){
+    errEl.textContent='Error: '+(err.message||'Could not submit. Please try again.');
+    errEl.style.display='block';
+    btn.textContent='Submit inquiry';btn.disabled=false;
+  }
+}
+
+document.getElementById('enterprise-modal').addEventListener('click',function(e){
+  if(e.target===this)closeEnterpriseModal();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&document.getElementById('enterprise-modal').classList.contains('open'))closeEnterpriseModal();
+});
+
+(function(){
+  var p=new URLSearchParams(window.location.search);
+  var plan=p.get('plan');
+  var period=p.get('period');
+  if(plan&&(plan==='essentials'||plan==='professional')){
+    if(period==='annual'){isAnnual=true;updatePrices()}
+    setTimeout(function(){subscribe(plan)},400);
+  }
+})();
+
+var io=new IntersectionObserver(function(entries){entries.forEach(function(e,i){if(e.isIntersecting){setTimeout(function(){e.target.classList.add('in')},i*90);io.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.fade').forEach(function(el){io.observe(el)});
+</script>
+<script src="js/ra-chrome.js"></script>
+</body>
+</html>

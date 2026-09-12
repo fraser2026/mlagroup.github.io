@@ -1,0 +1,96 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+}
+
+.row:first-child {
+  /* Tab bar already supplies top air — don’t double it vs Overview / Controls. */
+  padding-top: 0;
+}
+
+/* Spine through events — classic audit / activity log */
+.row::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ra-border);
+}
+
+.row:first-child::before {
+  top: 12px;
+}
+
+.row:last-child::before {
+  bottom: calc(100% - 20px);
+}
+
+.dot {
+  position: relative;
+  z-index: 1;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  margin-top: 5px;
+  flex-shrink: 0;
+  background: var(--ra-blurple);
+  box-shadow: 0 0 0 3px var(--ra-canvas);
+}
+
+.ok {
+  background: var(--ra-ok);
+}
+
+.warn {
+  background: var(--ra-warn);
+}
+
+.risk {
+  background: var(--ra-risk);
+}
+
+.info {
+  background: var(--ra-blurple);
+}
+
+.neutral {
+  background: var(--ra-blurple);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.meta {
+  margin-top: 3px;
+  font-family: var(--ra-font-num);
+  font-size: 12px;
+  color: var(--ra-text-3);
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.trailing {
+  flex-shrink: 0;
+}

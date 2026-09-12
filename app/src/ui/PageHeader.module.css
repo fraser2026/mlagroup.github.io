@@ -1,0 +1,36 @@
+.wrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.copy {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.025em;
+  color: var(--ra-ink);
+  line-height: 1.2;
+}
+
+.desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  max-width: 520px;
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: center;
+}

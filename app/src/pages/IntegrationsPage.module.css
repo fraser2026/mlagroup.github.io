@@ -1,0 +1,147 @@
+.deviceCard {
+  max-width: 420px;
+  display: grid;
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.deviceInput {
+  height: 32px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: 0.06em;
+  color: var(--ra-ink);
+  background: var(--ra-canvas);
+}
+
+.deviceInput:focus,
+.deviceInput:focus-visible {
+  outline: none;
+  border-color: var(--ra-blurple);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.deviceHint {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  line-height: 1.4;
+}
+
+.deviceHint code {
+  font-size: 11px;
+}
+
+.deviceActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hostsTools {
+  margin-top: 20px;
+}
+
+.list {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  overflow: hidden;
+  background: var(--ra-surface);
+  margin-top: 12px;
+}
+
+.linkedBlock {
+  margin-bottom: 16px;
+}
+
+.blockLabel {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  margin-bottom: 8px;
+}
+
+.market {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.marketCard {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  padding: 14px;
+  background: var(--ra-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color var(--ra-motion-fast) var(--ra-ease-out);
+}
+
+.marketCard:hover {
+  border-color: var(--ra-blurple);
+}
+
+.marketTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.marketName {
+  font-size: 14px;
+  font-weight: var(--ra-fw-semibold);
+  color: var(--ra-ink);
+}
+
+.marketMeta {
+  font-size: 12px;
+  color: var(--ra-text-3);
+  margin-top: -6px;
+}
+
+.marketAction {
+  margin-top: auto;
+}
+
+.snippet {
+  margin-top: 16px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  padding: 16px 18px;
+  background: var(--ra-surface);
+}
+
+.snippetLabel {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+.snippet pre {
+  margin: 0;
+  font-family: var(--ra-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

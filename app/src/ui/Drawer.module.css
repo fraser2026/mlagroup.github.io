@@ -1,0 +1,227 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(10, 14, 20, 0.22);
+  -webkit-backdrop-filter: blur(7px) saturate(1.02);
+  backdrop-filter: blur(7px) saturate(1.02);
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  padding: 0;
+  animation: raDrawerOverlayIn 180ms var(--ra-ease-out) both;
+}
+
+@media (min-width: 861px) {
+  /* Sit on the shell layer like the work card — same cushions + radius language */
+  .overlay {
+    padding: var(--ra-shell-pad-y) var(--ra-shell-pad-x) var(--ra-shell-pad-y) 0;
+    background: color-mix(in srgb, var(--ra-sidebar) 55%, transparent);
+  }
+
+  :global([data-theme='dark']) .overlay {
+    background: rgba(0, 0, 0, 0.45);
+  }
+}
+
+/* Preview: readable list behind; no blur; lighter dim */
+.overlayPreview {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(10, 14, 20, 0.28);
+}
+
+@media (min-width: 861px) {
+  .overlayPreview {
+    background: rgba(10, 14, 20, 0.22);
+  }
+
+  :global([data-theme='dark']) .overlayPreview {
+    background: rgba(0, 0, 0, 0.38);
+  }
+}
+
+.panel {
+  width: min(480px, 100%);
+  height: 100%;
+  background: var(--ra-canvas);
+  border: 1px solid var(--ra-border);
+  border-right: 0;
+  border-radius: 0;
+  box-shadow:
+    0 1px 2px rgba(10, 14, 20, 0.04),
+    0 12px 32px -10px rgba(10, 14, 20, 0.14);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: raDrawerPanelIn 200ms var(--ra-ease-out) both;
+}
+
+.panelPreview {
+  width: min(420px, 100%);
+}
+
+@media (min-width: 861px) {
+  .panel {
+    border-right: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-control);
+  }
+}
+
+@keyframes raDrawerOverlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes raDrawerOverlayOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes raDrawerPanelIn {
+  from {
+    opacity: 0.96;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes raDrawerPanelOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0.96;
+    transform: translateX(12px);
+  }
+}
+
+.overlayExit {
+  animation: raDrawerOverlayOut 180ms var(--ra-ease-out) both;
+  pointer-events: none;
+}
+
+.panelExit {
+  animation: raDrawerPanelOut 180ms var(--ra-ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .overlayPreview,
+  .overlayExit {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    animation: none;
+  }
+
+  .panel,
+  .panelPreview,
+  .panelExit {
+    animation: none;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--ra-border);
+  flex-shrink: 0;
+}
+
+.headerPreview {
+  padding: 16px 18px 12px;
+}
+
+.headerCopy {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  color: var(--ra-ink);
+  line-height: 1.2;
+}
+
+.headerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.description {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ra-text-3);
+  line-height: 1.4;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.close {
+  border: 0;
+  background: transparent;
+  color: var(--ra-text-3);
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: var(--ra-radius-control);
+}
+
+.close:hover {
+  color: var(--ra-ink);
+  background: var(--ra-hover);
+}
+
+.body {
+  padding: 8px 22px 24px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.bodyPreview {
+  padding: 4px 18px 20px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border-top: 0;
+  flex-shrink: 0;
+  background: var(--ra-canvas);
+}
+
+.footerPreview {
+  padding: 12px 18px;
+  border-top: 1px solid var(--ra-border);
+}

@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>AI Governance Risk Diagnostic | RegAnchor</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/ra-contact.js"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
+  <link rel="stylesheet" href="css/reganchor-flow.css">
+  <style>
+  /* Prescreen labels — match .section-desc; placeholders match contact.html lightness */
+  #screen-prescreen .form-label {
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--sub);
+    line-height: 1.55;
+    margin-bottom: 6px;
+  }
+  #screen-prescreen .form-label .form-label-note {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--sub);
+  }
+  #screen-prescreen .form-input::placeholder {
+    color: var(--ra-slate-30, #A3ACB9);
+    opacity: 1;
+    font-weight: 400;
+  }
+  #screen-prescreen .form-select:has(option[value=""]:checked) {
+    color: var(--ra-slate-30, #A3ACB9);
+  }
+  #screen-prescreen .form-select option {
+    color: var(--main);
+  }
+  </style>
+  <script src="js/ra-maturity.js"></script>
+</head>
+<body class="flow-page">
+
+<!-- CALCULATING OVERLAY -->
+<div class="calc-overlay" id="calcOverlay">
+  <div class="calc-spinner" aria-hidden="true"></div>
+  <div class="calc-title">Analysing your responses</div>
+  <div class="calc-sub">Applying sector calibration and regulatory scoring</div>
+  <div class="calc-track" aria-hidden="true"><div class="calc-track__fill" id="calcTrackFill"></div></div>
+</div>
+
+<div class="page">
+
+  <header class="site-chrome" id="siteChrome">
+    <nav class="site-nav">
+      <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+      <div class="nav-right">
+        <span class="flow-step" id="progressCount" hidden>1 of 8</span>
+        <a href="index.html" class="nav-signin">Homepage</a>
+      </div>
+    </nav>
+    <div class="scroll-progress scroll-progress--step" id="progressWrap" aria-hidden="true">
+      <div class="scroll-progress__fill progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="site-chrome__fade" aria-hidden="true"></div>
+  </header>
+
+  <div class="wrapper">
+
+    <aside class="q-rail" id="qRail">
+      <div class="q-rail-eyebrow">Assessment Domains</div>
+      <div class="q-rail-item" data-screen="screen-s1"><span class="q-rail-num">01</span><span>AI Inventory &amp; Classification</span></div>
+      <div class="q-rail-item" data-screen="screen-s2"><span class="q-rail-num">02</span><span>Governance &amp; Accountability</span></div>
+      <div class="q-rail-item" data-screen="screen-s3"><span class="q-rail-num">03</span><span>Data Quality &amp; Lineage</span></div>
+      <div class="q-rail-item" data-screen="screen-s4"><span class="q-rail-num">04</span><span>Human Oversight &amp; Controls</span></div>
+      <div class="q-rail-item" data-screen="screen-s5"><span class="q-rail-num">05</span><span>Explainability &amp; Transparency</span></div>
+      <div class="q-rail-item" data-screen="screen-s6"><span class="q-rail-num">06</span><span>Compliance &amp; Legal Alignment</span></div>
+      <div class="q-rail-item" data-screen="screen-s7"><span class="q-rail-num">07</span><span>Operational Controls &amp; Resilience</span></div>
+    </aside>
+
+    <!-- LANDING -->
+    <div class="screen active" id="screen-landing">
+      <div class="flow-landing">
+        <h1>Measure your AI risk <em>exposure.</em></h1>
+        <p class="lead">A free assessment of governance maturity across seven control areas, aligned to UK and EU regulatory expectations.</p>
+        <div class="landing-meta">
+          <span>Under 20 minutes</span>
+          <span>7 control areas</span>
+          <span>Confidential</span>
+        </div>
+        <div class="landing-actions">
+          <button type="button" class="btn-primary" onclick="goTo('screen-prescreen')">Start the diagnostic</button>
+        </div>
+        <p class="landing-note">Free results summary. Full report available for £295.</p>
+      </div>
+    </div>
+
+    <!-- PRE-SCREEN -->
+    <div class="screen" id="screen-prescreen">
+      <div class="card">
+        <div class="section-title">Organisation details</div>
+        <div class="section-desc">Used to calibrate your score. Handled in confidence.</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label" for="ps-name">Full name *</label><input type="text" class="form-input" id="ps-name" placeholder="e.g. Alex Johnson" autocomplete="name"></div>
+          <div class="form-group"><label class="form-label" for="ps-role">Job title / role *</label><input type="text" class="form-input" id="ps-role" placeholder="e.g. Chief Risk Officer" autocomplete="organization-title"></div>
+        </div>
+        <div class="form-group"><label class="form-label" for="ps-email">Professional email address *</label><input type="email" class="form-input" id="ps-email" placeholder="you@yourcompany.com" autocomplete="email"></div>
+        <div class="form-group"><label class="form-label" for="ps-org">Organisation name *</label><input type="text" class="form-input" id="ps-org" placeholder="e.g. Acme Financial Ltd" autocomplete="organization"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label" for="ps-sector">Industry sector *</label>
+            <select class="form-select" id="ps-sector">
+              <option value="">Select your sector</option>
+              <option>Financial Services</option><option>Healthcare &amp; Life Sciences</option>
+              <option>Legal &amp; Professional Services</option><option>Retail &amp; E-commerce</option>
+              <option>Technology &amp; SaaS</option><option>Public Sector / Government</option>
+              <option>Education</option><option>Manufacturing &amp; Logistics</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label" for="ps-size">Number of employees *</label>
+            <select class="form-select" id="ps-size">
+              <option value="">Select range</option>
+              <option>1-49</option><option>50-249</option><option>250-999</option><option>1,000+</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Regulatory regime(s) that apply <span class="form-label-note">(select all that apply)</span></label>
+          <div class="options" style="margin-top:8px">
+            <label class="option cb" onclick="toggleCb(this)"><span class="option-dot"></span>FCA regulated</label>
+            <label class="option cb" onclick="toggleCb(this)"><span class="option-dot"></span>ICO registered / GDPR obligations</label>
+            <label class="option cb" onclick="toggleCb(this)"><span class="option-dot"></span>NHS / CQC oversight</label>
+            <label class="option cb" onclick="toggleCb(this)"><span class="option-dot"></span>SRA (Solicitors Regulation Authority)</label>
+            <label class="option cb" onclick="toggleCb(this)"><span class="option-dot"></span>None currently</label>
+            <label class="option cb" onclick="toggleCb(this)"><span class="option-dot"></span>Unsure</label>
+          </div>
+        </div>
+        <div id="ps-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button type="button" class="btn-secondary" onclick="goTo('screen-landing')">&#8592; Back</button>
+          <button type="button" class="btn-primary" onclick="validatePrescreen()">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S1 -->
+    <div class="screen" id="screen-s1">
+      <div class="card">
+        <div class="section-title">AI Inventory &amp; Classification</div>
+        <div class="section-desc">Identifying AI systems in scope and establishing potential regulatory exposure.</div>
+        <div class="q-block">
+          <div class="q-label">Does your organisation maintain an up-to-date inventory of all AI systems currently in use, including third-party AI tools integrated into business processes?</div>
+          <div class="options" id="q1_1">
+            <label class="option" onclick="pick(this,'q1_1',3)"><span class="option-dot"></span>Yes: fully maintained and reviewed at least annually</label>
+            <label class="option" onclick="pick(this,'q1_1',1)"><span class="option-dot"></span>Partially: some systems documented but not comprehensively</label>
+            <label class="option" onclick="pick(this,'q1_1',0)"><span class="option-dot"></span>No formal inventory exists</label>
+            <label class="option" onclick="pick(this,'q1_1',0)" data-uncertainty="true"><span class="option-dot"></span>Don&#8217;t know</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Which of the following categories apply to your AI systems?</div>
+          <div class="q-hint">These categories align with EU AI Act Annex III high-risk classifications. Select all that apply. Selections affect your exposure score.</div>
+          <div class="options" id="q1_2">
+            <label class="option cb" onclick="toggleCb(this)" data-val="auto"><span class="option-dot"></span>Automated decision support affecting individuals</label>
+            <label class="option cb" onclick="toggleCb(this)" data-val="profile"><span class="option-dot"></span>Customer profiling or segmentation</label>
+            <label class="option cb" onclick="toggleCb(this)" data-val="credit"><span class="option-dot"></span>Customer eligibility or credit scoring</label>
+            <label class="option cb" onclick="toggleCb(this)" data-val="hr"><span class="option-dot"></span>HR or recruitment support</label>
+            <label class="option cb" onclick="toggleCb(this)" data-val="bio"><span class="option-dot"></span>Biometric or identity verification</label>
+            <label class="option cb" onclick="toggleCb(this)" data-val="health"><span class="option-dot"></span>Health or safety related outputs</label>
+            <label class="option cb" onclick="toggleCb(this)" data-val="none"><span class="option-dot"></span>None of the above: AI is used only for internal operational tasks</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Have your AI systems been formally assessed against legal and regulatory requirements specific to your sector?</div>
+          <div class="options" id="q1_3">
+            <label class="option" onclick="pick(this,'q1_3',3)"><span class="option-dot"></span>Yes: documented assessment, reviewed within the last 12 months</label>
+            <label class="option" onclick="pick(this,'q1_3',1)"><span class="option-dot"></span>Yes: informally reviewed but not documented</label>
+            <label class="option" onclick="pick(this,'q1_3',0)"><span class="option-dot"></span>No: not yet assessed</label>
+            <label class="option" onclick="pick(this,'q1_3',0)" data-uncertainty="true"><span class="option-dot"></span>Unsure whether this is required for our AI use</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Does your organisation have a documented process for onboarding new AI systems, including a risk assessment before deployment?</div>
+          <div class="options" id="q1_4">
+            <label class="option" onclick="pick(this,'q1_4',3)"><span class="option-dot"></span>Yes: formal onboarding process with documented risk gate</label>
+            <label class="option" onclick="pick(this,'q1_4',2)"><span class="option-dot"></span>Partially: some review occurs but not consistently applied</label>
+            <label class="option" onclick="pick(this,'q1_4',0)"><span class="option-dot"></span>No: AI systems are adopted without structured review</label>
+            <label class="option" onclick="pick(this,'q1_4',1)"><span class="option-dot"></span>Not applicable: we have not adopted any new AI systems recently</label>
+          </div>
+        </div>
+        <div id="s1-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-prescreen')">&#8592; Back</button>
+          <button class="btn-primary" onclick="next(['q1_1','q1_3','q1_4'],'s1-error','screen-s2')">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S2 -->
+    <div class="screen" id="screen-s2">
+      <div class="card">
+        <div class="section-title">Governance, Leadership &amp; Accountability</div>
+        <div class="section-desc">Assessing the maturity of internal ownership and oversight structures.</div>
+        <div class="q-block">
+          <div class="q-label">Is there a formally appointed individual or function responsible for AI governance, with defined, documented responsibilities and a clear reporting line?</div>
+          <div class="options" id="q2_1">
+            <label class="option" onclick="pick(this,'q2_1',3)"><span class="option-dot"></span>Yes: named individual or function with documented scope and board-level reporting</label>
+            <label class="option" onclick="pick(this,'q2_1',1)"><span class="option-dot"></span>Yes: but informally arranged with no documented mandate</label>
+            <label class="option" onclick="pick(this,'q2_1',0)"><span class="option-dot"></span>No: responsibility is unclear or distributed without accountability</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are AI systems formally classified by risk level within your organisation?</div>
+          <div class="options" id="q2_2">
+            <label class="option" onclick="pick(this,'q2_2',3)"><span class="option-dot"></span>Yes: with a written classification framework applied consistently</label>
+            <label class="option" onclick="pick(this,'q2_2',2)"><span class="option-dot"></span>Partially: some classification exists but inconsistently applied</label>
+            <label class="option" onclick="pick(this,'q2_2',0)"><span class="option-dot"></span>No formal classification in place</label>
+            <label class="option" onclick="pick(this,'q2_2',1)"><span class="option-dot"></span>Not yet required at our current stage of AI adoption</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Does executive leadership receive regular, documented reporting on AI risk, performance, and governance status?</div>
+          <div class="options" id="q2_3">
+            <label class="option" onclick="pick(this,'q2_3',3)"><span class="option-dot"></span>Yes: at least quarterly, with documented minutes or records</label>
+            <label class="option" onclick="pick(this,'q2_3',1)"><span class="option-dot"></span>Yes: occasionally, but not on a regular schedule</label>
+            <label class="option" onclick="pick(this,'q2_3',0)"><span class="option-dot"></span>No: AI risk is not reported to executive or board level</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are documented policies in place governing the acceptable and prohibited use of AI systems across your organisation?</div>
+          <div class="options" id="q2_4">
+            <label class="option" onclick="pick(this,'q2_4',3)"><span class="option-dot"></span>Yes: comprehensive AI use policy, reviewed within 12 months</label>
+            <label class="option" onclick="pick(this,'q2_4',1)"><span class="option-dot"></span>Partially: some guidance exists but not a comprehensive policy</label>
+            <label class="option" onclick="pick(this,'q2_4',0)"><span class="option-dot"></span>No policies in place</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are roles and responsibilities for AI oversight explicitly defined across risk, compliance, legal, and technical functions?</div>
+          <div class="options" id="q2_5">
+            <label class="option" onclick="pick(this,'q2_5',3)"><span class="option-dot"></span>Yes: clearly defined in writing with named role holders</label>
+            <label class="option" onclick="pick(this,'q2_5',2)"><span class="option-dot"></span>Partially: some functions have defined roles but others do not</label>
+            <label class="option" onclick="pick(this,'q2_5',0)"><span class="option-dot"></span>No: roles are assumed rather than assigned</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Is AI awareness or literacy training provided to staff who interact with, rely upon, or are affected by AI-generated outputs?</div>
+          <div class="options" id="q2_6">
+            <label class="option" onclick="pick(this,'q2_6',3)"><span class="option-dot"></span>Yes: mandatory training with completion records maintained</label>
+            <label class="option" onclick="pick(this,'q2_6',2)"><span class="option-dot"></span>Yes: available but voluntary, no completion tracking</label>
+            <label class="option" onclick="pick(this,'q2_6',1)"><span class="option-dot"></span>Planned but not yet implemented</label>
+            <label class="option" onclick="pick(this,'q2_6',0)"><span class="option-dot"></span>No training in place</label>
+          </div>
+        </div>
+        <div id="s2-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s1')">&#8592; Back</button>
+          <button class="btn-primary" onclick="next(['q2_1','q2_2','q2_3','q2_4','q2_5','q2_6'],'s2-error','screen-s3')">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3 -->
+    <div class="screen" id="screen-s3">
+      <div class="card">
+        <div class="section-title">Data Quality, Lineage &amp; Management</div>
+        <div class="section-desc">Confirming that your AI systems are supported by clear, auditable data practices.</div>
+        <div class="q-block">
+          <div class="q-label">Is the origin and source of data used by AI systems documented and accessible, including how it is collected, processed, and updated?</div>
+          <div class="q-hint">i.e. where data comes from, how it is collected and processed</div>
+          <div class="options" id="q3_1">
+            <label class="option" onclick="pick(this,'q3_1',3)"><span class="option-dot"></span>Fully documented and accessible to relevant staff</label>
+            <label class="option" onclick="pick(this,'q3_1',1)"><span class="option-dot"></span>Partially documented: some sources recorded but not comprehensively</label>
+            <label class="option" onclick="pick(this,'q3_1',0)"><span class="option-dot"></span>Not documented</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Do you maintain records of data lineage for core AI systems?</div>
+          <div class="q-hint">Sources, transformations applied, and version history</div>
+          <div class="options" id="q3_2">
+            <label class="option" onclick="pick(this,'q3_2',3)"><span class="option-dot"></span>Yes: comprehensive lineage records maintained and version-controlled</label>
+            <label class="option" onclick="pick(this,'q3_2',2)"><span class="option-dot"></span>Partially: some lineage tracked but not consistently</label>
+            <label class="option" onclick="pick(this,'q3_2',1)"><span class="option-dot"></span>Limited records: ad-hoc rather than systematic</label>
+            <label class="option" onclick="pick(this,'q3_2',0)"><span class="option-dot"></span>No lineage records maintained</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Do you perform regular data quality assessments for inputs feeding AI decisions, covering completeness, accuracy, and representativeness?</div>
+          <div class="options" id="q3_3">
+            <label class="option" onclick="pick(this,'q3_3',3)"><span class="option-dot"></span>Yes: scheduled assessments with documented results</label>
+            <label class="option" onclick="pick(this,'q3_3',1)"><span class="option-dot"></span>Yes: but ad-hoc and undocumented</label>
+            <label class="option" onclick="pick(this,'q3_3',0)"><span class="option-dot"></span>No assessments performed</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Is there a documented process for identifying, escalating, and resolving data quality issues that affect AI system inputs or outputs?</div>
+          <div class="options" id="q3_4">
+            <label class="option" onclick="pick(this,'q3_4',3)"><span class="option-dot"></span>Yes: formal documented process with escalation path</label>
+            <label class="option" onclick="pick(this,'q3_4',1)"><span class="option-dot"></span>Yes: informal process exists but not documented</label>
+            <label class="option" onclick="pick(this,'q3_4',0)"><span class="option-dot"></span>No process exists</label>
+          </div>
+        </div>
+        <div id="s3-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s2')">&#8592; Back</button>
+          <button class="btn-primary" onclick="next(['q3_1','q3_2','q3_3','q3_4'],'s3-error','screen-s4')">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4 -->
+    <div class="screen" id="screen-s4">
+      <div class="card">
+        <div class="section-title">Human Oversight &amp; Decision Controls</div>
+        <div class="section-desc">Evaluating how human judgement integrates with AI-driven decisions.</div>
+        <div class="q-block">
+          <div class="q-label">Do AI decision processes include human review for high-impact outcomes, where the AI output materially affects an individual&#8217;s rights, access to services, or financial position?</div>
+          <div class="options" id="q4_1">
+            <label class="option" onclick="pick(this,'q4_1',3)"><span class="option-dot"></span>Yes: human review is mandatory for all high-impact outcomes, with documented protocols</label>
+            <label class="option" onclick="pick(this,'q4_1',2)"><span class="option-dot"></span>Yes: conditionally, based on a defined risk threshold</label>
+            <label class="option" onclick="pick(this,'q4_1',1)"><span class="option-dot"></span>Rarely: review occurs informally but is not systematic</label>
+            <label class="option" onclick="pick(this,'q4_1',0)"><span class="option-dot"></span>No: AI outputs are acted upon without human review</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are override protocols formally documented for circumstances where a human reviewer disagrees with or wishes to countermand an AI-driven outcome?</div>
+          <div class="options" id="q4_2">
+            <label class="option" onclick="pick(this,'q4_2',3)"><span class="option-dot"></span>Yes: formally documented, with records of overrides maintained</label>
+            <label class="option" onclick="pick(this,'q4_2',1)"><span class="option-dot"></span>Understood informally but not documented</label>
+            <label class="option" onclick="pick(this,'q4_2',1)"><span class="option-dot"></span>Planned but not yet in place</label>
+            <label class="option" onclick="pick(this,'q4_2',0)"><span class="option-dot"></span>No</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Do staff responsible for reviewing AI-assisted decisions receive adequate, documented training, covering both the system&#8217;s capabilities and its known limitations?</div>
+          <div class="options" id="q4_3">
+            <label class="option" onclick="pick(this,'q4_3',3)"><span class="option-dot"></span>Yes: mandatory training with completion records and periodic refresh</label>
+            <label class="option" onclick="pick(this,'q4_3',1)"><span class="option-dot"></span>Partially: some training exists but inconsistent or undocumented</label>
+            <label class="option" onclick="pick(this,'q4_3',0)"><span class="option-dot"></span>No formal training in place</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are escalation pathways defined and documented for AI-assisted decisions that require additional scrutiny, challenge, or senior review?</div>
+          <div class="options" id="q4_4">
+            <label class="option" onclick="pick(this,'q4_4',3)"><span class="option-dot"></span>Yes: clearly documented with named escalation contacts and timescales</label>
+            <label class="option" onclick="pick(this,'q4_4',1)"><span class="option-dot"></span>Informal pathways are understood but not documented</label>
+            <label class="option" onclick="pick(this,'q4_4',0)"><span class="option-dot"></span>No escalation pathways defined</label>
+          </div>
+        </div>
+        <div id="s4-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s3')">&#8592; Back</button>
+          <button class="btn-primary" onclick="next(['q4_1','q4_2','q4_3','q4_4'],'s4-error','screen-s5')">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5 -->
+    <div class="screen" id="screen-s5">
+      <div class="card">
+        <div class="section-title">Explainability &amp; Transparency</div>
+        <div class="section-desc">Assessing whether AI-assisted decisions are explainable, traceable, and defensible.</div>
+        <div class="q-block">
+          <div class="q-label">Can your organisation provide a clear, meaningful explanation for AI-assisted decisions when required, by an individual, a regulator, or in a legal context?</div>
+          <div class="options" id="q5_1">
+            <label class="option" onclick="pick(this,'q5_1',3)"><span class="option-dot"></span>Yes: consistently, with a documented explanation methodology</label>
+            <label class="option" onclick="pick(this,'q5_1',2)"><span class="option-dot"></span>In most cases: explanations possible but not always documented</label>
+            <label class="option" onclick="pick(this,'q5_1',1)"><span class="option-dot"></span>Only in limited circumstances: depends on system and context</label>
+            <label class="option" onclick="pick(this,'q5_1',0)"><span class="option-dot"></span>No: explanations cannot be produced</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Do you maintain logs of AI input features, decision outputs, and confidence or probability scores where applicable?</div>
+          <div class="options" id="q5_2">
+            <label class="option" onclick="pick(this,'q5_2',3)"><span class="option-dot"></span>Yes: detailed logs retained for a defined period, accessible for audit</label>
+            <label class="option" onclick="pick(this,'q5_2',1)"><span class="option-dot"></span>Partially: some logging exists but incomplete or inconsistently retained</label>
+            <label class="option" onclick="pick(this,'q5_2',0)"><span class="option-dot"></span>No logging in place</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are decision logic, model versions, and model change history recorded and accessible for internal audit and regulatory examination?</div>
+          <div class="options" id="q5_3">
+            <label class="option" onclick="pick(this,'q5_3',3)"><span class="option-dot"></span>Yes: all versions documented with change rationale, accessible on request</label>
+            <label class="option" onclick="pick(this,'q5_3',1)"><span class="option-dot"></span>Partially: some version information recorded but not comprehensively</label>
+            <label class="option" onclick="pick(this,'q5_3',0)"><span class="option-dot"></span>No: model versioning is not tracked</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Can a specific AI-assisted decision be traced back to its source inputs, the model version that produced it, and the logic applied: for any decision made in the past 12 months?</div>
+          <div class="options" id="q5_4">
+            <label class="option" onclick="pick(this,'q5_4',3)"><span class="option-dot"></span>Always: full traceability across all AI-assisted decisions</label>
+            <label class="option" onclick="pick(this,'q5_4',2)"><span class="option-dot"></span>In most cases: some decisions can be traced but not all</label>
+            <label class="option" onclick="pick(this,'q5_4',1)"><span class="option-dot"></span>Rarely: traceability possible only in limited circumstances</label>
+            <label class="option" onclick="pick(this,'q5_4',0)"><span class="option-dot"></span>Never: decisions cannot be reconstructed</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are AI systems tested for bias, fairness, or discriminatory outputs, before deployment and on an ongoing basis, with results documented?</div>
+          <div class="options" id="q5_5">
+            <label class="option" onclick="pick(this,'q5_5',3)"><span class="option-dot"></span>Yes: formal testing methodology, documented results, periodic re-testing schedule</label>
+            <label class="option" onclick="pick(this,'q5_5',1)"><span class="option-dot"></span>Some testing conducted but not systematic or documented</label>
+            <label class="option" onclick="pick(this,'q5_5',0)"><span class="option-dot"></span>No formal testing for bias or fairness</label>
+            <label class="option" onclick="pick(this,'q5_5',1)"><span class="option-dot"></span>Not applicable: our AI systems do not produce outputs affecting individuals</label>
+          </div>
+        </div>
+        <div id="s5-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s4')">&#8592; Back</button>
+          <button class="btn-primary" onclick="next(['q5_1','q5_2','q5_3','q5_4','q5_5'],'s5-error','screen-s6')">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S6 -->
+    <div class="screen" id="screen-s6">
+      <div class="card">
+        <div class="section-title">Compliance &amp; Legal Alignment</div>
+        <div class="section-desc">Confirming awareness and active alignment with UK and EU legal obligations.</div>
+        <div class="q-block">
+          <div class="q-label">Has your organisation conducted a formal Data Protection Impact Assessment (DPIA) for AI systems that process personal data, and has it been reviewed within the last 12 months?</div>
+          <div class="options" id="q6_1">
+            <label class="option" onclick="pick(this,'q6_1',3)"><span class="option-dot"></span>Yes: completed, reviewed within 12 months, and documented</label>
+            <label class="option" onclick="pick(this,'q6_1',2)"><span class="option-dot"></span>Yes: completed but not reviewed recently (more than 12 months ago)</label>
+            <label class="option" onclick="pick(this,'q6_1',1)"><span class="option-dot"></span>Planned but not yet completed</label>
+            <label class="option" onclick="pick(this,'q6_1',0)"><span class="option-dot"></span>No DPIA has been conducted</label>
+            <label class="option" onclick="pick(this,'q6_1',2)"><span class="option-dot"></span>Not required: our AI systems do not process personal data</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are individuals informed: at the point of interaction or decision: when automated or AI-assisted processes are used in ways that materially affect them?</div>
+          <div class="options" id="q6_2">
+            <label class="option" onclick="pick(this,'q6_2',3)"><span class="option-dot"></span>Yes: always, with documented transparency notices</label>
+            <label class="option" onclick="pick(this,'q6_2',1)"><span class="option-dot"></span>Partially: in some contexts but not comprehensively</label>
+            <label class="option" onclick="pick(this,'q6_2',0)"><span class="option-dot"></span>No: individuals are not informed</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Is there a documented process allowing individuals to request human review of, or formally challenge, an AI-assisted decision that affects them?</div>
+          <div class="options" id="q6_3">
+            <label class="option" onclick="pick(this,'q6_3',3)"><span class="option-dot"></span>Yes: formally documented, with defined timescales and named responsible function</label>
+            <label class="option" onclick="pick(this,'q6_3',1)"><span class="option-dot"></span>Limited process exists: requests can be made but the process is not documented</label>
+            <label class="option" onclick="pick(this,'q6_3',0)"><span class="option-dot"></span>No mechanism exists</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Has your organisation assessed which of its AI systems fall within the scope of the EU AI Act, including any that may qualify as high-risk under Annex III?</div>
+          <div class="options" id="q6_4">
+            <label class="option" onclick="pick(this,'q6_4',3)"><span class="option-dot"></span>Yes: formal scope assessment conducted, documented, and kept under review</label>
+            <label class="option" onclick="pick(this,'q6_4',2)"><span class="option-dot"></span>Partially: some systems assessed but not comprehensively</label>
+            <label class="option" onclick="pick(this,'q6_4',0)"><span class="option-dot"></span>No: EU AI Act scope has not been formally assessed</label>
+            <label class="option" onclick="pick(this,'q6_4',0)" data-uncertainty="true"><span class="option-dot"></span>Unsure whether the EU AI Act applies to our organisation</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are individuals able to exercise their data rights in relation to AI-assisted decisions, including the right to explanation, objection, and erasure?</div>
+          <div class="options" id="q6_5">
+            <label class="option" onclick="pick(this,'q6_5',3)"><span class="option-dot"></span>Yes: all applicable rights supported with documented processes and response timescales</label>
+            <label class="option" onclick="pick(this,'q6_5',1)"><span class="option-dot"></span>Partially: some rights accommodated but not all, or processes are informal</label>
+            <label class="option" onclick="pick(this,'q6_5',0)"><span class="option-dot"></span>No: rights requests relating to AI decisions are not formally handled</label>
+          </div>
+        </div>
+        <div id="s6-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s5')">&#8592; Back</button>
+          <button class="btn-primary" onclick="next(['q6_1','q6_2','q6_3','q6_4','q6_5'],'s6-error','screen-s7')">Continue &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S7 -->
+    <div class="screen" id="screen-s7">
+      <div class="card">
+        <div class="section-title">Operational Controls &amp; Resilience</div>
+        <div class="section-desc">Assessing the robustness of risk controls, third-party management, and operational resilience around AI systems.</div>
+        <div class="q-block">
+          <div class="q-label">Are AI systems included in your organisation&#8217;s formal risk and control self-assessment (RCSA) or equivalent risk register?</div>
+          <div class="options" id="q7_1">
+            <label class="option" onclick="pick(this,'q7_1',3)"><span class="option-dot"></span>Yes: all AI systems are explicitly included in the risk framework</label>
+            <label class="option" onclick="pick(this,'q7_1',2)"><span class="option-dot"></span>Partially: some AI systems are included but not comprehensively</label>
+            <label class="option" onclick="pick(this,'q7_1',0)"><span class="option-dot"></span>No: AI is not included in formal risk assessments</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Do third-party AI providers and AI-enabled services undergo structured due diligence, covering data handling, contractual obligations, and ongoing performance review?</div>
+          <div class="options" id="q7_2">
+            <label class="option" onclick="pick(this,'q7_2',3)"><span class="option-dot"></span>Yes: formal due diligence with documented outputs and contractual controls</label>
+            <label class="option" onclick="pick(this,'q7_2',2)"><span class="option-dot"></span>Partially: some review occurs but not systematically</label>
+            <label class="option" onclick="pick(this,'q7_2',0)"><span class="option-dot"></span>No structured review of third-party AI providers</label>
+            <label class="option" onclick="pick(this,'q7_2',3)"><span class="option-dot"></span>We do not use third-party AI providers</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Are cybersecurity and adversarial vulnerabilities assessed for AI systems?</div>
+          <div class="q-hint">e.g. prompt injection, model manipulation, data poisoning: these are AI-specific and not captured by standard cybersecurity assessments</div>
+          <div class="options" id="q7_3">
+            <label class="option" onclick="pick(this,'q7_3',3)"><span class="option-dot"></span>Yes: AI-specific security testing formally conducted</label>
+            <label class="option" onclick="pick(this,'q7_3',2)"><span class="option-dot"></span>Partially: some assessment conducted but not AI-specific</label>
+            <label class="option" onclick="pick(this,'q7_3',1)"><span class="option-dot"></span>No: standard cybersecurity applies but AI-specific risks not assessed</label>
+            <label class="option" onclick="pick(this,'q7_3',1)"><span class="option-dot"></span>Not currently applicable to our scale or AI use</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Do you monitor AI model performance on an ongoing basis, tracking accuracy, drift, and degradation, with defined thresholds that trigger review?</div>
+          <div class="options" id="q7_4">
+            <label class="option" onclick="pick(this,'q7_4',3)"><span class="option-dot"></span>Yes: automated monitoring with defined thresholds and documented review process</label>
+            <label class="option" onclick="pick(this,'q7_4',2)"><span class="option-dot"></span>Yes: manual monitoring, periodically reviewed</label>
+            <label class="option" onclick="pick(this,'q7_4',1)"><span class="option-dot"></span>Partially: some monitoring but without defined thresholds or process</label>
+            <label class="option" onclick="pick(this,'q7_4',0)"><span class="option-dot"></span>No monitoring in place</label>
+          </div>
+        </div>
+        <div class="q-block">
+          <div class="q-label">Does your organisation have a defined incident response process specifically for AI system failures, harmful outputs, or unexpected behaviour?</div>
+          <div class="options" id="q7_5">
+            <label class="option" onclick="pick(this,'q7_5',3)"><span class="option-dot"></span>Yes: formally documented, tested, and includes AI-specific scenarios</label>
+            <label class="option" onclick="pick(this,'q7_5',1)"><span class="option-dot"></span>Yes: general incident response applies but AI-specific scenarios not addressed</label>
+            <label class="option" onclick="pick(this,'q7_5',0)"><span class="option-dot"></span>No formal incident response process for AI failures</label>
+          </div>
+        </div>
+        <div id="s7-error" class="error-msg"></div>
+        <div class="nav-btns">
+          <button class="btn-secondary" onclick="goTo('screen-s6')">&#8592; Back</button>
+          <button class="btn-primary" onclick="calcResults()">Generate My Risk Report &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /wrapper -->
+</div><!-- /page -->
+
+<script>
+const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════════════════════════════════
+//  RegAnchor AI GOVERNANCE RISK DIAGNOSTIC: SCORING ENGINE v2.0.0
+// ═══════════════════════════════════════════════════════════════════
+
+const FRAMEWORK = {
+  version:    '2.0.0',
+  date:       'February 2026',
+  nextReview: 'August 2026'
+};
+
+const WEIGHTS = {
+  s1: 0.14, s2: 0.20, s3: 0.10,
+  s4: 0.16, s5: 0.16, s6: 0.18, s7: 0.06
+};
+
+const SECTOR_MULTIPLIER = {
+  'Financial Services':             1.00,
+  'Healthcare & Life Sciences':     1.00,
+  'Public Sector / Government':     0.95,
+  'Legal & Professional Services':  0.92,
+  'Technology & SaaS':              0.88,
+  'Retail & E-commerce':            0.85,
+  'Education':                      0.82,
+  'Manufacturing & Logistics':      0.80,
+  'Other':                          0.90
+};
+
+const HIGH_RISK_ADDITIONS = {
+  auto:    { s4: 2 },
+  profile: { s6: 2 },
+  credit:  { s4: 2, s6: 2 },
+  hr:      { s4: 2 },
+  bio:     { s4: 2, s5: 2 },
+  health:  { s4: 2, s5: 2, s6: 2 }
+};
+
+const PRIORITY_FLAG_RULES = [
+  { id: 'pf_governance',   condition: () => (S.q2_1 || 0) === 0, label: 'No named AI governance owner: accountability gap', basis: 'FCA SM&CR; EU AI Act Art.27', severity: 'critical' },
+  { id: 'pf_oversight',    condition: () => (S.q4_1 || 0) === 0, label: 'No human oversight of AI decisions: potential UK GDPR Art.22 violation', basis: 'UK GDPR Art.22; EU AI Act Art.14', severity: 'critical' },
+  { id: 'pf_dpia',         condition: () => (S.q6_1 || 0) === 0, label: 'No DPIA conducted: ICO enforcement priority where personal data is processed', basis: 'UK GDPR Art.35; ICO AI Guidance 2023', severity: 'critical' },
+  { id: 'pf_transparency', condition: () => (S.q6_2 || 0) === 0, label: 'Individuals not informed of AI-assisted decisions: transparency obligation likely breached', basis: 'UK GDPR Art.13/14', severity: 'high' },
+  { id: 'pf_no_inventory', condition: () => (S.q1_1 || 0) === 0, label: 'No AI inventory: scope of regulatory exposure cannot be determined', basis: 'EU AI Act Art.9; FCA DP5/22', severity: 'high' },
+  { id: 'pf_no_policy',    condition: () => (S.q2_4 || 0) === 0, label: 'No AI use policies in place: unmanaged operational and legal risk', basis: 'ICO Accountability Framework; EU AI Act Art.27', severity: 'high' }
+];
+
+const RISK_BANDS = [
+  { min: 80, max: 100, id: 'low',      label: 'Low Risk',            heading: 'Governance Established: Maintenance Mode',     summary: 'Your organisation demonstrates strong AI governance maturity across the assessed areas. The priority now is to sustain, evolve, and stress-test these frameworks as AI deployments develop and regulatory obligations mature.' },
+  { min: 65, max: 79,  id: 'lowmod',   label: 'Low to Moderate Risk', heading: 'Foundations Present: Targeted Gaps Remain',    summary: 'Your organisation has established meaningful governance foundations, but specific gaps create regulatory exposure. These are addressable with targeted action rather than a full rebuild. The foundations are sound.' },
+  { min: 45, max: 64,  id: 'moderate', label: 'Moderate Risk',       heading: 'Governance Gaps: Regulatory Exposure Likely',  summary: 'Material governance gaps exist across multiple areas. Regulatory scrutiny of AI is intensifying. Organisations at this maturity level face meaningful risk of enforcement attention, reputational exposure, or operational failure.' },
+  { min: 25, max: 44,  id: 'high',     label: 'High Risk',           heading: 'Significant Exposure: Intervention Required',  summary: 'Your responses indicate significant and widespread governance deficiencies. This level of exposure is not a matter of future risk. It represents current, active vulnerability to regulatory action, legal challenge, and operational harm.' },
+  { min: 0,  max: 24,  id: 'critical', label: 'Critical Risk',       heading: 'Governance Absent: Urgent Escalation Needed',  summary: 'Your assessment indicates that AI governance is largely absent. This requires board-level escalation and specialist engagement now. Continued operation without governance controls creates severe regulatory and legal exposure.' }
+];
+
+const BAND_RECS = {
+  critical: [
+    'Urgently appoint a named AI governance lead with documented accountability and a board-level reporting line',
+    'Commission an immediate AI inventory audit to establish scope and identify regulatory exposure',
+    'Restrict high-impact automated decisions until human oversight controls are operational',
+    'Engage legal counsel to assess UK GDPR, EU AI Act, and sector-specific obligations immediately',
+    'Develop and implement a minimum viable AI policy framework within 30 days'
+  ],
+  high: [
+    'Formalise AI governance ownership with documented responsibilities across risk, compliance, and technical functions',
+    'Conduct Data Protection Impact Assessments (DPIAs) for all AI systems processing personal data',
+    'Implement decision logging and audit trail capability for all high-impact AI outputs',
+    'Establish human-in-the-loop review protocols with documented override procedures',
+    'Review third-party AI provider contracts for data handling, liability, and transparency obligations'
+  ],
+  moderate: [
+    'Elevate informal governance arrangements into formally documented policies with named owners',
+    'Complete a full DPIA review and ensure individuals are proactively informed of automated decision-making',
+    'Strengthen data lineage documentation to support explainability, auditability, and model traceability',
+    'Develop escalation pathways and override protocols for AI-assisted decisions affecting individuals',
+    'Introduce scheduled model performance monitoring with defined drift detection thresholds'
+  ],
+  lowmod: [
+    'Document any remaining informal governance arrangements. Verbal accountability cannot be demonstrated to a regulator',
+    'Conduct an EU AI Act scope assessment to determine which obligations apply from August 2026',
+    'Close identified gaps in explainability and audit trail capability before regulatory obligations mature',
+    'Formalise training records for staff who review or rely on AI-generated outputs',
+    'Schedule an annual external review of your governance framework against updated regulatory guidance'
+  ],
+  low: [
+    'Maintain currency with EU AI Act implementation. High-risk obligations apply from August 2026',
+    'Ensure new AI deployments are automatically subject to your existing inventory and DPIA process',
+    'Continue scheduled bias and fairness testing as models evolve and data distributions shift',
+    'Consider ISO/IEC 42001 certification to formally evidence governance maturity to clients and regulators',
+    'Share governance best practices internally to build organisational resilience beyond the governance function'
+  ]
+};
+
+const SECTOR_RECS = {
+  'Financial Services':            'Review your AI governance framework against FCA DP5/22 and ensure named Senior Manager accountability is documented for all AI-driven customer outcomes under SM&CR.',
+  'Healthcare & Life Sciences':    'Assess whether any AI systems in clinical pathways require DCB0129 clinical safety assessment and NHS DTAC compliance. These obligations apply regardless of procurement route.',
+  'Legal & Professional Services': 'Review SRA AI Guidance (2024) obligations, including client disclosure requirements where AI is used in client-facing work, and ensure your indemnity position covers AI-related errors.',
+  'Retail & E-commerce':           'Audit customer profiling and personalisation AI for GDPR compliance and ICO profiling guidance. Where automated decisions affect eligibility, review UK GDPR Art.22 obligations.',
+  'Technology & SaaS':             'Clarify whether your AI deployments create provider obligations under the EU AI Act. If you supply AI-enabled services to EU customers, conformity assessment requirements may apply.',
+  'Public Sector / Government':    "Review AI systems against ICO's public authority guidance and ensure compliance with the AI Act's specific obligations for public sector deployment.",
+  'Education':                     "Ensure any AI used in assessment, student profiling, or admissions is reviewed against ICO children's data guidance and the Equality Act 2010.",
+  'Manufacturing & Logistics':     'Identify any AI systems that interact with physical safety systems. These may qualify as high-risk under EU AI Act safety provisions and require conformity assessment before August 2026.',
+  'Other':                         'Conduct a sector mapping exercise to identify which regulatory regimes apply to your specific AI use cases.'
+};
+
+// ─── RUNTIME STATE ────────────────────────────────────────────────
+const S = {};
+let RESULTS = {};
+
+const ORDER  = ['screen-landing','screen-prescreen','screen-s1','screen-s2','screen-s3','screen-s4','screen-s5','screen-s6','screen-s7'];
+const TOTAL_STEPS = ORDER.length - 1; // exclude landing
+const SECTION_SCREENS = ['screen-s1','screen-s2','screen-s3','screen-s4','screen-s5','screen-s6','screen-s7'];
+
+// ─── UI HELPERS ───────────────────────────────────────────────────
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  syncRail(id);
+  const idx = ORDER.indexOf(id);
+  const chrome = document.getElementById('siteChrome');
+  const count = document.getElementById('progressCount');
+  const fill = document.getElementById('progressFill');
+  if (id === 'screen-landing' || idx < 1) {
+    chrome.classList.remove('has-steps');
+    if (count) count.hidden = true;
+    return;
+  }
+  chrome.classList.add('has-steps');
+  if (count) {
+    count.hidden = false;
+    count.textContent = idx + ' of ' + TOTAL_STEPS;
+  }
+  if (fill) fill.style.width = Math.round((idx / TOTAL_STEPS) * 100) + '%';
+}
+
+// Section rail: shows all 7 domains, marks current + completed, and
+// lets you jump back to anything already visited (never ahead).
+function syncRail(id) {
+  const curIdx = SECTION_SCREENS.indexOf(id);
+  document.querySelector('.page').classList.toggle('in-quiz', curIdx > -1);
+  document.querySelectorAll('.q-rail-item').forEach((item, i) => {
+    item.classList.toggle('active', i === curIdx);
+    item.classList.toggle('done', curIdx > -1 && i < curIdx);
+  });
+}
+function railJump(id) {
+  const targetIdx = SECTION_SCREENS.indexOf(id);
+  const curIdx = SECTION_SCREENS.indexOf(document.querySelector('.screen.active').id);
+  if (targetIdx > -1 && targetIdx < curIdx) goTo(id);
+}
+document.querySelectorAll('.q-rail-item').forEach(item => {
+  item.addEventListener('click', () => railJump(item.dataset.screen));
+});
+
+function pick(el, gid, score) {
+  document.querySelectorAll('#' + gid + ' .option:not(.cb)').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  S[gid] = score;
+}
+
+function toggleCb(el) { el.classList.toggle('selected'); }
+
+function validatePrescreen() {
+  const n   = document.getElementById('ps-name').value.trim();
+  const r   = document.getElementById('ps-role').value.trim();
+  const e   = document.getElementById('ps-email').value.trim();
+  const o   = document.getElementById('ps-org').value.trim();
+  const sec = document.getElementById('ps-sector').value;
+  const sz  = document.getElementById('ps-size').value;
+  const err = document.getElementById('ps-error');
+  if (!n || !r || !e || !o || !sec || !sz) {
+    err.textContent = 'Please complete all required fields.'; err.style.display = 'block'; return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+    err.textContent = 'Please enter a valid email address.'; err.style.display = 'block'; return;
+  }
+  err.style.display = 'none';
+  goTo('screen-s1');
+}
+
+function next(qs, errId, nxt) {
+  for (const q of qs) {
+    if (S[q] === undefined) {
+      document.getElementById(errId).textContent = 'Please answer all questions before continuing.';
+      document.getElementById(errId).style.display = 'block';
+      return;
+    }
+  }
+  document.getElementById(errId).style.display = 'none';
+  goTo(nxt);
+}
+
+// ─── SCORING ENGINE ───────────────────────────────────────────────
+function calcResults() {
+  for (const q of ['q7_1','q7_2','q7_3','q7_4','q7_5']) {
+    if (S[q] === undefined) {
+      document.getElementById('s7-error').textContent = 'Please answer all questions before continuing.';
+      document.getElementById('s7-error').style.display = 'block';
+      return;
+    }
+  }
+  document.getElementById('s7-error').style.display = 'none';
+
+  const rawScores = {
+    s1: (S.q1_1||0)+(S.q1_3||0)+(S.q1_4||0),
+    s2: (S.q2_1||0)+(S.q2_2||0)+(S.q2_3||0)+(S.q2_4||0)+(S.q2_5||0)+(S.q2_6||0),
+    s3: (S.q3_1||0)+(S.q3_2||0)+(S.q3_3||0)+(S.q3_4||0),
+    s4: (S.q4_1||0)+(S.q4_2||0)+(S.q4_3||0)+(S.q4_4||0),
+    s5: (S.q5_1||0)+(S.q5_2||0)+(S.q5_3||0)+(S.q5_4||0)+(S.q5_5||0),
+    s6: (S.q6_1||0)+(S.q6_2||0)+(S.q6_3||0)+(S.q6_4||0)+(S.q6_5||0),
+    s7: (S.q7_1||0)+(S.q7_2||0)+(S.q7_3||0)+(S.q7_4||0)+(S.q7_5||0)
+  };
+
+  const sectionMaxBase = { s1:9, s2:18, s3:12, s4:12, s5:15, s6:15, s7:15 };
+  const adjustedMax = { ...sectionMaxBase };
+
+  const selectedCategories = [];
+  document.querySelectorAll('#q1_2 .cb.selected').forEach(el => {
+    const v = el.getAttribute('data-val');
+    if (v && v !== 'none') selectedCategories.push(v);
+  });
+  selectedCategories.forEach(cat => {
+    const additions = HIGH_RISK_ADDITIONS[cat] || {};
+    Object.entries(additions).forEach(([sec, add]) => { adjustedMax[sec] += add; });
+  });
+
+  let weightedScore = 0;
+  const sectionPcts = {};
+  const sectionNames = {
+    s1:'AI Inventory & Classification', s2:'Governance & Accountability',
+    s3:'Data Quality & Lineage',        s4:'Human Oversight & Controls',
+    s5:'Explainability & Transparency', s6:'Compliance & Legal Alignment',
+    s7:'Operational Controls & Resilience'
+  };
+  Object.keys(rawScores).forEach(sec => {
+    const pct = Math.min(100, Math.round((rawScores[sec] / adjustedMax[sec]) * 100));
+    sectionPcts[sec] = pct;
+    weightedScore += pct * WEIGHTS[sec];
+  });
+  weightedScore = Math.round(weightedScore);
+
+  const sector     = document.getElementById('ps-sector').value;
+  const multiplier = SECTOR_MULTIPLIER[sector] || 0.90;
+  const adjustedScore = Math.round(weightedScore * multiplier);
+
+  let uncertaintyCount = 0;
+  document.querySelectorAll('.option[data-uncertainty="true"].selected').forEach(() => uncertaintyCount++);
+
+  let band = RISK_BANDS.find(b => adjustedScore >= b.min && adjustedScore <= b.max) || RISK_BANDS[RISK_BANDS.length - 1];
+  if (uncertaintyCount >= 5) {
+    const idx = RISK_BANDS.findIndex(b => b.id === band.id);
+    band = RISK_BANDS[Math.min(idx + 2, RISK_BANDS.length - 1)];
+  } else if (uncertaintyCount >= 3) {
+    const idx = RISK_BANDS.findIndex(b => b.id === band.id);
+    band = RISK_BANDS[Math.min(idx + 1, RISK_BANDS.length - 1)];
+  }
+
+  const priorityFlags = PRIORITY_FLAG_RULES.filter(rule => rule.condition());
+
+  const regimeFlags = [];
+  document.querySelectorAll('#screen-prescreen .cb.selected').forEach(el => {
+    const txt = el.textContent.trim();
+    if (txt.includes('FCA'))                        regimeFlags.push({ label:'FCA regulated: SM&CR requires named Senior Manager accountability for AI governance', basis:'FCA SM&CR, DP5/22' });
+    if (txt.includes('ICO') || txt.includes('GDPR')) regimeFlags.push({ label:'ICO/GDPR registered: DPIA is mandatory for high-risk AI processing of personal data', basis:'UK GDPR Art.35' });
+    if (txt.includes('NHS') || txt.includes('CQC'))  regimeFlags.push({ label:'NHS/CQC: Clinical AI pathways require DCB0129 safety assessment and NHS DTAC compliance', basis:'NHS DTAC, DCB0129' });
+    if (txt.includes('SRA'))                         regimeFlags.push({ label:'SRA regulated: client disclosure and competence obligations apply to AI-assisted legal work', basis:'SRA AI Guidance 2024' });
+  });
+
+  RESULTS = {
+    adjustedScore, weightedScore, multiplier, sector,
+    band, uncertaintyCount, selectedCategories,
+    rawScores, sectionPcts, sectionNames, adjustedMax,
+    priorityFlags, regimeFlags,
+    orgSize:          document.getElementById('ps-size').value,
+    frameworkVersion: FRAMEWORK.version,
+    frameworkDate:    FRAMEWORK.date
+  };
+
+  // ── SHOW CALCULATING OVERLAY ────────────────────────────────────
+  const calcEl = document.getElementById('calcOverlay');
+  const calcFill = document.getElementById('calcTrackFill');
+  if (calcFill) {
+    calcFill.style.transition = 'none';
+    calcFill.style.width = '8%';
+    void calcFill.offsetWidth;
+    calcFill.style.transition = 'width 1.1s ease';
+  }
+  calcEl.classList.add('active');
+  if (calcFill) requestAnimationFrame(() => { calcFill.style.width = '78%'; });
+
+  // ── SAVE TO SESSIONstorage (for results.html to read) ───────────
+  sessionStorage.setItem('mla_diagnostic_result', JSON.stringify({
+    adjusted_score:      RESULTS.adjustedScore,
+    weighted_score:      RESULTS.weightedScore,
+    risk_band:           RESULTS.band.id,
+    section_scores:      RESULTS.sectionPcts,
+    priority_flags:      RESULTS.priorityFlags,
+    regime_flags:        RESULTS.regimeFlags,
+    uncertainty_count:   RESULTS.uncertaintyCount,
+    selected_categories: RESULTS.selectedCategories,
+    organisation:        document.getElementById('ps-org')?.value || '',
+    sector:              RESULTS.sector,
+    org_size:            RESULTS.orgSize,
+    respondent_name:     document.getElementById('ps-name')?.value || '',
+    respondent_role:     document.getElementById('ps-role')?.value || '',
+    respondent_email:    document.getElementById('ps-email')?.value || ''
+  }));
+
+  // ── SAVE TO SUPABASE → THEN MAIL (with result_id) → REDIRECT ───
+  // Ack must wait for the insert UUID so the email CTA can deep-link
+  // to buy-report.html?rid=<uuid>. Mail used to race the insert.
+  saveToSupabase().then(async (resultId) => {
+    try {
+      await Promise.race([
+        sendEmails(resultId),
+        new Promise((resolve) => setTimeout(resolve, 8000))
+      ]);
+    } catch (e) {}
+    window.location.href = 'results.html';
+  }).catch(async () => {
+    // Even if Supabase fails, results are in sessionStorage: proceed.
+    // Still notify ops; skip prospect ack without a result_id.
+    try {
+      await Promise.race([
+        sendEmails(null),
+        new Promise((resolve) => setTimeout(resolve, 8000))
+      ]);
+    } catch (e) {}
+    window.location.href = 'results.html';
+  });
+}
+
+// ─── SUPABASE SAVE ────────────────────────────────────────────────
+// Client-generated id: anon RLS allows INSERT but not SELECT, so
+// insert().select('id') would fail. Return the UUID we wrote instead.
+function newResultId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+async function saveToSupabase() {
+  try {
+    const resultId = newResultId();
+    const { error } = await supabaseClient
+      .from('diagnostic_results')
+      .insert({
+        id:                  resultId,
+        organisation:        document.getElementById('ps-org')?.value || '',
+        sector:              RESULTS.sector || '',
+        org_size:            RESULTS.orgSize || '',
+        weighted_score:      RESULTS.weightedScore || 0,
+        adjusted_score:      RESULTS.adjustedScore || 0,
+        risk_band:           RESULTS.band?.id || '',
+        section_scores:      RESULTS.sectionPcts || {},
+        priority_flags:      RESULTS.priorityFlags || [],
+        framework_version:   RESULTS.frameworkVersion || '2.0.0',
+        respondent_name:     document.getElementById('ps-name')?.value || '',
+        respondent_role:     document.getElementById('ps-role')?.value || '',
+        respondent_email:    document.getElementById('ps-email')?.value || '',
+        raw_scores:          RESULTS.rawScores || {},
+        regime_flags:        RESULTS.regimeFlags || [],
+        uncertainty_count:   RESULTS.uncertaintyCount || 0,
+        selected_categories: RESULTS.selectedCategories || []
+      });
+
+    if (error) {
+      console.log('Supabase save error:', error);
+      throw error;
+    }
+
+    // Update sessionStorage result with the DB id for portal linking
+    try {
+      const existing = JSON.parse(sessionStorage.getItem('mla_diagnostic_result') || '{}');
+      existing.id = resultId;
+      sessionStorage.setItem('mla_diagnostic_result', JSON.stringify(existing));
+      sessionStorage.setItem('pending_result_id', resultId);
+      localStorage.setItem('mla_result_id', resultId);
+    } catch(e) {}
+    return resultId;
+  } catch(e) {
+    console.log('Save error:', e);
+    throw e;
+  }
+}
+
+// ─── EMAIL DISPATCH ───────────────────────────────────────────────
+// NOTE: reads from RESULTS directly: does NOT depend on DOM render.
+// Ack is slim (buy-report CTA needs result_id). Lead keeps the full dump.
+function sendEmails(resultId) {
+  const name   = document.getElementById('ps-name').value;
+  const email  = document.getElementById('ps-email').value;
+  const org    = document.getElementById('ps-org').value;
+  const role   = document.getElementById('ps-role').value;
+  const sector = document.getElementById('ps-sector').value;
+  const size   = document.getElementById('ps-size').value;
+  const today  = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+  const band   = RESULTS.band ? RESULTS.band.label: 'Unknown';
+  const score  = RESULTS.adjustedScore + '%';
+  const summary = RESULTS.band ? RESULTS.band.summary: '';
+
+  // Build flag text directly from RESULTS (not DOM)
+  const flagText = [
+    ...(RESULTS.priorityFlags || []).map((f, i) => `${i+1}. ${f.label} [${f.basis}]`),
+    ...(RESULTS.regimeFlags   || []).map((f, i) => `${(RESULTS.priorityFlags||[]).length+i+1}. ${f.label}`)
+  ].join('\n') || 'No critical flags identified.';
+
+  // Build rec text directly from RESULTS (not DOM)
+  const bandRecs   = BAND_RECS[RESULTS.band?.id || 'moderate'] || [];
+  const sectorRec  = SECTOR_RECS[sector] || '';
+  const allRecs    = sectorRec ? [sectorRec, ...bandRecs] : bandRecs;
+  const recText    = allRecs.map(r => '- ' + r).join('\n');
+
+  const C = window.RA_CONTACT || {};
+  const base = {
+    email,
+    client_name: name,
+    name,
+    organisation: org,
+    client_role: role,
+    role,
+    sector,
+    org_size: size,
+    risk_band: band,
+    risk_score: score,
+    report_date: today,
+    framework_version: RESULTS.frameworkVersion,
+    weighted_score: RESULTS.weightedScore != null ? RESULTS.weightedScore + '%' : undefined,
+    multiplier: RESULTS.multiplier != null ? Math.round(RESULTS.multiplier * 100) + '%' : undefined
+  };
+  if (resultId) base.result_id = resultId;
+
+  // Prospect ack: identity + score band + result_id for buy CTA. Flags/recs stay in the paid report.
+  const ackPayload = Object.assign({}, base);
+
+  // Ops lead: full dump including flags / recommendations / summary.
+  const leadPayload = Object.assign({}, base, {
+    risk_summary: summary,
+    recommendations: recText,
+    flags: flagText
+  });
+
+  if (typeof C.sendMail !== 'function') return Promise.resolve();
+
+  const jobs = [];
+  if (resultId) {
+    jobs.push(
+      C.sendMail('diagnostic-ack', ackPayload)
+        .then(() => console.log('Client email sent'))
+        .catch(e => console.log('Ack email error:', e))
+    );
+  } else {
+    console.log('Skipping diagnostic-ack — no result_id yet');
+  }
+  jobs.push(
+    C.sendMail('diagnostic-lead', leadPayload)
+      .then(() => console.log('Lead notification sent'))
+      .catch(e => console.log('Lead email error:', e))
+  );
+  return Promise.all(jobs);
+}
+
+// Sticky chrome fade: same behaviour as results.html
+(function () {
+  const chrome = document.getElementById('siteChrome');
+  if (!chrome) return;
+  const onScroll = () => chrome.classList.toggle('is-scrolled', window.scrollY > 12);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+.label {
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}

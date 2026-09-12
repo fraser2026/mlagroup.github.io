@@ -1,0 +1,13 @@
+.icon {
+  display: block;
+  flex-shrink: 0;
+  color: currentColor;
+  transition: transform var(--ra-motion-fast) var(--ra-ease-out),
+    color var(--ra-motion-fast) var(--ra-ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon {
+    transition: none;
+  }
+}

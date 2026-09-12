@@ -1,0 +1,348 @@
+/* Policy body — portal parity (readable enterprise prose, not cramped markdown) */
+.doc {
+  max-width: 68ch;
+  font-size: 14px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+  line-height: 1.7;
+}
+
+.doc :global(.policy-doc > :first-child) {
+  margin-top: 0;
+}
+
+.doc :global(.policy-doc > :last-child) {
+  margin-bottom: 0;
+}
+
+.doc :global(.md-h2) {
+  font-size: 18px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.02em;
+  color: var(--ra-ink);
+  line-height: 1.3;
+  margin: 0 0 18px;
+}
+
+.doc :global(.md-h3) {
+  font-size: 14px;
+  font-weight: var(--ra-fw-semibold);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  line-height: 1.35;
+  margin: 28px 0 10px;
+}
+
+.doc :global(.md-h4) {
+  font-size: 13px;
+  font-weight: var(--ra-fw-semibold);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  line-height: 1.4;
+  margin: 18px 0 6px;
+}
+
+.doc :global(.md-h3 + .md-h4) {
+  margin-top: 14px;
+}
+
+.doc :global(.md-list + .md-h4) {
+  margin-top: 16px;
+}
+
+.doc :global(.md-h3:first-child),
+.doc :global(.md-h4:first-child) {
+  margin-top: 0;
+}
+
+.doc :global(.md-p) {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ra-text-2);
+  margin: 0 0 14px;
+}
+
+.doc :global(.md-p strong),
+.doc :global(.md-li__text strong) {
+  font-weight: var(--ra-fw-semibold);
+  color: var(--ra-ink);
+}
+
+.doc :global(.md-list) {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: block;
+}
+
+.doc :global(.md-li) {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  padding: 5px 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ra-text-2);
+}
+
+.doc :global(.md-li__bullet) {
+  flex-shrink: 0;
+  width: 1em;
+  height: auto;
+  margin-top: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ra-text-3);
+  font-size: 14px;
+  line-height: 1.65;
+  text-align: center;
+}
+
+.doc :global(.md-li__bullet::before) {
+  content: '•';
+}
+
+.doc :global(.md-li__text) {
+  min-width: 0;
+  flex: 1;
+}
+
+.doc :global(.md-foot) {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ra-border);
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  letter-spacing: -0.01em;
+  line-height: 1.55;
+}
+
+.doc :global(.empty) {
+  color: var(--ra-text-2);
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 720px;
+}
+
+.libraryTop {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 4px;
+}
+
+.block {
+  padding-bottom: 0;
+}
+
+.pageMeta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pageMetaLine {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+}
+
+/* Soft work surface — roomier padding for policy reading (portal panel parity) */
+.work {
+  display: grid;
+  gap: 20px;
+  padding: 28px 32px 36px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+  max-width: 720px;
+}
+
+.workHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.workTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.015em;
+  color: var(--ra-ink);
+  line-height: 1.3;
+}
+
+.workSub {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+}
+
+.lead {
+  display: grid;
+  gap: 16px;
+}
+
+.bodyCopy {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+  max-width: 68ch;
+}
+
+.meta {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  letter-spacing: -0.01em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.ackBlock {
+  display: grid;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.ackCopy {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+  line-height: 1.45;
+  max-width: 52ch;
+}
+
+.ackDone {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  line-height: 1.45;
+  max-width: 68ch;
+}
+
+.fileLink {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-blurple-fg);
+}
+
+.fileLink:hover {
+  color: var(--ra-blurple);
+}
+
+.ackList {
+  display: flex;
+  flex-direction: column;
+}
+
+.ackRow {
+  display: grid;
+  gap: 4px;
+  padding: 14px 0;
+  border-top: 1px solid var(--ra-border);
+}
+
+.ackRow:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.ackName {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+}
+
+.empty {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-2);
+  line-height: 1.45;
+}
+
+/* Templates on list page */
+.panel {
+  display: grid;
+  gap: 0;
+  max-width: 720px;
+}
+
+.sectionLabel {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.015em;
+  color: var(--ra-ink);
+  line-height: 1.3;
+}
+
+.tplRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-top: 1px solid var(--ra-border);
+}
+
+.tplRow:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.tplTitle {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+}
+
+.tplDesc {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+@media (max-width: 560px) {
+  .work {
+    padding: 20px 18px 24px;
+  }
+}

@@ -1,0 +1,54 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fill {
+  display: flex;
+  width: 100%;
+  min-height: 220px;
+  flex: 1;
+}
+
+.viewport {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.mark {
+  display: block;
+  fill: currentColor;
+  color: #a3acb9;
+  animation: raPulse 0.38s ease-in-out infinite alternate;
+  will-change: opacity;
+}
+
+.md {
+  width: 36px;
+  height: auto;
+}
+
+.lg {
+  width: 48px;
+  height: auto;
+}
+
+@keyframes raPulse {
+  from {
+    opacity: 0.22;
+  }
+  to {
+    opacity: 0.58;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark {
+    animation: none;
+    opacity: 0.4;
+  }
+}

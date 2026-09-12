@@ -1,0 +1,362 @@
+/* RegAnchor app tokens — brand floor from DESIGN.md; product shell ceiling */
+:root {
+  /* Surfaces */
+  --ra-canvas: #ffffff;
+  --ra-mist: #f6f9fc;
+  --ra-surface: #ffffff;
+  --ra-elevated: #ffffff;
+  --ra-sidebar: #f6f9fc;
+  --ra-chrome: #ffffff;
+
+  /* Lines — quiet but visible at rest (fields/search must not disappear) */
+  --ra-border: #cfd7e3;
+  --ra-border-hover: #b4bfce;
+  --ra-border-field: #b8c2d0;
+
+  /* Ink hierarchy — true black primary in light (matches wordmark) */
+  --ra-navy: #0a2540;
+  --ra-ink: #000000;
+  --ra-body: #425466;
+  --ra-muted: #697386;
+
+  /* Accent (scarce) — site brand fills; fg is for labels/markers on surfaces */
+  --ra-blurple: #533afd;
+  --ra-blurple-hover: #4434e0;
+  --ra-blurple-fg: var(--ra-blurple);
+  --ra-blurple-soft: color-mix(in srgb, var(--ra-blurple) 8%, var(--ra-surface));
+  --ra-focus-fill: color-mix(in srgb, var(--ra-blurple) 4%, var(--ra-canvas));
+  --ra-focus-ring: color-mix(in srgb, var(--ra-blurple) 12%, transparent);
+  --ra-white: #ffffff;
+
+  /* Status (labels only) — distinct hue families for colour vision:
+     high = crimson, limited = amber gold, minimal = teal (not leaf green) */
+  --ra-risk: #c8102e;
+  --ra-risk-bg: #fce8eb;
+  --ra-warn: #b45309;
+  --ra-warn-bg: #fff4e0;
+  --ra-ok: #0f766e;
+  --ra-ok-bg: #e6f5f3;
+  --ra-bar-ink: var(--ra-navy);
+
+  /* Aliases */
+  --ra-bg: var(--ra-canvas);
+  --ra-text: var(--ra-ink);
+  --ra-text-2: var(--ra-body);
+  --ra-text-3: var(--ra-muted);
+  --ra-hover: rgba(10, 14, 20, 0.04);
+  --ra-pressed: rgba(10, 14, 20, 0.07);
+  --ra-selected: var(--ra-blurple-soft);
+
+  /* Type */
+  --ra-font: 'Inter', 'Inter var', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ra-font-brand: 'IBM Plex Sans', var(--ra-font);
+  /* Product numerals — same face as portal UI (Inter). Plex stays for wordmark / marketing only. */
+  --ra-font-num: var(--ra-font);
+  --ra-font-features: 'ss01', 'cv01', 'cv02', 'cv03', 'cv04', 'cv11';
+  --ra-fs-display: 1.75rem;
+  --ra-fs-title: 1.35rem;
+  --ra-fs-section: 0.9375rem;
+  --ra-fs-body: 0.875rem;
+  --ra-fs-meta: 0.75rem;
+  --ra-fs-metric: 1.5rem;
+  --ra-fw-regular: 400;
+  --ra-fw-medium: 500;
+  --ra-fw-semibold: 600;
+  --ra-lh-tight: 1.25;
+  --ra-lh-body: 1.45;
+
+  /* Space scale */
+  --ra-space-1: 4px;
+  --ra-space-2: 8px;
+  --ra-space-3: 12px;
+  --ra-space-4: 16px;
+  --ra-space-5: 24px;
+  --ra-space-6: 32px;
+  --ra-space-7: 48px;
+
+  /* Controls */
+  --ra-radius-control: 4px;
+  --ra-radius-panel: 6px;
+
+  /* Icons */
+  --ra-icon-sm: 16px;
+  --ra-icon-md: 18px;
+  --ra-icon-stroke: 1.75;
+
+  /* Layout */
+  --ra-sidebar-w: 248px;
+  --ra-rail-w: 280px;
+  --ra-chrome-h: 52px;
+  --ra-topbar-h: var(--ra-chrome-h);
+  --ra-content-max: 1120px;
+  /* Shell cushions — Y equal; X (right) matches scrollbar gutter (Openlayer) */
+  --ra-shell-pad-y: 8px;
+  --ra-shell-pad-x: 14px;
+  --ra-shell-pad: var(--ra-shell-pad-y);
+  --ra-scrollbar-size: 14px;
+  /* Soft grey — matches the quiet light-mode bar before hover */
+  --ra-scrollbar-thumb: #c5cad1;
+  --ra-scrollbar-thumb-hover: #b0b6bf;
+
+  /* Motion (state change only) */
+  --ra-motion-fast: 120ms;
+  --ra-motion-med: 200ms;
+  --ra-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ra-ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Z */
+  --ra-z-chrome: 20;
+  --ra-z-rail: 30;
+  --ra-z-overlay: 40;
+  --ra-z-toast: 50;
+
+  /* Elevation */
+  --ra-shadow-menu: 0 8px 24px rgba(10, 14, 20, 0.1);
+}
+
+/* Dark product theme — Openlayer-leaning: jet-black work surface over a
+   slightly lighter sidebar shell, white titles, scarce hairlines. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Main work surface = true black; sidebar/shell sits one step up */
+  --ra-canvas: #000000;
+  --ra-mist: #111111;
+  --ra-surface: #000000;
+  --ra-elevated: #141414;
+  --ra-sidebar: #111111;
+  --ra-chrome: #000000;
+
+  /* Scarce dividers — readable on jet black without shouting */
+  --ra-border: rgba(255, 255, 255, 0.14);
+  --ra-border-hover: rgba(255, 255, 255, 0.22);
+  --ra-border-field: rgba(255, 255, 255, 0.22);
+
+  --ra-navy: #fafafa;
+  --ra-ink: #ffffff;
+  --ra-body: #a3a3a3;
+  --ra-muted: #737373;
+
+  /* Fills stay brand. Text accents go white on dark — less neon, less accent sprawl.
+     Borders/boxes that need brand still use --ra-blurple directly. */
+  --ra-blurple: #533afd;
+  --ra-blurple-hover: #4434e0;
+  --ra-blurple-fg: #ffffff;
+  --ra-blurple-soft: color-mix(in srgb, var(--ra-blurple) 14%, var(--ra-canvas));
+  --ra-focus-fill: color-mix(in srgb, var(--ra-blurple) 10%, var(--ra-canvas));
+  --ra-focus-ring: color-mix(in srgb, var(--ra-blurple) 28%, transparent);
+  --ra-white: #ffffff;
+
+  --ra-risk: #f04363;
+  --ra-risk-bg: color-mix(in srgb, #c8102e 20%, var(--ra-canvas));
+  --ra-warn: #e08a2e;
+  --ra-warn-bg: color-mix(in srgb, #b45309 20%, var(--ra-canvas));
+  --ra-ok: #2bb39a;
+  --ra-ok-bg: color-mix(in srgb, #0f766e 20%, var(--ra-canvas));
+  --ra-bar-ink: var(--ra-ink);
+
+  /* Body/shell reads as sidebar so the main card can sit on top */
+  --ra-bg: var(--ra-sidebar);
+  --ra-text: var(--ra-ink);
+  --ra-text-2: var(--ra-body);
+  --ra-text-3: var(--ra-muted);
+  --ra-hover: rgba(255, 255, 255, 0.04);
+  --ra-pressed: rgba(255, 255, 255, 0.07);
+  --ra-selected: var(--ra-blurple-soft);
+
+  --ra-shadow-menu: 0 12px 40px rgba(0, 0, 0, 0.55);
+  /* Openlayer-like mid grey — never near-white on hover */
+  --ra-scrollbar-thumb: #5a5a5a;
+  --ra-scrollbar-thumb-hover: #6a6a6a;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/*
+  iOS Safari landscape can auto-inflate “readable” text (section intros,
+  ledger rows, connection/audit copy). Lock adjust to 100% so landscape
+  matches portrait/desktop sizes without disabling user zoom.
+*/
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--ra-font);
+  font-size: 14px;
+  font-weight: var(--ra-fw-regular);
+  line-height: 1.5;
+  letter-spacing: -0.011em;
+  font-feature-settings: var(--ra-font-features);
+  font-optical-sizing: auto;
+  color: var(--ra-body);
+  background: var(--ra-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/*
+  Product numerals — Inter + tabular (portal face).
+  Use className="ra-num" or font-family: var(--ra-font-num).
+  Do not use IBM Plex for in-app scores / dates.
+*/
+.ra-num {
+  font-family: var(--ra-font-num);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus {
+  outline: none;
+}
+
+/*
+  Keyboard focus fallback for unstyled controls.
+  Inset rings look like selected chips on nav / tabs / rows — keep this
+  outside and soft; chrome overrides below where hover/active is enough.
+*/
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ra-blurple) 50%, transparent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--ra-blurple) 28%, var(--ra-canvas));
+  color: var(--ra-ink);
+}
+
+/* Desktop scrollbars — system-wide.
+   Any ::-webkit-scrollbar rule opts out of Windows overlay scrollbars
+   (those were the harsh white / near-black hover thumbs). Track stays
+   transparent so each surface colour shows through. */
+@media (min-width: 861px) {
+  #root *,
+  body > div {
+    scrollbar-width: auto;
+    scrollbar-color: var(--ra-scrollbar-thumb) transparent;
+  }
+
+  #root *::-webkit-scrollbar,
+  body > div::-webkit-scrollbar,
+  body > div *::-webkit-scrollbar {
+    width: var(--ra-scrollbar-size);
+    height: var(--ra-scrollbar-size);
+  }
+
+  #root *::-webkit-scrollbar-track,
+  #root *::-webkit-scrollbar-track-piece,
+  #root *::-webkit-scrollbar-corner,
+  #root *::-webkit-scrollbar-button,
+  body > div::-webkit-scrollbar-track,
+  body > div::-webkit-scrollbar-track-piece,
+  body > div::-webkit-scrollbar-corner,
+  body > div::-webkit-scrollbar-button,
+  body > div *::-webkit-scrollbar-track,
+  body > div *::-webkit-scrollbar-track-piece,
+  body > div *::-webkit-scrollbar-corner,
+  body > div *::-webkit-scrollbar-button {
+    background: transparent;
+  }
+
+  #root *::-webkit-scrollbar-thumb,
+  body > div::-webkit-scrollbar-thumb,
+  body > div *::-webkit-scrollbar-thumb {
+    background-color: var(--ra-scrollbar-thumb);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  #root *::-webkit-scrollbar-thumb:hover,
+  #root *::-webkit-scrollbar-thumb:active,
+  body > div::-webkit-scrollbar-thumb:hover,
+  body > div::-webkit-scrollbar-thumb:active,
+  body > div *::-webkit-scrollbar-thumb:hover,
+  body > div *::-webkit-scrollbar-thumb:active {
+    background-color: var(--ra-scrollbar-thumb-hover);
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  #root *::-webkit-scrollbar-button:single-button,
+  body > div::-webkit-scrollbar-button:single-button,
+  body > div *::-webkit-scrollbar-button:single-button {
+    display: block;
+    width: var(--ra-scrollbar-size);
+    height: var(--ra-scrollbar-size);
+    background-color: transparent;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  :root[data-theme='dark'] #root *::-webkit-scrollbar-button:single-button:vertical:decrement,
+  :root[data-theme='dark'] body > div::-webkit-scrollbar-button:single-button:vertical:decrement,
+  :root[data-theme='dark'] body > div *::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6' viewBox='0 0 6 6'%3E%3Cpath fill='%23737373' d='M3 1.6 5.2 4.2H.8z'/%3E%3C/svg%3E");
+  }
+
+  :root[data-theme='dark'] #root *::-webkit-scrollbar-button:single-button:vertical:increment,
+  :root[data-theme='dark'] body > div::-webkit-scrollbar-button:single-button:vertical:increment,
+  :root[data-theme='dark'] body > div *::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6' viewBox='0 0 6 6'%3E%3Cpath fill='%23737373' d='M3 4.4.8 1.8h4.4z'/%3E%3C/svg%3E");
+  }
+
+  :root:not([data-theme='dark']) #root *::-webkit-scrollbar-button:single-button:vertical:decrement,
+  :root:not([data-theme='dark']) body > div::-webkit-scrollbar-button:single-button:vertical:decrement,
+  :root:not([data-theme='dark']) body > div *::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6' viewBox='0 0 6 6'%3E%3Cpath fill='%23a0a8b4' d='M3 1.6 5.2 4.2H.8z'/%3E%3C/svg%3E");
+  }
+
+  :root:not([data-theme='dark']) #root *::-webkit-scrollbar-button:single-button:vertical:increment,
+  :root:not([data-theme='dark']) body > div::-webkit-scrollbar-button:single-button:vertical:increment,
+  :root:not([data-theme='dark']) body > div *::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6' viewBox='0 0 6 6'%3E%3Cpath fill='%23a0a8b4' d='M3 4.4.8 1.8h4.4z'/%3E%3C/svg%3E");
+  }
+
+  /* Chip strips / tiny overflow rails — hide bars; use chevrons instead */
+  #root [data-ra-noscroll],
+  #root [data-ra-noscroll] *,
+  body > div [data-ra-noscroll],
+  body > div [data-ra-noscroll] * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  #root [data-ra-noscroll]::-webkit-scrollbar,
+  #root [data-ra-noscroll] *::-webkit-scrollbar,
+  body > div [data-ra-noscroll]::-webkit-scrollbar,
+  body > div [data-ra-noscroll] *::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+  }
+}
+

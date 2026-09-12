@@ -1,0 +1,55 @@
+.wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.track {
+  fill: none;
+  stroke: var(--ra-mist);
+}
+
+.fill {
+  fill: none;
+  stroke: var(--ra-blurple);
+  stroke-linecap: butt;
+  transition: stroke-dashoffset var(--ra-motion-med) var(--ra-ease-out);
+}
+
+.center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px;
+}
+
+.value {
+  font-family: var(--ra-font-num);
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ra-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: var(--ra-fw-semibold);
+  color: var(--ra-text-3);
+  letter-spacing: 0.02em;
+}
+
+.sub {
+  margin-top: 2px;
+  font-family: var(--ra-font-num);
+  font-size: 11px;
+  color: var(--ra-blurple);
+  font-weight: var(--ra-fw-medium);
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,13 @@
+name = "reganchor-app"
+compatibility_date = "2026-09-07"
+workers_dev = true
+
+# SPA static assets (Cloudflare Workers — preferred over Pages for new apps)
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+# Custom domain (requires no conflicting DNS CNAME beforehand)
+[[routes]]
+pattern = "app.reganchor.com"
+custom_domain = true

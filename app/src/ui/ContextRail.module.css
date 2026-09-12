@@ -1,0 +1,254 @@
+/* Own scrollbar — hover/focus here scrolls the rail, not the middle column */
+.rail {
+  width: var(--ra-rail-w);
+  flex-shrink: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-left: 1px solid var(--ra-border);
+  border-radius: 0;
+  background: var(--ra-canvas);
+}
+
+.inner {
+  padding: var(--ra-space-4) var(--ra-space-4) var(--ra-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ra-space-5);
+  min-height: 100%;
+}
+
+.headingRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.headingToggle {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 4px 6px;
+  margin-left: -6px;
+  border: 0;
+  border-radius: var(--ra-radius-control);
+  background: transparent;
+  color: var(--ra-ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.headingToggle:hover {
+  background: var(--ra-hover);
+}
+
+.heading {
+  font-size: 13px;
+  font-weight: var(--ra-fw-semibold);
+  color: inherit;
+  letter-spacing: -0.01em;
+}
+
+.headingChevron {
+  color: var(--ra-text-3);
+  transition: transform var(--ra-motion-med) var(--ra-ease-out);
+  transform: rotate(-90deg);
+}
+
+.headingChevronOpen {
+  transform: rotate(0deg);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: calc(var(--ra-space-2) * -1);
+}
+
+.link {
+  position: relative;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 7px 10px 7px 12px;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  cursor: pointer;
+  transition:
+    background var(--ra-motion-fast) var(--ra-ease-out),
+    color var(--ra-motion-fast) var(--ra-ease-out);
+}
+
+/* Straight native marker — never follow a rounded corner */
+.link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: transparent;
+  border-radius: 0;
+}
+
+/* Hover = quiet mist + white/ink. Location = blurple label + marker line only. */
+.link:hover {
+  background: var(--ra-hover);
+  color: var(--ra-ink);
+}
+
+.link:focus-visible {
+  outline: none;
+  background: var(--ra-hover);
+  color: var(--ra-ink);
+}
+
+.link:active {
+  background: var(--ra-pressed);
+}
+
+.active {
+  background: transparent;
+  color: var(--ra-blurple-fg);
+}
+
+.active:hover {
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
+}
+
+.active::before {
+  background: var(--ra-blurple);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ra-space-2);
+}
+
+.blockHeading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-semibold);
+  color: var(--ra-text-3);
+}
+
+.blockIcon {
+  color: var(--ra-text-3);
+}
+
+.memberCard {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: transparent;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activityEmpty {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  color: var(--ra-text-3);
+  background: transparent;
+}
+
+.memberRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ra-blurple) 14%, var(--ra-mist));
+  color: var(--ra-blurple);
+  font-size: 10px;
+  font-weight: var(--ra-fw-semibold);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.memberMeta {
+  min-width: 0;
+}
+
+.memberEmail {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  word-break: break-word;
+}
+
+.you {
+  color: var(--ra-text-3);
+  font-weight: var(--ra-fw-regular);
+}
+
+.memberRole {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--ra-text-3);
+}
+
+.viewMembers {
+  appearance: none;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--ra-border);
+  background: transparent;
+  color: var(--ra-text-2);
+  border-radius: var(--ra-radius-control);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.muted {
+  font-size: 12px;
+  color: var(--ra-text-3);
+  padding: 4px 2px;
+}
+
+.appearance {
+  margin-top: auto;
+  padding-top: var(--ra-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ra-space-2);
+}
+
+@media (max-width: 1100px) {
+  .rail {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headingChevron {
+    transition: none;
+  }
+}

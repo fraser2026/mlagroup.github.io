@@ -1,0 +1,20 @@
+---
+description: Portaled overflow menus for tables (Registry ⋯ pattern)
+globs: app/src/**/*.{tsx,ts,css}
+alwaysApply: false
+---
+
+# Portaled table row menus
+
+When a row `⋯` / action menu sits inside a scrollable table (`overflow-x: auto`), **do not** `position: absolute` it inside the table. That stretches the scrollport and shows a scrollbar.
+
+## Pattern
+
+1. Portal the menu to `document.body` with `position: fixed`.
+2. Measure the **live** trigger after open — opening often remounts the cell; a stored `HTMLElement` can become detached (`getBoundingClientRect()` → zeros) and wrongly close the menu.
+3. Re-query the trigger each place/sync, e.g. `[data-row-more="${id}"] button`, and skip zero-size rects instead of treating them as off-screen.
+4. Flip above/below from **real menu height** (`scrollHeight`), clamp with `maxHeight` + internal scroll so the card never hangs off the viewport.
+5. Reposition on scroll/resize; close only if the live trigger leaves the viewport.
+
+Reference: `RegistryPage` row menu (`openRowMenu` / `syncRowMenuPlacement` / `createPortal`).
+---

@@ -1,0 +1,108 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ra-space-2);
+  /* md — product default: match search / toolbar (~32px), not marketing CTAs */
+  padding: 6px 12px;
+  min-height: 32px;
+  border-radius: var(--ra-radius-control);
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background var(--ra-motion-fast) var(--ra-ease-out),
+    border-color var(--ra-motion-fast) var(--ra-ease-out),
+    color var(--ra-motion-fast) var(--ra-ease-out),
+    transform var(--ra-motion-fast) var(--ra-ease-out),
+    box-shadow var(--ra-motion-fast) var(--ra-ease-out),
+    opacity var(--ra-motion-fast) var(--ra-ease-out);
+  user-select: none;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+/* sm — dense forms, keys, drawer footers, table / ledger actions (~chip height) */
+.sm {
+  min-height: 28px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pending {
+  opacity: 0.72;
+  cursor: progress;
+}
+
+.btn:focus-visible {
+  outline: none;
+}
+
+.primary {
+  background: var(--ra-blurple);
+  border-color: var(--ra-blurple);
+  color: var(--ra-white);
+}
+
+.primary:hover:not(:disabled),
+.primary:focus-visible:not(:disabled) {
+  background: var(--ra-blurple-hover);
+  border-color: var(--ra-blurple-hover);
+  color: var(--ra-white);
+}
+
+.primary:focus-visible:not(:disabled) {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.primary:active:not(:disabled) {
+  background: var(--ra-blurple-hover);
+}
+
+.ghost {
+  background: var(--ra-surface);
+  border-color: var(--ra-border);
+  color: var(--ra-text);
+}
+
+.ghost:hover:not(:disabled),
+.ghost:focus-visible:not(:disabled) {
+  border-color: var(--ra-blurple);
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
+}
+
+.ghost:focus-visible:not(:disabled) {
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.ghost:active:not(:disabled) {
+  background: var(--ra-pressed);
+}
+
+.ghost.selected {
+  border-color: var(--ra-blurple);
+  background: var(--ra-selected);
+  color: var(--ra-blurple-fg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+
+  .btn:active:not(:disabled) {
+    transform: none;
+  }
+}

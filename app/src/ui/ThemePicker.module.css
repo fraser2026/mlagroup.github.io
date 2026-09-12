@@ -1,0 +1,52 @@
+.wrap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-mist);
+}
+
+.option {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--ra-radius-control);
+  background: transparent;
+  color: var(--ra-text-3);
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+
+.option:hover {
+  color: var(--ra-ink);
+  background: var(--ra-hover);
+}
+
+.on {
+  color: var(--ra-blurple-fg);
+  background: var(--ra-surface);
+  border-color: var(--ra-blurple);
+  box-shadow: none;
+}
+
+.option:focus-visible {
+  outline: none;
+  color: var(--ra-ink);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.compact .option {
+  min-height: 28px;
+  padding: 4px 6px;
+  font-size: 11px;
+  gap: 4px;
+}

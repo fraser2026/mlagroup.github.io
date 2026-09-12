@@ -1,0 +1,52 @@
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+  max-width: 720px;
+}
+
+.metaItem {
+  display: grid;
+  gap: 4px;
+}
+
+.metaItem label {
+  font-size: 12px;
+  color: var(--ra-text-3);
+}
+
+.metaItem span {
+  font-size: 14px;
+  color: var(--ra-ink);
+}
+
+.copy {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--ra-text-2);
+  line-height: 1.45;
+  max-width: 62ch;
+}
+
+.actions {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.invoiceLink {
+  font-size: 13px;
+  color: var(--ra-blurple);
+  text-decoration: none;
+}
+
+.invoiceLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+}

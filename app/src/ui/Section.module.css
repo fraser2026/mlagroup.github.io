@@ -1,0 +1,36 @@
+.section {
+  scroll-margin-top: 16px;
+  padding-bottom: var(--ra-space-6);
+}
+
+.section:focus,
+.section:focus-visible {
+  outline: none;
+}
+
+.header {
+  margin-bottom: var(--ra-space-4);
+}
+
+.section:not(:has(> header)) {
+  /* Content-first tabs — keep scroll margin, no extra top chrome */
+  padding-top: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--ra-fs-section);
+  font-weight: var(--ra-fw-medium);
+  line-height: var(--ra-lh-tight);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+}
+
+.desc {
+  margin: 8px 0 0;
+  font-size: var(--ra-fs-body);
+  font-weight: var(--ra-fw-medium);
+  line-height: 1.45;
+  color: var(--ra-text-2);
+  max-width: 62ch;
+}

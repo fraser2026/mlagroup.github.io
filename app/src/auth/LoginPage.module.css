@@ -1,0 +1,59 @@
+.page {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--ra-mist);
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+  padding: 28px 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ra-text-3);
+}
+
+.input {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--ra-border-field);
+  border-radius: var(--ra-radius-control);
+  color: var(--ra-text);
+  background: var(--ra-surface);
+}
+
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border-color: var(--ra-blurple);
+  background: var(--ra-focus-fill);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.hint {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: var(--ra-text-3);
+}
+
+.hint a {
+  color: var(--ra-blurple);
+}

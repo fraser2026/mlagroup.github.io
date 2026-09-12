@@ -1,0 +1,249 @@
+.period {
+  display: inline-flex;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  overflow: hidden;
+}
+
+.periodBtn,
+.periodActive {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--ra-surface);
+  color: var(--ra-text-2);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.periodActive {
+  background: var(--ra-hover);
+  color: var(--ra-blurple);
+  font-weight: var(--ra-fw-medium);
+}
+
+.periodBtn:hover {
+  color: var(--ra-blurple);
+  background: var(--ra-hover);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 16px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+}
+
+.cardCurrent {
+  border-color: var(--ra-blurple);
+}
+
+.flag {
+  font-size: 11px;
+  color: var(--ra-blurple);
+  font-weight: var(--ra-fw-medium);
+}
+
+.tier {
+  font-size: 12px;
+  color: var(--ra-text-3);
+}
+
+.name {
+  font-size: 18px;
+  font-weight: var(--ra-fw-semibold);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+}
+
+.desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ra-text-2);
+  line-height: 1.45;
+  min-height: 2.9em;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.currency {
+  font-size: 16px;
+  color: var(--ra-ink);
+}
+
+.num {
+  font-family: var(--ra-font-num);
+  font-size: 32px;
+  font-weight: var(--ra-fw-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--ra-ink);
+  letter-spacing: -0.02em;
+}
+
+.numWide {
+  font-family: var(--ra-font-num);
+  font-size: 28px;
+  font-weight: var(--ra-fw-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--ra-ink);
+}
+
+.per {
+  font-size: 13px;
+  color: var(--ra-text-3);
+  margin-left: 4px;
+}
+
+.save {
+  font-size: 12px;
+  color: var(--ra-ok);
+}
+
+.feats {
+  display: grid;
+  gap: 6px;
+  padding: 10px 0 4px;
+  border-top: 1px solid var(--ra-border);
+  margin-top: 4px;
+  flex: 1;
+}
+
+.feat {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ra-text);
+  line-height: 1.35;
+}
+
+.mark {
+  color: var(--ra-blurple);
+  flex-shrink: 0;
+}
+
+.current {
+  font-size: 13px;
+  color: var(--ra-text-3);
+  padding: 8px 0;
+}
+
+.compareWrap {
+  margin-top: 14px;
+  overflow-x: auto;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+}
+
+.compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.compare th,
+.compare td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--ra-border);
+  color: var(--ra-text);
+}
+
+.compare th {
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  background: var(--ra-mist);
+}
+
+.sectionRow td {
+  font-weight: var(--ra-fw-semibold);
+  color: var(--ra-ink);
+  background: var(--ra-hover);
+}
+
+.entForm {
+  display: grid;
+  gap: 14px;
+  max-width: 520px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ra-text-3);
+}
+
+.input,
+.textarea {
+  border: 1px solid var(--ra-border-field);
+  border-radius: var(--ra-radius-control);
+  padding: 9px 10px;
+  font: inherit;
+  color: var(--ra-ink);
+  background: var(--ra-canvas);
+}
+
+.input {
+  height: 36px;
+  padding: 0 10px;
+}
+
+.input:focus,
+.input:focus-visible,
+.textarea:focus,
+.textarea:focus-visible {
+  outline: none;
+  border-color: var(--ra-blurple);
+  background: var(--ra-focus-fill);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.fieldset {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  padding: 12px;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.fieldset legend {
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--ra-text-3);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ra-text);
+}
+
+.entActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

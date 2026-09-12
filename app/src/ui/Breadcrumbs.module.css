@@ -1,0 +1,46 @@
+.trail {
+  min-width: 0;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  min-width: 0;
+}
+
+.sep {
+  display: flex;
+  color: var(--ra-text-3);
+  opacity: 0.7;
+}
+
+.link {
+  display: inline-block;
+  padding: 2px 4px;
+  border-radius: var(--ra-radius-control);
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.link:hover {
+  color: var(--ra-ink);
+  background: var(--ra-hover);
+}
+
+.current {
+  display: inline-block;
+  padding: 2px 4px;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+}

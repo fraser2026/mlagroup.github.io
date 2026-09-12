@@ -1,74 +1,78 @@
 ---
-description: RegAnchor portal aesthetic and brand locks — read before any UI work
+description: RegAnchor product feel — clarity, density, scarce accent (not old portal dogma)
 alwaysApply: true
 ---
 
-# RegAnchor aesthetic (mandatory)
+# RegAnchor design (agents)
 
-Full reference: [DESIGN.md](DESIGN.md). Naming/legal: [BRAND.md](BRAND.md). Tokens: `css/reganchor.css`, `css/portal.css`.
+Full note: [DESIGN.md](DESIGN.md). Names/legal: [BRAND.md](BRAND.md).
 
-## Before changing UI
+## Feel
 
-1. Open `portal.html` / `css/portal.css` and match that language.
-2. Open `index.html` for public marketing chrome and **button pair** behaviour.
-3. Do not invent a second theme (especially dark fintech or purple-gradient startup).
+Apple-like clarity + Cloudflare / Supabase density: compact useful controls, clear hierarchy, precise boundaries, calm whitespace around dense data. Premium = quiet and exact — not loud chrome.
 
-## Non-negotiables
+## Non‑negotiables
 
-- Light paper canvas, ink `#0A0E14`, hairlines `#E6EBF1`, Blurple `#533AFD` **only** for primary actions and score meters
-- Inter body; IBM Plex Sans for wordmark and score numerals
-- Sentence case chrome — no stamped all-caps
-- Severity = typographic colour on the label, never a parent `color` that paints the whole block
-- 4px controls; ledgers over decorative cards; no glow/glass/pill clusters
-- Product copy = **RegAnchor**; certificates/legal issuer = **MLA Group Ltd**
-- PDF templates (`report-template.html`, `certificate-template.html`) stay self-contained CSS for Puppeteer
+- Light canvas by default; dark = jet-black work card over sidebar shell; dark text accents are white (blurple reserved for fills, chip boxes, borders, marker lines); scrollbar tracks match surfaces; AD avatars keep blurple
+- Sentence case; no em dashes in product copy
+- Status colour on the label only — never a whole block
+- Product = **RegAnchor**; legal issuer = **MLA Group Ltd**
+- Prefer `app/src/ui`; don’t paste default shadcn/MUI aesthetics
+- Do not box every table/stat section in dark mode; one header rule beats a full card outline
+- No sharp 90° product rectangles — cards/buttons/inputs/tags use `--ra-radius-control`
+- Section intros are optional: use when the tab needs orientation; keep body-size `--ra-text-2` on nav pages (not meta whisper); skip when content already explains (Overview)
+- Detail tabs: never repeat Overview / Audit titles; Assessment / Controls empty titles only while content is empty
 
-## Buttons (index is the source of truth — never invent a third pair)
+## Type (meta surfaces)
 
-Match `index.html` `.btn-primary` / `.btn-ghost` exactly on every new public surface.
+Same weight (`--ra-fw-medium`). Hierarchy is **colour + size only**. Never mute primary content.
 
-| Control | Rest | Hover / focus |
-|---------|------|----------------|
-| **Primary** | Blurple fill + white label | Blurple-hover `#4434E0`, still white label |
-| **Ghost** (white / outline) | White (or paper) fill, ink label, hairline border | **Blurple border + Blurple label** on quiet paper hover — **not** ink/dark fill |
-| **Menus / major actions** | Ink label; muted grey if disabled | Quiet grey wash **plus Blurple label** (same as ghost / wordmark). Keep the grey shader — do not fill the row Blurple. Disabled stays grey, no accent. |
+| Role | Colour | Size |
+|------|--------|------|
+| Primary (module titles, provider names, asset names, values, model line) | `--ra-ink` | as designed |
+| Secondary (field labels, metric labels, supporting body under a title) | `--ra-text-2` | 12–13px |
+| Tertiary (dates, placeholders, quiet asides) | `--ra-text-3` | ≤12px |
+| Metric numerals (scores, %, counts, L-codes, date/time figures) | `--ra-ink` | as designed; **Inter** via `--ra-font-num` / `.ra-num` / `<RaNum>` + tabular (portal face). Same digit face as UI — not IBM Plex. Plex is wordmark / marketing only. |
 
-```css
-/* Ghost: never darken the fill on hover */
-.btn-ghost:hover,
-.btn-ghost:focus-visible {
-  border-color: var(--accent); /* blurple */
-  background: var(--hover);    /* quiet paper hover only */
-  color: var(--accent);        /* blurple text — not dark ink */
-}
+**Dark mode:** ink is white. If a screen looks “all grey”, primary content was muted by mistake. Fix colour roles; do not thin weights. Supporting copy stays `--ra-text-2`, not tertiary.
 
-/* Menus / major actions: grey wash stays, label goes Blurple */
-.reg-bulk-menu button:hover,
-.reg-bulk-menu button:focus-visible {
-  background: var(--ra-hover);
-  color: var(--ra-blurple);
-}
+Menus (account, column filter, bulk/⋯): rest `--ra-text-2` medium, hover ink + grey wash. Same padding `8px 10px`.
+
+Provider names always use official brand casing via `labelProvider()` (OpenAI, Anthropic, AWS Bedrock, Microsoft Foundry). Model provider ≠ infrastructure (Azure/AWS/GCP) ≠ interface (MCP/API/Gateway). Status colour stays on the badge/word only. Remove chrome that has no job.
+
+## Product spine (current)
+
+```
+Workspace (org)
+  ├── Registry · Connect · Reports
+  ├── Getting started (Workspace group)
+  ├── Frameworks / Policies / Controls
+  └── Administration: API keys · Data backends · …
+
+Asset (registry detail tabs)
+  ├── Overview
+  ├── Assessment
+  ├── Controls
+  ├── Connection   (runtime key, org admin, provider usage, gateway)
+  └── Audit log
 ```
 
-Reject: ghost hover that turns black/navy/ink solid, grey-only hover with no Blurple on an enabled major action, primary that greys out on hover.
+Connect is org-level. Asset Connection is the per-asset runtime / gateway surface. **Data backends** is org-level warehouse/DB connect (UI foundation; live connectors later). Govern / Build / Operate module chips are parked. Browse / Act / Deep-focus are future interaction modes, not current chrome.
 
-## Reject these patterns
+## Do not treat as sacred
 
-```html
-<!-- BAD: risk colour cascades into every child -->
-<div class="dom-band" style="color:${sc.c}">...</div>
+Early portal “hairlines everywhere / bold black score posters / match portal.css literally” rules. Portal is legacy behaviour reference when needed; **app design follows DESIGN.md**, not museum CSS.
 
-<!-- BAD: full-width pink number bar -->
-<div class="act-n" style="background:${ph.color}22;color:${ph.color}">1</div>
-```
+## Buttons (keep this pair)
 
-```html
-<!-- GOOD: ink hierarchy + meter; risk only on status word -->
-<div class="dom-band">
-  <div class="dom-concept-name">…</div>
-  <div class="dom-meter"><span style="width:39%"></span></div>
-  <span class="dom-status-pill is-risk">High risk</span>
-</div>
-```
+| Control | Rest | Hover |
+|---------|------|--------|
+| Primary | Blurple + white label | Blurple-hover, white label |
+| Ghost | Paper, ink, light border | Blurple border + Blurple label (never ink fill) |
+| Menus | Ink label | Grey wash + Blurple label |
 
-If layout CSS for JS-emitted classes is missing, restore layout — do not only swap CSS variables.
+Size: **md** (~32px) page/header; **sm** (~28px) forms, keys, drawers, row actions. Radius = `--ra-radius-control` (4px), same as marketing.
+
+## Reject
+
+Dark fintech, purple-gradient starter kits, all-caps chrome, pill clusters, glow/glass, cascading risk colour on parents.

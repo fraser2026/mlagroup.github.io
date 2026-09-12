@@ -1,0 +1,129 @@
+/* Portal form language — hierarchy: section (ink) > label (muted) > input (ink) */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.divider {
+  display: block;
+  margin: 28px 0 14px;
+}
+
+.divider:first-child {
+  margin-top: 12px;
+}
+
+.divider span {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  white-space: nowrap;
+}
+
+.field {
+  display: block;
+  margin-bottom: 16px;
+  min-width: 0;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+  margin-bottom: 6px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.req {
+  color: var(--ra-risk);
+  margin-left: 2px;
+}
+
+.hint {
+  font-weight: 400;
+  color: var(--ra-text-3);
+  opacity: 0.85;
+}
+
+.hintBlock {
+  font-size: 12px;
+  color: var(--ra-text-2);
+  margin: -4px 0 14px;
+  line-height: 1.4;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  background: var(--ra-canvas);
+  border: 1px solid var(--ra-border-field);
+  border-radius: var(--ra-radius-control);
+  color: var(--ra-ink);
+  font-family: var(--ra-font);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  outline: none;
+  transition:
+    border-color 0.12s,
+    background 0.12s,
+    box-shadow 0.12s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.4;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--ra-text-3);
+  opacity: 0.85;
+}
+
+.input:focus,
+.input:focus-visible,
+.textarea:focus,
+.textarea:focus-visible {
+  border-color: var(--ra-blurple);
+  background: var(--ra-focus-fill);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+  outline: none;
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--ra-mist);
+}
+
+.error {
+  font-size: 12px;
+  color: var(--ra-risk);
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--ra-risk) 30%, var(--ra-border));
+  border-radius: var(--ra-radius-control);
+  background: color-mix(in srgb, var(--ra-risk) 6%, var(--ra-canvas));
+}
+
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

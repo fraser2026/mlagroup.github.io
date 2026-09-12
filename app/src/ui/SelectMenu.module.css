@@ -1,0 +1,156 @@
+.root {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.trigger {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-sizing: border-box;
+  min-height: 38px;
+  padding: 8px 10px 8px 12px;
+  border: 1px solid var(--ra-border-field);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-canvas);
+  color: var(--ra-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    background 0.12s,
+    box-shadow 0.12s;
+}
+
+.trigger:hover:not(:disabled) {
+  border-color: var(--ra-border-hover);
+}
+
+.triggerOpen,
+.trigger:focus-visible {
+  outline: none;
+  border-color: var(--ra-blurple);
+  background: var(--ra-focus-fill);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.triggerDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--ra-mist);
+}
+
+.triggerInner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.triggerIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.triggerLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  color: var(--ra-text-3);
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--ra-text-3);
+}
+
+.menu {
+  position: fixed;
+  z-index: 1200;
+  overflow: auto;
+  padding: 6px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-canvas);
+  box-shadow: var(--ra-shadow-menu);
+  box-sizing: border-box;
+}
+
+.group + .group {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--ra-border);
+}
+
+.groupLabel {
+  padding: 6px 10px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ra-text-3);
+  letter-spacing: -0.01em;
+}
+
+.option {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  padding: 8px 10px;
+  border-radius: var(--ra-radius-control);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.option:hover:not(:disabled) {
+  background: var(--ra-hover);
+  color: var(--ra-ink);
+}
+
+/* Selected stays legible; hover mist (not weight) shows the interactive state */
+.optionActive {
+  background: transparent;
+  color: var(--ra-blurple-fg);
+  font-weight: 400;
+}
+
+.optionActive:hover:not(:disabled) {
+  background: var(--ra-pressed);
+  color: var(--ra-blurple-fg);
+}
+
+.optionDisabled {
+  color: var(--ra-text-3);
+  cursor: not-allowed;
+}
+
+.optionIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.optionLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

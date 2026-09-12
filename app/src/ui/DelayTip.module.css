@@ -1,0 +1,54 @@
+.trigger {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.triggerInline {
+  display: inline-flex;
+  max-width: none;
+  vertical-align: middle;
+}
+
+.tip {
+  position: fixed;
+  z-index: var(--ra-z-toast);
+  padding: 8px 10px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-canvas);
+  box-shadow: var(--ra-shadow-menu);
+  color: var(--ra-body);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  white-space: normal;
+  word-break: break-word;
+  pointer-events: none;
+  animation: tipIn 120ms var(--ra-ease-out);
+}
+
+.tipCompact {
+  white-space: nowrap;
+  word-break: normal;
+  color: var(--ra-ink);
+  font-weight: var(--ra-fw-medium);
+}
+
+@keyframes tipIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tip {
+    animation: none;
+  }
+}

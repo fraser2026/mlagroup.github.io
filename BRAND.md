@@ -4,8 +4,8 @@ RegAnchor is the trading name of **MLA Group Ltd**. The legal entity is unchange
 is the single reference for deciding, at any given occurrence, whether "MLA" becomes "RegAnchor"
 or stays as it is.
 
-**Visual / portal aesthetic** (colours, type, report/portal UI rules) lives in [DESIGN.md](DESIGN.md).
-Agents must follow both files.
+**Visual / product feel** lives in [DESIGN.md](DESIGN.md) (clarity, density, app UI).  
+This file is **names and legal entity only** — not layout dogma. Agents use both: BRAND for who/what to call things, DESIGN for how the product should feel.
 
 ## The entity
 
@@ -42,7 +42,7 @@ reference is harmless; an under-cautious one is not.
 
 ### Wordmark
 The text pattern `mla<em>group.</em>` in every nav, sidebar, and footer. Replaced by `RegAnchor`
-in CamelCase, set in IBM Plex Sans Medium, no italic, no trailing full stop inside the mark.
+in CamelCase. Match the **shipping wordmark** in the app / site (do not invent a second mark).
 
 Affects: `index.html`, `platform.html`, `pricing.html`, `methodology.html`, `contact.html`,
 `login.html`, `diagnostic.html`, `results.html`, `verify.html`, `privacy.html`, `terms.html`,

@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>AI Governance Risk Report | RegAnchor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* RegAnchor diagnostic report — board / portal ledger (webview) */
+:root {
+  --bg: #FFFFFF;
+  --surface-1: #F6F9FC;
+  --border: #E6EBF1;
+  --text-1: #0A0E14;
+  --text-2: #425466;
+  --text-3: #697386;
+  --navy: #0A2540;
+  --blue: #533AFD;
+  --critical: #CD3D64;
+  --high: #C45C26;
+  --moderate: #92400e;
+  --lowmod: #533AFD;
+  --low: #24B47E;
+  --nav-h: 56px;
+  --r: 4px;
+  --font-brand: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--text-2);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.65;
+  text-transform:none;
+}
+.ra-report h1,.ra-report h2,.ra-report h3,.ra-report h4{
+  font-family:var(--font-brand)!important;
+  font-weight:500!important;
+  color:var(--text-1);
+  letter-spacing:-.02em;
+  line-height:1.2;
+  text-transform:none!important;
+}
+.ra-report h2{font-size:1.35rem!important}
+
+#ls{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .4s ease}
+#ls.out{opacity:0;pointer-events:none}
+.ls-logo{font-family:var(--font-brand);font-size:1.1rem;font-weight:500;letter-spacing:-.025em;color:var(--text-1);margin-bottom:28px}
+.ls-track{width:200px;height:2px;background:var(--border);overflow:hidden}
+.ls-fill{height:100%;width:0;background:var(--blue);animation:lp 2s ease forwards}
+@keyframes lp{to{width:88%}}
+.ls-msg{font-size:.75rem;color:var(--text-3);margin-top:14px;min-height:18px}
+
+#es{display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:12px}
+#es.show{display:flex}
+.es-ico{font-size:1.5rem;opacity:.35;margin-bottom:4px}
+.es-title{font-family:var(--font-brand);font-size:1.1rem;font-weight:500;color:var(--text-1)}
+.es-msg{font-size:.88rem;color:var(--text-2);max-width:360px;text-align:center;line-height:1.6}
+.es-btn{margin-top:12px;padding:10px 20px;background:var(--blue);color:#fff;border:1px solid var(--blue);border-radius:var(--r);font-family:var(--font-body);font-size:.85rem;font-weight:500;cursor:pointer;text-decoration:none;display:inline-block}
+
+#rpt{display:none}
+#rpt.show{display:block}
+
+.rnav{position:sticky;top:0;height:var(--nav-h);background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:100}
+.rnav-logo{font-family:var(--font-brand);font-size:.95rem;font-weight:500;letter-spacing:-.025em;color:var(--text-1);text-decoration:none}
+.rnav-links{display:flex;list-style:none;gap:2px}
+.rnav-links a{font-size:.78rem;font-weight:400;color:var(--text-3);text-decoration:none;padding:6px 10px;border-radius:var(--r)}
+.rnav-links a:hover{color:var(--text-1);background:rgba(6,27,49,.04)}
+.rnav-links a.act{color:var(--text-1);font-weight:600;box-shadow:none;border-bottom:none}
+.rnav-r{display:flex;align-items:center;gap:10px}
+.conf-badge{font-size:.72rem;color:var(--text-3);border:1px solid var(--border);padding:4px 10px;border-radius:var(--r)}
+.pdf-btn{padding:8px 14px;background:var(--blue);color:#fff;border:1px solid var(--blue);border-radius:var(--r);font-family:var(--font-body);font-size:.78rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+.pdf-btn:hover{filter:brightness(.95)}
+.pdf-btn svg{width:13px;height:13px}
+
+.hero{padding:40px 0 36px;border-bottom:1px solid var(--border)}
+.hero-bg,.hero-grid,.hero-scroll{display:none!important}
+.hero-inner{max-width:920px;margin:0 auto;padding:0 28px;width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:48px;align-items:center}
+.hero-reading{display:flex;flex-direction:column;align-items:flex-start;gap:16px;padding-left:5px}
+.hero-reading__label{font-size:.72rem;font-weight:500;color:var(--text-3)}
+.hero-reading__meta{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding-left:0;max-width:280px}
+.band-head{font-size:.78rem;color:var(--text-3);margin:0;line-height:1.45;text-align:left;max-width:260px}
+.hero-eyebrow{font-family:var(--font-brand);font-size:.72rem;font-weight:500;color:var(--text-3);margin-bottom:12px}
+.hero-org{font-family:var(--font-brand);font-size:clamp(1.7rem,3vw,2.25rem)!important;font-weight:500;letter-spacing:-.03em;color:var(--text-1);margin-bottom:12px}
+.hero-sub{font-size:.92rem;color:var(--text-2);line-height:1.7;margin-bottom:24px;max-width:520px}
+.hero-meta{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border)}
+.hero-meta-item{padding:12px 14px;border-right:1px solid var(--border)}
+.hero-meta-item:last-child{border-right:none}
+.hm-label{font-size:.68rem;color:var(--text-3);margin-bottom:3px;font-weight:500}
+.hm-val{font-size:.84rem;font-weight:500;color:var(--text-1)}
+.hero-right{display:flex;align-items:center;justify-content:flex-end}
+.band-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--r);font-size:.75rem;font-weight:600}
+.band-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.band-lbl{font-size:.75rem;font-weight:600}
+
+.rsec{max-width:920px;margin:0 auto;padding:44px 28px;border-bottom:1px solid var(--border)}
+.sec-hdr{margin-bottom:24px}
+.sec-num,.rsec-eyebrow{font-family:var(--font-brand);font-size:.72rem;font-weight:500;color:var(--text-3);margin-bottom:8px}
+.sec-title,.rsec-title{font-family:var(--font-brand)!important;font-size:1.35rem!important;font-weight:500!important;letter-spacing:-.02em;color:var(--text-1);margin-bottom:10px}
+.sec-intro,.rsec-intro{font-size:.9rem;color:var(--text-2);line-height:1.7;max-width:62ch}
+
+.verdict-box,.brief-verdict,.acc-gap,.tech-note,.mla-note,.sect-notice,.bench-box{
+  border:1px solid var(--border);border-left:2px solid var(--text-1);
+  padding:16px 18px;margin:16px 0;background:var(--bg);color:var(--text-2)!important
+}
+.bv-eyebrow,.sn-lbl,.acc-lbl,.tn-lbl,.mn-lbl,.dr-lbl,.bench-lbl{
+  font-family:var(--font-brand);font-size:.72rem;font-weight:500;color:var(--text-3)!important;margin-bottom:6px
+}
+.bv-text,.sn-txt,.acc-txt,.tn-txt,.mn-txt,.dr-txt,.bench-txt{font-size:.88rem;color:var(--text-2)!important;line-height:1.7}
+
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin:16px 0}
+th{text-align:left;font-family:var(--font-brand);font-weight:500;font-size:.72rem;color:var(--text-3);padding:10px 12px;border-bottom:1px solid var(--text-1)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-2);line-height:1.5}
+.obl-reg,.rn{display:block;font-weight:500;color:var(--text-1);font-size:.84rem}
+.obl-art,.ra,.dw{display:block;font-size:.72rem;color:var(--text-3);margin-top:2px}
+.dn{font-weight:500;color:var(--text-1);font-size:.84rem}
+.s-alert{color:var(--critical);font-weight:600;font-size:.78rem}
+.s-warn{color:var(--high);font-weight:500;font-size:.78rem}
+.s-ok{color:var(--low);font-weight:500;font-size:.78rem}
+.dl-now{color:var(--critical);font-weight:600;font-size:.78rem}
+.dl-aug{color:var(--high);font-weight:500;font-size:.78rem}
+.t-mand{font-weight:500;color:var(--text-1);font-size:.78rem}
+.t-adv{color:var(--text-3);font-size:.78rem}
+.rc-penalty{font-size:.8rem}
+.rbadge{font-size:.72rem;font-weight:600;color:var(--text-3)!important;background:transparent!important;padding:0!important;border:none!important}
+.rbadge.is-risk{color:var(--critical)!important}
+.rbadge.is-warn{color:var(--high)!important}
+.rbadge.is-ok{color:var(--low)!important}
+.mbar-t{width:88px;height:4px;background:var(--border);overflow:hidden;border-radius:1px}
+.mbar-f{height:100%;background:var(--blue)!important;border-radius:1px}
+
+.board-items{display:flex;flex-direction:column;gap:0;border:1px solid var(--border)}
+.bi{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg)!important;border-radius:0!important;box-shadow:none!important;border-left:none!important;border-right:none!important;border-top:none!important}
+.bi:last-child{border-bottom:none}
+.bi-num{font-family:var(--font-brand);font-size:.84rem;font-weight:500;color:var(--text-3);min-width:20px;font-feature-settings:'tnum'}
+.bi-txt{font-size:.9rem;color:var(--text-1);line-height:1.55;font-weight:500}
+
+.dash-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:28px;align-items:start;margin-bottom:8px}
+.radar-card{border:1px solid var(--border);padding:16px}
+.radar-lbl{font-family:var(--font-brand);font-size:.72rem;font-weight:500;color:var(--text-3);margin-bottom:8px}
+#radar-svg{width:100%;height:auto;display:block}
+
+.find-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.find-tabs-hint{font-size:.78rem;color:var(--text-3);margin:-8px 0 14px}
+.ft{padding:8px 12px;border:1px solid var(--border);background:var(--bg);border-radius:var(--r);font-family:var(--font-body);font-size:.78rem;font-weight:500;color:var(--text-3);cursor:pointer}
+.ft:hover{color:var(--text-1);border-color:var(--text-1)}
+.ft.act,.ft.active{color:#fff;background:var(--blue);border-color:var(--blue)}
+.fpanel{display:none}.fpanel.act,.fpanel.active,.fpanel.show{display:block}
+
+.pf-card{
+  position:relative;padding:20px 20px 20px 22px;margin-bottom:0;
+  background:var(--bg)!important;border:1px solid var(--border)!important;border-left:2px solid var(--text-1)!important;
+  border-radius:0!important;box-shadow:none!important
+}
+.pf-card + .pf-card{border-top:none!important}
+.pf-ghost{display:none}
+.pf-meta{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.pf-id{font-family:var(--font-brand);font-size:.72rem;font-weight:500;color:var(--text-3)}
+.pf-sev{font-size:.72rem;font-weight:600;text-transform:none!important;color:var(--text-3)}
+.pf-sev.is-risk{color:var(--critical)}
+.pf-sev.is-warn{color:var(--high)}
+.pf-sev.is-ok{color:var(--low)}
+.pf-sect{font-size:.72rem;color:var(--text-3)}
+.pf-label{font-family:var(--font-brand);font-size:1.05rem;font-weight:500;color:var(--text-1);letter-spacing:-.015em;margin-bottom:8px;line-height:1.35}
+.pf-basis{font-size:.84rem;color:var(--text-3);margin-bottom:14px;line-height:1.55}
+.pf-impact-blk,.pf-rec{margin-top:14px}
+.pf-impact-lbl,.pf-rec-lbl{font-size:.72rem;font-weight:500;color:var(--text-3);margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.pf-impact,.pf-rec-txt{font-size:.88rem;color:var(--text-2);line-height:1.7}
+
+.dom-card{background:var(--bg)!important;border:1px solid var(--border)!important;border-radius:0!important;box-shadow:none!important;overflow:hidden}
+.dom-band{padding:20px 20px 18px;border-bottom:1px solid var(--border);background:var(--surface-1);color:inherit!important}
+.dom-band-inner{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end}
+.dom-concept-tag{font-size:.72rem;font-weight:500;color:var(--text-3);margin-bottom:8px}
+.dom-concept-name{font-family:var(--font-brand);font-size:1.35rem;font-weight:500;color:var(--text-1);letter-spacing:-.02em;line-height:1.25;margin-bottom:0}
+.dom-name{display:none}
+.dom-score-wrap{text-align:right;min-width:140px}
+.dom-score{display:block;font-family:var(--font-brand);font-size:2rem;font-weight:500;color:var(--text-1);letter-spacing:-.03em;font-feature-settings:'tnum';line-height:1}
+.dom-score-meta{font-size:.68rem;color:var(--text-3);margin:6px 0 8px}
+.dom-meter{width:140px;height:4px;background:var(--border);border-radius:1px;overflow:hidden;margin-left:auto;margin-bottom:8px}
+.dom-meter > span{display:block;height:100%;background:var(--blue);border-radius:1px}
+.dom-status-pill{font-size:.78rem;font-weight:600;color:var(--text-3)}
+.dom-status-pill.is-risk{color:var(--critical)}
+.dom-status-pill.is-warn{color:var(--high)}
+.dom-status-pill.is-ok{color:var(--low)}
+.dom-body{padding:8px 20px 20px}
+.db-blk{padding:16px 0;border-bottom:1px solid var(--border)}
+.db-blk:last-child{border-bottom:none}
+.db-lbl{font-size:.72rem;font-weight:500;color:var(--text-3);margin-bottom:6px}
+.db-txt{font-size:.9rem;color:var(--text-2);line-height:1.7}
+.dom-rec{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+
+.rm-phases{display:flex;flex-direction:column;gap:28px}
+.rm-phase{display:block;padding:0;border:none}
+.rm-side{margin-bottom:12px}
+.rm-marker{display:none!important}
+.rm-win{display:inline-block;font-size:.72rem;font-weight:500;color:var(--text-3)!important;border:1px solid var(--border)!important;background:var(--surface-1)!important;padding:4px 10px;border-radius:var(--r);margin-bottom:10px}
+.rm-name{font-family:var(--font-brand)!important;font-size:1.15rem!important;font-weight:500!important;color:var(--text-1);margin:0 0 6px;letter-spacing:-.015em}
+.rm-badge{display:inline-block;font-size:.72rem;font-weight:500;color:var(--text-3)!important;background:transparent!important;border:none!important;padding:0!important;margin-bottom:8px}
+.rm-rationale{font-size:.88rem;color:var(--text-2);line-height:1.65;margin-bottom:14px;padding:0!important;border:none!important;background:transparent!important}
+.rm-actions{border:1px solid var(--border)}
+.rm-action{
+  display:grid!important;grid-template-columns:36px 1fr auto;gap:12px;align-items:start;
+  padding:12px 14px!important;margin:0!important;
+  background:var(--bg)!important;border:none!important;border-bottom:1px solid var(--border)!important;
+  border-radius:0!important;box-shadow:none!important
+}
+.rm-action:last-child{border-bottom:none!important}
+.act-n{
+  width:28px!important;height:28px!important;min-width:28px;max-width:28px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-brand);font-size:.84rem;font-weight:500;font-feature-settings:'tnum';
+  background:var(--surface-1)!important;color:var(--text-1)!important;border:1px solid var(--border);
+  border-radius:var(--r)!important;line-height:1;flex-shrink:0
+}
+.act-txt{font-size:.9rem;color:var(--text-1);line-height:1.5;font-weight:500;padding-top:4px}
+.act-own{font-size:.72rem;font-weight:500;color:var(--text-3)!important;border:none!important;padding:4px 0 0!important;background:transparent!important;white-space:nowrap}
+.rm-del{margin-top:12px;font-size:.78rem;color:var(--text-3)!important;line-height:1.5}
+
+.fwd-paras{display:flex;flex-direction:column;gap:16px}
+.fwd-p{font-size:.9rem;color:var(--text-2);line-height:1.75}
+
+.rfooter{max-width:920px;margin:0 auto;padding:28px;display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-top:1px solid var(--text-1)}
+.rf-logo{font-family:var(--font-brand);font-weight:500;color:var(--text-1);text-decoration:none}
+.rf-notice{font-size:.75rem;color:var(--text-3);line-height:1.6;max-width:520px}
+.rf-ver{font-size:.72rem;color:var(--text-3);text-align:right}
+
+@media(max-width:900px){
+  .hero-inner,.dash-grid,.dom-band-inner{grid-template-columns:1fr;gap:20px}
+  .dom-score-wrap{text-align:left}
+  .dom-meter{margin-left:0}
+  .rnav-links{display:none}
+  .rsec{padding:36px 16px}
+  .rnav{padding:0 16px}
+  .hero-meta{grid-template-columns:1fr 1fr}
+  .hero-meta-item:nth-child(2n){border-right:none}
+  .rm-action{grid-template-columns:28px 1fr}
+  .act-own{grid-column:2;padding-top:0!important}
+  .rfooter{flex-direction:column}
+}
+@media print{
+  .rnav,.btn-topbar,.find-tabs{display:none!important}
+  body{background:#fff}
+}
+</style>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
+  <link rel="stylesheet" href="css/reganchor-report.css">
+  <script src="js/ra-maturity.js"></script>
+</head>
+<body class="ra-report">
+
+<!-- LOADING -->
+<div id="ls">
+  <div class="ls-logo ra-wordmark"><img src="brand/wordmark-text.svg" alt="RegAnchor" width="193" height="36" decoding="async"></div>
+  <div class="ls-track"><div class="ls-fill"></div></div>
+  <div class="ls-msg" id="ls-msg">Verifying access...</div>
+</div>
+
+<!-- ERROR -->
+<div id="es">
+  <div class="es-ico">⚠</div>
+  <div class="es-title" id="es-title">Access Denied</div>
+  <div class="es-msg" id="es-msg">This report could not be loaded.</div>
+  <a href="portal.html" class="es-btn">Return to Portal</a>
+</div>
+
+<!-- REPORT -->
+<div id="rpt">
+
+  <!-- STICKY NAV -->
+  <nav class="rnav" id="rnav">
+    <a href="portal.html" class="rnav-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+    <ul class="rnav-links">
+      <li><a href="#executive-brief">Executive Brief</a></li>
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#regulatory-register">Regulatory Register</a></li>
+      <li><a href="#findings">Findings</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#forward-risk">Outlook</a></li>
+    </ul>
+    <div class="rnav-r">
+      <a href="portal.html" class="btn-topbar btn-topbar-primary">Back to Portal</a>
+    </div>
+    <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress__fill" id="scrollProgress"></div></div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-eyebrow">AI Governance Risk Assessment · Board Advisory Report</div>
+        <h1 class="hero-org" id="hero-org">Organisation Name</h1>
+        <p class="hero-sub" id="hero-sub">This report presents the findings of your AI Governance Risk Diagnostic, assessed against UK and EU regulatory expectations. It is prepared for board and senior executive review.</p>
+        <div class="hero-meta" id="hero-meta"></div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-reading">
+          <div class="hero-reading__label">Governance maturity</div>
+          <div id="maturityMount"></div>
+          <div class="hero-reading__meta">
+            <div class="band-pill" id="band-pill">
+              <span class="band-dot" id="band-dot"></span>
+              <span class="band-lbl" id="band-lbl"></span>
+            </div>
+            <p class="band-head" id="band-head"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1. EXECUTIVE BRIEF -->
+  <section class="rsec fiu" id="executive-brief">
+    <div class="sec-hdr">
+      <h2 class="sec-title">Executive Brief</h2>
+      <p class="sec-intro" id="brief-intro"></p>
+    </div>
+    <div id="brief-verdict" class="brief-verdict">
+      <div class="bv-eyebrow" id="bv-eyebrow"></div>
+      <div class="bv-text" id="bv-text"></div>
+    </div>
+    <div style="margin-bottom:28px">
+      <div style="font-size:.72rem;letter-spacing:.02em;color:var(--text-3);font-weight:500;margin-bottom:14px">Principal regulatory obligations</div>
+      <div class="tbl-scroll">
+        <table class="obl-tbl" id="obl-tbl">
+          <thead><tr>
+            <th>Regulation</th><th>Obligation Area</th><th>Status</th><th>Deadline</th>
+          </tr></thead>
+          <tbody id="obl-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:.72rem;letter-spacing:.02em;color:var(--text-3);font-weight:500;margin-bottom:14px">Board attention required</div>
+      <div class="board-items" id="board-items"></div>
+    </div>
+  </section>
+
+  <!-- 2. GOVERNANCE MATURITY DASHBOARD -->
+  <section class="rsec fiu" id="dashboard">
+    <div class="sec-hdr">
+      <h2 class="sec-title">Governance Maturity Dashboard</h2>
+      <p class="sec-intro">Domain scores reflect the proportion of maximum available points achieved in each governance area. The radar chart visualises relative maturity across all seven domains simultaneously. Each domain is assessed independently and contributes to the overall weighted score according to its regulatory significance.</p>
+    </div>
+    <div class="dash-grid">
+      <div class="radar-card">
+        <div class="radar-lbl">Seven-Domain Maturity Profile</div>
+        <svg id="radar-svg" viewBox="0 0 300 280"></svg>
+      </div>
+      <div>
+        <table class="domain-tbl" id="domain-tbl">
+          <thead><tr>
+            <th>Domain</th><th>Wt.</th><th>Score</th><th></th><th>Status</th>
+          </tr></thead>
+          <tbody id="domain-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="bench-box" id="bench-box">
+      <div class="bench-lbl">Sector Benchmark Observation</div>
+      <div class="bench-txt" id="bench-txt"></div>
+    </div>
+  </section>
+
+  <!-- 3. REGULATORY OBLIGATION REGISTER -->
+  <section class="rsec fiu" id="regulatory-register">
+    <div class="sec-hdr">
+      <h2 class="sec-title">Regulatory Obligation Register</h2>
+      <p class="sec-intro">The following register maps each applicable regulation to the current compliance status derived from assessment responses. It is designed for use in board reporting, legal review, and audit defence preparation. Mandatory obligations carry financial penalties; deadlines are binding, not advisory.</p>
+    </div>
+    <div class="acc-gap">
+      <div class="acc-lbl">Accountability Gap: Regulatory Blindspot</div>
+      <div class="acc-txt">Under FCA PS7/21 and EU AI Act Art. 27, accountability for AI systems cannot be distributed across functions. The absence of a named individual responsible for AI governance creates a Regulatory Blindspot that prevents effective human oversight. In any supervisory inquiry, enforcement investigation, or litigation, regulators will identify a specific person to question. &ldquo;Shared responsibility&rdquo; is not a legally defensible position under either framework. RegAnchor recommends the immediate appointment of a named AI Oversight Lead with documented mandate and veto authority over model deployment.</div>
+    </div>
+    <div class="tbl-scroll" style="margin-bottom:0">
+      <table class="reg-tbl" id="reg-tbl">
+        <thead><tr>
+          <th>Regulation</th><th>Obligation</th><th>Type</th><th>Consequence</th><th>Deadline</th>
+        </tr></thead>
+        <tbody id="reg-tbody"></tbody>
+      </table>
+    </div>
+    <div id="sect-notice"></div>
+  </section>
+
+  <!-- 4. DETAILED FINDINGS -->
+  <section class="rsec fiu" id="findings">
+    <div class="sec-hdr">
+      <h2 class="sec-title">Detailed Findings &amp; Domain Analysis</h2>
+      <p class="sec-intro">Findings are drawn from assessment responses and cross-referenced against current UK and EU regulatory obligations. Priority findings address governance flags raised by the diagnostic. Domain analysis provides advisory commentary for each of the seven governance areas, calibrated to your sector and risk profile.</p>
+    </div>
+    <p class="find-tabs-hint">Select a tab to view priority findings or domain detail.</p>
+    <div class="find-tabs" id="find-tabs"></div>
+    <div id="find-panels"></div>
+  </section>
+
+  <!-- 5. REMEDIATION ROADMAP -->
+  <section class="rsec fiu" id="roadmap">
+    <div class="sec-hdr">
+      <h2 class="sec-title">30/60/90&#8209;Day Remediation Roadmap</h2>
+      <p class="sec-intro" id="roadmap-intro">This roadmap converts assessment findings into a structured remediation programme. Phases are sequenced by risk contribution score (domain governance gap multiplied by regulatory weighting), ensuring resources address the areas of greatest regulatory exposure first.</p>
+    </div>
+    <div class="rm-phases" id="rm-phases"></div>
+  </section>
+
+  <!-- 6. FORWARD RISK LANDSCAPE -->
+  <section class="rsec fiu" id="forward-risk">
+    <div class="sec-hdr">
+      <h2 class="sec-title">Forward Risk Landscape</h2>
+      <p class="sec-intro">The following section addresses the forward trajectory of AI regulation over the next 12&ndash;36 months. Understanding the direction of regulatory travel is essential for boards making investment decisions about governance infrastructure.</p>
+    </div>
+    <div class="fwd-paras">
+      <div class="fwd-p">The regulatory landscape governing AI is not static. The EU AI Act&rsquo;s high-risk obligations, effective August 2026, represent the most significant compliance deadline facing organisations with material AI deployments. However, the enforcement trajectory extends well beyond this initial milestone. The European AI Office, established in February 2024, has commenced proactive monitoring of systemic risk models and has signalled an intent to pursue active enforcement from Q3 2026. The Commission&rsquo;s proposed Digital Omnibus package in late 2025 could extend Annex III deadlines to December 2027 &mdash; but organisations should not assume this extension will materialise. Prudent compliance planning treats August 2026 as the binding deadline.</div>
+      <div class="fwd-p">In the United Kingdom, the FCA published its AI Review conclusions confirming that AI governance is now a standing supervisory priority. The Bank of England&rsquo;s Critical Third Party regime, operational since 2025, extends regulatory scrutiny to AI vendors supplying services to regulated firms. This means third-party AI tools embedded in business processes now carry indirect compliance obligations for the firms that use them &mdash; a material expansion of the regulatory perimeter that many organisations have not yet accounted for. Senior managers are now individually on the hook for AI-driven outcomes under SM&amp;CR: the FCA has made clear that &ldquo;reasonable steps&rdquo; in relation to AI tools is a live supervisory expectation, not a future obligation.</div>
+      <div class="fwd-p">ISO/IEC 42001, published in December 2023, is moving rapidly from a governance benchmark to a procurement requirement. Enterprise clients, public sector buyers, and regulated counterparties are increasingly requesting evidence of ISO 42001 compliance as part of supplier qualification and due diligence. For organisations at this governance maturity level, a certification-ready programme is a 12&ndash;18 month undertaking that must begin before it becomes an urgent commercial necessity. The organisations that begin now will hold a competitive governance advantage by 2027 that latecomers will find difficult and expensive to close.</div>
+    </div>
+    <div class="mla-note">
+      <div class="mn-lbl">RegAnchor Advisory Note</div>
+      <div class="mn-txt" id="mla-note-txt"></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="rfooter">
+    <a href="portal.html" class="rf-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+    <div class="rf-notice">This report is produced for informational purposes based on self-reported responses. It does not constitute legal or regulatory advice. RegAnchor is not a certified audit regulator. Organisations should engage qualified legal and compliance counsel when implementing governance changes. RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562).</div>
+    <div class="rf-ver" id="rf-ver"></div>
+  </footer>
+
+</div><!-- /#rpt -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   CONFIGURATION — update these to match your other site files
+══════════════════════════════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+
+/* ══════════════════════════════════════════════════════════════════
+   FRAMEWORK DATA
+══════════════════════════════════════════════════════════════════ */
+const W  = {s1:.14,s2:.20,s3:.10,s4:.16,s5:.16,s6:.18,s7:.06};
+const SN = {s1:'AI Inventory & Classification',s2:'Governance & Accountability',s3:'Data Quality & Lineage',s4:'Human Oversight & Controls',s5:'Explainability & Transparency',s6:'Compliance & Legal Alignment',s7:'Operational Controls & Resilience'};
+const SM = {'Financial Services':1.00,'Healthcare & Life Sciences':1.00,'Public Sector / Government':.95,'Legal & Professional Services':.92,'Technology & SaaS':.88,'Retail & E-commerce':.85,'Education':.82,'Manufacturing & Logistics':.80,'Other':.90};
+const RB = [
+  {min:80,max:100,id:'low',   label:'Low Risk',          heading:'Governance Established: Maintenance Mode',       summary:'Your organisation demonstrates strong AI governance maturity across the assessed areas. The priority is to sustain, evolve, and stress-test frameworks as AI deployments develop and regulatory obligations mature.'},
+  {min:65,max:79, id:'lowmod',label:'Low to Moderate Risk', heading:'Foundations Present: Targeted Gaps Remain',      summary:'Meaningful governance foundations are established, but specific gaps create regulatory exposure. These are addressable with targeted action rather than a full rebuild.'},
+  {min:45,max:64, id:'moderate',label:'Moderate Risk',    heading:'Governance Gaps: Regulatory Exposure Likely',    summary:'Material governance gaps exist across multiple areas. Organisations at this maturity level face meaningful risk of enforcement attention, reputational exposure, or operational failure.'},
+  {min:25,max:44, id:'high',  label:'High Risk',          heading:'Significant Exposure: Intervention Required',    summary:'Significant and widespread governance deficiencies. This level of exposure represents current, active vulnerability to regulatory action, legal challenge, and operational harm.'},
+  {min:0, max:24, id:'critical',label:'Critical Risk',    heading:'Governance Absent: Urgent Escalation Needed',    summary:'AI governance is largely absent. This requires board-level escalation and specialist engagement now. Continued operation without governance controls creates severe regulatory and legal exposure.'}
+];
+const BAND_COLORS = {critical:'#CD3D64',high:'#C45C26',moderate:'#92400e',lowmod:'#533AFD',low:'#24B47E'};
+const BAND_COLORS_BG = {critical:'rgba(205,61,100,.08)',high:'rgba(196,92,38,.08)',moderate:'rgba(146,64,14,.08)',lowmod:'rgba(83,58,253,.08)',low:'rgba(36,180,126,.08)'};
+
+const BR = {
+  critical:['Urgently appoint a named AI governance lead with documented accountability and a board-level reporting line','Commission an immediate AI inventory audit to establish scope and identify regulatory exposure','Restrict high-impact automated decisions until human oversight controls are operational','Engage legal counsel to assess UK GDPR, EU AI Act, and sector-specific obligations immediately','Develop and implement a minimum viable AI policy framework within 30 days'],
+  high:['Formalise AI governance ownership with documented responsibilities across risk, compliance, and technical functions','Conduct Data Protection Impact Assessments for all AI systems processing personal data','Implement decision logging and audit trail capability for all high-impact AI outputs','Establish human-in-the-loop review protocols with documented override procedures','Review third-party AI provider contracts for data handling, liability, and transparency obligations'],
+  moderate:['Elevate informal governance arrangements into formally documented policies with named owners','Complete a full DPIA review and ensure individuals are proactively informed of automated decision-making','Strengthen data lineage documentation to support explainability, auditability, and model traceability','Develop escalation pathways and override protocols for AI-assisted decisions affecting individuals','Introduce scheduled model performance monitoring with defined drift detection thresholds'],
+  lowmod:['Document any remaining informal governance arrangements — verbal accountability cannot be demonstrated to a regulator','Conduct an EU AI Act scope assessment to determine which obligations apply from August 2026','Close identified gaps in explainability and audit trail capability before regulatory obligations mature','Formalise training records for staff who review or rely on AI-generated outputs','Schedule an annual external review of your governance framework against updated regulatory guidance'],
+  low:['Maintain currency with EU AI Act implementation — high-risk obligations apply from August 2026','Ensure new AI deployments are automatically subject to your existing inventory and DPIA process','Continue scheduled bias and fairness testing as models evolve and data distributions shift','Consider ISO/IEC 42001 certification to formally evidence governance maturity to clients and regulators','Share governance best practices internally to build organisational resilience beyond the governance function']
+};
+const SR = {
+  'Financial Services':'Your sector triggers specific obligations under FCA PS7/21 and SM&CR. Named Senior Manager accountability must be documented for all AI-driven customer outcomes. Consumer Duty (PS22/9) requires that AI-assisted decisions produce demonstrably fair outcomes.',
+  'Healthcare & Life Sciences':'Clinical AI pathways may require DCB0129 safety assessment and NHS DTAC compliance regardless of procurement route. AI systems used in clinical decision-making are subject to MHRA oversight and may qualify as medical devices.',
+  'Legal & Professional Services':'SRA AI Guidance (2024) creates client disclosure obligations where AI is used in client-facing work. Indemnity positions should be reviewed to confirm coverage for AI-related errors. Confidentiality obligations extend to AI tools processing client data.',
+  'Retail & E-commerce':'Customer profiling and personalisation AI must be reviewed against ICO profiling guidance. Where automated decisions affect product eligibility, pricing, or access, UK GDPR Art.22 obligations apply. Consumer protection obligations under the Consumer Rights Act 2015 extend to AI-driven decisions.',
+  'Technology & SaaS':'If AI-enabled services are supplied to EU customers, provider obligations under the EU AI Act may apply — including conformity assessments for high-risk systems. GPAI model providers face transparency obligations from August 2025.',
+  'Public Sector / Government':'Public authority use of AI is subject to specific ICO guidance on automated decision-making. Public law principles — rationality, fairness, consistency — apply to AI-assisted administrative decisions and create additional grounds of challenge.',
+  'Education':'AI used in assessment, student profiling, or admissions requires review against ICO guidance, the Equality Act 2010, and relevant sector-specific obligations. Automated decisions affecting learners may trigger Art.22 safeguards.',
+  'Manufacturing & Logistics':'AI systems interacting with physical safety systems may qualify as high-risk under EU AI Act Annex III safety provisions and require third-party conformity assessment before August 2026.',
+  'Other':'A sector mapping exercise is required to identify which regulatory regimes apply to your specific AI use cases. Sector-specific guidance from the ICO, FCA, or relevant regulatory body should be reviewed before regulatory scope is confirmed.'
+};
+const FD = {
+  pf_governance:{section:'Governance & Accountability',severity:'critical',impact:'The absence of a named AI governance owner creates a structural accountability gap. Under the EU AI Act and FCA operational resilience expectations, clear documented ownership is a baseline requirement — not a best practice. In any enforcement investigation, this is the first question asked: who is accountable?',rec:'Appoint a named individual as AI Governance Lead with a documented mandate, defined scope covering all AI systems in use, and a formal reporting line to board or senior executive level. This appointment must be recorded in role documentation and circulated internally.'},
+  pf_oversight:{section:'Human Oversight & Controls',severity:'critical',impact:'Automated decisions affecting individuals without adequate human review create direct regulatory exposure. UK GDPR Article 22 imposes specific requirements where decisions are solely automated. EU AI Act Article 14 makes human oversight a mandatory technical and organisational requirement for high-risk AI systems — not a design preference.',rec:'Implement mandatory human review protocols for all AI-assisted decisions that materially affect individuals. Document the protocol, define what constitutes a high-impact outcome, name the review function, and maintain records. Where AI outputs are acted upon without review, restrict that workflow until controls are in place.'},
+  pf_dpia:{section:'Compliance & Legal Alignment',severity:'critical',impact:'A Data Protection Impact Assessment is a legal requirement under UK GDPR Article 35 for AI systems involving systematic or high-risk processing of personal data. The absence of a required DPIA removes a critical layer of documented due diligence and is an ICO enforcement priority.',rec:'Commission DPIAs for all AI systems processing personal data, prioritising those making or informing decisions about individuals. Engage your DPO or external privacy counsel. DPIAs must be completed before deployment and reviewed when systems change materially.'},
+  pf_transparency:{section:'Compliance & Legal Alignment',severity:'high',impact:'UK GDPR Articles 13 and 14 require proactive disclosure when automated processes materially affect individuals. The ICO has been explicit: generic privacy policy references are insufficient. Transparency must be layered, timely, and decision-specific.',rec:'Audit all individual-facing processes involving AI-assisted decisions. Implement layered transparency notices at the point of interaction. Document these notices and review against ICO layered transparency guidance.'},
+  pf_no_inventory:{section:'AI Inventory & Classification',severity:'high',impact:'Without a documented AI inventory, the organisation cannot determine its regulatory scope, cannot demonstrate governance readiness, and cannot identify which systems require enhanced controls. Regulators treat the absence of an inventory as evidence that governance has not been implemented.',rec:'Conduct an immediate AI inventory audit covering all systems in operational use, under active development, or embedded in third-party tools. Document purpose, data inputs, decision outputs, and vendor for each system.'},
+  pf_no_policy:{section:'Governance & Accountability',severity:'high',impact:'Without documented AI use policies, staff have no authoritative guidance on acceptable use, prohibited applications, risk escalation, or governance obligations. This creates unmanaged operational risk across every function using AI tools.',rec:'Develop and implement a comprehensive AI Use Policy covering permitted and prohibited applications, risk assessment requirements, data handling obligations, human oversight requirements, incident reporting, and staff responsibilities.'}
+};
+const RF_TEMPLATE = {section:'Regulatory Compliance',severity:'info',impact:'Your selected regulatory regime creates specific obligations in relation to AI governance that exist independently of your overall maturity score. These are mandatory disclosure and accountability requirements, not recommendations, and must be addressed regardless of where other governance gaps are prioritised.',rec:'Review the specific regulatory guidance cited for your regime. Engage your compliance function or external regulatory counsel to map obligations against your current AI use profile and governance arrangements.'};
+
+/* ── PREMIUM DOMAIN COPY ── */
+const PREMIUM = {
+  s1:{concept:'The Invisible Fleet',
+    high:{
+      assessment:'This organisation has not established a complete AI inventory. RegAnchor classifies this condition as <strong>The Invisible Fleet</strong> — AI systems are in active operation, but the organisation cannot demonstrate what they are, what data they process, or what decisions they influence. This is not a documentation gap. It is a governance blindspot with direct regulatory consequence.',
+      exposure:'Under EU AI Act Art. 6 and the Commission\'s classification guidance (February 2026), operators must categorise every in-scope AI system before determining applicable obligations. Without an inventory, this categorisation cannot be performed. Annex III obligations — mandatory conformity assessments, human oversight under Art. 14, and logging under Art. 12 — become enforceable from August 2026. Organisations that cannot identify which systems are in scope cannot begin compliance.',
+      consequence:'If a regulator or enforcement body asks to see every AI system that touches decisions about individuals, this organisation\'s current answer is: we do not know. That answer is not defensible in any supervisory inquiry, subject access request, or legal discovery process.',
+      technicalNote:'EU AI Act Art. 27 requires providers and deployers of high-risk AI systems to maintain current and accurate technical documentation. The absence of an AI inventory makes compliance with Art. 27 structurally impossible. FCA SM&CR Prescribed Responsibility 24 similarly requires named accountability for systems that materially affect customers — accountability that cannot be assigned to systems that are not catalogued.'
+    },
+    moderate:{assessment:'Initial progress on AI system cataloguing has been made, but the inventory remains incomplete. Gaps in coverage mean the full scope of AI-related regulatory obligations cannot be confirmed.',exposure:'EU AI Act classification requirements apply to all in-scope systems, not only those currently documented. Partial inventories create compliance uncertainty — regulators treat undocumented systems as ungoverned systems.'},
+    low:{assessment:'An AI inventory is in place and provides a documented basis for governance decisions and regulatory scope assessment.',exposure:'Maintain the inventory as an active document. New deployments should trigger an automatic inventory update and classification review before going live.'}
+  },
+  s2:{concept:'The Governance Vacuum',
+    high:{
+      assessment:'This organisation is operating without a named individual accountable for AI governance. RegAnchor classifies this as <strong>The Governance Vacuum</strong> — responsibility is distributed across functions without any single point of oversight, escalation, or accountability. Under intensifying regulatory scrutiny, this is not a management preference. It is a legal liability.',
+      exposure:'EU AI Act Art. 27 and FCA SM&CR PS7/21 both require deployers to designate a responsible person with documented authority. The FCA\'s AI Update (2025) explicitly states that firms must identify a named individual accountable for AI-driven outcomes affecting customers. SM&CR Prescribed Responsibility 24 requires a named Senior Manager to hold accountability for operational resilience — a category that now encompasses AI-dependent processes.',
+      consequence:'In any regulatory inquiry, enforcement investigation, or litigation, the first question will be: who is accountable for this AI system? The current answer — that responsibility is shared — is not a legally defensible position. Distributed accountability is, in regulatory terms, no accountability. Senior managers cannot be held collectively responsible; individual accountability is the entire architecture of SM&CR.',
+      technicalNote:'FCA Dear CEO Letter (February 2025) on AI governance explicitly states that firms must identify a named individual accountable for AI-driven outcomes. The ICO Accountability Framework (2024) applies the same principle to data controllers using AI. The EU AI Act creates direct personal liability for the designated responsible person — making the absence of that designation a gap that cannot be filled retrospectively once enforcement action has commenced.'
+    },
+    moderate:{assessment:'Governance ownership arrangements exist informally but lack the documentation, mandate, and reporting structure required to satisfy regulatory expectations.',exposure:'Under SM&CR, undocumented accountability is equivalent to no accountability in any enforcement context. Informal arrangements must be formalised before they can be relied upon in a regulatory inquiry.'},
+    low:{assessment:'Governance accountability is documented with named ownership and a defined mandate. This provides the regulatory foundation for all downstream compliance activities.',exposure:'Maintain documentation currency. Governance arrangements should be reviewed annually or when material changes occur to AI deployments or the organisation\'s structure.'}
+  },
+  s3:{concept:'The Untraceable Decision',
+    high:{
+      assessment:'When an AI model produces an output that affects an individual — a credit assessment, a hiring recommendation, a clinical pathway flag — regulators and courts increasingly ask one question: show us the data that produced this outcome. This organisation cannot currently answer that question. RegAnchor classifies this as <strong>The Untraceable Decision</strong> — the provenance of AI outputs is opaque even to the organisation itself.',
+      exposure:'UK GDPR Art. 22 grants individuals the right to obtain an explanation of automated decisions with legal or significant effects. To honour that right, the organisation must be able to trace data inputs, model version, and decision logic behind any output. Without documented data lineage, these rights cannot be fulfilled. Under Art. 5(2), the burden of proof rests with the controller.',
+      consequence:'A single subject access request targeting an AI-driven decision has the potential to expose the full extent of this gap. The ICO has been explicit: the inability to provide a meaningful explanation of an automated decision is a compliance failure, regardless of whether the decision itself was correct.',
+      technicalNote:'ICO Data Protection by Design Guidance (2024) and EU AI Act Art. 12 both mandate records sufficient to enable post-hoc auditability. The absence of data lineage documentation places this organisation in potential breach of both frameworks for any system qualifying as high-risk. UK GDPR Art. 5(2) accountability principle means the controller must demonstrate compliance — not wait to be challenged.'
+    },
+    moderate:{assessment:'Data lineage documentation exists for some AI systems but is not comprehensive or consistently applied. Gaps create uneven compliance risk across the organisation\'s AI portfolio.',exposure:'Partial documentation creates a selective defence. Enforcement attention targeting any undocumented system cannot be mitigated by reference to processes that exist elsewhere.'},
+    low:{assessment:'Data lineage documentation is established and provides the audit trail required to support explainability obligations and regulatory inquiry responses.',exposure:'Maintain documentation through model updates and data changes. Lineage records should be version-controlled and retained for the duration of system operation plus applicable legal hold periods.'}
+  },
+  s4:{concept:'The Absent Brake',
+    high:{
+      assessment:'AI systems operating without documented human override protocols are, in regulatory terms, uncontrolled. This organisation has not established the escalation pathways, intervention triggers, or review protocols required to ensure that humans — not models — hold final decision authority over outcomes affecting individuals. RegAnchor classifies this as <strong>The Absent Brake</strong>.',
+      exposure:'EU AI Act Art. 14 makes human oversight a mandatory technical and organisational requirement for high-risk AI systems. The obligation is not satisfied by a general commitment to human review — it requires documented protocols, named roles, defined intervention triggers, and operational testing records. FCA Consumer Duty (PS22/9) further requires that firms demonstrate fair outcomes, an obligation that cannot be met without human accountability for AI-driven decisions.',
+      consequence:'An AI system that produces a harmful outcome in the absence of human override capability creates direct regulatory exposure. The question will not be whether the model erred — it will be whether the organisation had controls in place to prevent or detect the error. Under SM&CR, named Senior Managers bear personal accountability for operational failures in systems under their oversight.',
+      technicalNote:'EU AI Act Art. 14(4) specifies that human oversight measures must be able to understand the AI system\'s capabilities and limitations, monitor its operation, intervene or interrupt at any point, and not over-rely on outputs. These are technical and procedural requirements, not statements of intent. Conformity assessment for Annex III systems will require documented evidence that each of these capabilities is operational.'
+    },
+    moderate:{assessment:'Human review processes exist for some AI-assisted decisions but are not formalised, consistently applied, or documented to the standard required for regulatory purposes.',exposure:'Informal human review cannot be relied upon as a control in a regulatory inquiry. EU AI Act Art. 14 requires that oversight measures be documented and operationally tested — not simply practised.'},
+    low:{assessment:'Human oversight protocols are documented and operational, with defined roles and intervention triggers. This satisfies the core Art. 14 requirement for high-risk AI systems.',exposure:'Conduct periodic operational testing of override capability to ensure controls remain effective as systems evolve. Document test results as part of ongoing compliance evidence.'}
+  },
+  s5:{concept:'The Black Box Problem',
+    high:{
+      assessment:'The most legally exposed position in modern AI governance is not producing a wrong outcome — it is being unable to explain a correct one. This organisation\'s AI systems operate without documented explainability mechanisms. When an individual asks why a decision affected them, the organisation cannot provide a meaningful answer. RegAnchor classifies this as <strong>The Black Box Problem</strong> — an active legal liability, not a future risk.',
+      exposure:'UK GDPR Art. 13 and 14 require individuals to be informed when automated processes materially affect them. Art. 22 grants the right to a meaningful explanation of purely automated decisions. ICO\'s AI Transparency Framework (2024) is explicit: generic references to AI in privacy policies are insufficient. Transparency must be layered, timely, and decision-specific.',
+      consequence:'A single regulatory complaint from an individual who received an adverse AI-driven decision and was unable to obtain an explanation is sufficient to trigger an ICO investigation. At that point, the absence of explainability mechanisms is not a gap to be addressed going forward — it is evidence of a past compliance failure, potentially affecting all decisions made since the system was deployed.',
+      technicalNote:'EU AI Act Art. 13 requires high-risk AI systems to be sufficiently transparent to allow deployers to interpret outputs and use them appropriately. Art. 12 additionally requires logging that enables reconstruction of circumstances surrounding any significant output. These are conformity requirements enforceable from August 2026 for Annex III systems — but UK GDPR explainability obligations apply now, to systems already in operation.'
+    },
+    moderate:{assessment:'Some explainability mechanisms exist but are not systematically documented or consistently applied across all AI systems that affect individuals.',exposure:'Selective explainability creates uneven regulatory exposure. Enforcement attention will focus on unexplained decisions, and the absence of a systematic approach signals that explainability is not embedded as a governance requirement.'},
+    low:{assessment:'Explainability mechanisms are documented and applied, providing the basis for responding to individual explanation requests and regulatory inquiries.',exposure:'Validate explainability outputs against the ICO\'s Transparency Framework annually and as systems are updated. Explainability that worked for one model version may not be adequate after retraining or architectural changes.'}
+  },
+  s6:{concept:'The Obligations Gap',
+    high:{
+      assessment:'Regulatory compliance in AI governance is not a point-in-time exercise. The EU AI Act, UK GDPR, FCA Consumer Duty, and sector-specific obligations create overlapping, evolving requirements demanding active monitoring. This organisation\'s current compliance posture is reactive — gaps are addressed when identified, not before. RegAnchor classifies this as <strong>The Obligations Gap</strong>: the distance between regulatory expectation and current documented practice.',
+      exposure:'The EU AI Act creates a phased compliance timeline already in motion. General obligations have applied since August 2024. High-risk system obligations apply from August 2026. Organisations beginning compliance work in 2026 face a compressed timeline with no contingency. The EU AI Office has confirmed it will not defer enforcement for organisations that failed to prepare.',
+      consequence:'Regulatory enforcement in AI governance is accelerating. The ICO published its first AI enforcement actions in 2024. Organisations that cannot demonstrate documented compliance programmes are increasingly subject to regulatory attention, regardless of whether they have caused demonstrable harm. The FCA has explicitly stated that good intent does not substitute for documented compliance evidence.',
+      technicalNote:'FCA PS22/9 Consumer Duty and SM&CR Prescribed Responsibility 24 create personal accountability at Senior Manager level for ensuring AI-driven processes produce fair outcomes. Under the ICO Accountability Framework (Art. 5(2) UK GDPR), the burden of proof rests with the controller to demonstrate compliance — the regulator does not need to prove a failure before requiring evidence of compliance.'
+    },
+    moderate:{assessment:'Core compliance obligations are understood but coverage is incomplete and monitoring is not formalised. Reactive compliance creates gaps between obligation and practice.',exposure:'Partial compliance creates an uneven defence. Documented gaps can be used as evidence of awareness without remediation — a worse regulatory position than consistent underdevelopment.'},
+    low:{assessment:'The compliance programme is proactive with documented monitoring arrangements and a process for incorporating regulatory changes.',exposure:'Maintain regulatory change monitoring as obligations evolve. EU AI Act implementation guidance is published on a rolling basis — the February 2026 classification guidelines represent one of several updates expected through the implementation period.'}
+  },
+  s7:{concept:'The Silent Failure Risk',
+    high:{
+      assessment:'AI systems in production without documented incident response pathways, performance monitoring, and drift detection create what RegAnchor terms <strong>The Silent Failure Risk</strong> — degraded model performance that goes undetected until it produces a material adverse outcome. By that point, reputational, legal, and regulatory damage is already in progress.',
+      exposure:'FCA SS1/21 Operational Resilience rules require firms to demonstrate they can detect, respond to, and recover from disruption to important business services — a category that now encompasses AI-dependent processes. The FCA\'s 2024 operational resilience review confirmed that AI system failures are within scope.',
+      consequence:'Model drift — the gradual degradation of AI performance as real-world data diverges from training data — is invisible to users, undetectable without monitoring, and can affect thousands of individual outcomes before it is identified. Without drift detection protocols, this organisation has no mechanism to identify, escalate, or respond to this risk.',
+      technicalNote:'ISO/IEC 42001 Section 9 mandates scheduled performance evaluation as a core component of AI management system governance. EU AI Act Art. 72 requires post-market monitoring for high-risk AI systems, including logging of system performance over time. These are not aspirational standards — they form part of the conformity assessment for Annex III systems and will be audited accordingly.'
+    },
+    moderate:{assessment:'Basic operational monitoring exists but lacks the formal structure, defined thresholds, and documented escalation pathways required to satisfy regulatory expectations.',exposure:'Informal monitoring cannot demonstrate control. The ability to show that monitoring was conducted, what thresholds applied, and what escalation occurred when they were triggered is a core governance requirement under both FCA operational resilience rules and ISO 42001.'},
+    low:{assessment:'Operational controls and monitoring are established with defined thresholds and documented escalation pathways.',exposure:'Conduct periodic operational testing of incident response capability. Model performance thresholds should be reviewed when systems are retrained or when operational context changes materially.'}
+  }
+};
+
+/* ── ROADMAP ACTION MAP ── */
+const RM_ACTIONS = {
+  s1:{owner:'AI Lead / CTO',    actions:['Commission full AI inventory audit across all business units','Document each system: purpose, data inputs, decision outputs, vendor relationship','Classify systems against EU AI Act Annex III categories','Assign named governance owner per system in the register'],del:'Complete AI System Register'},
+  s2:{owner:'Board / CEO',      actions:['Appoint named AI Oversight Lead with documented mandate and veto authority','Establish board-level AI governance reporting line','Draft, ratify, and publish AI Use Policy with named functional owners','Record appointment in role documentation and circulate to all relevant staff'],del:'AI Governance Lead Appointment + Policy'},
+  s3:{owner:'Data / CISO',      actions:['Map data provenance for all AI systems processing personal data','Implement data version control and lineage logging','Document model training datasets, versions, and update cadence','Establish data quality thresholds and breach monitoring protocols'],del:'Data Lineage Documentation'},
+  s4:{owner:'Operations / Risk',actions:['Define human review triggers for all AI-assisted decisions affecting individuals','Document override protocols and escalation pathways','Name review function and responsibility per decision type','Conduct and document operational testing of override capability'],del:'Human Oversight Protocol'},
+  s5:{owner:'Legal / Compliance',actions:['Audit all individual-facing AI processes for transparency obligations','Implement layered transparency notices at point of interaction','Document explainability method per AI system','Establish process for responding to explanation requests under Art.22'],del:'Transparency & Explainability Framework'},
+  s6:{owner:'Legal / Compliance',actions:['Map all applicable regulatory obligations against current AI use profile','Commission DPIAs for all high-risk AI processing of personal data','Engage external counsel to confirm EU AI Act Annex III scope','Implement regulatory change monitoring across all applicable frameworks'],del:'Regulatory Obligation Register'},
+  s7:{owner:'Technology / Risk', actions:['Implement model performance monitoring with defined drift thresholds','Establish AI incident response pathway and named escalation contacts','Document recovery time objectives for AI-dependent business services','Schedule quarterly performance review cycle with documented outputs'],del:'AI Operational Resilience Protocol'}
+};
+
+const REG_TABLE = [
+  {reg:'EU AI Act',art:'Art. 6 & Annex III',obl:'Risk classification and registration of high-risk AI systems',type:'M',pen:'Up to EUR 30M or 6% of global annual turnover',dl:'August 2026'},
+  {reg:'EU AI Act',art:'Art. 14',obl:'Human oversight measures for high-risk AI systems',type:'M',pen:'Up to EUR 30M or 6% of global annual turnover',dl:'August 2026'},
+  {reg:'EU AI Act',art:'Art. 13 & 12',obl:'Transparency to deployers and automatic event logging',type:'M',pen:'Up to EUR 15M or 3% of global annual turnover',dl:'August 2026'},
+  {reg:'EU AI Act',art:'Art. 27',obl:'Fundamental rights impact assessment by deployers',type:'M',pen:'Up to EUR 15M or 3% of global annual turnover',dl:'August 2026'},
+  {reg:'UK GDPR',art:'Art. 35',obl:'Data Protection Impact Assessment for high-risk AI processing',type:'M',pen:'Up to GBP 17.5M or 4% of global annual turnover',dl:'Immediate'},
+  {reg:'UK GDPR',art:'Art. 22',obl:'Safeguards for solely automated decision-making with significant effects',type:'M',pen:'Up to GBP 17.5M or 4% of global annual turnover',dl:'Immediate'},
+  {reg:'UK GDPR',art:'Art. 13–14',obl:'Transparency obligations: inform individuals of AI-assisted decisions',type:'M',pen:'Up to GBP 17.5M or 4% of global annual turnover',dl:'Immediate'},
+  {reg:'FCA / SM&CR',art:'PS7/21 & PRs',obl:'Named Senior Manager accountability for AI-driven customer outcomes',type:'M',pen:'Individual sanctions; prohibition from regulated activity',dl:'Immediate'},
+  {reg:'ISO/IEC 42001',art:'Sections 6–9',obl:'AI management system: risk assessment, monitoring, and evaluation',type:'A',pen:'Certification benchmark; increasing client and regulator expectation',dl:'Ongoing'}
+];
+
+/* ══════════════════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════════════════ */
+function ps(s){if(!s)return'';return String(s).replace(/[\u2014\u2013]/g,'-').replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/\u2026/g,'...').replace(/\u00A0/g,' ').replace(/[^\x00-\xFF]/g,'').replace(/\s+/g,' ').trim();}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getBand(adj,bandId){if(bandId){for(let b of RB){if(b.id===bandId)return b;}}for(let b of RB){if(adj>=b.min&&adj<=b.max)return b;}return RB[2];}
+function secColor(p){
+  if(p>=75)return{c:'var(--low)',cls:'is-ok',lbl:'Low risk'};
+  if(p>=50)return{c:'var(--high)',cls:'is-warn',lbl:'Moderate risk'};
+  return{c:'var(--critical)',cls:'is-risk',lbl:'High risk'};
+}
+function sevCls(sev){
+  if(sev==='critical'||sev==='high')return 'is-risk';
+  if(sev==='moderate')return 'is-warn';
+  return 'is-ok';
+}
+function msg(m){document.getElementById('ls-msg').textContent=m;}
+function showError(title,m){document.getElementById('es').classList.add('show');document.getElementById('es-title').textContent=title;document.getElementById('es-msg').textContent=m;}
+
+/* ══════════════════════════════════════════════════════════════════
+   SCORE RECONSTRUCTION
+══════════════════════════════════════════════════════════════════ */
+function recon(row){
+  const sp=row.section_scores||{};
+  const band=getBand(row.adjusted_score||0,row.risk_band);
+  const sec=row.sector||'Other';
+  const mult=SM[sec]||.90;
+  const pf=(row.priority_flags||[]).map(f=>({id:f.id||'',label:f.label||'',basis:f.basis||'',severity:f.severity||'high'}));
+  const bsm={s1:9,s2:18,s3:12,s4:12,s5:15,s6:15,s7:15};
+  let rs=row.raw_scores||{};
+  if(Object.keys(rs).length===0){Object.keys(sp).forEach(s=>{rs[s]=Math.round((sp[s]/100)*(bsm[s]||15));});}
+  return{adjustedScore:row.adjusted_score||0,weightedScore:row.weighted_score||0,multiplier:mult,sector:sec,orgSize:row.org_size||'',respondentName:(row.respondent_name||'').trim(),respondentRole:(row.respondent_role||'').trim(),band,sectionPcts:sp,rawScores:rs,adjustedMax:bsm,priorityFlags:pf,regimeFlags:row.regime_flags||[],uncertaintyCount:row.uncertainty_count||0,selectedCategories:row.selected_categories||[],frameworkVersion:row.framework_version||'2.0.0'};
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   BUILD FINDINGS LIST
+══════════════════════════════════════════════════════════════════ */
+function buildFindings(R){
+  const list=[];
+  R.priorityFlags.forEach(f=>{
+    const d=FD[f.id]||{section:'General',severity:f.severity||'high',impact:'This governance area requires attention.',rec:'Review with your compliance function.'};
+    list.push({label:ps(f.label),basis:ps(f.basis),section:d.section,severity:d.severity,impact:d.impact,rec:d.rec});
+  });
+  (R.regimeFlags||[]).forEach(f=>{list.push({label:ps(f.label),basis:ps(f.basis),section:RF_TEMPLATE.section,severity:RF_TEMPLATE.severity,impact:RF_TEMPLATE.impact,rec:RF_TEMPLATE.rec});});
+  if(R.uncertaintyCount>=3){list.push({label:`Elevated uncertainty: ${R.uncertaintyCount} responses flagged insufficient internal visibility`,basis:'Risk band elevated per framework uncertainty threshold',section:'Assessment Integrity',severity:'moderate',impact:`This assessment recorded ${R.uncertaintyCount} Uncertainty Flags — instances where the respondent indicated incomplete visibility into their own AI governance arrangements. Uncertainty flags are treated as risk amplifiers, not neutral data points. An organisation that does not know whether a control exists cannot claim that control for compliance purposes. Your reported score should be understood as a ceiling, not a floor — actual governance maturity may be materially lower.`,rec:'Conduct an internal governance stocktake to establish the factual position on each uncertain area before any regulatory engagement.'});}
+  if(R.selectedCategories&&R.selectedCategories.length>0&&R.selectedCategories.indexOf('none')===-1){list.push({label:'High-risk AI category detected — EU AI Act Annex III obligations apply from August 2026',basis:`EU AI Act Annex III; Categories: ${R.selectedCategories.join(', ')}`,section:'AI Inventory & Classification',severity:'critical',impact:'AI systems in Annex III categories are subject to mandatory conformity assessments, technical documentation requirements, human oversight obligations under Article 14, and logging requirements under Article 12. High-risk obligations apply from August 2026. Organisations that have not begun conformity assessment preparation face a compressed timeline with significant resourcing implications.',rec:'Conduct a formal EU AI Act scoping assessment for each high-risk category identified. Map current systems against the full Annex III compliance checklist and prioritise conformity assessment preparation immediately.'});}
+  return list;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   BUILD ROADMAP
+══════════════════════════════════════════════════════════════════ */
+function buildRoadmap(R){
+  const domains=['s1','s2','s3','s4','s5','s6','s7'];
+  const scored=domains.map(s=>({key:s,pct:R.sectionPcts[s]||0,w:W[s]||0,risk:(1-(( R.sectionPcts[s]||0)/100))*(W[s]||0)})).sort((a,b)=>b.risk-a.risk);
+  const p1=scored.slice(0,2).map(d=>d.key);
+  const p2=scored.slice(2,4).map(d=>d.key);
+  const p3=scored.slice(4).map(d=>d.key);
+  const makePhase=(keys,name,window,badgeLbl,color)=>({name,window,badgeLbl,color,rationale:`Prioritised by risk contribution score. Focus: ${keys.map(k=>SN[k]+' ('+Math.round(W[k]*100)+'% weight)').join(' and ')}.`,actions:keys.flatMap(k=>{const a=RM_ACTIONS[k]||{owner:'Compliance',actions:['Review and document current position'],del:'Assessment Complete'};return a.actions.map(txt=>({text:txt,owner:a.owner,del:a.del}));}).slice(0,6),deliverables:keys.map(k=>(RM_ACTIONS[k]||{del:'Documented Output'}).del)});
+  return{p1:makePhase(p1,'Phase 1: Defensive Shielding','Days 0–30','Immediate priority','#533AFD'),p2:makePhase(p2,'Phase 2: Structural Foundation','Days 31–60','Structural build','#533AFD'),p3:makePhase(p3,'Phase 3: Operational Excellence','Days 61–90+','Operational excellence','#533AFD')};
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RADAR CHART — animated, domain-highlight capable
+══════════════════════════════════════════════════════════════════ */
+let _radarState={pcts:{},bandColor:'#2563eb',dpts:[],keys:['s1','s2','s3','s4','s5','s6','s7'],cx:150,cy:140,R:95,a0:-Math.PI/2,step:(2*Math.PI)/7,activeKey:null};
+
+function drawRadar(svg, pcts, bandColor){
+  const {cx,cy,R,a0,step,keys}=_radarState;
+  _radarState.pcts=pcts;
+  _radarState.bandColor=bandColor;
+  const shortLbls=['AI Inventory','Governance','Data Quality','Oversight','Explainability','Compliance','Operations'];
+  let html='';
+
+  const ink='#0A0E14', mute='#697386', line='#E6EBF1', blurple='#533AFD';
+  [.25,.5,.75,1].forEach((r,ri)=>{
+    const pts=keys.map((_,i)=>{const a=a0+i*step;return`${cx+R*r*Math.cos(a)},${cy+R*r*Math.sin(a)}`;}).join(' ');
+    html+=`<polygon points="${pts}" fill="none" stroke="${ri===3?line:'#EEF2F7'}" stroke-width="${ri===3?.8:.5}"/>`;
+    if(ri===1||ri===3){html+=`<text x="${cx+3}" y="${cy-R*r+4}" font-size="7" fill="${mute}" font-family="Inter,sans-serif">${Math.round(r*100)}%</text>`;}
+  });
+
+  keys.forEach((_,i)=>{
+    const a=a0+i*step;
+    html+=`<line x1="${cx}" y1="${cy}" x2="${cx+R*Math.cos(a)}" y2="${cy+R*Math.sin(a)}" stroke="${line}" stroke-width=".6"/>`;
+  });
+
+  const dpts=keys.map((_,i)=>{const a=a0+i*step;const v=Math.min(Math.max((pcts[keys[i]]||0)/100,0),1);return{x:cx+R*v*Math.cos(a),y:cy+R*v*Math.sin(a)};});
+  _radarState.dpts=dpts;
+  const polyPts=dpts.map(p=>`${p.x},${p.y}`).join(' ');
+  html+=`<polygon id="radar-poly" points="${polyPts}" fill="${blurple}" fill-opacity=".12" stroke="${blurple}" stroke-width="1.6" stroke-linejoin="round" style="transform-origin:${cx}px ${cy}px;opacity:0;transform:scale(.4);transition:opacity .8s ease,transform .8s ease"/>`;
+
+  dpts.forEach((p,i)=>{
+    const k=keys[i];
+    html+=`<circle id="rdot-ring-${k}" cx="${p.x}" cy="${p.y}" r="10" fill="none" stroke="${blurple}" stroke-width="1.5" opacity="0" style="transition:opacity .3s,r .3s"/>`;
+    html+=`<circle id="rdot-${k}" cx="${p.x}" cy="${p.y}" r="3.5" fill="${blurple}" opacity="1" style="transition:r .2s,opacity .2s"/>`;
+    html+=`<circle cx="${p.x}" cy="${p.y}" r="1.4" fill="#fff"/>`;
+  });
+
+  keys.forEach((k,i)=>{
+    const a=a0+i*step;
+    const lx=cx+(R+18)*Math.cos(a);
+    const ly=cy+(R+18)*Math.sin(a);
+    const ca=Math.cos(a);
+    const anc=ca>0.25?'start':ca<-0.25?'end':'middle';
+    const p=pcts[k]||0;
+    html+=`<text x="${lx}" y="${ly-2}" text-anchor="${anc}" font-size="8.5" font-weight="500" fill="${ink}" font-family="Inter,sans-serif">${shortLbls[i]}</text>`;
+    html+=`<text x="${lx}" y="${ly+9}" text-anchor="${anc}" font-size="8" fill="${mute}" font-family="IBM Plex Sans,sans-serif" font-weight="500">${p}%</text>`;
+  });
+
+  // Center
+  html+=`<circle cx="${cx}" cy="${cy}" r="2.5" fill="${blurple}"/>`;
+  svg.innerHTML=html;
+
+  // Animate in EVERY TIME dashboard section enters viewport
+  const dashEl=document.getElementById('dashboard');
+  if(dashEl){
+    const radarObs=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          const poly=document.getElementById('radar-poly');
+          if(poly){
+            // Reset then animate
+            poly.style.transition='none';
+            poly.style.opacity='0';
+            poly.style.transform='scale(.4)';
+            requestAnimationFrame(()=>{
+              requestAnimationFrame(()=>{
+                poly.style.transition='opacity .8s ease,transform .8s ease';
+                poly.style.opacity='1';
+                poly.style.transform='scale(1)';
+              });
+            });
+          }
+          // Animate score bars
+          document.querySelectorAll('.mbar-f').forEach(bar=>{
+            const target=bar.dataset.target||'0';
+            bar.style.transition='none';
+            bar.style.width='0%';
+            setTimeout(()=>{
+              bar.style.transition='width 1.6s cubic-bezier(.22,1,.36,1)';
+              bar.style.width=target+'%';
+            },120);
+          });
+        }
+      });
+    },{threshold:.2});
+    radarObs.observe(dashEl);
+  }
+}
+
+function radarHighlight(key){
+  const {keys,bandColor}=_radarState;
+  // Reset all dots
+  keys.forEach(k=>{
+    const dot=document.getElementById(`rdot-${k}`);
+    const ring=document.getElementById(`rdot-ring-${k}`);
+    if(dot){dot.setAttribute('r','4.5');dot.style.opacity='.9';}
+    if(ring){ring.style.opacity='0';}
+  });
+  // Highlight selected
+  if(key&&key!=='priority'){
+    const dot=document.getElementById(`rdot-${key}`);
+    const ring=document.getElementById(`rdot-ring-${key}`);
+    if(dot){dot.setAttribute('r','6.5');dot.style.opacity='1';}
+    if(ring){ring.style.opacity='1';}
+    // Pulse the ring
+    if(ring){
+      ring.animate([{opacity:0,r:10},{opacity:.8,r:14},{opacity:0,r:18}],{duration:900,iterations:2});
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER FUNCTIONS
+══════════════════════════════════════════════════════════════════ */
+function renderHero(R,org,today,name,role,sector,size){
+  document.getElementById('hero-org').textContent=org||'Organisation';
+  document.getElementById('hero-sub').textContent=`This report presents findings of the AI Governance Risk Diagnostic completed on ${today}, assessed against UK and EU regulatory expectations. Prepared for board and senior executive review. Framework v${R.frameworkVersion}.`;
+  const meta=document.getElementById('hero-meta');
+  const respondent=name?(role?`${name}, ${role}`:name):'';
+  const items=[[respondent,'Respondent'],[sector,'Sector'],[size?size+' employees':'Not specified','Organisation Size'],[today,'Assessment Date']];
+  meta.innerHTML=items.filter(([v])=>v).map(([v,l])=>`<div class="hero-meta-item"><div class="hm-label">${l}</div><div class="hm-val">${esc(v)}</div></div>`).join('');
+
+  const bc=R.band.id;
+  const mount=document.getElementById('maturityMount');
+  if(mount && typeof raMaturityBlock==='function'){
+    mount.innerHTML=raMaturityBlock(R.adjustedScore,{animate:true});
+    requestAnimationFrame(function(){ animateMaturity(mount); });
+  }
+
+  const riskCls=bc==='critical'||bc==='high'?' is-risk':bc==='moderate'?' is-warn':' is-ok';
+  const pill=document.getElementById('band-pill');
+  if(pill)pill.className='band-pill'+riskCls;
+  const lbl=document.getElementById('band-lbl');
+  if(lbl){
+    lbl.textContent=R.band.label;
+    lbl.className='band-lbl'+riskCls;
+  }
+  const head=document.getElementById('band-head');
+  if(head)head.textContent=R.band.heading;
+}
+
+function renderExecutiveBrief(R,findings,org,today){
+  const intro=document.getElementById('brief-intro');
+  intro.textContent=`On ${today}, RegAnchor completed an AI Governance Risk Diagnostic for ${org}. This brief is designed for board-level review. It summarises the risk position, principal obligations, and three priorities requiring immediate board attention.`;
+
+  const v=document.getElementById('brief-verdict');
+  v.style.borderLeftColor='';
+  v.style.color='';
+  document.getElementById('bv-eyebrow').textContent=`${R.band.label}: ${R.band.heading}`;
+  document.getElementById('bv-text').textContent=R.band.summary;
+  
+  // Obligations table
+  const hasDPIA=R.priorityFlags.some(f=>f.id==='pf_dpia');
+  const hasOversight=R.priorityFlags.some(f=>f.id==='pf_oversight');
+  const hasGov=R.priorityFlags.some(f=>f.id==='pf_governance');
+  const hasInv=R.priorityFlags.some(f=>f.id==='pf_no_inventory');
+  const hasCat=R.selectedCategories&&R.selectedCategories.length>0&&R.selectedCategories.indexOf('none')===-1;
+  const rows=[
+    {reg:'EU AI Act, Annex III',art:'Art. 6',obl:'High-risk AI system classification',status:hasCat?'High-risk system detected':'Classification review required',statusCls:hasCat?'s-alert':'s-warn',dl:'August 2026',dlCls:'dl-aug'},
+    {reg:'UK GDPR, DPIA',art:'Art. 35',obl:'Data Protection Impact Assessment',status:hasDPIA?'DPIA not completed':'Assess scope and complete',statusCls:hasDPIA?'s-alert':'s-warn',dl:'Immediate',dlCls:'dl-now'},
+    {reg:'UK GDPR, Automated Decisions',art:'Art. 22',obl:'Human oversight of automated decisions',status:hasOversight?'Oversight controls absent':'Controls confirmed',statusCls:hasOversight?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
+    {reg:'FCA SM&CR, AI Accountability',art:'PS7/21',obl:'Named Senior Manager accountability',status:hasGov?'No named owner identified':'Owner confirmed',statusCls:hasGov?'s-alert':'s-ok',dl:'Immediate',dlCls:'dl-now'},
+    {reg:'EU AI Act, AI Inventory',art:'Art. 27',obl:'AI system inventory and documentation',status:hasInv?'Inventory incomplete':'Maintained and current',statusCls:hasInv?'s-alert':'s-ok',dl:'August 2026',dlCls:'dl-aug'}
+  ];
+  document.getElementById('obl-tbody').innerHTML=rows.map(r=>`<tr><td><span class="obl-reg">${esc(r.reg)}</span><span class="obl-art">${esc(r.art)}</span></td><td style="color:var(--text-2);font-size:.82rem">${esc(r.obl)}</td><td class="${r.statusCls}">${esc(r.status)}</td><td class="${r.dlCls}">${esc(r.dl)}</td></tr>`).join('');
+  
+  // Board attention items
+  const critical=findings.filter(f=>f.severity==='critical').slice(0,3);
+  const items=critical.length?critical:(findings.length?findings.slice(0,3):[{label:'Continue to maintain and evolve current governance frameworks as regulatory obligations mature.',severity:'info'}]);
+  document.getElementById('board-items').innerHTML=items.map((f,i)=>`<div class="bi"><div class="bi-num">${i+1}</div><div class="bi-txt">${esc(f.label)}</div></div>`).join('');
+}
+
+function renderDashboard(R){
+  drawRadar(document.getElementById('radar-svg'),R.sectionPcts,'#533AFD');
+  const tbody=document.getElementById('domain-tbody');
+  tbody.innerHTML=['s1','s2','s3','s4','s5','s6','s7'].map(s=>{
+    const p=R.sectionPcts[s]||0,wt=Math.round(W[s]*100);
+    const sc=secColor(p);
+    return `<tr>
+      <td><div class="dn">${esc(SN[s])}</div><div class="dw">${wt}% weight</div></td>
+      <td class="dw">${wt}%</td>
+      <td style="font-family:var(--font-brand);font-weight:500;font-feature-settings:'tnum';color:var(--text-1)">${p}%</td>
+      <td><div class="mbar-t"><div class="mbar-f" data-target="${p}" style="width:0%"></div></div></td>
+      <td><span class="rbadge ${sc.cls}">${sc.lbl}</span></td>
+    </tr>`;
+  }).join('');
+  // Benchmark
+  const highCount=Object.values(R.sectionPcts).filter(p=>p<50).length;
+  const modCount=Object.values(R.sectionPcts).filter(p=>p>=50&&p<75).length;
+  document.getElementById('bench-txt').textContent=`Organisations at ${R.band.label} maturity in comparable sectors typically present ${highCount}–${highCount+1} critical governance domains requiring immediate remediation. This assessment identified ${highCount} domain${highCount!==1?'s':''} in the High Risk band and ${modCount} at Moderate Risk. The weighted score of ${R.weightedScore}% (adjusted to ${R.adjustedScore}% following ${R.sector} sector calibration) places this organisation in the lower maturity quartile for this sector profile.`;
+}
+
+function renderRegulatoryRegister(R){
+  const sr=SR[R.sector]||SR['Other'];
+  // Register table
+  document.getElementById('reg-tbody').innerHTML=REG_TABLE.map((r)=>`<tr>
+    <td><span class="rn">${esc(r.reg)}</span><span class="ra">${esc(r.art)}</span></td>
+    <td>${esc(r.obl)}</td>
+    <td><span class="${r.type==='M'?'t-mand':'t-adv'}">${r.type==='M'?'Mandatory':'Advisory'}</span></td>
+    <td class="rc-penalty">${esc(r.pen)}</td>
+    <td class="${r.dl==='Immediate'?'dl-now':r.dl==='Ongoing'?'':'dl-aug'}">${esc(r.dl)}</td>
+  </tr>`).join('');
+  // Sector notice
+  const sn=document.getElementById('sect-notice');
+  sn.innerHTML=`<div class="sect-notice"><div class="sn-lbl">Sector-Specific Regulatory Notice: ${esc(R.sector)}</div><div class="sn-txt">${esc(sr)}</div></div>`;
+}
+
+function renderFindings(R,findings){
+  const tabsEl=document.getElementById('find-tabs');
+  const panelsEl=document.getElementById('find-panels');
+  const tabs=[{id:'priority',lbl:'Priority Findings'}];
+  ['s1','s2','s3','s4','s5','s6','s7'].forEach((s,i)=>{
+    tabs.push({id:s,lbl:`S${i+1} · ${SN[s].split(' ')[0]}`});
+  });
+  tabsEl.innerHTML=tabs.map((t,i)=>`<button type="button" class="ft${i===0?' act':''}" data-tab="${t.id}">${esc(t.lbl)}</button>`).join('');
+
+  // ── Priority findings panel ──
+  let priorityHtml=`<div class="fpanel act" id="fpanel-priority">`;
+  if(findings.length===0){
+    priorityHtml+=`<div class="pf-card" style="border-left-color:var(--low)">
+      <div class="pf-meta">
+        <div class="pf-id">Finding 01</div>
+        <div class="pf-sev-wrap"><span class="pf-sev" style="color:var(--low)">No Critical Flags</span></div>
+      </div>
+      <div class="pf-body">
+        <div class="pf-label">Governance foundations are established across assessed domains.</div>
+        <div class="pf-impact-blk">
+          <div class="pf-impact-lbl">Advisory Note</div>
+          <div class="pf-impact">Your assessment did not trigger critical governance flags. Continue to maintain and evolve your frameworks as regulatory obligations mature. EU AI Act high-risk obligations apply from August 2026 — begin conformity assessment preparation now to remain ahead of that deadline.</div>
+        </div>
+      </div>
+      <div class="pf-rec"><div class="pf-rec-lbl">Action Required</div><div class="pf-rec-txt">Schedule an annual external review of your governance framework against updated regulatory guidance.</div></div>
+    </div>`;
+  }
+  findings.forEach((f,i)=>{
+    const num=String(i+1).padStart(2,'0');
+    const sev=sevCls(f.severity);
+    priorityHtml+=`<div class="pf-card">
+      <div class="pf-meta">
+        <div class="pf-id">Finding ${num}</div>
+        <span class="pf-sev ${sev}">${esc(f.severity)}</span>
+        <div class="pf-sect">${esc(f.section)}</div>
+      </div>
+      <div class="pf-body">
+        <div class="pf-label">${esc(f.label)}</div>
+        <div class="pf-basis">${esc(f.basis)}</div>
+        <div class="pf-impact-blk">
+          <div class="pf-impact-lbl">Business and regulatory impact</div>
+          <div class="pf-impact">${esc(f.impact)}</div>
+        </div>
+      </div>
+      <div class="pf-rec">
+        <div class="pf-rec-lbl">Action required</div>
+        <div class="pf-rec-txt">${esc(f.rec)}</div>
+      </div>
+    </div>`;
+  });
+  priorityHtml+='</div>';
+
+  // ── Domain panels ──
+  let domainHtml='';
+  ['s1','s2','s3','s4','s5','s6','s7'].forEach(s=>{
+    const p=R.sectionPcts[s]||0;
+    const bk=p>=75?'low':p>=50?'moderate':'high';
+    const prem=PREMIUM[s];
+    const content=prem?(prem[bk]||prem.high):{assessment:'Review this domain against current regulatory guidance.',exposure:'',consequence:'',technicalNote:''};
+    const sc=secColor(p);
+    const concept=prem?prem.concept:'';
+    const wt=Math.round(W[s]*100);
+    const a=RM_ACTIONS[s];
+
+    domainHtml+=`<div class="fpanel" id="fpanel-${s}">
+      <div class="dom-card">
+        <div class="dom-band">
+          <div class="dom-band-inner">
+            <div class="dom-concept-wrap">
+              <div class="dom-concept-tag">${esc(SN[s])} · ${wt}% weighting</div>
+              <div class="dom-concept-name">${esc(concept)}</div>
+            </div>
+            <div class="dom-score-wrap">
+              <span class="dom-score">${p}%</span>
+              <div class="dom-score-meta">Governance score</div>
+              <div class="dom-meter"><span style="width:${Math.max(0,Math.min(100,p))}%"></span></div>
+              <div><span class="dom-status-pill ${sc.cls}">${sc.lbl}</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="dom-body">
+          ${content.assessment?`<div class="db-blk">
+            <div class="db-lbl">Assessment</div>
+            <div class="db-txt">${content.assessment}</div>
+          </div>`:''}
+          ${content.exposure?`<div class="db-blk">
+            <div class="db-lbl">Regulatory exposure</div>
+            <div class="db-txt">${content.exposure}</div>
+          </div>`:''}
+          ${content.consequence?`<div class="db-blk">
+            <div class="db-lbl">Business consequence</div>
+            <div class="db-txt">${content.consequence}</div>
+          </div>`:''}
+          ${content.technicalNote?`<div class="tech-note">
+            <div class="tn-lbl">Technical note — regulatory citation</div>
+            <div class="tn-txt">${esc(content.technicalNote)}</div>
+          </div>`:''}
+          ${a?`<div class="dom-rec">
+            <div class="dr-lbl">Recommended action</div>
+            <div class="dr-txt">${esc(a.actions[0])}</div>
+          </div>`:''}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  panelsEl.innerHTML=priorityHtml+domainHtml;
+
+  // Tab switching
+  tabsEl.querySelectorAll('.ft').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      tabsEl.querySelectorAll('.ft').forEach(b=>b.classList.remove('act'));
+      panelsEl.querySelectorAll('.fpanel').forEach(p=>p.classList.remove('act'));
+      btn.classList.add('act');
+      const tab=btn.dataset.tab;
+      const panel=document.getElementById('fpanel-'+tab);
+      if(panel)panel.classList.add('act');
+      // Highlight corresponding radar dot
+      radarHighlight(tab);
+      // Scroll dashboard into view briefly to show highlight if user is in findings
+      const dash=document.getElementById('dashboard');
+      if(tab!=='priority'&&dash){
+        const dashRect=dash.getBoundingClientRect();
+        if(dashRect.bottom<0||dashRect.top>window.innerHeight){
+          // Don't scroll — just highlight silently; radar visible when user scrolls back
+        }
+      }
+    });
+  });
+}
+
+function renderRoadmap(R){
+  const rm=buildRoadmap(R);
+  const phases=[rm.p1,rm.p2,rm.p3];
+  document.getElementById('rm-phases').innerHTML=phases.map(ph=>{
+    const actions=ph.actions.map((a,i)=>`<div class="rm-action">
+      <div class="act-n">${i+1}</div>
+      <div class="act-txt">${esc(a.text)}</div>
+      <div class="act-own">${esc(a.owner)}</div>
+    </div>`).join('');
+    const dels=ph.deliverables.filter((v,i,a)=>a.indexOf(v)===i).join(' · ');
+    return `<div class="rm-phase">
+      <div class="rm-side">
+        <div class="rm-win">${esc(ph.window)}</div>
+        <div class="rm-name">${esc(ph.name)}</div>
+        <span class="rm-badge">${esc(ph.badgeLbl)}</span>
+      </div>
+      <div class="rm-content">
+        <div class="rm-rationale">${esc(ph.rationale)}</div>
+        <div class="rm-actions">${actions}</div>
+        <div class="rm-del">${esc(dels)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderForwardRisk(R){
+  document.getElementById('mla-note-txt').textContent=`RegAnchor monitors regulatory developments across the EU AI Act, UK GDPR, FCA, ICO, and ISO/IEC frameworks continuously. Framework v${R.frameworkVersion} will be updated in line with regulatory developments. Clients who have completed a diagnostic assessment receive notification of material regulatory changes affecting their risk band and sector. Next scheduled framework review: August 2026.`;
+  document.getElementById('rf-ver').innerHTML=`Framework v${R.frameworkVersion}<br>${location.host}`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MASTER RENDER
+══════════════════════════════════════════════════════════════════ */
+function renderReport(row){
+  const R=recon(row);
+  const org=ps(row.organisation||'Organisation');
+  const name=ps(R.respondentName);
+  const role=ps(R.respondentRole);
+  const sector=ps(R.sector);
+  const size=ps(R.orgSize);
+  const today=new Date(row.created_at||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const findings=buildFindings(R);
+  
+  document.title=`${org} · AI Governance Risk Report | RegAnchor`;
+  renderHero(R,org,today,name,role,sector,size);
+  renderExecutiveBrief(R,findings,org,today);
+  renderDashboard(R);
+  renderRegulatoryRegister(R);
+  renderFindings(R,findings);
+  renderRoadmap(R);
+  renderForwardRisk(R);
+  
+  // Fade in the report
+  const ls=document.getElementById('ls');
+  ls.classList.add('out');
+  setTimeout(()=>{ls.style.display='none';document.getElementById('rpt').classList.add('show');},550);
+  
+  // Scroll-based fade-in for sections
+  const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');observer.unobserve(e.target);}});},{threshold:.08});
+  document.querySelectorAll('.fiu').forEach(el=>observer.observe(el));
+  
+  // Active nav highlight (weight only) + Blurple scroll progress
+  const sections=['executive-brief','dashboard','regulatory-register','findings','roadmap','forward-risk'];
+  const navLinks=document.querySelectorAll('.rnav-links a');
+  const nav=document.getElementById('rnav');
+  const fill=document.getElementById('scrollProgress');
+  const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.remove('act'));const a=document.querySelector(`.rnav-links a[href="#${e.target.id}"]`);if(a)a.classList.add('act');}});},{threshold:.3});
+  sections.forEach(id=>{const el=document.getElementById(id);if(el)io.observe(el);});
+  function updateScrollProgress(){
+    const doc=document.documentElement;
+    const max=Math.max(1,doc.scrollHeight-window.innerHeight);
+    const p=Math.min(1,Math.max(0,window.scrollY/max));
+    if(fill)fill.style.transform='scaleX('+p+')';
+    if(nav)nav.classList.toggle('is-scrolled',window.scrollY>8);
+  }
+  window.addEventListener('scroll',updateScrollProgress,{passive:true});
+  updateScrollProgress();
+
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   INIT — SUPABASE AUTH + FETCH
+══════════════════════════════════════════════════════════════════ */
+async function init(){
+  try{
+    const {createClient}=supabase;
+    const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
+    
+    msg('Verifying session...');
+    const {data:{user},error:authErr}=await sb.auth.getUser();
+    if(authErr||!user){
+      const ret=encodeURIComponent(window.location.href);
+      window.location.href=`login.html?return=${ret}`;
+      return;
+    }
+    
+    msg('Loading report data...');
+    const params=new URLSearchParams(window.location.search);
+    const rid=params.get('rid');
+    if(!rid){showError('Report Not Found','No report ID was provided. Please return to your portal and try again.');return;}
+    
+    const {data:result,error:fetchErr}=await sb.from('diagnostic_results').select('*').eq('id',rid).single();
+    if(fetchErr||!result){showError('Access Denied','This report could not be found or you do not have permission to view it.');return;}
+    
+    msg('Rendering report...');
+    renderReport(result);
+    
+  } catch(err){
+    console.error(err);
+    showError('Error Loading Report',err.message||'An unexpected error occurred. Please return to your portal and try again.');
+  }
+}
+
+/* ── Radar polygon transition ── */
+const style=document.createElement('style');
+style.textContent='@keyframes radarPulse{0%,100%{opacity:.6}50%{opacity:1}}';
+document.head.appendChild(style);
+
+window.addEventListener('load',init);
+</script>
+<script src="js/ra-chrome.js"></script>
+</body>
+</html>

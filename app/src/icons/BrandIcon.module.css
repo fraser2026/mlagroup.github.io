@@ -1,0 +1,30 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ra-ink);
+  flex-shrink: 0;
+}
+
+.img {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Anthropic / OpenAI are black glyphs — lift to soft white on dark canvas */
+:global([data-theme='dark']) .monoDark {
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
+}
+
+.fallback {
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-mist);
+  color: var(--ra-text-2);
+  font-size: 9px;
+  font-weight: var(--ra-fw-semibold);
+  flex-shrink: 0;
+}

@@ -1,0 +1,43 @@
+.bone {
+  background: linear-gradient(
+    90deg,
+    var(--ra-mist) 0%,
+    color-mix(in srgb, var(--ra-mist) 70%, var(--ra-ink)) 50%,
+    var(--ra-mist) 100%
+  );
+  background-size: 200% 100%;
+  animation: ra-shimmer 1.2s var(--ra-ease-out) infinite;
+  opacity: 0.35;
+}
+
+:global([data-theme='dark']) .bone {
+  opacity: 0.45;
+  background: linear-gradient(
+    90deg,
+    var(--ra-canvas) 0%,
+    color-mix(in srgb, var(--ra-canvas) 75%, var(--ra-ink)) 50%,
+    var(--ra-canvas) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ra-space-2);
+}
+
+@keyframes ra-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
+}

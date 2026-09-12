@@ -1,0 +1,94 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ra-z-toast);
+  background: rgba(10, 14, 20, 0.28);
+  display: grid;
+  place-items: start center;
+  padding: 12vh 16px 16px;
+}
+
+.dialog {
+  width: min(560px, 100%);
+  background: var(--ra-canvas);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-panel);
+  box-shadow: var(--ra-shadow-menu);
+  overflow: hidden;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.searchIcon {
+  color: var(--ra-text-3);
+}
+
+.input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ra-ink);
+}
+
+.kbd {
+  font-size: 10px;
+  color: var(--ra-text-3);
+  border: 1px solid var(--ra-border);
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-family: var(--ra-font);
+}
+
+.list {
+  max-height: 360px;
+  overflow: auto;
+  padding: 8px;
+}
+
+.group {
+  margin-bottom: 8px;
+}
+
+.group [cmdk-group-heading] {
+  font-size: 11px;
+  font-weight: var(--ra-fw-semibold);
+  color: var(--ra-text-3);
+  padding: 6px 8px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--ra-radius-control);
+  font-size: 13px;
+  color: var(--ra-text-2);
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--ra-hover);
+  color: var(--ra-ink);
+}
+
+.item[data-selected='true'] {
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ra-text-3);
+}

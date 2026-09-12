@@ -1,0 +1,205 @@
+/*
+  Preview hierarchy (lock):
+  1. Description — primary body (ink, medium)
+  2. Meta labels — muted; meta values — ink (same weight)
+  3. Section titles — quiet (muted), so content can be the ink
+  4. Dates — same recipe as registry table (.cellDate)
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.block {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.block:last-child {
+  border-bottom: 0;
+  padding-bottom: 4px;
+}
+
+.blockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* Quiet section label — not competing with values */
+.blockTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+}
+
+.metaLabel {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+}
+
+.descBlock {
+  margin: 0 0 12px;
+}
+
+.blockLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  border-radius: var(--ra-radius-control);
+  padding: 2px 4px;
+  margin-right: -4px;
+}
+
+.blockLink:hover {
+  color: var(--ra-ink);
+  background: var(--ra-hover);
+}
+
+/* Primary body — description */
+.desc {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+  color: var(--ra-ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.value {
+  margin: 0;
+  font-family: var(--ra-font-num);
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+  color: var(--ra-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin: 0;
+}
+
+.meta dt {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.meta dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  word-break: break-word;
+}
+
+.providerRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.connRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+
+/* Match RegistryPage .cellDate exactly — Plex numerals */
+.date {
+  font-family: var(--ra-font-num);
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.01em;
+}
+
+.auditStack {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+.auditRow {
+  min-width: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.auditRow:first-child {
+  padding-top: 0;
+}
+
+.auditRow:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.auditAction {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  line-height: 1.35;
+  color: var(--ra-ink);
+}
+
+.auditMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.metaKind {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}

@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>AI System Assessment | RegAnchor</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/reganchor.css">
+  <link rel="stylesheet" href="css/reganchor-flow.css">
+  <style>
+  /* Screens participate in .wrapper grid with q-rail (match diagnostic layout) */
+  #screens-container { display: contents; }
+
+  /* Pre-assessment labels — match diagnostic #screen-prescreen (sentence case, body weight) */
+  #screen-pre .form-label {
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--sub);
+    line-height: 1.55;
+    margin-bottom: 6px;
+  }
+  #screen-pre .form-label .form-label-note {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--sub);
+  }
+  #screen-pre .form-input::placeholder,
+  #screen-pre .form-textarea::placeholder {
+    color: var(--ra-slate-30, #A3ACB9);
+    opacity: 1;
+    font-weight: 400;
+  }
+  /* Empty select / placeholder option lighter than field labels */
+  #screen-pre .form-select:has(option[value=""]:checked) {
+    color: var(--ra-slate-30, #A3ACB9);
+  }
+  #screen-pre .form-select option { color: var(--main); }
+  #screen-pre .form-select option[value=""] { color: var(--ra-slate-30, #A3ACB9); }
+
+  /* System meta box — portal detail hierarchy (not diagnostic form labels).
+     Labels = muted/light; values = ink/dark (same as .det-subtitle / .meta-item) */
+  #screen-pre .assess-sys-meta {
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #screen-pre .assess-sys-meta__row {
+    margin: 0;
+  }
+  #screen-pre .assess-sys-meta__k {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    color: var(--ra-text-3, var(--muted, #697386));
+    margin-bottom: 3px;
+    line-height: 1.3;
+  }
+  #screen-pre .assess-sys-meta__v {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ra-text, var(--main, #0A0E14));
+    line-height: 1.4;
+  }
+  </style>
+  <script src="js/ra-maturity.js"></script>
+</head>
+<body class="flow-page">
+
+<div class="calc-overlay" id="calcOverlay">
+  <div class="calc-spinner" aria-hidden="true"></div>
+  <div class="calc-title">Scoring your assessment</div>
+  <div class="calc-sub">Calculating governance maturity and regulatory exposure</div>
+  <div class="calc-track" aria-hidden="true"><div class="calc-track__fill" id="calcTrackFill"></div></div>
+</div>
+ 
+<div class="page">
+<header class="site-chrome" id="siteChrome">
+  <nav class="site-nav">
+    <a href="portal.html#dashboard" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+    <div class="nav-right">
+      <span class="flow-step" id="progressCount" hidden>1 of 8</span>
+      <a href="portal.html#dashboard" class="nav-signin" id="assess-back">Back to portal</a>
+    </div>
+  </nav>
+  <div class="scroll-progress scroll-progress--step" id="progressWrap" aria-hidden="true">
+    <div class="scroll-progress__fill progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <div class="site-chrome__fade" aria-hidden="true"></div>
+</header>
+ 
+<div class="wrapper">
+  <aside class="q-rail" id="qRail" aria-label="Assessment domains">
+    <div class="q-rail-eyebrow">Assessment Domains</div>
+    <div class="q-rail-item" data-screen="screen-s1"><span class="q-rail-num">01</span><span>System Purpose &amp; Classification</span></div>
+    <div class="q-rail-item" data-screen="screen-s2"><span class="q-rail-num">02</span><span>Data Governance</span></div>
+    <div class="q-rail-item" data-screen="screen-s3"><span class="q-rail-num">03</span><span>Transparency &amp; Explainability</span></div>
+    <div class="q-rail-item" data-screen="screen-s4"><span class="q-rail-num">04</span><span>Human Oversight</span></div>
+    <div class="q-rail-item" data-screen="screen-s5"><span class="q-rail-num">05</span><span>Security &amp; Robustness</span></div>
+    <div class="q-rail-item" data-screen="screen-s6"><span class="q-rail-num">06</span><span>Accountability &amp; Documentation</span></div>
+    <div class="q-rail-item" data-screen="screen-s7"><span class="q-rail-num">07</span><span>Third-Party &amp; Supply Chain</span></div>
+  </aside>
+  <!-- Screens are generated dynamically by JS -->
+  <div id="screens-container"></div>
+</div>
+</div>
+ 
+<script>
+const SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ 
+// ═══ GET SYSTEM ID FROM URL ══════════════════════════════════
+const params=new URLSearchParams(window.location.search);
+const SYSTEM_ID=params.get('system_id');
+(function(){
+  var back=document.getElementById('assess-back');
+  var ret='#dashboard';
+  try{
+    var stored=sessionStorage.getItem('ra_portal_return');
+    if(stored&&stored.charAt(0)==='#'&&stored.indexOf('index')===-1)ret=stored;
+  }catch(e){}
+  if(back)back.setAttribute('href','portal.html'+ret);
+})();
+let currentUser=null,currentOrg=null,systemData=null;
+function isPaidTier(){return currentOrg&&(currentOrg.plan==='essentials'||currentOrg.plan==='professional')&&currentOrg.subscription_status==='active'}
+
+// ═══ QUESTIONNAIRE DEFINITION ════════════════════════════════
+const VER='1.0.0';
+const WEIGHTS={s1:0.10,s2:0.20,s3:0.15,s4:0.15,s5:0.15,s6:0.15,s7:0.10};
+const SECTIONS=[
+{id:'s1',title:'System Purpose & Classification',desc:'Establishing the intended use, impact scope, and regulatory exposure of this AI system.',reg:'EU AI Act Annex III, Article 6',questions:[
+  {id:'q1_1',text:'What is the intended use and potential impact of this AI system?',options:[
+    {l:'Low impact: internal tooling with no effect on individuals',s:3},
+    {l:'Moderate impact: supports decisions but a human always decides',s:2},
+    {l:'Significant impact: directly informs decisions affecting individuals',s:1},
+    {l:'Critical impact: makes or substantially determines outcomes for individuals',s:0}]},
+  {id:'q1_2',text:'Who are the primary end users of this system?',options:[
+    {l:'Internal staff only: no public-facing interaction',s:3},
+    {l:'Internal staff with outputs shared externally',s:2},
+    {l:'Directly accessed by customers or the public',s:1},
+    {l:'Used by regulated entities or vulnerable populations',s:0}]},
+  {id:'q1_3',text:'Does this system make or inform decisions that affect individuals\u2019 rights, access to services, or financial position?',options:[
+    {l:'No: outputs do not affect individuals',s:3},
+    {l:'Indirectly: outputs may influence but do not determine outcomes',s:2},
+    {l:'Yes: the system informs decisions that affect individuals',s:1},
+    {l:'Yes: the system makes automated decisions with direct effect',s:0}]},
+  {id:'q1_4',text:'At what scale does this system operate?',options:[
+    {l:'Limited: small number of users or cases',s:3},
+    {l:'Moderate: departmental use across the organisation',s:2},
+    {l:'Significant: organisation-wide or large customer base',s:1},
+    {l:'Extensive: high-volume processing affecting many individuals',s:0}]}
+]},
+{id:'s2',title:'Data Governance',desc:'Assessing data practices, personal data handling, quality controls, and retention policies.',reg:'UK GDPR Articles 5, 6, 25, 35; EU AI Act Article 10',questions:[
+  {id:'q2_1',text:'What type of data does this system process?',options:[
+    {l:'Non-personal, non-sensitive data only',s:3},
+    {l:'Personal data that is not sensitive (names, contact details)',s:2},
+    {l:'Special category data (health, ethnicity, biometric)',s:1},
+    {l:'Don\u2019t know what data the system processes',s:0}]},
+  {id:'q2_2',text:'Is there a documented lawful basis for this system\u2019s processing of personal data?',options:[
+    {l:'Yes: lawful basis identified, documented, and reviewed within 12 months',s:3},
+    {l:'Yes: identified but not formally documented',s:2},
+    {l:'No personal data is processed',s:3},
+    {l:'No: lawful basis has not been assessed',s:0},
+    {l:'Don\u2019t know',s:0}]},
+  {id:'q2_3',text:'Is the source of training and input data verified and documented?',options:[
+    {l:'Yes: data sources documented with provenance and quality records',s:3},
+    {l:'Partially: some sources documented but not comprehensively',s:2},
+    {l:'No: data sources are not tracked',s:0},
+    {l:'Don\u2019t know',s:0}]},
+  {id:'q2_4',text:'Are mechanisms in place to monitor data quality and detect bias?',options:[
+    {l:'Yes: regular assessments with documented methodology and results',s:3},
+    {l:'Partially: some checks exist but are not systematic',s:2},
+    {l:'Planned but not yet implemented',s:1},
+    {l:'No mechanisms in place',s:0}]},
+  {id:'q2_5',text:'Is there a defined data retention and deletion policy for this system?',options:[
+    {l:'Yes: documented policy with defined retention periods and deletion procedures',s:3},
+    {l:'Partially: general organisational policy exists but not AI-specific',s:2},
+    {l:'No formal policy',s:0},
+    {l:'Don\u2019t know',s:0}]}
+]},
+{id:'s3',title:'Transparency & Explainability',desc:'Evaluating whether AI interactions are disclosed, decisions can be explained, and outputs are traceable.',reg:'EU AI Act Articles 13, 50; UK GDPR Article 22',questions:[
+  {id:'q3_1',text:'Are end users informed that they are interacting with or affected by an AI system?',options:[
+    {l:'Yes: clear disclosure at the point of interaction',s:3},
+    {l:'Partially: disclosed in terms of service but not at point of use',s:1},
+    {l:'No: users are not informed',s:0},
+    {l:'Not applicable: no user-facing interaction',s:3}]},
+  {id:'q3_2',text:'Can decisions or outputs produced by this system be explained in understandable terms?',options:[
+    {l:'Yes: documented explanation methodology, accessible to non-technical stakeholders',s:3},
+    {l:'Partially: technical explanations available but not user-friendly',s:2},
+    {l:'Limited: explanations possible only in certain cases',s:1},
+    {l:'No: the system is a black box',s:0}]},
+  {id:'q3_3',text:'Are inputs, outputs, and confidence scores logged for audit and review?',options:[
+    {l:'Yes: comprehensive logging with defined retention period',s:3},
+    {l:'Partially: some outputs logged but not systematically',s:2},
+    {l:'No logging in place',s:0},
+    {l:'Don\u2019t know',s:0}]},
+  {id:'q3_4',text:'Are error handling and fallback mechanisms documented for when the system fails or produces uncertain outputs?',options:[
+    {l:'Yes: documented procedures with defined triggers and escalation paths',s:3},
+    {l:'Partially: informal processes exist but are not documented',s:1},
+    {l:'No fallback mechanisms defined',s:0}]}
+]},
+{id:'s4',title:'Human Oversight',desc:'Assessing whether human judgement is integrated into AI-driven processes and whether oversight is effective.',reg:'EU AI Act Article 14',questions:[
+  {id:'q4_1',text:'Are high-impact outputs reviewed by a human before action is taken?',options:[
+    {l:'Yes: mandatory human review for all high-impact outputs with documented protocols',s:3},
+    {l:'Conditionally: based on defined risk thresholds',s:2},
+    {l:'Rarely: review occurs informally',s:1},
+    {l:'No: outputs are acted upon without human review',s:0}]},
+  {id:'q4_2',text:'Can automated decisions be overridden by a human, and is this process documented?',options:[
+    {l:'Yes: formally documented override process with records maintained',s:3},
+    {l:'Yes: override is possible but the process is informal',s:1},
+    {l:'No: there is no mechanism to override',s:0}]},
+  {id:'q4_3',text:'Are staff responsible for reviewing AI outputs trained on the system\u2019s capabilities and limitations?',options:[
+    {l:'Yes: mandatory training with completion records and periodic refresh',s:3},
+    {l:'Yes: training available but voluntary or inconsistent',s:2},
+    {l:'No formal training provided',s:0},
+    {l:'Not applicable: no human review takes place',s:0}]},
+  {id:'q4_4',text:'Is there a formal process for monitoring whether human oversight is effective in practice?',options:[
+    {l:'Yes: regular reviews of override rates, decision quality, and oversight outcomes',s:3},
+    {l:'Partially: some metrics tracked but not systematically reviewed',s:2},
+    {l:'No formal monitoring of oversight effectiveness',s:0}]}
+]},
+{id:'s5',title:'Security & Robustness',desc:'Evaluating resilience against adversarial threats, performance monitoring, and operational continuity.',reg:'EU AI Act Article 15',questions:[
+  {id:'q5_1',text:'Has this system been tested for adversarial vulnerabilities specific to AI (e.g. prompt injection, data poisoning, model manipulation)?',options:[
+    {l:'Yes: formal AI-specific security testing conducted and documented',s:3},
+    {l:'Partially: general security testing but AI-specific risks not assessed',s:1},
+    {l:'No testing conducted',s:0},
+    {l:'Don\u2019t know',s:0}]},
+  {id:'q5_2',text:'Is the system\u2019s performance monitored on an ongoing basis, including accuracy and drift detection?',options:[
+    {l:'Yes: automated monitoring with defined thresholds and alerting',s:3},
+    {l:'Yes: manual periodic reviews',s:2},
+    {l:'Partially: some monitoring but no defined thresholds',s:1},
+    {l:'No performance monitoring in place',s:0}]},
+  {id:'q5_3',text:'Are there defined procedures for responding to AI system failures, harmful outputs, or unexpected behaviour?',options:[
+    {l:'Yes: documented incident response including AI-specific scenarios',s:3},
+    {l:'General incident response exists but does not cover AI-specific failures',s:1},
+    {l:'No incident response process for this system',s:0}]},
+  {id:'q5_4',text:'Is model retraining, versioning, and change management controlled and documented?',options:[
+    {l:'Yes: version control with documented change rationale and rollback capability',s:3},
+    {l:'Partially: some version tracking but not comprehensive',s:2},
+    {l:'No version control or change management',s:0},
+    {l:'Not applicable: using a fixed third-party model',s:2}]}
+]},
+{id:'s6',title:'Accountability & Documentation',desc:'Assessing whether governance roles, documentation, and audit capabilities are in place.',reg:'EU AI Act Articles 9, 11, 17',questions:[
+  {id:'q6_1',text:'Is there a named individual responsible for the governance of this AI system?',options:[
+    {l:'Yes: named system owner with documented responsibilities and reporting line',s:3},
+    {l:'Yes: informally understood but not documented',s:1},
+    {l:'No: ownership is unclear',s:0}]},
+  {id:'q6_2',text:'Is technical documentation maintained for this system covering architecture, intended use, limitations, and performance?',options:[
+    {l:'Yes: comprehensive documentation maintained and reviewed within 12 months',s:3},
+    {l:'Partially: some documentation exists but is incomplete or outdated',s:2},
+    {l:'No documentation maintained',s:0}]},
+  {id:'q6_3',text:'Are incidents and failures logged, reviewed, and used to improve the system?',options:[
+    {l:'Yes: incident log with root cause analysis and documented improvements',s:3},
+    {l:'Partially: incidents are noted but not systematically reviewed',s:1},
+    {l:'No incident logging',s:0}]},
+  {id:'q6_4',text:'Are decision logs and audit trails maintained that would satisfy a regulatory examination?',options:[
+    {l:'Yes: audit-ready logs retained for a defined period, accessible on request',s:3},
+    {l:'Partially: some records exist but may not satisfy regulatory scrutiny',s:2},
+    {l:'No audit trail maintained',s:0},
+    {l:'Don\u2019t know',s:0}]}
+]},
+{id:'s7',title:'Third-Party & Supply Chain',desc:'Evaluating governance of external AI providers, vendor contracts, and supply chain transparency.',reg:'EU AI Act Article 26',questions:[
+  {id:'q7_1',text:'Is this AI system developed in-house, provided by a third party, or a hybrid?',hint:'Third-party systems carry additional deployer obligations under the EU AI Act.',options:[
+    {l:'Fully in-house: developed and maintained internally',s:3},
+    {l:'Hybrid: built on third-party foundation with internal customisation',s:2},
+    {l:'Third-party: externally provided with limited internal visibility',s:1},
+    {l:'Don\u2019t know the development origin',s:0}]},
+  {id:'q7_2',text:'Have vendor contracts been reviewed for regulatory compliance, data handling, and liability allocation?',options:[
+    {l:'Yes: contracts reviewed with specific AI governance provisions',s:3},
+    {l:'Partially: standard procurement review but no AI-specific clauses',s:2},
+    {l:'No contract review for AI governance',s:0},
+    {l:'Not applicable: system is fully in-house',s:3}]},
+  {id:'q7_3',text:'Are model cards, transparency reports, or impact assessments available from the provider?',options:[
+    {l:'Yes: provider supplies comprehensive transparency documentation',s:3},
+    {l:'Partially: some information available but incomplete',s:2},
+    {l:'No: provider does not supply transparency documentation',s:0},
+    {l:'Not applicable: system is fully in-house',s:3}]},
+  {id:'q7_4',text:'Are third-party updates, model changes, or data practice changes tracked and assessed before deployment?',options:[
+    {l:'Yes: change management process includes third-party AI updates',s:3},
+    {l:'Partially: aware of major updates but no formal tracking',s:2},
+    {l:'No: third-party changes are not tracked',s:0},
+    {l:'Not applicable: system is fully in-house',s:3}]}
+]}
+];
+ 
+const SECTOR_OPTIONS=['Financial Services','Healthcare & Life Sciences','Legal & Professional Services','Retail & E-commerce','Technology & SaaS','Public Sector / Government','Education','Manufacturing & Logistics','Other'];
+ 
+// ═══ STATE ════════════════════════════════════════════════════
+const R={}; // responses: q_id → score
+let assessSector='';
+let assessNotes='';
+const ORDER=['pre',...SECTIONS.map(s=>s.id)];
+const TOTAL_STEPS=ORDER.length; // pre + 7 domains = 8
+const SECTION_SCREENS=SECTIONS.map(s=>'screen-'+s.id);
+ 
+// ═══ INIT ═════════════════════════════════════════════════════
+async function init(){
+  if(!SYSTEM_ID){alert('No system specified.');window.location.href='portal.html';return}
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='/login?next='+encodeURIComponent(window.location.pathname+window.location.search+window.location.hash);return}
+  currentUser=session.user;
+  // Load system data
+  const{data:sys}=await sb.from('ai_systems').select('*').eq('id',SYSTEM_ID).single();
+  if(!sys){alert('System not found.');window.location.href='portal.html';return}
+  systemData=sys;
+  // Load org
+  const{data:org}=await sb.from('organisations').select('*').eq('id',sys.org_id).single();
+  currentOrg=org;
+  buildScreens();
+  bindRail();
+  goTo('pre');
+}
+ 
+// ═══ BUILD SCREENS ════════════════════════════════════════════
+function buildScreens(){
+  const c=document.getElementById('screens-container');
+  const riskLbl=systemData.risk_tier
+    ? 'Suggested: '+(systemData.risk_tier.charAt(0).toUpperCase()+systemData.risk_tier.slice(1))
+    : 'Not yet classified';
+  // Pre-assessment screen — same chrome/language as diagnostic prescreen
+  let html=`<div class="screen" id="screen-pre"><div class="card">
+    <div class="section-title">${esc(systemData.name)}</div>
+    <div class="section-desc">Evaluate governance maturity across seven domains. You get a system-level risk score and regulatory mapping.</div>
+    <div class="info-callout assess-sys-meta">
+      <div class="assess-sys-meta__row">
+        <span class="assess-sys-meta__k">System</span>
+        <span class="assess-sys-meta__v">${esc(systemData.name)}</span>
+      </div>
+      <div class="assess-sys-meta__row">
+        <span class="assess-sys-meta__k">Risk Tier</span>
+        <span class="assess-sys-meta__v">${esc(riskLbl)}</span>
+      </div>
+      <div class="assess-sys-meta__row">
+        <span class="assess-sys-meta__k">Owner</span>
+        <span class="assess-sys-meta__v">${esc(systemData.system_owner||'Not set')}</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="pre-sector">Which sector does this AI system primarily operate in?</label>
+      <select class="form-select" id="pre-sector">
+        <option value="">Select sector</option>
+        ${SECTOR_OPTIONS.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="pre-notes">Any additional context for the assessor? <span class="form-label-note">(optional)</span></label>
+      <textarea class="form-input" id="pre-notes" rows="3" placeholder="Anything RegAnchor should know about this system" style="resize:vertical;min-height:70px;"></textarea>
+    </div>
+    <div id="pre-error" class="error-msg"></div>
+    <div class="nav-btns">
+      <button type="button" class="btn-primary" onclick="startAssessment()">Begin assessment &#8594;</button>
+    </div>
+  </div></div>`;
+ 
+  // Section screens
+  SECTIONS.forEach((section,si)=>{
+    html+=`<div class="screen" id="screen-${section.id}"><div class="card">
+      <div class="section-title">${section.title}</div>
+      <div class="section-desc">${section.desc}</div>`;
+    section.questions.forEach((q,qi)=>{
+      html+=`<div class="q-block">
+        <div class="q-label">${q.text}</div>
+        ${q.hint?`<div class="q-hint">${q.hint}</div>`:''}
+        <div class="options" id="${q.id}">
+          ${q.options.map((o,oi)=>`<label class="option" onclick="pick(this,'${q.id}',${o.s})"><span class="option-dot"></span>${esc(o.l)}</label>`).join('')}
+        </div>
+      </div>`;
+    });
+    html+=`<div id="${section.id}-error" class="error-msg"></div>
+      <div class="nav-btns">
+        <button class="btn-secondary" onclick="goTo('${si===0?'pre':SECTIONS[si-1].id}')">&#8592; Back</button>
+        ${si<SECTIONS.length-1
+          ?`<button class="btn-primary" onclick="nextSection('${section.id}','${SECTIONS[si+1].id}')">Continue &#8594;</button>`
+          :`<button class="btn-primary" onclick="finishAssessment('${section.id}')">Complete Assessment &#8594;</button>`
+        }
+      </div>
+    </div></div>`;
+  });
+ 
+  c.innerHTML=html;
+}
+ 
+// ═══ NAVIGATION ══════════════════════════════════════════════
+function goTo(id){
+  const screenId=id.indexOf('screen-')===0?id:('screen-'+id);
+  const plainId=screenId.replace(/^screen-/,'');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(screenId);
+  if(!el)return;
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  syncRail(screenId);
+
+  const idx=ORDER.indexOf(plainId);
+  const chrome=document.getElementById('siteChrome');
+  const count=document.getElementById('progressCount');
+  const fill=document.getElementById('progressFill');
+  const showSteps=idx>-1&&plainId!=='calc'&&plainId!=='results';
+  if(chrome) chrome.classList.toggle('has-steps',showSteps);
+  if(count){
+    count.hidden=!showSteps;
+    if(showSteps) count.textContent=(idx+1)+' of '+TOTAL_STEPS;
+  }
+  if(showSteps&&fill){
+    fill.style.width=Math.round(((idx+1)/TOTAL_STEPS)*100)+'%';
+  }else if(fill){
+    fill.style.width='0%';
+  }
+}
+
+/* Section rail: active + completed; jump only to earlier domains */
+function syncRail(screenId){
+  const curIdx=SECTION_SCREENS.indexOf(screenId);
+  const page=document.querySelector('.page');
+  if(page) page.classList.toggle('in-quiz',curIdx>-1);
+  document.querySelectorAll('.q-rail-item').forEach((item,i)=>{
+    item.classList.toggle('active',i===curIdx);
+    item.classList.toggle('done',curIdx>-1&&i<curIdx);
+  });
+}
+function railJump(screenId){
+  const targetIdx=SECTION_SCREENS.indexOf(screenId);
+  const active=document.querySelector('.screen.active');
+  const curIdx=active?SECTION_SCREENS.indexOf(active.id):-1;
+  if(targetIdx>-1&&targetIdx<curIdx) goTo(screenId);
+}
+function bindRail(){
+  document.querySelectorAll('.q-rail-item').forEach(item=>{
+    item.addEventListener('click',()=>railJump(item.getAttribute('data-screen')));
+  });
+}
+ 
+function pick(el,qid,score){
+  document.querySelectorAll('#'+qid+' .option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  R[qid]=score;
+}
+ 
+function startAssessment(){
+  assessSector=document.getElementById('pre-sector').value;
+  const err=document.getElementById('pre-error');
+  if(!assessSector){err.textContent='Please select a sector.';err.style.display='block';return}
+  err.style.display='none';
+  assessNotes=document.getElementById('pre-notes').value.trim();
+  goTo(SECTIONS[0].id);
+}
+ 
+function nextSection(currentId,nextId){
+  const section=SECTIONS.find(s=>s.id===currentId);
+  const err=document.getElementById(currentId+'-error');
+  for(const q of section.questions){
+    if(R[q.id]===undefined){err.textContent='Please answer all questions before continuing.';err.style.display='block';return}
+  }
+  err.style.display='none';
+  goTo(nextId);
+}
+ 
+// ═══ SCORING ═════════════════════════════════════════════════
+function finishAssessment(lastSectionId){
+  const section=SECTIONS.find(s=>s.id===lastSectionId);
+  const err=document.getElementById(lastSectionId+'-error');
+  for(const q of section.questions){
+    if(R[q.id]===undefined){err.textContent='Please answer all questions before continuing.';err.style.display='block';return}
+  }
+  err.style.display='none';
+  const calcEl=document.getElementById('calcOverlay');
+  const calcFill=document.getElementById('calcTrackFill');
+  if(calcFill){calcFill.style.transition='none';calcFill.style.width='8%';void calcFill.offsetWidth;calcFill.style.transition='width 1.1s ease'}
+  calcEl.classList.add('active');
+  if(calcFill) requestAnimationFrame(()=>{calcFill.style.width='78%'});
+ 
+  // Calculate scores
+  const sectionScores={};
+  let weightedTotal=0;
+  SECTIONS.forEach(sec=>{
+    let earned=0,possible=0;
+    sec.questions.forEach(q=>{
+      const ans=R[q.id];if(ans!==undefined){earned+=ans;possible+=Math.max(...q.options.map(o=>o.s))}
+    });
+    const pct=possible>0?Math.round((earned/possible)*100):0;
+    sectionScores[sec.id]={score:pct,title:sec.title,weight:WEIGHTS[sec.id]};
+    weightedTotal+=pct*WEIGHTS[sec.id];
+  });
+  const overall=Math.round(weightedTotal);
+  const band=overall>=70?'low':overall>=40?'medium':'high';
+ 
+  // Priority flags
+  const flags=[];
+  Object.entries(sectionScores).forEach(([id,d])=>{
+    if(d.score<40){const sec=SECTIONS.find(s=>s.id===id);flags.push({section:d.title,score:d.score,regulatory:sec?.reg||''})}
+  });
+ 
+  // Tier validation
+  let tierVal=null;
+  if(systemData.risk_tier){
+    let suggested='minimal';
+    if(R.q1_1===0||R.q1_3===0)suggested='high';
+    else if(R.q1_1===1||R.q1_3===1)suggested='high';
+    else if(R.q1_1===2||R.q1_3===2)suggested='limited';
+    if(R.q2_1===1)suggested='high';
+    const mismatch=['high','unacceptable'].includes(suggested)&&!['high','unacceptable'].includes(systemData.risk_tier);
+    if(mismatch)tierVal={suggested,current:systemData.risk_tier,mismatch:true};
+  }
+ 
+  saveAssessment({responses:R,sectionScores,overall,band,flags,tierVal});
+}
+ 
+async function saveAssessment(result){
+  try{
+    const{data:inserted,error}=await sb.from('registry_assessments').insert({
+      system_id:SYSTEM_ID,
+      org_id:currentOrg.id,
+      responses:result.responses,
+      section_scores:result.sectionScores,
+      overall_score:result.overall,
+      risk_band:result.band,
+      questionnaire_version:VER,
+      sector:assessSector,
+      client_notes:assessNotes||null,
+      tier_validation:result.tierVal,
+      requested_by:currentUser.id,
+      status:'submitted'
+    }).select('id').single();
+    if(error)throw error;
+    const assessId=inserted?.id||null;
+    // Audit log
+    await sb.from('registry_audit_log').insert({
+      org_id:currentOrg.id,user_id:currentUser.id,
+      action:'assessment_submitted',entity_type:'ai_system',entity_id:SYSTEM_ID,
+      changes:{overall_score:result.overall,risk_band:result.band,sector:assessSector,assessment_id:assessId}
+    });
+    // Trigger governance controls based on responses
+    var triggered=await triggerControls(result.responses,assessId);
+    // Show results screen
+    showResultsScreen(result,triggered||[],assessId);
+  }catch(err){
+    document.getElementById('calcOverlay').classList.remove('active');
+    alert('Error saving assessment: '+err.message);
+  }
+}
+ 
+// ═══ CONTROL TRIGGER LOGIC ════════════════════════════════════
+// Maps assessment responses to the 12 governance controls
+const TRIGGER_MAP=[
+  {control_number:1, questions:['q6_1'], threshold:1},          // AI Governance Policy
+  {control_number:3, questions:['q7_1','q7_2','q7_3','q7_4'], threshold:1}, // Vendor Governance
+  {control_number:4, questions:['q1_1','q1_3'], threshold:1},  // Risk Classification
+  {control_number:5, questions:['q4_1','q4_2','q4_4'], threshold:1}, // Human Oversight
+  {control_number:6, questions:['q3_1','q3_2'], threshold:1},  // Transparency
+  {control_number:7, questions:['q2_1','q2_3','q2_4','q2_5'], threshold:1}, // Data Governance
+  {control_number:8, questions:['q5_2'], threshold:1},          // Monitoring
+  {control_number:9, questions:['q5_1'], threshold:1},          // Security Testing
+  {control_number:10, questions:['q5_3'], threshold:1},         // Incident Response
+  {control_number:11, questions:['q6_2'], threshold:1},         // Documentation
+  {control_number:12, questions:['q3_3','q6_4'], threshold:1},  // Audit Logging
+];
+ 
+async function triggerControls(responses,assessId){
+  try{
+    const{data:controls}=await sb.from('governance_controls').select('id,control_number,title,is_org_level').eq('is_active',true);
+    if(!controls)return;
+    const ctrlMap={};controls.forEach(c=>{ctrlMap[c.control_number]=c});
+    const triggered=[];
+    TRIGGER_MAP.forEach(rule=>{
+      const ctrl=ctrlMap[rule.control_number];if(!ctrl)return;
+      const anyBelow=rule.questions.some(qid=>responses[qid]!==undefined&&responses[qid]<=rule.threshold);
+      if(anyBelow)triggered.push(ctrl);
+    });
+    if(ctrlMap[2])triggered.push(ctrlMap[2]);
+    if(!triggered.length)return;
+    for(const ctrl of triggered){
+      const payload={control_id:ctrl.id,org_id:currentOrg.id,status:'not_started',triggered_by:'assessment',assessment_id:assessId||null};
+      if(!ctrl.is_org_level)payload.system_id=SYSTEM_ID;
+      else payload.system_id=null;
+      // Insert, ignore duplicate (unique constraint handles idempotency)
+      const{error}=await sb.from('control_assignments').insert(payload);
+      if(error&&error.code!=='23505')console.error('Control trigger error:',ctrl.control_number,error);
+      // 23505 = unique_violation = already assigned, which is fine
+    }
+    console.log('Triggered '+triggered.length+' controls');
+    return triggered;
+  }catch(err){console.error('Trigger controls error:',err);return[]}
+}
+ 
+function showResultsScreen(result, triggered, assessId) {
+  document.getElementById('calcOverlay').classList.remove('active');
+  document.getElementById('siteChrome')?.classList.remove('has-steps');
+  document.querySelector('.page')?.classList.remove('in-quiz');
+  const pc = document.getElementById('progressCount');
+  if (pc) pc.hidden = true;
+  const fill = document.getElementById('progressFill');
+  if (fill) fill.style.width = '0%';
+
+  var band = result.band;
+  var bandLabel = band === 'low' ? 'Low Risk': band === 'high' ? 'High Risk': 'Medium Risk';
+  var score = result.overall || 0;
+  var ss = result.sectionScores || {};
+
+  var secBars = Object.entries(ss).map(function (entry) {
+    var v = entry[1];
+    var pct = Math.round(v.score || 0);
+    var lvl = pct >= 70 ? 'Low': pct >= 40 ? 'Moderate': 'High';
+    return '' +
+      '<div class="domain-item">' +
+        '<div><div class="domain-name">' + esc(v.title || entry[0]) + '</div></div>' +
+        '<div style="display:flex;align-items:center;gap:12px;">' +
+          '<div class="domain-track"><div class="domain-track__fill" style="width:' + pct + '%"></div></div>' +
+          '<span class="domain-pct">' + pct + '</span>' +
+          '<span class="risk-pill">' + lvl + '</span>' +
+        '</div>' +
+      '</div>';
+  }).join('');
+
+  var ctrlHtml = '';
+  if (triggered.length) {
+    ctrlHtml = '' +
+      '<div style="margin-top:28px;text-align:left;">' +
+        '<div class="label">Controls Triggered</div>' +
+        '<div style="display:flex;flex-direction:column;">' +
+          triggered.map(function (c) {
+            return '' +
+              '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">' +
+                '<span style="font-family:var(--ra-font-brand);font-size:12px;font-weight:500;color:var(--muted);width:28px;flex-shrink:0;">' +
+                  c.control_number +
+                '</span>' +
+                '<span style="font-size:14px;color:var(--main);">' + esc(c.title || ('Control ' + c.control_number)) + '</span>' +
+              '</div>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+  } else {
+    ctrlHtml = '' +
+      '<div style="margin-top:28px;padding:16px 0;border-top:1px solid var(--border);text-align:left;">' +
+        '<div style="font-size:14px;font-weight:500;color:var(--main);margin-bottom:4px;">No controls triggered</div>' +
+        '<div style="font-size:13px;color:var(--muted);">This system scored well across all governance domains.</div>' +
+      '</div>';
+  }
+
+  var reportCta = isPaidTier()
+    ? '<a href="system-report.html?aid=' + (assessId || '') + '" target="_blank" class="btn-secondary">View Full Report</a>': '<a href="portal.html?goto=plans" class="btn-secondary">Upgrade to View Report</a>';
+
+  document.getElementById('screens-container').innerHTML = '' +
+    '<div class="card" style="padding:36px 28px;">' +
+      '<div class="label">Assessment Complete</div>' +
+      '<h2 style="margin-bottom:8px;">' + esc(systemData.name) + '</h2>' +
+      '<div class="diag-score" style="justify-content:flex-start;margin-top:16px;">' +
+        '<span class="diag-score__num" style="font-size:64px;">' + Math.round(score) + '</span>' +
+        '<span class="diag-score__of">/ 100</span>' +
+      '</div>' +
+      '<p class="diag-tier"><strong>' + raLevelText(score) + '</strong> / ' + bandLabel + '</p>' +
+      '<div class="diag-maturity-row" style="margin:20px 0 28px;">' +
+        raComplianceBar(score) + raLadderScale(score) +
+      '</div>' +
+      '<div class="domain-list" style="max-width:none;">' + secBars + '</div>' +
+      ctrlHtml +
+      '<div class="nav-btns" style="margin-top:28px;flex-wrap:wrap;">' +
+        '<a href="portal.html?goto=system-controls-' + SYSTEM_ID + '" class="btn-primary">View Controls</a>' +
+        reportCta +
+        '<a href="portal.html#registry-detail-' + SYSTEM_ID + '" class="btn-secondary">Back to System</a>' +
+      '</div>' +
+    '</div>';
+}
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// Sticky chrome fade: same behaviour as results.html
+(function () {
+  const chrome = document.getElementById('siteChrome');
+  if (!chrome) return;
+  const onScroll = () => chrome.classList.toggle('is-scrolled', window.scrollY > 12);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+ 
+init();
+</script>
+</body>
+</html>

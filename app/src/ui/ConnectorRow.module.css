@@ -1,0 +1,72 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--ra-border);
+  background: var(--ra-surface);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.icon {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--ra-mist);
+  overflow: hidden;
+}
+
+.icon img,
+.icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ra-text);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.tag {
+  font-size: 11px;
+  color: var(--ra-text-3);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  padding: 2px 7px;
+  background: var(--ra-mist);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}

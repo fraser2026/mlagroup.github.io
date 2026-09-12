@@ -1,0 +1,51 @@
+.strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  background: transparent;
+  border: 0;
+}
+
+.cell {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-canvas);
+}
+
+.label {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.value {
+  font-family: var(--ra-font-num);
+  font-size: 18px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.02em;
+  color: var(--ra-ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.hint {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ra-text-3);
+}
+
+.risk .value {
+  color: var(--ra-risk);
+}
+
+.ok .value {
+  color: var(--ra-ok);
+}
+
+.warn .value {
+  color: var(--ra-warn);
+}

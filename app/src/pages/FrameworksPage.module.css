@@ -1,0 +1,96 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+  transition:
+    border-color var(--ra-motion-fast) var(--ra-ease-out),
+    background var(--ra-motion-fast) var(--ra-ease-out);
+}
+
+.card:hover {
+  border-color: var(--ra-blurple);
+  background: var(--ra-hover);
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: var(--ra-fw-semibold);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+}
+
+.cardBody {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ra-text-2);
+  line-height: 1.45;
+  min-height: 2.9em;
+}
+
+.cardMeta {
+  font-size: 12px;
+  color: var(--ra-text-3);
+}
+
+.hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ra-text-2);
+  max-width: 62ch;
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ra-text-3);
+}
+
+.field input,
+.field textarea {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  padding: 9px 10px;
+  font: inherit;
+  color: var(--ra-ink);
+  background: var(--ra-canvas);
+}
+
+.field input:focus,
+.field input:focus-visible,
+.field textarea:focus,
+.field textarea:focus-visible {
+  outline: none;
+  border-color: var(--ra-blurple);
+  background: var(--ra-focus-fill);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

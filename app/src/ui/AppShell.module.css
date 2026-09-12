@@ -1,0 +1,370 @@
+/* Layer 0 = sidebar shell. Layer 1 = work card (full rounded hairline on desktop). */
+.shell {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ra-sidebar);
+}
+
+.sidebar {
+  width: var(--ra-sidebar-w);
+  flex-shrink: 0;
+  border-right: 0;
+  background: var(--ra-sidebar);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.brand {
+  height: var(--ra-chrome-h);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--ra-space-4);
+  border-bottom: 0;
+  background: var(--ra-sidebar);
+}
+
+.brand img {
+  display: block;
+}
+
+.brandSr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.nav {
+  padding: var(--ra-space-3) var(--ra-space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow: auto;
+}
+
+.section {
+  margin-top: var(--ra-space-3);
+}
+
+.sectionToggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--ra-body);
+  font-size: 12px;
+  font-weight: var(--ra-fw-semibold);
+  letter-spacing: -0.01em;
+  padding: 8px 10px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: var(--ra-radius-control);
+  transition: background var(--ra-motion-fast) var(--ra-ease-out), color var(--ra-motion-fast) var(--ra-ease-out);
+}
+
+.sectionToggle:hover {
+  background: var(--ra-hover);
+  color: var(--ra-ink);
+}
+
+.sectionChevron {
+  transition: transform var(--ra-motion-med) var(--ra-ease-out);
+  transform: rotate(-90deg);
+}
+
+.sectionChevronOpen {
+  transform: rotate(0deg);
+}
+
+.sectionItems {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ra-space-2);
+  padding: 8px 10px;
+  border-radius: var(--ra-radius-control);
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  transition:
+    background var(--ra-motion-fast) var(--ra-ease-out),
+    color var(--ra-motion-fast) var(--ra-ease-out);
+}
+
+/* Hover = quiet mist only. Blurple is reserved for the current page. */
+.navItem:hover {
+  background: var(--ra-hover);
+  color: var(--ra-ink);
+}
+
+.navItem:focus-visible {
+  outline: none;
+  background: var(--ra-hover);
+  color: var(--ra-ink);
+}
+
+.navItem:active {
+  background: var(--ra-pressed);
+}
+
+.navIcon {
+  display: flex;
+  color: currentColor;
+}
+
+.navLabel {
+  min-width: 0;
+}
+
+.active {
+  background: transparent;
+  color: var(--ra-blurple-fg);
+  font-weight: var(--ra-fw-semibold);
+}
+
+.active:hover {
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
+}
+
+.active:focus-visible {
+  outline: none;
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
+}
+
+.bottomNav {
+  margin-top: auto;
+  padding-top: var(--ra-space-3);
+  border-top: 1px solid var(--ra-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ra-space-2);
+  padding: 14px var(--ra-space-3);
+  border-top: 1px solid var(--ra-border);
+  background: transparent;
+}
+
+.userMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--ra-space-2);
+  min-width: 0;
+  flex: 1;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ra-ink) 10%, var(--ra-mist));
+  color: var(--ra-ink);
+  font-size: 11px;
+  font-weight: var(--ra-fw-semibold);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.userLabel {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Account trigger — quiet on the sidebar shell */
+.signOut {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 6px;
+  border-radius: var(--ra-radius-control);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--ra-border) 80%, transparent);
+  color: var(--ra-text-3);
+  cursor: pointer;
+}
+
+.signOut:hover:not(:disabled),
+.signOut[aria-expanded='true'] {
+  background: var(--ra-hover);
+  border-color: var(--ra-border-hover);
+  color: var(--ra-ink);
+}
+
+.signOut:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.accountMenu {
+  z-index: var(--ra-z-toast);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-canvas);
+  box-shadow: var(--ra-shadow-menu);
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.accountHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--ra-space-2);
+  padding: 8px 10px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.accountAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ra-blurple) 14%, var(--ra-mist));
+  color: var(--ra-blurple);
+  font-size: 10px;
+  font-weight: var(--ra-fw-semibold);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.accountEmail {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountItem {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--ra-space-2);
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--ra-radius-control);
+  background: transparent;
+  color: var(--ra-text-2);
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  text-align: left;
+  cursor: pointer;
+}
+
+.accountItem:hover:not(:disabled) {
+  background: var(--ra-hover);
+  color: var(--ra-ink);
+}
+
+.accountItem:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--ra-canvas);
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--ra-canvas);
+}
+
+/* Desktop: work card floats on the shell — equal Y gaps, right gap = scrollbar gutter.
+   Full button-radius corners + continuous hairline (incl. left against the nav). */
+@media (min-width: 861px) {
+  .shell {
+    padding: var(--ra-shell-pad-y) var(--ra-shell-pad-x) var(--ra-shell-pad-y) 0;
+  }
+
+  .main {
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-control);
+  }
+}
+
+@media (max-width: 860px) {
+  .shell {
+    flex-direction: column;
+    height: auto;
+    min-height: 100%;
+    overflow: auto;
+    padding: var(--ra-shell-pad-y);
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .nav {
+    max-height: 220px;
+  }
+
+  .main {
+    height: auto;
+    min-height: 60vh;
+    overflow: visible;
+    border: 1px solid var(--ra-border);
+    border-radius: var(--ra-radius-control);
+  }
+
+  .content {
+    overflow: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sectionChevron,
+  .headingChevron,
+  .navItem {
+    transition: none;
+  }
+}

@@ -1,0 +1,67 @@
+.stack {
+  position: fixed;
+  right: max(16px, var(--ra-shell-pad-x));
+  bottom: max(16px, var(--ra-shell-pad-y));
+  z-index: var(--ra-z-toast);
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  max-width: min(320px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-elevated);
+  box-shadow: var(--ra-shadow-menu);
+  animation: raToastIn 160ms var(--ra-ease-out) both;
+}
+
+.leaving {
+  animation: raToastOut 180ms var(--ra-ease-out) both;
+}
+
+.mark {
+  width: 3px;
+  align-self: stretch;
+  min-height: 14px;
+  border-radius: 2px;
+  background: var(--ra-blurple);
+  flex-shrink: 0;
+  margin: 1px 0;
+}
+
+.text {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  color: var(--ra-ink);
+}
+
+@keyframes raToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes raToastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}

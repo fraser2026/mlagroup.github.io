@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>AI System Governance Report | RegAnchor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/reganchor.css">
+<link rel="stylesheet" href="css/reganchor-report.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body.ra-report{min-height:100%}
+.loading{padding:80px 0;text-align:center;color:var(--ra-muted,#697386);font-size:.88rem}
+.loading-spinner{width:28px;height:28px;border:2px solid var(--ra-border,#E6EBF1);border-top-color:var(--ra-blurple,#533AFD);border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.report-nav{position:relative}
+.rpt-lede{font-size:.84rem;color:var(--ra-muted,#697386);line-height:1.65;margin:0 0 18px;max-width:62ch}
+.step-text,.flag-text,.reg-desc{font-size:.88rem;color:var(--ra-body,#425466);line-height:1.65}
+.flag-reg,.reg-title{font-size:.82rem;font-weight:500;color:var(--ra-ink,#061B31);margin-bottom:3px}
+.tier-alert-title{font-size:.82rem;font-weight:600;color:var(--ra-ink,#061B31);margin-bottom:4px}
+.tier-alert-body{font-size:.82rem;color:var(--ra-body,#425466);line-height:1.6}
+/* System report cards: quieter titles than diagnostic board sections */
+.ra-report.sys-report .rpt-card-title{
+  font-size:1.05rem!important;
+  margin-bottom:8px;
+}
+.ra-report.sys-report .rpt-card{padding:22px 24px;margin-bottom:16px}
+.ra-report.sys-report .report-hero{padding:32px 0 24px}
+.ra-report.sys-report .report-badge{margin-bottom:10px}
+.ra-report.sys-report .btn-topbar,
+.ra-report.sys-report .btn-topbar-primary{font-size:13px!important;line-height:1!important;padding:8px 16px!important}
+.ra-report.sys-report .report-footer,
+.ra-report.sys-report .report-footer p,
+.ra-report.sys-report .report-footer strong{font-size:12px!important;line-height:1.55!important}
+</style>
+</head>
+<body class="ra-report sys-report">
+
+<nav class="report-nav" id="rnav">
+  <a href="portal.html" class="nav-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+  <div class="nav-actions">
+    <a href="portal.html" class="btn-topbar btn-topbar-primary">Back to Portal</a>
+  </div>
+  <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress__fill" id="scrollProgress"></div></div>
+</nav>
+
+<div class="report" id="report-container">
+  <div class="loading" id="loading"><div class="loading-spinner"></div><div class="loading-text">Loading assessment report…</div></div>
+</div>
+
+<script>
+const SUPABASE_URL='https://hueftewwenjaiagdoqmb.supabase.co';
+const SUPABASE_KEY='sb_publishable_Am0Ot4bWLoMb5pIhN50byQ_n3QIujY5';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const params=new URLSearchParams(window.location.search);
+const ASSESS_ID=params.get('aid');
+
+const BAND_L={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};
+const BAND_CLS={high:'is-risk',medium:'is-warn',low:'is-ok'};
+const BAND_DESC={
+  high:'This AI system has significant governance gaps that create regulatory exposure and operational risk. Priority remediation is recommended before the system is expanded or placed into production.',
+  medium:'This AI system has a functional governance foundation but material gaps remain. Targeted improvements are needed to meet regulatory expectations and reduce residual risk.',
+  low:'This AI system demonstrates strong governance maturity. The priority is to maintain and evolve these controls as the system, regulations, and data landscape develop.'
+};
+const TIER_L={unacceptable:'Unacceptable',high:'High',limited:'Limited',minimal:'Minimal'};
+
+const REG_MAP={
+  s1:{articles:['EU AI Act Annex III: Risk classification','EU AI Act Article 6: Classification rules for high-risk systems'],desc:'This section establishes the system\u2019s risk tier and regulatory scope under the EU AI Act.'},
+  s2:{articles:['UK GDPR Article 5: Data processing principles','UK GDPR Article 6: Lawful basis','UK GDPR Article 35: DPIA requirement','EU AI Act Article 10: Data governance'],desc:'Data governance obligations apply to any AI system processing personal data.'},
+  s3:{articles:['EU AI Act Article 13: Transparency obligations','EU AI Act Article 50: AI interaction disclosure','UK GDPR Article 22: Automated decision-making'],desc:'Transparency requirements ensure individuals understand when and how AI affects them.'},
+  s4:{articles:['EU AI Act Article 14: Human oversight measures'],desc:'Human oversight is a core requirement for high-risk AI systems under the EU AI Act.'},
+  s5:{articles:['EU AI Act Article 15: Accuracy, robustness, cybersecurity'],desc:'AI systems must be resilient against adversarial threats and perform reliably throughout their lifecycle.'},
+  s6:{articles:['EU AI Act Article 9: Risk management system','EU AI Act Article 11: Technical documentation','EU AI Act Article 17: Quality management'],desc:'Accountability and documentation requirements form the basis of regulatory compliance evidence.'},
+  s7:{articles:['EU AI Act Article 26: Obligations of deployers'],desc:'Deployers of third-party AI systems carry specific obligations for oversight, monitoring, and transparency.'}
+};
+
+const RECS_BY_SECTION={
+  s1:['Review the system\u2019s classification against EU AI Act Annex III criteria and document the rationale','Conduct a formal impact assessment to quantify the system\u2019s effect on individuals'],
+  s2:['Document the lawful basis for all personal data processing under UK GDPR Article 6','Implement systematic data quality monitoring with defined metrics and review schedules','Conduct or update a Data Protection Impact Assessment (DPIA) for this system'],
+  s3:['Implement clear AI disclosure at the point of user interaction','Establish and document an explanation methodology for AI-driven outputs','Deploy comprehensive input/output logging with defined retention periods'],
+  s4:['Define and document mandatory human review protocols for high-impact outputs','Establish a formal override process with records and escalation paths','Implement oversight effectiveness monitoring with defined metrics'],
+  s5:['Conduct AI-specific adversarial security testing (prompt injection, data poisoning)','Implement automated performance monitoring with drift detection thresholds','Document an AI-specific incident response procedure with defined scenarios'],
+  s6:['Appoint a named system owner with documented responsibilities and reporting line','Create and maintain comprehensive technical documentation for this system','Establish audit-ready decision logs with defined retention periods'],
+  s7:['Review vendor contracts for AI-specific governance, data handling, and liability provisions','Request model cards or transparency reports from the AI provider','Implement change management processes that cover third-party model updates']
+};
+
+function domainRisk(pct){
+  if(pct<40)return{lbl:'High',cls:'is-risk'};
+  if(pct<70)return{lbl:'Medium',cls:'is-warn'};
+  return{lbl:'Low',cls:'is-ok'};
+}
+
+function bindScrollProgress(){
+  const nav=document.getElementById('rnav');
+  const fill=document.getElementById('scrollProgress');
+  function update(){
+    const doc=document.documentElement;
+    const max=Math.max(1,doc.scrollHeight-window.innerHeight);
+    const p=Math.min(1,Math.max(0,window.scrollY/max));
+    if(fill)fill.style.transform='scaleX('+p+')';
+    if(nav)nav.classList.toggle('is-scrolled',window.scrollY>8);
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  update();
+}
+
+function animateScoreRing(root,score){
+  const fill=root.querySelector('.score-ring-fill');
+  const num=root.querySelector('.score-center-num');
+  if(!fill)return;
+  const circ=2*Math.PI*48;
+  const target=Math.max(0,Math.min(100,Number(score)||0));
+  const endOffset=circ-(circ*(target/100));
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  fill.style.strokeDasharray=String(circ);
+  fill.style.strokeDashoffset=String(circ);
+  if(num)num.textContent='0%';
+
+  if(reduce){
+    fill.style.strokeDashoffset=String(endOffset);
+    if(num)num.textContent=Math.round(target)+'%';
+    return;
+  }
+
+  requestAnimationFrame(function(){
+    fill.style.strokeDashoffset=String(endOffset);
+  });
+
+  const start=performance.now();
+  const duration=1400;
+  const ease=function(t){return 1-Math.pow(1-t,3)};
+  function tick(now){
+    const t=Math.min(1,(now-start)/duration);
+    if(num)num.textContent=Math.round(target*ease(t))+'%';
+    if(t<1)requestAnimationFrame(tick);
+    else if(num)num.textContent=Math.round(target)+'%';
+  }
+  requestAnimationFrame(tick);
+}
+
+function animateDomainRows(root){
+  if(!root)return;
+  const rows=root.querySelectorAll('.domain-row[data-pct]');
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  rows.forEach(function(row,i){
+    const target=parseFloat(row.getAttribute('data-pct'))||0;
+    const fill=row.querySelector('.domain-fill');
+    const pctEl=row.querySelector('.domain-pct');
+    if(!fill||!pctEl)return;
+    fill.style.width='0%';
+    pctEl.textContent='0%';
+    if(reduce){
+      fill.style.width=target+'%';
+      pctEl.textContent=Math.round(target)+'%';
+      return;
+    }
+    setTimeout(function(){
+      fill.style.transition='width 1.4s cubic-bezier(0.22, 1, 0.36, 1)';
+      fill.style.width=target+'%';
+      const start=performance.now();
+      const duration=1400;
+      const ease=function(t){return 1-Math.pow(1-t,3)};
+      function tick(now){
+        const t=Math.min(1,(now-start)/duration);
+        pctEl.textContent=Math.round(target*ease(t))+'%';
+        if(t<1)requestAnimationFrame(tick);
+        else pctEl.textContent=Math.round(target)+'%';
+      }
+      requestAnimationFrame(tick);
+    },120+i*90);
+  });
+}
+
+async function init(){
+  if(!ASSESS_ID){
+    document.getElementById('loading').innerHTML='<div style="color:var(--ra-risk);font-size:.85rem;">No assessment ID provided.</div>';
+    return;
+  }
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='/login?next='+encodeURIComponent(window.location.pathname+window.location.search+window.location.hash);return}
+
+  const{data:assess,error:aErr}=await sb.from('registry_assessments').select('*').eq('id',ASSESS_ID).single();
+  if(aErr||!assess){
+    document.getElementById('loading').innerHTML='<div style="color:var(--ra-risk);font-size:.85rem;">Assessment not found.</div>';
+    return;
+  }
+
+  const{data:sys}=await sb.from('ai_systems').select('*').eq('id',assess.system_id).single();
+  const{data:org}=await sb.from('organisations').select('name').eq('id',assess.org_id).single();
+  const{data:profile}=await sb.from('profiles').select('full_name').eq('id',assess.requested_by).single();
+
+  renderReport(assess,sys||{},org||{},profile||{});
+  bindScrollProgress();
+}
+
+function renderReport(a,sys,org,profile){
+  const band=a.risk_band||'medium';
+  const score=Math.max(0,Math.min(100,Number(a.overall_score)||0));
+  const ss=a.section_scores||{};
+  const tv=a.tier_validation;
+  const today=new Date(a.requested_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const bandCls=BAND_CLS[band]||'is-warn';
+  const circ=2*Math.PI*48;
+
+  const flags=[];
+  Object.entries(ss).forEach(([id,d])=>{
+    if(d.score<40){
+      const rm=REG_MAP[id];
+      flags.push({section:d.title,score:d.score,regulatory:rm?rm.articles[0]:''});
+    }
+  });
+
+  const recs=[];
+  Object.entries(ss).forEach(([id,d])=>{
+    if(d.score<70&&RECS_BY_SECTION[id]){
+      RECS_BY_SECTION[id].forEach(r=>{if(recs.length<8)recs.push(r)});
+    }
+  });
+
+  const engagedRegs=[];
+  Object.entries(ss).forEach(([id,d])=>{
+    const rm=REG_MAP[id];
+    if(rm)rm.articles.forEach(art=>{engagedRegs.push({title:art,desc:rm.desc})});
+  });
+
+  const domainRows=Object.entries(ss).map(([id,d])=>{
+    const pct=Math.max(0,Math.min(100,Number(d.score)||0));
+    const risk=domainRisk(pct);
+    return '<div class="domain-row" data-pct="'+pct+'">'+
+      '<span class="domain-name">'+esc(d.title||id)+'</span>'+
+      '<div class="domain-bar"><div class="domain-fill"></div></div>'+
+      '<span class="domain-pct">0%</span>'+
+      '<span class="rbadge '+risk.cls+'">'+risk.lbl+'</span>'+
+    '</div>';
+  }).join('');
+
+  const c=document.getElementById('report-container');
+  c.innerHTML=
+    '<div class="report-hero">'+
+      '<div class="report-badge badge-'+band+' '+bandCls+'"><span class="badge-dot"></span>'+esc(BAND_L[band]||band)+'</div>'+
+      '<div class="report-sublabel">AI System Governance Report · Prepared by RegAnchor</div>'+
+      '<div class="report-sys-name">'+esc(sys.name||'AI System')+'</div>'+
+      '<div class="report-desc">'+esc(sys.description||'This report presents findings of the AI system governance assessment, evaluating maturity across 7 governance domains and mapping regulatory exposure.')+'</div>'+
+      '<div class="report-meta">'+
+        '<div class="meta-cell"><div class="meta-label">Organisation</div><div class="meta-val">'+esc(org.name||'Not set')+'</div></div>'+
+        '<div class="meta-cell"><div class="meta-label">System Owner</div><div class="meta-val">'+esc(sys.system_owner||'Not set')+'</div></div>'+
+        '<div class="meta-cell"><div class="meta-label">Risk Tier</div><div class="meta-val">'+(sys.risk_tier?esc(TIER_L[sys.risk_tier]||sys.risk_tier):'Unclassified')+'</div></div>'+
+        '<div class="meta-cell"><div class="meta-label">Assessment Date</div><div class="meta-val">'+esc(today)+'</div></div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="score-hero">'+
+      '<div class="score-ring">'+
+        '<svg viewBox="0 0 120 120" aria-hidden="true">'+
+          '<circle class="score-ring-bg" cx="60" cy="60" r="48"/>'+
+          '<circle class="score-ring-fill" cx="60" cy="60" r="48" stroke-dasharray="'+circ+'" stroke-dashoffset="'+circ+'"/>'+
+        '</svg>'+
+        '<div class="score-center">'+
+          '<div class="score-center-num">0%</div>'+
+          '<div class="score-center-label">Score</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="score-info">'+
+        '<h3>'+esc(BAND_L[band]||band)+'</h3>'+
+        '<p>'+esc(BAND_DESC[band]||'')+'</p>'+
+      '</div>'+
+    '</div>'+
+
+    (tv&&tv.mismatch
+      ? '<div class="tier-alert"><div class="tier-alert-title">Risk Tier Mismatch Detected</div><div class="tier-alert-body">'+esc(tv.message||'Assessment responses suggest this system may require a higher risk classification than currently assigned. RegAnchor recommends reviewing the classification against EU AI Act Annex III criteria.')+'</div></div>'
+      : '')+
+
+    '<div class="rpt-card">'+
+      '<div class="rpt-card-title">Governance Maturity by Domain</div>'+
+      '<p class="rpt-lede">Domain scores reflect governance maturity across the assessed areas.</p>'+
+      (domainRows||'<p class="rpt-lede">No domain scores available for this assessment.</p>')+
+    '</div>'+
+
+    (flags.length
+      ? '<div class="rpt-card">'+
+          '<div class="rpt-card-title">Priority Governance Gaps</div>'+
+          '<p class="rpt-lede">Domains scored below 40% that require immediate attention.</p>'+
+          flags.map(f=>'<div class="flag-item"><div class="flag-icon">!</div><div><div class="flag-text"><strong>'+esc(f.section)+'</strong> scored '+f.score+'%, significantly below the minimum governance threshold.</div><div class="flag-reg">'+esc(f.regulatory)+'</div></div></div>').join('')+
+        '</div>'
+      : '')+
+
+    '<div class="rpt-card">'+
+      '<div class="rpt-card-title">Regulatory Obligations Engaged</div>'+
+      '<p class="rpt-lede">Regulatory articles engaged by this AI system based on assessment responses.</p>'+
+      engagedRegs.slice(0,10).map(r=>'<div class="reg-item"><div><div class="reg-title">'+esc(r.title)+'</div><div class="reg-desc">'+esc(r.desc)+'</div></div></div>').join('')+
+    '</div>'+
+
+    (recs.length
+      ? '<div class="rpt-card">'+
+          '<div class="rpt-card-title">Recommended Next Steps</div>'+
+          '<p class="rpt-lede">Actions prioritised by regulatory significance.</p>'+
+          recs.map((r,i)=>'<div class="step-item"><div class="step-num">'+(i+1)+'</div><div class="step-text">'+esc(r)+'</div></div>').join('')+
+        '</div>'
+      : '')+
+
+    '<div class="report-footer">'+
+      '<p><strong>RegAnchor</strong> is the trading name of MLA Group Ltd<br>'+
+      'AI Governance and Risk Consultancy<br><br>'+
+      'This report represents a structured assessment of the governance position of the named AI system at a single point in time. It does not constitute legal advice, regulatory certification, or audit opinion. Assessment version '+esc(a.questionnaire_version||'1.0.0')+'. Report generated '+esc(today)+'. Submitted by '+esc(profile.full_name||'Unknown')+'.</p>'+
+    '</div>';
+
+  document.title=(sys.name||'AI System')+' · Governance Report | RegAnchor';
+
+  requestAnimationFrame(function(){
+    animateScoreRing(c,score);
+    animateDomainRows(c);
+  });
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+init();
+</script>
+</body>
+</html>
