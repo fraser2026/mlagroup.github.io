@@ -550,33 +550,43 @@ async function saveAssessment(result){
 }
  
 // ═══ CONTROL TRIGGER LOGIC ════════════════════════════════════
-// Maps assessment responses to the 12 governance controls
-const TRIGGER_MAP=[
-  {control_number:1, questions:['q6_1'], threshold:1},          // AI Governance Policy
-  {control_number:3, questions:['q7_1','q7_2','q7_3','q7_4'], threshold:1}, // Vendor Governance
-  {control_number:4, questions:['q1_1','q1_3'], threshold:1},  // Risk Classification
-  {control_number:5, questions:['q4_1','q4_2','q4_4'], threshold:1}, // Human Oversight
-  {control_number:6, questions:['q3_1','q3_2'], threshold:1},  // Transparency
-  {control_number:7, questions:['q2_1','q2_3','q2_4','q2_5'], threshold:1}, // Data Governance
-  {control_number:8, questions:['q5_2'], threshold:1},          // Monitoring
-  {control_number:9, questions:['q5_1'], threshold:1},          // Security Testing
-  {control_number:10, questions:['q5_3'], threshold:1},         // Incident Response
-  {control_number:11, questions:['q6_2'], threshold:1},         // Documentation
-  {control_number:12, questions:['q3_3','q6_4'], threshold:1},  // Audit Logging
-];
- 
+// Source of truth: governance_controls.trigger_rules (Control Centre / Supabase).
+// Do not hardcode TRIGGER_MAP here — Phase 0 exit: flipping DB rules changes behaviour.
+function parseTriggerRule(raw){
+  if(!raw)return null;
+  if(typeof raw==='string'){
+    try{raw=JSON.parse(raw);}catch(e){return null;}
+  }
+  if(typeof raw!=='object'||!raw)return null;
+  return raw;
+}
+
+function controlTriggeredByResponses(ctrl,responses){
+  const rule=parseTriggerRule(ctrl.trigger_rules);
+  if(!rule)return false;
+  // C2 inventory: always issued on assessment (auto_complete / systems_registered shape)
+  if(Array.isArray(rule.conditions)||rule.auto_complete===true)return true;
+  const logic=String(rule.logic||'any_below').toLowerCase();
+  const questions=Array.isArray(rule.questions)?rule.questions:[];
+  if(!questions.length)return false;
+  const threshold=Number(rule.threshold);
+  const thr=Number.isFinite(threshold)?threshold:1;
+  if(logic==='any_below'||logic==='any'){
+    return questions.some(qid=>responses[qid]!==undefined&&Number(responses[qid])<=thr);
+  }
+  if(logic==='all_below'||logic==='all'){
+    return questions.every(qid=>responses[qid]!==undefined&&Number(responses[qid])<=thr);
+  }
+  return questions.some(qid=>responses[qid]!==undefined&&Number(responses[qid])<=thr);
+}
+
 async function triggerControls(responses,assessId){
   try{
-    const{data:controls}=await sb.from('governance_controls').select('id,control_number,title,is_org_level').eq('is_active',true);
+    const{data:controls}=await sb.from('governance_controls')
+      .select('id,control_number,title,is_org_level,trigger_rules')
+      .eq('is_active',true);
     if(!controls)return;
-    const ctrlMap={};controls.forEach(c=>{ctrlMap[c.control_number]=c});
-    const triggered=[];
-    TRIGGER_MAP.forEach(rule=>{
-      const ctrl=ctrlMap[rule.control_number];if(!ctrl)return;
-      const anyBelow=rule.questions.some(qid=>responses[qid]!==undefined&&responses[qid]<=rule.threshold);
-      if(anyBelow)triggered.push(ctrl);
-    });
-    if(ctrlMap[2])triggered.push(ctrlMap[2]);
+    const triggered=controls.filter(c=>controlTriggeredByResponses(c,responses));
     if(!triggered.length)return;
     for(const ctrl of triggered){
       const payload={control_id:ctrl.id,org_id:currentOrg.id,status:'not_started',triggered_by:'assessment',assessment_id:assessId||null};
@@ -587,7 +597,7 @@ async function triggerControls(responses,assessId){
       if(error&&error.code!=='23505')console.error('Control trigger error:',ctrl.control_number,error);
       // 23505 = unique_violation = already assigned, which is fine
     }
-    console.log('Triggered '+triggered.length+' controls');
+    console.log('Triggered '+triggered.length+' controls from DB trigger_rules');
     return triggered;
   }catch(err){console.error('Trigger controls error:',err);return[]}
 }
