@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RegAnchor · AI Governance Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   AI Governance Dossier — RegAnchor app typography (Inter)
+   Dense enterprise record. No marketing chrome.
+   ============================================================ */
+
+:root {
+  --ink: #111827;
+  --text-2: #4B5563;
+  --text-3: #6B7280;
+  --line: #E5E7EB;
+  --line-strong: #111827;
+  --wash: #F9FAFB;
+  --accent: #533AFD;
+  --ok: #047857;
+  --warn: #B45309;
+  --risk: #BE123C;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --t-display: 22pt;
+  --t-h1: 13pt;
+  --t-body: 9pt;
+  --t-small: 8pt;
+  --t-micro: 7.5pt;
+  --t-num: 20pt;
+  --radius: 4px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 10pt;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+body {
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: var(--t-body);
+  color: var(--text-2);
+  line-height: 1.45;
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+.section { page-break-before: always; }
+.keep { page-break-inside: avoid; }
+
+.sec-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0 0 8px;
+  margin: 0 0 4px;
+  border-bottom: 1px solid var(--line-strong);
+}
+.sec-bar-num {
+  font-size: var(--t-micro);
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: .06em;
+  min-width: 1.4em;
+}
+.sec-bar-title {
+  font-size: var(--t-micro);
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+.sec-title {
+  font-family: var(--font);
+  font-size: var(--t-h1);
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.3;
+  margin: 14px 0 6px;
+}
+.sec-intro {
+  font-size: var(--t-body);
+  color: var(--text-2);
+  line-height: 1.5;
+  max-width: 68ch;
+  margin: 0 0 16px;
+}
+
+.sub-label {
+  display: block;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 18px 0 8px;
+}
+
+/* Cover */
+.cover {
+  page-break-after: always;
+  min-height: 252mm;
+  display: flex;
+  flex-direction: column;
+}
+.cover-top { flex: 1; padding-top: 2mm; }
+.brand-wordmark {
+  display: block;
+  width: 128px;
+  height: auto;
+  margin-bottom: 32px;
+}
+.cov-doctype {
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: .08em;
+  color: var(--text-3);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.cov-title {
+  font-size: var(--t-display);
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  margin-bottom: 8px;
+}
+.cov-org {
+  font-size: 12pt;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.cov-meta {
+  font-size: var(--t-small);
+  color: var(--text-3);
+  margin-bottom: 28px;
+}
+.cov-blurb {
+  font-size: var(--t-body);
+  color: var(--text-2);
+  max-width: 56ch;
+  line-height: 1.55;
+  margin-bottom: 28px;
+}
+.cov-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.cov-kpi {
+  padding: 12px 10px 12px 0;
+  border-right: 1px solid var(--line);
+}
+.cov-kpi:last-child { border-right: none; padding-right: 0; }
+.cov-score-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.cov-score-line .cov-kpi-val { font-size: 18pt; }
+.cov-score-line .cov-kpi-sub { margin-top: 0; font-size: var(--t-small); color: var(--ink); font-weight: 500; }
+.cov-kpi-lbl {
+  font-size: var(--t-micro);
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+.cov-kpi-val {
+  font-size: 14pt;
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.cov-kpi-sub {
+  font-size: var(--t-micro);
+  color: var(--text-3);
+  margin-top: 2px;
+}
+.cover-foot {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: var(--t-small);
+  color: var(--text-3);
+}
+.cover-foot strong { color: var(--ink); font-weight: 500; }
+
+/* Score block */
+.score-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 20px;
+  align-items: center;
+  margin: 8px 0 18px;
+}
+.score-ring {
+  position: relative;
+  width: 108px;
+  height: 108px;
+}
+.score-ring svg { display: block; width: 108px; height: 108px; }
+.score-ring-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.score-num {
+  font-size: var(--t-num);
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.score-of { font-size: var(--t-micro); color: var(--text-3); margin-top: 2px; }
+.score-posture {
+  font-size: 11pt;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.score-note {
+  font-size: var(--t-small);
+  color: var(--text-3);
+  max-width: 48ch;
+  line-height: 1.45;
+}
+.layer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 0 0 18px;
+}
+.layer {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.layer-lbl {
+  font-size: var(--t-micro);
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.layer-val {
+  font-size: 14pt;
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 0 0 18px;
+}
+.stat {
+  padding: 10px 12px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.stat:nth-child(3n) { border-right: none; }
+.stat:nth-last-child(-n+3) { border-bottom: none; }
+.stat-lbl {
+  display: block;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  color: var(--text-3);
+  margin-bottom: 2px;
+}
+.stat-val {
+  font-size: 13pt;
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.stat-sub {
+  font-size: var(--t-micro);
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.obs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.obs-list li {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-body);
+  color: var(--ink);
+  line-height: 1.45;
+}
+.obs-list li:last-child { border-bottom: none; }
+.obs-list li::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--accent);
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* TOC */
+.toc { list-style: none; margin: 8px 0 0; padding: 0; }
+.toc li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-body);
+  color: var(--ink);
+}
+.toc-num {
+  font-weight: 500;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  min-width: 1.6em;
+}
+.toc-title { flex: 1; font-weight: 500; }
+
+/* Tables */
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 14px;
+  font-size: var(--t-small);
+}
+table.data th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-3);
+  font-size: var(--t-micro);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 6px 8px 6px 0;
+  border-bottom: 1px solid var(--line-strong);
+  vertical-align: bottom;
+}
+table.data td {
+  padding: 7px 8px 7px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: top;
+  line-height: 1.35;
+}
+table.data td.muted { color: var(--text-3); }
+table.data .num { font-variant-numeric: tabular-nums; }
+
+.status {
+  font-weight: 500;
+  font-size: var(--t-small);
+}
+.status.s-ok { color: var(--ok); }
+.status.s-warn { color: var(--warn); }
+.status.s-risk { color: var(--risk); }
+.status.s-muted, .status.s-info { color: var(--text-3); }
+
+.ev-stack { display: flex; flex-direction: column; gap: 3px; }
+.ev-label {
+  font-size: 6.5pt;
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.ev-item { font-size: var(--t-small); color: var(--ink); line-height: 1.3; }
+.ev-item.quiet { color: var(--text-3); }
+
+/* Control detail cards */
+.ctrl-block {
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+  page-break-inside: avoid;
+}
+.ctrl-block:first-of-type { border-top: none; }
+.ctrl-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.ctrl-code {
+  font-weight: 500;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-small);
+}
+.ctrl-name {
+  font-weight: 500;
+  color: var(--ink);
+  font-size: var(--t-body);
+  flex: 1;
+}
+.ctrl-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px 14px;
+  margin: 8px 0;
+  font-size: var(--t-small);
+}
+.ctrl-meta dt {
+  font-size: 6.5pt;
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 1px;
+}
+.ctrl-meta dd { color: var(--ink); font-weight: 400; }
+.ctrl-body {
+  font-size: var(--t-small);
+  color: var(--text-2);
+  line-height: 1.45;
+  margin: 4px 0 8px;
+  max-width: 72ch;
+}
+.ctrl-ev {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+.ctrl-ev-box {
+  background: var(--wash);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+}
+.ctrl-ev-box ul {
+  margin: 4px 0 0;
+  padding-left: 14px;
+  color: var(--ink);
+  font-size: var(--t-small);
+}
+.ctrl-ev-box li { margin-bottom: 2px; }
+
+.kv {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 4px 12px;
+  margin: 0 0 14px;
+  font-size: var(--t-body);
+}
+.kv dt { color: var(--text-3); font-weight: 500; }
+.kv dd { color: var(--ink); }
+
+.empty {
+  padding: 14px 0;
+  color: var(--text-3);
+  font-size: var(--t-body);
+  border-top: 1px solid var(--line);
+}
+
+.attest {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 12px 0;
+}
+.attest p {
+  font-size: var(--t-body);
+  color: var(--text-2);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+.attest p:last-child { margin-bottom: 0; }
+.attest strong { color: var(--ink); font-weight: 500; }
+
+.sign-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+.sign-box {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  min-height: 56px;
+}
+.sign-lbl {
+  font-size: var(--t-micro);
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.sign-val {
+  margin-top: 18px;
+  font-size: var(--t-body);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+@media print {
+  .section { page-break-before: always; }
+  .cover { page-break-after: always; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr, .ctrl-block, .layer, .stat, .obs-list li, .attest, .sign-box {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  table.data { page-break-inside: auto; }
+  h2, .sec-bar, .sub-label {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  p, li { orphans: 3; widows: 3; }
+}
+</style>
+</head>
+<body>
+<div id="dossier"></div>
+<script>
+/*__DOSSIER_DATA__*/
+
+const PROVIDER_LABELS = {
+  anthropic: 'Anthropic',
+  openai: 'OpenAI',
+  bedrock: 'AWS Bedrock',
+  aws: 'AWS',
+  google: 'Google',
+  googlecloud: 'Google Cloud',
+  gemini: 'Gemini',
+  azure: 'Microsoft Foundry',
+  azureai: 'Microsoft Foundry',
+  microsoft: 'Microsoft',
+  meta: 'Meta',
+  huggingface: 'Hugging Face',
+  groq: 'Groq',
+  cohere: 'Cohere',
+  cursor: 'Cursor',
+  in_house: 'In-house',
+  other: 'Other',
+};
+
+const CTRL_STATUS = {
+  not_started: 'Not Started',
+  in_progress: 'In Progress',
+  implemented: 'Implemented',
+  verified: 'Verified',
+  overdue: 'Overdue',
+};
+
+const ASSESS_STATUS = {
+  submitted: 'Awaiting review',
+  in_review: 'Under review',
+  controls_issued: 'Controls assigned',
+};
+
+const TIER = {
+  none: 'Unclassified',
+  unclassified: 'Unclassified',
+  minimal: 'Minimal',
+  limited: 'Limited',
+  high: 'High',
+  unacceptable: 'Unacceptable',
+};
+
+const LIFECYCLE = {
+  planned: 'Planned',
+  development: 'Development',
+  pilot: 'Pilot',
+  production: 'Production',
+  decommissioned: 'Decommissioned',
+};
+
+const KIND = {
+  system: 'System',
+  agent: 'Agent',
+  model: 'Model',
+  tool: 'Tool',
+};
+
+const ACTIVITY_LABELS = {
+  system_created: 'AI asset created',
+  system_updated: 'AI asset updated',
+  risk_tier_changed: 'Risk classification changed',
+  control_assigned: 'Control assigned',
+  control_updated: 'Control updated',
+  control_implemented: 'Control implemented',
+  assessment_submitted: 'Assessment submitted',
+  assessment_requested: 'Assessment requested',
+  policy_adopted: 'Policy adopted',
+  policy_acknowledged: 'Policy acknowledged',
+  policy_esigned: 'Policy signed',
+  compliance_status_updated: 'Obligation status updated',
+};
+
+function x(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function labelProvider(slug, fallback) {
+  const s = String(slug || '').trim().toLowerCase();
+  if (!s) return (fallback || '').trim() || 'Not set';
+  return PROVIDER_LABELS[s] || (fallback || '').trim() || slug;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch { return '—'; }
+}
+
+function fmtShort(iso) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch { return '—'; }
+}
+
+function controlCode(n) {
+  if (n == null || n === '') return '—';
+  return 'C' + String(n).replace(/^c/i, '');
+}
+
+function ctrlStatus(s) {
+  const k = String(s || '').toLowerCase();
+  return CTRL_STATUS[k] || pretty(s) || 'Not Started';
+}
+
+function assessStatus(s) {
+  const k = String(s || '').toLowerCase();
+  return ASSESS_STATUS[k] || pretty(s) || '—';
+}
+
+function tierLabel(t) {
+  const k = String(t || '').toLowerCase();
+  return TIER[k] || (t ? pretty(t) : 'Unclassified');
+}
+
+function lifeLabel(l) {
+  const k = String(l || '').toLowerCase();
+  return LIFECYCLE[k] || pretty(l) || '—';
+}
+
+function kindLabel(k) {
+  const key = String(k || '').toLowerCase();
+  return KIND[key] || pretty(k) || '—';
+}
+
+function purposeLabel(p) {
+  if (!p) return '—';
+  return String(p).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function pretty(s) {
+  const t = String(s || '').replace(/_/g, ' ').trim();
+  if (!t) return '';
+  return t.split(/\s+/).map((w) => {
+    if (/^ai$/i.test(w)) return 'AI';
+    if (/^id$/i.test(w)) return 'ID';
+    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  }).join(' ');
+}
+
+function statusClass(s) {
+  const t = String(s || '').toLowerCase();
+  if (['implemented', 'verified', 'active', 'controls_issued', 'minimal', 'production', 'met', 'compliant'].includes(t)) return 's-ok';
+  if (['in_progress', 'in_review', 'submitted', 'limited', 'partial', 'development', 'pilot'].includes(t)) return 's-warn';
+  if (['not_started', 'high', 'unacceptable', 'overdue', 'failed', 'not_met'].includes(t)) return 's-risk';
+  return 's-muted';
+}
+
+function donut(score) {
+  const s = Math.max(0, Math.min(100, Number(score) || 0));
+  const r = 46;
+  const c = 2 * Math.PI * r;
+  const dash = (s / 100) * c;
+  return `<svg viewBox="0 0 108 108" aria-hidden="true">
+    <circle cx="54" cy="54" r="${r}" fill="none" stroke="#E5E7EB" stroke-width="7"/>
+    <circle cx="54" cy="54" r="${r}" fill="none" stroke="#533AFD" stroke-width="7"
+      stroke-linecap="butt" stroke-dasharray="${dash} ${c}"
+      transform="rotate(-90 54 54)"/>
+  </svg>`;
+}
+
+function wordmarkLogo() {
+  return `<svg class="brand-wordmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 389 72.75" role="img" aria-label="RegAnchor">
+    <g fill="#000000">
+      <path d="M360.9,35.77c0,12.67-10.37,22.68-24.34,22.68s-24.27-10.01-24.27-22.68,10.37-22.68,24.27-22.68,24.34,10.01,24.34,22.68ZM324.75,35.77c0,6.98,5.04,12.46,11.81,12.46s11.88-5.54,11.88-12.46-5.04-12.46-11.88-12.46-11.81,5.54-11.81,12.46Z"/>
+      <path d="M376,56h-12V15h11v8.55c1.52-3.17,12.03-8.55,12.03-8.55h1.97v12.86c-.51-.21-1.62-.36-2.35-.36-6.46,0-10.65,4.33-10.65,7.39v21.1Z"/>
+      <path d="M13.14,39h-.14v17H0V2h15.19c12.2,0,23.81,3.98,23.81,18.31,0,7.96-5.33,13.25-12.12,16l14.31,19.69h-15.94l-12.11-17ZM13,14v15h3.32c5.7,0,9.66-2.88,9.66-7.93,0-4.69-3.39-7.07-9.81-7.07h-3.17Z"/>
+      <path d="M64.77,57.51c-15.7,0-25.13-9.58-25.13-22.68s9.43-22.68,22.97-22.68c12.75,0,22.39,9.58,22.39,22.75v3.1h-32.69c1.01,6.48,5.33,9.94,12.6,9.94,5.9,0,9.94-2.02,13.1-4.82l6.7,7.13c-4.54,4.1-10.87,7.27-19.95,7.27ZM52.09,30h19.59c-1.3-5.11-4.68-8.14-9.79-8.14s-8.5,3.02-9.79,8.14Z"/>
+      <path d="M109.75,72.73c-4.97.11-10.07-.19-15.75-1.35v-10.24c5.25,1.12,9.03,1.47,12.96,1.47,7.14,0,12.04-2.59,12.04-11.55v-2.81s-7.8,5.9-12.84,5.9c-10.22,0-19.59-8.21-19.59-20.45s9.29-20.74,19.59-20.74c5.26,0,10.3,2.59,13.84,6.55v-4.52h12v34.79c0,12.4-9.85,22.66-22.25,22.94ZM119.34,34.26c0-5.76-4.61-10.44-10.3-10.44s-10.88,5.2-10.33,11.38c.42,4.7,4.18,8.54,8.85,9.18,6.34.88,11.77-4.03,11.77-10.12Z"/>
+      <path d="M168.47,2h-12.74l-20.92,54h13.46l13.83-13.15,13.41,13.15h13.88L168.47,2ZM153.93,40.39c3.24-8.89,6.81-18.71,8.03-22.05,1.17,3.25,4.71,13.09,7.92,22.01-4.68-3.6-11.27-3.58-15.95.04Z"/>
+      <path d="M203,56h-12V15h11v5c2.49-3,7.11-6.07,13.36-6.07,8.39,0,14.64,5.79,14.64,15.21v26.86h-11v-23.47c0-6.12-3.49-8.42-7.85-8.42-3.78,0-8.15,2.88-8.15,7.71v24.19Z"/>
+      <path d="M267,55.73c-2.03,1.38-6.67,1.89-9.79,1.89-14.21,0-24.87-9.14-24.87-22.12s10.66-22.12,24.87-22.12c3.12,0,7.69.51,9.79,1.89v10.73h-.36c-2.25-1.96-5.87-2.47-9.14-2.47-7.25,0-12.62,5.08-12.62,11.97s5.37,11.97,12.62,11.97c3.26,0,6.89-.58,9.14-2.47h.36v10.73Z"/>
+      <path d="M282,56h-11V0h11v20.1c2.42-3.02,7.03-6.32,13.36-6.32,8.39,0,14.64,5.82,14.64,15.22v26.99h-12v-23.4c0-6.19-3.49-8.42-7.85-8.42-3.78,0-8.15,2.81-8.15,7.7v24.12Z"/>
+    </g>
+  </svg>`;
+}
+
+function secBar(num, title) {
+  return `<div class="sec-bar">
+    <span class="sec-bar-num">${x(num)}</span>
+    <span class="sec-bar-title">${x(title)}</span>
+  </div>`;
+}
+
+function empty(msg) {
+  return `<div class="empty">${x(msg)}</div>`;
+}
+
+function evCell(ctrl) {
+  const suggested = ctrl.suggested_evidence || [];
+  const provided = ctrl.evidence_provided || [];
+  const sug = suggested.length
+    ? suggested.slice(0, 4).map((s) => `<div class="ev-item quiet">${x(displayEvidenceType(s))}</div>`).join('') +
+      (suggested.length > 4 ? `<div class="ev-item quiet">+${suggested.length - 4} more</div>` : '')
+    : `<div class="ev-item quiet">None recorded</div>`;
+  const prov = provided.length
+    ? provided.slice(0, 4).map((e) => `<div class="ev-item">${x(e.file_name)}</div>`).join('') +
+      (provided.length > 4 ? `<div class="ev-item">+${provided.length - 4} more</div>` : '')
+    : `<div class="ev-item quiet">None uploaded</div>`;
+  return `<div class="ev-stack">
+    <span class="ev-label">Suggested</span>${sug}
+    <span class="ev-label" style="margin-top:4px">Provided</span>${prov}
+  </div>`;
+}
+
+function governanceBasisCell(ctrl) {
+  const mapped = ctrl.mapped_requirements || [];
+  if (mapped.length) {
+    return mapped.map((m) => {
+      const fw = m.framework_name ? `${m.framework_name} · ` : '';
+      return `<div>${x(fw + (m.requirement_title || ''))}</div>`;
+    }).join('');
+  }
+  if (ctrl.is_org_level) return `<span class="muted">Internal governance requirement</span>`;
+  return `<span class="muted">Internal governance requirement</span>`;
+}
+
+function displayControlTitle(title) {
+  return String(title || 'Control')
+    .replace(/\bAI System Risk Classification\b/gi, 'AI Asset Risk Classification')
+    .replace(/\bAI system inventory\b/gi, 'AI asset inventory')
+    .replace(/\bAI System Inventory\b/g, 'AI Asset Inventory');
+}
+
+function displayEvidenceType(label) {
+  return String(label || '')
+    .replace(/\bAI system classification report\b/gi, 'AI asset classification record')
+    .replace(/\bAI system inventory export\b/gi, 'AI asset inventory export')
+    .replace(/\bAI system\b/gi, 'AI asset');
+}
+
+function render(D) {
+  const org = D.organisation || {};
+  const orgName = org.name || 'Organisation';
+  const meta = D.meta || {};
+  const dossierId = meta.dossier_id || '—';
+  const generatedAt = meta.generated_at || new Date().toISOString();
+  const hash = meta.snapshot_hash || '';
+  const summary = D.summary || {};
+  const score = Number(summary.composite_score || 0);
+  const posture = summary.posture || 'Unscored';
+  const counts = summary.counts || {};
+  const layers = summary.layers || [];
+  const observations = summary.observations || [];
+  const assets = D.assets || [];
+  const assessments = D.assessments || [];
+  const policies = D.policies || [];
+  const frameworks = D.frameworks || {};
+  const obligations = frameworks.obligations || [];
+  const customFw = frameworks.custom || [];
+  const customFwControls = frameworks.custom_controls || [];
+  const controls = D.controls || [];
+  const evidence = D.evidence || [];
+  const activity = D.activity || [];
+  const accountability = D.accountability || {};
+  const orgRoles = accountability.org_roles || D.members || [];
+  const assetOwners = accountability.asset_owners || [];
+
+  const root = document.getElementById('dossier');
+
+  const toc = [
+    ['01', 'Executive summary'],
+    ['02', 'Organisation & scope'],
+    ['03', 'AI asset inventory'],
+    ['04', 'Accountability'],
+    ['05', 'Frameworks, regulations & policies'],
+    ['06', 'Controls, requirements & evidence'],
+    ['07', 'Assessments & risk'],
+    ['08', 'Evidence index'],
+    ['09', 'Activity trail'],
+    ['10', 'Attestation & notice'],
+  ];
+
+  /* ── Cover ── */
+  let html = `<section class="cover">
+    <div class="cover-top">
+      ${wordmarkLogo()}
+      <div class="cov-doctype">AI governance dossier</div>
+      <h1 class="cov-title">Point-in-time governance record</h1>
+      <div class="cov-org">${x(orgName)}</div>
+      <div class="cov-meta">Export ${x(fmtDate(generatedAt))} · ${x(dossierId)}${hash ? ' · Snapshot ' + x(hash) : ''}</div>
+      <p class="cov-blurb">This dossier provides a point-in-time record of how ${x(orgName)} governs its AI assets in RegAnchor, including its inventory, accountability, applicable requirements, control assignments, supporting evidence, policies and assessment outcomes as of the export date.</p>
+      <div class="cov-score-line">
+        <div>
+          <div class="cov-kpi-lbl">Governance score</div>
+          <div class="cov-kpi-val">${score}</div>
+        </div>
+        <div class="cov-kpi-sub">${x(posture)}</div>
+      </div>
+      <div class="cov-kpis">
+        <div class="cov-kpi"><div class="cov-kpi-lbl">AI assets</div><div class="cov-kpi-val">${counts.assets || assets.length}</div><div class="cov-kpi-sub">${counts.high_risk_assets || 0} high risk</div></div>
+        <div class="cov-kpi"><div class="cov-kpi-lbl">Controls assigned</div><div class="cov-kpi-val">${counts.controls || controls.length}</div><div class="cov-kpi-sub">${counts.controls_done || 0} implemented</div></div>
+        <div class="cov-kpi"><div class="cov-kpi-lbl">Evidence records</div><div class="cov-kpi-val">${counts.evidence || evidence.length}</div></div>
+        <div class="cov-kpi"><div class="cov-kpi-lbl">Mapped requirements</div><div class="cov-kpi-val">${counts.obligations || 0}</div></div>
+        <div class="cov-kpi"><div class="cov-kpi-lbl">Active policies</div><div class="cov-kpi-val">${counts.policies_active || 0}</div></div>
+      </div>
+    </div>
+    <div class="cover-foot">
+      <div><strong>Prepared for</strong><br>Authorised reviewers, auditors, assurance and procurement</div>
+      <div style="text-align:right"><strong>Issued by</strong><br>MLA Group Ltd via RegAnchor</div>
+    </div>
+  </section>`;
+
+  /* ── 01 Executive summary ── */
+  html += `<section class="section">
+    ${secBar('01', 'Executive summary')}
+    <h2 class="sec-title">Governance posture</h2>
+    <p class="sec-intro">Overall score is a RegAnchor governance indicator derived from recorded controls and layer scores. It is not a certification of compliance.</p>
+    <div class="score-row">
+      <div class="score-ring">${donut(score)}<div class="score-ring-inner"><div class="score-num">${score}</div><div class="score-of">/ 100</div></div></div>
+      <div>
+        <div class="score-posture">${x(posture)}</div>
+        <p class="score-note">Composite governance score as of ${x(fmtDate(summary.score_as_of || generatedAt))}. Layer scores below follow the RegAnchor organisation / AI asset / assurance model.</p>
+      </div>
+    </div>
+    <div class="layer-grid">
+      ${layers.map((l) => `<div class="layer"><div class="layer-lbl">${x(l.label)}</div><div class="layer-val">${Math.round(Number(l.score) || 0)}</div></div>`).join('') || '<div class="layer"><div class="layer-lbl">Organisation</div><div class="layer-val">—</div></div>'}
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><span class="stat-lbl">AI assets</span><div class="stat-val">${counts.assets || 0}</div><div class="stat-sub">${counts.high_risk_assets || 0} high risk</div></div>
+      <div class="stat"><span class="stat-lbl">Assessments</span><div class="stat-val">${counts.assessments || 0}</div></div>
+      <div class="stat"><span class="stat-lbl">Controls assigned</span><div class="stat-val">${counts.controls || 0}</div><div class="stat-sub">${counts.controls_done || 0} implemented · ${counts.controls_in_progress || 0} in progress · ${counts.controls_outstanding || 0} outstanding</div></div>
+      <div class="stat"><span class="stat-lbl">Evidence records</span><div class="stat-val">${counts.evidence || 0}</div></div>
+      <div class="stat"><span class="stat-lbl">Active policies</span><div class="stat-val">${counts.policies_active || 0}</div></div>
+      <div class="stat"><span class="stat-lbl">Mapped requirements</span><div class="stat-val">${counts.obligations || 0}</div></div>
+    </div>
+    <span class="sub-label">Key governance observations</span>
+    ${observations.length
+      ? `<ul class="obs-list">${observations.map((o) => `<li>${x(o)}</li>`).join('')}</ul>`
+      : empty('No material observations generated from the current snapshot.')}
+  </section>`;
+
+  /* ── Contents ── */
+  html += `<section class="section">
+    ${secBar('', 'Contents')}
+    <h2 class="sec-title">Contents</h2>
+    <ul class="toc">${toc.map(([n, t]) => `<li><span class="toc-num">${n}</span><span class="toc-title">${x(t)}</span></li>`).join('')}</ul>
+  </section>`;
+
+  /* ── 02 Organisation & scope ── */
+  html += `<section class="section">
+    ${secBar('02', 'Organisation & scope')}
+    <h2 class="sec-title">Organisation</h2>
+    <p class="sec-intro">Workspace recorded in RegAnchor for this export. Internal implementation identifiers are omitted where they are not useful to a reviewer.</p>
+    <dl class="kv">
+      <dt>Organisation</dt><dd>${x(orgName)}</dd>
+      <dt>Sector</dt><dd>${x(org.sector || '—')}</dd>
+      <dt>Organisation size</dt><dd>${x(org.org_size || '—')}</dd>
+      <dt>Export date</dt><dd>${x(fmtDate(generatedAt))}</dd>
+      <dt>Dossier ID</dt><dd>${x(dossierId)}</dd>
+      <dt>Snapshot</dt><dd>${x(hash || '—')}</dd>
+    </dl>
+    <span class="sub-label">Scope of this export</span>
+    <dl class="kv">
+      <dt>AI assets in scope</dt><dd>${counts.assets || 0}</dd>
+      <dt>Control assignments</dt><dd>${counts.controls || 0}</dd>
+      <dt>Evidence records</dt><dd>${counts.evidence || 0}</dd>
+      <dt>Assessments</dt><dd>${counts.assessments || 0}</dd>
+      <dt>Mapped requirements</dt><dd>${counts.obligations || 0}</dd>
+      <dt>Active policies</dt><dd>${counts.policies_active || 0}</dd>
+    </dl>
+  </section>`;
+
+  /* ── 03 AI asset inventory ── */
+  const assetRows = assets.slice(0, 60).map((a) => `<tr>
+    <td>${x(a.name || 'Unnamed')}</td>
+    <td>${x(labelProvider(a.provider_slug, a.vendor))}</td>
+    <td class="muted">${x(kindLabel(a.asset_kind))}</td>
+    <td><span class="status ${statusClass(a.risk_tier)}">${x(tierLabel(a.risk_tier))}</span></td>
+    <td>${x(lifeLabel(a.lifecycle))}</td>
+    <td>${x(a.system_owner || '—')}</td>
+    <td class="muted">${x(a.department || '—')}</td>
+  </tr>`).join('');
+
+  html += `<section class="section">
+    ${secBar('03', 'AI asset inventory')}
+    <h2 class="sec-title">Registered AI assets</h2>
+    <p class="sec-intro">Inventory of AI assets held in RegAnchor for ${x(orgName)}, excluding deleted records. Type is metadata on the asset, not a separate inventory category.</p>
+    ${assets.length ? `<table class="data">
+      <thead><tr>
+        <th>Asset</th><th>Provider</th><th>Type</th><th>Risk</th><th>Lifecycle</th><th>Owner</th><th>Department</th>
+      </tr></thead>
+      <tbody>${assetRows}</tbody>
+    </table>
+    ${assets.length > 60 ? `<p class="sec-intro">${assets.length - 60} additional assets omitted from this page; full register available in RegAnchor.</p>` : ''}`
+      : empty('No AI assets registered for this organisation.')}
+  </section>`;
+
+  /* ── 04 Accountability ── */
+  const roleRows = orgRoles.map((m) => `<tr>
+    <td>${x(m.full_name || 'Member')}</td>
+    <td>${x(pretty(m.role))}</td>
+  </tr>`).join('');
+  const ownerRows = assetOwners.slice(0, 40).map((o) => `<tr>
+    <td>${x(o.asset_name)}</td>
+    <td>${x(o.owner)}</td>
+    <td class="muted">${x(o.department || '—')}</td>
+    <td><span class="status ${statusClass(o.risk_tier)}">${x(tierLabel(o.risk_tier))}</span></td>
+  </tr>`).join('');
+
+  html += `<section class="section">
+    ${secBar('04', 'Accountability')}
+    <h2 class="sec-title">Governance accountability</h2>
+    <p class="sec-intro">Organisation roles and AI asset ownership as recorded in RegAnchor. Personal email addresses are not included in this export.</p>
+    <span class="sub-label">Organisation roles</span>
+    ${orgRoles.length
+      ? `<table class="data"><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody>${roleRows}</tbody></table>`
+      : empty('No organisation members recorded.')}
+    <span class="sub-label">AI asset owners</span>
+    ${assetOwners.length
+      ? `<table class="data"><thead><tr><th>AI asset</th><th>Owner</th><th>Department</th><th>Risk</th></tr></thead><tbody>${ownerRows}</tbody></table>`
+      : empty('No asset owners recorded on AI assets.')}
+  </section>`;
+
+  /* ── 05 Frameworks ── */
+  const obByFw = new Map();
+  for (const o of obligations) {
+    const key = o.framework_label || o.framework || 'Framework';
+    const list = obByFw.get(key) || [];
+    list.push(o);
+    obByFw.set(key, list);
+  }
+
+  let fwHtml = '';
+  for (const [fwName, rows] of obByFw) {
+    fwHtml += `<span class="sub-label">${x(fwName)}</span>
+      <table class="data"><thead><tr>
+        <th>Mapped requirement</th><th>Article / reference</th><th>AI assets mapped</th><th>Status mix</th>
+      </tr></thead><tbody>
+      ${rows.map((o) => {
+        const mix = Object.entries(o.statuses || {}).map(([k, v]) => `${pretty(k)} ${v}`).join(' · ') || '—';
+        return `<tr>
+          <td>${x(o.obligation_title)}</td>
+          <td class="num">${x(o.article_reference || '—')}</td>
+          <td class="num">${o.asset_count || 0}</td>
+          <td class="muted">${x(mix)}</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>`;
+  }
+
+  const policyRows = policies.slice(0, 40).map((p) => `<tr>
+    <td>${x(p.title)}</td>
+    <td>${x(p.version || '—')}</td>
+    <td><span class="status ${p.is_active ? 's-ok' : 's-muted'}">${p.is_active ? 'Active' : 'Inactive'}</span></td>
+    <td class="muted">${x(fmtShort(p.published_at || p.updated_at))}</td>
+    <td class="muted">${p.linked_control_title ? x(controlCode(p.linked_control_number) + ' · ' + p.linked_control_title) : '—'}</td>
+  </tr>`).join('');
+
+  html += `<section class="section">
+    ${secBar('05', 'Frameworks, regulations & policies')}
+    <h2 class="sec-title">Regulatory and framework mappings</h2>
+    <p class="sec-intro">Mapped requirements below are those linked to AI assets in RegAnchor, with the relevant article, regulation or guidance reference recorded where available. This section reports mappings, not a determination of legal obligations, and is not legal advice.</p>
+    ${obligations.length ? fwHtml : empty('No framework requirements are currently mapped against AI assets for this organisation.')}
+    ${customFw.length ? `<span class="sub-label">Custom frameworks</span>
+      <table class="data"><thead><tr><th>Framework</th><th>Status</th><th>Source</th></tr></thead>
+      <tbody>${customFw.map((f) => `<tr>
+        <td>${x(f.name)}</td>
+        <td><span class="status ${f.is_active ? 's-ok' : 's-muted'}">${f.is_active ? 'Active' : 'Inactive'}</span></td>
+        <td class="muted">${x(f.source || '—')}</td>
+      </tr>`).join('')}</tbody></table>
+      ${customFwControls.filter((c) => c.mapped_control_id).length
+        ? `<table class="data"><thead><tr><th>Requirement</th><th>Framework</th><th>Mapped RegAnchor control</th><th>Status</th></tr></thead>
+        <tbody>${customFwControls.filter((c) => c.mapped_control_id).map((c) => `<tr>
+          <td>${x(c.title)}</td>
+          <td>${x(c.framework_name || '—')}</td>
+          <td>${x(controlCode(c.mapped_control_number) + (c.mapped_control_title ? ' · ' + c.mapped_control_title : ''))}</td>
+          <td><span class="status ${statusClass(c.status)}">${x(ctrlStatus(c.status))}</span></td>
+        </tr>`).join('')}</tbody></table>`
+        : ''}` : ''}
+    <span class="sub-label">Policies</span>
+    ${policies.length
+      ? `<table class="data"><thead><tr><th>Policy</th><th>Version</th><th>Status</th><th>Date</th><th>Linked control</th></tr></thead><tbody>${policyRows}</tbody></table>`
+      : empty('No policies recorded.')}
+  </section>`;
+
+  /* ── 06 Controls register + detail ── */
+  const ctrlRegister = controls.slice(0, 80).map((c) => `<tr>
+    <td><strong>${x(controlCode(c.control_number))}</strong><br>${x(displayControlTitle(c.title))}</td>
+    <td>${governanceBasisCell(c)}</td>
+    <td>${x(c.is_org_level ? 'Organisation' : (c.asset_name || '—'))}</td>
+    <td><span class="status ${statusClass(c.status)}">${x(ctrlStatus(c.status))}</span></td>
+    <td>${evCell(c)}</td>
+    <td>${x(c.owner_name || '—')}</td>
+    <td class="num muted">${x(fmtShort(c.due_date))}</td>
+  </tr>`).join('');
+
+  const detailBlocks = controls.slice(0, 40).map((c) => {
+    const suggested = (c.suggested_evidence || []).map((s) => `<li>${x(displayEvidenceType(s))}</li>`).join('') || '<li>None recorded</li>';
+    const provided = (c.evidence_provided || []).map((e) => `<li>${x(e.file_name)}</li>`).join('') || '<li>None uploaded</li>';
+    const req = (c.mapped_requirements || []).length
+      ? (c.mapped_requirements || []).map((m) => `${m.framework_name ? m.framework_name + ' · ' : ''}${m.requirement_title}`).join('; ')
+      : 'No external requirement currently mapped.';
+    return `<div class="ctrl-block keep">
+      <div class="ctrl-head">
+        <span class="ctrl-code">${x(controlCode(c.control_number))}</span>
+        <span class="ctrl-name">${x(displayControlTitle(c.title))}</span>
+        <span class="status ${statusClass(c.status)}">${x(ctrlStatus(c.status))}</span>
+      </div>
+      ${c.purpose || c.description ? `<p class="ctrl-body">${x(c.purpose || c.description)}</p>` : ''}
+      <dl class="ctrl-meta">
+        <div><dt>Scope</dt><dd>${x(c.is_org_level ? 'Organisation' : (c.asset_name || 'AI asset'))}</dd></div>
+        <div><dt>Owner</dt><dd>${x(c.owner_name || '—')}</dd></div>
+        <div><dt>Due</dt><dd>${x(fmtShort(c.due_date))}</dd></div>
+        <div><dt>Evidence status</dt><dd>${(c.evidence_count || 0) > 0 ? (c.evidence_count + ' file(s) uploaded') : 'No evidence uploaded'}</dd></div>
+        <div><dt>Regulatory / framework mapping</dt><dd>${x(req)}</dd></div>
+      </dl>
+      <div class="ctrl-ev">
+        <div class="ctrl-ev-box"><span class="ev-label">Suggested evidence</span><ul>${suggested}</ul></div>
+        <div class="ctrl-ev-box"><span class="ev-label">Evidence provided</span><ul>${provided}</ul></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  html += `<section class="section">
+    ${secBar('06', 'Controls, requirements & evidence')}
+    <h2 class="sec-title">Control register</h2>
+    <p class="sec-intro">Control assignments from RegAnchor. Status and evidence are recorded separately: uploaded evidence supports a control; it does not by itself mean the control is implemented.</p>
+    ${controls.length
+      ? `<table class="data">
+        <thead><tr>
+          <th>Control</th><th>Governance basis</th><th>Asset / scope</th><th>Status</th><th>Evidence</th><th>Owner</th><th>Due</th>
+        </tr></thead>
+        <tbody>${ctrlRegister}</tbody>
+      </table>
+      ${controls.length > 80 ? `<p class="sec-intro">${controls.length - 80} additional assignments omitted from the register table.</p>` : ''}`
+      : empty('No control assignments recorded.')}
+  </section>`;
+
+  html += `<section class="section">
+    ${secBar('06a', 'Control detail')}
+    <h2 class="sec-title">Control definitions and evidence</h2>
+    <p class="sec-intro">Expanded view of assigned controls, including RegAnchor control meaning, suggested evidence types, and files actually uploaded against each assignment.</p>
+    ${controls.length ? detailBlocks : empty('No control assignments to detail.')}
+    ${controls.length > 40 ? `<p class="sec-intro">${controls.length - 40} further assignments are summarised in the register only.</p>` : ''}
+  </section>`;
+
+  /* ── 07 Assessments ── */
+  const assessRows = assessments.slice(0, 50).map((a) => `<tr>
+    <td>${x(a.asset_name || '—')}</td>
+    <td class="num muted">${x(fmtShort(a.completed_at || a.requested_at))}</td>
+    <td class="num">${a.overall_score != null ? x(a.overall_score) : '—'}</td>
+    <td><span class="status ${statusClass(a.risk_band)}">${x(tierLabel(a.risk_band) === 'Unclassified' && a.risk_band ? pretty(a.risk_band) : tierLabel(a.risk_band))}</span></td>
+    <td><span class="status ${statusClass(a.status)}">${x(assessStatus(a.status))}</span></td>
+  </tr>`).join('');
+
+  html += `<section class="section">
+    ${secBar('07', 'Assessments & risk')}
+    <h2 class="sec-title">Assessment outcomes</h2>
+    <p class="sec-intro">Registry assessments recorded for AI assets. This is a governance summary, not a full questionnaire export.</p>
+    ${assessments.length
+      ? `<table class="data"><thead><tr>
+        <th>AI asset</th><th>Date</th><th>Score</th><th>Risk band</th><th>Assessment status</th>
+      </tr></thead><tbody>${assessRows}</tbody></table>`
+      : empty('No assessments recorded.')}
+  </section>`;
+
+  /* ── 08 Evidence index ── */
+  const evRows = evidence.slice(0, 80).map((e) => `<tr>
+    <td>${x(e.file_name)}</td>
+    <td>${e.control_title ? x(controlCode(e.control_number) + ' · ' + e.control_title) : '—'}</td>
+    <td>${x(e.asset_name || (e.scope === 'organisation' ? 'Organisation' : '—'))}</td>
+    <td class="num muted">${x(fmtShort(e.uploaded_at))}</td>
+    <td class="muted">${x(e.file_type || '—')}</td>
+    <td><span class="status ${statusClass(e.control_status)}">${e.control_status ? x(ctrlStatus(e.control_status)) : '—'}</span></td>
+  </tr>`).join('');
+
+  html += `<section class="section">
+    ${secBar('08', 'Evidence index')}
+    <h2 class="sec-title">Uploaded evidence</h2>
+    <p class="sec-intro">Files uploaded in RegAnchor and their linked control assignment or AI asset, where that relationship exists.</p>
+    ${evidence.length
+      ? `<table class="data"><thead><tr>
+        <th>File</th><th>Linked control</th><th>AI asset / scope</th><th>Uploaded</th><th>Type</th><th>Control status</th>
+      </tr></thead><tbody>${evRows}</tbody></table>`
+      : empty('No evidence files uploaded.')}
+  </section>`;
+
+  /* ── 09 Activity ── */
+  const actRows = activity.slice(0, 50).map((a) => `<tr>
+    <td class="num muted">${x(fmtShort(a.created_at))}</td>
+    <td>${x(ACTIVITY_LABELS[a.action] || pretty(a.action))}</td>
+    <td>${x(a.entity_type === 'ai_system' || a.entity_type === 'ai_asset' ? 'AI asset' : pretty(a.entity_type))}</td>
+    <td class="muted">${x(a.entity_label || '—')}</td>
+  </tr>`).join('');
+
+  html += `<section class="section">
+    ${secBar('09', 'Activity trail')}
+    <h2 class="sec-title">Recent governance activity</h2>
+    <p class="sec-intro">Selected governance events from the RegAnchor audit log for this organisation.</p>
+    ${activity.length
+      ? `<table class="data"><thead><tr><th>Date</th><th>Event</th><th>Entity</th><th>Subject</th></tr></thead><tbody>${actRows}</tbody></table>`
+      : empty('No qualifying governance activity in the recent log.')}
+  </section>`;
+
+  /* ── 10 Attestation ── */
+  html += `<section class="section">
+    ${secBar('10', 'Attestation & notice')}
+    <h2 class="sec-title">Attestation</h2>
+    <div class="attest">
+      <p>This AI Governance Dossier is a <strong>point-in-time export</strong> of data held in RegAnchor for <strong>${x(orgName)}</strong> as at <strong>${x(fmtDate(generatedAt))}</strong>.</p>
+      <p>It represents the organisation’s recorded AI asset inventory, control assignments, evidence uploads, assessments, policies and framework mappings at the stated export time. Dossier ID <strong>${x(dossierId)}</strong>${hash ? '; snapshot <strong>' + x(hash) + '</strong>' : ''}.</p>
+      <p>It is <strong>not</strong> a certification of compliance, <strong>not</strong> legal advice, and <strong>not</strong> an independent assurance opinion.</p>
+    </div>
+    <div class="sign-grid">
+      <div class="sign-box">
+        <div class="sign-lbl">Organisation reviewer</div>
+        <div class="sign-val">Name / role / date</div>
+      </div>
+      <div class="sign-box">
+        <div class="sign-lbl">Export reference</div>
+        <div class="sign-val">${x(dossierId)}<br><span style="font-weight:400;color:var(--text-3)">${x(fmtDate(generatedAt))}</span></div>
+      </div>
+    </div>
+  </section>`;
+
+  root.innerHTML = html;
+  document.title = `RegAnchor · AI Governance Dossier · ${orgName}`;
+}
+
+/* Local file:// preview only. Production Puppeteer injects DOSSIER_DATA. */
+const PREVIEW_DOSSIER = {
+  organisation: {
+    id: 'preview',
+    name: 'Example Organisation Ltd',
+    sector: 'Financial services',
+    org_size: '201–1000',
+    plan: 'professional',
+    subscription_status: 'active',
+  },
+  summary: {
+    composite_score: 62,
+    posture: 'Developing',
+    score_as_of: '2026-09-14T12:00:00.000Z',
+    layers: [
+      { key: 'organisation', label: 'Organisation', score: 70 },
+      { key: 'assets', label: 'AI assets', score: 58 },
+      { key: 'assurance', label: 'Assurance', score: 55 },
+    ],
+    risk: [
+      { key: 'high', label: 'High', count: 1 },
+      { key: 'limited', label: 'Limited', count: 2 },
+      { key: 'minimal', label: 'Minimal', count: 1 },
+    ],
+    counts: {
+      assets: 12,
+      high_risk_assets: 3,
+      assessments: 5,
+      policies: 4,
+      policies_active: 3,
+      frameworks_custom: 0,
+      obligations: 6,
+      controls: 8,
+      controls_done: 2,
+      controls_in_progress: 3,
+      controls_outstanding: 3,
+      evidence: 3,
+      members: 3,
+    },
+    observations: [
+      '3 high-risk AI assets are currently in scope (Credit Decision Assistant, Claims Triage Model, Fraud Signal Ranker).',
+      '2 implemented controls have no supporting evidence recorded.',
+      '3 control assignments remain outstanding; earliest remediation due 15 October 2026.',
+    ],
+  },
+  assets: [
+    { name: 'Credit Decision Assistant', provider_slug: 'openai', asset_kind: 'system', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Risk', purpose_category: 'essential_services_access' },
+    { name: 'Support Copilot', provider_slug: 'anthropic', asset_kind: 'agent', risk_tier: 'limited', lifecycle: 'production', system_owner: 'J. Chen', department: 'Customer' },
+    { name: 'Doc Summariser', provider_slug: 'azure', asset_kind: 'tool', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'J. Chen', department: 'Operations' },
+    { name: 'Internal FAQ Bot', provider_slug: 'openai', asset_kind: 'system', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'A. Patel', department: 'IT' },
+    { name: 'Claims Triage Model', provider_slug: 'bedrock', asset_kind: 'model', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Claims' },
+    { name: 'KYC Document Reader', provider_slug: 'azure', asset_kind: 'system', risk_tier: 'limited', lifecycle: 'production', system_owner: 'R. Singh', department: 'Compliance' },
+    { name: 'Marketing Content Generator', provider_slug: 'openai', asset_kind: 'tool', risk_tier: 'minimal', lifecycle: 'pilot', system_owner: 'J. Chen', department: 'Marketing' },
+    { name: 'Fraud Signal Ranker', provider_slug: 'anthropic', asset_kind: 'model', risk_tier: 'high', lifecycle: 'development', system_owner: 'A. Patel', department: 'Risk' },
+    { name: 'HR Screening Assistant', provider_slug: 'openai', asset_kind: 'agent', risk_tier: 'limited', lifecycle: 'planned', system_owner: 'L. Ng', department: 'People' },
+    { name: 'Contract Clause Extractor', provider_slug: 'anthropic', asset_kind: 'tool', risk_tier: 'limited', lifecycle: 'production', system_owner: 'R. Singh', department: 'Legal' },
+    { name: 'Ops Knowledge Agent', provider_slug: 'openai', asset_kind: 'agent', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'J. Chen', department: 'Operations' },
+    { name: 'Board Pack Drafter', provider_slug: 'anthropic', asset_kind: 'system', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'A. Patel', department: 'Executive' },
+  ],
+  assessments: [
+    { asset_name: 'Credit Decision Assistant', requested_at: '2026-08-01', completed_at: '2026-08-12', overall_score: 48, risk_band: 'high', status: 'controls_issued' },
+    { asset_name: 'Support Copilot', requested_at: '2026-07-10', completed_at: '2026-07-18', overall_score: 71, risk_band: 'limited', status: 'controls_issued' },
+    { asset_name: 'Doc Summariser', requested_at: '2026-09-01', status: 'submitted', overall_score: null, risk_band: null },
+  ],
+  policies: [
+    { title: 'AI Governance Policy', version: '1.2', is_active: true, published_at: '2026-06-01', linked_control_title: 'AI Governance Policy', linked_control_number: 1 },
+    { title: 'Human Oversight Procedure', version: '1.0', is_active: true, published_at: '2026-07-15', linked_control_title: 'Human Oversight Framework', linked_control_number: 5 },
+  ],
+  frameworks: {
+    custom: [],
+    custom_controls: [],
+    obligations: [
+      { framework: 'eu_ai_act', framework_label: 'EU AI Act', obligation_title: 'Human oversight measures', article_reference: 'Article 14', asset_count: 2, statuses: { partial: 1, not_started: 1 } },
+      { framework: 'eu_ai_act', framework_label: 'EU AI Act', obligation_title: 'Risk management system', article_reference: 'Article 9', asset_count: 1, statuses: { in_progress: 1 } },
+      { framework: 'uk_gdpr', framework_label: 'UK GDPR', obligation_title: 'Automated decision-making safeguards', article_reference: 'UK GDPR Article 22', asset_count: 1, statuses: { met: 1 } },
+    ],
+  },
+  controls: [
+    {
+      control_number: 1, title: 'AI Governance Policy', status: 'implemented', is_org_level: true, pillar: 'accountability', control_type: 'organisation',
+      purpose: 'Establish organisational accountability for AI use.',
+      suggested_evidence: ['AI governance policy document', 'Board or leadership approval record'],
+      evidence_provided: [],
+      evidence_count: 0, owner_name: 'A. Patel', due_date: null, mapped_requirements: [],
+    },
+    {
+      control_number: 5, title: 'Human Oversight Framework', status: 'in_progress', asset_name: 'Credit Decision Assistant', pillar: 'control', control_type: 'system',
+      purpose: 'Ensure documented human oversight for consequential AI decisions.',
+      suggested_evidence: ['Oversight procedure document', 'Training records', 'Oversight workflow diagram'],
+      evidence_provided: [{ file_name: 'oversight-sop-v3.pdf', uploaded_at: '2026-08-20' }],
+      evidence_count: 1, owner_name: 'A. Patel', due_date: '2026-09-30', mapped_requirements: [],
+    },
+    {
+      control_number: 4, title: 'AI Asset Risk Classification', status: 'not_started', asset_name: 'Doc Summariser', pillar: 'visibility', control_type: 'system',
+      purpose: 'Classify AI assets by risk tier with documented rationale.',
+      suggested_evidence: ['AI asset classification record', 'Risk assessment documentation'],
+      evidence_provided: [], evidence_count: 0, owner_name: null, due_date: '2026-10-15', mapped_requirements: [],
+    },
+  ],
+  evidence: [
+    { file_name: 'oversight-sop-v3.pdf', control_title: 'Human Oversight Framework', control_number: 5, asset_name: 'Credit Decision Assistant', scope: 'asset', uploaded_at: '2026-08-20', file_type: 'application/pdf', control_status: 'in_progress' },
+  ],
+  activity: [
+    { created_at: '2026-09-10', action: 'control_updated', entity_type: 'governance_control', entity_label: null },
+    { created_at: '2026-08-20', action: 'control_implemented', entity_type: 'governance_control', entity_label: null },
+    { created_at: '2026-08-12', action: 'assessment_submitted', entity_type: 'ai_system', entity_label: 'Credit Decision Assistant' },
+    { created_at: '2026-06-01', action: 'policy_adopted', entity_type: 'policy', entity_label: null },
+  ],
+  accountability: {
+    org_roles: [
+      { full_name: 'A. Patel', role: 'owner' },
+      { full_name: 'J. Chen', role: 'admin' },
+    ],
+    asset_owners: [
+      { asset_name: 'Credit Decision Assistant', owner: 'A. Patel', department: 'Risk', risk_tier: 'high' },
+      { asset_name: 'Support Copilot', owner: 'J. Chen', department: 'Customer', risk_tier: 'limited' },
+    ],
+  },
+  meta: {
+    dossier_id: 'RAD-PREV-VIEW01',
+    generated_at: '2026-09-14T12:00:00.000Z',
+    snapshot_hash: 'localpreview0001',
+    generator_version: '2.0.0-preview',
+  },
+};
+
+if (typeof DOSSIER_DATA !== 'undefined') {
+  render(DOSSIER_DATA);
+} else {
+  render(PREVIEW_DOSSIER);
+}
+</script>
+</body>
+</html>
