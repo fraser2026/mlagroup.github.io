@@ -6,6 +6,7 @@ import {
   Boxes,
   Building2,
   ClipboardList,
+  FileText,
   LayoutGrid,
   ListChecks,
   Plug,
@@ -16,8 +17,10 @@ import {
   KeyRound,
   Database,
   Fingerprint,
+  ShieldCheck,
 } from 'lucide-react'
 import { Icon } from './Icon'
+import { useOverlayScrollLock } from './useOverlayScrollLock'
 import { sb } from '../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
 import { loadWorkspace } from '../lib/workspace'
@@ -35,8 +38,11 @@ const NAV = [
   { to: '/integrations', label: 'Connect', icon: Plug },
   { to: '/api-keys', label: 'API keys', icon: KeyRound },
   { to: '/authentication', label: 'Authentication', icon: Fingerprint },
+  { to: '/auditor-access', label: 'Auditor access', icon: ShieldCheck },
   { to: '/data-backends', label: 'Data backends', icon: Database },
   { to: '/monitoring', label: 'Monitoring', icon: Activity },
+  { to: '/reports', label: 'Reports', icon: FileText },
+  { to: '/reports#dossier', label: 'Governance dossier', icon: FileText },
   { to: '/organisation', label: 'Organisation', icon: Building2 },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
@@ -63,6 +69,8 @@ export function CommandPalette({ open, onOpenChange }: Props) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onOpenChange])
+
+  useOverlayScrollLock(open)
 
   useEffect(() => {
     if (!open || !session?.user) return
@@ -103,7 +111,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
   if (!open) return null
 
   return (
-    <div className={styles.overlay} onClick={() => onOpenChange(false)}>
+    <div className={styles.overlay} data-ra-overlay-root="" onClick={() => onOpenChange(false)}>
       <Command
         className={styles.dialog}
         onClick={(e) => e.stopPropagation()}
@@ -121,7 +129,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
           />
           <kbd className={styles.kbd}>esc</kbd>
         </div>
-        <Command.List className={styles.list} data-ra-scroll="canvas">
+        <Command.List className={styles.list} data-ra-scroll="overlay">
           <Command.Empty className={styles.empty}>No matches</Command.Empty>
           <Command.Group heading="Navigate" className={styles.group}>
             {NAV.filter((n) => !query || n.label.toLowerCase().includes(query.toLowerCase())).map((n) => (

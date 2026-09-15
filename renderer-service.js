@@ -13,6 +13,10 @@
  * Body: Certificate data JSON
  * Returns: application/pdf
  *
+ * POST /render-dossier
+ * Body: Org governance dossier snapshot JSON
+ * Returns: application/pdf
+ *
  * Keep-alive: GET /healthcheck  → plain text "OK" (no Puppeteer / DB / storage)
  * Legacy:     GET /health       → JSON status
  */
@@ -27,7 +31,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-app.use(express.json({ limit: '5mb' }));  app.use((req, res, next) => {   res.header('Access-Control-Allow-Origin', '*');   res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');   res.header('Access-Control-Allow-Headers', 'Content-Type');   if (req.method === 'OPTIONS') return res.sendStatus(204);   next(); });
+app.use(express.json({ limit: '12mb' }));  app.use((req, res, next) => {   res.header('Access-Control-Allow-Origin', '*');   res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');   res.header('Access-Control-Allow-Headers', 'Content-Type');   if (req.method === 'OPTIONS') return res.sendStatus(204);   next(); });
 
 const PORT = process.env.PORT || 3001;
 const TEMPLATE_PATH = join(__dirname, 'report-template.html');
@@ -36,8 +40,12 @@ const TEMPLATE_PATH = join(__dirname, 'report-template.html');
 // Override via env at the reganchor.com cutover rather than editing this file.
 const SITE_DOMAIN = process.env.SITE_DOMAIN || 'reganchor.com';
 
-// Pre-load template
-const TEMPLATE_HTML = readFileSync(TEMPLATE_PATH, 'utf-8');   const CERT_TEMPLATE_PATH = join(__dirname, 'certificate-template.html'); const CERT_TEMPLATE_HTML = readFileSync(CERT_TEMPLATE_PATH, 'utf-8');
+// Pre-load templates
+const TEMPLATE_HTML = readFileSync(TEMPLATE_PATH, 'utf-8');
+const CERT_TEMPLATE_PATH = join(__dirname, 'certificate-template.html');
+const CERT_TEMPLATE_HTML = readFileSync(CERT_TEMPLATE_PATH, 'utf-8');
+const DOSSIER_TEMPLATE_PATH = join(__dirname, 'dossier-template.html');
+const DOSSIER_TEMPLATE_HTML = readFileSync(DOSSIER_TEMPLATE_PATH, 'utf-8');
 
 const LAUNCH_OPTS = {
   headless: 'new',
@@ -251,6 +259,93 @@ app.post('/render-certificate', async (req, res) => {
 
   } catch (err) {
     console.error(`[Renderer] Certificate error: ${err.message}`);
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (page) {
+      try { await page.close(); } catch (_) { /* ignore */ }
+    }
+  }
+});
+
+// ── Governance dossier render endpoint ──
+app.post('/render-dossier', async (req, res) => {
+  const startTime = Date.now();
+  let page;
+
+  try {
+    const dossierData = req.body;
+    if (!dossierData || !dossierData.organisation) {
+      return res.status(400).json({ error: 'Invalid dossier data' });
+    }
+
+    const orgName = String(dossierData.organisation.name || dossierData.organisation || 'Organisation');
+    console.log(`[Renderer] Generating dossier for: ${orgName}`);
+
+    const renderedHtml = DOSSIER_TEMPLATE_HTML.replace(
+      '/*__DOSSIER_DATA__*/',
+      `const DOSSIER_DATA = ${JSON.stringify(dossierData)};`,
+    );
+
+    const browser = await getBrowser();
+    page = await browser.newPage();
+
+    await page.setContent(renderedHtml, {
+      waitUntil: 'networkidle0',
+      timeout: 60000,
+    });
+    await page.evaluateHandle('document.fonts.ready');
+    await page.waitForFunction(
+      () => {
+        const el = document.getElementById('dossier');
+        return el && el.children.length > 0;
+      },
+      { timeout: 15000 },
+    );
+
+    const dateStr = new Date(dossierData.meta?.generated_at || Date.now())
+      .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const dossierId = String(dossierData.meta?.dossier_id || '').replace(/"/g, '&quot;');
+    const orgSafe = orgName.replace(/"/g, '&quot;');
+
+    const headerTemplate = `
+      <div style="width:100%;padding:0 18mm;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;height:16mm;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;border-bottom:1px solid #E5E7EB;">
+        <span style="color:#111827;font-size:7.5pt;font-weight:600;letter-spacing:0.04em;">REGANCHOR</span>
+        <span style="color:#6B7280;font-size:7.5pt;font-weight:500;">AI Governance Dossier${dossierId ? ' · ' + dossierId : ''}</span>
+        <span style="color:#6B7280;font-size:7.5pt;font-weight:500;font-variant-numeric:tabular-nums;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+      </div>`;
+
+    const footerTemplate = `
+      <div style="width:100%;padding:0 18mm;display:flex;align-items:center;justify-content:space-between;height:14mm;box-sizing:border-box;border-top:1px solid #E5E7EB;font-family:Inter,Helvetica,Arial,sans-serif;">
+        <span style="color:#6B7280;font-size:7pt;">Confidential · ${orgSafe} · ${dateStr}</span>
+        <span style="color:#6B7280;font-size:7pt;">${SITE_DOMAIN}</span>
+      </div>`;
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      margin: {
+        top: '24mm',
+        bottom: '16mm',
+        left: '18mm',
+        right: '18mm',
+      },
+      printBackground: true,
+      preferCSSPageSize: false,
+      displayHeaderFooter: true,
+      headerTemplate,
+      footerTemplate,
+    });
+
+    const elapsed = Date.now() - startTime;
+    console.log(`[Renderer] Dossier complete: ${(pdfBuffer.length / 1024).toFixed(0)} KB in ${elapsed}ms`);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Length': pdfBuffer.length,
+      'Cache-Control': 'no-store',
+    });
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error(`[Renderer] Dossier error: ${err.message}`);
     res.status(500).json({ error: err.message });
   } finally {
     if (page) {

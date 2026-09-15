@@ -25,3 +25,38 @@
   gap: 8px;
   justify-content: flex-end;
 }
+
+.dossierCard {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0 4px;
+  border-top: 1px solid var(--ra-line);
+}
+
+.dossierCopy {
+  min-width: 0;
+  max-width: 52ch;
+}
+
+.dossierTitle {
+  font-size: 15px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  margin-bottom: 6px;
+}
+
+.dossierBody {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ra-text-2);
+}
+
+@media (max-width: 720px) {
+  .dossierCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

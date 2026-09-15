@@ -1,14 +1,15 @@
 ---
 description: Board report and certificate surfaces must match portal ledger language
-globs: report.html,system-report.html,report-template.html,certificate-template.html,verify.html,css/reganchor-report.css,css/portal.css,js/portal-cert.js,generate-pdf.html
+globs: report.html,system-report.html,report-template.html,certificate-template.html,dossier-template.html,verify.html,css/reganchor-report.css,css/portal.css,js/portal-cert.js,generate-pdf.html,renderer-service.js
 alwaysApply: false
 ---
 
-# Reports / certificates
+# Reports / certificates / dossier
 
 - Visual source of truth: [DESIGN.md](DESIGN.md) + live `portal.html`
 - Shared web skin: `css/reganchor-report.css` (link after `reganchor.css`)
-- Production PDF path: portal → edge → Puppeteer → `report-template.html` — **not** `generate-pdf.html` (orphaned jsPDF)
+- Production PDF path: app/portal → edge → Puppeteer → template HTML — **not** `generate-pdf.html` (orphaned jsPDF)
+- Org governance dossier: `dossier-template.html` + `POST /render-dossier` + `generate-dossier` edge
 - Web and PDF need not be pixel-identical; they must feel like the same product
 - After CSS/JS changes on `file://`, tell the user to hard-refresh
 - Do not claim “restyled” unless Findings domain tabs and Roadmap actions look like quiet ledgers (no all-red headers, no pink number bars)
@@ -19,3 +20,8 @@ alwaysApply: false
 - Roadmap: compact numbered rows, muted owners, no phase-coloured slabs
 - No Instrument Serif / DM Sans / dark navy canvas leftovers
 - Sentence case labels throughout
+- Dossier: current RegAnchor / RA mark (not retired icon); no fake data when tables are empty
+- Dossier fonts: **Inter only** (app UI face). No Source Serif / Instrument / display serif experiments
+- Customer-facing inventory term: **AI assets** (table may still be `ai_systems`)
+- Controls section must separate **status** vs **suggested evidence** vs **uploaded evidence**; do not invent article↔control links that are not in Supabase
+- **Forbidden:** Anchor Line (hairline + blurple/gradient blob at 61.8%). Plain 1px `--line` only.

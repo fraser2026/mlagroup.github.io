@@ -16,6 +16,7 @@ import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { MARKETING_ORIGIN } from '../lib/config'
 import { invokeEdge } from '../lib/edge'
+import { canManageMembers, canUseGovernanceDossier } from '../lib/org'
 import { fmtDate } from '../lib/rpc'
 import { sb } from '../lib/supabase'
 import styles from './ReportsPage.module.css'
@@ -56,7 +57,7 @@ function bandTone(band?: string | null) {
 }
 
 export function ReportsPage() {
-  const { org, user, session, isPaidTier, profile } = useAuth()
+  const { org, user, session, isPaidTier, profile, role } = useAuth()
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([])
   const [assessments, setAssessments] = useState<Assessment[]>([])
   const [sysNames, setSysNames] = useState<Record<string, string>>({})
@@ -64,9 +65,21 @@ export function ReportsPage() {
   const [isPaid, setIsPaid] = useState(false)
   const [loading, setLoading] = useState(true)
   const [pdfBusy, setPdfBusy] = useState<string | null>(null)
+  const [dossierBusy, setDossierBusy] = useState(false)
+  const [dossierNotice, setDossierNotice] = useState('')
   const [error, setError] = useState('')
 
+  const dossierOk = canUseGovernanceDossier(org)
+  const canExportDossier = dossierOk && canManageMembers(role)
+
   usePageChrome({ title: 'Reports', breadcrumbs: [{ label: 'Reports' }] })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.location.hash === '#dossier') {
+      document.getElementById('dossier')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [loading])
 
   const load = useCallback(async () => {
     if (!user?.id) {
@@ -144,10 +157,36 @@ export function ReportsPage() {
     }
   }
 
+  async function downloadDossier() {
+    if (!session?.access_token || !org?.id) return
+    setDossierBusy(true)
+    setError('')
+    setDossierNotice('Assembling workspace snapshot and rendering PDF. This can take up to a minute.')
+    try {
+      const data = await invokeEdge<{ download_url?: string; dossier_id?: string }>(
+        'generate-dossier',
+        { org_id: org.id },
+        session.access_token,
+      )
+      if (!data?.download_url) throw new Error('No download URL returned.')
+      setDossierNotice(
+        data.dossier_id
+          ? `Dossier ${data.dossier_id} ready. Opening download…`
+          : 'Dossier ready. Opening download…',
+      )
+      window.open(data.download_url, '_blank')
+    } catch (e) {
+      setDossierNotice('')
+      setError(e instanceof Error ? e.message : 'Dossier generation failed.')
+    } finally {
+      setDossierBusy(false)
+    }
+  }
+
   if (loading) {
     return (
       <PageFrame>
-        <PageHeader title="Reports" description="Diagnostic PDFs and system assessment reports." />
+        <PageHeader title="Reports" description="AI Governance Dossier, diagnostic PDFs, and assessment reports." />
         <BrandLoader fill label="Loading reports" />
       </PageFrame>
     )
@@ -156,13 +195,54 @@ export function ReportsPage() {
   return (
     <PageFrame
       railItems={[
+        { id: 'dossier', label: 'Dossier' },
         { id: 'diagnostic', label: 'Diagnostics' },
         { id: 'assessments', label: 'Assessments' },
       ]}
     >
-      <PageHeader title="Reports" description="Diagnostic PDFs and system assessment reports." />
+      <PageHeader
+        title="Reports"
+        description="AI Governance Dossier, diagnostic PDFs, and assessment reports."
+      />
 
       {error ? <Notice tone="risk">{error}</Notice> : null}
+      {dossierNotice && !error ? <Notice tone="quiet">{dossierNotice}</Notice> : null}
+
+      <Section
+        id="dossier"
+        title="AI Governance Dossier"
+        description="Point-in-time PDF for authorised reviewers, auditors, and procurement. Export from this page — Professional and Enterprise, owners and admins only."
+      >
+        {canExportDossier ? (
+          <div className={styles.dossierCard}>
+            <div className={styles.dossierCopy}>
+              <div className={styles.dossierTitle}>{org?.name || 'Organisation'}</div>
+              <p className={styles.dossierBody}>
+                Generates a dated governance record from your live RegAnchor workspace: AI assets,
+                accountability, mapped requirements, controls, evidence, assessments, and activity.
+                The PDF opens in a new tab when ready.
+              </p>
+            </div>
+            <Button pending={dossierBusy} onClick={() => void downloadDossier()}>
+              {dossierBusy ? 'Generating dossier…' : 'Generate dossier PDF'}
+            </Button>
+          </div>
+        ) : dossierOk ? (
+          <Notice tone="quiet">
+            AI Governance Dossier export is available to organisation owners and admins on this plan.
+          </Notice>
+        ) : (
+          <EmptyState
+            title="Professional feature"
+            body="AI Governance Dossier export is included with Professional and Enterprise."
+            action={
+              <Link to="/plans">
+                <Button>View plans</Button>
+              </Link>
+            }
+          />
+        )}
+      </Section>
 
       <Section id="diagnostic" title="Diagnostic reports">
         {diagnostics.length === 0 ? (
