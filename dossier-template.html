@@ -780,6 +780,7 @@ function render(D) {
   const dossierId = meta.dossier_id || '—';
   const generatedAt = meta.generated_at || new Date().toISOString();
   const hash = meta.snapshot_hash || '';
+  const catalogueHash = meta.catalogue_hash || '';
   const summary = D.summary || {};
   const score = Number(summary.composite_score || 0);
   const posture = summary.posture || 'Unscored';
@@ -822,7 +823,7 @@ function render(D) {
       <div class="cov-doctype">AI governance dossier</div>
       <h1 class="cov-title">Point-in-time governance record</h1>
       <div class="cov-org">${x(orgName)}</div>
-      <div class="cov-meta">Export ${x(fmtDate(generatedAt))} · ${x(dossierId)}${hash ? ' · Snapshot ' + x(hash) : ''}</div>
+      <div class="cov-meta">Export ${x(fmtDate(generatedAt))} · ${x(dossierId)}${hash ? ' · Snapshot ' + x(hash) : ''}${catalogueHash ? ' · Catalogue ' + x(catalogueHash) : ''}</div>
       <p class="cov-blurb">This dossier provides a point-in-time record of how ${x(orgName)} governs its AI assets in RegAnchor, including its inventory, accountability, applicable requirements, control assignments, supporting evidence, policies and assessment outcomes as of the export date.</p>
       <div class="cov-score-line">
         <div>
@@ -892,7 +893,8 @@ function render(D) {
       <dt>Organisation size</dt><dd>${x(org.org_size || '—')}</dd>
       <dt>Export date</dt><dd>${x(fmtDate(generatedAt))}</dd>
       <dt>Dossier ID</dt><dd>${x(dossierId)}</dd>
-      <dt>Snapshot</dt><dd>${x(hash || '—')}</dd>
+      <dt>Org snapshot</dt><dd>${x(hash || '—')}</dd>
+      <dt>Catalogue</dt><dd>${x(catalogueHash || '—')}</dd>
     </dl>
     <span class="sub-label">Scope of this export</span>
     <dl class="kv">
@@ -1142,7 +1144,7 @@ function render(D) {
     <h2 class="sec-title">Attestation</h2>
     <div class="attest">
       <p>This AI Governance Dossier is a <strong>point-in-time export</strong> of data held in RegAnchor for <strong>${x(orgName)}</strong> as at <strong>${x(fmtDate(generatedAt))}</strong>.</p>
-      <p>It represents the organisation’s recorded AI asset inventory, control assignments, evidence uploads, assessments, policies and framework mappings at the stated export time. Dossier ID <strong>${x(dossierId)}</strong>${hash ? '; snapshot <strong>' + x(hash) + '</strong>' : ''}.</p>
+      <p>It represents the organisation’s recorded AI asset inventory, control assignments, evidence uploads, assessments, policies and framework mappings at the stated export time. Dossier ID <strong>${x(dossierId)}</strong>${hash ? '; org snapshot <strong>' + x(hash) + '</strong>' : ''}${catalogueHash ? '; methodology catalogue <strong>' + x(catalogueHash) + '</strong>' : ''}.</p>
       <p>It is <strong>not</strong> a certification of compliance, <strong>not</strong> legal advice, and <strong>not</strong> an independent assurance opinion.</p>
     </div>
     <div class="sign-grid">
@@ -1152,7 +1154,7 @@ function render(D) {
       </div>
       <div class="sign-box">
         <div class="sign-lbl">Export reference</div>
-        <div class="sign-val">${x(dossierId)}<br><span style="font-weight:400;color:var(--text-3)">${x(fmtDate(generatedAt))}</span></div>
+        <div class="sign-val">${x(dossierId)}<br><span style="font-weight:400;color:var(--text-3)">${x(fmtDate(generatedAt))}${catalogueHash ? '<br>Catalogue ' + x(catalogueHash) : ''}</span></div>
       </div>
     </div>
   </section>`;
@@ -1283,6 +1285,7 @@ const PREVIEW_DOSSIER = {
     dossier_id: 'RAD-PREV-VIEW01',
     generated_at: '2026-09-14T12:00:00.000Z',
     snapshot_hash: 'localpreview0001',
+    catalogue_hash: 'catalogueprev01',
     generator_version: '2.0.0-preview',
   },
 };
