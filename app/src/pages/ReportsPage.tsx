@@ -186,7 +186,10 @@ export function ReportsPage() {
   if (loading) {
     return (
       <PageFrame>
-        <PageHeader title="Reports" description="AI Governance Dossier, diagnostic PDFs, and assessment reports." />
+        <PageHeader
+          title="Reports"
+          description="Governance records, assessments, and diagnostic reports."
+        />
         <BrandLoader fill label="Loading reports" />
       </PageFrame>
     )
@@ -202,7 +205,7 @@ export function ReportsPage() {
     >
       <PageHeader
         title="Reports"
-        description="AI Governance Dossier, diagnostic PDFs, and assessment reports."
+        description="Governance records, assessments, and diagnostic reports."
       />
 
       {error ? <Notice tone="risk">{error}</Notice> : null}
@@ -211,21 +214,27 @@ export function ReportsPage() {
       <Section
         id="dossier"
         title="AI Governance Dossier"
-        description="Point-in-time PDF for authorised reviewers, auditors, and procurement. Export from this page — Professional and Enterprise, owners and admins only."
+        description="A point-in-time record of your AI governance, prepared for review, assurance, and procurement."
       >
         {canExportDossier ? (
           <div className={styles.dossierCard}>
             <div className={styles.dossierCopy}>
               <div className={styles.dossierTitle}>{org?.name || 'Organisation'}</div>
               <p className={styles.dossierBody}>
-                Generates a dated governance record from your live RegAnchor workspace: AI assets,
-                accountability, mapped requirements, controls, evidence, assessments, and activity.
-                The PDF opens in a new tab when ready.
+                Generate a dated PDF from your RegAnchor workspace, including AI assets,
+                accountability, mapped requirements, controls, evidence, assessments and governance
+                activity.
               </p>
             </div>
-            <Button pending={dossierBusy} onClick={() => void downloadDossier()}>
-              {dossierBusy ? 'Generating dossier…' : 'Generate dossier PDF'}
-            </Button>
+            <div className={styles.dossierAction}>
+              <Button
+                className={styles.dossierButton}
+                pending={dossierBusy}
+                onClick={() => void downloadDossier()}
+              >
+                {dossierBusy ? 'Generating…' : 'Governance Dossier'}
+              </Button>
+            </div>
           </div>
         ) : dossierOk ? (
           <Notice tone="quiet">

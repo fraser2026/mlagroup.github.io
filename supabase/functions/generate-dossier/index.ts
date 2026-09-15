@@ -320,7 +320,7 @@ serve(async (req) => {
       supabase
         .from('ai_systems')
         .select(
-          'id,name,description,vendor,system_type,asset_kind,provider_slug,model_name,lifecycle,department,system_owner,purpose_category,risk_tier,created_at,updated_at',
+          'id,name,description,vendor,provider_slug,model_name,lifecycle,department,system_owner,purpose_category,risk_tier,created_at,updated_at',
         )
         .eq('org_id', orgId)
         .is('deleted_at', null)

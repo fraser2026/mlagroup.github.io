@@ -599,13 +599,6 @@ const LIFECYCLE = {
   decommissioned: 'Decommissioned',
 };
 
-const KIND = {
-  system: 'System',
-  agent: 'Agent',
-  model: 'Model',
-  tool: 'Tool',
-};
-
 const ACTIVITY_LABELS = {
   system_created: 'AI asset created',
   system_updated: 'AI asset updated',
@@ -672,11 +665,6 @@ function tierLabel(t) {
 function lifeLabel(l) {
   const k = String(l || '').toLowerCase();
   return LIFECYCLE[k] || pretty(l) || '—';
-}
-
-function kindLabel(k) {
-  const key = String(k || '').toLowerCase();
-  return KIND[key] || pretty(k) || '—';
 }
 
 function purposeLabel(p) {
@@ -921,7 +909,6 @@ function render(D) {
   const assetRows = assets.slice(0, 60).map((a) => `<tr>
     <td>${x(a.name || 'Unnamed')}</td>
     <td>${x(labelProvider(a.provider_slug, a.vendor))}</td>
-    <td class="muted">${x(kindLabel(a.asset_kind))}</td>
     <td><span class="status ${statusClass(a.risk_tier)}">${x(tierLabel(a.risk_tier))}</span></td>
     <td>${x(lifeLabel(a.lifecycle))}</td>
     <td>${x(a.system_owner || '—')}</td>
@@ -931,10 +918,10 @@ function render(D) {
   html += `<section class="section">
     ${secBar('03', 'AI asset inventory')}
     <h2 class="sec-title">Registered AI assets</h2>
-    <p class="sec-intro">Inventory of AI assets held in RegAnchor for ${x(orgName)}, excluding deleted records. Type is metadata on the asset, not a separate inventory category.</p>
+    <p class="sec-intro">Inventory of AI assets held in RegAnchor for ${x(orgName)}, excluding deleted records.</p>
     ${assets.length ? `<table class="data">
       <thead><tr>
-        <th>Asset</th><th>Provider</th><th>Type</th><th>Risk</th><th>Lifecycle</th><th>Owner</th><th>Department</th>
+        <th>Asset</th><th>Provider</th><th>Risk</th><th>Lifecycle</th><th>Owner</th><th>Department</th>
       </tr></thead>
       <tbody>${assetRows}</tbody>
     </table>
@@ -1220,18 +1207,18 @@ const PREVIEW_DOSSIER = {
     ],
   },
   assets: [
-    { name: 'Credit Decision Assistant', provider_slug: 'openai', asset_kind: 'system', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Risk', purpose_category: 'essential_services_access' },
-    { name: 'Support Copilot', provider_slug: 'anthropic', asset_kind: 'agent', risk_tier: 'limited', lifecycle: 'production', system_owner: 'J. Chen', department: 'Customer' },
-    { name: 'Doc Summariser', provider_slug: 'azure', asset_kind: 'tool', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'J. Chen', department: 'Operations' },
-    { name: 'Internal FAQ Bot', provider_slug: 'openai', asset_kind: 'system', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'A. Patel', department: 'IT' },
-    { name: 'Claims Triage Model', provider_slug: 'bedrock', asset_kind: 'model', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Claims' },
-    { name: 'KYC Document Reader', provider_slug: 'azure', asset_kind: 'system', risk_tier: 'limited', lifecycle: 'production', system_owner: 'R. Singh', department: 'Compliance' },
-    { name: 'Marketing Content Generator', provider_slug: 'openai', asset_kind: 'tool', risk_tier: 'minimal', lifecycle: 'pilot', system_owner: 'J. Chen', department: 'Marketing' },
-    { name: 'Fraud Signal Ranker', provider_slug: 'anthropic', asset_kind: 'model', risk_tier: 'high', lifecycle: 'development', system_owner: 'A. Patel', department: 'Risk' },
-    { name: 'HR Screening Assistant', provider_slug: 'openai', asset_kind: 'agent', risk_tier: 'limited', lifecycle: 'planned', system_owner: 'L. Ng', department: 'People' },
-    { name: 'Contract Clause Extractor', provider_slug: 'anthropic', asset_kind: 'tool', risk_tier: 'limited', lifecycle: 'production', system_owner: 'R. Singh', department: 'Legal' },
-    { name: 'Ops Knowledge Agent', provider_slug: 'openai', asset_kind: 'agent', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'J. Chen', department: 'Operations' },
-    { name: 'Board Pack Drafter', provider_slug: 'anthropic', asset_kind: 'system', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'A. Patel', department: 'Executive' },
+    { name: 'Credit Decision Assistant', provider_slug: 'openai', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Risk', purpose_category: 'essential_services_access' },
+    { name: 'Support Copilot', provider_slug: 'anthropic', risk_tier: 'limited', lifecycle: 'production', system_owner: 'J. Chen', department: 'Customer' },
+    { name: 'Doc Summariser', provider_slug: 'azure', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'J. Chen', department: 'Operations' },
+    { name: 'Internal FAQ Bot', provider_slug: 'openai', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'A. Patel', department: 'IT' },
+    { name: 'Claims Triage Model', provider_slug: 'bedrock', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Claims' },
+    { name: 'KYC Document Reader', provider_slug: 'azure', risk_tier: 'limited', lifecycle: 'production', system_owner: 'R. Singh', department: 'Compliance' },
+    { name: 'Marketing Content Generator', provider_slug: 'openai', risk_tier: 'minimal', lifecycle: 'pilot', system_owner: 'J. Chen', department: 'Marketing' },
+    { name: 'Fraud Signal Ranker', provider_slug: 'anthropic', risk_tier: 'high', lifecycle: 'development', system_owner: 'A. Patel', department: 'Risk' },
+    { name: 'HR Screening Assistant', provider_slug: 'openai', risk_tier: 'limited', lifecycle: 'planned', system_owner: 'L. Ng', department: 'People' },
+    { name: 'Contract Clause Extractor', provider_slug: 'anthropic', risk_tier: 'limited', lifecycle: 'production', system_owner: 'R. Singh', department: 'Legal' },
+    { name: 'Ops Knowledge Agent', provider_slug: 'openai', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'J. Chen', department: 'Operations' },
+    { name: 'Board Pack Drafter', provider_slug: 'anthropic', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'A. Patel', department: 'Executive' },
   ],
   assessments: [
     { asset_name: 'Credit Decision Assistant', requested_at: '2026-08-01', completed_at: '2026-08-12', overall_score: 48, risk_band: 'high', status: 'controls_issued' },

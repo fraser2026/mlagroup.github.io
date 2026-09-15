@@ -28,35 +28,53 @@
 
 .dossierCard {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 16px 0 4px;
+  gap: 24px;
+  padding: 20px 0 4px;
   border-top: 1px solid var(--ra-line);
 }
 
 .dossierCopy {
+  display: grid;
+  gap: 6px;
   min-width: 0;
-  max-width: 52ch;
+  max-width: 62ch;
 }
 
 .dossierTitle {
   font-size: 15px;
   font-weight: var(--ra-fw-medium);
+  line-height: 1.35;
   color: var(--ra-ink);
-  margin-bottom: 6px;
+  letter-spacing: -0.01em;
 }
 
 .dossierBody {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--ra-fs-body, 13px);
+  font-weight: var(--ra-fw-medium);
+  line-height: 1.45;
   color: var(--ra-text-2);
+}
+
+.dossierAction {
+  flex-shrink: 0;
 }
 
 @media (max-width: 720px) {
   .dossierCard {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
+    padding-top: 16px;
+  }
+
+  .dossierAction {
+    width: 100%;
+  }
+
+  .dossierButton {
+    width: 100%;
   }
 }
