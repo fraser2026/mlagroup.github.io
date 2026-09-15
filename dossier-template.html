@@ -751,12 +751,16 @@ function governanceBasisCell(ctrl) {
   const mapped = ctrl.mapped_requirements || [];
   if (mapped.length) {
     return mapped.map((m) => {
-      const fw = m.framework_name ? `${m.framework_name} · ` : '';
-      return `<div>${x(fw + (m.requirement_title || ''))}</div>`;
+      const fw = m.framework_name ? `${m.framework_name}` : '';
+      const art = m.article_reference ? m.article_reference : '';
+      const title = m.requirement_title || '';
+      const head = [fw, art].filter(Boolean).join(' · ');
+      const line = head && title ? `${head}: ${title}` : head || title || 'Mapped requirement';
+      return `<div>${x(line)}${m.is_primary ? ' <span class="muted">(primary)</span>' : ''}</div>`;
     }).join('');
   }
   if (ctrl.is_org_level) return `<span class="muted">Internal governance requirement</span>`;
-  return `<span class="muted">Internal governance requirement</span>`;
+  return `<span class="muted">No external requirement currently mapped</span>`;
 }
 
 function displayControlTitle(title) {
@@ -1034,7 +1038,11 @@ function render(D) {
     const suggested = (c.suggested_evidence || []).map((s) => `<li>${x(displayEvidenceType(s))}</li>`).join('') || '<li>None recorded</li>';
     const provided = (c.evidence_provided || []).map((e) => `<li>${x(e.file_name)}</li>`).join('') || '<li>None uploaded</li>';
     const req = (c.mapped_requirements || []).length
-      ? (c.mapped_requirements || []).map((m) => `${m.framework_name ? m.framework_name + ' · ' : ''}${m.requirement_title}`).join('; ')
+      ? (c.mapped_requirements || []).map((m) => {
+          const head = [m.framework_name, m.article_reference].filter(Boolean).join(' · ');
+          const title = m.requirement_title || '';
+          return head && title ? `${head}: ${title}` : head || title;
+        }).join('; ')
       : 'No external requirement currently mapped.';
     return `<div class="ctrl-block keep">
       <div class="ctrl-head">
