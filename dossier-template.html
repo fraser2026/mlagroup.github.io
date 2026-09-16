@@ -5,32 +5,33 @@
 <title>RegAnchor · AI Governance Dossier</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   AI Governance Dossier — RegAnchor app typography (Inter)
-   Dense enterprise record. No marketing chrome.
+   AI Governance Dossier — premium board / procurement record
+   Inter only. Sentence case. Status on the word. No Anchor Line.
    ============================================================ */
 
 :root {
-  --ink: #111827;
-  --text-2: #4B5563;
-  --text-3: #6B7280;
-  --line: #E5E7EB;
-  --line-strong: #111827;
-  --wash: #F9FAFB;
+  --ink: #0A0E14;
+  --text-2: #425466;
+  --text-3: #697386;
+  --line: #E6EBF1;
+  --line-strong: #0A0E14;
+  --wash: #F6F9FC;
   --accent: #533AFD;
-  --ok: #047857;
-  --warn: #B45309;
-  --risk: #BE123C;
+  --ok: #0F766E;
+  --risk: #C8102E;
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --t-display: 22pt;
+  --t-hero: 26pt;
+  --t-display: 15pt;
   --t-h1: 13pt;
-  --t-body: 9pt;
-  --t-small: 8pt;
-  --t-micro: 7.5pt;
-  --t-num: 20pt;
+  --t-body: 9.5pt;
+  --t-small: 8.5pt;
+  --t-micro: 8pt;
+  --t-num: 22pt;
   --radius: 4px;
+  --page-pad-x: 0;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -46,62 +47,60 @@ body {
   font-weight: 400;
   font-size: var(--t-body);
   color: var(--text-2);
-  line-height: 1.45;
+  line-height: 1.5;
   background: #fff;
+  text-transform: none;
   -webkit-font-smoothing: antialiased;
 }
 
 .section { page-break-before: always; }
 .keep { page-break-inside: avoid; }
 
+/* Section chrome — sentence case */
 .sec-bar {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  padding: 0 0 8px;
-  margin: 0 0 4px;
-  border-bottom: 1px solid var(--line-strong);
+  padding: 0 0 10px;
+  margin: 0 0 18px;
+  border-bottom: 1px solid var(--line);
 }
 .sec-bar-num {
   font-size: var(--t-micro);
   font-weight: 500;
   color: var(--text-3);
-  letter-spacing: .06em;
-  min-width: 1.4em;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.6em;
 }
 .sec-bar-title {
   font-size: var(--t-micro);
   font-weight: 500;
   color: var(--ink);
-  letter-spacing: .05em;
-  text-transform: uppercase;
   flex: 1;
 }
 
 .sec-title {
-  font-family: var(--font);
   font-size: var(--t-h1);
   font-weight: 500;
   color: var(--ink);
   line-height: 1.3;
-  margin: 14px 0 6px;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
 }
 .sec-intro {
   font-size: var(--t-body);
   color: var(--text-2);
-  line-height: 1.5;
-  max-width: 68ch;
-  margin: 0 0 16px;
+  line-height: 1.55;
+  max-width: 62ch;
+  margin: 0 0 20px;
 }
 
 .sub-label {
   display: block;
   font-size: var(--t-micro);
   font-weight: 500;
-  letter-spacing: .05em;
-  text-transform: uppercase;
   color: var(--text-3);
-  margin: 18px 0 8px;
+  margin: 22px 0 10px;
 }
 
 /* Cover */
@@ -111,107 +110,140 @@ body {
   display: flex;
   flex-direction: column;
 }
-.cover-top { flex: 1; padding-top: 2mm; }
+.cover-top { flex: 1; padding-top: 4mm; }
 .brand-wordmark {
   display: block;
-  width: 128px;
+  width: 152px;
   height: auto;
-  margin-bottom: 32px;
+  overflow: visible;
+  margin-bottom: 40px;
 }
 .cov-doctype {
   font-size: var(--t-micro);
   font-weight: 500;
-  letter-spacing: .08em;
   color: var(--text-3);
-  margin-bottom: 10px;
-  text-transform: uppercase;
-}
-.cov-title {
-  font-size: var(--t-display);
-  font-weight: 500;
-  color: var(--ink);
-  line-height: 1.2;
-  letter-spacing: -.02em;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 }
 .cov-org {
-  font-size: 12pt;
+  font-size: var(--t-hero);
   font-weight: 500;
   color: var(--ink);
-  margin-bottom: 6px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin-bottom: 10px;
 }
-.cov-meta {
+.cov-export {
   font-size: var(--t-small);
   color: var(--text-3);
+  margin-bottom: 4px;
+}
+.cov-id {
+  font-size: var(--t-small);
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
   margin-bottom: 28px;
 }
 .cov-blurb {
   font-size: var(--t-body);
   color: var(--text-2);
-  max-width: 56ch;
-  line-height: 1.55;
-  margin-bottom: 28px;
+  max-width: 54ch;
+  line-height: 1.6;
+  margin-bottom: 32px;
 }
+
+.cov-score {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.cov-score-lbl {
+  font-size: var(--t-micro);
+  font-weight: 500;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+.cov-score-val {
+  font-size: 20pt;
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.cov-score-posture {
+  font-size: 11pt;
+  font-weight: 500;
+  color: var(--ink);
+}
+
 .cov-kpis {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
 }
 .cov-kpi {
-  padding: 12px 10px 12px 0;
+  padding: 4px 14px 4px 0;
   border-right: 1px solid var(--line);
 }
 .cov-kpi:last-child { border-right: none; padding-right: 0; }
-.cov-score-line {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 18px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--line);
-}
-.cov-score-line .cov-kpi-val { font-size: 18pt; }
-.cov-score-line .cov-kpi-sub { margin-top: 0; font-size: var(--t-small); color: var(--ink); font-weight: 500; }
 .cov-kpi-lbl {
   font-size: var(--t-micro);
   font-weight: 500;
   color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: .04em;
   margin-bottom: 4px;
 }
 .cov-kpi-val {
-  font-size: 14pt;
+  font-size: 15pt;
   font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
+  line-height: 1.15;
 }
 .cov-kpi-sub {
   font-size: var(--t-micro);
   color: var(--text-3);
-  margin-top: 2px;
+  margin-top: 3px;
 }
+
+.cov-ref {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 28px;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--line);
+  font-size: var(--t-micro);
+}
+.cov-ref dt { color: var(--text-3); font-weight: 500; }
+.cov-ref dd { color: var(--ink); font-variant-numeric: tabular-nums; margin-bottom: 6px; }
+
 .cover-foot {
   margin-top: auto;
-  padding-top: 24px;
+  padding-top: 28px;
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
   font-size: var(--t-small);
   color: var(--text-3);
 }
-.cover-foot strong { color: var(--ink); font-weight: 500; }
+.cover-foot strong {
+  display: block;
+  color: var(--ink);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
 
-/* Score block */
+/* Score / layers */
 .score-row {
   display: grid;
   grid-template-columns: 120px 1fr;
-  gap: 20px;
+  gap: 24px;
   align-items: center;
-  margin: 8px 0 18px;
+  margin: 4px 0 22px;
 }
 .score-ring {
   position: relative;
@@ -234,70 +266,85 @@ body {
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
-.score-of { font-size: var(--t-micro); color: var(--text-3); margin-top: 2px; }
+.score-of { font-size: var(--t-micro); color: var(--text-3); margin-top: 3px; }
 .score-posture {
-  font-size: 11pt;
+  font-size: 12pt;
   font-weight: 500;
   color: var(--ink);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .score-note {
   font-size: var(--t-small);
   color: var(--text-3);
   max-width: 48ch;
-  line-height: 1.45;
+  line-height: 1.5;
 }
+
 .layer-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin: 0 0 18px;
+  gap: 12px;
+  margin: 0 0 22px;
 }
 .layer {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 10px 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
 }
 .layer-lbl {
   font-size: var(--t-micro);
   font-weight: 500;
   color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: .04em;
 }
 .layer-val {
-  font-size: 14pt;
+  font-size: 16pt;
   font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
-  margin-top: 2px;
+  margin-top: 4px;
+}
+
+.risk-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0 0 22px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.risk-chip {
+  font-size: var(--t-small);
+  color: var(--text-2);
+}
+.risk-chip strong {
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-right: 6px;
 }
 
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin: 0 0 18px;
+  margin: 0 0 22px;
+  border-top: 1px solid var(--line);
 }
 .stat {
-  padding: 10px 12px;
-  border-right: 1px solid var(--line);
+  padding: 14px 14px 14px 0;
   border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
 }
-.stat:nth-child(3n) { border-right: none; }
-.stat:nth-last-child(-n+3) { border-bottom: none; }
+.stat:nth-child(3n) { border-right: none; padding-right: 0; }
 .stat-lbl {
   display: block;
   font-size: var(--t-micro);
   font-weight: 500;
   color: var(--text-3);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 .stat-val {
-  font-size: 13pt;
+  font-size: 14pt;
   font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -305,42 +352,42 @@ body {
 .stat-sub {
   font-size: var(--t-micro);
   color: var(--text-3);
-  margin-top: 1px;
+  margin-top: 3px;
+  line-height: 1.4;
 }
 
 .obs-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-top: 1px solid var(--line);
 }
 .obs-list li {
-  padding: 9px 12px;
+  padding: 11px 0 11px 14px;
   border-bottom: 1px solid var(--line);
   font-size: var(--t-body);
   color: var(--ink);
-  line-height: 1.45;
+  line-height: 1.5;
+  position: relative;
 }
-.obs-list li:last-child { border-bottom: none; }
 .obs-list li::before {
   content: '';
-  display: inline-block;
+  position: absolute;
+  left: 0;
+  top: 17px;
   width: 5px;
   height: 5px;
   border-radius: 1px;
   background: var(--accent);
-  margin-right: 8px;
-  vertical-align: middle;
 }
 
 /* TOC */
-.toc { list-style: none; margin: 8px 0 0; padding: 0; }
+.toc { list-style: none; margin: 4px 0 0; padding: 0; }
 .toc li {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  padding: 7px 0;
+  gap: 12px;
+  padding: 10px 0;
   border-bottom: 1px solid var(--line);
   font-size: var(--t-body);
   color: var(--ink);
@@ -349,7 +396,7 @@ body {
   font-weight: 500;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
-  min-width: 1.6em;
+  min-width: 1.8em;
 }
 .toc-title { flex: 1; font-weight: 500; }
 
@@ -357,7 +404,7 @@ body {
 table.data {
   width: 100%;
   border-collapse: collapse;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   font-size: var(--t-small);
 }
 table.data th {
@@ -365,54 +412,89 @@ table.data th {
   font-weight: 500;
   color: var(--text-3);
   font-size: var(--t-micro);
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  padding: 6px 8px 6px 0;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: 8px 10px 8px 0;
   border-bottom: 1px solid var(--line-strong);
   vertical-align: bottom;
 }
 table.data td {
-  padding: 7px 8px 7px 0;
+  padding: 9px 10px 9px 0;
   border-bottom: 1px solid var(--line);
   color: var(--ink);
   vertical-align: top;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 table.data td.muted { color: var(--text-3); }
 table.data .num { font-variant-numeric: tabular-nums; }
+table.data .asset-name { font-weight: 500; color: var(--ink); }
+table.data .asset-sub {
+  display: block;
+  font-size: var(--t-micro);
+  font-weight: 400;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.provider-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.provider-ico {
+  flex: none;
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+.provider-fallback {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--wash);
+  color: var(--text-3);
+  font-size: 6pt;
+  font-weight: 600;
+  letter-spacing: 0;
+}
 
 .status {
   font-weight: 500;
   font-size: var(--t-small);
 }
 .status.s-ok { color: var(--ok); }
-.status.s-warn { color: var(--warn); }
 .status.s-risk { color: var(--risk); }
-.status.s-muted, .status.s-info { color: var(--text-3); }
+.status.s-muted, .status.s-info, .status.s-neutral { color: var(--text-3); }
+.status.s-ink { color: var(--ink); }
 
-.ev-stack { display: flex; flex-direction: column; gap: 3px; }
-.ev-label {
-  font-size: 6.5pt;
-  font-weight: 500;
+.ev-summary { font-size: var(--t-small); color: var(--ink); }
+.ev-summary.quiet { color: var(--text-3); }
+
+.mix-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--t-micro);
   color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: .04em;
 }
-.ev-item { font-size: var(--t-small); color: var(--ink); line-height: 1.3; }
-.ev-item.quiet { color: var(--text-3); }
 
-/* Control detail cards */
+/* Control detail */
 .ctrl-block {
-  border-top: 1px solid var(--line);
-  padding: 12px 0;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
   page-break-inside: avoid;
 }
-.ctrl-block:first-of-type { border-top: none; }
+.ctrl-block:first-of-type { padding-top: 0; }
 .ctrl-head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  margin-bottom: 6px;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 .ctrl-code {
   font-weight: 500;
@@ -429,73 +511,85 @@ table.data .num { font-variant-numeric: tabular-nums; }
 .ctrl-meta {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px 14px;
-  margin: 8px 0;
+  gap: 10px 16px;
+  margin: 12px 0;
   font-size: var(--t-small);
 }
 .ctrl-meta dt {
-  font-size: 6.5pt;
+  font-size: var(--t-micro);
   font-weight: 500;
   color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 .ctrl-meta dd { color: var(--ink); font-weight: 400; }
 .ctrl-body {
   font-size: var(--t-small);
   color: var(--text-2);
-  line-height: 1.45;
+  line-height: 1.5;
   margin: 4px 0 8px;
   max-width: 72ch;
 }
 .ctrl-ev {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 6px;
+  gap: 12px;
+  margin-top: 8px;
 }
 .ctrl-ev-box {
   background: var(--wash);
   border-radius: var(--radius);
-  padding: 8px 10px;
+  padding: 10px 12px;
+}
+.ctrl-ev-box .ev-label {
+  display: block;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  color: var(--text-3);
+  margin-bottom: 4px;
 }
 .ctrl-ev-box ul {
-  margin: 4px 0 0;
+  margin: 0;
   padding-left: 14px;
   color: var(--ink);
   font-size: var(--t-small);
 }
-.ctrl-ev-box li { margin-bottom: 2px; }
+.ctrl-ev-box li { margin-bottom: 3px; }
 
 .kv {
   display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 4px 12px;
-  margin: 0 0 14px;
+  grid-template-columns: 150px 1fr;
+  gap: 6px 16px;
+  margin: 0 0 18px;
   font-size: var(--t-body);
 }
 .kv dt { color: var(--text-3); font-weight: 500; }
 .kv dd { color: var(--ink); }
 
+.note-line {
+  font-size: var(--t-small);
+  color: var(--text-3);
+  margin: 12px 0 0;
+  line-height: 1.45;
+}
+
 .empty {
-  padding: 14px 0;
+  padding: 16px 0;
   color: var(--text-3);
   font-size: var(--t-body);
   border-top: 1px solid var(--line);
 }
 
 .attest {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin: 12px 0;
+  padding: 4px 0 8px;
+  margin: 4px 0 8px;
+  border-top: 1px solid var(--line);
 }
 .attest p {
   font-size: var(--t-body);
   color: var(--text-2);
-  line-height: 1.5;
-  margin-bottom: 8px;
+  line-height: 1.55;
+  margin-bottom: 12px;
+  max-width: 68ch;
 }
 .attest p:last-child { margin-bottom: 0; }
 .attest strong { color: var(--ink); font-weight: 500; }
@@ -503,33 +597,38 @@ table.data .num { font-variant-numeric: tabular-nums; }
 .sign-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 20px;
+  gap: 24px;
+  margin-top: 28px;
 }
 .sign-box {
-  border-top: 1px solid var(--line);
-  padding-top: 10px;
-  min-height: 56px;
+  border-top: 1px solid var(--line-strong);
+  padding-top: 12px;
+  min-height: 72px;
 }
 .sign-lbl {
   font-size: var(--t-micro);
   font-weight: 500;
   color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: .04em;
 }
 .sign-val {
-  margin-top: 18px;
+  margin-top: 22px;
   font-size: var(--t-body);
   color: var(--ink);
   font-weight: 500;
+}
+.sign-meta {
+  display: block;
+  margin-top: 6px;
+  font-weight: 400;
+  font-size: var(--t-small);
+  color: var(--text-3);
+  line-height: 1.45;
 }
 
 @media print {
   .section { page-break-before: always; }
   .cover { page-break-after: always; }
   thead { display: table-header-group; }
-  tfoot { display: table-footer-group; }
   tr, .ctrl-block, .layer, .stat, .obs-list li, .attest, .sign-box {
     page-break-inside: avoid;
     break-inside: avoid;
@@ -568,9 +667,25 @@ const PROVIDER_LABELS = {
   other: 'Other',
 };
 
+const PROVIDER_ICONS = {
+  anthropic: `<path fill="#141413" fill-rule="evenodd" d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z"/>`,
+  openai: `<path fill="#000000" fill-rule="evenodd" d="M9.205 8.658v-2.26c0-.19.072-.333.238-.428l4.543-2.616c.619-.357 1.356-.523 2.117-.523 2.854 0 4.662 2.212 4.662 4.566 0 .167 0 .357-.024.547l-4.71-2.759a.797.797 0 00-.856 0l-5.97 3.473zm10.609 8.8V12.06c0-.333-.143-.57-.429-.737l-5.97-3.473 1.95-1.118a.433.433 0 01.476 0l4.543 2.617c1.309.76 2.189 2.378 2.189 3.948 0 1.808-1.07 3.473-2.76 4.163zM7.802 12.703l-1.95-1.142c-.167-.095-.239-.238-.239-.428V5.899c0-2.545 1.95-4.472 4.591-4.472 1 0 1.927.333 2.712.928L8.23 5.067c-.285.166-.428.404-.428.737v6.898zM12 15.128l-2.795-1.57v-3.33L12 8.658l2.795 1.57v3.33L12 15.128zm1.796 7.23c-1 0-1.927-.332-2.712-.927l4.686-2.712c.285-.166.428-.404.428-.737v-6.898l1.974 1.142c.167.095.238.238.238.428v5.233c0 2.545-1.974 4.472-4.614 4.472zm-5.637-5.303l-4.544-2.617c-1.308-.761-2.188-2.378-2.188-3.948A4.482 4.482 0 014.21 6.327v5.423c0 .333.143.571.428.738l5.947 3.449-1.95 1.118a.432.432 0 01-.476 0zm-.262 3.9c-2.688 0-4.662-2.021-4.662-4.519 0-.19.024-.38.047-.57l4.686 2.71c.286.167.571.167.856 0l5.97-3.448v2.26c0 .19-.07.333-.237.428l-4.543 2.616c-.619.357-1.356.523-2.117.523zm5.899 2.83a5.947 5.947 0 005.827-4.756C22.287 18.339 24 15.84 24 13.296c0-1.665-.713-3.282-1.998-4.448.119-.5.19-.999.19-1.498 0-3.401-2.759-5.947-5.946-5.947-.642 0-1.26.095-1.88.31A5.962 5.962 0 0010.205 0a5.947 5.947 0 00-5.827 4.757C1.713 5.447 0 7.945 0 10.49c0 1.666.713 3.283 1.998 4.448-.119.5-.19 1-.19 1.499 0 3.401 2.759 5.946 5.946 5.946.642 0 1.26-.095 1.88-.309a5.96 5.96 0 004.162 1.713z"/>`,
+  google: `<path d="M23 12.245c0-.905-.075-1.565-.236-2.25h-10.54v4.083h6.186c-.124 1.014-.797 2.542-2.294 3.569l-.021.136 3.332 2.53.23.022C21.779 18.417 23 15.593 23 12.245z" fill="#4285F4"/><path d="M12.225 23c3.03 0 5.574-.978 7.433-2.665l-3.542-2.688c-.948.648-2.22 1.1-3.891 1.1a6.745 6.745 0 01-6.386-4.572l-.132.011-3.465 2.628-.045.124C4.043 20.531 7.835 23 12.225 23z" fill="#34A853"/><path d="M5.84 14.175A6.65 6.65 0 015.463 12c0-.758.138-1.491.361-2.175l-.006-.147-3.508-2.67-.115.054A10.831 10.831 0 001 12c0 1.772.436 3.447 1.197 4.938l3.642-2.763z" fill="#FBBC05"/><path d="M12.225 5.253c2.108 0 3.529.892 4.34 1.638l3.167-3.031C17.787 2.088 15.255 1 12.225 1 7.834 1 4.043 3.469 2.197 7.062l3.63 2.763a6.77 6.77 0 016.398-4.572z" fill="#EB4335"/>`,
+  gemini: `<path d="M20.616 10.835a14.147 14.147 0 01-4.45-3.001 14.111 14.111 0 01-3.678-6.452.503.503 0 00-.975 0 14.134 14.134 0 01-3.679 6.452 14.155 14.155 0 01-4.45 3.001c-.65.28-1.318.505-2.002.678a.502.502 0 000 .975c.684.172 1.35.397 2.002.677a14.147 14.147 0 014.45 3.001 14.112 14.112 0 013.679 6.453.502.502 0 00.975 0c.172-.685.397-1.351.677-2.003a14.145 14.145 0 013.001-4.45 14.113 14.113 0 016.453-3.678.503.503 0 000-.975 13.245 13.245 0 01-2.003-.678z" fill="#3186FF"/>`,
+  googlecloud: `<path d="M15.961 7.327l2.086-2.086.14-.879C14.384.905 8.34 1.297 4.913 5.18A9.643 9.643 0 002.88 8.991l.747-.105 4.172-.688.322-.33c1.856-2.038 4.994-2.312 7.137-.578l.703.037z" fill="#EA4335"/><path d="M21.02 8.93a9.399 9.399 0 00-2.834-4.568L15.258 7.29a5.204 5.204 0 011.91 4.129v.52a2.606 2.606 0 012.607 2.605c0 1.44-1.167 2.577-2.606 2.577h-5.22l-.512.556v3.126l.513.49h5.219c3.743.03 6.802-2.952 6.83-6.695a6.778 6.778 0 00-2.98-5.668z" fill="#4285F4"/><path d="M6.738 21.293h5.212v-4.172H6.738c-.371 0-.731-.08-1.069-.234l-.74.227-2.1 2.086-.183.71a6.763 6.763 0 004.092 1.383z" fill="#34A853"/><path d="M6.738 7.759A6.778 6.778 0 002.646 19.91l3.023-3.023a2.606 2.606 0 113.448-3.448l3.023-3.023a6.771 6.771 0 00-5.402-2.657z" fill="#FBBC05"/>`,
+  azure: `<path clip-rule="evenodd" d="M16.233 0c.713 0 1.345.551 1.572 1.329.227.778 1.555 5.59 1.555 5.59v9.562h-4.813L14.645 0h1.588z" fill="#BF2C92" fill-rule="evenodd"/><path d="M23.298 7.47c0-.34-.275-.6-.6-.6h-2.835a3.617 3.617 0 00-3.614 3.615v5.996h3.436a3.617 3.617 0 003.613-3.614V7.47z" fill="#6276E1"/><path clip-rule="evenodd" d="M16.233 0a.982.982 0 00-.989.989l-.097 18.198A4.814 4.814 0 0110.334 24H1.6a.597.597 0 01-.567-.794l7-19.981A4.819 4.819 0 0112.57 0h3.679-.016z" fill="#1171ED" fill-rule="evenodd"/>`,
+  azureai: `<path clip-rule="evenodd" d="M16.233 0c.713 0 1.345.551 1.572 1.329.227.778 1.555 5.59 1.555 5.59v9.562h-4.813L14.645 0h1.588z" fill="#BF2C92" fill-rule="evenodd"/><path d="M23.298 7.47c0-.34-.275-.6-.6-.6h-2.835a3.617 3.617 0 00-3.614 3.615v5.996h3.436a3.617 3.617 0 003.613-3.614V7.47z" fill="#6276E1"/><path clip-rule="evenodd" d="M16.233 0a.982.982 0 00-.989.989l-.097 18.198A4.814 4.814 0 0110.334 24H1.6a.597.597 0 01-.567-.794l7-19.981A4.819 4.819 0 0112.57 0h3.679-.016z" fill="#1171ED" fill-rule="evenodd"/>`,
+  microsoft: `<path d="M11.49 2H2v9.492h9.492V2h-.002z" fill="#F25022"/><path d="M22 2h-9.492v9.492H22V2z" fill="#7FBA00"/><path d="M11.49 12.508H2V22h9.492v-9.492h-.002z" fill="#00A4EF"/><path d="M22 12.508h-9.492V22H22v-9.492z" fill="#FFB900"/>`,
+  bedrock: `<path d="M13.05 15.513h3.08c.214 0 .389.177.389.394v1.82a1.704 1.704 0 011.296 1.661c0 .943-.755 1.708-1.685 1.708-.931 0-1.686-.765-1.686-1.708 0-.807.554-1.484 1.297-1.662v-1.425h-2.69v4.663a.395.395 0 01-.188.338l-2.69 1.641a.385.385 0 01-.405-.002l-4.926-3.086a.395.395 0 01-.185-.336V16.3L2.196 14.87A.395.395 0 012 14.555L2 14.528V9.406c0-.14.073-.27.192-.34l2.465-1.462V4.448c0-.129.062-.249.165-.322l.021-.014L9.77 1.058a.385.385 0 01.407 0l2.69 1.675a.395.395 0 01.185.336V7.6h3.856V5.683a1.704 1.704 0 01-1.296-1.662c0-.943.755-1.708 1.685-1.708.931 0 1.685.765 1.685 1.708 0 .807-.553 1.484-1.296 1.662v2.311a.391.391 0 01-.389.394h-4.245v1.806h6.624a1.69 1.69 0 011.64-1.313c.93 0 1.685.764 1.685 1.707 0 .943-.754 1.708-1.685 1.708a1.69 1.69 0 01-1.64-1.314H13.05v1.937h4.953l.915 1.18a1.66 1.66 0 01.84-.227c.931 0 1.685.764 1.685 1.707 0 .943-.754 1.708-1.685 1.708-.93 0-1.685-.765-1.685-1.708 0-.346.102-.668.276-.937l-.724-.935H13.05v1.806z" fill="#3D8FFF"/>`,
+  meta: `<path fill="#0082FB" d="M12 7.2C10.4 4.8 8.2 3.2 5.7 3.2 2.7 3.2.5 5.5.5 9.1c0 5 3.8 9.4 8 9.4 1.4 0 2.6-.7 4.1-3.2.15-.3.3-.55.45-.9.15.35.3.6.45.9 1.5 2.5 2.7 3.2 4.1 3.2 4.2 0 5.9-4.4 5.9-9.4 0-3.6-2.2-5.9-5.2-5.9-2.5 0-4.7 1.6-6.3 4z"/>`,
+  huggingface: `<path d="M2.25 11.535c0-3.407 1.847-6.554 4.844-8.258a9.822 9.822 0 019.687 0c2.997 1.704 4.844 4.851 4.844 8.258 0 5.266-4.337 9.535-9.687 9.535S2.25 16.8 2.25 11.535z" fill="#FF9D0B"/><path d="M11.938 20.086c4.797 0 8.687-3.829 8.687-8.551 0-4.722-3.89-8.55-8.687-8.55-4.798 0-8.688 3.828-8.688 8.55 0 4.722 3.89 8.55 8.688 8.55z" fill="#FFD21E"/>`,
+  cohere: `<path clip-rule="evenodd" d="M8.128 14.099c.592 0 1.77-.033 3.398-.703 1.897-.781 5.672-2.2 8.395-3.656 1.905-1.018 2.74-2.366 2.74-4.18A4.56 4.56 0 0018.1 1H7.549A6.55 6.55 0 001 7.55c0 3.617 2.745 6.549 7.128 6.549z" fill="#39594D" fill-rule="evenodd"/><path clip-rule="evenodd" d="M9.912 18.61a4.387 4.387 0 012.705-4.052l3.323-1.38c3.361-1.394 7.06 1.076 7.06 4.715a5.104 5.104 0 01-5.105 5.104l-3.597-.001a4.386 4.386 0 01-4.386-4.387z" fill="#D18EE2" fill-rule="evenodd"/><path d="M4.776 14.962A3.775 3.775 0 001 18.738v.489a3.776 3.776 0 007.551 0v-.49a3.775 3.775 0 00-3.775-3.775z" fill="#FF7759"/>`,
+  groq: `<path fill="#F55036" fill-rule="evenodd" d="M12.036 2c-3.853-.035-7 3-7.036 6.781-.035 3.782 3.055 6.872 6.908 6.907h2.42v-2.566h-2.292c-2.407.028-4.38-1.866-4.408-4.23-.029-2.362 1.901-4.298 4.308-4.326h.1c2.407 0 4.358 1.915 4.365 4.278v6.305c0 2.342-1.944 4.25-4.323 4.279a4.375 4.375 0 01-3.033-1.252l-1.851 1.818A7 7 0 0012.029 22h.092c3.803-.056 6.858-3.083 6.879-6.816v-6.5C18.907 4.963 15.817 2 12.036 2z"/>`,
+};
+
 const CTRL_STATUS = {
-  not_started: 'Not Started',
-  in_progress: 'In Progress',
+  not_started: 'Not started',
+  in_progress: 'In progress',
   implemented: 'Implemented',
   verified: 'Verified',
   overdue: 'Overdue',
@@ -622,39 +737,55 @@ function x(v) {
     .replace(/"/g, '&quot;');
 }
 
+function blank(v) {
+  const s = String(v == null ? '' : v).trim();
+  return s || 'Not recorded';
+}
+
 function labelProvider(slug, fallback) {
   const s = String(slug || '').trim().toLowerCase();
   if (!s) return (fallback || '').trim() || 'Not set';
   return PROVIDER_LABELS[s] || (fallback || '').trim() || slug;
 }
 
+function providerMark(slug, fallback) {
+  const s = String(slug || '').trim().toLowerCase();
+  const label = labelProvider(s, fallback);
+  const icon = PROVIDER_ICONS[s];
+  if (icon) {
+    return `<span class="provider-cell"><svg class="provider-ico" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">${icon}</svg><span>${x(label)}</span></span>`;
+  }
+  const initials = label.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '—';
+  return `<span class="provider-cell"><span class="provider-fallback">${x(initials)}</span><span>${x(label)}</span></span>`;
+}
+
 function fmtDate(iso) {
-  if (!iso) return '—';
+  if (!iso) return 'Not recorded';
   try {
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  } catch { return '—'; }
+  } catch { return 'Not recorded'; }
 }
 
 function fmtShort(iso) {
-  if (!iso) return '—';
+  if (!iso) return 'Not recorded';
   try {
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  } catch { return '—'; }
+  } catch { return 'Not recorded'; }
 }
 
 function controlCode(n) {
-  if (n == null || n === '') return '—';
+  if (n == null || n === '') return 'Not recorded';
   return 'C' + String(n).replace(/^c/i, '');
 }
 
 function ctrlStatus(s) {
   const k = String(s || '').toLowerCase();
-  return CTRL_STATUS[k] || pretty(s) || 'Not Started';
+  return CTRL_STATUS[k] || pretty(s) || 'Not started';
 }
 
 function assessStatus(s) {
   const k = String(s || '').toLowerCase();
-  return ASSESS_STATUS[k] || pretty(s) || '—';
+  return ASSESS_STATUS[k] || pretty(s) || 'Not recorded';
 }
 
 function tierLabel(t) {
@@ -664,12 +795,7 @@ function tierLabel(t) {
 
 function lifeLabel(l) {
   const k = String(l || '').toLowerCase();
-  return LIFECYCLE[k] || pretty(l) || '—';
-}
-
-function purposeLabel(p) {
-  if (!p) return '—';
-  return String(p).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return LIFECYCLE[k] || pretty(l) || 'Not recorded';
 }
 
 function pretty(s) {
@@ -682,11 +808,12 @@ function pretty(s) {
   }).join(' ');
 }
 
+/** Status colour on the word only. No amber/gold. */
 function statusClass(s) {
   const t = String(s || '').toLowerCase();
-  if (['implemented', 'verified', 'active', 'controls_issued', 'minimal', 'production', 'met', 'compliant'].includes(t)) return 's-ok';
-  if (['in_progress', 'in_review', 'submitted', 'limited', 'partial', 'development', 'pilot'].includes(t)) return 's-warn';
+  if (['implemented', 'verified', 'active', 'controls_issued', 'met', 'compliant', 'production'].includes(t)) return 's-ok';
   if (['not_started', 'high', 'unacceptable', 'overdue', 'failed', 'not_met'].includes(t)) return 's-risk';
+  if (['minimal', 'limited', 'in_progress', 'in_review', 'submitted', 'development', 'pilot', 'planned'].includes(t)) return 's-ink';
   return 's-muted';
 }
 
@@ -696,7 +823,7 @@ function donut(score) {
   const c = 2 * Math.PI * r;
   const dash = (s / 100) * c;
   return `<svg viewBox="0 0 108 108" aria-hidden="true">
-    <circle cx="54" cy="54" r="${r}" fill="none" stroke="#E5E7EB" stroke-width="7"/>
+    <circle cx="54" cy="54" r="${r}" fill="none" stroke="#E6EBF1" stroke-width="7"/>
     <circle cx="54" cy="54" r="${r}" fill="none" stroke="#533AFD" stroke-width="7"
       stroke-linecap="butt" stroke-dasharray="${dash} ${c}"
       transform="rotate(-90 54 54)"/>
@@ -704,8 +831,9 @@ function donut(score) {
 }
 
 function wordmarkLogo() {
-  return `<svg class="brand-wordmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 389 72.75" role="img" aria-label="RegAnchor">
-    <g fill="#000000">
+  /* viewBox padded below 72.75 so the g descender never clips in PDF rasterisation */
+  return `<svg class="brand-wordmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 389 84" role="img" aria-label="RegAnchor">
+    <g fill="#0A0E14">
       <path d="M360.9,35.77c0,12.67-10.37,22.68-24.34,22.68s-24.27-10.01-24.27-22.68,10.37-22.68,24.27-22.68,24.34,10.01,24.34,22.68ZM324.75,35.77c0,6.98,5.04,12.46,11.81,12.46s11.88-5.54,11.88-12.46-5.04-12.46-11.88-12.46-11.81,5.54-11.81,12.46Z"/>
       <path d="M376,56h-12V15h11v8.55c1.52-3.17,12.03-8.55,12.03-8.55h1.97v12.86c-.51-.21-1.62-.36-2.35-.36-6.46,0-10.65,4.33-10.65,7.39v21.1Z"/>
       <path d="M13.14,39h-.14v17H0V2h15.19c12.2,0,23.81,3.98,23.81,18.31,0,7.96-5.33,13.25-12.12,16l14.31,19.69h-15.94l-12.11-17ZM13,14v15h3.32c5.7,0,9.66-2.88,9.66-7.93,0-4.69-3.39-7.07-9.81-7.07h-3.17Z"/>
@@ -721,7 +849,7 @@ function wordmarkLogo() {
 
 function secBar(num, title) {
   return `<div class="sec-bar">
-    <span class="sec-bar-num">${x(num)}</span>
+    ${num ? `<span class="sec-bar-num">${x(num)}</span>` : ''}
     <span class="sec-bar-title">${x(title)}</span>
   </div>`;
 }
@@ -730,31 +858,20 @@ function empty(msg) {
   return `<div class="empty">${x(msg)}</div>`;
 }
 
-function evCell(ctrl) {
-  const suggested = ctrl.suggested_evidence || [];
-  const provided = ctrl.evidence_provided || [];
-  const sug = suggested.length
-    ? suggested.slice(0, 4).map((s) => `<div class="ev-item quiet">${x(displayEvidenceType(s))}</div>`).join('') +
-      (suggested.length > 4 ? `<div class="ev-item quiet">+${suggested.length - 4} more</div>` : '')
-    : `<div class="ev-item quiet">None recorded</div>`;
-  const prov = provided.length
-    ? provided.slice(0, 4).map((e) => `<div class="ev-item">${x(e.file_name)}</div>`).join('') +
-      (provided.length > 4 ? `<div class="ev-item">+${provided.length - 4} more</div>` : '')
-    : `<div class="ev-item quiet">None uploaded</div>`;
-  return `<div class="ev-stack">
-    <span class="ev-label">Suggested</span>${sug}
-    <span class="ev-label" style="margin-top:4px">Provided</span>${prov}
-  </div>`;
+function evSummary(ctrl) {
+  const n = Number(ctrl.evidence_count || (ctrl.evidence_provided || []).length || 0);
+  if (n > 0) return `<span class="ev-summary">Uploaded ${n}</span>`;
+  return `<span class="ev-summary quiet">None</span>`;
 }
 
 function governanceBasisCell(ctrl) {
   const mapped = ctrl.mapped_requirements || [];
   if (mapped.length) {
     return mapped.map((m) => {
-      const fw = m.framework_name ? `${m.framework_name}` : '';
-      const art = m.article_reference ? m.article_reference : '';
+      const fw = m.framework_name || '';
+      const art = m.article_reference || '';
       const title = m.requirement_title || '';
-      const head = [fw, art].filter(Boolean).join(' · ');
+      const head = [fw, art].filter(Boolean).join(', ');
       const line = head && title ? `${head}: ${title}` : head || title || 'Mapped requirement';
       return `<div>${x(line)}${m.is_primary ? ' <span class="muted">(primary)</span>' : ''}</div>`;
     }).join('');
@@ -777,11 +894,24 @@ function displayEvidenceType(label) {
     .replace(/\bAI system\b/gi, 'AI asset');
 }
 
+function isMaterialControl(c) {
+  const st = String(c.status || '').toLowerCase();
+  const ev = Number(c.evidence_count || (c.evidence_provided || []).length || 0);
+  if (ev > 0) return true;
+  return ['implemented', 'verified', 'overdue', 'in_progress'].includes(st);
+}
+
+function statusMixStack(statuses) {
+  const entries = Object.entries(statuses || {});
+  if (!entries.length) return `<span class="muted">Not recorded</span>`;
+  return `<div class="mix-stack">${entries.map(([k, v]) => `${x(pretty(k))}: ${x(v)}`).join('<br>')}</div>`;
+}
+
 function render(D) {
   const org = D.organisation || {};
   const orgName = org.name || 'Organisation';
   const meta = D.meta || {};
-  const dossierId = meta.dossier_id || '—';
+  const dossierId = meta.dossier_id || 'Not recorded';
   const generatedAt = meta.generated_at || new Date().toISOString();
   const hash = meta.snapshot_hash || '';
   const catalogueHash = meta.catalogue_hash || '';
@@ -792,6 +922,7 @@ function render(D) {
   const posture = summary.posture || 'Unscored';
   const counts = summary.counts || {};
   const layers = summary.layers || [];
+  const riskBuckets = summary.risk || [];
   const observations = summary.observations || [];
   const assets = D.assets || [];
   const assessments = D.assessments || [];
@@ -811,15 +942,15 @@ function render(D) {
 
   const toc = [
     ['01', 'Executive summary'],
-    ['02', 'Organisation & scope'],
+    ['02', 'Organisation and scope'],
     ['03', 'AI asset inventory'],
     ['04', 'Accountability'],
-    ['05', 'Frameworks, regulations & policies'],
-    ['06', 'Controls, requirements & evidence'],
-    ['07', 'Assessments & risk'],
+    ['05', 'Frameworks, regulations and policies'],
+    ['06', 'Controls, requirements and evidence'],
+    ['07', 'Assessments and risk'],
     ['08', 'Evidence index'],
     ['09', 'Activity trail'],
-    ['10', 'Attestation & notice'],
+    ['10', 'Attestation and notice'],
   ];
 
   /* ── Cover ── */
@@ -827,50 +958,67 @@ function render(D) {
     <div class="cover-top">
       ${wordmarkLogo()}
       <div class="cov-doctype">AI governance dossier</div>
-      <h1 class="cov-title">Point-in-time governance record</h1>
       <div class="cov-org">${x(orgName)}</div>
-      <div class="cov-meta">Export ${x(fmtDate(generatedAt))} · ${x(dossierId)}${hash ? ' · Snapshot ' + x(hash) : ''}${catalogueHash ? ' · Catalogue ' + x(catalogueHash) : ''}${methodologyLabel ? ' · Methodology ' + x(methodologyLabel) : ''}</div>
-      <p class="cov-blurb">This dossier provides a point-in-time record of how ${x(orgName)} governs its AI assets in RegAnchor, including its inventory, accountability, applicable requirements, control assignments, supporting evidence, policies and assessment outcomes as of the export date.</p>
-      <div class="cov-score-line">
+      <div class="cov-export">Exported ${x(fmtDate(generatedAt))}</div>
+      <div class="cov-id">${x(dossierId)}</div>
+      <p class="cov-blurb">A structured record of how ${x(orgName)} governs AI assets in RegAnchor: inventory, accountability, mapped requirements, control assignments, evidence, policies and assessment outcomes as held at the export date.</p>
+      <div class="cov-score">
         <div>
-          <div class="cov-kpi-lbl">Governance score</div>
-          <div class="cov-kpi-val">${score}</div>
+          <div class="cov-score-lbl">Governance score</div>
+          <div class="cov-score-val">${score}</div>
         </div>
-        <div class="cov-kpi-sub">${x(posture)}</div>
+        <div class="cov-score-posture">${x(posture)}</div>
       </div>
       <div class="cov-kpis">
         <div class="cov-kpi"><div class="cov-kpi-lbl">AI assets</div><div class="cov-kpi-val">${counts.assets || assets.length}</div><div class="cov-kpi-sub">${counts.high_risk_assets || 0} high risk</div></div>
-        <div class="cov-kpi"><div class="cov-kpi-lbl">Controls assigned</div><div class="cov-kpi-val">${counts.controls || controls.length}</div><div class="cov-kpi-sub">${counts.controls_done || 0} implemented</div></div>
-        <div class="cov-kpi"><div class="cov-kpi-lbl">Evidence records</div><div class="cov-kpi-val">${counts.evidence || evidence.length}</div></div>
-        <div class="cov-kpi"><div class="cov-kpi-lbl">Mapped requirements</div><div class="cov-kpi-val">${counts.obligations || 0}</div></div>
-        <div class="cov-kpi"><div class="cov-kpi-lbl">Active policies</div><div class="cov-kpi-val">${counts.policies_active || 0}</div></div>
+        <div class="cov-kpi"><div class="cov-kpi-lbl">Controls</div><div class="cov-kpi-val">${counts.controls || controls.length}</div><div class="cov-kpi-sub">${counts.controls_done || 0} implemented</div></div>
+        <div class="cov-kpi"><div class="cov-kpi-lbl">Evidence</div><div class="cov-kpi-val">${counts.evidence || evidence.length}</div></div>
+        <div class="cov-kpi"><div class="cov-kpi-lbl">Requirements</div><div class="cov-kpi-val">${counts.obligations || 0}</div></div>
+        <div class="cov-kpi"><div class="cov-kpi-lbl">Policies</div><div class="cov-kpi-val">${counts.policies_active || 0}</div></div>
       </div>
+      <dl class="cov-ref">
+        <div><dt>Org snapshot</dt><dd>${x(blank(hash))}</dd></div>
+        <div><dt>Catalogue</dt><dd>${x(blank(catalogueHash))}</dd></div>
+        <div><dt>Methodology</dt><dd>${x(blank(methodologyLabel))}</dd></div>
+        <div><dt>Prepared for</dt><dd>Authorised reviewers, auditors, assurance and procurement</dd></div>
+      </dl>
     </div>
     <div class="cover-foot">
-      <div><strong>Prepared for</strong><br>Authorised reviewers, auditors, assurance and procurement</div>
-      <div style="text-align:right"><strong>Issued by</strong><br>MLA Group Ltd via RegAnchor</div>
+      <div><strong>Issued by</strong>MLA Group Ltd via RegAnchor</div>
+      <div style="text-align:right"><strong>Confidential</strong>${x(orgName)}</div>
     </div>
   </section>`;
 
   /* ── 01 Executive summary ── */
+  const riskStrip = riskBuckets.length
+    ? `<div class="risk-strip">${riskBuckets.map((r) =>
+        `<span class="risk-chip"><strong>${x(r.count || 0)}</strong>${x(r.label || pretty(r.key))}</span>`
+      ).join('')}</div>`
+    : '';
+
   html += `<section class="section">
     ${secBar('01', 'Executive summary')}
     <h2 class="sec-title">Governance posture</h2>
-    <p class="sec-intro">Overall score is a RegAnchor governance indicator derived from recorded controls and layer scores. It is not a certification of compliance.</p>
+    <p class="sec-intro">The composite score is a RegAnchor indicator from recorded controls and layer scores. It is not a certification of compliance.</p>
     <div class="score-row">
       <div class="score-ring">${donut(score)}<div class="score-ring-inner"><div class="score-num">${score}</div><div class="score-of">/ 100</div></div></div>
       <div>
         <div class="score-posture">${x(posture)}</div>
-        <p class="score-note">Composite governance score as of ${x(fmtDate(summary.score_as_of || generatedAt))}. Layer scores below follow the RegAnchor organisation / AI asset / assurance model.</p>
+        <p class="score-note">As of ${x(fmtDate(summary.score_as_of || generatedAt))}. Layer scores follow the RegAnchor organisation, AI asset and assurance model.</p>
       </div>
     </div>
     <div class="layer-grid">
-      ${layers.map((l) => `<div class="layer"><div class="layer-lbl">${x(l.label)}</div><div class="layer-val">${Math.round(Number(l.score) || 0)}</div></div>`).join('') || '<div class="layer"><div class="layer-lbl">Organisation</div><div class="layer-val">—</div></div>'}
+      ${(layers.length ? layers : [
+        { label: 'Organisation', score: null },
+        { label: 'AI assets', score: null },
+        { label: 'Assurance', score: null },
+      ]).map((l) => `<div class="layer"><div class="layer-lbl">${x(l.label)}</div><div class="layer-val">${l.score == null ? '—' : Math.round(Number(l.score) || 0)}</div></div>`).join('')}
     </div>
+    ${riskStrip}
     <div class="stat-grid">
       <div class="stat"><span class="stat-lbl">AI assets</span><div class="stat-val">${counts.assets || 0}</div><div class="stat-sub">${counts.high_risk_assets || 0} high risk</div></div>
       <div class="stat"><span class="stat-lbl">Assessments</span><div class="stat-val">${counts.assessments || 0}</div></div>
-      <div class="stat"><span class="stat-lbl">Controls assigned</span><div class="stat-val">${counts.controls || 0}</div><div class="stat-sub">${counts.controls_done || 0} implemented · ${counts.controls_in_progress || 0} in progress · ${counts.controls_outstanding || 0} outstanding</div></div>
+      <div class="stat"><span class="stat-lbl">Controls assigned</span><div class="stat-val">${counts.controls || 0}</div><div class="stat-sub">${counts.controls_done || 0} implemented, ${counts.controls_in_progress || 0} in progress, ${counts.controls_outstanding || 0} outstanding</div></div>
       <div class="stat"><span class="stat-lbl">Evidence records</span><div class="stat-val">${counts.evidence || 0}</div></div>
       <div class="stat"><span class="stat-lbl">Active policies</span><div class="stat-val">${counts.policies_active || 0}</div></div>
       <div class="stat"><span class="stat-lbl">Mapped requirements</span><div class="stat-val">${counts.obligations || 0}</div></div>
@@ -884,24 +1032,23 @@ function render(D) {
   /* ── Contents ── */
   html += `<section class="section">
     ${secBar('', 'Contents')}
-    <h2 class="sec-title">Contents</h2>
     <ul class="toc">${toc.map(([n, t]) => `<li><span class="toc-num">${n}</span><span class="toc-title">${x(t)}</span></li>`).join('')}</ul>
   </section>`;
 
   /* ── 02 Organisation & scope ── */
   html += `<section class="section">
-    ${secBar('02', 'Organisation & scope')}
+    ${secBar('02', 'Organisation and scope')}
     <h2 class="sec-title">Organisation</h2>
     <p class="sec-intro">Workspace recorded in RegAnchor for this export. Internal implementation identifiers are omitted where they are not useful to a reviewer.</p>
     <dl class="kv">
       <dt>Organisation</dt><dd>${x(orgName)}</dd>
-      <dt>Sector</dt><dd>${x(org.sector || '—')}</dd>
-      <dt>Organisation size</dt><dd>${x(org.org_size || '—')}</dd>
+      <dt>Sector</dt><dd>${x(blank(org.sector))}</dd>
+      <dt>Organisation size</dt><dd>${x(blank(org.org_size))}</dd>
       <dt>Export date</dt><dd>${x(fmtDate(generatedAt))}</dd>
       <dt>Dossier ID</dt><dd>${x(dossierId)}</dd>
-      <dt>Org snapshot</dt><dd>${x(hash || '—')}</dd>
-      <dt>Catalogue</dt><dd>${x(catalogueHash || '—')}</dd>
-      <dt>Methodology</dt><dd>${x(methodologyLabel || '—')}${methodologyId ? ' · ' + x(String(methodologyId).slice(0, 8)) : ''}</dd>
+      <dt>Org snapshot</dt><dd>${x(blank(hash))}</dd>
+      <dt>Catalogue</dt><dd>${x(blank(catalogueHash))}</dd>
+      <dt>Methodology</dt><dd>${x(blank(methodologyLabel))}${methodologyId ? `<span class="sign-meta">${x(String(methodologyId).slice(0, 8))}</span>` : ''}</dd>
     </dl>
     <span class="sub-label">Scope of this export</span>
     <dl class="kv">
@@ -916,12 +1063,12 @@ function render(D) {
 
   /* ── 03 AI asset inventory ── */
   const assetRows = assets.slice(0, 60).map((a) => `<tr>
-    <td>${x(a.name || 'Unnamed')}</td>
-    <td>${x(labelProvider(a.provider_slug, a.vendor))}</td>
+    <td><span class="asset-name">${x(a.name || 'Unnamed')}</span>${a.model_name ? `<span class="asset-sub">${x(a.model_name)}</span>` : ''}</td>
+    <td>${providerMark(a.provider_slug, a.vendor)}</td>
     <td><span class="status ${statusClass(a.risk_tier)}">${x(tierLabel(a.risk_tier))}</span></td>
     <td>${x(lifeLabel(a.lifecycle))}</td>
-    <td>${x(a.system_owner || '—')}</td>
-    <td class="muted">${x(a.department || '—')}</td>
+    <td>${x(blank(a.system_owner))}</td>
+    <td class="muted">${x(blank(a.department))}</td>
   </tr>`).join('');
 
   html += `<section class="section">
@@ -934,7 +1081,7 @@ function render(D) {
       </tr></thead>
       <tbody>${assetRows}</tbody>
     </table>
-    ${assets.length > 60 ? `<p class="sec-intro">${assets.length - 60} additional assets omitted from this page; full register available in RegAnchor.</p>` : ''}`
+    ${assets.length > 60 ? `<p class="note-line">${assets.length - 60} additional assets are available in RegAnchor and omitted from this page.</p>` : ''}`
       : empty('No AI assets registered for this organisation.')}
   </section>`;
 
@@ -945,8 +1092,8 @@ function render(D) {
   </tr>`).join('');
   const ownerRows = assetOwners.slice(0, 40).map((o) => `<tr>
     <td>${x(o.asset_name)}</td>
-    <td>${x(o.owner)}</td>
-    <td class="muted">${x(o.department || '—')}</td>
+    <td>${x(blank(o.owner))}</td>
+    <td class="muted">${x(blank(o.department))}</td>
     <td><span class="status ${statusClass(o.risk_tier)}">${x(tierLabel(o.risk_tier))}</span></td>
   </tr>`).join('');
 
@@ -979,44 +1126,41 @@ function render(D) {
       <table class="data"><thead><tr>
         <th>Mapped requirement</th><th>Article / reference</th><th>AI assets mapped</th><th>Status mix</th>
       </tr></thead><tbody>
-      ${rows.map((o) => {
-        const mix = Object.entries(o.statuses || {}).map(([k, v]) => `${pretty(k)} ${v}`).join(' · ') || '—';
-        return `<tr>
+      ${rows.map((o) => `<tr>
           <td>${x(o.obligation_title)}</td>
-          <td class="num">${x(o.article_reference || '—')}</td>
+          <td class="num">${x(blank(o.article_reference))}</td>
           <td class="num">${o.asset_count || 0}</td>
-          <td class="muted">${x(mix)}</td>
-        </tr>`;
-      }).join('')}
+          <td>${statusMixStack(o.statuses)}</td>
+        </tr>`).join('')}
       </tbody></table>`;
   }
 
   const policyRows = policies.slice(0, 40).map((p) => `<tr>
     <td>${x(p.title)}</td>
-    <td>${x(p.version || '—')}</td>
+    <td>${x(blank(p.version))}</td>
     <td><span class="status ${p.is_active ? 's-ok' : 's-muted'}">${p.is_active ? 'Active' : 'Inactive'}</span></td>
     <td class="muted">${x(fmtShort(p.published_at || p.updated_at))}</td>
-    <td class="muted">${p.linked_control_title ? x(controlCode(p.linked_control_number) + ' · ' + p.linked_control_title) : '—'}</td>
+    <td class="muted">${p.linked_control_title ? x(controlCode(p.linked_control_number) + ', ' + p.linked_control_title) : 'Not recorded'}</td>
   </tr>`).join('');
 
   html += `<section class="section">
-    ${secBar('05', 'Frameworks, regulations & policies')}
+    ${secBar('05', 'Frameworks, regulations and policies')}
     <h2 class="sec-title">Regulatory and framework mappings</h2>
-    <p class="sec-intro">Mapped requirements below are those linked to AI assets in RegAnchor, with the relevant article, regulation or guidance reference recorded where available. This section reports mappings, not a determination of legal obligations, and is not legal advice.</p>
+    <p class="sec-intro">Mapped requirements linked to AI assets in RegAnchor, with article, regulation or guidance references where recorded. This section reports mappings only. It is not a determination of legal obligations and is not legal advice.</p>
     ${obligations.length ? fwHtml : empty('No framework requirements are currently mapped against AI assets for this organisation.')}
     ${customFw.length ? `<span class="sub-label">Custom frameworks</span>
       <table class="data"><thead><tr><th>Framework</th><th>Status</th><th>Source</th></tr></thead>
       <tbody>${customFw.map((f) => `<tr>
         <td>${x(f.name)}</td>
         <td><span class="status ${f.is_active ? 's-ok' : 's-muted'}">${f.is_active ? 'Active' : 'Inactive'}</span></td>
-        <td class="muted">${x(f.source || '—')}</td>
+        <td class="muted">${x(blank(f.source))}</td>
       </tr>`).join('')}</tbody></table>
       ${customFwControls.filter((c) => c.mapped_control_id).length
         ? `<table class="data"><thead><tr><th>Requirement</th><th>Framework</th><th>Mapped RegAnchor control</th><th>Status</th></tr></thead>
         <tbody>${customFwControls.filter((c) => c.mapped_control_id).map((c) => `<tr>
           <td>${x(c.title)}</td>
-          <td>${x(c.framework_name || '—')}</td>
-          <td>${x(controlCode(c.mapped_control_number) + (c.mapped_control_title ? ' · ' + c.mapped_control_title : ''))}</td>
+          <td>${x(blank(c.framework_name))}</td>
+          <td>${x(controlCode(c.mapped_control_number) + (c.mapped_control_title ? ', ' + c.mapped_control_title : ''))}</td>
           <td><span class="status ${statusClass(c.status)}">${x(ctrlStatus(c.status))}</span></td>
         </tr>`).join('')}</tbody></table>`
         : ''}` : ''}
@@ -1026,23 +1170,28 @@ function render(D) {
       : empty('No policies recorded.')}
   </section>`;
 
-  /* ── 06 Controls register + detail ── */
+  /* ── 06 Controls register ── */
   const ctrlRegister = controls.slice(0, 80).map((c) => `<tr>
     <td><strong>${x(controlCode(c.control_number))}</strong><br>${x(displayControlTitle(c.title))}</td>
     <td>${governanceBasisCell(c)}</td>
-    <td>${x(c.is_org_level ? 'Organisation' : (c.asset_name || '—'))}</td>
+    <td>${x(c.is_org_level ? 'Organisation' : blank(c.asset_name))}</td>
     <td><span class="status ${statusClass(c.status)}">${x(ctrlStatus(c.status))}</span></td>
-    <td>${evCell(c)}</td>
-    <td>${x(c.owner_name || '—')}</td>
+    <td>${evSummary(c)}</td>
+    <td>${x(blank(c.owner_name))}</td>
     <td class="num muted">${x(fmtShort(c.due_date))}</td>
   </tr>`).join('');
 
-  const detailBlocks = controls.slice(0, 40).map((c) => {
+  const material = controls.filter(isMaterialControl);
+  const detailSource = material.slice(0, 40);
+  const skippedOutstanding = controls.length - material.length;
+  const detailOmitted = Math.max(0, material.length - detailSource.length);
+
+  const detailBlocks = detailSource.map((c) => {
     const suggested = (c.suggested_evidence || []).map((s) => `<li>${x(displayEvidenceType(s))}</li>`).join('') || '<li>None recorded</li>';
     const provided = (c.evidence_provided || []).map((e) => `<li>${x(e.file_name)}</li>`).join('') || '<li>None uploaded</li>';
     const req = (c.mapped_requirements || []).length
       ? (c.mapped_requirements || []).map((m) => {
-          const head = [m.framework_name, m.article_reference].filter(Boolean).join(' · ');
+          const head = [m.framework_name, m.article_reference].filter(Boolean).join(', ');
           const title = m.requirement_title || '';
           return head && title ? `${head}: ${title}` : head || title;
         }).join('; ')
@@ -1055,8 +1204,8 @@ function render(D) {
       </div>
       ${c.purpose || c.description ? `<p class="ctrl-body">${x(c.purpose || c.description)}</p>` : ''}
       <dl class="ctrl-meta">
-        <div><dt>Scope</dt><dd>${x(c.is_org_level ? 'Organisation' : (c.asset_name || 'AI asset'))}</dd></div>
-        <div><dt>Owner</dt><dd>${x(c.owner_name || '—')}</dd></div>
+        <div><dt>Scope</dt><dd>${x(c.is_org_level ? 'Organisation' : blank(c.asset_name))}</dd></div>
+        <div><dt>Owner</dt><dd>${x(blank(c.owner_name))}</dd></div>
         <div><dt>Due</dt><dd>${x(fmtShort(c.due_date))}</dd></div>
         <div><dt>Evidence status</dt><dd>${(c.evidence_count || 0) > 0 ? (c.evidence_count + ' file(s) uploaded') : 'No evidence uploaded'}</dd></div>
         <div><dt>Regulatory / framework mapping</dt><dd>${x(req)}</dd></div>
@@ -1069,7 +1218,7 @@ function render(D) {
   }).join('');
 
   html += `<section class="section">
-    ${secBar('06', 'Controls, requirements & evidence')}
+    ${secBar('06', 'Controls, requirements and evidence')}
     <h2 class="sec-title">Control register</h2>
     <p class="sec-intro">Control assignments from RegAnchor. Status and evidence are recorded separately: uploaded evidence supports a control; it does not by itself mean the control is implemented.</p>
     ${controls.length
@@ -1079,29 +1228,30 @@ function render(D) {
         </tr></thead>
         <tbody>${ctrlRegister}</tbody>
       </table>
-      ${controls.length > 80 ? `<p class="sec-intro">${controls.length - 80} additional assignments omitted from the register table.</p>` : ''}`
+      ${controls.length > 80 ? `<p class="note-line">${controls.length - 80} additional assignments are omitted from the register table.</p>` : ''}`
       : empty('No control assignments recorded.')}
   </section>`;
 
   html += `<section class="section">
     ${secBar('06a', 'Control detail')}
     <h2 class="sec-title">Control definitions and evidence</h2>
-    <p class="sec-intro">Expanded view of assigned controls, including RegAnchor control meaning, suggested evidence types, and files actually uploaded against each assignment.</p>
-    ${controls.length ? detailBlocks : empty('No control assignments to detail.')}
-    ${controls.length > 40 ? `<p class="sec-intro">${controls.length - 40} further assignments are summarised in the register only.</p>` : ''}
+    <p class="sec-intro">Expanded view of material assignments: implemented, verified, overdue, in progress, or any with uploaded evidence. Outstanding not-started items remain in the register only.</p>
+    ${detailSource.length ? detailBlocks : empty('No material control assignments to detail in this export.')}
+    ${skippedOutstanding > 0 ? `<p class="note-line">${skippedOutstanding} not-started assignment${skippedOutstanding === 1 ? '' : 's'} summarised in the register only.</p>` : ''}
+    ${detailOmitted > 0 ? `<p class="note-line">${detailOmitted} further material assignment${detailOmitted === 1 ? '' : 's'} summarised in the register only.</p>` : ''}
   </section>`;
 
   /* ── 07 Assessments ── */
   const assessRows = assessments.slice(0, 50).map((a) => `<tr>
-    <td>${x(a.asset_name || '—')}</td>
+    <td>${x(blank(a.asset_name))}</td>
     <td class="num muted">${x(fmtShort(a.completed_at || a.requested_at))}</td>
-    <td class="num">${a.overall_score != null ? x(a.overall_score) : '—'}</td>
+    <td class="num">${a.overall_score != null ? x(a.overall_score) : 'Not recorded'}</td>
     <td><span class="status ${statusClass(a.risk_band)}">${x(tierLabel(a.risk_band) === 'Unclassified' && a.risk_band ? pretty(a.risk_band) : tierLabel(a.risk_band))}</span></td>
     <td><span class="status ${statusClass(a.status)}">${x(assessStatus(a.status))}</span></td>
   </tr>`).join('');
 
   html += `<section class="section">
-    ${secBar('07', 'Assessments & risk')}
+    ${secBar('07', 'Assessments and risk')}
     <h2 class="sec-title">Assessment outcomes</h2>
     <p class="sec-intro">Registry assessments recorded for AI assets. This is a governance summary, not a full questionnaire export.</p>
     ${assessments.length
@@ -1114,11 +1264,11 @@ function render(D) {
   /* ── 08 Evidence index ── */
   const evRows = evidence.slice(0, 80).map((e) => `<tr>
     <td>${x(e.file_name)}</td>
-    <td>${e.control_title ? x(controlCode(e.control_number) + ' · ' + e.control_title) : '—'}</td>
-    <td>${x(e.asset_name || (e.scope === 'organisation' ? 'Organisation' : '—'))}</td>
+    <td>${e.control_title ? x(controlCode(e.control_number) + ', ' + e.control_title) : 'Not recorded'}</td>
+    <td>${x(e.asset_name || (e.scope === 'organisation' ? 'Organisation' : 'Not recorded'))}</td>
     <td class="num muted">${x(fmtShort(e.uploaded_at))}</td>
-    <td class="muted">${x(e.file_type || '—')}</td>
-    <td><span class="status ${statusClass(e.control_status)}">${e.control_status ? x(ctrlStatus(e.control_status)) : '—'}</span></td>
+    <td class="muted">${x(blank(e.file_type))}</td>
+    <td><span class="status ${statusClass(e.control_status)}">${e.control_status ? x(ctrlStatus(e.control_status)) : 'Not recorded'}</span></td>
   </tr>`).join('');
 
   html += `<section class="section">
@@ -1137,7 +1287,7 @@ function render(D) {
     <td class="num muted">${x(fmtShort(a.created_at))}</td>
     <td>${x(ACTIVITY_LABELS[a.action] || pretty(a.action))}</td>
     <td>${x(a.entity_type === 'ai_system' || a.entity_type === 'ai_asset' ? 'AI asset' : pretty(a.entity_type))}</td>
-    <td class="muted">${x(a.entity_label || '—')}</td>
+    <td class="muted">${x(blank(a.entity_label))}</td>
   </tr>`).join('');
 
   html += `<section class="section">
@@ -1151,11 +1301,11 @@ function render(D) {
 
   /* ── 10 Attestation ── */
   html += `<section class="section">
-    ${secBar('10', 'Attestation & notice')}
+    ${secBar('10', 'Attestation and notice')}
     <h2 class="sec-title">Attestation</h2>
     <div class="attest">
-      <p>This AI Governance Dossier is a <strong>point-in-time export</strong> of data held in RegAnchor for <strong>${x(orgName)}</strong> as at <strong>${x(fmtDate(generatedAt))}</strong>.</p>
-      <p>It represents the organisation’s recorded AI asset inventory, control assignments, evidence uploads, assessments, policies and framework mappings at the stated export time. Dossier ID <strong>${x(dossierId)}</strong>${hash ? '; org snapshot <strong>' + x(hash) + '</strong>' : ''}${catalogueHash ? '; methodology catalogue <strong>' + x(catalogueHash) + '</strong>' : ''}.</p>
+      <p>This AI Governance Dossier is an export of data held in RegAnchor for <strong>${x(orgName)}</strong> as at <strong>${x(fmtDate(generatedAt))}</strong>.</p>
+      <p>It reflects the organisation’s recorded AI asset inventory, control assignments, evidence uploads, assessments, policies and framework mappings at the stated export time.</p>
       <p>It is <strong>not</strong> a certification of compliance, <strong>not</strong> legal advice, and <strong>not</strong> an independent assurance opinion.</p>
     </div>
     <div class="sign-grid">
@@ -1165,7 +1315,9 @@ function render(D) {
       </div>
       <div class="sign-box">
         <div class="sign-lbl">Export reference</div>
-        <div class="sign-val">${x(dossierId)}<br><span style="font-weight:400;color:var(--text-3)">${x(fmtDate(generatedAt))}${catalogueHash ? '<br>Catalogue ' + x(catalogueHash) : ''}${methodologyLabel ? '<br>Methodology ' + x(methodologyLabel) : ''}</span></div>
+        <div class="sign-val">${x(dossierId)}
+          <span class="sign-meta">${x(fmtDate(generatedAt))}${catalogueHash ? '<br>Catalogue ' + x(catalogueHash) : ''}${methodologyLabel ? '<br>Methodology ' + x(methodologyLabel) : ''}${hash ? '<br>Snapshot ' + x(hash) : ''}</span>
+        </div>
       </div>
     </div>
   </section>`;
@@ -1194,9 +1346,9 @@ const PREVIEW_DOSSIER = {
       { key: 'assurance', label: 'Assurance', score: 55 },
     ],
     risk: [
-      { key: 'high', label: 'High', count: 1 },
-      { key: 'limited', label: 'Limited', count: 2 },
-      { key: 'minimal', label: 'Minimal', count: 1 },
+      { key: 'high', label: 'High', count: 3 },
+      { key: 'limited', label: 'Limited', count: 5 },
+      { key: 'minimal', label: 'Minimal', count: 4 },
     ],
     counts: {
       assets: 12,
@@ -1220,8 +1372,8 @@ const PREVIEW_DOSSIER = {
     ],
   },
   assets: [
-    { name: 'Credit Decision Assistant', provider_slug: 'openai', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Risk', purpose_category: 'essential_services_access' },
-    { name: 'Support Copilot', provider_slug: 'anthropic', risk_tier: 'limited', lifecycle: 'production', system_owner: 'J. Chen', department: 'Customer' },
+    { name: 'Credit Decision Assistant', provider_slug: 'openai', model_name: 'gpt-4.1', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Risk' },
+    { name: 'Support Copilot', provider_slug: 'anthropic', model_name: 'claude-sonnet-4', risk_tier: 'limited', lifecycle: 'production', system_owner: 'J. Chen', department: 'Customer' },
     { name: 'Doc Summariser', provider_slug: 'azure', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'J. Chen', department: 'Operations' },
     { name: 'Internal FAQ Bot', provider_slug: 'openai', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'A. Patel', department: 'IT' },
     { name: 'Claims Triage Model', provider_slug: 'bedrock', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Claims' },
@@ -1230,7 +1382,7 @@ const PREVIEW_DOSSIER = {
     { name: 'Fraud Signal Ranker', provider_slug: 'anthropic', risk_tier: 'high', lifecycle: 'development', system_owner: 'A. Patel', department: 'Risk' },
     { name: 'HR Screening Assistant', provider_slug: 'openai', risk_tier: 'limited', lifecycle: 'planned', system_owner: 'L. Ng', department: 'People' },
     { name: 'Contract Clause Extractor', provider_slug: 'anthropic', risk_tier: 'limited', lifecycle: 'production', system_owner: 'R. Singh', department: 'Legal' },
-    { name: 'Ops Knowledge Agent', provider_slug: 'openai', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'J. Chen', department: 'Operations' },
+    { name: 'Ops Knowledge Agent', provider_slug: 'google', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'J. Chen', department: 'Operations' },
     { name: 'Board Pack Drafter', provider_slug: 'anthropic', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'A. Patel', department: 'Executive' },
   ],
   assessments: [
@@ -1299,7 +1451,7 @@ const PREVIEW_DOSSIER = {
     catalogue_hash: 'catalogueprev01',
     methodology_version_id: '00000000-0000-4000-8000-000000000001',
     methodology_version_label: '2026.09.16',
-    generator_version: '2.0.0-preview',
+    generator_version: '2.4.0-preview',
   },
 };
 
