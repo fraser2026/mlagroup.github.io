@@ -785,6 +785,8 @@ function render(D) {
   const generatedAt = meta.generated_at || new Date().toISOString();
   const hash = meta.snapshot_hash || '';
   const catalogueHash = meta.catalogue_hash || '';
+  const methodologyLabel = meta.methodology_version_label || '';
+  const methodologyId = meta.methodology_version_id || '';
   const summary = D.summary || {};
   const score = Number(summary.composite_score || 0);
   const posture = summary.posture || 'Unscored';
@@ -827,7 +829,7 @@ function render(D) {
       <div class="cov-doctype">AI governance dossier</div>
       <h1 class="cov-title">Point-in-time governance record</h1>
       <div class="cov-org">${x(orgName)}</div>
-      <div class="cov-meta">Export ${x(fmtDate(generatedAt))} · ${x(dossierId)}${hash ? ' · Snapshot ' + x(hash) : ''}${catalogueHash ? ' · Catalogue ' + x(catalogueHash) : ''}</div>
+      <div class="cov-meta">Export ${x(fmtDate(generatedAt))} · ${x(dossierId)}${hash ? ' · Snapshot ' + x(hash) : ''}${catalogueHash ? ' · Catalogue ' + x(catalogueHash) : ''}${methodologyLabel ? ' · Methodology ' + x(methodologyLabel) : ''}</div>
       <p class="cov-blurb">This dossier provides a point-in-time record of how ${x(orgName)} governs its AI assets in RegAnchor, including its inventory, accountability, applicable requirements, control assignments, supporting evidence, policies and assessment outcomes as of the export date.</p>
       <div class="cov-score-line">
         <div>
@@ -899,6 +901,7 @@ function render(D) {
       <dt>Dossier ID</dt><dd>${x(dossierId)}</dd>
       <dt>Org snapshot</dt><dd>${x(hash || '—')}</dd>
       <dt>Catalogue</dt><dd>${x(catalogueHash || '—')}</dd>
+      <dt>Methodology</dt><dd>${x(methodologyLabel || '—')}${methodologyId ? ' · ' + x(String(methodologyId).slice(0, 8)) : ''}</dd>
     </dl>
     <span class="sub-label">Scope of this export</span>
     <dl class="kv">
@@ -1162,7 +1165,7 @@ function render(D) {
       </div>
       <div class="sign-box">
         <div class="sign-lbl">Export reference</div>
-        <div class="sign-val">${x(dossierId)}<br><span style="font-weight:400;color:var(--text-3)">${x(fmtDate(generatedAt))}${catalogueHash ? '<br>Catalogue ' + x(catalogueHash) : ''}</span></div>
+        <div class="sign-val">${x(dossierId)}<br><span style="font-weight:400;color:var(--text-3)">${x(fmtDate(generatedAt))}${catalogueHash ? '<br>Catalogue ' + x(catalogueHash) : ''}${methodologyLabel ? '<br>Methodology ' + x(methodologyLabel) : ''}</span></div>
       </div>
     </div>
   </section>`;
@@ -1294,6 +1297,8 @@ const PREVIEW_DOSSIER = {
     generated_at: '2026-09-14T12:00:00.000Z',
     snapshot_hash: 'localpreview0001',
     catalogue_hash: 'catalogueprev01',
+    methodology_version_id: '00000000-0000-4000-8000-000000000001',
+    methodology_version_label: '2026.09.16',
     generator_version: '2.0.0-preview',
   },
 };
