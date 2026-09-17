@@ -281,7 +281,18 @@ app.post('/render-dossier', async (req, res) => {
     const orgName = String(dossierData.organisation.name || dossierData.organisation || 'Organisation');
     console.log(`[Renderer] Generating dossier for: ${orgName}`);
 
-    const renderedHtml = DOSSIER_TEMPLATE_HTML.replace(
+    // Always read from disk so a Render deploy of dossier-template.html is visible immediately.
+    let dossierHtml = readFileSync(DOSSIER_TEMPLATE_PATH, 'utf-8');
+    try {
+      const swooshPath = join(__dirname, 'brand', 'dossier-swoosh.svg');
+      const swooshSvg = readFileSync(swooshPath, 'utf-8');
+      const swooshData = `data:image/svg+xml;base64,${Buffer.from(swooshSvg).toString('base64')}`;
+      dossierHtml = dossierHtml.replace(/src="brand\/dossier-swoosh\.svg"/g, `src="${swooshData}"`);
+    } catch (swooshErr) {
+      console.warn(`[Renderer] Dossier swoosh inline skipped: ${swooshErr.message}`);
+    }
+
+    const renderedHtml = dossierHtml.replace(
       '/*__DOSSIER_DATA__*/',
       `const DOSSIER_DATA = ${JSON.stringify(dossierData)};`,
     );
@@ -302,37 +313,14 @@ app.post('/render-dossier', async (req, res) => {
       { timeout: 15000 },
     );
 
-    const dateStr = new Date(dossierData.meta?.generated_at || Date.now())
-      .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-    const dossierId = String(dossierData.meta?.dossier_id || '').replace(/"/g, '&quot;');
-    const orgSafe = orgName.replace(/"/g, '&quot;');
-
-    const headerTemplate = `
-      <div style="width:100%;padding:0 18mm;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;height:16mm;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;border-bottom:1px solid #E5E7EB;">
-        <span style="color:#111827;font-size:7.5pt;font-weight:600;letter-spacing:0.04em;">REGANCHOR</span>
-        <span style="color:#6B7280;font-size:7.5pt;font-weight:500;">AI Governance Dossier${dossierId ? ' · ' + dossierId : ''}</span>
-        <span style="color:#6B7280;font-size:7.5pt;font-weight:500;font-variant-numeric:tabular-nums;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
-      </div>`;
-
-    const footerTemplate = `
-      <div style="width:100%;padding:0 18mm;display:flex;align-items:center;justify-content:space-between;height:14mm;box-sizing:border-box;border-top:1px solid #E5E7EB;font-family:Inter,Helvetica,Arial,sans-serif;">
-        <span style="color:#6B7280;font-size:7pt;">Confidential · ${orgSafe} · ${dateStr}</span>
-        <span style="color:#6B7280;font-size:7pt;">${SITE_DOMAIN}</span>
-      </div>`;
-
+    // Template owns page chrome (cover, Confidential header, wordmark footer).
+    // Do not overlay the legacy Puppeteer REGANCHOR header/footer.
     const pdfBuffer = await page.pdf({
       format: 'A4',
-      margin: {
-        top: '24mm',
-        bottom: '16mm',
-        left: '18mm',
-        right: '18mm',
-      },
       printBackground: true,
-      preferCSSPageSize: false,
-      displayHeaderFooter: true,
-      headerTemplate,
-      footerTemplate,
+      preferCSSPageSize: true,
+      displayHeaderFooter: false,
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
     });
 
     const elapsed = Date.now() - startTime;
