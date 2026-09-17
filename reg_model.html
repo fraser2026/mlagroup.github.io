@@ -92,7 +92,7 @@
     </div>
     
     <div class="input-group">
-        <label>Professional Tier Clients (£249/mo)</label>
+        <label>Professional Tier Clients (£299/mo)</label>
         <input type="number" id="professional" value="8" oninput="calculate()">
     </div>
     
@@ -131,7 +131,7 @@ function calculate() {
     const enterprisePrice = parseFloat(document.getElementById('enterprisePrice').value) || 0;
 
     const diagRev = diagnostics * 295;
-    const mrr = (essentials * 129) + (professional * 249) + (enterpriseCount * enterprisePrice);
+    const mrr = (essentials * 129) + (professional * 299) + (enterpriseCount * enterprisePrice);
     const arr = (mrr * 12) + diagRev;
 
     document.getElementById('diagOut').innerText = '£' + diagRev.toLocaleString();
