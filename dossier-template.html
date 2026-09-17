@@ -21,7 +21,11 @@
   --wash: #F6F9FC;
   --accent: #533AFD;
   --ok: #0F766E;
+  --ok-bg: #E6F5F3;
+  --warn: #B45309;
+  --warn-bg: #FFF4E0;
   --risk: #C8102E;
+  --risk-bg: #FCE8EB;
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --t-hero: 26pt;
   --t-display: 15pt;
@@ -154,7 +158,7 @@ body {
 }
 .exec-lede:last-of-type { margin-bottom: 28px; }
 
-/* Posture panel — score + band list (no mid-page hairlines) */
+/* Posture panel — score + band list (left-embedded) */
 .posture-panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -398,6 +402,7 @@ body {
   max-width: 78%;
   /* Room for the crest under Prepared by */
   padding-bottom: 24%;
+  --cover-stack-gap: 28mm;
 }
 
 .brand-wordmark {
@@ -410,9 +415,15 @@ body {
   flex-shrink: 0;
 }
 
-/* Title + tagline stay mid-upper; meta packs further down */
+.cover .brand-wordmark {
+  width: 132px;
+  /* Drop the mark so wordmark→title matches tagline→Organisation */
+  margin-top: 10mm;
+}
+
+/* Title + tagline; gap above matches gap into meta */
 .cover-intro {
-  margin-top: 38mm;
+  margin-top: var(--cover-stack-gap);
   display: flex;
   flex-direction: column;
 }
@@ -439,12 +450,12 @@ body {
   max-width: none;
 }
 
-/* Stacked label-over-value — below the tagline, not hard against the crest */
+/* Stacked label-over-value — same vertical gap as wordmark→title */
 .cov-meta {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin: 28mm 0 0;
+  margin: var(--cover-stack-gap) 0 0;
   max-width: 28em;
 }
 .cov-meta-item {
@@ -601,19 +612,26 @@ body {
 .toc-label {
   display: flex;
   align-items: baseline;
-  gap: 0.35em;
+  gap: 0.55em;
   flex: 0 1 auto;
   min-width: 0;
   color: var(--ink);
   font-weight: 500;
 }
 .toc-num {
+  box-sizing: content-box;
+  flex: 0 0 3ch;
+  width: 3ch;
   font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
+  text-align: right;
 }
-.toc-title { font-weight: 500; color: var(--ink); }
+.toc-title {
+  flex: 0 1 auto;
+  font-weight: 500;
+  color: var(--ink);
+}
 .toc-lead {
   flex: 1 1 auto;
   border-bottom: 1px dotted var(--text-3);
@@ -623,40 +641,57 @@ body {
   opacity: 0.55;
 }
 .toc-page {
-  flex-shrink: 0;
+  flex: 0 0 2ch;
+  width: 2ch;
   font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
-  min-width: 1.25em;
   text-align: right;
 }
 
 /* Tables */
 table.data {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin: 0 0 16px;
   font-size: var(--t-small);
 }
 table.data th {
   text-align: left;
   font-weight: 500;
-  color: var(--text-3);
+  color: var(--ink);
   font-size: var(--t-micro);
   text-transform: none;
-  letter-spacing: 0;
-  padding: 8px 10px 8px 0;
-  border-bottom: 1px solid var(--line-strong);
-  vertical-align: bottom;
+  letter-spacing: -0.01em;
+  padding: 10px 12px;
+  background: #F3F1FF;
+  border-bottom: none;
+  vertical-align: middle;
+}
+table.data th:first-child {
+  border-radius: var(--radius) 0 0 var(--radius);
+  padding-left: 12px;
+}
+table.data th:last-child {
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding-right: 12px;
 }
 table.data td {
-  padding: 9px 10px 9px 0;
+  padding: 9px 12px;
   border-bottom: 1px solid var(--line);
   color: var(--ink);
   vertical-align: top;
   line-height: 1.4;
+  font-weight: 500;
 }
-table.data td.muted { color: var(--text-3); }
+table.data td:first-child { padding-left: 12px; }
+table.data td:last-child { padding-right: 12px; }
+table.data td.muted,
+table.data .muted {
+  color: var(--ink);
+  font-weight: 500;
+}
 table.data .num { font-variant-numeric: tabular-nums; }
 table.data .asset-name { font-weight: 500; color: var(--ink); }
 table.data .asset-sub {
@@ -665,6 +700,9 @@ table.data .asset-sub {
   font-weight: 400;
   color: var(--text-3);
   margin-top: 2px;
+}
+table.data .ev-summary.quiet {
+  color: var(--ink);
 }
 
 .provider-cell {
@@ -703,15 +741,49 @@ table.data .asset-sub {
 .status.s-muted, .status.s-info, .status.s-neutral { color: var(--text-3); }
 .status.s-ink { color: var(--ink); }
 
+/* Risk tags — match app StatusLabel badge tones */
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: var(--radius);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.risk-badge.tier-high {
+  background: var(--risk-bg);
+  color: var(--risk);
+}
+.risk-badge.tier-limited {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.risk-badge.tier-minimal {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.risk-badge.tier-none {
+  background: var(--wash);
+  color: var(--text-2);
+  border-color: var(--line);
+}
+
 .ev-summary { font-size: var(--t-small); color: var(--ink); }
-.ev-summary.quiet { color: var(--text-3); }
+.ev-summary.quiet { color: var(--ink); }
 
 .mix-stack {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: var(--t-micro);
-  color: var(--text-3);
+  font-size: inherit;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
 }
 
 /* Control detail */
@@ -788,13 +860,152 @@ table.data .asset-sub {
 
 .kv {
   display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 6px 16px;
-  margin: 0 0 18px;
+  grid-template-columns: 168px 1fr;
+  column-gap: 16px;
+  row-gap: 0;
+  margin: 0;
   font-size: var(--t-body);
+  position: relative;
+  align-items: stretch;
 }
-.kv dt { color: var(--text-3); font-weight: 500; }
-.kv dd { color: var(--ink); }
+.kv::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 168px;
+  background: #F3F1FF;
+  border-radius: var(--radius);
+  z-index: 0;
+  pointer-events: none;
+}
+.kv dt,
+.kv dd {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  min-height: 1.4em;
+  box-sizing: border-box;
+  color: var(--ink);
+  font-weight: 500;
+}
+.kv dd {
+  padding-left: 4px;
+}
+
+/* Asset profiles — symmetrical two-column cards */
+.asset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+  margin: 4px 0 0;
+  align-items: stretch;
+}
+.asset-card {
+  display: grid;
+  grid-template-rows: 22px 4.35em auto;
+  row-gap: 10px;
+  min-height: 0;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  page-break-inside: avoid;
+  box-sizing: border-box;
+  align-content: start;
+}
+.asset-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  height: 22px;
+  overflow: hidden;
+}
+.asset-card-title {
+  font-size: 10pt;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--ink);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.conn-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: var(--radius);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.conn-badge.conn-ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.conn-badge.conn-warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.asset-card-desc {
+  margin: 0;
+  height: 4.35em;
+  min-height: 4.35em;
+  max-height: 4.35em;
+  font-size: var(--t-body);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+  color: var(--ink);
+  overflow: hidden;
+}
+.asset-card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin: 4px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  align-items: start;
+}
+.asset-meta-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.asset-meta {
+  min-width: 0;
+}
+.asset-meta-lbl {
+  display: block;
+  margin-bottom: 2px;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-2);
+}
+.asset-meta-val {
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  color: var(--ink);
+  word-break: break-word;
+}
 
 .note-line {
   font-size: var(--t-small);
@@ -810,57 +1021,91 @@ table.data .asset-sub {
   border-top: 1px solid var(--line);
 }
 
-.attest {
-  padding: 4px 0 8px;
-  margin: 4px 0 8px;
-  border-top: 1px solid var(--line);
-}
-.attest p {
+.approve-lede {
   font-size: var(--t-body);
   color: var(--text-2);
   line-height: 1.55;
-  margin-bottom: 12px;
+  margin: 0 0 28px;
   max-width: 68ch;
 }
-.attest p:last-child { margin-bottom: 0; }
-.attest strong { color: var(--ink); font-weight: 500; }
-
-.sign-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 28px;
-}
-.sign-box {
-  border-top: 1px solid var(--line-strong);
-  padding-top: 12px;
-  min-height: 72px;
-}
-.sign-lbl {
-  font-size: var(--t-micro);
-  font-weight: 500;
-  color: var(--text-3);
-}
-.sign-val {
-  margin-top: 22px;
-  font-size: var(--t-body);
+.approve-lede strong {
   color: var(--ink);
   font-weight: 500;
 }
-.sign-meta {
+
+.signoff-block {
+  margin: 0 0 28px;
+}
+.signoff-row {
+  display: grid;
+  grid-template-columns: 1.35fr 1.15fr 0.85fr;
+  gap: 20px 28px;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+  page-break-inside: avoid;
+}
+.signoff-row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.signoff-lbl {
   display: block;
-  margin-top: 6px;
-  font-weight: 400;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+.signoff-name {
+  font-size: var(--t-body);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.35;
+  min-height: 1.35em;
+}
+.signoff-job {
+  margin-top: 4px;
   font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.35;
+  min-height: 1.35em;
+}
+.signoff-rule {
+  margin-top: 28px;
+  border-bottom: 1px solid var(--ink);
+  min-height: 28px;
+}
+.signoff-date-val {
+  margin-top: 28px;
+  font-size: var(--t-body);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.35;
+  min-height: 28px;
+}
+
+.export-ref {
+  margin: 4px 0 0;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--text-3);
   line-height: 1.45;
+}
+
+.disclaimer-slot {
+  margin-top: 36px;
+  min-height: 48px;
 }
 
 @media print {
   .section { page-break-before: always; }
   .cover { page-break-after: always; }
   thead { display: table-header-group; }
-  tr, .ctrl-block, .layer, .stat, .obs-list li, .attest, .sign-box {
+  tr, .ctrl-block, .layer, .stat, .obs-list li, .signoff-row {
     page-break-inside: avoid;
     break-inside: avoid;
   }
@@ -1024,6 +1269,54 @@ function tierLabel(t) {
   return TIER[k] || (t ? pretty(t) : 'Unclassified');
 }
 
+function riskBadgeClass(t) {
+  const k = String(t || '').toLowerCase();
+  if (k === 'high' || k === 'unacceptable') return 'tier-high';
+  if (k === 'limited') return 'tier-limited';
+  if (k === 'minimal') return 'tier-minimal';
+  return 'tier-none';
+}
+
+function riskBadge(t) {
+  return `<span class="risk-badge ${riskBadgeClass(t)}">${x(tierLabel(t))}</span>`;
+}
+
+function connBadge(status) {
+  const connected = String(status || '').toLowerCase() === 'connected';
+  return `<span class="conn-badge ${connected ? 'conn-ok' : 'conn-warn'}">${connected ? 'Connected' : 'Not connected'}</span>`;
+}
+
+const PURPOSE_LABELS = {
+  biometric_identification: 'Biometric identification',
+  critical_infrastructure: 'Critical infrastructure management',
+  education_access: 'Education and vocational training access',
+  employment_management: 'Employment and worker management',
+  essential_services_access: 'Access to essential services (credit, insurance)',
+  law_enforcement: 'Law enforcement',
+  migration_border: 'Migration and border control',
+  justice_administration: 'Administration of justice',
+  customer_chatbot: 'Customer-facing chatbot / virtual assistant',
+  content_generation: 'Content generation (text, image, audio)',
+  emotion_recognition: 'Emotion recognition',
+  internal_automation: 'Internal process automation',
+  data_analytics: 'Data analytics and reporting',
+  other: 'Other',
+};
+
+function purposeLabel(p) {
+  if (!p) return 'Not set';
+  return PURPOSE_LABELS[String(p)] || pretty(p);
+}
+
+/** Keep profile card descriptions to three lines; longer text ends with ... */
+function clipDesc(s, max = 168) {
+  const t = String(s == null ? '' : s).trim() || 'No description provided.';
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 3);
+  const soft = cut.replace(/\s+\S*$/, '').trimEnd();
+  return (soft.length > 40 ? soft : cut.trimEnd()) + '...';
+}
+
 function lifeLabel(l) {
   const k = String(l || '').toLowerCase();
   return LIFECYCLE[k] || pretty(l) || 'Not recorded';
@@ -1093,10 +1386,14 @@ function pageFooter() {
 }
 
 /** Cover = page 1. Each .section starts a new page; tall sections can span multiple. */
+function pageHeightPx() {
+  return Math.round(297 * (96 / 25.4));
+}
+
 function applyPagination() {
   const root = document.getElementById('dossier');
   if (!root) return;
-  const pagePx = Math.round(297 * (96 / 25.4));
+  const pagePx = pageHeightPx();
   const blocks = [root.querySelector('.cover'), ...root.querySelectorAll(':scope > .section')].filter(Boolean);
   let page = 1;
   const tocPages = {};
@@ -1124,6 +1421,18 @@ function applyPagination() {
     if (nEl && start) nEl.textContent = start;
     if (tEl) tEl.textContent = String(total);
   });
+}
+
+/** Keep activity trail on a single page — drop oldest rows until it fits. */
+function fitActivityToPage(root) {
+  const sec = root.querySelector('section[data-toc="10"]');
+  if (!sec) return;
+  const tbody = sec.querySelector('table.data tbody');
+  if (!tbody || !tbody.rows.length) return;
+  const pagePx = pageHeightPx();
+  while (sec.scrollHeight > pagePx + 1 && tbody.rows.length > 1) {
+    tbody.deleteRow(tbody.rows.length - 1);
+  }
 }
 
 function postureBands(active) {
@@ -1154,11 +1463,11 @@ function governanceBasisCell(ctrl) {
       const title = m.requirement_title || '';
       const head = [fw, art].filter(Boolean).join(', ');
       const line = head && title ? `${head}: ${title}` : head || title || 'Mapped requirement';
-      return `<div>${x(line)}${m.is_primary ? ' <span class="muted">(primary)</span>' : ''}</div>`;
+      return `<div>${x(line)}${m.is_primary ? ' (primary)' : ''}</div>`;
     }).join('');
   }
-  if (ctrl.is_org_level) return `<span class="muted">Internal governance requirement</span>`;
-  return `<span class="muted">No external requirement currently mapped</span>`;
+  if (ctrl.is_org_level) return 'Internal governance requirement';
+  return 'No external requirement currently mapped';
 }
 
 function displayControlTitle(title) {
@@ -1183,8 +1492,8 @@ function isMaterialControl(c) {
 }
 
 function statusMixStack(statuses) {
-  const entries = Object.entries(statuses || {});
-  if (!entries.length) return `<span class="muted">Not recorded</span>`;
+  const entries = Object.entries(statuses || {}).filter(([, n]) => Number(n) > 0);
+  if (!entries.length) return 'Not recorded';
   return `<div class="mix-stack">${entries.map(([k, v]) => `${x(pretty(k))}: ${x(v)}`).join('<br>')}</div>`;
 }
 
@@ -1223,13 +1532,14 @@ function render(D) {
     ['1', 'Executive summary'],
     ['2', 'Organisation and scope'],
     ['3', 'AI asset inventory'],
-    ['4', 'Accountability'],
-    ['5', 'Frameworks, regulations and policies'],
-    ['6', 'Controls, requirements and evidence'],
-    ['7', 'Assessments and risk'],
-    ['8', 'Evidence index'],
-    ['9', 'Activity trail'],
-    ['10', 'Attestation and notice'],
+    ['4', 'Asset profiles'],
+    ['5', 'Accountability'],
+    ['6', 'Frameworks, regulations and policies'],
+    ['7', 'Controls, requirements and evidence'],
+    ['8', 'Assessments and risk'],
+    ['9', 'Evidence index'],
+    ['10', 'Activity trail'],
+    ['11', 'Approval and sign off'],
   ];
 
   /* ── Cover (book cover — no KPIs / boxes / blurb) ── */
@@ -1265,7 +1575,7 @@ function render(D) {
           <div class="score-ring">${donut(score)}<div class="score-ring-inner"><div class="score-num">${score}</div><div class="score-of">/ 100</div></div></div>
           <div class="posture-score-copy">
             <div class="score-posture">${x(posture)}</div>
-            <p class="score-note">As of ${x(fmtDate(summary.score_as_of || generatedAt))}. RegAnchor indicator from recorded controls and layer scores.</p>
+            <p class="score-note">As of ${x(fmtDate(summary.score_as_of || generatedAt))}.</p>
           </div>
         </div>
         ${postureBands(posture)}
@@ -1320,7 +1630,6 @@ function render(D) {
     ${pageHeader(dossierId)}
     <div class="section-body">
     <h1 class="page-title">2. Organisation and scope</h1>
-    <p class="sec-intro">Workspace recorded in RegAnchor for this export. Internal implementation identifiers are omitted where they are not useful to a reviewer.</p>
     <dl class="kv">
       <dt>Organisation</dt><dd>${x(orgName)}</dd>
       <dt>Sector</dt><dd>${x(blank(org.sector))}</dd>
@@ -1329,14 +1638,8 @@ function render(D) {
       <dt>Dossier ID</dt><dd>${x(dossierId)}</dd>
       <dt>Org snapshot</dt><dd>${x(blank(hash))}</dd>
       <dt>Catalogue</dt><dd>${x(blank(catalogueHash))}</dd>
-      <dt>Methodology</dt><dd>${x(blank(methodologyLabel))}${methodologyId ? `<span class="sign-meta">${x(String(methodologyId).slice(0, 8))}</span>` : ''}</dd>
-    </dl>
-    <span class="sub-label">Scope of this export</span>
-    <dl class="kv">
+      <dt>Methodology</dt><dd>${x(blank(methodologyLabel))}</dd>
       <dt>AI assets in scope</dt><dd>${counts.assets || 0}</dd>
-      <dt>Control assignments</dt><dd>${counts.controls || 0}</dd>
-      <dt>Evidence records</dt><dd>${counts.evidence || 0}</dd>
-      <dt>Assessments</dt><dd>${counts.assessments || 0}</dd>
       <dt>Mapped requirements</dt><dd>${counts.obligations || 0}</dd>
       <dt>Active policies</dt><dd>${counts.policies_active || 0}</dd>
     </dl>
@@ -1346,12 +1649,11 @@ function render(D) {
 
   /* ── 3 AI asset inventory ── */
   const assetRows = assets.slice(0, 60).map((a) => `<tr>
-    <td><span class="asset-name">${x(a.name || 'Unnamed')}</span>${a.model_name ? `<span class="asset-sub">${x(a.model_name)}</span>` : ''}</td>
+    <td><span class="asset-name">${x(a.name || 'Unnamed')}</span></td>
     <td>${providerMark(a.provider_slug, a.vendor)}</td>
-    <td><span class="status ${statusClass(a.risk_tier)}">${x(tierLabel(a.risk_tier))}</span></td>
+    <td>${riskBadge(a.risk_tier)}</td>
     <td>${x(lifeLabel(a.lifecycle))}</td>
     <td>${x(blank(a.system_owner))}</td>
-    <td class="muted">${x(blank(a.department))}</td>
   </tr>`).join('');
 
   html += `<section class="section" data-toc="3">
@@ -1361,7 +1663,7 @@ function render(D) {
     <p class="sec-intro">Inventory of AI assets held in RegAnchor for ${x(orgName)}, excluding deleted records.</p>
     ${assets.length ? `<table class="data">
       <thead><tr>
-        <th>Asset</th><th>Provider</th><th>Risk</th><th>Lifecycle</th><th>Owner</th><th>Department</th>
+        <th>Asset</th><th>Provider</th><th>Risk</th><th>Lifecycle</th><th>Owner</th>
       </tr></thead>
       <tbody>${assetRows}</tbody>
     </table>
@@ -1371,7 +1673,59 @@ function render(D) {
     ${pageFooter()}
   </section>`;
 
-  /* ── 4 Accountability ── */
+  /* ── 4 Asset profiles ── */
+  const profileCards = (list) => list.map((a) => {
+    const desc = clipDesc(a.description);
+    const model = a.model_name || 'Not set';
+    const provider = labelProvider(a.provider_slug, a.vendor);
+    const vendor = a.vendor || (a.provider_slug ? labelProvider(a.provider_slug) : 'In-house');
+    return `<article class="asset-card keep">
+      <div class="asset-card-head">
+        <div class="asset-card-title">${x(a.name || 'Unnamed')}</div>
+        ${connBadge(a.connection_status)}
+      </div>
+      <p class="asset-card-desc">${x(desc)}</p>
+      <div class="asset-card-meta">
+        <div class="asset-meta-col">
+          <div class="asset-meta"><span class="asset-meta-lbl">Provider</span><div class="asset-meta-val">${x(provider)}</div></div>
+          <div class="asset-meta"><span class="asset-meta-lbl">Model</span><div class="asset-meta-val">${x(model)}</div></div>
+          <div class="asset-meta"><span class="asset-meta-lbl">Vendor</span><div class="asset-meta-val">${x(vendor)}</div></div>
+        </div>
+        <div class="asset-meta-col">
+          <div class="asset-meta"><span class="asset-meta-lbl">Asset ID</span><div class="asset-meta-val">${x(blank(a.id))}</div></div>
+          <div class="asset-meta"><span class="asset-meta-lbl">Department</span><div class="asset-meta-val">${x(blank(a.department))}</div></div>
+          <div class="asset-meta"><span class="asset-meta-lbl">Purpose</span><div class="asset-meta-val">${x(purposeLabel(a.purpose_category))}</div></div>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+
+  const PROFILE_PER_PAGE = 4;
+  if (!assets.length) {
+    html += `<section class="section" data-toc="4">
+      ${pageHeader(dossierId)}
+      <div class="section-body">
+      <h1 class="page-title">4. Asset profiles</h1>
+      ${empty('No AI assets registered for this organisation.')}
+      </div>
+      ${pageFooter()}
+    </section>`;
+  } else {
+    for (let i = 0; i < assets.length; i += PROFILE_PER_PAGE) {
+      const slice = assets.slice(i, i + PROFILE_PER_PAGE);
+      const first = i === 0;
+      html += `<section class="section"${first ? ' data-toc="4"' : ''}>
+        ${pageHeader(dossierId)}
+        <div class="section-body">
+        <h1 class="page-title">${first ? '4. Asset profiles' : '4. Asset profiles (continued)'}</h1>
+        <div class="asset-grid">${profileCards(slice)}</div>
+        </div>
+        ${pageFooter()}
+      </section>`;
+    }
+  }
+
+  /* ── 5 Accountability ── */
   const roleRows = orgRoles.map((m) => `<tr>
     <td>${x(m.full_name || 'Member')}</td>
     <td>${x(pretty(m.role))}</td>
@@ -1379,14 +1733,14 @@ function render(D) {
   const ownerRows = assetOwners.slice(0, 40).map((o) => `<tr>
     <td>${x(o.asset_name)}</td>
     <td>${x(blank(o.owner))}</td>
-    <td class="muted">${x(blank(o.department))}</td>
-    <td><span class="status ${statusClass(o.risk_tier)}">${x(tierLabel(o.risk_tier))}</span></td>
+    <td>${x(blank(o.department))}</td>
+    <td>${riskBadge(o.risk_tier)}</td>
   </tr>`).join('');
 
-  html += `<section class="section" data-toc="4">
+  html += `<section class="section" data-toc="5">
     ${pageHeader(dossierId)}
     <div class="section-body">
-    <h1 class="page-title">4. Accountability</h1>
+    <h1 class="page-title">5. Accountability</h1>
     <p class="sec-intro">Organisation roles and AI asset ownership as recorded in RegAnchor. Personal email addresses are not included in this export.</p>
     <span class="sub-label">Organisation roles</span>
     ${orgRoles.length
@@ -1428,14 +1782,14 @@ function render(D) {
     <td>${x(p.title)}</td>
     <td>${x(blank(p.version))}</td>
     <td><span class="status ${p.is_active ? 's-ok' : 's-muted'}">${p.is_active ? 'Active' : 'Inactive'}</span></td>
-    <td class="muted">${x(fmtShort(p.published_at || p.updated_at))}</td>
-    <td class="muted">${p.linked_control_title ? x(controlCode(p.linked_control_number) + ', ' + p.linked_control_title) : 'Not recorded'}</td>
+    <td>${x(fmtShort(p.published_at || p.updated_at))}</td>
+    <td>${p.linked_control_title ? x(controlCode(p.linked_control_number) + ', ' + p.linked_control_title) : 'Not recorded'}</td>
   </tr>`).join('');
 
-  html += `<section class="section" data-toc="5">
+  html += `<section class="section" data-toc="6">
     ${pageHeader(dossierId)}
     <div class="section-body">
-    <h1 class="page-title">5. Frameworks, regulations and policies</h1>
+    <h1 class="page-title">6. Frameworks, regulations and policies</h1>
     <p class="sec-intro">Mapped requirements linked to AI assets in RegAnchor, with article, regulation or guidance references where recorded. This section reports mappings only. It is not a determination of legal obligations and is not legal advice.</p>
     ${obligations.length ? fwHtml : empty('No framework requirements are currently mapped against AI assets for this organisation.')}
     ${customFw.length ? `<span class="sub-label">Custom frameworks</span>
@@ -1443,7 +1797,7 @@ function render(D) {
       <tbody>${customFw.map((f) => `<tr>
         <td>${x(f.name)}</td>
         <td><span class="status ${f.is_active ? 's-ok' : 's-muted'}">${f.is_active ? 'Active' : 'Inactive'}</span></td>
-        <td class="muted">${x(blank(f.source))}</td>
+        <td>${x(blank(f.source))}</td>
       </tr>`).join('')}</tbody></table>
       ${customFwControls.filter((c) => c.mapped_control_id).length
         ? `<table class="data"><thead><tr><th>Requirement</th><th>Framework</th><th>Mapped RegAnchor control</th><th>Status</th></tr></thead>
@@ -1470,7 +1824,7 @@ function render(D) {
     <td><span class="status ${statusClass(c.status)}">${x(ctrlStatus(c.status))}</span></td>
     <td>${evSummary(c)}</td>
     <td>${x(blank(c.owner_name))}</td>
-    <td class="num muted">${x(fmtShort(c.due_date))}</td>
+    <td class="num">${x(fmtShort(c.due_date))}</td>
   </tr>`).join('');
 
   const material = controls.filter(isMaterialControl);
@@ -1509,10 +1863,10 @@ function render(D) {
     </div>`;
   }).join('');
 
-  html += `<section class="section" data-toc="6">
+  html += `<section class="section" data-toc="7">
     ${pageHeader(dossierId)}
     <div class="section-body">
-    <h1 class="page-title">6. Controls, requirements and evidence</h1>
+    <h1 class="page-title">7. Controls, requirements and evidence</h1>
     <p class="sec-intro">Control assignments from RegAnchor. Status and evidence are recorded separately: uploaded evidence supports a control; it does not by itself mean the control is implemented.</p>
     ${controls.length
       ? `<table class="data">
@@ -1542,16 +1896,16 @@ function render(D) {
   /* ── 07 Assessments ── */
   const assessRows = assessments.slice(0, 50).map((a) => `<tr>
     <td>${x(blank(a.asset_name))}</td>
-    <td class="num muted">${x(fmtShort(a.completed_at || a.requested_at))}</td>
+    <td class="num">${x(fmtShort(a.completed_at || a.requested_at))}</td>
     <td class="num">${a.overall_score != null ? x(a.overall_score) : 'Not recorded'}</td>
     <td><span class="status ${statusClass(a.risk_band)}">${x(tierLabel(a.risk_band) === 'Unclassified' && a.risk_band ? pretty(a.risk_band) : tierLabel(a.risk_band))}</span></td>
     <td><span class="status ${statusClass(a.status)}">${x(assessStatus(a.status))}</span></td>
   </tr>`).join('');
 
-  html += `<section class="section" data-toc="7">
+  html += `<section class="section" data-toc="8">
     ${pageHeader(dossierId)}
     <div class="section-body">
-    <h1 class="page-title">7. Assessments and risk</h1>
+    <h1 class="page-title">8. Assessments and risk</h1>
     <p class="sec-intro">Registry assessments recorded for AI assets. This is a governance summary, not a full questionnaire export.</p>
     ${assessments.length
       ? `<table class="data"><thead><tr>
@@ -1567,15 +1921,15 @@ function render(D) {
     <td>${x(e.file_name)}</td>
     <td>${e.control_title ? x(controlCode(e.control_number) + ', ' + e.control_title) : 'Not recorded'}</td>
     <td>${x(e.asset_name || (e.scope === 'organisation' ? 'Organisation' : 'Not recorded'))}</td>
-    <td class="num muted">${x(fmtShort(e.uploaded_at))}</td>
-    <td class="muted">${x(blank(e.file_type))}</td>
+    <td class="num">${x(fmtShort(e.uploaded_at))}</td>
+    <td>${x(blank(e.file_type))}</td>
     <td><span class="status ${statusClass(e.control_status)}">${e.control_status ? x(ctrlStatus(e.control_status)) : 'Not recorded'}</span></td>
   </tr>`).join('');
 
-  html += `<section class="section" data-toc="8">
+  html += `<section class="section" data-toc="9">
     ${pageHeader(dossierId)}
     <div class="section-body">
-    <h1 class="page-title">8. Evidence index</h1>
+    <h1 class="page-title">9. Evidence index</h1>
     <p class="sec-intro">Files uploaded in RegAnchor and their linked control assignment or AI asset, where that relationship exists.</p>
     ${evidence.length
       ? `<table class="data"><thead><tr>
@@ -1586,59 +1940,68 @@ function render(D) {
     ${pageFooter()}
   </section>`;
 
-  /* ── 09 Activity ── */
-  const actRows = activity.slice(0, 50).map((a) => `<tr>
-    <td class="num muted">${x(fmtShort(a.created_at))}</td>
+  /* ── 10 Activity ── */
+  const ACTIVITY_PAGE_MAX = 18;
+  const activityPage = activity.slice(0, ACTIVITY_PAGE_MAX);
+  const actRows = activityPage.map((a) => `<tr>
+    <td class="num">${x(fmtShort(a.created_at))}</td>
     <td>${x(ACTIVITY_LABELS[a.action] || pretty(a.action))}</td>
     <td>${x(a.entity_type === 'ai_system' || a.entity_type === 'ai_asset' ? 'AI asset' : pretty(a.entity_type))}</td>
-    <td class="muted">${x(blank(a.entity_label))}</td>
+    <td>${x(blank(a.entity_label))}</td>
   </tr>`).join('');
 
-  html += `<section class="section" data-toc="9">
+  html += `<section class="section" data-toc="10">
     ${pageHeader(dossierId)}
     <div class="section-body">
-    <h1 class="page-title">9. Activity trail</h1>
-    <p class="sec-intro">Selected governance events from the RegAnchor audit log for this organisation.</p>
-    ${activity.length
+    <h1 class="page-title">10. Activity trail</h1>
+    <p class="sec-intro">Recent governance activities from the RegAnchor audit log for this organisation.</p>
+    ${activityPage.length
       ? `<table class="data"><thead><tr><th>Date</th><th>Event</th><th>Entity</th><th>Subject</th></tr></thead><tbody>${actRows}</tbody></table>`
       : empty('No qualifying governance activity in the recent log.')}
     </div>
     ${pageFooter()}
   </section>`;
 
-  /* ── 10 Attestation ── */
-  html += `<section class="section" data-toc="10">
+  /* ── 11 Approval and sign off ── */
+  const approvals = (D.approvals || []).slice(0, 6);
+  const approvalRows = (approvals.length ? approvals : [{ name: '', job_title: '', signed_at: null }]).map((a) => `<div class="signoff-row keep">
+      <div>
+        <span class="signoff-lbl">Approved by</span>
+        <div class="signoff-name">${a.name ? x(a.name) : '&nbsp;'}</div>
+        <div class="signoff-job">${a.job_title ? x(a.job_title) : '&nbsp;'}</div>
+      </div>
+      <div>
+        <span class="signoff-lbl">Signature</span>
+        <div class="signoff-rule" aria-hidden="true"></div>
+      </div>
+      <div>
+        <span class="signoff-lbl">Date</span>
+        <div class="signoff-date-val">${a.signed_at ? x(fmtDate(a.signed_at)) : '&nbsp;'}</div>
+      </div>
+    </div>`).join('');
+
+  html += `<section class="section" data-toc="11">
     ${pageHeader(dossierId)}
     <div class="section-body">
-    <h1 class="page-title">10. Attestation and notice</h1>
-    <div class="attest">
-      <p>This AI Governance Dossier is an export of data held in RegAnchor for <strong>${x(orgName)}</strong> as at <strong>${x(fmtDate(generatedAt))}</strong>.</p>
-      <p>It reflects the organisation’s recorded AI asset inventory, control assignments, evidence uploads, assessments, policies and framework mappings at the stated export time.</p>
-      <p>It is <strong>not</strong> a certification of compliance, <strong>not</strong> legal advice, and <strong>not</strong> an independent assurance opinion.</p>
-    </div>
-    <div class="sign-grid">
-      <div class="sign-box">
-        <div class="sign-lbl">Organisation reviewer</div>
-        <div class="sign-val">Name / role / date</div>
-      </div>
-      <div class="sign-box">
-        <div class="sign-lbl">Export reference</div>
-        <div class="sign-val">${x(dossierId)}
-          <span class="sign-meta">${x(fmtDate(generatedAt))}${catalogueHash ? '<br>Catalogue ' + x(catalogueHash) : ''}${methodologyLabel ? '<br>Methodology ' + x(methodologyLabel) : ''}${hash ? '<br>Snapshot ' + x(hash) : ''}</span>
-        </div>
-      </div>
-    </div>
+    <h1 class="page-title">11. Approval and sign off</h1>
+    <p class="approve-lede">This AI Governance Dossier is an export of data held in RegAnchor for <strong>${x(orgName)}</strong> as at <strong>${x(fmtDate(generatedAt))}</strong>. It has been reviewed and approved by the following authorised representatives of the organisation.</p>
+    <div class="signoff-block">${approvalRows}</div>
+    <p class="export-ref">Export reference ${x(dossierId)}</p>
+    <div class="disclaimer-slot" aria-hidden="true"></div>
     </div>
     ${pageFooter()}
   </section>`;
 
   root.innerHTML = html;
   document.title = `RegAnchor · AI Governance Dossier · ${orgName}`;
-  const runPaginate = () => applyPagination();
+  const finish = () => {
+    fitActivityToPage(root);
+    applyPagination();
+  };
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(runPaginate).catch(runPaginate);
+    document.fonts.ready.then(finish).catch(finish);
   } else {
-    requestAnimationFrame(runPaginate);
+    requestAnimationFrame(finish);
   }
 }
 
@@ -1688,18 +2051,174 @@ const PREVIEW_DOSSIER = {
     ],
   },
   assets: [
-    { name: 'Credit Decision Assistant', provider_slug: 'openai', model_name: 'gpt-4.1', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Risk' },
-    { name: 'Support Copilot', provider_slug: 'anthropic', model_name: 'claude-sonnet-4', risk_tier: 'limited', lifecycle: 'production', system_owner: 'J. Chen', department: 'Customer' },
-    { name: 'Doc Summariser', provider_slug: 'azure', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'J. Chen', department: 'Operations' },
-    { name: 'Internal FAQ Bot', provider_slug: 'openai', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'A. Patel', department: 'IT' },
-    { name: 'Claims Triage Model', provider_slug: 'bedrock', risk_tier: 'high', lifecycle: 'production', system_owner: 'A. Patel', department: 'Claims' },
-    { name: 'KYC Document Reader', provider_slug: 'azure', risk_tier: 'limited', lifecycle: 'production', system_owner: 'R. Singh', department: 'Compliance' },
-    { name: 'Marketing Content Generator', provider_slug: 'openai', risk_tier: 'minimal', lifecycle: 'pilot', system_owner: 'J. Chen', department: 'Marketing' },
-    { name: 'Fraud Signal Ranker', provider_slug: 'anthropic', risk_tier: 'high', lifecycle: 'development', system_owner: 'A. Patel', department: 'Risk' },
-    { name: 'HR Screening Assistant', provider_slug: 'openai', risk_tier: 'limited', lifecycle: 'planned', system_owner: 'L. Ng', department: 'People' },
-    { name: 'Contract Clause Extractor', provider_slug: 'anthropic', risk_tier: 'limited', lifecycle: 'production', system_owner: 'R. Singh', department: 'Legal' },
-    { name: 'Ops Knowledge Agent', provider_slug: 'google', risk_tier: 'minimal', lifecycle: 'production', system_owner: 'J. Chen', department: 'Operations' },
-    { name: 'Board Pack Drafter', provider_slug: 'anthropic', risk_tier: 'limited', lifecycle: 'pilot', system_owner: 'A. Patel', department: 'Executive' },
+    {
+      id: 'ast-credit-001',
+      name: 'Credit Decision Assistant',
+      description: 'Supports underwriters with creditworthiness scoring for SME lending applications. Human approval is required before any decline above a defined threshold. Additional operational notes and edge-case handling guidance is recorded in the registry for reviewer context during audits.',
+      provider_slug: 'openai',
+      model_name: 'gpt-4.1',
+      vendor: 'OpenAI',
+      risk_tier: 'high',
+      lifecycle: 'production',
+      system_owner: 'A. Patel',
+      department: 'Risk',
+      purpose_category: 'essential_services_access',
+      connection_status: 'connected',
+    },
+    {
+      id: 'ast-support-002',
+      name: 'Support Copilot',
+      description: 'Assists customer support agents with draft responses and knowledge retrieval. Agents review and send all replies.',
+      provider_slug: 'anthropic',
+      model_name: 'claude-sonnet-4',
+      vendor: 'Anthropic',
+      risk_tier: 'limited',
+      lifecycle: 'production',
+      system_owner: 'J. Chen',
+      department: 'Customer',
+      purpose_category: 'customer_chatbot',
+      connection_status: 'connected',
+    },
+    {
+      id: 'ast-doc-003',
+      name: 'Doc Summariser',
+      description: 'Summarises long internal documents for operations teams. Outputs are advisory and not used for automated decisions.',
+      provider_slug: 'azure',
+      model_name: 'gpt-4o',
+      vendor: 'Microsoft',
+      risk_tier: 'limited',
+      lifecycle: 'pilot',
+      system_owner: 'J. Chen',
+      department: 'Operations',
+      purpose_category: 'internal_automation',
+      connection_status: null,
+    },
+    {
+      id: 'ast-faq-004',
+      name: 'Internal FAQ Bot',
+      description: 'Answers common employee questions from the internal knowledge base. Limited to non-sensitive HR and IT topics.',
+      provider_slug: 'openai',
+      model_name: 'gpt-4.1-mini',
+      vendor: 'OpenAI',
+      risk_tier: 'minimal',
+      lifecycle: 'production',
+      system_owner: 'A. Patel',
+      department: 'IT',
+      purpose_category: 'internal_automation',
+      connection_status: 'connected',
+    },
+    {
+      id: 'ast-claims-005',
+      name: 'Claims Triage Model',
+      description: 'Prioritises incoming insurance claims for specialist review based on complexity and potential exposure.',
+      provider_slug: 'bedrock',
+      model_name: 'claude-3-5-sonnet',
+      vendor: 'AWS',
+      risk_tier: 'high',
+      lifecycle: 'production',
+      system_owner: 'A. Patel',
+      department: 'Claims',
+      purpose_category: 'essential_services_access',
+      connection_status: 'connected',
+    },
+    {
+      id: 'ast-kyc-006',
+      name: 'KYC Document Reader',
+      description: 'Extracts identity fields from customer KYC documents to accelerate onboarding checks. Results are verified by compliance officers.',
+      provider_slug: 'azure',
+      model_name: 'gpt-4o',
+      vendor: 'Microsoft',
+      risk_tier: 'limited',
+      lifecycle: 'production',
+      system_owner: 'R. Singh',
+      department: 'Compliance',
+      purpose_category: 'data_analytics',
+      connection_status: 'pending',
+    },
+    {
+      id: 'ast-mkt-007',
+      name: 'Marketing Content Generator',
+      description: 'Drafts marketing copy and campaign variants for human editors. Not customer-facing without review.',
+      provider_slug: 'openai',
+      model_name: 'gpt-4.1',
+      vendor: 'OpenAI',
+      risk_tier: 'minimal',
+      lifecycle: 'pilot',
+      system_owner: 'J. Chen',
+      department: 'Marketing',
+      purpose_category: 'content_generation',
+      connection_status: null,
+    },
+    {
+      id: 'ast-fraud-008',
+      name: 'Fraud Signal Ranker',
+      description: 'Ranks transaction alerts for fraud investigators. Does not block payments automatically.',
+      provider_slug: 'anthropic',
+      model_name: 'claude-sonnet-4',
+      vendor: 'Anthropic',
+      risk_tier: 'high',
+      lifecycle: 'development',
+      system_owner: 'A. Patel',
+      department: 'Risk',
+      purpose_category: 'essential_services_access',
+      connection_status: 'connected',
+    },
+    {
+      id: 'ast-hr-009',
+      name: 'HR Screening Assistant',
+      description: 'Helps recruiters structure candidate shortlists from CV text. Final hiring decisions remain with hiring managers.',
+      provider_slug: 'openai',
+      model_name: 'gpt-4.1',
+      vendor: 'OpenAI',
+      risk_tier: 'limited',
+      lifecycle: 'planned',
+      system_owner: 'L. Ng',
+      department: 'People',
+      purpose_category: 'employment_management',
+      connection_status: null,
+    },
+    {
+      id: 'ast-legal-010',
+      name: 'Contract Clause Extractor',
+      description: 'Highlights key clauses and obligations in vendor contracts for legal review.',
+      provider_slug: 'anthropic',
+      model_name: 'claude-sonnet-4',
+      vendor: 'Anthropic',
+      risk_tier: 'limited',
+      lifecycle: 'production',
+      system_owner: 'R. Singh',
+      department: 'Legal',
+      purpose_category: 'data_analytics',
+      connection_status: 'connected',
+    },
+    {
+      id: 'ast-ops-011',
+      name: 'Ops Knowledge Agent',
+      description: 'Retrieves runbook steps and known-issue notes for operations engineers during incidents.',
+      provider_slug: 'google',
+      model_name: 'gemini-2.0-flash',
+      vendor: 'Google',
+      risk_tier: 'minimal',
+      lifecycle: 'production',
+      system_owner: 'J. Chen',
+      department: 'Operations',
+      purpose_category: 'internal_automation',
+      connection_status: 'connected',
+    },
+    {
+      id: 'ast-board-012',
+      name: 'Board Pack Drafter',
+      description: 'Assembles draft narrative sections for board packs from approved source metrics. Executives edit before circulation.',
+      provider_slug: 'anthropic',
+      model_name: 'claude-opus-4',
+      vendor: 'Anthropic',
+      risk_tier: 'limited',
+      lifecycle: 'pilot',
+      system_owner: 'A. Patel',
+      department: 'Executive',
+      purpose_category: 'content_generation',
+      connection_status: null,
+    },
   ],
   assessments: [
     { asset_name: 'Credit Decision Assistant', requested_at: '2026-08-01', completed_at: '2026-08-12', overall_score: 48, risk_band: 'high', status: 'controls_issued' },
@@ -1745,10 +2264,24 @@ const PREVIEW_DOSSIER = {
     { file_name: 'oversight-sop-v3.pdf', control_title: 'Human Oversight Framework', control_number: 5, asset_name: 'Credit Decision Assistant', scope: 'asset', uploaded_at: '2026-08-20', file_type: 'application/pdf', control_status: 'in_progress' },
   ],
   activity: [
-    { created_at: '2026-09-10', action: 'control_updated', entity_type: 'governance_control', entity_label: null },
-    { created_at: '2026-08-20', action: 'control_implemented', entity_type: 'governance_control', entity_label: null },
-    { created_at: '2026-08-12', action: 'assessment_submitted', entity_type: 'ai_system', entity_label: 'Credit Decision Assistant' },
-    { created_at: '2026-06-01', action: 'policy_adopted', entity_type: 'policy', entity_label: null },
+    { created_at: '2026-09-15T16:20:32.000Z', action: 'system_updated', entity_type: 'ai_system', entity_label: 'AML Transaction Monitoring' },
+    { created_at: '2026-09-15T16:20:31.000Z', action: 'risk_tier_changed', entity_type: 'ai_system', entity_label: 'AML Transaction Monitoring' },
+    { created_at: '2026-09-14T11:36:14.000Z', action: 'control_updated', entity_type: 'governance_control', entity_label: null },
+    { created_at: '2026-09-12T14:10:33.000Z', action: 'policy_adopted', entity_type: 'policy', entity_label: null },
+    { created_at: '2026-09-12T14:10:25.000Z', action: 'policy_acknowledged', entity_type: 'policy', entity_label: null },
+    { created_at: '2026-09-12T14:10:03.000Z', action: 'policy_adopted', entity_type: 'policy', entity_label: null },
+    { created_at: '2026-09-12T05:32:16.000Z', action: 'policy_acknowledged', entity_type: 'policy', entity_label: null },
+    { created_at: '2026-09-12T05:31:59.000Z', action: 'policy_acknowledged', entity_type: 'policy', entity_label: null },
+    { created_at: '2026-09-12T05:30:39.000Z', action: 'policy_adopted', entity_type: 'policy', entity_label: null },
+    { created_at: '2026-09-10T16:10:30.000Z', action: 'system_updated', entity_type: 'ai_system', entity_label: 'OpenAI API Test' },
+    { created_at: '2026-09-08T13:57:33.000Z', action: 'system_updated', entity_type: 'ai_system', entity_label: 'AML Transaction Monitoring' },
+    { created_at: '2026-09-08T13:56:12.000Z', action: 'system_updated', entity_type: 'ai_system', entity_label: 'Document Intelligence Engine' },
+    { created_at: '2026-09-08T13:54:09.000Z', action: 'system_updated', entity_type: 'ai_system', entity_label: 'Legal Claims Classifier' },
+    { created_at: '2026-09-04T22:24:49.000Z', action: 'system_updated', entity_type: 'ai_system', entity_label: 'Anthropic API Test' },
+    { created_at: '2026-09-04T22:23:21.000Z', action: 'system_updated', entity_type: 'ai_system', entity_label: 'Google API Test' },
+    { created_at: '2026-09-03T08:18:12.000Z', action: 'assessment_submitted', entity_type: 'ai_system', entity_label: 'Marketing Personalisation Engine' },
+    { created_at: '2026-08-20T10:00:00.000Z', action: 'control_implemented', entity_type: 'governance_control', entity_label: null },
+    { created_at: '2026-08-14T11:56:40.000Z', action: 'control_assigned', entity_type: 'governance_control', entity_label: null },
   ],
   accountability: {
     org_roles: [
@@ -1760,6 +2293,10 @@ const PREVIEW_DOSSIER = {
       { asset_name: 'Support Copilot', owner: 'J. Chen', department: 'Customer', risk_tier: 'limited' },
     ],
   },
+  approvals: [
+    { name: 'A. Patel', job_title: 'Head of Risk', signed_at: null },
+    { name: 'J. Chen', job_title: 'Chief Operating Officer', signed_at: null },
+  ],
   meta: {
     dossier_id: 'RAD-PREV-VIEW01',
     generated_at: '2026-09-14T12:00:00.000Z',

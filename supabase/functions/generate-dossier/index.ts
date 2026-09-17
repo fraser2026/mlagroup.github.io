@@ -316,6 +316,7 @@ serve(async (req) => {
       activityRes,
       membersRes,
       scoreRes,
+      connectionsRes,
     ] = await Promise.all([
       supabase
         .from('ai_systems')
@@ -381,12 +382,96 @@ serve(async (req) => {
         .order('snapshot_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase
+        .from('provider_connections')
+        .select('asset_id,status')
+        .eq('org_id', orgId)
+        .neq('status', 'revoked'),
     ])
 
-    const assets = assetsRes.data || []
+    const connByAsset = new Map<string, string>()
+    for (const c of connectionsRes.data || []) {
+      const assetId = c.asset_id as string | null
+      if (!assetId) continue
+      if (!connByAsset.has(assetId)) connByAsset.set(assetId, (c.status as string) || 'pending')
+      if (c.status === 'connected') connByAsset.set(assetId, 'connected')
+    }
+
+    const assets = (assetsRes.data || []).map((a) => ({
+      ...a,
+      connection_status: connByAsset.get(a.id as string) || null,
+    }))
     const assetNames = new Map(assets.map((a) => [a.id, a.name || 'AI asset']))
     const assetIds = new Set(assets.map((a) => a.id))
     const assetIdList = assets.map((a) => a.id)
+
+    // Methodology catalogue (Control Centre SoT) — hashed separately from org snapshot.
+    const [catalogueControlsRes, catalogueFrameworksRes, catalogueMapsRes] = await Promise.all([
+      supabase
+        .from('governance_controls')
+        .select(
+          'id,control_number,title,description,purpose,control_type,pillar,is_org_level,evidence_types,trigger_rules,display_order,is_active',
+        )
+        .order('control_number'),
+      supabase
+        .from('compliance_frameworks')
+        .select(
+          'id,framework,obligation_key,obligation_title,obligation_description,guidance_text,article_reference,display_order,is_active',
+        )
+        .order('framework')
+        .order('display_order'),
+      supabase
+        .from('control_requirement_map')
+        .select(
+          'id,control_id,obligation_id,requirement_id,is_primary,source_citation,interpretation_note,display_order,is_active',
+        )
+        .eq('is_active', true)
+        .order('display_order'),
+    ])
+
+    const catalogueControls = [...(catalogueControlsRes.data || [])].sort((a, b) =>
+      String(a.id).localeCompare(String(b.id)),
+    )
+    const catalogueFrameworks = [...(catalogueFrameworksRes.data || [])].sort((a, b) =>
+      String(a.id).localeCompare(String(b.id)),
+    )
+    const catalogueMaps = [...(catalogueMapsRes.data || [])].sort((a, b) =>
+      String(a.id).localeCompare(String(b.id)),
+    )
+    const catalogueHash = await sha16({
+      version: 1,
+      controls: catalogueControls,
+      frameworks: catalogueFrameworks,
+      maps: catalogueMaps,
+    })
+
+    const { data: currentMethodology } = await supabase
+      .from('methodology_versions')
+      .select('id,version_label,catalogue_hash,published_at')
+      .eq('is_current', true)
+      .maybeSingle()
+
+    const obligationMetaById = new Map(
+      catalogueFrameworks.map((cf) => [
+        String(cf.id),
+        {
+          id: String(cf.id),
+          framework: String(cf.framework || ''),
+          framework_label: FRAMEWORK_LABELS[String(cf.framework || '')] || String(cf.framework || '').replace(/_/g, ' '),
+          obligation_title: String(cf.obligation_title || 'Obligation'),
+          article_reference: cf.article_reference ? String(cf.article_reference) : null,
+        },
+      ]),
+    )
+
+    const mapsByControlId = new Map<string, typeof catalogueMaps>()
+    for (const m of catalogueMaps) {
+      const key = String(m.control_id || '')
+      if (!key) continue
+      const list = mapsByControlId.get(key) || []
+      list.push(m)
+      mapsByControlId.set(key, list)
+    }
 
     // system_compliance has no org_id — scope via this org's AI assets.
     // Join obligations in process (no guaranteed PostgREST embed).
@@ -592,19 +677,47 @@ serve(async (req) => {
       }
     })
 
-    // Attach policy + custom-framework requirement links onto controls (real FKs only)
+    // Attach policy + catalogue maps + custom-framework requirement links (real FKs only)
     const controlsEnriched = controls.map((c) => {
       const linkedPolicies = policies
         .filter((p) => p.linked_control_id && String(p.linked_control_id) === String(c.control_id))
         .map((p) => ({ title: p.title, version: p.version, is_active: p.is_active }))
-      const mappedRequirements = customFrameworkControls
+
+      const catalogueMapped = (mapsByControlId.get(String(c.control_id || '')) || [])
+        .slice()
+        .sort((a, b) => {
+          if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1
+          return Number(a.display_order || 0) - Number(b.display_order || 0)
+        })
+        .map((m) => {
+          const ob = obligationMetaById.get(String(m.obligation_id))
+          return {
+            framework_name: ob?.framework_label || null,
+            requirement_title: ob?.obligation_title || null,
+            article_reference: ob?.article_reference || null,
+            is_primary: Boolean(m.is_primary),
+            interpretation_note: m.interpretation_note ? String(m.interpretation_note) : null,
+            source: 'catalogue' as const,
+          }
+        })
+
+      const customMapped = customFrameworkControls
         .filter((fc) => fc.mapped_control_id && String(fc.mapped_control_id) === String(c.control_id))
         .map((fc) => ({
           framework_name: fc.framework_name,
           requirement_title: fc.title,
+          article_reference: null as string | null,
+          is_primary: false,
+          interpretation_note: null as string | null,
           status: fc.status,
+          source: 'org_custom' as const,
         }))
-      return { ...c, linked_policies: linkedPolicies, mapped_requirements: mappedRequirements }
+
+      return {
+        ...c,
+        linked_policies: linkedPolicies,
+        mapped_requirements: [...catalogueMapped, ...customMapped],
+      }
     })
 
     const ctrlDone = controlsEnriched.filter((c) => isDoneStatus(c.status)).length
@@ -636,7 +749,7 @@ serve(async (req) => {
 
     const activity = (activityRes.data || [])
       .filter((row) => ACTIVITY_KEEP.has(String(row.action || '')))
-      .slice(0, 60)
+      .slice(0, 18)
       .map((row) => ({
         id: row.id,
         action: row.action,
@@ -744,12 +857,18 @@ serve(async (req) => {
         dossier_id: dossierId,
         generated_at: generatedAt,
         snapshot_hash: snapshotHash,
-        generator_version: '2.0.0',
+        catalogue_hash: catalogueHash,
+        methodology_version_id: currentMethodology?.id || null,
+        methodology_version_label: currentMethodology?.version_label || null,
+        methodology_catalogue_hash: currentMethodology?.catalogue_hash || null,
+        generator_version: '2.4.0',
         requested_by: user.id,
       },
     }
 
-    console.log(`[generate-dossier] user=${user.id} org=${orgId} id=${dossierId} hash=${snapshotHash}`)
+    console.log(
+      `[generate-dossier] user=${user.id} org=${orgId} id=${dossierId} snapshot=${snapshotHash} catalogue=${catalogueHash} methodology=${currentMethodology?.version_label || 'none'}`,
+    )
 
     if (!RENDERER_URL) {
       return json({ error: 'RENDER_SERVICE_URL not configured' }, 500)
@@ -795,6 +914,7 @@ serve(async (req) => {
       success: true,
       dossier_id: dossierId,
       snapshot_hash: snapshotHash,
+      catalogue_hash: catalogueHash,
       filename,
       download_url: urlData?.signedUrl || null,
     })
