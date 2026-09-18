@@ -47,9 +47,14 @@ html {
   print-color-adjust: exact !important;
 }
 
+/*
+  Zero @page margin: section/cover own the page box.
+  Negative-margin bleed into @page margins is unreliable in Chromium PDF
+  (cover swoosh floated up; short pages left footers mid-page).
+*/
 @page {
   size: A4;
-  margin: 18mm 24mm;
+  margin: 0;
 }
 
 body {
@@ -89,8 +94,11 @@ body {
 }
 @media print {
   .section {
-    padding: 0;
-    min-height: auto;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 18mm 24mm 16mm;
+    box-sizing: border-box;
+    /* Fill the page so .page-ftr { margin-top: auto } pins to the bottom. */
   }
 }
 .section-body { flex: 1 1 auto; }
@@ -356,10 +364,13 @@ body {
 
 @media print {
   .cover {
-    margin: -18mm -24mm;
+    margin: 0;
     width: 210mm;
+    height: 297mm;
     min-height: 297mm;
+    max-height: 297mm;
     padding: 28mm 24mm 0;
+    overflow: hidden;
   }
 }
 
