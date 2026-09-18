@@ -353,8 +353,12 @@ app.post('/render-dossier', async (req, res) => {
     await page.evaluate(() => {
       document.body.classList.add('dossier-cover-only');
       document.body.classList.remove('dossier-body-only');
+      document.getElementById('dossier-cover-page-style')?.remove();
+      const style = document.createElement('style');
+      style.id = 'dossier-cover-page-style';
+      style.textContent = '@page { size: A4; margin: 0 !important; }';
+      document.head.appendChild(style);
     });
-    await page.addStyleTag({ content: '@page { size: A4; margin: 0 !important; }' });
     const coverPdf = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -367,6 +371,8 @@ app.post('/render-dossier', async (req, res) => {
     // Pass 2 — body sections with locked header/footer on every page.
     // Invisible offset page so Puppeteer pageNumbers start at 2 (cover = page 1).
     await page.evaluate(() => {
+      // Critical: drop cover's @page { margin:0 !important } or body chrome overlaps text.
+      document.getElementById('dossier-cover-page-style')?.remove();
       document.body.classList.remove('dossier-cover-only');
       document.body.classList.add('dossier-body-only');
       const root = document.getElementById('dossier');
