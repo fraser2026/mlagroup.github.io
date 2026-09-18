@@ -14,7 +14,7 @@ import {
   ToastStack,
 } from '../ui'
 import type { ToastItem } from '../ui'
-import { BrandIcon } from '../icons/BrandIcon'
+import { BrandIcon, hasBrandIcon } from '../icons/BrandIcon'
 import { usePageChrome } from '../ui/shellChrome'
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../lib/config'
 import { useAuth } from '../auth/AuthProvider'
@@ -416,7 +416,11 @@ export function IntegrationsPage() {
               {filteredConnections.map((c) => (
                 <ConnectorRow
                   key={c.id}
-                  icon={<BrandIcon slug={c.provider_slug || 'generic'} />}
+                  icon={
+                    hasBrandIcon(c.provider_slug) ? (
+                      <BrandIcon slug={c.provider_slug || ''} />
+                    ) : undefined
+                  }
                   name={labelProvider(c.provider_slug, 'Provider')}
                   status={c.status || 'unknown'}
                   statusTone={c.status === 'connected' ? 'ok' : c.status === 'error' ? 'risk' : 'neutral'}
@@ -449,7 +453,9 @@ export function IntegrationsPage() {
             {filteredCatalog.map((c) => (
               <div key={c.slug} className={styles.marketCard}>
                 <div className={styles.marketTop}>
-                  <BrandIcon slug={c.slug} size={28} title={labelProvider(c.slug, c.name)} />
+                  {hasBrandIcon(c.slug) ? (
+                    <BrandIcon slug={c.slug} size={28} title={labelProvider(c.slug, c.name)} />
+                  ) : null}
                   <StatusLabel tone={c.connector_available ? 'ok' : 'neutral'}>
                     {c.connector_available ? 'Ready' : 'Catalog'}
                   </StatusLabel>

@@ -371,7 +371,14 @@ export const PROVIDER_LABELS: Record<string, string> = {
 export function labelProvider(slug?: string | null, fallback?: string | null) {
   const s = (slug || '').trim()
   if (!s) return (fallback || '').trim() || 'Not set'
-  return PROVIDER_LABELS[s.toLowerCase()] || (fallback || '').trim() || s
+  const known = PROVIDER_LABELS[s.toLowerCase()]
+  if (known) return known
+  const fb = (fallback || '').trim()
+  if (fb) return fb
+  // Unknown slug with no vendor fallback: salesforce → Salesforce (never invent a mark).
+  return s
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 export function labelAssessStatus(status?: string | null) {

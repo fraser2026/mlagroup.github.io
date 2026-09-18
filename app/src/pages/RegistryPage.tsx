@@ -19,7 +19,7 @@ import {
   ToastStack,
   type ToastItem,
 } from '../ui'
-import { BrandIcon } from '../icons/BrandIcon'
+import { BrandIcon, hasBrandIcon } from '../icons/BrandIcon'
 import { usePageChrome } from '../ui/shellChrome'
 import { sb } from '../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
@@ -1132,9 +1132,10 @@ export function RegistryPage() {
         cell: (info) => {
           const slug = (info.getValue() || '').trim()
           if (!slug) return <span className={styles.providerEmpty}>-</span>
+          const name = labelProvider(slug)
           return (
-            <span className={styles.providerCell} aria-label={labelProvider(slug)}>
-              <BrandIcon slug={slug} size={18} />
+            <span className={styles.providerCell} aria-label={name}>
+              {hasBrandIcon(slug) ? <BrandIcon slug={slug} size={18} title={name} /> : name}
             </span>
           )
         },

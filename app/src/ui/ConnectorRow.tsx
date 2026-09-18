@@ -14,9 +14,11 @@ type Props = {
 export function ConnectorRow({ icon, name, status, statusTone = 'ok', tags = [], actions }: Props) {
   return (
     <div className={styles.row}>
-      <div className={styles.icon} aria-hidden>
-        {icon}
-      </div>
+      {icon ? (
+        <div className={styles.icon} aria-hidden>
+          {icon}
+        </div>
+      ) : null}
       <div className={styles.main}>
         <div className={styles.nameRow}>
           <span className={styles.name}>{name}</span>

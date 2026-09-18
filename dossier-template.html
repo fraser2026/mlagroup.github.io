@@ -751,21 +751,6 @@ table.data .ev-summary.quiet {
   width: 14px;
   height: 14px;
 }
-.provider-fallback {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  background: var(--wash);
-  color: var(--text-3);
-  font-size: 6pt;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
 .status {
   font-weight: 500;
   font-size: var(--t-small);
@@ -1253,9 +1238,13 @@ function blank(v) {
 }
 
 function labelProvider(slug, fallback) {
-  const s = String(slug || '').trim().toLowerCase();
+  const raw = String(slug || '').trim();
+  const s = raw.toLowerCase();
   if (!s) return (fallback || '').trim() || 'Not set';
-  return PROVIDER_LABELS[s] || (fallback || '').trim() || slug;
+  if (PROVIDER_LABELS[s]) return PROVIDER_LABELS[s];
+  const fb = (fallback || '').trim();
+  if (fb) return fb;
+  return raw.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function providerMark(slug, fallback) {
@@ -1265,8 +1254,8 @@ function providerMark(slug, fallback) {
   if (icon) {
     return `<span class="provider-cell"><svg class="provider-ico" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">${icon}</svg><span>${x(label)}</span></span>`;
   }
-  const initials = label.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '—';
-  return `<span class="provider-cell"><span class="provider-fallback">${x(initials)}</span><span>${x(label)}</span></span>`;
+  // No logo: plain label only — never invent an initials tile.
+  return `<span class="provider-cell"><span>${x(label)}</span></span>`;
 }
 
 function fmtDate(iso) {

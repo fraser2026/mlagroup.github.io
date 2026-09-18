@@ -1,5 +1,5 @@
 import { SelectMenu } from '../ui'
-import { BrandIcon } from '../icons/BrandIcon'
+import { BrandIcon, hasBrandIcon } from '../icons/BrandIcon'
 import type { AssetFormValues, ProviderCatalogRow } from '../lib/registry'
 import {
   DEPLOYMENT_OPTIONS,
@@ -56,7 +56,7 @@ export function AssetFormFields({ form, providers, error, onChange }: Props) {
       return {
         value: p.slug,
         label: name,
-        icon: <BrandIcon slug={p.slug} size={16} title={name} />,
+        ...(hasBrandIcon(p.slug) ? { icon: <BrandIcon slug={p.slug} size={16} title={name} /> } : {}),
       }
     }),
   ]

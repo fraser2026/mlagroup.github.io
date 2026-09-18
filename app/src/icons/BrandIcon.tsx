@@ -40,29 +40,28 @@ type Props = {
   title?: string
 }
 
+export function hasBrandIcon(slug?: string | null) {
+  const key = (slug || '').trim().toLowerCase()
+  return Boolean(key && PROVIDER_FILES[key])
+}
+
+/**
+ * Official provider mark only. No initials tile when a logo is missing —
+ * call sites should show the plain label instead.
+ */
 export function BrandIcon({ slug, size = 22, className, title }: Props) {
   const key = slug.trim().toLowerCase()
-  const label = title || labelProvider(key)
   const src = PROVIDER_FILES[key]
-  if (src) {
-    return (
-      <img
-        className={clsx(styles.img, MONO_DARK_MARKS.has(key) && styles.monoDark, className)}
-        src={src}
-        alt={label}
-        width={size}
-        height={size}
-        draggable={false}
-      />
-    )
-  }
+  if (!src) return null
+  const label = title || labelProvider(key)
   return (
-    <span
-      className={clsx(styles.fallback, className)}
-      style={{ width: size, height: size }}
-      aria-label={label}
-    >
-      {label.slice(0, 2).toUpperCase()}
-    </span>
+    <img
+      className={clsx(styles.img, MONO_DARK_MARKS.has(key) && styles.monoDark, className)}
+      src={src}
+      alt={label}
+      width={size}
+      height={size}
+      draggable={false}
+    />
   )
 }
