@@ -93,12 +93,23 @@ body {
   }
 }
 @media print {
+  /*
+    Live PDF chrome (Confidential / Dossier ID / wordmark / page n) is painted by
+    Puppeteer header/footer on every page. In-flow .page-hdr / .page-ftr are for
+    screen preview cards only — they cannot repeat when a section spans pages.
+  */
+  .page-hdr,
+  .page-ftr {
+    display: none !important;
+  }
   .section {
-    width: 210mm;
-    min-height: 297mm;
-    padding: 18mm 24mm 16mm;
+    width: auto;
+    min-height: 0;
+    padding: 0;
     box-sizing: border-box;
-    /* Fill the page so .page-ftr { margin-top: auto } pins to the bottom. */
+  }
+  .section-body {
+    flex: none;
   }
 }
 .section-body { flex: 1 1 auto; }
@@ -363,6 +374,10 @@ body {
 }
 
 @media print {
+  /*
+    Cover is rendered in a separate full-bleed PDF pass (no Puppeteer chrome),
+    then merged ahead of the body pages that carry locked header/footer.
+  */
   .cover {
     margin: 0;
     width: 210mm;
@@ -371,6 +386,15 @@ body {
     max-height: 297mm;
     padding: 28mm 24mm 0;
     overflow: hidden;
+  }
+  body.dossier-body-only .cover {
+    display: none !important;
+  }
+  body.dossier-cover-only .section {
+    display: none !important;
+  }
+  body.dossier-body-only .section:first-of-type {
+    page-break-before: auto;
   }
 }
 
