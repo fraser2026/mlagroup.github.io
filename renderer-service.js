@@ -324,9 +324,10 @@ app.post('/render-dossier', async (req, res) => {
       .replace(/"/g, '&quot;');
 
     // Locked chrome on every body page (not in-flow — scales with multi-page tables).
-    // Template height must fit inside Puppeteer top/bottom margin or Chromium overlaps body.
+    // Header sits near the top of the margin band; remaining band = gap before body
+    // (titles and continuation pages share the same top inset).
     const headerTemplate = `
-      <div style="width:100%;height:14mm;padding:0 24mm 3mm;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;font-size:7.5pt;font-weight:500;color:#6B7280;display:flex;justify-content:space-between;align-items:flex-end;">
+      <div style="width:100%;height:22mm;padding:5mm 24mm 0;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;font-size:7.5pt;font-weight:500;color:#6B7280;display:flex;justify-content:space-between;align-items:flex-start;">
         <span>Confidential</span>
         <span style="font-variant-numeric:tabular-nums;">${safeId}</span>
       </div>`;
@@ -390,8 +391,8 @@ app.post('/render-dossier', async (req, res) => {
       displayHeaderFooter: true,
       headerTemplate,
       footerTemplate,
-      // Must be >= header/footer template height or chrome paints over body.
-      margin: { top: '18mm', right: '24mm', bottom: '18mm', left: '24mm' },
+      // Top band = Confidential/ID near page top + clear gap before titles / continued content.
+      margin: { top: '22mm', right: '24mm', bottom: '18mm', left: '24mm' },
     });
 
     const coverDoc = await PDFDocument.load(coverPdf);
