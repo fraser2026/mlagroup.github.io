@@ -1751,7 +1751,7 @@ function render(D) {
       html += `<section class="section"${first ? ' data-toc="4"' : ''}>
         ${pageHeader(dossierId)}
         <div class="section-body">
-        <h1 class="page-title">${first ? '4. Asset profiles' : '4. Asset profiles (continued)'}</h1>
+        ${first ? '<h1 class="page-title">4. Asset profiles</h1>' : ''}
         <div class="asset-grid">${profileCards(slice)}</div>
         </div>
         ${pageFooter()}
@@ -1824,7 +1824,7 @@ function render(D) {
     ${pageHeader(dossierId)}
     <div class="section-body">
     <h1 class="page-title">6. Frameworks, regulations and policies</h1>
-    <p class="sec-intro">Mapped requirements linked to AI assets in RegAnchor, with article, regulation or guidance references where recorded. This section reports mappings only. It is not a determination of legal obligations and is not legal advice.</p>
+    <p class="sec-intro">Mapped requirements linked to AI assets in RegAnchor, with article, regulation or guidance references where recorded.</p>
     ${obligations.length ? fwHtml : empty('No framework requirements are currently mapped against AI assets for this organisation.')}
     ${customFw.length ? `<span class="sub-label">Custom frameworks</span>
       <table class="data"><thead><tr><th>Framework</th><th>Status</th><th>Source</th></tr></thead>
@@ -1863,8 +1863,6 @@ function render(D) {
 
   const material = controls.filter(isMaterialControl);
   const detailSource = material.slice(0, 40);
-  const skippedOutstanding = controls.length - material.length;
-  const detailOmitted = Math.max(0, material.length - detailSource.length);
 
   const detailBlocks = detailSource.map((c) => {
     const suggested = (c.suggested_evidence || []).map((s) => `<li>${x(displayEvidenceType(s))}</li>`).join('') || '<li>None recorded</li>';
@@ -1901,7 +1899,6 @@ function render(D) {
     ${pageHeader(dossierId)}
     <div class="section-body">
     <h1 class="page-title">7. Controls, requirements and evidence</h1>
-    <p class="sec-intro">Control assignments from RegAnchor. Status and evidence are recorded separately: uploaded evidence supports a control; it does not by itself mean the control is implemented.</p>
     ${controls.length
       ? `<table class="data">
         <thead><tr>
@@ -1921,8 +1918,6 @@ function render(D) {
     <h1 class="page-title">Control detail</h1>
     <p class="sec-intro">Expanded view of material assignments: implemented, verified, overdue, in progress, or any with uploaded evidence. Outstanding not-started items remain in the register only.</p>
     ${detailSource.length ? detailBlocks : empty('No material control assignments to detail in this export.')}
-    ${skippedOutstanding > 0 ? `<p class="note-line">${skippedOutstanding} not-started assignment${skippedOutstanding === 1 ? '' : 's'} summarised in the register only.</p>` : ''}
-    ${detailOmitted > 0 ? `<p class="note-line">${detailOmitted} further material assignment${detailOmitted === 1 ? '' : 's'} summarised in the register only.</p>` : ''}
     </div>
     ${pageFooter()}
   </section>`;

@@ -136,13 +136,10 @@ function buildObservations(input: {
     return t === 'high' || t === 'unacceptable'
   })
   if (highRisk.length) {
-    const names = highRisk
-      .slice(0, 3)
-      .map((a) => String(a.name || 'Unnamed asset'))
-      .join(', ')
+    const names = highRisk.map((a) => String(a.name || 'Unnamed asset')).join(', ')
     out.push(
       `${highRisk.length} high-risk AI asset${highRisk.length === 1 ? ' is' : 's are'} currently in scope${
-        names ? ` (${names}${highRisk.length > 3 ? ', …' : ''})` : ''
+        names ? ` (${names})` : ''
       }.`,
     )
   }
