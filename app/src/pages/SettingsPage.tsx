@@ -22,6 +22,9 @@ export function SettingsPage() {
   const [first, setFirst] = useState('')
   const [last, setLast] = useState('')
   const [organisation, setOrganisation] = useState('')
+  const [jobTitle, setJobTitle] = useState('')
+  const [department, setDepartment] = useState('')
+  const [workPhone, setWorkPhone] = useState('')
   const [pw, setPw] = useState('')
   const [pw2, setPw2] = useState('')
   const [toasts, setToasts] = useState<ToastItem[]>([])
@@ -56,6 +59,9 @@ export function SettingsPage() {
     setFirst(parts[0] || '')
     setLast(parts.slice(1).join(' ') || '')
     setOrganisation(profile?.organisation || org?.name || '')
+    setJobTitle(profile?.job_title || '')
+    setDepartment(profile?.department || '')
+    setWorkPhone(profile?.work_phone || '')
   }, [profile, org?.name])
 
   async function saveProfile() {
@@ -65,9 +71,17 @@ export function SettingsPage() {
     const full = `${first.trim()} ${last.trim()}`.trim()
     const orgName = organisation.trim()
     try {
-      const { error } = await sb
-        .from('profiles')
-        .upsert({ id: user.id, full_name: full, organisation: orgName }, { onConflict: 'id' })
+      const { error } = await sb.from('profiles').upsert(
+        {
+          id: user.id,
+          full_name: full,
+          organisation: orgName,
+          job_title: jobTitle.trim() || null,
+          department: department.trim() || null,
+          work_phone: workPhone.trim() || null,
+        },
+        { onConflict: 'id' },
+      )
       if (error) throw error
       if (org?.id && orgName && orgName !== org.name) {
         await sb.from('organisations').update({ name: orgName }).eq('id', org.id)
@@ -137,11 +151,11 @@ export function SettingsPage() {
         <p className={styles.hint}>Dark mode is tuned for Registry density first. Soft greys keep secondary text readable without going pure white on every label.</p>
       </Section>
 
-      <Section id="profile" title="Profile">
+      <Section id="profile" title="Profile" description="Used for AI asset governance ownership. Contact details stay in the app and are omitted from dossier exports.">
         <div className={styles.row}>
           <div>
             <div className={styles.label}>Signed in as</div>
-            <div className={styles.value}>{user?.email || 'â€”'}</div>
+            <div className={styles.value}>{user?.email || '—'}</div>
           </div>
           <StatusLabel tone="ok">Active</StatusLabel>
         </div>
@@ -162,9 +176,37 @@ export function SettingsPage() {
               onChange={(e) => setOrganisation(e.target.value)}
             />
           </label>
+          <label className={styles.field}>
+            Job title
+            <input
+              className={styles.input}
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              placeholder="e.g. Head of Risk"
+            />
+          </label>
+          <label className={styles.field}>
+            Department
+            <input
+              className={styles.input}
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              placeholder="e.g. Compliance"
+            />
+          </label>
           <label className={styles.fieldWide}>
-            Email
+            Work email
             <input className={styles.input} value={user?.email || ''} disabled readOnly />
+          </label>
+          <label className={styles.fieldWide}>
+            Work phone
+            <input
+              className={styles.input}
+              value={workPhone}
+              onChange={(e) => setWorkPhone(e.target.value)}
+              placeholder="e.g. +44 20 0000 0000"
+              autoComplete="tel"
+            />
           </label>
         </div>
         <div className={styles.actions}>

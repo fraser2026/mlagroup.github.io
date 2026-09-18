@@ -318,7 +318,7 @@ serve(async (req) => {
       supabase
         .from('ai_systems')
         .select(
-          'id,name,description,vendor,provider_slug,model_name,lifecycle,department,system_owner,purpose_category,risk_tier,created_at,updated_at',
+          'id,name,description,vendor,provider_slug,model_name,lifecycle,department,system_owner,business_owner_id,compliance_owner_id,technical_owner_id,purpose_category,risk_tier,created_at,updated_at',
         )
         .eq('org_id', orgId)
         .is('deleted_at', null)
@@ -519,14 +519,39 @@ serve(async (req) => {
     const assigneeIds = (controlsRes.data || [])
       .map((r: Record<string, unknown>) => r.assigned_to)
       .filter(Boolean) as string[]
-    const profileIds = [...new Set([...memberIds, ...assigneeIds])]
+    const ownerIds = assets.flatMap((a) =>
+      [a.business_owner_id, a.compliance_owner_id, a.technical_owner_id].filter(Boolean),
+    ) as string[]
+    const profileIds = [...new Set([...memberIds, ...assigneeIds, ...ownerIds])]
 
-    let profiles: Array<{ id: string; full_name?: string | null; email?: string | null }> = []
+    let profiles: Array<{
+      id: string
+      full_name?: string | null
+      email?: string | null
+      job_title?: string | null
+      department?: string | null
+    }> = []
     if (profileIds.length) {
-      const { data: profs } = await supabase.from('profiles').select('id,full_name,email').in('id', profileIds)
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id,full_name,email,job_title,department')
+        .in('id', profileIds)
       profiles = profs || []
     }
     const profileMap = new Map(profiles.map((p) => [p.id, p]))
+
+    function personName(id: unknown) {
+      if (!id) return null
+      const p = profileMap.get(String(id))
+      return p?.full_name || p?.email || null
+    }
+
+    const assetsWithOwners = assets.map((a) => ({
+      ...a,
+      business_owner_name: personName(a.business_owner_id) || (a.system_owner ? String(a.system_owner) : null),
+      compliance_owner_name: personName(a.compliance_owner_id),
+      technical_owner_name: personName(a.technical_owner_id),
+    }))
 
     const members = (membersRes.data || []).map((m) => {
       const p = profileMap.get(m.user_id)
@@ -767,14 +792,14 @@ serve(async (req) => {
     composite = Math.round(composite)
     const posture = maturityLabel(composite)
 
-    const highRiskCount = assets.filter((a) => {
+    const highRiskCount = assetsWithOwners.filter((a) => {
       const t = String(a.risk_tier || '').toLowerCase()
       return t === 'high' || t === 'unacceptable'
     }).length
 
     const activePolicies = policies.filter((p) => p.is_active).length
     const counts = {
-      assets: assets.length,
+      assets: assetsWithOwners.length,
       high_risk_assets: highRiskCount,
       assessments: assessments.length,
       policies: policies.length,
@@ -790,7 +815,7 @@ serve(async (req) => {
     }
 
     const observations = buildObservations({
-      assets: assets as Array<Record<string, unknown>>,
+      assets: assetsWithOwners as Array<Record<string, unknown>>,
       controls: controlsEnriched as Array<Record<string, unknown>>,
       assessments: assessments as Array<Record<string, unknown>>,
       evidence: evidence as Array<Record<string, unknown>>,
@@ -799,6 +824,41 @@ serve(async (req) => {
       score: composite,
       posture,
     })
+
+    const peopleById = new Map<
+      string,
+      {
+        id: string
+        full_name: string
+        job_title: string | null
+        department: string | null
+        roles: string[]
+      }
+    >()
+    function addPersonRole(id: unknown, roleLabel: string) {
+      if (!id) return
+      const key = String(id)
+      const p = profileMap.get(key)
+      const name = p?.full_name || p?.email
+      if (!name) return
+      const existing = peopleById.get(key)
+      if (existing) {
+        if (!existing.roles.includes(roleLabel)) existing.roles.push(roleLabel)
+        return
+      }
+      peopleById.set(key, {
+        id: key,
+        full_name: String(name),
+        job_title: p?.job_title ? String(p.job_title) : null,
+        department: p?.department ? String(p.department) : null,
+        roles: [roleLabel],
+      })
+    }
+    for (const a of assetsWithOwners) {
+      addPersonRole(a.business_owner_id, 'Business owner')
+      addPersonRole(a.compliance_owner_id, 'Compliance / risk owner')
+      addPersonRole(a.technical_owner_id, 'Technical / model owner')
+    }
 
     const generatedAt = new Date().toISOString()
     const coreSnapshot = {
@@ -814,12 +874,12 @@ serve(async (req) => {
         composite_score: composite,
         posture,
         layers: maturityLayers(scoreRow, ctrlDone, controlsEnriched.length),
-        risk: riskBuckets(assets),
+        risk: riskBuckets(assetsWithOwners),
         counts,
         observations,
         score_as_of: scoreRow?.snapshot_at || generatedAt,
       },
-      assets,
+      assets: assetsWithOwners,
       assessments,
       policies,
       frameworks: {
@@ -833,15 +893,14 @@ serve(async (req) => {
       members,
       accountability: {
         org_roles: members,
-        asset_owners: assets
-          .filter((a) => a.system_owner)
-          .map((a) => ({
-            asset_id: a.id,
-            asset_name: a.name,
-            owner: a.system_owner,
-            department: a.department || null,
-            risk_tier: a.risk_tier || null,
-          })),
+        asset_owners: assetsWithOwners.map((a) => ({
+          asset_id: a.id,
+          asset_name: a.name,
+          business_owner: a.business_owner_name,
+          compliance_owner: a.compliance_owner_name,
+          technical_owner: a.technical_owner_name,
+        })),
+        people: [...peopleById.values()].sort((a, b) => a.full_name.localeCompare(b.full_name)),
       },
     }
 
@@ -858,7 +917,7 @@ serve(async (req) => {
         methodology_version_id: currentMethodology?.id || null,
         methodology_version_label: currentMethodology?.version_label || null,
         methodology_catalogue_hash: currentMethodology?.catalogue_hash || null,
-        generator_version: '2.4.0',
+    generator_version: '2.5.0',
         requested_by: user.id,
       },
     }

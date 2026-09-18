@@ -148,6 +148,13 @@ export type RegistryAsset = {
   vendor?: string | null
   department?: string | null
   system_owner?: string | null
+  business_owner_id?: string | null
+  compliance_owner_id?: string | null
+  technical_owner_id?: string | null
+  /** Resolved display names for Overview (not DB columns). */
+  business_owner_name?: string | null
+  compliance_owner_name?: string | null
+  technical_owner_name?: string | null
   purpose_category?: string | null
   system_type?: string | null
   notes?: string | null
@@ -170,9 +177,18 @@ export type AssetFormValues = {
   risk_tier: string
   risk_tier_rationale: string
   lifecycle: string
-  system_owner: string
+  business_owner_id: string
+  compliance_owner_id: string
+  technical_owner_id: string
   department: string
   notes: string
+}
+
+export type OrgMemberOption = {
+  id: string
+  label: string
+  email?: string
+  job_title?: string | null
 }
 
 export type ProviderCatalogRow = {
@@ -219,7 +235,9 @@ export function emptyAssetForm(): AssetFormValues {
     risk_tier: '',
     risk_tier_rationale: '',
     lifecycle: 'planned',
-    system_owner: '',
+    business_owner_id: '',
+    compliance_owner_id: '',
+    technical_owner_id: '',
     department: '',
     notes: '',
   }
@@ -237,7 +255,9 @@ export function formFromAsset(a: Partial<RegistryAsset>): AssetFormValues {
     risk_tier: a.risk_tier || '',
     risk_tier_rationale: a.risk_tier_rationale || '',
     lifecycle: a.lifecycle || 'planned',
-    system_owner: a.system_owner || '',
+    business_owner_id: a.business_owner_id || '',
+    compliance_owner_id: a.compliance_owner_id || '',
+    technical_owner_id: a.technical_owner_id || '',
     department: a.department || '',
     notes: a.notes || '',
   }
@@ -461,6 +481,9 @@ export function assetHaystack(a: RegistryAsset) {
     a.model_name,
     a.description,
     a.system_owner,
+    a.business_owner_name,
+    a.compliance_owner_name,
+    a.technical_owner_name,
     a.department,
     a.connection_status === 'connected' ? 'connected' : 'not connected',
   ]
@@ -519,9 +542,12 @@ export function buildAssetPayload(
   form: AssetFormValues,
   orgId: string,
   userId: string,
+  members: OrgMemberOption[] = [],
 ): Record<string, unknown> {
   const vendorVal = form.vendor.trim() || null
   const tier = form.risk_tier || null
+  const businessLabel =
+    members.find((m) => m.id === form.business_owner_id)?.label?.trim() || null
   return {
     org_id: orgId,
     name: form.name.trim(),
@@ -536,14 +562,21 @@ export function buildAssetPayload(
     risk_tier_rationale: form.risk_tier_rationale.trim() || null,
     risk_tier_set_by: tier ? userId : null,
     lifecycle: form.lifecycle || 'planned',
-    system_owner: form.system_owner.trim(),
+    business_owner_id: form.business_owner_id || null,
+    compliance_owner_id: form.compliance_owner_id || null,
+    technical_owner_id: form.technical_owner_id || null,
+    // Legacy column kept in sync with business owner display name.
+    system_owner: businessLabel,
     department: form.department.trim() || null,
     notes: form.notes.trim() || null,
   }
 }
 
 export function validateAssetForm(form: AssetFormValues): string | null {
-  if (!form.name.trim() || !form.system_owner.trim()) return 'Name and owner are required.'
+  if (!form.name.trim()) return 'Name is required.'
+  if (!form.business_owner_id || !form.compliance_owner_id || !form.technical_owner_id) {
+    return 'Business, compliance, and technical owners are required.'
+  }
   if (!form.provider_slug || !form.model_name) return 'Provider and model are required.'
   if (notesRequired(form.provider_slug, form.model_name) && !form.notes.trim()) {
     return 'Please specify the provider or model in Notes when selecting Other.'

@@ -56,6 +56,7 @@ import {
   validateAssetForm,
   type AssetFormValues,
   type DeletePreview,
+  type OrgMemberOption,
   type ProviderCatalogRow,
   type ProviderInsights,
   type RegistryAsset,
@@ -191,6 +192,7 @@ export function RegistryDetailPage() {
   const [editError, setEditError] = useState('')
   const [editBusy, setEditBusy] = useState(false)
   const [providers, setProviders] = useState<ProviderCatalogRow[]>([])
+  const [orgMembers, setOrgMembers] = useState<OrgMemberOption[]>([])
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deletePreview, setDeletePreview] = useState<DeletePreview | null>(null)
   const [deleteReason, setDeleteReason] = useState('')
@@ -229,7 +231,7 @@ export function RegistryDetailPage() {
     const { data } = await sb
       .from('ai_systems')
       .select(
-        'id,name,asset_kind,risk_tier,risk_tier_rationale,lifecycle,description,provider_slug,model_name,vendor,department,system_owner,purpose_category,system_type,notes,created_at,updated_at',
+        'id,name,asset_kind,risk_tier,risk_tier_rationale,lifecycle,description,provider_slug,model_name,vendor,department,system_owner,business_owner_id,compliance_owner_id,technical_owner_id,purpose_category,system_type,notes,created_at,updated_at',
       )
       .eq('id', id)
       .is('deleted_at', null)
@@ -241,6 +243,29 @@ export function RegistryDetailPage() {
       return
     }
     const sys = data as RegistryAsset
+    const ownerIds = [
+      sys.business_owner_id,
+      sys.compliance_owner_id,
+      sys.technical_owner_id,
+    ].filter(Boolean) as string[]
+    if (ownerIds.length) {
+      const { data: ownerProfs } = await sb
+        .from('profiles')
+        .select('id,full_name,email')
+        .in('id', ownerIds)
+      const byId = new Map(
+        ((ownerProfs as { id: string; full_name?: string | null; email?: string | null }[]) || []).map(
+          (p) => [p.id, (p.full_name || p.email || 'Member').trim()],
+        ),
+      )
+      sys.business_owner_name = sys.business_owner_id ? byId.get(sys.business_owner_id) || null : null
+      sys.compliance_owner_name = sys.compliance_owner_id
+        ? byId.get(sys.compliance_owner_id) || null
+        : null
+      sys.technical_owner_name = sys.technical_owner_id
+        ? byId.get(sys.technical_owner_id) || null
+        : null
+    }
     setAsset(sys)
 
     const connectorSlug = sys.provider_slug || ''
@@ -344,6 +369,41 @@ export function RegistryDetailPage() {
     void loadProviderCatalog().then(setProviders)
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+    async function loadMembers() {
+      if (!org?.id) {
+        setOrgMembers([])
+        return
+      }
+      const { data: mems } = await sb.from('org_members').select('user_id').eq('org_id', org.id)
+      const ids = ((mems as { user_id: string }[]) || []).map((m) => m.user_id)
+      if (!ids.length) {
+        if (!cancelled) setOrgMembers([])
+        return
+      }
+      const { data: profs } = await sb
+        .from('profiles')
+        .select('id,full_name,email,job_title')
+        .in('id', ids)
+      if (cancelled) return
+      setOrgMembers(
+        ((profs as { id: string; full_name?: string | null; email?: string | null; job_title?: string | null }[]) || [])
+          .map((p) => ({
+            id: p.id,
+            label: (p.full_name || p.email || 'Member').trim(),
+            email: (p.email || '').trim(),
+            job_title: p.job_title || null,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label)),
+      )
+    }
+    void loadMembers()
+    return () => {
+      cancelled = true
+    }
+  }, [org?.id])
+
   const activeTokens = tokens.filter((t) => !t.revoked_at)
   const connected = !!conn?.credential_secret_id || conn?.status === 'connected'
   const provider = asset?.provider_slug || ''
@@ -398,7 +458,7 @@ export function RegistryDetailPage() {
     }
     setEditBusy(true)
     setEditError('')
-    const payload = buildAssetPayload(editForm, org.id, session.user.id)
+    const payload = buildAssetPayload(editForm, org.id, session.user.id, orgMembers)
     const { error: err } = await sb.from('ai_systems').update(payload).eq('id', asset.id)
     if (err) {
       setEditBusy(false)
@@ -738,8 +798,18 @@ export function RegistryDetailPage() {
                 <div className={styles.value}>{asset.department || 'Not set'}</div>
               </div>
               <div className={styles.field}>
-                <div className={styles.label}>Owner</div>
-                <div className={styles.value}>{asset.system_owner || 'Not set'}</div>
+                <div className={styles.label}>Business owner</div>
+                <div className={styles.value}>
+                  {asset.business_owner_name || asset.system_owner || 'Not set'}
+                </div>
+              </div>
+              <div className={styles.field}>
+                <div className={styles.label}>Compliance / risk owner</div>
+                <div className={styles.value}>{asset.compliance_owner_name || 'Not set'}</div>
+              </div>
+              <div className={styles.field}>
+                <div className={styles.label}>Technical / model owner</div>
+                <div className={styles.value}>{asset.technical_owner_name || 'Not set'}</div>
               </div>
               <div className={styles.field}>
                 <div className={styles.label}>Lifecycle</div>
@@ -1341,7 +1411,13 @@ export function RegistryDetailPage() {
         }
       >
         <p className={styles.drawerSub}>{asset?.name}</p>
-        <AssetFormFields form={editForm} providers={providers} error={editError} onChange={setEditForm} />
+        <AssetFormFields
+          form={editForm}
+          providers={providers}
+          members={orgMembers}
+          error={editError}
+          onChange={setEditForm}
+        />
       </Drawer>
 
       <Drawer open={deleteOpen} title="Remove from registry" onClose={() => setDeleteOpen(false)}>

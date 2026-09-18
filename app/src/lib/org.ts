@@ -23,6 +23,9 @@ export type OrgContext = {
     org_id?: string | null
     email?: string | null
     paid?: boolean | null
+    job_title?: string | null
+    department?: string | null
+    work_phone?: string | null
   } | null
   org: Organisation | null
   role: OrgRole | null
@@ -42,7 +45,7 @@ export function canDeleteRegistry(role: OrgRole | null) {
 
 export function orgSeatLimit(plan?: string | null) {
   const p = (plan || 'free').toLowerCase()
-  if (p === 'professional') return 5
+  if (p === 'professional') return 15
   if (p === 'enterprise') return 50
   return 1
 }
@@ -59,11 +62,22 @@ export function hasLiveSubscription(org: Organisation | null) {
   return !!org && (org.subscription_status === 'active' || org.subscription_status === 'trialing')
 }
 
+/** Auditor access (share + API) — Professional and Enterprise with live subscription. */
+export function canUseAuditorAccess(org: Organisation | null) {
+  const plan = (org?.plan || '').toLowerCase()
+  return (plan === 'professional' || plan === 'enterprise') && hasLiveSubscription(org)
+}
+
+/** Org governance dossier PDF export — same commercial gate as auditor access. */
+export function canUseGovernanceDossier(org: Organisation | null) {
+  return canUseAuditorAccess(org)
+}
+
 /** Portal-parity profile self-heal (non-privileged fields only). */
 export async function ensureProfile(userId: string, email?: string | null) {
   const { data: profile } = await sb
     .from('profiles')
-    .select('id,full_name,organisation,org_id,email,paid')
+    .select('id,full_name,organisation,org_id,email,paid,job_title,department,work_phone')
     .eq('id', userId)
     .maybeSingle()
   if (profile) return profile
@@ -74,12 +88,12 @@ export async function ensureProfile(userId: string, email?: string | null) {
       email: email || null,
       full_name: email?.split('@')[0] || null,
     })
-    .select('id,full_name,organisation,org_id,email,paid')
+    .select('id,full_name,organisation,org_id,email,paid,job_title,department,work_phone')
     .maybeSingle()
   if (error) {
     const { data: again } = await sb
       .from('profiles')
-      .select('id,full_name,organisation,org_id,email,paid')
+      .select('id,full_name,organisation,org_id,email,paid,job_title,department,work_phone')
       .eq('id', userId)
       .maybeSingle()
     return again

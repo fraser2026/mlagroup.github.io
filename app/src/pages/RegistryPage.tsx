@@ -63,6 +63,7 @@ type OwnerMember = {
   id: string
   label: string
   email: string
+  job_title?: string | null
 }
 
 function ownerInitials(label: string) {
@@ -261,7 +262,7 @@ export function RegistryPage() {
       sb
         .from('ai_systems')
         .select(
-          'id,name,asset_kind,risk_tier,lifecycle,description,provider_slug,model_name,vendor,department,system_owner,purpose_category,notes,updated_at,created_at',
+          'id,name,asset_kind,risk_tier,lifecycle,description,provider_slug,model_name,vendor,department,system_owner,business_owner_id,compliance_owner_id,technical_owner_id,purpose_category,notes,updated_at,created_at',
         )
         .eq('org_id', orgId)
         .is('deleted_at', null)
@@ -308,13 +309,17 @@ export function RegistryPage() {
         if (!cancelled) setOrgMembers([])
         return
       }
-      const { data: profs } = await sb.from('profiles').select('id,full_name,email').in('id', ids)
+      const { data: profs } = await sb
+        .from('profiles')
+        .select('id,full_name,email,job_title')
+        .in('id', ids)
       if (cancelled) return
-      const rows = ((profs as { id: string; full_name?: string | null; email?: string | null }[]) || [])
+      const rows = ((profs as { id: string; full_name?: string | null; email?: string | null; job_title?: string | null }[]) || [])
         .map((p) => ({
           id: p.id,
           label: (p.full_name || p.email || 'Member').trim(),
           email: (p.email || '').trim(),
+          job_title: p.job_title || null,
         }))
         .sort((a, b) => a.label.localeCompare(b.label))
       setOrgMembers(rows)
@@ -624,7 +629,7 @@ export function RegistryPage() {
     }
     setAddBusy(true)
     setAddError('')
-    const payload = buildAssetPayload(addForm, orgId, session.user.id)
+    const payload = buildAssetPayload(addForm, orgId, session.user.id, orgMembers)
     payload.created_by = session.user.id
     const { error: err } = await sb.from('ai_systems').insert(payload)
     setAddBusy(false)
@@ -656,6 +661,7 @@ export function RegistryPage() {
     const n = targets.length
     const writeDisabled = !n || busy || !canWrite
     const exportDisabled = !n || busy
+    const currentOwnerId = (targets[0]?.business_owner_id || '').trim()
     const currentOwner = (targets[0]?.system_owner || '').trim()
     const currentLifecycle = targets[0]?.lifecycle || ''
     const q = ownerQuery.trim().toLowerCase()
@@ -667,6 +673,7 @@ export function RegistryPage() {
       currentOwner &&
       !orgMembers.some(
         (m) =>
+          m.id === currentOwnerId ||
           m.label.toLowerCase() === currentOwner.toLowerCase() ||
           m.email.toLowerCase() === currentOwner.toLowerCase(),
       )
@@ -675,7 +682,8 @@ export function RegistryPage() {
     const showOrphan =
       !!orphanOwner && (!q || orphanOwner.toLowerCase().includes(q))
 
-    function ownerIsCurrent(label: string) {
+    function ownerIsCurrent(memberId: string, label: string) {
+      if (currentOwnerId) return currentOwnerId === memberId
       return !!currentOwner && currentOwner.toLowerCase() === label.toLowerCase()
     }
 
@@ -787,7 +795,7 @@ export function RegistryPage() {
           className={`${styles.flyout} ${styles.flyoutWide}`}
           style={{ top: flyoutTop }}
           role="menu"
-          aria-label="Assign owner"
+          aria-label="Assign business owner"
         >
           <div className={styles.ownerSearch}>
             <Icon icon={Search} size="sm" />
@@ -802,22 +810,34 @@ export function RegistryPage() {
           </div>
           <button
             type="button"
-            className={`${styles.ownerOption} ${!currentOwner ? styles.ownerOptionOn : ''}`}
+            className={`${styles.ownerOption} ${!currentOwnerId && !currentOwner ? styles.ownerOptionOn : ''}`}
             disabled={busy || !canWrite}
-            onClick={() => void patchSelected(targets, { system_owner: '' }, 'Owner cleared.')}
+            onClick={() =>
+              void patchSelected(
+                targets,
+                { business_owner_id: null, system_owner: null },
+                'Business owner cleared.',
+              )
+            }
           >
             <span className={`${styles.ownerAvatar} ${styles.ownerAvatarEmpty}`} aria-hidden>
               <Icon icon={User} size="sm" />
             </span>
-            <span className={styles.ownerOptionLabel}>No owner</span>
-            {!currentOwner ? <Icon icon={Check} size="sm" className={styles.ownerTick} /> : null}
+            <span className={styles.ownerOptionLabel}>No business owner</span>
+            {!currentOwnerId && !currentOwner ? <Icon icon={Check} size="sm" className={styles.ownerTick} /> : null}
           </button>
           {showOrphan ? (
             <button
               type="button"
               className={`${styles.ownerOption} ${styles.ownerOptionOn}`}
               disabled={busy || !canWrite}
-              onClick={() => void patchSelected(targets, { system_owner: orphanOwner }, 'Owner updated.')}
+              onClick={() =>
+                void patchSelected(
+                  targets,
+                  { business_owner_id: null, system_owner: orphanOwner },
+                  'Business owner updated.',
+                )
+              }
             >
               <span className={styles.ownerAvatar}>{ownerInitials(orphanOwner)}</span>
               <span className={styles.ownerOptionLabel}>{orphanOwner}</span>
@@ -828,7 +848,7 @@ export function RegistryPage() {
             <div className={styles.flyoutEmpty}>No members match.</div>
           ) : (
             memberMatches.map((m) => {
-              const on = ownerIsCurrent(m.label) || ownerIsCurrent(m.email)
+              const on = ownerIsCurrent(m.id, m.label)
               return (
                 <button
                   key={m.id}
@@ -836,7 +856,11 @@ export function RegistryPage() {
                   className={`${styles.ownerOption} ${on ? styles.ownerOptionOn : ''}`}
                   disabled={busy || !canWrite}
                   onClick={() =>
-                    void patchSelected(targets, { system_owner: m.label }, 'Owner updated.')
+                    void patchSelected(
+                      targets,
+                      { business_owner_id: m.id, system_owner: m.label },
+                      'Business owner updated.',
+                    )
                   }
                 >
                   <span className={styles.ownerAvatar}>{ownerInitials(m.label)}</span>
@@ -925,7 +949,7 @@ export function RegistryPage() {
               setPanel(panel === 'owner' ? 'root' : 'owner')
             }}
           >
-            <span className={styles.bulkItemLabel}>Assign owner</span>
+            <span className={styles.bulkItemLabel}>Assign business owner</span>
             <Icon icon={ChevronRight} size="sm" className={styles.bulkItemChevron} />
           </button>
           <button
@@ -1432,7 +1456,13 @@ export function RegistryPage() {
           </>
         }
       >
-        <AssetFormFields form={addForm} providers={providers} error={addError} onChange={setAddForm} />
+        <AssetFormFields
+          form={addForm}
+          providers={providers}
+          members={orgMembers}
+          error={addError}
+          onChange={setAddForm}
+        />
       </Drawer>
 
       <Drawer

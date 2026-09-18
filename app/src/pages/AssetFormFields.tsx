@@ -1,6 +1,6 @@
 import { SelectMenu } from '../ui'
 import { BrandIcon, hasBrandIcon } from '../icons/BrandIcon'
-import type { AssetFormValues, ProviderCatalogRow } from '../lib/registry'
+import type { AssetFormValues, OrgMemberOption, ProviderCatalogRow } from '../lib/registry'
 import {
   DEPLOYMENT_OPTIONS,
   PURPOSE_OPTIONS,
@@ -16,11 +16,12 @@ import styles from './RegistryForm.module.css'
 type Props = {
   form: AssetFormValues
   providers: ProviderCatalogRow[]
+  members: OrgMemberOption[]
   error?: string
   onChange: (next: AssetFormValues) => void
 }
 
-export function AssetFormFields({ form, providers, error, onChange }: Props) {
+export function AssetFormFields({ form, providers, members, error, onChange }: Props) {
   const models = modelsForPlatform(form.provider_slug)
   const suggested = suggestedTierForPurpose(form.purpose_category)
   const showRationale = !!(form.risk_tier && suggested && form.risk_tier !== suggested)
@@ -64,6 +65,14 @@ export function AssetFormFields({ form, providers, error, onChange }: Props) {
   const modelOptions = [
     { value: '', label: 'Select model' },
     ...models.map((m) => ({ value: m.id, label: m.label })),
+  ]
+
+  const memberOptions = [
+    { value: '', label: 'Select person' },
+    ...members.map((m) => ({
+      value: m.id,
+      label: m.job_title ? `${m.label} · ${m.job_title}` : m.label,
+    })),
   ]
 
   return (
@@ -198,30 +207,57 @@ export function AssetFormFields({ form, providers, error, onChange }: Props) {
       ) : null}
 
       <div className={styles.divider}>
-        <span>Governance metadata</span>
+        <span>Governance owners</span>
       </div>
-      <div className={styles.row}>
-        <label className={styles.field}>
-          <span className={styles.label}>
-            System owner<span className={styles.req}>*</span>
-          </span>
-          <input
-            className={styles.input}
-            value={form.system_owner}
-            onChange={(e) => set('system_owner', e.target.value)}
-            placeholder="Named accountable individual"
-          />
-        </label>
-        <label className={styles.field}>
-          <span className={styles.label}>Department</span>
-          <input
-            className={styles.input}
-            value={form.department}
-            onChange={(e) => set('department', e.target.value)}
-            placeholder="e.g. Operations, Risk"
-          />
-        </label>
+      <p className={styles.hintBlock}>
+        AI governance roles on this asset, separate from organisation user roles (owner, admin, editor).
+        Pick people from your organisation. Job title and contact details are set in Settings.
+      </p>
+      <div className={styles.field}>
+        <span className={styles.label}>
+          Business owner<span className={styles.req}>*</span>
+        </span>
+        <SelectMenu
+          aria-label="Business owner"
+          value={form.business_owner_id}
+          onChange={(v) => set('business_owner_id', v)}
+          options={memberOptions}
+          placeholder="Select person"
+        />
       </div>
+      <div className={styles.field}>
+        <span className={styles.label}>
+          Compliance / risk owner<span className={styles.req}>*</span>
+        </span>
+        <SelectMenu
+          aria-label="Compliance / risk owner"
+          value={form.compliance_owner_id}
+          onChange={(v) => set('compliance_owner_id', v)}
+          options={memberOptions}
+          placeholder="Select person"
+        />
+      </div>
+      <div className={styles.field}>
+        <span className={styles.label}>
+          Technical / model owner<span className={styles.req}>*</span>
+        </span>
+        <SelectMenu
+          aria-label="Technical / model owner"
+          value={form.technical_owner_id}
+          onChange={(v) => set('technical_owner_id', v)}
+          options={memberOptions}
+          placeholder="Select person"
+        />
+      </div>
+      <label className={styles.field}>
+        <span className={styles.label}>Department</span>
+        <input
+          className={styles.input}
+          value={form.department}
+          onChange={(e) => set('department', e.target.value)}
+          placeholder="Asset department, e.g. Operations, Risk"
+        />
+      </label>
       <label className={styles.field}>
         <span className={styles.label}>
           Notes{notesNeed ? <span className={styles.req}>*</span> : null}

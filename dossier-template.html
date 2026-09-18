@@ -1676,7 +1676,7 @@ function render(D) {
     <td>${providerMark(a.provider_slug, a.vendor)}</td>
     <td>${riskBadge(a.risk_tier)}</td>
     <td>${x(lifeLabel(a.lifecycle))}</td>
-    <td>${x(blank(a.system_owner))}</td>
+    <td class="num">${x(fmtShort(a.updated_at || a.created_at))}</td>
   </tr>`).join('');
 
   html += `<section class="section" data-toc="3">
@@ -1686,7 +1686,7 @@ function render(D) {
     <p class="sec-intro">Inventory of AI assets held in RegAnchor for ${x(orgName)}, excluding deleted records.</p>
     ${assets.length ? `<table class="data">
       <thead><tr>
-        <th>Asset</th><th>Provider</th><th>Risk</th><th>Lifecycle</th><th>Owner</th>
+        <th>Asset</th><th>Provider</th><th>Risk</th><th>Lifecycle</th><th>Last updated</th>
       </tr></thead>
       <tbody>${assetRows}</tbody>
     </table>
@@ -1753,26 +1753,37 @@ function render(D) {
     <td>${x(m.full_name || 'Member')}</td>
     <td>${x(pretty(m.role))}</td>
   </tr>`).join('');
+  const people = accountability.people || [];
   const ownerRows = assetOwners.slice(0, 40).map((o) => `<tr>
     <td>${x(o.asset_name)}</td>
-    <td>${x(blank(o.owner))}</td>
-    <td>${x(blank(o.department))}</td>
-    <td>${riskBadge(o.risk_tier)}</td>
+    <td>${x(blank(o.business_owner || o.owner))}</td>
+    <td>${x(blank(o.compliance_owner))}</td>
+    <td>${x(blank(o.technical_owner))}</td>
+  </tr>`).join('');
+  const peopleRows = people.slice(0, 40).map((p) => `<tr>
+    <td>${x(p.full_name)}</td>
+    <td>${x(blank(p.job_title))}</td>
+    <td>${x(blank(p.department))}</td>
+    <td>${x((p.roles || []).join('; '))}</td>
   </tr>`).join('');
 
   html += `<section class="section" data-toc="5">
     ${pageHeader(dossierId)}
     <div class="section-body">
     <h1 class="page-title">5. Accountability</h1>
-    <p class="sec-intro">Organisation roles and AI asset ownership as recorded in RegAnchor. Personal email addresses are not included in this export.</p>
+    <p class="sec-intro">Organisation roles in RegAnchor are separate from AI asset governance owners. Business owners answer for the use case and downstream impact. Compliance / risk owners cover regulatory alignment, privacy, ethics and documentation. Technical / model owners cover architecture, performance, bias monitoring and mitigation. Contact details are held in RegAnchor and are not included in this export.</p>
     <span class="sub-label">Organisation roles</span>
     ${orgRoles.length
       ? `<table class="data"><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody>${roleRows}</tbody></table>`
       : empty('No organisation members recorded.')}
     <span class="sub-label">AI asset owners</span>
     ${assetOwners.length
-      ? `<table class="data"><thead><tr><th>AI asset</th><th>Owner</th><th>Department</th><th>Risk</th></tr></thead><tbody>${ownerRows}</tbody></table>`
-      : empty('No asset owners recorded on AI assets.')}
+      ? `<table class="data"><thead><tr><th>AI asset</th><th>Business</th><th>Compliance</th><th>Technical</th></tr></thead><tbody>${ownerRows}</tbody></table>`
+      : empty('No governance owners recorded on AI assets.')}
+    <span class="sub-label">People profiles</span>
+    ${people.length
+      ? `<table class="data"><thead><tr><th>Name</th><th>Job title</th><th>Department</th><th>Governance roles</th></tr></thead><tbody>${peopleRows}</tbody></table>`
+      : empty('No named governance owners linked to AI assets.')}
     </div>
     ${pageFooter()}
   </section>`;
@@ -2307,8 +2318,24 @@ const PREVIEW_DOSSIER = {
       { full_name: 'J. Chen', role: 'admin' },
     ],
     asset_owners: [
-      { asset_name: 'Credit Decision Assistant', owner: 'A. Patel', department: 'Risk', risk_tier: 'high' },
-      { asset_name: 'Support Copilot', owner: 'J. Chen', department: 'Customer', risk_tier: 'limited' },
+      {
+        asset_name: 'Credit Decision Assistant',
+        business_owner: 'A. Patel',
+        compliance_owner: 'R. Singh',
+        technical_owner: 'J. Chen',
+      },
+      {
+        asset_name: 'Support Copilot',
+        business_owner: 'J. Chen',
+        compliance_owner: 'A. Patel',
+        technical_owner: 'L. Ng',
+      },
+    ],
+    people: [
+      { full_name: 'A. Patel', job_title: 'Head of Risk', department: 'Risk', roles: ['Business owner', 'Compliance / risk owner'] },
+      { full_name: 'J. Chen', job_title: 'COO', department: 'Operations', roles: ['Business owner', 'Technical / model owner'] },
+      { full_name: 'R. Singh', job_title: 'Compliance lead', department: 'Compliance', roles: ['Compliance / risk owner'] },
+      { full_name: 'L. Ng', job_title: 'ML engineer', department: 'Technology', roles: ['Technical / model owner'] },
     ],
   },
   approvals: [

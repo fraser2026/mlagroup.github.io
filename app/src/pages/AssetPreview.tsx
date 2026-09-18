@@ -192,8 +192,16 @@ export function AssetPreview({ asset, orgId }: Props) {
         </div>
         <dl className={styles.meta}>
           <div>
-            <dt>Owner</dt>
-            <dd>{asset.system_owner || '—'}</dd>
+            <dt>Business owner</dt>
+            <dd>{asset.business_owner_name || asset.system_owner || '—'}</dd>
+          </div>
+          <div>
+            <dt>Compliance / risk</dt>
+            <dd>{asset.compliance_owner_name || '—'}</dd>
+          </div>
+          <div>
+            <dt>Technical / model</dt>
+            <dd>{asset.technical_owner_name || '—'}</dd>
           </div>
           <div>
             <dt>Department</dt>
