@@ -48,13 +48,12 @@ html {
 }
 
 /*
-  Zero @page margin: section/cover own the page box.
-  Negative-margin bleed into @page margins is unreliable in Chromium PDF
-  (cover swoosh floated up; short pages left footers mid-page).
+  Page size only — do not set @page margin here.
+  Body PDFs reserve top/bottom bands via Puppeteer margin + header/footer.
+  (@page { margin: 0 } makes Chromium ignore those bands and overlap chrome.)
 */
 @page {
   size: A4;
-  margin: 0;
 }
 
 body {

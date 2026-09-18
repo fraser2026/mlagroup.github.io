@@ -324,14 +324,15 @@ app.post('/render-dossier', async (req, res) => {
       .replace(/"/g, '&quot;');
 
     // Locked chrome on every body page (not in-flow — scales with multi-page tables).
+    // Template height must fit inside Puppeteer top/bottom margin or Chromium overlaps body.
     const headerTemplate = `
-      <div style="width:100%;padding:0 24mm;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;font-size:7.5pt;font-weight:500;color:#6B7280;display:flex;justify-content:space-between;align-items:center;">
+      <div style="width:100%;height:14mm;padding:0 24mm 3mm;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;font-size:7.5pt;font-weight:500;color:#6B7280;display:flex;justify-content:space-between;align-items:flex-end;">
         <span>Confidential</span>
         <span style="font-variant-numeric:tabular-nums;">${safeId}</span>
       </div>`;
 
     const footerTemplate = `
-      <div style="width:100%;padding:0 24mm;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;font-size:7.5pt;font-weight:500;color:#6B7280;display:flex;justify-content:space-between;align-items:center;">
+      <div style="width:100%;height:14mm;padding:3mm 24mm 0;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;font-size:7.5pt;font-weight:500;color:#6B7280;display:flex;justify-content:space-between;align-items:flex-start;">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 389 84" width="78" height="17" role="img" aria-label="RegAnchor">
           <g fill="#0A0E14">
             <path d="M360.9,35.77c0,12.67-10.37,22.68-24.34,22.68s-24.27-10.01-24.27-22.68,10.37-22.68,24.27-22.68,24.34,10.01,24.34,22.68ZM324.75,35.77c0,6.98,5.04,12.46,11.81,12.46s11.88-5.54,11.88-12.46-5.04-12.46-11.88-12.46-11.81,5.54-11.81,12.46Z"/>
@@ -353,6 +354,7 @@ app.post('/render-dossier', async (req, res) => {
       document.body.classList.add('dossier-cover-only');
       document.body.classList.remove('dossier-body-only');
     });
+    await page.addStyleTag({ content: '@page { size: A4; margin: 0 !important; }' });
     const coverPdf = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -382,7 +384,8 @@ app.post('/render-dossier', async (req, res) => {
       displayHeaderFooter: true,
       headerTemplate,
       footerTemplate,
-      margin: { top: '14mm', right: '24mm', bottom: '14mm', left: '24mm' },
+      // Must be >= header/footer template height or chrome paints over body.
+      margin: { top: '18mm', right: '24mm', bottom: '18mm', left: '24mm' },
     });
 
     const coverDoc = await PDFDocument.load(coverPdf);
