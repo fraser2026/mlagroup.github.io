@@ -12,7 +12,14 @@ import styles from './UsersPage.module.css'
 
 type Member = { id: string; user_id: string; role: string }
 type Invite = { id: string; email: string; role: string; expires_at: string; invited_by?: string }
-type Profile = { id: string; full_name?: string | null; email?: string | null }
+type Profile = {
+  id: string
+  full_name?: string | null
+  email?: string | null
+  job_title?: string | null
+  department?: string | null
+  work_phone?: string | null
+}
 
 export function UsersPage() {
   const { org, canManageMembers, user, refreshOrg } = useAuth()
@@ -72,7 +79,10 @@ export function UsersPage() {
       ...inviteRows.map((i) => i.invited_by).filter(Boolean),
     ] as string[]
     if (ids.length) {
-      const { data: profs } = await sb.from('profiles').select('id,full_name,email').in('id', ids)
+      const { data: profs } = await sb
+        .from('profiles')
+        .select('id,full_name,email,job_title,department,work_phone')
+        .in('id', ids)
       const map: Record<string, Profile> = {}
       for (const p of profs || []) map[p.id] = p as Profile
       setProfiles(map)
@@ -89,7 +99,7 @@ export function UsersPage() {
   const seatNote =
     `${seatsUsed} of ${limit} seats used` +
     ((org?.plan || 'free') !== 'professional' && (org?.plan || '') !== 'enterprise'
-      ? '. Professional includes 5 seats'
+      ? '. Professional includes 15 seats'
       : '')
 
   async function onInvite(e: FormEvent) {
@@ -156,11 +166,14 @@ export function UsersPage() {
     <PageFrame
       railItems={[
         { id: 'invite', label: 'Invite' },
-        { id: 'members', label: 'Members' },
-        { id: 'roles', label: 'Roles' },
+        { id: 'members', label: 'People' },
+        { id: 'roles', label: 'Access' },
       ]}
     >
-      <PageHeader title="Users" description="Invite colleagues and manage role-based access." />
+      <PageHeader
+        title="Users"
+        description="People in this organisation: contact details for governance, and workspace access for who can sign in and change records."
+      />
       {error ? <Notice tone="risk">{error}</Notice> : null}
       {!org ? (
         <EmptyState title="No organisation" body="Organisation context is still loading." />
@@ -188,10 +201,10 @@ export function UsersPage() {
 
           <Section id="invite" title="Invite a colleague" description={seatNote}>
             {!canManageMembers ? (
-              <p className={styles.copy}>Only owners and admins can invite people or change roles.</p>
+              <p className={styles.copy}>Only workspace admins and admins can invite people or change roles.</p>
             ) : atLimit ? (
               <p className={styles.copy}>
-                Seat limit reached. Upgrade to Professional for 5 seats, or revoke a pending invite.{' '}
+                Seat limit reached. Upgrade to Professional for 15 seats, or revoke a pending invite.{' '}
                 {(org.plan || '') !== 'professional' ? <Link to="/plans">View plans</Link> : null}
               </p>
             ) : (
@@ -221,20 +234,39 @@ export function UsersPage() {
             )}
           </Section>
 
-          <Section id="members" title="Members" description="Role-based access">
+          <Section
+            id="members"
+            title="People"
+            description="Directory for AI asset ownership. Each person updates their own job title and contact in Settings."
+          >
             <div className={styles.list}>
               {members.map((m) => {
                 const p = profiles[m.user_id] || {}
                 const name = p.full_name || 'Unknown'
                 const isYou = m.user_id === user?.id
+                const detailParts = [
+                  p.job_title || null,
+                  p.department || null,
+                  p.email || null,
+                  p.work_phone || null,
+                ].filter(Boolean)
                 return (
                   <div key={m.id} className={styles.row}>
-                    <div>
+                    <div className={styles.person}>
                       <div className={styles.name}>
                         {name}
                         {isYou ? ' (you)' : ''}
                       </div>
-                      <div className={styles.meta}>{p.email || 'Not set'}</div>
+                      <div className={styles.meta}>
+                        {detailParts.length
+                          ? detailParts.join(' · ')
+                          : 'Add job title and contact in Settings'}
+                      </div>
+                      {isYou ? (
+                        <Link className={styles.profileLink} to="/settings">
+                          Edit your profile
+                        </Link>
+                      ) : null}
                     </div>
                     {canManageMembers && m.role !== 'owner' ? (
                       <select
@@ -269,7 +301,7 @@ export function UsersPage() {
                     <div>
                       <div className={styles.name}>{inv.email}</div>
                       <div className={styles.meta}>
-                        Expires {fmtDate(inv.expires_at)} Â· {MEMBER_ROLE_LABELS[inv.role] || inv.role}
+                        Expires {fmtDate(inv.expires_at)} · {MEMBER_ROLE_LABELS[inv.role] || inv.role}
                       </div>
                     </div>
                     {canManageMembers ? (
@@ -283,12 +315,18 @@ export function UsersPage() {
             </Section>
           ) : null}
 
-          <Section id="roles" title="Roles">
+          <Section id="roles" title="Workspace access">
             <p className={styles.copy}>
-              <strong>Owner:</strong> billing, members, and all registry actions. One per organisation.
+              These roles control who can sign in and change records. They are not AI asset governance
+              owners. Business, compliance, and technical owners are assigned on each asset.
             </p>
             <p className={styles.copy}>
-              <strong>Admin:</strong> invite, change roles, and edit systems. Cannot remove the owner.
+              <strong>Workspace admin:</strong> billing, members, and all registry actions. One per
+              organisation.
+            </p>
+            <p className={styles.copy}>
+              <strong>Admin:</strong> invite, change roles, and edit systems. Cannot remove the
+              workspace admin.
             </p>
             <p className={styles.copy}>
               <strong>Editor:</strong> register and update AI systems, controls, and assessments.

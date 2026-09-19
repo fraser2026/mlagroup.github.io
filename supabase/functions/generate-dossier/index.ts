@@ -555,9 +555,13 @@ serve(async (req) => {
 
     const members = (membersRes.data || []).map((m) => {
       const p = profileMap.get(m.user_id)
+      const role = String(m.role || '')
+      const roleLabel =
+        role === 'owner' ? 'Workspace admin' : role ? role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : null
       return {
         user_id: m.user_id,
-        role: m.role,
+        role,
+        role_label: roleLabel,
         full_name: p?.full_name || null,
         // Names only in accountability; emails omitted from dossier export
       }

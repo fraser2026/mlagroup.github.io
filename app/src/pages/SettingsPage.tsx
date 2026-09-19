@@ -151,7 +151,11 @@ export function SettingsPage() {
         <p className={styles.hint}>Dark mode is tuned for Registry density first. Soft greys keep secondary text readable without going pure white on every label.</p>
       </Section>
 
-      <Section id="profile" title="Profile" description="Used for AI asset governance ownership. Contact details stay in the app and are omitted from dossier exports.">
+      <Section
+        id="profile"
+        title="Profile"
+        description="Your details appear in Users and when you are assigned as an AI asset owner. Contact details stay in the app and are omitted from dossier exports."
+      >
         <div className={styles.row}>
           <div>
             <div className={styles.label}>Signed in as</div>

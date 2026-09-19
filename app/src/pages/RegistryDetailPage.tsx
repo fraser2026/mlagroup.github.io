@@ -51,6 +51,7 @@ import {
   labelTier,
   loadProviderCatalog,
   modelDisplayName,
+  ownershipIncomplete,
   riskTone,
   systemReportUrl,
   validateAssetForm,
@@ -754,6 +755,20 @@ export function RegistryDetailPage() {
 
       {tab === 'overview' ? (
         <Section id="overview">
+          {ownershipIncomplete(asset) ? (
+            <Notice tone="warn">
+              This asset is in production. Assign compliance and technical owners to complete governance
+              accountability.
+              {canWriteRegistry ? (
+                <>
+                  {' '}
+                  <button type="button" className={styles.inlineLink} onClick={() => openEdit()}>
+                    Edit asset
+                  </button>
+                </>
+              ) : null}
+            </Notice>
+          ) : null}
           <div className={styles.grid}>
               <div className={styles.fieldWide}>
                 <div className={styles.label}>Description</div>

@@ -1751,7 +1751,7 @@ function render(D) {
   /* ── 5 Accountability ── */
   const roleRows = orgRoles.map((m) => `<tr>
     <td>${x(m.full_name || 'Member')}</td>
-    <td>${x(pretty(m.role))}</td>
+    <td>${x(m.role_label || (m.role === 'owner' ? 'Workspace admin' : pretty(m.role)))}</td>
   </tr>`).join('');
   const people = accountability.people || [];
   const ownerRows = assetOwners.slice(0, 40).map((o) => `<tr>

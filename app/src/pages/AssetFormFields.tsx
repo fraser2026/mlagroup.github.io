@@ -210,8 +210,9 @@ export function AssetFormFields({ form, providers, members, error, onChange }: P
         <span>Governance owners</span>
       </div>
       <p className={styles.hintBlock}>
-        AI governance roles on this asset, separate from organisation user roles (owner, admin, editor).
-        Pick people from your organisation. Job title and contact details are set in Settings.
+        Who is accountable for this AI asset. Separate from workspace access roles (Users). Business
+        owner is required. Compliance and technical owners are required once the asset is in production.
+        People and contact details live under Users; update your own profile in Settings.
       </p>
       <div className={styles.field}>
         <span className={styles.label}>
@@ -227,7 +228,8 @@ export function AssetFormFields({ form, providers, members, error, onChange }: P
       </div>
       <div className={styles.field}>
         <span className={styles.label}>
-          Compliance / risk owner<span className={styles.req}>*</span>
+          Compliance / risk owner
+          {form.lifecycle === 'production' ? <span className={styles.req}>*</span> : null}
         </span>
         <SelectMenu
           aria-label="Compliance / risk owner"
@@ -239,7 +241,8 @@ export function AssetFormFields({ form, providers, members, error, onChange }: P
       </div>
       <div className={styles.field}>
         <span className={styles.label}>
-          Technical / model owner<span className={styles.req}>*</span>
+          Technical / model owner
+          {form.lifecycle === 'production' ? <span className={styles.req}>*</span> : null}
         </span>
         <SelectMenu
           aria-label="Technical / model owner"

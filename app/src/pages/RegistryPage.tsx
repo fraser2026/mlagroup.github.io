@@ -610,7 +610,9 @@ export function RegistryPage() {
       setError(registryLimitMessage(org?.plan))
       return
     }
-    setAddForm(emptyAssetForm())
+    const form = emptyAssetForm()
+    if (session?.user?.id) form.business_owner_id = session.user.id
+    setAddForm(form)
     setAddError('')
     setAddOpen(true)
   }

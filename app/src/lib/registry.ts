@@ -574,14 +574,31 @@ export function buildAssetPayload(
 
 export function validateAssetForm(form: AssetFormValues): string | null {
   if (!form.name.trim()) return 'Name is required.'
-  if (!form.business_owner_id || !form.compliance_owner_id || !form.technical_owner_id) {
-    return 'Business, compliance, and technical owners are required.'
+  if (!form.business_owner_id) return 'Business owner is required.'
+  if (form.lifecycle === 'production') {
+    if (!form.compliance_owner_id || !form.technical_owner_id) {
+      return 'Compliance and technical owners are required for production assets.'
+    }
   }
   if (!form.provider_slug || !form.model_name) return 'Provider and model are required.'
   if (notesRequired(form.provider_slug, form.model_name) && !form.notes.trim()) {
     return 'Please specify the provider or model in Notes when selecting Other.'
   }
   return null
+}
+
+/** True when a production asset is missing compliance or technical ownership. */
+export function ownershipIncomplete(a: {
+  lifecycle?: string | null
+  compliance_owner_id?: string | null
+  technical_owner_id?: string | null
+  compliance_owner_name?: string | null
+  technical_owner_name?: string | null
+}) {
+  if ((a.lifecycle || '').toLowerCase() !== 'production') return false
+  const compliance = a.compliance_owner_id || a.compliance_owner_name
+  const technical = a.technical_owner_id || a.technical_owner_name
+  return !compliance || !technical
 }
 
 export function auditChangesFromPatch(
