@@ -51,7 +51,21 @@ nav {
   text-decoration: none; color: var(--main); flex-shrink:0;
   display: inline-flex; align-items: center;
 }
-.logo img { display: block; height: 36px; width: auto; }
+.logo img {
+  display: block;
+  height: 36px;
+  width: auto;
+  transition: height 0.22s ease;
+}
+nav.is-scrolled .logo img { height: 26px; }
+@media (prefers-reduced-motion: reduce) {
+  .logo img { transition: none; }
+}
+.rfooter .rf-logo img {
+  display: block;
+  height: 36px;
+  width: auto;
+}
 .nav-centre {
   display: flex; align-items:center; gap:4px;
   position: absolute; left:50%; transform:translateX(-50%);
@@ -219,6 +233,7 @@ h1 {
 }
 .plan-card__price {
   display:flex; align-items:baseline; gap:3px; margin-bottom:4px;
+  min-height:36px;
 }
 .plan-card__currency { font-size:16px; font-weight:500; color:var(--main); }
 .plan-card__num {
@@ -226,6 +241,12 @@ h1 {
   font-size:36px; font-weight:500;
   letter-spacing:-0.03em; color:var(--main);
   font-feature-settings:'tnum';
+  line-height:1;
+}
+.plan-card__num--bespoke {
+  font-size:28px;
+  letter-spacing:-0.02em;
+  line-height:36px;
 }
 .plan-card__per { font-size:0.88rem; color:var(--ra-text-3, var(--muted)); }
 .plan-card__save { font-size:0.75rem; color:var(--ra-text-3, var(--muted)); margin-top:2px; min-height:18px; }
@@ -335,21 +356,48 @@ h1 {
   letter-spacing:-0.01em; text-transform:none;
   color:var(--muted); text-align:center;
   border-bottom:1px solid var(--border);
+  background:var(--ra-mist, #f6f9fc);
+  border-left:0; border-right:0;
 }
 .plan-table td {
   padding:11px 16px; text-align:center;
-  border-bottom:1px solid var(--border); color:var(--sub);
+  border-bottom:1px solid var(--border); color:var(--main); font-weight:500;
 }
-.plan-table th:first-child, .plan-table td:first-child { text-align:left; color:var(--main); }
+.plan-table th:first-child,
+.plan-table td:first-child { text-align:left; }
+.plan-table td:first-child {
+  color:var(--sub); font-weight:500;
+}
 .plan-table__section td {
-  font-size:0.75rem; font-weight:500;
-  letter-spacing:-0.01em; text-transform:none;
-  color:var(--ra-text-3, var(--muted));
-  background:var(--bg) !important;
-  padding-top:16px !important;
+  font-size:0.9rem; font-weight:500;
+  letter-spacing:-0.015em; text-transform:none;
+  color:var(--main);
+  background:var(--ra-mist, #f6f9fc) !important;
+  padding-top:14px !important;
+  padding-bottom:10px !important;
 }
-.plan-table__y { color:var(--main); font-weight:500; text-align:center; }
-.plan-table__n { color:var(--ra-text-4, var(--muted)); text-align:center; }
+.plan-table__feat { color:var(--sub); }
+.plan-table__badge {
+  display:inline-block; margin-left:8px; padding:1px 6px;
+  border:1px solid color-mix(in srgb, var(--ra-blurple, #533AFD) 28%, var(--border));
+  border-radius:4px;
+  background:color-mix(in srgb, var(--ra-blurple, #533AFD) 8%, var(--bg));
+  font-size:11px; font-weight:500; color:var(--ra-blurple, #533AFD);
+  vertical-align:middle; line-height:1.3;
+}
+.plan-table td.plan-table__y {
+  color:var(--ra-ok, #24B47E);
+  font-weight:600;
+  text-align:center;
+  font-size:0.88rem;
+}
+.plan-table td.plan-table__n {
+  color:var(--ra-text-4, var(--muted));
+  font-weight:500;
+  text-align:center;
+  font-size:0.88rem;
+  opacity:0.72;
+}
  
 /* FAQ — disclosure ledger (index features pattern, no left meter) */
 .faq-section { position:relative; z-index:1; max-width:640px; margin:0 auto; padding:52px 24px 0; }
@@ -567,8 +615,52 @@ footer { border-top:1px solid var(--main); background:var(--bg); position:relati
 .modal-inset {
   border:1px solid var(--border);
   background:var(--bg);
-  padding:14px 16px; margin-bottom:16px;
-  font-size:0.8125rem; color:var(--sub); line-height:1.65;
+  border-radius:4px;
+  padding:12px 14px; margin-bottom:0;
+  font-size:0.8125rem; color:var(--sub); line-height:1.45; font-weight:500;
+}
+.ent-form {
+  display:grid;
+  gap:14px;
+}
+.ent-reqs {
+  margin:0;
+  padding:0;
+  border:0;
+  display:block;
+}
+.ent-reqs__legend {
+  display:block;
+  float:none;
+  padding:0;
+  margin:0 0 12px;
+  font-size:0.75rem;
+  font-weight:500;
+  color:var(--muted);
+  line-height:1.35;
+  letter-spacing:-0.01em;
+}
+.ent-reqs__grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px 12px;
+}
+.ent-check {
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  font-size:0.8125rem;
+  font-weight:500;
+  color:var(--sub);
+  cursor:pointer;
+  line-height:1.35;
+}
+.ent-check input {
+  margin-top:2px;
+  width:15px;
+  height:15px;
+  accent-color:var(--ra-blurple,#533AFD);
+  flex-shrink:0;
 }
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .field-group { margin-bottom:16px; }
@@ -615,6 +707,7 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
 .ent-success p { font-size:0.9rem; color:var(--sub); line-height:1.65; }
 @media(max-width:560px){
   .field-row { grid-template-columns:1fr; }
+  .ent-reqs__grid { grid-template-columns:1fr; }
 }
  
 /* Animations */
@@ -654,7 +747,7 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
 <body>
  
 <nav>
-  <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+  <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg?v=a3" alt="" width="193" height="36" decoding="async"></a>
   <div class="nav-right">
     <a href="login.html" class="nav-signin">Sign in</a>
   </div>
@@ -684,19 +777,18 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
       <div class="plan-card fade">
         <div class="plan-card__head">
           <div class="plan-card__tier">Essentials</div>
-          <div class="plan-card__flag">Recommended</div>
         </div>
-        <div class="plan-card__name">Governance</div>
-        <div class="plan-card__desc">Certified governance maturity with a publicly verifiable certificate.</div>
+        <div class="plan-card__name">Foundation</div>
+        <div class="plan-card__desc">Governance foundation for teams putting AI into production.</div>
         <div class="plan-card__price"><span class="plan-card__currency">&pound;</span><span class="plan-card__num" id="pe">129</span><span class="plan-card__per" id="ppe">/month</span></div>
         <div class="plan-card__save" id="pse"></div>
         <div class="plan-card__rule"></div>
         <div class="plan-card__feats">
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Governance Certificate</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Public verification page</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Assessment reports</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Full governance framework</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Email support</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>AI asset registry</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Risk assessment &amp; classification</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Policy management</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Evidence management</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Data backend connections</div>
         </div>
         <button type="button" class="plan-card__cta" onclick="subscribe('essentials')">Get started</button>
       </div>
@@ -705,17 +797,17 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
         <div class="plan-card__head">
           <div class="plan-card__tier">Professional</div>
         </div>
-        <div class="plan-card__name">Compliance</div>
-        <div class="plan-card__desc">Operational governance across every system. Audit-ready at scale.</div>
-        <div class="plan-card__price"><span class="plan-card__currency">&pound;</span><span class="plan-card__num" id="pp">249</span><span class="plan-card__per" id="ppp">/month</span></div>
+        <div class="plan-card__name">Operations</div>
+        <div class="plan-card__desc">Continuous governance for organisations operating AI at scale.</div>
+        <div class="plan-card__price"><span class="plan-card__currency">&pound;</span><span class="plan-card__num" id="pp">299</span><span class="plan-card__per" id="ppp">/month</span></div>
         <div class="plan-card__save" id="psp"></div>
         <div class="plan-card__rule"></div>
         <div class="plan-card__feats">
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Unlimited AI systems</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Multi-user access (5 seats)</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Organisation-wide certification</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Compliance automation</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Priority support</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Unlimited AI assets</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Multi-user access (15 seats)</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Continuous monitoring</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Auditor export</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>API &amp; integrations</div>
         </div>
         <button type="button" class="plan-card__cta" onclick="subscribe('professional')">Upgrade to Professional</button>
       </div>
@@ -724,17 +816,17 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
         <div class="plan-card__head">
           <div class="plan-card__tier">Enterprise</div>
         </div>
-        <div class="plan-card__name">Governance OS</div>
-        <div class="plan-card__desc">Bespoke governance infrastructure for multi-jurisdiction obligations.</div>
-        <div class="plan-card__price"><span class="plan-card__num" style="font-size:28px;">Bespoke</span></div>
+        <div class="plan-card__name">Infrastructure</div>
+        <div class="plan-card__desc">Governance infrastructure for complex AI environments.</div>
+        <div class="plan-card__price"><span class="plan-card__num plan-card__num--bespoke">Bespoke</span></div>
         <div class="plan-card__save">Tailored to your organisation</div>
         <div class="plan-card__rule"></div>
         <div class="plan-card__feats">
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Everything in Professional</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Unlimited users</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Dedicated advisory lead</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>On-site sessions &amp; benchmarking</div>
-          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Custom SLA</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>SSO / SAML</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Multi-jurisdiction governance</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Custom controls &amp; workflows</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Unlimited users &amp; teams</div>
+          <div class="plan-feat plan-feat--strong"><span class="plan-feat__mark">✓</span>Dedicated support &amp; custom SLA</div>
         </div>
         <button type="button" class="plan-card__cta plan-card__cta--ink" onclick="openEnterpriseModal()">Talk to advisory</button>
       </div>
@@ -753,36 +845,53 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
   <div id="comp-table" class="plan-compare" hidden>
     <div class="table-scroll">
       <table class="plan-table">
-        <thead><tr><th>Feature</th><th>Free</th><th>Essentials</th><th>Professional</th><th>Enterprise</th></tr></thead>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Essentials</th>
+            <th>Professional</th>
+            <th>Enterprise</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr class="plan-table__section"><td colspan="5">Diagnostics &amp; Assessment</td></tr>
-          <tr><td>Governance diagnostic</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>Maturity score &amp; risk band</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>7-domain system assessment</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>Assessment reports</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr class="plan-table__section"><td colspan="5">Registry &amp; Systems</td></tr>
-          <tr><td>AI systems in registry</td><td>1</td><td>1</td><td>Unlimited</td><td>Unlimited</td></tr>
-          <tr><td>EU AI Act risk classification</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>Compliance framework tracking</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr class="plan-table__section"><td colspan="5">Governance Controls</td></tr>
-          <tr><td>12 governance controls</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>Task management &amp; evidence</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>RegAnchor expert support</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td>Priority</td><td>Dedicated</td></tr>
-          <tr><td>Compliance automation engine</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr class="plan-table__section"><td colspan="5">Certification</td></tr>
-          <tr><td>Governance certificate</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>Certificate PDF download</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>Public verification page</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>Governance dossier export</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr class="plan-table__section"><td colspan="5">Team &amp; Organisation</td></tr>
-          <tr><td>Users</td><td>1</td><td>1</td><td>Up to 5</td><td>Unlimited</td></tr>
-          <tr><td>Policy management</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>E-signatures</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>Audit trail</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td>Advanced</td><td>Advanced</td></tr>
-          <tr class="plan-table__section"><td colspan="5">Support</td></tr>
-          <tr><td>Support channel</td><td>In-portal</td><td>Email</td><td>Priority</td><td>Dedicated lead</td></tr>
-          <tr><td>On-site sessions</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td></tr>
-          <tr><td>Quarterly benchmarking</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__n">—</td><td class="plan-table__y">✓</td></tr>
+          <tr class="plan-table__section"><td colspan="4">Registry and classification</td></tr>
+          <tr><td>AI asset registry</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>AI assets</td><td>5</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>Risk assessment and classification (Annex III mapping)</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Provider and model tracking</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+
+          <tr class="plan-table__section"><td colspan="4">Governance and policy</td></tr>
+          <tr><td>Governance controls</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Policy management</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Custom controls and workflows</td><td class="plan-table__n">–</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Multi-jurisdiction governance</td><td class="plan-table__n">–</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td></tr>
+
+          <tr class="plan-table__section"><td colspan="4">Evidence and audit</td></tr>
+          <tr><td>Evidence management (dossier snapshot)</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Governance status reports and dashboards</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Advanced evidence and audit history</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Auditor export <span class="plan-table__badge">New</span></td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Custom evidence and reporting</td><td class="plan-table__n">–</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td></tr>
+
+          <tr class="plan-table__section"><td colspan="4">Monitoring and analytics</td></tr>
+          <tr><td>Basic usage and cost visibility</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Continuous monitoring</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Automated controls and testing</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Runtime and provider telemetry</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Usage, cost and model analytics</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Governance trend and benchmarking insights</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+
+          <tr class="plan-table__section"><td colspan="4">Connectivity</td></tr>
+          <tr><td>Connect your existing data sources</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>RegAnchor API access and integrations</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Advanced integrations</td><td class="plan-table__n">–</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td></tr>
+
+          <tr class="plan-table__section"><td colspan="4">Access, security and support</td></tr>
+          <tr><td>Users</td><td>1</td><td>15</td><td>Unlimited</td></tr>
+          <tr><td>SSO / SAML</td><td class="plan-table__n">–</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Advanced access controls</td><td class="plan-table__n">–</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td></tr>
+          <tr><td>Support</td><td>Email</td><td>Priority</td><td>Dedicated + custom SLA</td></tr>
+          <tr><td>Dedicated onboarding</td><td class="plan-table__n">–</td><td class="plan-table__n">–</td><td class="plan-table__y">✓</td></tr>
         </tbody>
       </table>
     </div>
@@ -795,7 +904,7 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
     <div class="faq-row">
       <button type="button" class="faq-row__trigger" id="faq-trigger-1" aria-expanded="false" aria-controls="faq-panel-1">
         <span class="faq-row__head">
-          <span class="faq-row__title">Can I start free and upgrade later?</span>
+          <span class="faq-row__title">Which plan is right for us?</span>
         </span>
         <span class="faq-row__chev" aria-hidden="true">
           <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -803,14 +912,14 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
       </button>
       <div class="faq-row__panel" id="faq-panel-1" role="region" aria-labelledby="faq-trigger-1" hidden>
         <div class="faq-row__panel-inner">
-          <p class="faq-row__body">Yes. Your governance data, control progress, and assessments are preserved when you upgrade. Move to Essentials or Professional at any time from your portal dashboard.</p>
+          <p class="faq-row__body">Essentials suits teams standing up their first AI governance programme: registering systems, classifying risk and getting policies and evidence in place. Professional is built for organisations already running AI in production who need continuous monitoring, an unlimited system registry and API access. Enterprise is for organisations with SSO, multi-jurisdiction requirements or custom governance workflows that a fixed tier cannot accommodate.</p>
         </div>
       </div>
     </div>
     <div class="faq-row">
       <button type="button" class="faq-row__trigger" id="faq-trigger-2" aria-expanded="false" aria-controls="faq-panel-2">
         <span class="faq-row__head">
-          <span class="faq-row__title">What qualifies me for a governance certificate?</span>
+          <span class="faq-row__title">Can we switch plans or billing frequency later?</span>
         </span>
         <span class="faq-row__chev" aria-hidden="true">
           <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -818,14 +927,14 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
       </button>
       <div class="faq-row__panel" id="faq-panel-2" role="region" aria-labelledby="faq-trigger-2" hidden>
         <div class="faq-row__panel-inner">
-          <p class="faq-row__body">An active Essentials or Professional subscription, a governance score of 70% or above, at least one registered AI system with a completed assessment, and all published policies acknowledged. Your portal tracks qualification progress in real time.</p>
+          <p class="faq-row__body">Yes. You can move between Essentials, Professional and Enterprise, or switch between monthly and annual billing, at any time from Billing.</p>
         </div>
       </div>
     </div>
     <div class="faq-row">
       <button type="button" class="faq-row__trigger" id="faq-trigger-3" aria-expanded="false" aria-controls="faq-panel-3">
         <span class="faq-row__head">
-          <span class="faq-row__title">What happens if I cancel?</span>
+          <span class="faq-row__title">How is the Enterprise plan priced?</span>
         </span>
         <span class="faq-row__chev" aria-hidden="true">
           <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -833,14 +942,14 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
       </button>
       <div class="faq-row__panel" id="faq-panel-3" role="region" aria-labelledby="faq-trigger-3" hidden>
         <div class="faq-row__panel-inner">
-          <p class="faq-row__body">Your portal access and governance data remain intact. Your certificate will expire, public verification will be deactivated, and PDF reports will be locked. Resubscribe at any time to reinstate.</p>
+          <p class="faq-row__body">Enterprise is scoped to your organisation, based on the number of users, jurisdictions and systems you are governing, and any custom controls or workflows you need. Contact us and we will put together a quote and a short scoping call before anything is agreed.</p>
         </div>
       </div>
     </div>
     <div class="faq-row">
       <button type="button" class="faq-row__trigger" id="faq-trigger-4" aria-expanded="false" aria-controls="faq-panel-4">
         <span class="faq-row__head">
-          <span class="faq-row__title">Is the certificate publicly verifiable?</span>
+          <span class="faq-row__title">What happens if we outgrow our plan limits?</span>
         </span>
         <span class="faq-row__chev" aria-hidden="true">
           <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -848,14 +957,14 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
       </button>
       <div class="faq-row__panel" id="faq-panel-4" role="region" aria-labelledby="faq-trigger-4" hidden>
         <div class="faq-row__panel-inner">
-          <p class="faq-row__body">Yes. Every active certificate has a unique ID and can be verified by anyone on our <a href="verify.html">public verification page</a>. The page confirms the organisation, level, score, and validity period.</p>
+          <p class="faq-row__body">If you are on Essentials and approaching your 5-system or 1-user limit, or on Professional and approaching your 15-seat limit, we will flag it before it becomes a blocker. You can add capacity or move to the next tier at that point. Nothing is locked or suspended automatically.</p>
         </div>
       </div>
     </div>
     <div class="faq-row">
       <button type="button" class="faq-row__trigger" id="faq-trigger-5" aria-expanded="false" aria-controls="faq-panel-5">
         <span class="faq-row__head">
-          <span class="faq-row__title">Can I switch between monthly and annual?</span>
+          <span class="faq-row__title">Is there a minimum contract, and can we cancel anytime?</span>
         </span>
         <span class="faq-row__chev" aria-hidden="true">
           <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -863,14 +972,14 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
       </button>
       <div class="faq-row__panel" id="faq-panel-5" role="region" aria-labelledby="faq-trigger-5" hidden>
         <div class="faq-row__panel-inner">
-          <p class="faq-row__body">Yes. Contact us to switch your billing period. Annual plans save approximately 17% compared to monthly.</p>
+          <p class="faq-row__body">Essentials and Professional have no minimum term. Cancel anytime, and you will keep access through the end of your current billing period. Annual plans are paid upfront for the year in exchange for the discount, then renew automatically unless cancelled beforehand. Enterprise is agreed on a bespoke contract with its own SLA, scoped during onboarding.</p>
         </div>
       </div>
     </div>
     <div class="faq-row">
       <button type="button" class="faq-row__trigger" id="faq-trigger-6" aria-expanded="false" aria-controls="faq-panel-6">
         <span class="faq-row__head">
-          <span class="faq-row__title">Which regulatory frameworks are covered?</span>
+          <span class="faq-row__title">Can we see RegAnchor before subscribing?</span>
         </span>
         <span class="faq-row__chev" aria-hidden="true">
           <svg class="faq-row__chev-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -878,7 +987,7 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
       </button>
       <div class="faq-row__panel" id="faq-panel-6" role="region" aria-labelledby="faq-trigger-6" hidden>
         <div class="faq-row__panel-inner">
-          <p class="faq-row__body">The EU AI Act, UK GDPR, FCA DP5/22, ICO AI Guidance, and ISO/IEC 42001. Every finding includes specific article references and regulatory citations.</p>
+          <p class="faq-row__body">Yes. Start with the free AI governance diagnostic to see how RegAnchor assesses your actual environment, or book a demo to walk through Essentials or Professional with our team. For Enterprise, a demo and scoping call are built into the quote process before any contract is agreed.</p>
         </div>
       </div>
     </div>
@@ -889,17 +998,17 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
   <div class="cta-wrap">
     <div class="cta-box fade">
       <h2>Evidence your governance.<br><em>Before they ask.</em></h2>
-      <p>Start with a free diagnostic. Upgrade when you need certification.</p>
+      <p>Start with a free diagnostic. Upgrade when you need governance.</p>
       <div class="cta-actions">
         <a href="diagnostic.html" class="btn-primary">Start Free Diagnostic <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        <a href="login.html" class="btn-ghost">Sign in to Portal</a>
+        <a href="login.html" class="btn-ghost">Sign in</a>
       </div>
     </div>
   </div>
 </section>
  
 <footer class="rfooter">
-  <a href="index.html" class="rf-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+  <a href="index.html" class="rf-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg?v=a3" alt="" width="193" height="36" decoding="async"></a>
   <div class="rf-links">
     <a href="privacy.html">Privacy Policy</a>
     <a href="security.html">Security</a>
@@ -920,55 +1029,55 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
       <button type="button" class="modal-close" onclick="closeEnterpriseModal()" aria-label="Close">&#10005;</button>
     </div>
     <div class="modal-body" id="ent-modal-body">
-      <div class="modal-inset">Enterprise plans include unlimited users, multi-department portals, dedicated advisory, on-site sessions, and custom SLA. We respond within 24 hours.</div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label" for="ent-name">Full name</label>
-          <input type="text" class="field-input" id="ent-name" placeholder="Your full name" autocomplete="name">
+      <div class="ent-form">
+        <div class="modal-inset">Enterprise plans include unlimited users, multi-department portals, dedicated advisory, on-site sessions, and custom SLA. We respond within 24 hours.</div>
+        <div class="field-row">
+          <div class="field-group" style="margin-bottom:0">
+            <label class="field-label" for="ent-name">Full name</label>
+            <input type="text" class="field-input" id="ent-name" placeholder="Your full name" autocomplete="name">
+          </div>
+          <div class="field-group" style="margin-bottom:0">
+            <label class="field-label" for="ent-role">Role / title</label>
+            <input type="text" class="field-input" id="ent-role" placeholder="e.g. Head of Risk, CTO" autocomplete="organization-title">
+          </div>
         </div>
-        <div class="field-group">
-          <label class="field-label" for="ent-role">Role / title</label>
-          <input type="text" class="field-input" id="ent-role" placeholder="e.g. Head of Risk, CTO" autocomplete="organization-title">
+        <div class="field-row">
+          <div class="field-group" style="margin-bottom:0">
+            <label class="field-label" for="ent-email">Email</label>
+            <input type="email" class="field-input" id="ent-email" placeholder="you@yourfirm.co.uk" autocomplete="email">
+          </div>
+          <div class="field-group" style="margin-bottom:0">
+            <label class="field-label" for="ent-org">Organisation</label>
+            <input type="text" class="field-input" id="ent-org" placeholder="Organisation name" autocomplete="organization">
+          </div>
         </div>
-      </div>
-      <div class="field-row">
-        <div class="field-group">
-          <label class="field-label" for="ent-email">Email</label>
-          <input type="email" class="field-input" id="ent-email" placeholder="you@yourfirm.co.uk" autocomplete="email">
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="ent-systems">Number of AI assets</label>
+          <select class="field-input" id="ent-systems">
+            <option value="">Select</option>
+            <option value="1-5">1-5 systems</option>
+            <option value="6-20">6-20 systems</option>
+            <option value="20-50">20-50 systems</option>
+            <option value="50+">50+ systems</option>
+          </select>
         </div>
-        <div class="field-group">
-          <label class="field-label" for="ent-org">Organisation</label>
-          <input type="text" class="field-input" id="ent-org" placeholder="Organisation name" autocomplete="organization">
+        <fieldset class="ent-reqs" id="ent-reqs">
+          <legend class="ent-reqs__legend">What are you looking for?</legend>
+          <div class="ent-reqs__grid">
+            <label class="ent-check"><input type="checkbox" value="SSO / SAML">SSO / SAML</label>
+            <label class="ent-check"><input type="checkbox" value="Multi-jurisdiction governance">Multi-jurisdiction governance</label>
+            <label class="ent-check"><input type="checkbox" value="Custom controls & workflows">Custom controls &amp; workflows</label>
+            <label class="ent-check"><input type="checkbox" value="Unlimited users & teams">Unlimited users &amp; teams</label>
+            <label class="ent-check"><input type="checkbox" value="Dedicated support & custom SLA">Dedicated support &amp; custom SLA</label>
+            <label class="ent-check"><input type="checkbox" value="Other">Other</label>
+          </div>
+        </fieldset>
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="ent-message">Tell us more about your requirements</label>
+          <textarea class="field-input" id="ent-message" rows="3" placeholder="Describe your governance needs, number of departments, jurisdictions, or any specific requirements…"></textarea>
         </div>
+        <div id="ent-error" style="font-size:0.75rem;color:#B91C1C;display:none;"></div>
       </div>
-      <div class="field-group">
-        <label class="field-label" for="ent-systems">Number of AI systems</label>
-        <select class="field-input" id="ent-systems">
-          <option value="">Select</option>
-          <option value="1-5">1 — 5 systems</option>
-          <option value="6-20">6 — 20 systems</option>
-          <option value="20-50">20 — 50 systems</option>
-          <option value="50+">50+ systems</option>
-        </select>
-      </div>
-      <div class="field-group">
-        <label class="field-label">What are you looking for?</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="ent-reqs">
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Multi-department portal" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Multi-department portal</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Dedicated advisory lead" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Dedicated advisory lead</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="API access" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">API access</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Custom integrations" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Custom integrations</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="On-site validation" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">On-site validation</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="ISO 42001 alignment" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">ISO 42001 alignment</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Quarterly benchmarking" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Quarterly benchmarking</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--sub);cursor:pointer;"><input type="checkbox" value="Other" style="accent-color:var(--ra-blurple,#533AFD);width:15px;height:15px;">Other</label>
-        </div>
-      </div>
-      <div class="field-group">
-        <label class="field-label" for="ent-message">Tell us more about your requirements</label>
-        <textarea class="field-input" id="ent-message" rows="3" placeholder="Describe your governance needs, number of departments, jurisdictions, or any specific requirements..."></textarea>
-      </div>
-      <div id="ent-error" style="font-size:0.75rem;color:#B91C1C;margin-bottom:8px;display:none;"></div>
     </div>
     <div class="modal-footer" id="ent-modal-footer">
       <button type="button" class="modal-btn" onclick="closeEnterpriseModal()">Cancel</button>
@@ -1006,14 +1115,14 @@ function updatePrices(){
     document.getElementById('pe').textContent='1,290';
     document.getElementById('ppe').textContent='/year';
     document.getElementById('pse').textContent='Save £258/yr';
-    document.getElementById('pp').textContent='2,490';
+    document.getElementById('pp').textContent='2,990';
     document.getElementById('ppp').textContent='/year';
-    document.getElementById('psp').textContent='Save £498/yr';
+    document.getElementById('psp').textContent='Save £598/yr';
   }else{
     document.getElementById('pe').textContent='129';
     document.getElementById('ppe').textContent='/month';
     document.getElementById('pse').textContent='';
-    document.getElementById('pp').textContent='249';
+    document.getElementById('pp').textContent='299';
     document.getElementById('ppp').textContent='/month';
     document.getElementById('psp').textContent='';
   }
