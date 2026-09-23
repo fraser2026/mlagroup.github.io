@@ -9,28 +9,61 @@ const stripe = new Stripe(stripeKey, {
   httpClient: Stripe.createFetchHttpClient(),
 })
 const isTestKey = stripeKey.startsWith('sk_test')
+/** branding_settings needs a recent API version (Clover+). */
+const SESSION_API_VERSION = '2025-09-30.clover'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
-const SITE_URL = Deno.env.get('SITE_URL') || 'https://reganchor.com'
+const SITE_URL = (Deno.env.get('SITE_URL') || 'https://reganchor.com').replace(/\/$/, '')
+
+const ALLOWED_ORIGINS = new Set([
+  'https://reganchor.com',
+  'https://www.reganchor.com',
+  'https://app.reganchor.com',
+])
 
 const LIVE_PRICE_MAP: Record<string, { plan: string; period: string }> = {
   'price_1TD37VRfSQTwpCt9fmlCcuQh': { plan: 'essentials', period: 'monthly' },
   'price_1TD37VRfSQTwpCt914LUfLrf': { plan: 'essentials', period: 'annual' },
+  // Current Professional (£299 / £2,990)
+  'price_1UF1yPRfSQTwpCt9ssDdo6uQ': { plan: 'professional', period: 'monthly' },
+  'price_1UF1zvRfSQTwpCt9rcSPUtkN': { plan: 'professional', period: 'annual' },
+  // Legacy Professional (£249 / £2,490) — keep for older sessions
   'price_1TD392RfSQTwpCt9yaJicEiY': { plan: 'professional', period: 'monthly' },
   'price_1TD3AbRfSQTwpCt969zGi3bD': { plan: 'professional', period: 'annual' },
 }
 
 const TEST_CATALOG: Record<string, { plan: string; period: string; amount: number; interval: 'month' | 'year'; name: string }> = {
-  'test:essentials:monthly': { plan: 'essentials', period: 'monthly', amount: 12900, interval: 'month', name: 'Essentials — Governance' },
-  'test:essentials:annual': { plan: 'essentials', period: 'annual', amount: 129000, interval: 'year', name: 'Essentials — Governance (annual)' },
-  'test:professional:monthly': { plan: 'professional', period: 'monthly', amount: 24900, interval: 'month', name: 'Professional — Compliance' },
-  'test:professional:annual': { plan: 'professional', period: 'annual', amount: 249000, interval: 'year', name: 'Professional — Compliance (annual)' },
+  'test:essentials:monthly': { plan: 'essentials', period: 'monthly', amount: 12900, interval: 'month', name: 'Essentials — Foundation' },
+  'test:essentials:annual': { plan: 'essentials', period: 'annual', amount: 129000, interval: 'year', name: 'Essentials — Foundation (annual)' },
+  'test:professional:monthly': { plan: 'professional', period: 'monthly', amount: 29900, interval: 'month', name: 'Professional — Operations' },
+  'test:professional:annual': { plan: 'professional', period: 'annual', amount: 299000, interval: 'year', name: 'Professional — Operations (annual)' },
 }
+
+const BRANDING = {
+  display_name: 'RegAnchor',
+  background_color: '#ffffff',
+  button_color: '#533afd',
+  border_style: 'rectangular' as const,
+}
+
+/** Per-request API version so branding_settings is accepted without changing the client default. */
+const createOpts = { apiVersion: SESSION_API_VERSION } as const
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+function resolveOrigin(raw: unknown): string {
+  const o = String(raw || '').trim().replace(/\/$/, '')
+  if (ALLOWED_ORIGINS.has(o)) return o
+  return SITE_URL
+}
+
+function isAppOrigin(origin: string) {
+  return origin === 'https://app.reganchor.com'
 }
 
 function resolveLine(price_id: string) {
@@ -62,7 +95,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { price_id, org_id, embedded, guest } = body
+    const { price_id, org_id, embedded, guest, return_origin } = body
     if (!price_id) {
       return new Response(JSON.stringify({ error: 'price_id required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -78,12 +111,17 @@ serve(async (req) => {
     }
     const { planInfo, line_items } = resolved
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const origin = resolveOrigin(return_origin)
+    const appReturnUrl = isAppOrigin(origin)
+      ? `${origin}/plans?subscription=success&plan=${planInfo.plan}&session_id={CHECKOUT_SESSION_ID}`
+      : `${origin}/portal.html?subscription=success&plan=${planInfo.plan}&session_id={CHECKOUT_SESSION_ID}`
 
     if (guest === true) {
       const sessionConfig: Record<string, unknown> = {
         mode: 'subscription',
         line_items,
         allow_promotion_codes: true,
+        branding_settings: BRANDING,
         metadata: { plan: planInfo.plan, period: planInfo.period, guest: 'true', test: isTestKey ? 'true' : 'false' },
         subscription_data: {
           metadata: { plan: planInfo.plan, period: planInfo.period, guest: 'true' },
@@ -96,8 +134,10 @@ serve(async (req) => {
         sessionConfig.success_url = SITE_URL + '/subscription-success.html?session_id={CHECKOUT_SESSION_ID}&plan=' + planInfo.plan
         sessionConfig.cancel_url = SITE_URL + '/pricing.html'
       }
-      const session = await stripe.checkout.sessions.create(sessionConfig as any)
-      return new Response(JSON.stringify(embedded ? { clientSecret: session.client_secret, testMode: isTestKey } : { url: session.url, testMode: isTestKey }), {
+      const session = await stripe.checkout.sessions.create(sessionConfig as any, createOpts as any)
+      return new Response(JSON.stringify(embedded
+        ? { clientSecret: session.client_secret, testMode: isTestKey }
+        : { url: session.url, testMode: isTestKey }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -146,7 +186,7 @@ serve(async (req) => {
 
     const { data: existingOrg } = await supabase.from('organisations').select('stripe_subscription_id, subscription_status').eq('id', org_id).single()
     if (existingOrg?.stripe_subscription_id && existingOrg?.subscription_status === 'active') {
-      return new Response(JSON.stringify({ error: 'Active subscription exists. Manage it from your portal settings.', existing: true }), {
+      return new Response(JSON.stringify({ error: 'Active subscription exists. Manage it from Billing.', existing: true }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -158,17 +198,25 @@ serve(async (req) => {
       metadata: { org_id, plan: planInfo.plan, period: planInfo.period, user_id: user.id },
       subscription_data: { metadata: { org_id, plan: planInfo.plan, period: planInfo.period } },
       allow_promotion_codes: true,
+      branding_settings: BRANDING,
     }
     if (embedded) {
       sessionConfig.ui_mode = 'embedded'
-      sessionConfig.return_url = SITE_URL + '/portal.html?subscription=success&plan=' + planInfo.plan + '&session_id={CHECKOUT_SESSION_ID}'
+      sessionConfig.return_url = appReturnUrl
     } else {
-      sessionConfig.success_url = SITE_URL + '/portal.html?subscription=success&plan=' + planInfo.plan
-      sessionConfig.cancel_url = SITE_URL + '/portal.html?subscription=cancelled'
+      if (isAppOrigin(origin)) {
+        sessionConfig.success_url = `${origin}/plans?subscription=success&plan=${planInfo.plan}`
+        sessionConfig.cancel_url = `${origin}/plans?subscription=cancelled`
+      } else {
+        sessionConfig.success_url = `${origin}/portal.html?subscription=success&plan=${planInfo.plan}`
+        sessionConfig.cancel_url = `${origin}/portal.html?subscription=cancelled`
+      }
     }
 
-    const session = await stripe.checkout.sessions.create(sessionConfig)
-    return new Response(JSON.stringify(embedded ? { clientSecret: session.client_secret, testMode: isTestKey } : { url: session.url, testMode: isTestKey }), {
+    const session = await stripe.checkout.sessions.create(sessionConfig, createOpts as any)
+    return new Response(JSON.stringify(embedded
+      ? { clientSecret: session.client_secret, testMode: isTestKey }
+      : { url: session.url, testMode: isTestKey }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err) {

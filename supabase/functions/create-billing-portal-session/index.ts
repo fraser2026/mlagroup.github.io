@@ -11,7 +11,13 @@ const stripe = new Stripe(stripeKey, {
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
-const SITE_URL = Deno.env.get('SITE_URL') || 'https://reganchor.com'
+const SITE_URL = (Deno.env.get('SITE_URL') || 'https://reganchor.com').replace(/\/$/, '')
+
+const ALLOWED_ORIGINS = new Set([
+  'https://reganchor.com',
+  'https://www.reganchor.com',
+  'https://app.reganchor.com',
+])
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,12 +31,21 @@ function json(body: unknown, status = 200) {
   })
 }
 
+function resolveOrigin(raw: unknown): string {
+  const o = String(raw || '').trim().replace(/\/$/, '')
+  if (ALLOWED_ORIGINS.has(o)) return o
+  return SITE_URL
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) return json({ error: 'Sign in to manage your subscription.' }, 401)
+
+    const body = await req.json().catch(() => ({}))
+    const origin = resolveOrigin(body.return_origin)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     const token = authHeader.replace('Bearer ', '')
@@ -62,9 +77,14 @@ serve(async (req) => {
       return json({ error: 'No Stripe customer is linked to this organisation yet.' }, 400)
     }
 
+    const returnUrl =
+      origin === 'https://app.reganchor.com'
+        ? `${origin}/billing`
+        : `${origin}/portal.html#billing`
+
     const session = await stripe.billingPortal.sessions.create({
       customer: org.stripe_customer_id,
-      return_url: SITE_URL.replace(/\/$/, '') + '/portal.html#billing',
+      return_url: returnUrl,
     })
 
     if (!session.url) return json({ error: 'Billing settings could not be opened.' }, 500)

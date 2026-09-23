@@ -17,6 +17,9 @@ const webhookSecret = Deno.env.get('STRIPE_SUBSCRIPTION_WEBHOOK_SECRET') || ''
 const PRICE_TO_PLAN: Record<string, string> = {
   'price_1TD37VRfSQTwpCt9fmlCcuQh': 'essentials',
   'price_1TD37VRfSQTwpCt914LUfLrf': 'essentials',
+  'price_1UF1yPRfSQTwpCt9ssDdo6uQ': 'professional',
+  'price_1UF1zvRfSQTwpCt9rcSPUtkN': 'professional',
+  // Legacy Professional prices
   'price_1TD392RfSQTwpCt9yaJicEiY': 'professional',
   'price_1TD3AbRfSQTwpCt969zGi3bD': 'professional',
 }

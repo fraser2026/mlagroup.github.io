@@ -12,8 +12,6 @@ const corsHeaders = {
 const DEVICE_TTL_MS = 15 * 60 * 1000
 const ACCESS_TTL_SEC = 60 * 60
 const REFRESH_TTL_SEC = 30 * 24 * 60 * 60
-const VERIFICATION_PATH = '/portal.html#mcp-device'
-
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -28,9 +26,24 @@ function serviceClient() {
   )
 }
 
+/** App origin → /integrations. Apex / other → legacy portal device page. */
 function verificationUri(): string {
   const configured = (Deno.env.get('REGANCHOR_PUBLIC_ORIGIN') || 'https://reganchor.com').replace(/\/+$/, '')
-  return `${configured}${VERIFICATION_PATH}`
+  try {
+    const host = new URL(configured).hostname.toLowerCase()
+    if (host === 'app.reganchor.com' || host.startsWith('app.')) {
+      return `${configured}/integrations`
+    }
+  } catch {
+    /* fall through */
+  }
+  return `${configured}/portal.html#mcp-device`
+}
+
+function verificationUriComplete(userCode: string): string {
+  const base = verificationUri()
+  const sep = base.includes('#') ? (base.includes('?') ? '&' : '?') : base.includes('?') ? '&' : '?'
+  return `${base}${sep}code=${encodeURIComponent(userCode)}`
 }
 
 function base64Url(bytes: Uint8Array): string {
@@ -152,7 +165,7 @@ Deno.serve(async (req) => {
         device_code: deviceCode,
         user_code: userCode,
         verification_uri: verificationUri(),
-        verification_uri_complete: `${verificationUri()}?code=${encodeURIComponent(userCode)}`,
+        verification_uri_complete: verificationUriComplete(userCode),
         expires_in: Math.floor(DEVICE_TTL_MS / 1000),
         interval: 5,
       })

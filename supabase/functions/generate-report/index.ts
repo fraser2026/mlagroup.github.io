@@ -112,7 +112,29 @@ serve(async (req) => {
       selected_categories: ensureObject(response.selected_categories),
     }
 
+    // Live diagnostic PDF regs from Control Centre (Engines → Diagnostic regs).
+    // Embedded REGS in report-template.html remain the fallback only.
+    const { data: regRows, error: regError } = await supabase
+      .from('diagnostic_regs')
+      .select('regime,article,obligation,requirement_type,penalty,deadline,display_order')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+
+    if (regError) {
+      console.error('[generate-report] diagnostic_regs load failed:', regError.message)
+    } else if (regRows?.length) {
+      payload._regs = regRows.map((row) => ({
+        reg: row.regime,
+        art: row.article,
+        obl: row.obligation,
+        type: row.requirement_type === 'A' ? 'A' : 'M',
+        pen: row.penalty || '',
+        dl: row.deadline || '',
+      }))
+    }
+
     // Compute hash from the normalised payload — ensures PDF and DB always match
+    // (includes _regs when present so regulatory copy is part of the snapshot).
     const reportId = uuidv4()
     const generatedAt = new Date().toISOString()
     const encoder = new TextEncoder()
@@ -128,7 +150,7 @@ serve(async (req) => {
       generated_at: generatedAt,
       snapshot_hash: snapshotHash,
       framework_version: response.framework_version || '2.0.0',
-      generator_version: '1.0.0',
+      generator_version: '1.1.0',
     }
 
     console.log(`[generate-report] user=${user.id} org=${response.organisation} hash=${snapshotHash}`)
@@ -197,7 +219,7 @@ serve(async (req) => {
         action: 'generated',
         snapshot_hash: snapshotHash,
         generated_at: generatedAt,
-        generator_version: '1.0.0',
+        generator_version: '1.1.0',
         framework_version: frameworkVersion,
       })
 

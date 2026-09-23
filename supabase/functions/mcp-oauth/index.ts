@@ -326,8 +326,12 @@ Deno.serve(async (req) => {
         scope,
         client_name: client.client_name || 'MCP client',
       })
-      // Use query string (not hash): many clients drop fragments on HTTP redirects.
-      const portal = `${publicOrigin()}/portal.html?mcp_oauth=1&${qs.toString()}`
+      // Prefer app shell consent when REGANCHOR_PUBLIC_ORIGIN is app.*; keep portal.html for apex.
+      const origin = publicOrigin()
+      const consentPath = /\/\/app\./i.test(origin)
+        ? `/oauth/consent?${qs.toString()}`
+        : `/portal.html?mcp_oauth=1&${qs.toString()}`
+      const portal = `${origin}${consentPath}`
       return Response.redirect(portal, 302)
     }
 

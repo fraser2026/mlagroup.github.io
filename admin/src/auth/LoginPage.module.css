@@ -1,0 +1,43 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--ra-canvas);
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  display: grid;
+  gap: 16px;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--ra-line);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-paper);
+  color: var(--ra-ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--ra-blurple);
+}

@@ -49,6 +49,10 @@ verify_jwt = false
 # Gateway JWT required — do NOT deploy with --no-verify-jwt.
 verify_jwt = true
 
+[functions.generate-dossier]
+# Org owner/admin + Professional/Enterprise; JWT required.
+verify_jwt = true
+
 [functions.provider-connect]
 verify_jwt = true
 
@@ -78,6 +82,14 @@ verify_jwt = true
 [functions.asset-gateway-token]
 # Signed-in organisation owner/admin; authorization is checked in-function.
 verify_jwt = true
+
+[functions.auditor-access]
+# Signed-in organisation owner/admin; Professional+ plan checked in-function.
+verify_jwt = true
+
+[functions.auditor-portal]
+# Authenticates ra_aud_sh_ / ra_aud_api_ capability tokens, not a Supabase JWT.
+verify_jwt = false
 
 [functions.gateway-anthropic]
 # Authenticates a RegAnchor asset gateway capability, not a Supabase JWT.
