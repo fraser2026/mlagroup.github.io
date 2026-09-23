@@ -83,7 +83,7 @@ textarea.field-input{resize:vertical;min-height:80px}
 <div class="nav-label">Clients</div>
 <div class="nav-item" onclick="showView('clients',this)"><svg viewBox="0 0 16 16"><path d="M2 3h12v10H2z"/><path d="M5 3V1h6v2"/><path d="M2 7h12"/></svg>All Clients</div>
 <div class="nav-label">Tools</div>
-<div class="nav-item" onclick="window.location.href='portal.html'"><svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg>Client Portal</div>
+<div class="nav-item" onclick="window.location.href='https://app.reganchor.com/registry'"><svg viewBox="0 0 16 16"><path d="M6 12l-4-4 4-4M10 4l4 4-4 4"/></svg>Workspace</div>
 <div class="nav-item" id="nav-devtools" style="display:none;" onclick="showView('devtools',this)"><svg viewBox="0 0 16 16"><path d="M5.5 2.5l-3 3 3 3M10.5 2.5l3 3-3 3"/><path d="M9 1L7 11"/></svg>Dev Tools</div>
 </nav>
 <div class="sidebar-footer"><div class="user-tile"><div class="user-avatar">RA</div><div><div class="user-name">RegAnchor</div><div class="user-role">Administrator</div></div></div></div>
@@ -321,7 +321,7 @@ let allPoliciesAdmin=[],allAcksAdmin=[],allTemplatesAdmin=[];
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—'}
 function fmtDateLong(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
-async function signOut(){await sb.auth.signOut();window.location.href='login.html'}
+async function signOut(){await sb.auth.signOut();window.location.href='https://app.reganchor.com/login'}
  
 const BAND_L={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};
 const BAND_C={high:'#f87171',medium:'#fbbf24',low:'#4ade80'};
@@ -342,12 +342,12 @@ function showView(id,navEl){
 async function init(){
   var result=await sb.auth.getSession();
   var session=result.data.session;
-  if(!session){window.location.href='login.html';return}
+  if(!session){window.location.href='https://app.reganchor.com/login';return}
   currentUser=session.user;
   var profileResult=await sb.from('profiles').select('role,full_name').eq('id',currentUser.id).single();
   var profile=profileResult.data;
   if(!profile||profile.role!=='mla_admin'){
-    document.querySelector('.content').innerHTML='<div class="empty" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;"><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Access Denied</h2><p>This page is restricted to RegAnchor administrators.</p><a href="portal.html" class="btn btn-primary" style="margin-top:16px;">Go to Portal</a></div>';
+    document.querySelector('.content').innerHTML='<div class="empty" style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;"><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.4rem;color:var(--main);margin-bottom:8px;">Access Denied</h2><p>This page is restricted to RegAnchor administrators.</p><a href="https://app.reganchor.com/registry" class="btn btn-primary" style="margin-top:16px;">Go to workspace</a></div>';
     return;
   }
   await loadData();
@@ -357,7 +357,7 @@ async function init(){
 async function loadData(){
   var results=await Promise.all([
     sb.from('organisations').select('*').order('created_at',{ascending:false}),
-    sb.from('ai_systems').select('id,name,org_id,asset_kind,risk_tier,deployment_status,system_owner,vendor,description').order('created_at',{ascending:false}),
+    sb.from('ai_systems').select('id,name,org_id,asset_kind,risk_tier,lifecycle,system_owner,vendor,description').order('created_at',{ascending:false}),
     sb.from('registry_assessments').select('*').order('requested_at',{ascending:false}),
     sb.from('support_requests').select('*').order('requested_at',{ascending:false}),
     sb.from('governance_controls').select('id,control_number,title,control_type').eq('is_active',true),
@@ -514,7 +514,7 @@ async function openAssessmentDetail(assessId){
   el.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;"><div><div style="font-size:.72rem;color:var(--muted);margin-bottom:4px;">'+esc(orgName)+'</div><h2 style="font-family:\'Instrument Serif\',serif;font-size:1.5rem;font-weight:400;color:var(--main);">'+esc(sys.name||'AI System')+'</h2><div style="display:flex;align-items:center;gap:8px;margin-top:6px;"><span style="font-size:1.6rem;font-weight:700;color:'+(BAND_C[band]||'var(--muted)')+';">'+(a.overall_score!==null?a.overall_score+'%':'—')+'</span><span class="pill '+(STATUS_P[a.status]||'')+'">'+(STATUS_L[a.status]||a.status)+'</span></div></div><div style="text-align:right;font-size:.72rem;color:var(--muted);">Submitted: '+fmtDateLong(a.requested_at)+'<br>Sector: '+esc(a.sector||'—')+'<br>Version: '+esc(a.questionnaire_version||'1.0.0')+'</div></div>'+
     (secBars?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:12px;">Section Scores</div>'+secBars+'</div>':'')+
     (tv&&tv.mismatch?'<div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:10px;padding:14px 18px;margin-bottom:14px;"><div style="font-size:.78rem;font-weight:600;color:var(--amber);margin-bottom:4px;">Risk Tier Mismatch</div><div style="font-size:.76rem;color:var(--muted2);line-height:1.6;">'+esc(tv.message||'Risk tier mismatch detected.')+'</div></div>':'')+
-    '<div class="detail-card"><div class="meta-grid"><div><div class="detail-label">System Owner</div><div class="detail-val">'+esc(sys.system_owner||'—')+'</div></div><div><div class="detail-label">Vendor</div><div class="detail-val">'+esc(sys.vendor||'—')+'</div></div><div><div class="detail-label">Risk Tier</div><div class="detail-val">'+(sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified')+'</div></div><div><div class="detail-label">Deployment</div><div class="detail-val">'+esc(sys.deployment_status||'—')+'</div></div></div></div>'+
+    '<div class="detail-card"><div class="meta-grid"><div><div class="detail-label">System Owner</div><div class="detail-val">'+esc(sys.system_owner||'—')+'</div></div><div><div class="detail-label">Vendor</div><div class="detail-val">'+esc(sys.vendor||'—')+'</div></div><div><div class="detail-label">Risk Tier</div><div class="detail-val">'+(sys.risk_tier?sys.risk_tier.charAt(0).toUpperCase()+sys.risk_tier.slice(1):'Unclassified')+'</div></div><div><div class="detail-label">Lifecycle</div><div class="detail-val">'+esc(sys.lifecycle||'—')+'</div></div></div></div>'+
     (a.client_notes?'<div class="detail-card"><div style="font-size:.78rem;font-weight:600;color:var(--main);margin-bottom:8px;">Client Notes</div><div style="font-size:.8rem;color:var(--sub);line-height:1.7;">'+esc(a.client_notes)+'</div></div>':'')+
     '<div class="panel" style="margin-top:20px;"><div class="panel-header"><div class="panel-title">RegAnchor Review</div></div><div style="padding:20px;"><label class="field-label">Status</label><select class="field-input" id="ad-status"><option value="submitted" '+(a.status==='submitted'?'selected':'')+'>Submitted — Awaiting Review</option><option value="in_review" '+(a.status==='in_review'?'selected':'')+'>Under Review</option><option value="controls_issued" '+(a.status==='controls_issued'?'selected':'')+'>Controls Issued</option></select><label class="field-label">RegAnchor Notes for Client</label><textarea class="field-input" id="ad-notes" placeholder="Notes visible to the client — findings, recommendations, next steps…">'+esc(a.mla_notes||'')+'</textarea><div style="display:flex;gap:10px;"><button class="btn btn-primary" onclick="saveReview(\''+a.id+'\')">Save &amp; Update Client</button><a href="system-report.html?aid='+a.id+'" target="_blank" class="btn btn-ghost">View Report</a></div><div id="ad-msg" style="font-size:.75rem;margin-top:10px;display:none;"></div></div></div>';
   
@@ -669,7 +669,7 @@ async function submitSupportResponse(reqId){
     await sb.from('registry_audit_log').insert({org_id:r.org_id,user_id:currentUser.id,action:'support_responded',entity_type:'governance_control',entity_id:r.system_id||r.control_id,changes:{_actor_name:'RegAnchor',_is_mla:true,control:getCtrlName(r.control_id)}});
     r.status='responded';r.mla_response=response;
     var ctrlNameForAlert=getCtrlName(r.control_id);
-    await sb.from('governance_alerts').insert({org_id:r.org_id,alert_type:'support_response',severity:'info',title:'RegAnchor responded to your support request',body:'You have a new response regarding "'+ctrlNameForAlert+'". Open the control in your portal to view the full conversation and reply.',ref_id:r.control_assignment_id||null,ref_type:'support_request'});
+    await sb.from('governance_alerts').insert({org_id:r.org_id,alert_type:'support_response',severity:'info',title:'RegAnchor responded to your support request',body:'You have a new response regarding "'+ctrlNameForAlert+'". Open the control in your workspace to view the full conversation and reply.',ref_id:r.control_assignment_id||null,ref_type:'support_request'});
     var clientProfileResult=await sb.from('profiles').select('full_name,email').eq('id',r.requested_by).single();
     var clientProfile=clientProfileResult.data;
     if(clientProfile?.email){
@@ -678,7 +678,7 @@ async function submitSupportResponse(reqId){
         clientProfile.email,
         clientProfile.full_name?.split(' ')[0]||'there',
         'RegAnchor has responded to your support request',
-        'You have a new response from RegAnchor regarding your support request on "'+ctrlName+'".\n\n'+response+'\n\nLog in to your portal to view the full conversation and reply.'
+        'You have a new response from RegAnchor regarding your support request on "'+ctrlName+'".\n\n'+response+'\n\nLog in to your workspace to view the full conversation and reply.'
       );
     }
   }
@@ -1219,7 +1219,7 @@ function viewAsClient(){
     msgEl.style.display='block';msgEl.style.color='var(--red)';msgEl.textContent='Select an organisation first.';
     return;
   }
-  window.open('portal.html','_blank');
+  window.open('https://app.reganchor.com/registry','_blank');
 }
 
 async function loadOrgSummary(){

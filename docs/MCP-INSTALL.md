@@ -89,9 +89,9 @@ node .\login.mjs
 Do **not** run `node login.mjs` from the repo root (`MODULE_NOT_FOUND`).  
 Do **not** use PowerShell `Set-Location` inside Command Prompt.
 
-### B3. Approve in the portal
+### B3. Approve in the app
 
-1. Open the printed URL while signed into RegAnchor.
+1. Open the printed URL while signed into RegAnchor (app Connect, or legacy portal if the URI still points there).
 2. Approve the user code.
 3. Wait until the CLI prints `Approved.`
 

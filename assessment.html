@@ -376,7 +376,7 @@ function refreshSectionDerived(){
 async function init(){
   if(!SYSTEM_ID){alert('No system specified.');window.location.href=appHome('/registry');return}
   const{data:{session}}=await sb.auth.getSession();
-  if(!session){window.location.href='/login?next='+encodeURIComponent(window.location.pathname+window.location.search+window.location.hash);return}
+  if(!session){window.location.href=appHome('/login')+'?next='+encodeURIComponent(window.location.pathname+window.location.search+window.location.hash);return}
   currentUser=session.user;
   // Load system data
   const{data:sys}=await sb.from('ai_systems').select('*').eq('id',SYSTEM_ID).single();

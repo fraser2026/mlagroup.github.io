@@ -198,7 +198,7 @@ console.log('RegAnchor MCP device login')
 console.log('--------------------------')
 console.log(`User code:  ${start.data.user_code}`)
 console.log(`Open:       ${start.data.verification_uri_complete || start.data.verification_uri}`)
-console.log('Approve in the portal while signed in, then wait here.')
+console.log('Approve in RegAnchor Connect while signed in, then wait here.')
 console.log('(Install guide: docs/MCP-INSTALL.md)')
 console.log('')
 

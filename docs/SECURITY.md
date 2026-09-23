@@ -8,7 +8,7 @@ Source of truth for the public [Security](../security.html) page. Product name i
 |---|---|
 | Authentication | Email/password via Supabase Auth. Google OAuth (`signInWithOAuth`) when the Google provider is enabled in the Supabase project. |
 | Sessions | JWT access tokens; publishable (anon) key only in the browser. Service role never ships in client code. |
-| Multi-user seats | Professional = 5 seats (members + pending invites). Free/Essentials = 1. Enforced in `invite_org_member`, not only in the UI. |
+| Multi-user seats | Professional = 15 seats (members + pending invites). Free/Essentials = 1. Enforced in `invite_org_member`, not only in the UI. |
 | RBAC | Organisation roles: Owner, Admin, Editor, Viewer. Privileged membership changes go through `SECURITY DEFINER` RPCs (`invite_org_member`, `accept_org_invite`, `set_org_member_role`, `remove_org_member`). Row-level security on `organisations`, `org_members`, `org_invites`, and `ai_systems` uses `is_org_member` / `has_org_role`. |
 | Invitations | Hashed tokens (`sha256`), 14-day expiry, email must match the signed-in user. Raw token is shown once and is not stored. |
 | Profile privileges | `profiles.role` and `profiles.paid` cannot be changed from the client. RLS on `profiles` limits reads to self and same-organisation colleagues. |

@@ -81,7 +81,7 @@ function deriveAssetSystemType(platformSlug,vendor){
 function registrySystemsBaseList(){
   var list=allSystems;
   if(regFilter!=='all'){
-    list=list.filter(function(s){return s.deployment_status===regFilter});
+    list=list.filter(function(s){return s.lifecycle===regFilter});
   }
   return list;
 }
@@ -207,7 +207,7 @@ function renderRegistryStats(){
   document.getElementById('reg-high').textContent=highCount;
 
   /* ── In Production ── */
-  var prodCount=allSystems.filter(function(s){return s.deployment_status==='production';}).length;
+  var prodCount=allSystems.filter(function(s){return s.lifecycle==='production';}).length;
   document.getElementById('reg-prod').textContent=prodCount;
 
   /* ── Maturity: same type stack as the other three ── */
@@ -233,7 +233,7 @@ function visibleRegistrySystems(){
   return list.filter(function(s){
     var name=(s.name||'').toLowerCase();
     var tier=(TIER_LABELS[s.risk_tier]||'Unclassified').toLowerCase();
-    var status=(STATUS_LABELS[s.deployment_status]||s.deployment_status||'').toLowerCase();
+    var status=(STATUS_LABELS[s.lifecycle]||s.lifecycle||'').toLowerCase();
     var kind=(ASSET_KIND_LABELS[s.asset_kind||'system']||'').toLowerCase();
     return name.indexOf(q)!==-1||tier.indexOf(q)!==-1||status.indexOf(q)!==-1||kind.indexOf(q)!==-1;
   });
@@ -263,8 +263,8 @@ function syncRegBulkChrome(){
     if(retirePanel){
       var copy=retirePanel.querySelector('.reg-retire-copy');
       if(copy){
-        if(n===1)copy.textContent='Decommission 1 system? This sets its deployment status to Decommissioned.';
-        else copy.textContent='Decommission '+n+' systems? This sets their deployment status to Decommissioned.';
+        if(n===1)copy.textContent='Decommission 1 system? This sets its lifecycle to Decommissioned.';
+        else copy.textContent='Decommission '+n+' systems? This sets their lifecycle to Decommissioned.';
       }
     }
   }
@@ -282,7 +282,7 @@ function setRegSearch(q){
   syncRegBulkChrome();
 }
 function systemSearchHaystack(sys){
-  return ((sys.name||'')+' '+(ASSET_KIND_LABELS[sys.asset_kind||'system']||'')+' '+(TIER_LABELS[sys.risk_tier]||'Unclassified')+' '+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status||'')).toLowerCase();
+  return ((sys.name||'')+' '+(ASSET_KIND_LABELS[sys.asset_kind||'system']||'')+' '+(TIER_LABELS[sys.risk_tier]||'Unclassified')+' '+(STATUS_LABELS[sys.lifecycle]||sys.lifecycle||'')).toLowerCase();
 }
 function applyRegistrySearch(){
   var wrap=document.getElementById('reg-table-wrap');
@@ -428,13 +428,13 @@ var REG_EXPORT_SKIP={
   org_id:true,created_by:true,risk_tier_set_by:true,system_compliance:true,
   _assessScore:true,_ctrlPct:true
 };
-var REG_EXPORT_SYS_ORDER=['id','name','asset_kind','provider_slug','model_name','description','vendor','system_type','department','system_owner','notes','purpose_category','risk_tier','risk_tier_rationale','deployment_status','created_at','updated_at'];
+var REG_EXPORT_SYS_ORDER=['id','name','asset_kind','provider_slug','model_name','description','vendor','system_type','department','system_owner','notes','purpose_category','risk_tier','risk_tier_rationale','lifecycle','created_at','updated_at'];
 var REG_EXPORT_ASSESS_SKIP={id:true,org_id:true,system_id:true,answers:true};
 var REG_EXPORT_LABELS={
   id:'System ID',name:'System name',asset_kind:'Asset type',provider_slug:'Provider',model_name:'Model',description:'Description',vendor:'Vendor',
   system_type:'System type',department:'Department',system_owner:'System owner',
   notes:'Notes',purpose_category:'Purpose category',risk_tier:'Risk class',
-  risk_tier_rationale:'Classification rationale',deployment_status:'Deployment status',
+  risk_tier_rationale:'Classification rationale',lifecycle:'Lifecycle',
   created_at:'Registered',updated_at:'Last updated',
   status:'Assessment status',risk_band:'Assessment band',requested_at:'Assessment date',
   sector:'Assessment sector',questionnaire_version:'Questionnaire version',
@@ -470,7 +470,7 @@ function exportCollectKeys(records,skip){
 function exportFormatValue(key,val){
   if(val===null||val===undefined||val==='')return '';
   if(key==='risk_tier')return TIER_LABELS[val]||val;
-  if(key==='deployment_status')return STATUS_LABELS[val]||val;
+  if(key==='lifecycle')return STATUS_LABELS[val]||val;
   if(key==='system_type')return TYPE_LABELS[val]||val;
   if(key==='asset_kind')return ASSET_KIND_LABELS[val]||val;
   if(key==='provider_slug')return providerCatalogName(val)||val;
@@ -735,13 +735,13 @@ function showRegMenuPanel(name){
   if(name==='retire'){
     var copy=menu.querySelector('.reg-retire-copy');
     if(copy){
-      if(targets.length===1)copy.textContent='Decommission '+targets[0].name+'? This sets deployment status to Decommissioned.';
-      else copy.textContent='Decommission '+targets.length+' systems? This sets their deployment status to Decommissioned.';
+      if(targets.length===1)copy.textContent='Decommission '+targets[0].name+'? This sets lifecycle to Decommissioned.';
+      else copy.textContent='Decommission '+targets.length+' systems? This sets their lifecycle to Decommissioned.';
     }
   }
   if(name==='delete'){
     prepareRegDeletePanel(menu,targets).then(function(){
-      if(menu.id==='reg-row-menu'){
+  if(menu.id==='reg-row-menu'){
         var more=document.querySelector('.reg-row-more[aria-expanded="true"]');
         if(more)positionRegRowMenu(more);
       }
@@ -786,10 +786,10 @@ async function applyRegSystemPatch(targets,patch){
   return true;
 }
 async function applyRegStatus(status){
-  var targets=actionTargets().filter(function(s){return s.deployment_status!==status});
+  var targets=actionTargets().filter(function(s){return s.lifecycle!==status});
   finishRegAction();
   if(!targets.length)return;
-  await applyRegSystemPatch(targets,{deployment_status:status});
+  await applyRegSystemPatch(targets,{lifecycle:status});
 }
 async function applyRegOwner(){
   var menu=visibleRegMenu();
@@ -805,10 +805,10 @@ async function applyRegOwner(){
   await applyRegSystemPatch(targets,{system_owner:owner});
 }
 async function applyRegRetire(){
-  var targets=actionTargets().filter(function(s){return s.deployment_status!=='decommissioned'});
+  var targets=actionTargets().filter(function(s){return s.lifecycle!=='decommissioned'});
   finishRegAction();
   if(!targets.length)return;
-  await applyRegSystemPatch(targets,{deployment_status:'decommissioned'});
+  await applyRegSystemPatch(targets,{lifecycle:'decommissioned'});
 }
 
 var regDeletePreview=null;
@@ -1070,7 +1070,7 @@ function renderSystemTable(opts){
       '<td><div class="sys-name">'+esc(sys.name)+'</div><div class="sys-desc">'+esc(sys.description||'')+'</div></td>'+
       '<td><span class="kind-pill kind-'+kind+'">'+(ASSET_KIND_LABELS[kind]||kind)+'</span></td>'+
       '<td><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></td>'+
-      '<td><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||sys.deployment_status)+'</span></td>'+
+      '<td><span class="status-pill status-'+sys.lifecycle+'">'+(STATUS_LABELS[sys.lifecycle]||sys.lifecycle)+'</span></td>'+
       '<td class="col-maturity">'+regMaturityCell(score,!(opts&&opts.quiet))+'</td>'+
       '<td class="col-date">'+fmtDate(sys.updated_at)+'</td>'+
       '<td class="col-more" onclick="event.stopPropagation()"><button type="button" class="reg-row-more" aria-label="Actions for '+esc(sys.name)+'" aria-haspopup="menu" aria-expanded="false" onclick="toggleRegRowMenu(event,\''+sys.id+'\')"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3.5" r="1.35"/><circle cx="8" cy="8" r="1.35"/><circle cx="8" cy="12.5" r="1.35"/></svg></button></td>'+
@@ -1107,7 +1107,7 @@ const PROVIDER_CONN_STATUS_LABELS={pending:'Not connected',connected:'Connected'
 
 async function invokeProviderFn(name,body){
   if(location.protocol==='file:'){
-    throw new Error('Open the portal at https://reganchor.com/portal.html or a local http:// server. Opening as a file blocks provider actions.');
+    throw new Error('Open the workspace at https://app.reganchor.com or a local http:// server. Opening as a file blocks provider actions.');
   }
   var sd=await sb.auth.getSession();
   var session=sd.data.session;
@@ -1492,7 +1492,7 @@ function renderAssetOverview(sys,tier){
   var assetKind=sys.asset_kind||'system';
   var providerLabel=providerCatalogName(sys.provider_slug)||'Not set';
   var modelLabel=modelDisplayName(sys.provider_slug,sys.model_name)||'Not set';
-  return '<div class="detail-desc"><div class="stat-label">Description</div><p>'+esc(sys.description||'No description provided.')+'</p></div><div class="meta-grid"><div class="meta-item"><label>Asset ID</label><span class="meta-id">'+esc(sys.id)+'</span></div><div class="meta-item"><label>Type</label><span><span class="kind-pill kind-'+assetKind+'">'+(ASSET_KIND_LABELS[assetKind]||assetKind)+'</span></span></div><div class="meta-item"><label>Provider</label><span>'+providerOverviewValue(sys,providerLabel)+'</span></div><div class="meta-item"><label>Model</label><span>'+esc(modelLabel)+'</span></div><div class="meta-item"><label>Vendor</label><span>'+esc(sys.vendor||'In-house')+'</span></div><div class="meta-item"><label>Department</label><span>'+esc(sys.department||'Not set')+'</span></div><div class="meta-item"><label>Owner</label><span>'+esc(sys.system_owner||'Not set')+'</span></div><div class="meta-item"><label>Deployment</label><span><span class="status-pill status-'+sys.deployment_status+'">'+(STATUS_LABELS[sys.deployment_status]||'Not set')+'</span></span></div><div class="meta-item"><label>Purpose category</label><span>'+esc(sys.purpose_category?sys.purpose_category.replace(/_/g,' '):'Not set')+'</span></div><div class="meta-item"><label>Risk tier</label><span><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></span></div>'+(sys.risk_tier_rationale?'<div class="meta-item" style="grid-column:1/-1;"><label>Classification rationale</label><span>'+esc(sys.risk_tier_rationale)+'</span></div>':'')+'<div class="meta-item"><label>Registered</label><span>'+fmtDate(sys.created_at)+'</span></div><div class="meta-item"><label>Last updated</label><span>'+fmtDate(sys.updated_at)+'</span></div></div>';
+  return '<div class="detail-desc"><div class="stat-label">Description</div><p>'+esc(sys.description||'No description provided.')+'</p></div><div class="meta-grid"><div class="meta-item"><label>Asset ID</label><span class="meta-id">'+esc(sys.id)+'</span></div><div class="meta-item"><label>Type</label><span><span class="kind-pill kind-'+assetKind+'">'+(ASSET_KIND_LABELS[assetKind]||assetKind)+'</span></span></div><div class="meta-item"><label>Provider</label><span>'+providerOverviewValue(sys,providerLabel)+'</span></div><div class="meta-item"><label>Model</label><span>'+esc(modelLabel)+'</span></div><div class="meta-item"><label>Vendor</label><span>'+esc(sys.vendor||'In-house')+'</span></div><div class="meta-item"><label>Department</label><span>'+esc(sys.department||'Not set')+'</span></div><div class="meta-item"><label>Owner</label><span>'+esc(sys.system_owner||'Not set')+'</span></div><div class="meta-item"><label>Lifecycle</label><span><span class="status-pill status-'+sys.lifecycle+'">'+(STATUS_LABELS[sys.lifecycle]||'Not set')+'</span></span></div><div class="meta-item"><label>Purpose category</label><span>'+esc(sys.purpose_category?sys.purpose_category.replace(/_/g,' '):'Not set')+'</span></div><div class="meta-item"><label>Risk tier</label><span><span class="tier-pill tier-'+tier+'">'+(TIER_LABELS[tier]||'Unclassified')+'</span></span></div>'+(sys.risk_tier_rationale?'<div class="meta-item" style="grid-column:1/-1;"><label>Classification rationale</label><span>'+esc(sys.risk_tier_rationale)+'</span></div>':'')+'<div class="meta-item"><label>Registered</label><span>'+fmtDate(sys.created_at)+'</span></div><div class="meta-item"><label>Last updated</label><span>'+fmtDate(sys.updated_at)+'</span></div></div>';
 }
 
 function renderProviderConnectionTab(sys,connection,orgCredential){
@@ -1530,7 +1530,7 @@ function renderProviderConnectionPanel(sys,connection,orgCredential){
   }
   var html='<div class="provider-connection-panel"><div class="provider-connection-head"><div class="stat-label">Provider connection</div><span class="conn-gov-tier '+tierCls+'">'+esc(tierLabel)+'</span></div>'+
     '<p class="provider-connection-copy">Connect a runtime API key for this asset. '+(supportsAdmin?'Governance Admin keys are managed once per provider under Organisation → Providers. ':'')+'Credentials are encrypted in Vault and never shown again.</p>'+
-    (location.protocol==='file:'?'<p class="provider-connection-copy" style="color:var(--ra-risk)">You opened this page as a local file. Use https://reganchor.com/portal.html or a local http:// server. Opening as a file blocks provider actions.</p>':'')+
+    (location.protocol==='file:'?'<p class="provider-connection-copy" style="color:var(--ra-risk)">You opened this page as a local file. Use https://app.reganchor.com or a local http:// server. Opening as a file blocks provider actions.</p>':'')+
     renderProviderCapabilityList(connection)+
     (profile&&profile.encouragement?'<p class="provider-connection-encourage">'+esc(profile.encouragement)+'</p>':'')+
     (profile&&profile.limitations&&profile.limitations.length?'<div class="provider-connection-notes">'+profile.limitations.map(function(note){return '<p>'+esc(note)+'</p>'}).join('')+'</div>':'')+
@@ -1602,7 +1602,7 @@ async function renderOrgProvidersPanel(){
   var canManage=typeof canDeleteRegistry==='function'&&canDeleteRegistry();
   var html='<div class="org-providers"><p class="org-providers-lead">Connect a Governance Admin key once per AI provider. AI assets then attach only a runtime key on their Connection tab.</p>';
   if(location.protocol==='file:'){
-    html+='<p class="provider-connection-copy" style="color:var(--ra-risk)">Open the portal via https://reganchor.com or a local http:// server. Opening as a file blocks provider actions.</p>';
+    html+='<p class="provider-connection-copy" style="color:var(--ra-risk)">Open the workspace via https://app.reganchor.com or a local http:// server. Opening as a file blocks provider actions.</p>';
   }
   connectors.forEach(function(p){
     var cred=bySlug[p.slug]||null;
@@ -1824,7 +1824,7 @@ async function openSystemDetail(sysId,opts){
   // Re-enable: set SHOW_DET_HEADER_TAGS true (CSS .det-tags also un-hides when [hidden] is cleared).
   var SHOW_DET_HEADER_TAGS=false;
   var tagParts=[];
-  if(sys.deployment_status)tagParts.push(STATUS_LABELS[sys.deployment_status]||sys.deployment_status);
+  if(sys.lifecycle)tagParts.push(STATUS_LABELS[sys.lifecycle]||sys.lifecycle);
   if(sys.system_type)tagParts.push(TYPE_LABELS[sys.system_type]||sys.system_type);
   if(sys.purpose_category)tagParts.push(sys.purpose_category.replace(/_/g,' '));
   var latestA=(assessments&&assessments.length)?assessments[0]:null;
@@ -2056,7 +2056,7 @@ function switchDetailTab(id,btn){
  
 // ═══ ADD/EDIT SYSTEM ══════════════════════════════════════════
 function openAddSystem(){if(typeof canWriteRegistry==='function'&&!canWriteRegistry())return;var orgPlan=currentOrg?currentOrg.plan:'free';var sysLimit=(orgPlan==='professional')?999:1;if(activeRegistrySystemCount()>=sysLimit){var sysMsg='';if(orgPlan==='essentials')sysMsg='You have reached your Essentials plan limit of 1 AI asset. Upgrade for unlimited assets, multi-user access, and more.';else if(orgPlan==='professional')sysMsg='Need more from your governance platform? Enterprise includes unlimited users, dedicated advisory, and more.';else sysMsg='You have reached your free plan limit of 1 AI asset. Subscribe to unlock more assets, governance certification, and more.';openUpgradeModal(sysMsg);return}document.getElementById('sysmod-id').value='';document.getElementById('sysmod-title').textContent='Add AI asset';document.getElementById('sysmod-sub').textContent='Register a governed system or agent in your inventory';document.getElementById('sysmod-submit').innerHTML='<svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10"/></svg> Register asset';clearSystemForm();populateProviderSelect('');populateModelSelect('','');updateAssetNotesRequirement();showSysmodRemoveZone(false);document.getElementById('system-modal').classList.add('open')}
-function openEditSystem(){const sys=allSystems.find(s=>s.id===currentSystemId);if(!sys)return;document.getElementById('sysmod-id').value=sys.id;document.getElementById('sysmod-title').textContent='Edit asset';document.getElementById('sysmod-sub').textContent=sys.name;document.getElementById('sysmod-submit').innerHTML='Save Changes';document.getElementById('sysmod-name').value=sys.name||'';document.getElementById('sysmod-desc').value=sys.description||'';document.getElementById('sysmod-kind').value=sys.asset_kind||'system';document.getElementById('sysmod-vendor').value=sys.vendor||'';document.getElementById('sysmod-purpose').value=sys.purpose_category||'';document.getElementById('sysmod-tier').value=sys.risk_tier||'';document.getElementById('sysmod-status').value=sys.deployment_status||'planned';document.getElementById('sysmod-rationale').value=sys.risk_tier_rationale||'';document.getElementById('sysmod-owner').value=sys.system_owner||'';document.getElementById('sysmod-dept').value=sys.department||'';document.getElementById('sysmod-notes').value=sys.notes||'';populateProviderSelect(sys.provider_slug||'');populateModelSelect(sys.provider_slug||'',sys.model_name||'');onPurposeChange();updateAssetNotesRequirement();showSysmodRemoveZone(typeof canDeleteRegistry==='function'&&canDeleteRegistry());if(typeof canDeleteRegistry==='function'&&canDeleteRegistry())prepareSysmodRemove(sys.id);document.getElementById('system-modal').classList.add('open')}
+function openEditSystem(){const sys=allSystems.find(s=>s.id===currentSystemId);if(!sys)return;document.getElementById('sysmod-id').value=sys.id;document.getElementById('sysmod-title').textContent='Edit asset';document.getElementById('sysmod-sub').textContent=sys.name;document.getElementById('sysmod-submit').innerHTML='Save Changes';document.getElementById('sysmod-name').value=sys.name||'';document.getElementById('sysmod-desc').value=sys.description||'';document.getElementById('sysmod-kind').value=sys.asset_kind||'system';document.getElementById('sysmod-vendor').value=sys.vendor||'';document.getElementById('sysmod-purpose').value=sys.purpose_category||'';document.getElementById('sysmod-tier').value=sys.risk_tier||'';document.getElementById('sysmod-status').value=sys.lifecycle||'planned';document.getElementById('sysmod-rationale').value=sys.risk_tier_rationale||'';document.getElementById('sysmod-owner').value=sys.system_owner||'';document.getElementById('sysmod-dept').value=sys.department||'';document.getElementById('sysmod-notes').value=sys.notes||'';populateProviderSelect(sys.provider_slug||'');populateModelSelect(sys.provider_slug||'',sys.model_name||'');onPurposeChange();updateAssetNotesRequirement();showSysmodRemoveZone(typeof canDeleteRegistry==='function'&&canDeleteRegistry());if(typeof canDeleteRegistry==='function'&&canDeleteRegistry())prepareSysmodRemove(sys.id);document.getElementById('system-modal').classList.add('open')}
 function clearSystemForm(){['sysmod-name','sysmod-desc','sysmod-vendor','sysmod-rationale','sysmod-owner','sysmod-dept','sysmod-notes'].forEach(id=>document.getElementById(id).value='');document.getElementById('sysmod-kind').value='system';document.getElementById('sysmod-purpose').value='';document.getElementById('sysmod-tier').value='';document.getElementById('sysmod-status').value='planned';document.getElementById('sysmod-tier-hint').style.display='none';document.getElementById('sysmod-rationale-wrap').style.display='none';document.getElementById('sysmod-error').style.display='none';updateAssetNotesRequirement();resetSysmodRemove(false)}
 function closeSystemModal(){document.getElementById('system-modal').classList.remove('open')}
 function onPurposeChange(){const purpose=document.getElementById('sysmod-purpose').value;const suggested=PURPOSE_TIER_MAP[purpose];const hint=document.getElementById('sysmod-tier-hint');const tierSel=document.getElementById('sysmod-tier');const rw=document.getElementById('sysmod-rationale-wrap');
@@ -2073,7 +2073,7 @@ async function submitSystem(){
   errEl.style.display='none';
   const btn=document.getElementById('sysmod-submit');const origH=btn.innerHTML;btn.textContent='Saving…';btn.disabled=true;if(!currentOrg)await ensureOrg();
   var vendorVal=document.getElementById('sysmod-vendor').value.trim()||null;
-  const payload={org_id:currentOrg.id,name,asset_kind:document.getElementById('sysmod-kind').value||'system',provider_slug:platform,model_name:model,description:document.getElementById('sysmod-desc').value.trim()||null,vendor:vendorVal,system_type:deriveAssetSystemType(platform,vendorVal),purpose_category:document.getElementById('sysmod-purpose').value||null,risk_tier:document.getElementById('sysmod-tier').value||null,risk_tier_rationale:document.getElementById('sysmod-rationale').value.trim()||null,risk_tier_set_by:document.getElementById('sysmod-tier').value?currentUser.id:null,deployment_status:document.getElementById('sysmod-status').value,system_owner:owner,department:document.getElementById('sysmod-dept').value.trim()||null,notes:notesVal||null};
+  const payload={org_id:currentOrg.id,name,asset_kind:document.getElementById('sysmod-kind').value||'system',provider_slug:platform,model_name:model,description:document.getElementById('sysmod-desc').value.trim()||null,vendor:vendorVal,system_type:deriveAssetSystemType(platform,vendorVal),purpose_category:document.getElementById('sysmod-purpose').value||null,risk_tier:document.getElementById('sysmod-tier').value||null,risk_tier_rationale:document.getElementById('sysmod-rationale').value.trim()||null,risk_tier_set_by:document.getElementById('sysmod-tier').value?currentUser.id:null,lifecycle:document.getElementById('sysmod-status').value,system_owner:owner,department:document.getElementById('sysmod-dept').value.trim()||null,notes:notesVal||null};
   const editId=document.getElementById('sysmod-id').value;
   if(!editId){var sysLimit=1;var orgPlan=currentOrg?currentOrg.plan:'free';if(orgPlan==='professional')sysLimit=999;if(activeRegistrySystemCount()>=sysLimit){errEl.textContent='Your '+(orgPlan||'free')+' plan allows '+(sysLimit>=999?'unlimited':sysLimit)+' AI system'+(sysLimit!==1?'s':'')+'. Upgrade to Professional for unlimited systems.';errEl.style.display='block';btn.innerHTML=origH;btn.disabled=false;return}}
   try{if(editId){const{error}=await sb.from('ai_systems').update(payload).eq('id',editId);if(error)throw error;

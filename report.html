@@ -1072,15 +1072,14 @@ async function init(){
     msg('Verifying session...');
     const {data:{user},error:authErr}=await sb.auth.getUser();
     if(authErr||!user){
-      const ret=encodeURIComponent(window.location.href);
-      window.location.href=`login.html?return=${ret}`;
+      window.location.href='https://app.reganchor.com/login?next='+encodeURIComponent(window.location.pathname+window.location.search+window.location.hash);
       return;
     }
     
     msg('Loading report data...');
     const params=new URLSearchParams(window.location.search);
     const rid=params.get('rid');
-    if(!rid){showError('Report Not Found','No report ID was provided. Please return to your portal and try again.');return;}
+    if(!rid){showError('Report Not Found','No report ID was provided. Please return to your workspace and try again.');return;}
     
     const {data:result,error:fetchErr}=await sb.from('diagnostic_results').select('*').eq('id',rid).single();
     if(fetchErr||!result){showError('Access Denied','This report could not be found or you do not have permission to view it.');return;}
@@ -1090,7 +1089,7 @@ async function init(){
     
   } catch(err){
     console.error(err);
-    showError('Error Loading Report',err.message||'An unexpected error occurred. Please return to your portal and try again.');
+    showError('Error Loading Report',err.message||'An unexpected error occurred. Please return to your workspace and try again.');
   }
 }
 

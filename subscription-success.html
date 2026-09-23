@@ -109,7 +109,7 @@
       <div id="state-signup" style="display:none;">
         <div class="eyebrow">Payment confirmed</div>
         <h1 id="modal-title">Create your<br><em>account</em></h1>
-        <p class="subtext">One step to open your governance portal. Use your work email so invitations and certificates reach the right people.</p>
+        <p class="subtext">One step to open your workspace. Use your work email so invitations and certificates reach the right people.</p>
         <div class="plan-chip" id="plan-chip">Essentials</div>
 
         <div class="field">
@@ -143,7 +143,7 @@
           <input type="password" class="field-input" id="su-password" autocomplete="new-password" placeholder="Min. 8 characters">
         </div>
         <div class="error-box" id="su-error"></div>
-        <button type="button" class="btn-primary" id="su-btn" onclick="doSignup()">Create account &amp; open portal</button>
+        <button type="button" class="btn-primary" id="su-btn" onclick="doSignup()">Create account &amp; open workspace</button>
         <div class="switch-link">Already have an account? <button type="button" onclick="showSignin()">Sign in</button></div>
       </div>
 
@@ -160,15 +160,15 @@
           <input type="password" class="field-input" id="si-password" autocomplete="current-password">
         </div>
         <div class="error-box" id="si-error"></div>
-        <button type="button" class="btn-primary" id="si-btn" onclick="doSignin()">Sign in &amp; open portal</button>
+        <button type="button" class="btn-primary" id="si-btn" onclick="doSignin()">Sign in &amp; open workspace</button>
         <div class="switch-link">New here? <button type="button" onclick="showSignup()">Create an account</button></div>
       </div>
 
       <div id="state-success" style="display:none;">
         <div class="eyebrow">You're set</div>
         <h1>Subscription<br><em>activated</em></h1>
-        <p class="subtext" id="success-copy">Your plan is linked. Continue in the portal to register systems and evidence controls.</p>
-        <a href="portal.html" class="btn-primary">Open portal</a>
+        <p class="subtext" id="success-copy">Your plan is linked. Continue in the workspace to register systems and evidence controls.</p>
+        <a href="https://app.reganchor.com/registry" class="btn-primary">Open workspace</a>
       </div>
 
       <div id="state-error" style="display:none;">
@@ -176,7 +176,7 @@
         <h1>We couldn't<br><em>finish setup</em></h1>
         <p class="subtext">Your payment may still have succeeded. Contact support with your receipt and we'll activate access.</p>
         <a href="mailto:info@reganchor.com?subject=Subscription%20setup" class="btn-primary">Contact support</a>
-        <a href="portal.html" class="btn-ghost">Try portal</a>
+        <a href="https://app.reganchor.com/login?next=%2Fregistry" class="btn-ghost">Try workspace</a>
       </div>
 
     </div>

@@ -144,6 +144,8 @@
       </div>
     </div>
 
+    <!-- Domain screens: rebuilt from Control Centre diagnostic_questions when available. -->
+    <div id="domain-screens">
     <!-- S1 -->
     <div class="screen" id="screen-s1">
       <div class="card">
@@ -524,6 +526,8 @@
       </div>
     </div>
 
+    </div><!-- /domain-screens -->
+
   </div><!-- /wrapper -->
 </div><!-- /page -->
 
@@ -558,6 +562,170 @@ const SECTOR_MULTIPLIER = {
   'Manufacturing & Logistics':      0.80,
   'Other':                          0.90
 };
+
+/** Load live engine config from Control Centre (Engines → Diagnostic scoring). Falls back to defaults above. */
+async function loadDiagnosticScoringConfig() {
+  try {
+    const [{ data: weights, error: wErr }, { data: sectors, error: sErr }] = await Promise.all([
+      supabaseClient
+        .from('diagnostic_section_weights')
+        .select('section_key,weight,is_active')
+        .eq('is_active', true),
+      supabaseClient
+        .from('diagnostic_sector_multipliers')
+        .select('sector,multiplier,is_active')
+        .eq('is_active', true),
+    ]);
+    if (wErr) throw wErr;
+    if (sErr) throw sErr;
+    if (weights && weights.length) {
+      weights.forEach((row) => {
+        const key = String(row.section_key || '');
+        const w = Number(row.weight);
+        if (key && Number.isFinite(w)) WEIGHTS[key] = w;
+      });
+    }
+    if (sectors && sectors.length) {
+      sectors.forEach((row) => {
+        const sector = String(row.sector || '');
+        const m = Number(row.multiplier);
+        if (sector && Number.isFinite(m)) SECTOR_MULTIPLIER[sector] = m;
+      });
+    }
+    console.log('[diagnostic] scoring config loaded from Control Centre');
+  } catch (err) {
+    console.warn('[diagnostic] scoring config fallback to embedded defaults', err);
+  }
+}
+loadDiagnosticScoringConfig();
+
+/** Live questionnaire from Control Centre (Engines → Diagnostic questions). Null = keep embedded HTML. */
+let DIAG_BANK = null;
+
+function escDiag(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function requiredKeysFor(sectionKey) {
+  if (!DIAG_BANK) return null;
+  const sec = DIAG_BANK.find((s) => s.section_key === sectionKey);
+  if (!sec) return null;
+  return (sec.questions || [])
+    .filter((q) => q.is_required !== false && q.question_kind !== 'multi')
+    .map((q) => q.question_key);
+}
+
+function rebuildDomainScreens(bank) {
+  const host = document.getElementById('domain-screens');
+  if (!host || !bank || !bank.length) return;
+
+  const keys = bank.map((s) => s.section_key);
+  let html = '';
+  bank.forEach((sec, si) => {
+    const sid = sec.section_key;
+    const prev = si === 0 ? 'screen-prescreen' : 'screen-' + keys[si - 1];
+    const nextId = si < keys.length - 1 ? 'screen-' + keys[si + 1] : null;
+    const req = (sec.questions || [])
+      .filter((q) => q.is_required !== false && q.question_kind !== 'multi')
+      .map((q) => q.question_key);
+    const reqLit = JSON.stringify(req);
+
+    html += `<div class="screen" id="screen-${escDiag(sid)}"><div class="card">`;
+    html += `<div class="section-title">${escDiag(sec.title)}</div>`;
+    html += `<div class="section-desc">${escDiag(sec.description || '')}</div>`;
+
+    (sec.questions || []).forEach((q) => {
+      html += `<div class="q-block">`;
+      html += `<div class="q-label">${escDiag(q.prompt)}</div>`;
+      if (q.hint) html += `<div class="q-hint">${escDiag(q.hint)}</div>`;
+      html += `<div class="options" id="${escDiag(q.question_key)}">`;
+      const opts = Array.isArray(q.options) ? q.options : [];
+      if (q.question_kind === 'multi') {
+        opts.forEach((o) => {
+          html += `<label class="option cb" onclick="toggleCb(this)" data-val="${escDiag(o.value || '')}"><span class="option-dot"></span>${escDiag(o.label || '')}</label>`;
+        });
+      } else {
+        opts.forEach((o) => {
+          const score = Number(o.score != null ? o.score : 0);
+          const unc = o.uncertainty ? ' data-uncertainty="true"' : '';
+          html += `<label class="option" onclick="pick(this,'${escDiag(q.question_key)}',${score})"${unc}><span class="option-dot"></span>${escDiag(o.label || '')}</label>`;
+        });
+      }
+      html += `</div></div>`;
+    });
+
+    html += `<div id="${escDiag(sid)}-error" class="error-msg"></div><div class="nav-btns">`;
+    html += `<button class="btn-secondary" onclick="goTo('${prev}')">&#8592; Back</button>`;
+    if (nextId) {
+      html += `<button class="btn-primary" onclick="next(${reqLit},'${escDiag(sid)}-error','${nextId}')">Continue &#8594;</button>`;
+    } else {
+      html += `<button class="btn-primary" onclick="calcResults()">Generate My Risk Report &#8594;</button>`;
+    }
+    html += `</div></div></div>`;
+  });
+
+  host.innerHTML = html;
+  DIAG_BANK = bank;
+  console.log('[diagnostic] questionnaire screens rebuilt from Control Centre');
+}
+
+async function loadDiagnosticQuestionnaire() {
+  try {
+    const [{ data: secs, error: sErr }, { data: qs, error: qErr }] = await Promise.all([
+      supabaseClient
+        .from('diagnostic_sections')
+        .select('section_key,title,description,display_order,is_active')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true }),
+      supabaseClient
+        .from('diagnostic_questions')
+        .select('section_key,question_key,prompt,hint,question_kind,is_required,display_order,is_active,options')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true }),
+    ]);
+    if (sErr) throw sErr;
+    if (qErr) throw qErr;
+    if (!secs || !secs.length || !qs || !qs.length) return;
+
+    const bySection = {};
+    qs.forEach((row) => {
+      const key = String(row.section_key || '');
+      if (!key) return;
+      if (!bySection[key]) bySection[key] = [];
+      bySection[key].push({
+        question_key: String(row.question_key || ''),
+        prompt: String(row.prompt || ''),
+        hint: row.hint ? String(row.hint) : null,
+        question_kind: row.question_kind === 'multi' ? 'multi' : 'single',
+        is_required: row.is_required !== false,
+        options: Array.isArray(row.options) ? row.options : [],
+      });
+    });
+
+    const bank = secs
+      .map((sec) => {
+        const questions = bySection[sec.section_key] || [];
+        if (!questions.length) return null;
+        return {
+          section_key: String(sec.section_key),
+          title: String(sec.title || sec.section_key),
+          description: String(sec.description || ''),
+          questions,
+        };
+      })
+      .filter(Boolean);
+
+    if (bank.length) rebuildDomainScreens(bank);
+  } catch (err) {
+    console.warn('[diagnostic] questionnaire fallback to embedded HTML', err);
+  }
+}
+loadDiagnosticQuestionnaire();
 
 const HIGH_RISK_ADDITIONS = {
   auto:    { s4: 2 },
@@ -725,7 +893,8 @@ function next(qs, errId, nxt) {
 
 // ─── SCORING ENGINE ───────────────────────────────────────────────
 function calcResults() {
-  for (const q of ['q7_1','q7_2','q7_3','q7_4','q7_5']) {
+  const s7Required = requiredKeysFor('s7') || ['q7_1','q7_2','q7_3','q7_4','q7_5'];
+  for (const q of s7Required) {
     if (S[q] === undefined) {
       document.getElementById('s7-error').textContent = 'Please answer all questions before continuing.';
       document.getElementById('s7-error').style.display = 'block';

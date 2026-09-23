@@ -100,7 +100,29 @@ async function fetchResponseData(responseId) {
   if (error) throw new Error(`Supabase fetch failed: ${error.message}`);
   if (!response) throw new Error(`No response found with id: ${responseId}`);
 
-  return response;
+  const { data: regRows, error: regError } = await supabase
+    .from('diagnostic_regs')
+    .select('regime,article,obligation,requirement_type,penalty,deadline,display_order')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true });
+
+  if (regError) {
+    console.warn(`[RegAnchor Report] diagnostic_regs load failed: ${regError.message}`);
+    return response;
+  }
+  if (!regRows?.length) return response;
+
+  return {
+    ...response,
+    _regs: regRows.map((row) => ({
+      reg: row.regime,
+      art: row.article,
+      obl: row.obligation,
+      type: row.requirement_type === 'A' ? 'A' : 'M',
+      pen: row.penalty || '',
+      dl: row.deadline || '',
+    })),
+  };
 }
 
 // ============================================================

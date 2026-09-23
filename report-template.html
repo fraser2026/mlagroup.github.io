@@ -316,7 +316,8 @@ const RM={
   s7:{owner:'Technology / Risk', del:'Operational Resilience Protocol', actions:['Implement model performance monitoring with defined drift thresholds','Establish AI incident response pathway and named escalation contacts','Document recovery time objectives for AI-dependent business services','Schedule quarterly performance review cycle with documented outputs']}
 };
 
-const REGS=[
+// Fallback only. Live mint injects REPORT_DATA._regs from diagnostic_regs (Control Centre).
+const REGS_DEFAULT=[
   {reg:'EU AI Act',    art:'Art. 6 & Annex III',obl:'Risk classification and registration of high-risk AI systems',          type:'M',pen:'Up to EUR 30M or 6% global turnover', dl:'Aug 2026'},
   {reg:'EU AI Act',    art:'Art. 14',            obl:'Human oversight measures for high-risk AI systems',                     type:'M',pen:'Up to EUR 30M or 6% global turnover', dl:'Aug 2026'},
   {reg:'EU AI Act',    art:'Art. 13 & 12',       obl:'Transparency to deployers and automatic event logging',                 type:'M',pen:'Up to EUR 15M or 3% global turnover', dl:'Aug 2026'},
@@ -327,6 +328,21 @@ const REGS=[
   {reg:'FCA / SM&CR',  art:'PS7/21 & PRs',       obl:'Named Senior Manager accountability for AI-driven customer outcomes',   type:'M',pen:'Individual sanctions; prohibition from regulated activity',dl:'Immediate'},
   {reg:'ISO/IEC 42001',art:'Sections 6–9',       obl:'AI management system: risk assessment, monitoring, and evaluation',    type:'A',pen:'Certification benchmark; increasing regulator expectation',dl:'Ongoing'}
 ];
+let REGS=REGS_DEFAULT.slice();
+
+function applyLiveRegs(raw){
+  const live=raw&&raw._regs;
+  if(!Array.isArray(live)||!live.length)return;
+  REGS=live.map(r=>({
+    reg:ps(r.reg||r.regime||''),
+    art:ps(r.art||r.article||''),
+    obl:ps(r.obl||r.obligation||''),
+    type:(r.type||r.requirement_type)==='A'?'A':'M',
+    pen:ps(r.pen||r.penalty||''),
+    dl:ps(r.dl||r.deadline||'')
+  })).filter(r=>r.reg&&r.obl);
+  if(!REGS.length)REGS=REGS_DEFAULT.slice();
+}
 
 const OUTLOOK=[
   {t:'EU AI Act Enforcement Timeline',p:'High-risk obligations under the EU AI Act take full effect in August 2026. Organisations without documented governance frameworks, conformity assessment preparations, and registered AI systems face potential enforcement from the AI Office and national supervisory authorities. Foundational governance structures must be established within the Phase 1 window.'},
@@ -404,6 +420,7 @@ function secBar(num,title,org){
 
 // ════ RENDER ════
 function render(raw){
+  applyLiveRegs(raw);
   const R=recon(raw);
   const org=ps(raw.organisation||'Organisation');
   const date=new Date(raw.created_at||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});

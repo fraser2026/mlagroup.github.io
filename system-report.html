@@ -199,7 +199,7 @@ async function init(){
     return;
   }
   const{data:{session}}=await sb.auth.getSession();
-  if(!session){window.location.href='/login?next='+encodeURIComponent(window.location.pathname+window.location.search+window.location.hash);return}
+  if(!session){window.location.href=appHome('/login')+'?next='+encodeURIComponent(window.location.pathname+window.location.search+window.location.hash);return}
 
   const{data:assess,error:aErr}=await sb.from('registry_assessments').select('*').eq('id',ASSESS_ID).single();
   if(aErr||!assess){

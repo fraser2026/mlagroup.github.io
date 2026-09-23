@@ -180,7 +180,7 @@
         </div>
         <h1>You're in.</h1>
         <p class="subtext">Your first assessment is ready in the workspace.</p>
-        <a href="portal.html#reports" class="btn-primary" style="margin-top:28px;">
+        <a href="https://app.reganchor.com/reports" class="btn-primary" style="margin-top:28px;">
           Open report
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
         </a>
@@ -241,7 +241,7 @@
         <div style="font-family:var(--font-brand);font-weight:500;letter-spacing:-0.02em;font-size:1.35rem;color:var(--main);margin-bottom:10px;">Something went wrong</div>
         <p style="font-size:0.83rem;color:var(--sub);margin-bottom:0;">We couldn't activate your access automatically. Contact us and we'll resolve it within the hour.</p>
         <a href="mailto:info@reganchor.com?subject=Payment%20Issue" class="btn-primary" style="margin-top:24px;">Contact support</a>
-        <a href="portal.html#reports" class="btn-ghost">Try the portal anyway</a>
+        <a href="https://app.reganchor.com/login?next=%2Freports" class="btn-ghost">Try the workspace anyway</a>
       </div>
 
     </div>
@@ -463,7 +463,7 @@
         // Call the server-side linker — JWT sub + Stripe email match
         await callLinkDiagnostic();
 
-        // Poll until the portal will actually show the report
+        // Poll until the workspace will actually show the report
         await waitForActivation(userId);
       } else {
         // ── Not logged in: show signup form ──
@@ -516,7 +516,7 @@
       //    Links diagnostic, sets paid, creates/updates entitlement (JWT-bound)
       await callLinkDiagnostic();
 
-      // 4. Poll until portal will show the report
+      // 4. Poll until workspace will show the report
       await waitForActivation(userId);
 
     } catch(e) {

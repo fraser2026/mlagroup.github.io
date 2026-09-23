@@ -7,17 +7,17 @@ It is **not** the Claude Messages gateway (`ra_gw_…`).
 
 ---
 
-## Option A — Portal Connect (recommended)
+## Option A — App Connect (recommended)
 
-1. Sign in at [reganchor.com/portal.html](https://reganchor.com/portal.html).
-2. Open **Integrations**.
-3. Under **Agent MCP**, choose your client → **Connect**.
+1. Sign in at [app.reganchor.com](https://app.reganchor.com).
+2. Open **Connect**.
+3. Choose **Connect Cursor** (or approve a device code under **Approve MCP login**).
 4. Copy the config snippet into your host (see below).
 5. Reload MCP tools in the host. Ask: `List my assets`.
 
 Revoke unused sessions from the same page.
 
-Access tokens last **one hour**. Click **Connect** again (or use refresh if your host supports `ra_mcp_rt_…`) when they expire.
+Access tokens last **one hour**. Connect again (or use refresh if your host supports `ra_mcp_rt_…`) when they expire.
 
 ### Cursor (header config)
 
@@ -46,12 +46,12 @@ When OAuth is enabled for your project:
 1. Add a remote MCP server with URL only:  
    `https://<project>.supabase.co/functions/v1/mcp`
 2. Click **Authenticate** / Connect.
-3. Approve in the RegAnchor portal consent screen.
+3. Approve in the RegAnchor consent screen on the app.
 4. Cursor stores and refreshes tokens.
 
 ### Codex / other hosts
 
-Use the same `mcpServers.reganchor` object your portal snippet prints. Paths vary by product; the URL + Bearer + `apikey` headers are the same.
+Use the same `mcpServers.reganchor` object your Connect snippet prints. Paths vary by product; the URL + Bearer + `apikey` headers are the same.
 
 ---
 
@@ -60,7 +60,7 @@ Use the same `mcpServers.reganchor` object your portal snippet prints. Paths var
 If your host starts login itself:
 
 1. Host shows a code `ABCD-EFGH`.
-2. Open **Integrations → Approve MCP login** (or the printed portal URL).
+2. Open **Connect → Approve MCP login** (or the printed URL).
 3. Enter the code → **Approve**.
 4. Return to the host.
 
@@ -78,7 +78,7 @@ Repo maintainers can still use `node mcp/login.mjs` from a clone; customers shou
 | `refresh_insights` | Admin usage refresh (owner/admin) |
 | Gateway token list / mint / revoke | Owner/admin |
 
-Permissions match your portal role (RLS).
+Permissions match your organisation role (RLS).
 
 ---
 
