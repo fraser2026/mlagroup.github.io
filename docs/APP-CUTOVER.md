@@ -1,5 +1,14 @@
 # `app.reganchor.com` cutover
 
+## Deploy model
+
+| Surface | How it ships |
+|---|---|
+| Marketing (`reganchor.com`) | **Git push** → GitHub Pages |
+| Product app (`app.reganchor.com`) | **`cd app && npm run build && npx wrangler deploy`** (manual; not auto from git) |
+
+Commit app changes so they are not lost. A git push alone does **not** update the Worker.
+
 ## Status (live)
 
 | Piece | State |
@@ -8,10 +17,10 @@
 | Preview | https://reganchor-app.frasergibsonuk.workers.dev |
 | Custom domain | https://app.reganchor.com (Workers custom domain → AAAA `100::` proxied) |
 | SPA routing | `not_found_handling = single-page-application` (`/login`, `/registry`, … OK) |
-| Portal auto-redirect | Still **opt-in** (`?app=1` or `localStorage.ra_use_app=1`) |
+| Portal auto-redirect | **Hard cutover** (`DEFAULT_TO_APP = true`; opt out with `?legacy=1`) |
 | MCP OAuth consent | `REGANCHOR_PUBLIC_ORIGIN=https://app.reganchor.com` → `/oauth/consent` |
 
-Legacy portal remains: https://reganchor.com/portal.html
+Legacy `portal.html` on the marketing host redirects to the app (unless `?legacy=1`).
 
 ---
 
