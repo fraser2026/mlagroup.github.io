@@ -1,10 +1,27 @@
 .page {
+  position: relative;
   min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 72px 24px 32px;
   background: var(--ra-mist);
+}
+
+.brand {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  text-decoration: none;
+}
+
+.brand img {
+  display: block;
+  height: 26px;
+  width: auto;
 }
 
 .card {
@@ -13,7 +30,38 @@
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-control);
   background: var(--ra-surface);
-  padding: 28px 24px;
+  padding: 24px;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin: 0 0 18px;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 10px 8px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ra-text-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--ra-ink);
+}
+
+.tabActive {
+  color: var(--ra-ink);
+  border-bottom-color: var(--ra-blurple);
 }
 
 .form {
@@ -28,7 +76,25 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--ra-text-3);
+  color: var(--ra-text-2);
+}
+
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.forgot {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ra-blurple);
+  text-decoration: none;
+}
+
+.forgot:hover {
+  color: var(--ra-blurple-hover);
 }
 
 .input {
@@ -36,8 +102,14 @@
   padding: 0 10px;
   border: 1px solid var(--ra-border-field);
   border-radius: var(--ra-radius-control);
-  color: var(--ra-text);
+  color: var(--ra-ink);
   background: var(--ra-surface);
+  font: inherit;
+  font-size: 13px;
+}
+
+.input::placeholder {
+  color: var(--ra-text-3);
 }
 
 .input:focus,
@@ -48,12 +120,124 @@
   box-shadow: 0 0 0 3px var(--ra-focus-ring);
 }
 
-.hint {
-  margin: 16px 0 0;
-  font-size: 12px;
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ra-text-2);
+  cursor: pointer;
+}
+
+.remember input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--ra-blurple);
+  flex-shrink: 0;
+}
+
+.ssoStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ssoBtn {
+  appearance: none;
+  width: 100%;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+  color: var(--ra-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ssoBtn:hover:not(:disabled) {
+  border-color: var(--ra-blurple);
+  color: var(--ra-blurple);
+  background: var(--ra-hover);
+}
+
+.ssoBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.gIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.foot {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.55;
   color: var(--ra-text-3);
 }
 
-.hint a {
+.foot a {
   color: var(--ra-blurple);
+  text-decoration: none;
+}
+
+.foot a:hover {
+  color: var(--ra-blurple-hover);
+  text-decoration: underline;
+}
+
+.ssoPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ssoBack {
+  appearance: none;
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ra-text-2);
+  cursor: pointer;
+}
+
+.ssoBack:hover {
+  color: var(--ra-blurple);
+}
+
+.ssoKicker {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ra-text-3);
+}
+
+.ssoTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  color: var(--ra-ink);
+}
+
+.ssoLead {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ra-text-2);
 }

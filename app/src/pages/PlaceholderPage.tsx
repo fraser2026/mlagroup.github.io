@@ -7,8 +7,7 @@ export function PlaceholderPage({ title, description }: { title: string; descrip
     <PageFrame>
       <PageHeader title={title} description={description} />
       <Notice title="Coming in migration">
-        This route is reserved in the new app shell. Use the legacy portal for write flows until this surface is
-        migrated.
+        This route is reserved in the app shell and is not available yet.
       </Notice>
     </PageFrame>
   )

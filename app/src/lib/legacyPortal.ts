@@ -1,4 +1,4 @@
-/** Same-origin legacy portal entry (parity bridge). */
+/** Same-origin legacy portal entry (parity bridge; prefer React routes). */
 export const LEGACY_PORTAL_PATH = '/legacy/portal.html'
 
 export function legacyPortalUrl(hash = 'dashboard') {
@@ -26,4 +26,30 @@ export function reactPathToPortalHash(pathname: string): string {
   if (p === '/reports') return 'reports'
   if (p === '/monitoring') return 'audit-log'
   return 'dashboard'
+}
+
+/** Map legacy portal hash / goto → React app path (no portal hand-off). */
+export function portalHashToAppPath(raw: string): string {
+  const h = String(raw || 'dashboard').replace(/^#/, '').replace(/^\?goto=/, '')
+  if (!h || h === 'dashboard') return '/registry'
+  if (h === 'registry') return '/registry'
+  if (h.startsWith('registry-detail-')) return `/registry/${h.slice('registry-detail-'.length)}`
+  if (h.startsWith('system-controls-')) {
+    return `/registry/${h.slice('system-controls-'.length)}?tab=controls`
+  }
+  if (h === 'controls') return '/controls'
+  if (h.startsWith('control-detail-')) return `/controls/${h.slice('control-detail-'.length)}`
+  if (h === 'policies') return '/policies'
+  if (h.startsWith('policy-detail-')) return `/policies/${h.slice('policy-detail-'.length)}`
+  if (h === 'org' || h === 'organisation' || h === 'organization') return '/organisation'
+  if (h === 'integrations') return '/integrations'
+  if (h === 'settings') return '/settings'
+  if (h === 'users') return '/users'
+  if (h === 'billing') return '/billing'
+  if (h === 'plans') return '/plans'
+  if (h === 'alerts' || h === 'notifications') return '/alerts'
+  if (h === 'reports') return '/reports'
+  if (h === 'audit-log' || h === 'monitoring') return '/monitoring'
+  if (h === 'api-keys') return '/api-keys'
+  return '/registry'
 }

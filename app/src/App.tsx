@@ -30,10 +30,12 @@ import { ReportsPage } from './pages/ReportsPage'
 import { ApiKeysPage } from './pages/ApiKeysPage'
 import { DataBackendsPage } from './pages/DataBackendsPage'
 import { AuthenticationPage } from './pages/AuthenticationPage'
+import { AuditorAccessPage } from './pages/AuditorAccessPage'
+import { AuditorPortalPage } from './pages/AuditorPortalPage'
 
 /**
- * React app is the primary shell. Legacy portal remains at /legacy/portal.html
- * and /portal/* for bridge / parity checks.
+ * React app is the primary shell. Legacy /portal/* routes map into React.
+ * Static assessment/report HTML remains under /legacy/*.
  */
 export default function App() {
   return (
@@ -42,6 +44,7 @@ export default function App() {
         <NuqsAdapter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/auditor/:token" element={<AuditorPortalPage />} />
             <Route
               path="/oauth/consent"
               element={
@@ -106,6 +109,7 @@ export default function App() {
               <Route path="api-keys" element={<ApiKeysPage />} />
               <Route path="data-backends" element={<DataBackendsPage />} />
               <Route path="authentication" element={<AuthenticationPage />} />
+              <Route path="auditor-access" element={<AuditorAccessPage />} />
               <Route path="home" element={<HomePage />} />
               <Route path="legacy-portal" element={<LegacyPortalRedirect hash="dashboard" />} />
             </Route>

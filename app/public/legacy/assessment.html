@@ -86,10 +86,10 @@
 <div class="page">
 <header class="site-chrome" id="siteChrome">
   <nav class="site-nav">
-    <a href="portal.html#dashboard" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+    <a href="/registry" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
     <div class="nav-right">
       <span class="flow-step" id="progressCount" hidden>1 of 8</span>
-      <a href="portal.html#dashboard" class="nav-signin" id="assess-back">Back to portal</a>
+      <a href="/registry" class="nav-signin" id="assess-back">Back home</a>
     </div>
   </nav>
   <div class="scroll-progress scroll-progress--step" id="progressWrap" aria-hidden="true">
@@ -122,14 +122,31 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 // ═══ GET SYSTEM ID FROM URL ══════════════════════════════════
 const params=new URLSearchParams(window.location.search);
 const SYSTEM_ID=params.get('system_id');
+function appHome(path){
+  var p=path||'/registry';
+  if(p.charAt(0)!=='/')p='/'+p;
+  var host=location.hostname;
+  if(host==='app.reganchor.com'||host==='localhost'||host==='127.0.0.1')return p;
+  return 'https://app.reganchor.com'+p;
+}
 (function(){
   var back=document.getElementById('assess-back');
-  var ret='#dashboard';
-  try{
-    var stored=sessionStorage.getItem('ra_portal_return');
-    if(stored&&stored.charAt(0)==='#'&&stored.indexOf('index')===-1)ret=stored;
-  }catch(e){}
-  if(back)back.setAttribute('href','portal.html'+ret);
+  var logo=document.querySelector('.logo.ra-wordmark');
+  var ret=params.get('return')||'';
+  if(!ret&&SYSTEM_ID)ret='/registry/'+encodeURIComponent(SYSTEM_ID)+'?tab=assessment';
+  if(!ret){
+    try{
+      var stored=sessionStorage.getItem('ra_app_return')||sessionStorage.getItem('ra_portal_return');
+      if(stored&&stored.charAt(0)==='/')ret=stored;
+      else if(stored&&stored.charAt(0)==='#'&&stored.indexOf('registry-detail-')===0){
+        ret='/registry/'+stored.slice('#registry-detail-'.length);
+      }
+    }catch(e){}
+  }
+  if(!ret)ret='/registry';
+  var href=appHome(ret);
+  if(back){back.setAttribute('href',href);back.textContent='Back home'}
+  if(logo)logo.setAttribute('href',href);
 })();
 let currentUser=null,currentOrg=null,systemData=null;
 function isPaidTier(){return currentOrg&&(currentOrg.plan==='essentials'||currentOrg.plan==='professional')&&currentOrg.subscription_status==='active'}
@@ -137,7 +154,7 @@ function isPaidTier(){return currentOrg&&(currentOrg.plan==='essentials'||curren
 // ═══ QUESTIONNAIRE DEFINITION ════════════════════════════════
 const VER='1.0.0';
 const WEIGHTS={s1:0.10,s2:0.20,s3:0.15,s4:0.15,s5:0.15,s6:0.15,s7:0.10};
-const SECTIONS=[
+let SECTIONS=[
 {id:'s1',title:'System Purpose & Classification',desc:'Establishing the intended use, impact scope, and regulatory exposure of this AI system.',reg:'EU AI Act Annex III, Article 6',questions:[
   {id:'q1_1',text:'What is the intended use and potential impact of this AI system?',options:[
     {l:'Low impact: internal tooling with no effect on individuals',s:3},
@@ -294,28 +311,82 @@ const SECTIONS=[
 ];
  
 const SECTOR_OPTIONS=['Financial Services','Healthcare & Life Sciences','Legal & Professional Services','Retail & E-commerce','Technology & SaaS','Public Sector / Government','Education','Manufacturing & Logistics','Other'];
- 
+
+/** Load live questionnaire from Control Centre (Engines → Asset assessment questions). Falls back to embedded SECTIONS. */
+async function loadAssessmentQuestionnaire(){
+  try{
+    const[{data:secs,error:sErr},{data:qs,error:qErr}]=await Promise.all([
+      sb.from('assessment_sections').select('section_key,title,description,regulatory_basis,display_order,is_active').eq('is_active',true).order('display_order',{ascending:true}),
+      sb.from('assessment_questions').select('section_key,question_key,prompt,hint,display_order,is_active,options').eq('is_active',true).order('display_order',{ascending:true})
+    ]);
+    if(sErr)throw sErr;
+    if(qErr)throw qErr;
+    if(!secs||!secs.length||!qs||!qs.length)return;
+    const bySection={};
+    qs.forEach(function(row){
+      const key=String(row.section_key||'');
+      if(!key)return;
+      if(!bySection[key])bySection[key]=[];
+      const opts=Array.isArray(row.options)?row.options:[];
+      bySection[key].push({
+        id:String(row.question_key||''),
+        text:String(row.prompt||''),
+        hint:row.hint?String(row.hint):undefined,
+        options:opts.map(function(o){
+          return{l:String(o.label||o.l||''),s:Number(o.score!=null?o.score:o.s)||0};
+        }).filter(function(o){return o.l;})
+      });
+    });
+    const next=secs.map(function(sec){
+      const questions=bySection[sec.section_key]||[];
+      if(!questions.length)return null;
+      return{
+        id:String(sec.section_key),
+        title:String(sec.title||sec.section_key),
+        desc:String(sec.description||''),
+        reg:String(sec.regulatory_basis||''),
+        questions:questions
+      };
+    }).filter(Boolean);
+    if(next.length){
+      SECTIONS.length=0;
+      next.forEach(function(s){SECTIONS.push(s);});
+      console.log('[assessment] questionnaire loaded from Control Centre');
+    }
+  }catch(err){
+    console.warn('[assessment] questionnaire fallback to embedded defaults',err);
+  }
+}
+
 // ═══ STATE ════════════════════════════════════════════════════
 const R={}; // responses: q_id → score
 let assessSector='';
 let assessNotes='';
-const ORDER=['pre',...SECTIONS.map(s=>s.id)];
-const TOTAL_STEPS=ORDER.length; // pre + 7 domains = 8
-const SECTION_SCREENS=SECTIONS.map(s=>'screen-'+s.id);
+let ORDER=['pre',...SECTIONS.map(s=>s.id)];
+let TOTAL_STEPS=ORDER.length; // pre + 7 domains = 8
+let SECTION_SCREENS=SECTIONS.map(s=>'screen-'+s.id);
+
+function refreshSectionDerived(){
+  ORDER=['pre',...SECTIONS.map(s=>s.id)];
+  TOTAL_STEPS=ORDER.length;
+  SECTION_SCREENS=SECTIONS.map(s=>'screen-'+s.id);
+}
  
 // ═══ INIT ═════════════════════════════════════════════════════
 async function init(){
-  if(!SYSTEM_ID){alert('No system specified.');window.location.href='portal.html';return}
+  if(!SYSTEM_ID){alert('No system specified.');window.location.href=appHome('/registry');return}
   const{data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='/login?next='+encodeURIComponent(window.location.pathname+window.location.search+window.location.hash);return}
   currentUser=session.user;
   // Load system data
   const{data:sys}=await sb.from('ai_systems').select('*').eq('id',SYSTEM_ID).single();
-  if(!sys){alert('System not found.');window.location.href='portal.html';return}
+  if(!sys){alert('System not found.');window.location.href=appHome('/registry');return}
   systemData=sys;
   // Load org
   const{data:org}=await sb.from('organisations').select('*').eq('id',sys.org_id).single();
   currentOrg=org;
+  await loadAssessmentQuestionnaire();
+  refreshSectionDerived();
   buildScreens();
   bindRail();
   goTo('pre');
@@ -657,7 +728,7 @@ function showResultsScreen(result, triggered, assessId) {
   }
 
   var reportCta = isPaidTier()
-    ? '<a href="system-report.html?aid=' + (assessId || '') + '" target="_blank" class="btn-secondary">View Full Report</a>': '<a href="portal.html?goto=plans" class="btn-secondary">Upgrade to View Report</a>';
+    ? '<a href="system-report.html?aid=' + (assessId || '') + '" target="_blank" class="btn-secondary">View Full Report</a>': '<a href="' + appHome('/plans') + '" class="btn-secondary">Upgrade to View Report</a>';
 
   document.getElementById('screens-container').innerHTML = '' +
     '<div class="card" style="padding:36px 28px;">' +
@@ -674,9 +745,9 @@ function showResultsScreen(result, triggered, assessId) {
       '<div class="domain-list" style="max-width:none;">' + secBars + '</div>' +
       ctrlHtml +
       '<div class="nav-btns" style="margin-top:28px;flex-wrap:wrap;">' +
-        '<a href="portal.html?goto=system-controls-' + SYSTEM_ID + '" class="btn-primary">View Controls</a>' +
+        '<a href="' + appHome('/registry/' + SYSTEM_ID + '?tab=controls') + '" class="btn-primary">View Controls</a>' +
         reportCta +
-        '<a href="portal.html#registry-detail-' + SYSTEM_ID + '" class="btn-secondary">Back to System</a>' +
+        '<a href="' + appHome('/registry/' + SYSTEM_ID + '?tab=assessment') + '" class="btn-secondary">Back to System</a>' +
       '</div>' +
     '</div>';
 }

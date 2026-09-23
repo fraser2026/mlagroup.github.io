@@ -497,7 +497,8 @@ export function actorName(profile?: { full_name?: string | null } | null, email?
 }
 
 export function assessmentUrl(systemId: string) {
-  return `/legacy/assessment.html?system_id=${encodeURIComponent(systemId)}`
+  const returnTo = `/registry/${encodeURIComponent(systemId)}?tab=assessment`
+  return `/legacy/assessment.html?system_id=${encodeURIComponent(systemId)}&return=${encodeURIComponent(returnTo)}`
 }
 
 export function systemReportUrl(assessmentId: string) {

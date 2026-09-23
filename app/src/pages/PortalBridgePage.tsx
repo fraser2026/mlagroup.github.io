@@ -1,32 +1,24 @@
-import { useEffect } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
-import { BrandLoader } from '../ui'
-import { legacyPortalUrl, reactPathToPortalHash } from '../lib/legacyPortal'
+import { Navigate, useLocation, useParams } from 'react-router-dom'
+import { portalHashToAppPath, reactPathToPortalHash } from '../lib/legacyPortal'
 
 /**
- * Full-document hand-off to the same-origin legacy portal.
- * Used for surfaces not yet React-parity-complete, and as the
- * primary "portal on app as is" experience.
+ * Legacy /portal/* URLs map into the React app (no hand-off to portal.html).
  */
 export function PortalBridgePage({ hash }: { hash?: string }) {
   const location = useLocation()
   const params = useParams()
 
-  useEffect(() => {
-    let target = hash
-    if (!target && params.view) {
-      target = params.view
-      if (params.id) target = `${params.view}-detail-${params.id}`
-    }
-    if (!target) target = reactPathToPortalHash(location.pathname)
+  let target = hash
+  if (!target && params.view) {
+    target = params.view
+    if (params.id) target = `${params.view}-detail-${params.id}`
+  }
+  if (!target) target = reactPathToPortalHash(location.pathname)
 
-    const url = new URL(legacyPortalUrl(target), window.location.origin)
-    if (location.search) {
-      const src = new URLSearchParams(location.search)
-      src.forEach((v, k) => url.searchParams.set(k, v))
-    }
-    window.location.replace(url.pathname + url.search + url.hash)
-  }, [hash, location.pathname, location.search, params.view, params.id])
-
-  return <BrandLoader viewport label="Opening" />
+  const mapped = portalHashToAppPath(target)
+  const [base, mappedQs = ''] = mapped.split('?')
+  const merged = new URLSearchParams(mappedQs)
+  new URLSearchParams(location.search).forEach((v, k) => merged.set(k, v))
+  const qs = merged.toString()
+  return <Navigate to={qs ? `${base}?${qs}` : base} replace />
 }

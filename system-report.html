@@ -42,9 +42,9 @@ body.ra-report{min-height:100%}
 <body class="ra-report sys-report">
 
 <nav class="report-nav" id="rnav">
-  <a href="portal.html" class="nav-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
+  <a href="/registry" class="nav-logo ra-wordmark" id="sys-report-logo" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
   <div class="nav-actions">
-    <a href="portal.html" class="btn-topbar btn-topbar-primary">Back to Portal</a>
+    <a href="/registry" class="btn-topbar btn-topbar-primary" id="sys-report-back">Back home</a>
   </div>
   <div class="scroll-progress" aria-hidden="true"><div class="scroll-progress__fill" id="scrollProgress"></div></div>
 </nav>
@@ -60,6 +60,21 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const params=new URLSearchParams(window.location.search);
 const ASSESS_ID=params.get('aid');
+
+function appHome(path){
+  var p=path||'/registry';
+  if(p.charAt(0)!=='/')p='/'+p;
+  var host=location.hostname;
+  if(host==='app.reganchor.com'||host==='localhost'||host==='127.0.0.1')return p;
+  return 'https://app.reganchor.com'+p;
+}
+function setReportBack(systemId){
+  var href=appHome(systemId?'/registry/'+encodeURIComponent(systemId)+'?tab=assessment':'/reports');
+  var back=document.getElementById('sys-report-back');
+  var logo=document.getElementById('sys-report-logo');
+  if(back){back.setAttribute('href',href);back.textContent='Back home'}
+  if(logo)logo.setAttribute('href',href);
+}
 
 const BAND_L={high:'High Risk',medium:'Medium Risk',low:'Low Risk'};
 const BAND_CLS={high:'is-risk',medium:'is-warn',low:'is-ok'};
@@ -184,7 +199,7 @@ async function init(){
     return;
   }
   const{data:{session}}=await sb.auth.getSession();
-  if(!session){window.location.href='login.html';return}
+  if(!session){window.location.href='/login?next='+encodeURIComponent(window.location.pathname+window.location.search+window.location.hash);return}
 
   const{data:assess,error:aErr}=await sb.from('registry_assessments').select('*').eq('id',ASSESS_ID).single();
   if(aErr||!assess){
@@ -196,6 +211,7 @@ async function init(){
   const{data:org}=await sb.from('organisations').select('name').eq('id',assess.org_id).single();
   const{data:profile}=await sb.from('profiles').select('full_name').eq('id',assess.requested_by).single();
 
+  setReportBack(assess.system_id||(sys&&sys.id)||'');
   renderReport(assess,sys||{},org||{},profile||{});
   bindScrollProgress();
 }

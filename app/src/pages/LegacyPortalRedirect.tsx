@@ -1,12 +1,7 @@
-import { useEffect } from 'react'
-import { BrandLoader } from '../ui'
-import { LEGACY_PORTAL_PATH } from '../lib/legacyPortal'
+import { Navigate } from 'react-router-dom'
+import { portalHashToAppPath } from '../lib/legacyPortal'
 
-/** Hard navigate into same-origin static portal (hash SPA). */
+/** Old /legacy-portal entry → React registry (no portal.html). */
 export function LegacyPortalRedirect({ hash = 'dashboard' }: { hash?: string }) {
-  useEffect(() => {
-    const h = String(hash).replace(/^#/, '')
-    window.location.replace(`${LEGACY_PORTAL_PATH}#${h}`)
-  }, [hash])
-  return <BrandLoader viewport label="Opening" />
+  return <Navigate to={portalHashToAppPath(hash)} replace />
 }
