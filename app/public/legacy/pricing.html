@@ -662,6 +662,51 @@ footer { border-top:1px solid var(--main); background:var(--bg); position:relati
   accent-color:var(--ra-blurple,#533AFD);
   flex-shrink:0;
 }
+/* App SelectMenu — light public surface */
+.ra-select { position:relative; width:100%; min-width:0; }
+.ra-select__trigger {
+  appearance:none; width:100%; box-sizing:border-box;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  min-height:38px; padding:8px 10px 8px 12px;
+  border:1px solid var(--ra-border-field, #b8c2d0);
+  border-radius:4px; background:var(--bg); color:var(--main);
+  font:inherit; font-size:0.88rem; font-weight:400; letter-spacing:-0.01em;
+  text-align:left; cursor:pointer;
+  transition:border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+.ra-select__trigger:hover { border-color:var(--ra-border-hover, #8b95a5); }
+.ra-select.is-open .ra-select__trigger,
+.ra-select__trigger:focus-visible {
+  outline:none;
+  border-color:var(--ra-blurple, #533AFD);
+  background:color-mix(in srgb, var(--ra-blurple, #533AFD) 4%, var(--bg));
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--ra-blurple, #533AFD) 12%, transparent);
+}
+.ra-select__label {
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1;
+}
+.ra-select__label.is-placeholder { color:var(--ra-slate-30, #A3ACB9); }
+.ra-select__chev {
+  flex-shrink:0; color:var(--muted); display:block;
+  transition:transform 0.15s ease;
+}
+.ra-select.is-open .ra-select__chev { transform:rotate(180deg); }
+.ra-select__menu {
+  display:none; position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:20;
+  max-height:280px; overflow:auto; padding:6px;
+  border:1px solid var(--border); border-radius:4px; background:var(--bg);
+  box-shadow:0 8px 24px rgba(10,14,20,0.1); box-sizing:border-box;
+}
+.ra-select.is-open .ra-select__menu { display:block; }
+.ra-select__option {
+  appearance:none; width:100%; display:block; border:0; background:transparent;
+  padding:8px 10px; border-radius:4px;
+  font:inherit; font-size:0.88rem; font-weight:400; letter-spacing:-0.01em;
+  color:var(--main); text-align:left; cursor:pointer;
+}
+.ra-select__option:hover { background:var(--hover); }
+.ra-select__option.is-active { color:var(--ra-blurple, #533AFD); }
+.ra-select__option.is-active:hover { background:rgba(10,14,20,0.07); }
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .field-group { margin-bottom:16px; }
 .field-label {
@@ -749,7 +794,7 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
 <nav>
   <a href="index.html" class="logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg?v=a3" alt="" width="193" height="36" decoding="async"></a>
   <div class="nav-right">
-    <a href="login.html" class="nav-signin">Sign in</a>
+    <a href="https://app.reganchor.com/login" class="nav-signin">Sign in</a>
   </div>
 </nav>
 <div class="ra-anchor-line ra-anchor-line--entrance"><div class="ra-anchor-line__seg"></div></div>
@@ -1001,7 +1046,7 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
       <p>Start with a free diagnostic. Upgrade when you need governance.</p>
       <div class="cta-actions">
         <a href="diagnostic.html" class="btn-primary">Start Free Diagnostic <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        <a href="login.html" class="btn-ghost">Sign in</a>
+        <a href="https://app.reganchor.com/login" class="btn-ghost">Sign in</a>
       </div>
     </div>
   </div>
@@ -1052,14 +1097,20 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
           </div>
         </div>
         <div class="field-group" style="margin-bottom:0">
-          <label class="field-label" for="ent-systems">Number of AI assets</label>
-          <select class="field-input" id="ent-systems">
-            <option value="">Select</option>
-            <option value="1-5">1-5 systems</option>
-            <option value="6-20">6-20 systems</option>
-            <option value="20-50">20-50 systems</option>
-            <option value="50+">50+ systems</option>
-          </select>
+          <span class="field-label" id="ent-systems-label">Number of AI assets</span>
+          <div class="ra-select" id="ent-systems-select" data-value="">
+            <input type="hidden" id="ent-systems" value="" autocomplete="off">
+            <button type="button" class="ra-select__trigger" id="ent-systems-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="ent-systems-label">
+              <span class="ra-select__label is-placeholder" id="ent-systems-label-text">Select</span>
+              <svg class="ra-select__chev" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="ra-select__menu" id="ent-systems-menu" role="listbox" aria-labelledby="ent-systems-label" hidden>
+              <button type="button" class="ra-select__option" role="option" data-value="1-5">1-5 systems</button>
+              <button type="button" class="ra-select__option" role="option" data-value="6-20">6-20 systems</button>
+              <button type="button" class="ra-select__option" role="option" data-value="20-50">20-50 systems</button>
+              <button type="button" class="ra-select__option" role="option" data-value="50+">50+ systems</button>
+            </div>
+          </div>
         </div>
         <fieldset class="ent-reqs" id="ent-reqs">
           <legend class="ent-reqs__legend">What are you looking for?</legend>
@@ -1301,6 +1352,65 @@ function cacheEntForm(){
   }
 }
 
+function setEntSystemsValue(value){
+  var root=document.getElementById('ent-systems-select');
+  var input=document.getElementById('ent-systems');
+  var label=document.getElementById('ent-systems-label-text');
+  var menu=document.getElementById('ent-systems-menu');
+  if(!root||!input||!label||!menu)return;
+  var v=value||'';
+  input.value=v;
+  root.setAttribute('data-value',v);
+  var opt=v?menu.querySelector('.ra-select__option[data-value="'+v.replace(/"/g,'')+'"]'):null;
+  if(opt){
+    label.textContent=opt.textContent;
+    label.classList.remove('is-placeholder');
+  }else{
+    label.textContent='Select';
+    label.classList.add('is-placeholder');
+  }
+  Array.prototype.forEach.call(menu.querySelectorAll('.ra-select__option'),function(btn){
+    var on=btn.getAttribute('data-value')===v;
+    btn.classList.toggle('is-active',on);
+    btn.setAttribute('aria-selected',on?'true':'false');
+  });
+}
+
+function closeEntSystemsMenu(){
+  var root=document.getElementById('ent-systems-select');
+  var trigger=document.getElementById('ent-systems-trigger');
+  var menu=document.getElementById('ent-systems-menu');
+  if(!root)return;
+  root.classList.remove('is-open');
+  if(trigger)trigger.setAttribute('aria-expanded','false');
+  if(menu)menu.hidden=true;
+}
+
+function initEntSystemsSelect(){
+  var root=document.getElementById('ent-systems-select');
+  var trigger=document.getElementById('ent-systems-trigger');
+  var menu=document.getElementById('ent-systems-menu');
+  if(!root||!trigger||!menu||root.getAttribute('data-ra-select')==='1')return;
+  root.setAttribute('data-ra-select','1');
+  trigger.addEventListener('click',function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    var open=root.classList.contains('is-open');
+    if(open){closeEntSystemsMenu();return}
+    root.classList.add('is-open');
+    trigger.setAttribute('aria-expanded','true');
+    menu.hidden=false;
+  });
+  Array.prototype.forEach.call(menu.querySelectorAll('.ra-select__option'),function(btn){
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      setEntSystemsValue(btn.getAttribute('data-value')||'');
+      closeEntSystemsMenu();
+    });
+  });
+}
+
 function openEnterpriseModal(){
   cacheEntForm();
   var modal=document.getElementById('enterprise-modal');
@@ -1311,9 +1421,14 @@ function openEnterpriseModal(){
   }
   var nameEl=document.getElementById('ent-name');
   if(nameEl)nameEl.value='';
-  ['ent-role','ent-email','ent-org','ent-systems','ent-message'].forEach(function(id){
+  ['ent-role','ent-email','ent-org','ent-message'].forEach(function(id){
     var el=document.getElementById(id); if(el)el.value='';
   });
+  var systemsRoot=document.getElementById('ent-systems-select');
+  if(systemsRoot)systemsRoot.removeAttribute('data-ra-select');
+  initEntSystemsSelect();
+  setEntSystemsValue('');
+  closeEntSystemsMenu();
   document.querySelectorAll('#ent-reqs input[type=checkbox]').forEach(function(c){c.checked=false});
   var err=document.getElementById('ent-error');
   if(err)err.style.display='none';
@@ -1324,6 +1439,7 @@ function openEnterpriseModal(){
 }
 
 function closeEnterpriseModal(){
+  closeEntSystemsMenu();
   var modal=document.getElementById('enterprise-modal');
   if(modal)modal.classList.remove('open');
   document.body.style.overflow='';
@@ -1379,10 +1495,19 @@ async function submitEnterpriseInquiry(){
 
 document.getElementById('enterprise-modal').addEventListener('click',function(e){
   if(e.target===this)closeEnterpriseModal();
+  else if(!e.target.closest || !e.target.closest('#ent-systems-select'))closeEntSystemsMenu();
 });
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'&&document.getElementById('enterprise-modal').classList.contains('open'))closeEnterpriseModal();
+  if(e.key==='Escape'){
+    var modal=document.getElementById('enterprise-modal');
+    if(modal&&modal.classList.contains('open')){
+      var root=document.getElementById('ent-systems-select');
+      if(root&&root.classList.contains('is-open')){closeEntSystemsMenu();return}
+      closeEnterpriseModal();
+    }
+  }
 });
+initEntSystemsSelect();
 
 (function(){
   var p=new URLSearchParams(window.location.search);
