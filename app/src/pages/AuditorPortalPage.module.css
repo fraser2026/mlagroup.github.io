@@ -1,0 +1,127 @@
+.shell {
+  min-height: 100%;
+  padding: 24px 20px 48px;
+  background: var(--ra-sidebar, #0a0e14);
+  color: var(--ra-ink);
+}
+
+:global([data-theme='light']) .shell,
+.shell {
+  background: #f4f5f7;
+}
+
+.top {
+  max-width: 960px;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.brand {
+  font-size: 15px;
+  font-weight: var(--ra-fw-medium, 500);
+  color: #0a0e14;
+  letter-spacing: -0.02em;
+}
+
+.sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium, 500);
+  color: #6b7280;
+}
+
+.card,
+.section {
+  max-width: 960px;
+  margin: 0 auto 14px;
+  padding: 18px 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: var(--ra-fw-medium, 500);
+  letter-spacing: -0.02em;
+  color: #0a0e14;
+}
+
+.meta {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium, 500);
+  color: #6b7280;
+}
+
+.note {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium, 500);
+  color: #4b5563;
+  line-height: 1.45;
+  max-width: 62ch;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: var(--ra-fw-medium, 500);
+  color: #0a0e14;
+}
+
+.count {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium, 500);
+  color: #6b7280;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium, 500);
+  color: #6b7280;
+}
+
+.tableWrap {
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium, 500);
+}
+
+.table th {
+  text-align: left;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 10px 8px 0;
+  white-space: nowrap;
+}
+
+.table td {
+  color: #0a0e14;
+  border-bottom: 1px solid #f0f1f3;
+  padding: 9px 10px 9px 0;
+  vertical-align: top;
+}
+
+.table tr:last-child td {
+  border-bottom: 0;
+}

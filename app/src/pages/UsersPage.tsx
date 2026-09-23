@@ -1,6 +1,19 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { BrandLoader, Button, EmptyState, Notice, PageFrame, PageHeader, Section, ToastStack } from '../ui'
+import {
+  BrandLoader,
+  Button,
+  EmptyState,
+  Ledger,
+  LedgerRow,
+  MetricStrip,
+  Notice,
+  PageFrame,
+  PageHeader,
+  Section,
+  StatusLabel,
+  ToastStack,
+} from '../ui'
 import type { ToastItem } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
@@ -21,6 +34,35 @@ type Profile = {
   work_phone?: string | null
 }
 
+function roleTone(role: string): 'ok' | 'info' | 'neutral' {
+  if (role === 'owner' || role === 'admin') return 'ok'
+  if (role === 'editor') return 'info'
+  return 'neutral'
+}
+
+const ACCESS_ROLES: { id: string; name: string; description: string }[] = [
+  {
+    id: 'owner',
+    name: 'Workspace admin',
+    description: 'Billing, members, and all registry actions. One per organisation.',
+  },
+  {
+    id: 'admin',
+    name: 'Admin',
+    description: 'Invite people, change roles, and edit systems. Cannot remove the workspace admin.',
+  },
+  {
+    id: 'editor',
+    name: 'Editor',
+    description: 'Register and update AI systems, controls, and assessments.',
+  },
+  {
+    id: 'viewer',
+    name: 'Viewer',
+    description: 'Read the registry and reports. Cannot change records.',
+  },
+]
+
 export function UsersPage() {
   const { org, canManageMembers, user, refreshOrg } = useAuth()
   const [members, setMembers] = useState<Member[]>([])
@@ -32,6 +74,7 @@ export function UsersPage() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [inviteBusy, setInviteBusy] = useState(false)
 
   usePageChrome({ title: 'Users', breadcrumbs: [{ label: 'Users' }] })
 
@@ -96,41 +139,46 @@ export function UsersPage() {
 
   const limit = orgSeatLimit(org?.plan)
   const atLimit = seatsUsed >= limit
-  const seatNote =
-    `${seatsUsed} of ${limit} seats used` +
-    ((org?.plan || 'free') !== 'professional' && (org?.plan || '') !== 'enterprise'
-      ? '. Professional includes 15 seats'
-      : '')
+  const planLabel = PLAN_LABELS[org?.plan || 'free'] || 'Free'
+  const seatHint =
+    (org?.plan || 'free') !== 'professional' && (org?.plan || '') !== 'enterprise'
+      ? 'Professional includes 15 seats'
+      : undefined
 
   async function onInvite(e: FormEvent) {
     e.preventDefault()
     if (!org?.id || !email.trim()) return
     setError('')
-    const { data, error: err } = await sb.rpc('invite_org_member', {
-      p_org_id: org.id,
-      p_email: email.trim(),
-      p_role: role,
-    })
-    const payload = parseRpcPayload(data)
-    if (err || !payload || payload.ok === false) {
-      setError(payload?.error || err?.message || 'Invite failed')
-      return
-    }
-    const token = (payload as { token?: string }).token
-    const invitedEmail = (payload as { email?: string }).email
-    if (token) {
-      const url = `${window.location.origin}/login?invite=${encodeURIComponent(token)}`
-      try {
-        await navigator.clipboard.writeText(url)
-      } catch {
-        /* ignore */
+    setInviteBusy(true)
+    try {
+      const { data, error: err } = await sb.rpc('invite_org_member', {
+        p_org_id: org.id,
+        p_email: email.trim(),
+        p_role: role,
+      })
+      const payload = parseRpcPayload(data)
+      if (err || !payload || payload.ok === false) {
+        setError(payload?.error || err?.message || 'Invite failed')
+        return
       }
+      const token = (payload as { token?: string }).token
+      const invitedEmail = (payload as { email?: string }).email
+      if (token) {
+        const url = `${window.location.origin}/login?invite=${encodeURIComponent(token)}`
+        try {
+          await navigator.clipboard.writeText(url)
+        } catch {
+          /* ignore */
+        }
+      }
+      pushToast(
+        `Invite created for ${invitedEmail || email}. Link copied. Send it to them. They must sign in with that email.`,
+      )
+      setEmail('')
+      await load()
+    } finally {
+      setInviteBusy(false)
     }
-    pushToast(
-      `Invite created for ${invitedEmail || email}. Link copied. Send it to them. They must sign in with that email.`,
-    )
-    setEmail('')
-    await load()
   }
 
   async function revoke(id: string) {
@@ -172,45 +220,59 @@ export function UsersPage() {
     >
       <PageHeader
         title="Users"
-        description="People in this organisation: contact details for governance, and workspace access for who can sign in and change records."
+        description="People in this organisation: contact details for governance ownership, and workspace roles for who can sign in and change records."
       />
-      {error ? <Notice tone="risk">{error}</Notice> : null}
+
+      {error ? (
+        <Notice tone="risk" title="Users">
+          {error}
+        </Notice>
+      ) : null}
+
       {!org ? (
         <EmptyState title="No organisation" body="Organisation context is still loading." />
       ) : loading ? (
         <BrandLoader fill label="Loading users" />
       ) : (
         <>
-          <div className={styles.stats}>
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Members</div>
-              <div className={styles.statValue}>{members.length}</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Pending</div>
-              <div className={styles.statValue}>{invites.length}</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Seats</div>
-              <div className={styles.statValue}>
-                {seatsUsed}/{limit}
-              </div>
-              <div className={styles.meta}>{PLAN_LABELS[org.plan || 'free'] || 'Free'}</div>
-            </div>
-          </div>
+          <MetricStrip
+            className={styles.metrics}
+            items={[
+              { id: 'members', label: 'Members', value: members.length },
+              { id: 'pending', label: 'Pending', value: invites.length },
+              {
+                id: 'seats',
+                label: 'Seats',
+                value: `${seatsUsed}/${limit}`,
+                hint: seatHint || planLabel,
+                tone: atLimit ? 'warn' : 'default',
+              },
+            ]}
+          />
 
-          <Section id="invite" title="Invite a colleague" description={seatNote}>
+          <Section
+            id="invite"
+            title="Invite"
+            description={`${seatsUsed} of ${limit} seats used on ${planLabel}.`}
+          >
             {!canManageMembers ? (
-              <p className={styles.copy}>Only workspace admins and admins can invite people or change roles.</p>
+              <p className={styles.copy}>
+                Only workspace admins and admins can invite people or change roles.
+              </p>
             ) : atLimit ? (
               <p className={styles.copy}>
-                Seat limit reached. Upgrade to Professional for 15 seats, or revoke a pending invite.{' '}
-                {(org.plan || '') !== 'professional' ? <Link to="/plans">View plans</Link> : null}
+                Seat limit reached. Upgrade to Professional for 15 seats, or revoke a pending invite.
+                {(org.plan || '') !== 'professional' && (org.plan || '') !== 'enterprise' ? (
+                  <>
+                    {' '}
+                    <Link to="/plans">View plans</Link>
+                  </>
+                ) : null}
               </p>
             ) : (
               <form className={styles.invite} onSubmit={onInvite}>
-                <label className={styles.label}>
-                  Work email
+                <label className={`${styles.field} ${styles.fieldEmail}`}>
+                  <span className={styles.label}>Work email</span>
                   <input
                     className={styles.input}
                     type="email"
@@ -221,15 +283,23 @@ export function UsersPage() {
                     required
                   />
                 </label>
-                <label className={styles.label}>
-                  Role
-                  <select className={styles.input} value={role} onChange={(e) => setRole(e.target.value)}>
+                <label className={`${styles.field} ${styles.fieldRole}`}>
+                  <span className={styles.label}>Role</span>
+                  <select
+                    className={styles.select}
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
                     <option value="editor">Editor</option>
                     <option value="admin">Admin</option>
                     <option value="viewer">Viewer</option>
                   </select>
                 </label>
-                <Button type="submit">Send invite</Button>
+                <div className={styles.inviteAction}>
+                  <Button type="submit" size="sm" pending={inviteBusy}>
+                    Send invite
+                  </Button>
+                </div>
               </form>
             )}
           </Section>
@@ -237,103 +307,122 @@ export function UsersPage() {
           <Section
             id="members"
             title="People"
-            description="Directory for AI asset ownership. Each person updates their own job title and contact in Settings."
+            description="Directory for AI asset ownership. Each person updates their own job title and contact details in Settings."
           >
-            <div className={styles.list}>
-              {members.map((m) => {
-                const p = profiles[m.user_id] || {}
-                const name = p.full_name || 'Unknown'
-                const isYou = m.user_id === user?.id
-                const detailParts = [
-                  p.job_title || null,
-                  p.department || null,
-                  p.email || null,
-                  p.work_phone || null,
-                ].filter(Boolean)
-                return (
-                  <div key={m.id} className={styles.row}>
-                    <div className={styles.person}>
-                      <div className={styles.name}>
-                        {name}
-                        {isYou ? ' (you)' : ''}
-                      </div>
-                      <div className={styles.meta}>
-                        {detailParts.length
-                          ? detailParts.join(' · ')
-                          : 'Add job title and contact in Settings'}
-                      </div>
-                      {isYou ? (
-                        <Link className={styles.profileLink} to="/settings">
-                          Edit your profile
-                        </Link>
-                      ) : null}
-                    </div>
-                    {canManageMembers && m.role !== 'owner' ? (
-                      <select
-                        className={styles.input}
-                        value={m.role}
-                        aria-label={`Role for ${name}`}
-                        onChange={(e) => void changeRole(m.id, e.target.value)}
-                      >
-                        <option value="admin">Admin</option>
-                        <option value="editor">Editor</option>
-                        <option value="viewer">Viewer</option>
-                      </select>
-                    ) : (
-                      <span className={styles.chip}>{MEMBER_ROLE_LABELS[m.role] || m.role}</span>
-                    )}
-                    {canManageMembers && m.role !== 'owner' && !isYou ? (
-                      <Button variant="ghost" type="button" onClick={() => void removeMember(m.id, name)}>
-                        Remove
-                      </Button>
-                    ) : null}
-                  </div>
-                )
-              })}
-            </div>
+            {members.length === 0 ? (
+              <EmptyState title="No members yet" body="Invite a colleague to get started." />
+            ) : (
+              <Ledger>
+                {members.map((m) => {
+                  const p = profiles[m.user_id] || {}
+                  const name = p.full_name || 'Unknown'
+                  const isYou = m.user_id === user?.id
+                  const detailParts = [
+                    p.job_title || null,
+                    p.department || null,
+                    p.email || null,
+                    p.work_phone || null,
+                  ].filter(Boolean)
+                  const description = detailParts.length
+                    ? detailParts.join(' · ')
+                    : 'Add job title and contact in Settings'
+                  return (
+                    <LedgerRow
+                      key={m.id}
+                      title={
+                        <>
+                          {name}
+                          {isYou ? <span className={styles.youMark}> (you)</span> : null}
+                        </>
+                      }
+                      description={description}
+                      meta={
+                        <div className={styles.rowMeta}>
+                          {canManageMembers && m.role !== 'owner' ? (
+                            <select
+                              className={`${styles.select} ${styles.roleSelect}`}
+                              value={m.role}
+                              aria-label={`Role for ${name}`}
+                              onChange={(e) => void changeRole(m.id, e.target.value)}
+                            >
+                              <option value="admin">Admin</option>
+                              <option value="editor">Editor</option>
+                              <option value="viewer">Viewer</option>
+                            </select>
+                          ) : (
+                            <StatusLabel tone={roleTone(m.role)}>
+                              {MEMBER_ROLE_LABELS[m.role] || m.role}
+                            </StatusLabel>
+                          )}
+                        </div>
+                      }
+                      trailing={
+                        isYou ? (
+                          <Link className={styles.profileLink} to="/settings">
+                            Edit profile
+                          </Link>
+                        ) : canManageMembers && m.role !== 'owner' ? (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            type="button"
+                            onClick={() => void removeMember(m.id, name)}
+                          >
+                            Remove
+                          </Button>
+                        ) : null
+                      }
+                    />
+                  )
+                })}
+              </Ledger>
+            )}
           </Section>
 
           {invites.length ? (
             <Section id="pending" title="Pending invitations">
-              <div className={styles.list}>
+              <Ledger>
                 {invites.map((inv) => (
-                  <div key={inv.id} className={styles.row}>
-                    <div>
-                      <div className={styles.name}>{inv.email}</div>
-                      <div className={styles.meta}>
-                        Expires {fmtDate(inv.expires_at)} · {MEMBER_ROLE_LABELS[inv.role] || inv.role}
-                      </div>
-                    </div>
-                    {canManageMembers ? (
-                      <Button variant="ghost" type="button" onClick={() => void revoke(inv.id)}>
-                        Revoke
-                      </Button>
-                    ) : null}
-                  </div>
+                  <LedgerRow
+                    key={inv.id}
+                    title={inv.email}
+                    description={`Expires ${fmtDate(inv.expires_at)}`}
+                    meta={
+                      <StatusLabel tone={roleTone(inv.role)}>
+                        {MEMBER_ROLE_LABELS[inv.role] || inv.role}
+                      </StatusLabel>
+                    }
+                    trailing={
+                      canManageMembers ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          type="button"
+                          onClick={() => void revoke(inv.id)}
+                        >
+                          Revoke
+                        </Button>
+                      ) : null
+                    }
+                  />
                 ))}
-              </div>
+              </Ledger>
             </Section>
           ) : null}
 
-          <Section id="roles" title="Workspace access">
-            <p className={styles.copy}>
-              These roles control who can sign in and change records. They are not AI asset governance
-              owners. Business, compliance, and technical owners are assigned on each asset.
-            </p>
-            <p className={styles.copy}>
-              <strong>Workspace admin:</strong> billing, members, and all registry actions. One per
-              organisation.
-            </p>
-            <p className={styles.copy}>
-              <strong>Admin:</strong> invite, change roles, and edit systems. Cannot remove the
-              workspace admin.
-            </p>
-            <p className={styles.copy}>
-              <strong>Editor:</strong> register and update AI systems, controls, and assessments.
-            </p>
-            <p className={styles.copy}>
-              <strong>Viewer:</strong> read the registry and reports. Cannot change records.
-            </p>
+          <Section
+            id="roles"
+            title="Workspace access"
+            description="These roles control who can sign in and change records. They are not AI asset governance owners. Business, Compliance, and Technical owners are assigned on each asset."
+          >
+            <div className={styles.roleList}>
+              {ACCESS_ROLES.map((r) => (
+                <div key={r.id} className={styles.roleItem}>
+                  <div className={styles.roleName}>{r.name}</div>
+                  <p className={styles.roleDesc}>{r.description}</p>
+                </div>
+              ))}
+            </div>
           </Section>
         </>
       )}

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
+import { useOverlayScrollLock } from './useOverlayScrollLock'
 import styles from './Drawer.module.css'
 
 type Variant = 'modal' | 'preview'
@@ -63,6 +64,8 @@ export function Drawer({
     return () => window.removeEventListener('keydown', onKey)
   }, [mounted, exiting, onClose])
 
+  useOverlayScrollLock(mounted && !exiting)
+
   if (!mounted) return null
 
   const footerContent = footer ?? null
@@ -76,6 +79,7 @@ export function Drawer({
         exiting && styles.overlayExit,
       )}
       role="presentation"
+      data-ra-overlay-root=""
       onClick={() => {
         if (!exiting) onClose()
       }}
@@ -111,7 +115,7 @@ export function Drawer({
             </button>
           </div>
         </header>
-        <div className={clsx(styles.body, isPreview && styles.bodyPreview)} data-ra-scroll="canvas">
+        <div className={clsx(styles.body, isPreview && styles.bodyPreview)} data-ra-scroll="overlay">
           {children}
         </div>
         {footerContent ? (

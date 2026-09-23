@@ -78,9 +78,9 @@
 
     azure: [
 
-      { id: 'gpt-5.6-sol', label: 'GPT-5.6 Sol (Microsoft Foundry)' },
+      { id: 'gpt-5.6-sol', label: 'GPT-5.6 Sol (Azure OpenAI)' },
 
-      { id: 'gpt-5.6-terra', label: 'GPT-5.6 Terra (Microsoft Foundry)' },
+      { id: 'gpt-5.6-terra', label: 'GPT-5.6 Terra (Azure OpenAI)' },
 
       OTHER_MODEL
 

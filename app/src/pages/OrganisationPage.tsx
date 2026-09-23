@@ -9,14 +9,13 @@ import {
   Notice,
   PageFrame,
   PageHeader,
-  Section,
   StatusLabel,
 } from '../ui'
 import { BrandIcon } from '../icons/BrandIcon'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { invokeEdge } from '../lib/edge'
-import { PLAN_LABELS } from '../lib/stripe'
+import { MEMBER_ROLE_LABELS, PLAN_LABELS } from '../lib/stripe'
 import { fmtDate } from '../lib/rpc'
 import { sb } from '../lib/supabase'
 import styles from './OrganisationPage.module.css'
@@ -54,8 +53,21 @@ type CatalogRow = {
 function subStatusLabel(status?: string | null) {
   if (status === 'active') return 'Active'
   if (status === 'trialing') return 'Trial'
-  if (status === 'none') return 'Not subscribed'
-  return status || 'Not set'
+  if (status === 'none' || !status) return 'Not subscribed'
+  return status
+}
+
+function subStatusTone(status?: string | null): 'ok' | 'info' | 'warn' | 'neutral' {
+  if (status === 'active') return 'ok'
+  if (status === 'trialing') return 'info'
+  if (status === 'past_due' || status === 'unpaid') return 'warn'
+  return 'neutral'
+}
+
+function roleTone(role?: string | null): 'ok' | 'info' | 'neutral' {
+  if (role === 'owner' || role === 'admin') return 'ok'
+  if (role === 'editor') return 'info'
+  return 'neutral'
 }
 
 export function OrganisationPage() {
@@ -204,13 +216,14 @@ export function OrganisationPage() {
   const anthropic = catalog.find((p) => p.slug === 'anthropic')
   const anthropicCred = creds.find((c) => c.provider_slug === 'anthropic')
   const hasAdmin = !!(anthropicCred && anthropicCred.admin_credential_secret_id)
+  const orgTitle = org?.name || 'Organisation'
 
   if (loading) {
     return (
       <PageFrame>
         <PageHeader
-          title={org?.name || 'Organisation'}
-          description="Workspace identity, membership, subscription, and organisation-scoped provider admin credentials."
+          title={orgTitle}
+          description="Workspace identity, subscription, provider admin keys, and members."
         />
         <BrandLoader fill label="Loading organisation" />
       </PageFrame>
@@ -220,201 +233,262 @@ export function OrganisationPage() {
   return (
     <PageFrame
       railItems={[
-        { id: 'profile', label: 'Profile' },
+        { id: 'workspace', label: 'Workspace' },
         { id: 'subscription', label: 'Subscription' },
         { id: 'providers', label: 'Providers' },
         { id: 'members', label: 'Members' },
       ]}
     >
       <PageHeader
-        title={org?.name || 'Organisation'}
-        description="Workspace identity, membership, subscription, and organisation-scoped provider admin credentials."
+        title={orgTitle}
+        description="Workspace identity, subscription, provider admin keys, and members."
       />
 
-      <Section id="profile" title="Profile">
-        <div className={styles.metaGrid}>
-          <div className={styles.metaItem}>
-            <label>Organisation name</label>
-            <span>{org?.name || 'â€”'}</span>
-          </div>
-          <div className={styles.metaItem}>
-            <label>Sector</label>
-            <span>{org?.sector || 'Not set'}</span>
-          </div>
-          <div className={styles.metaItem}>
-            <label>Organisation size</label>
-            <span>{org?.org_size || 'Not set'}</span>
-          </div>
-          <div className={styles.metaItem}>
-            <label>Organisation ID</label>
-            <span className={styles.metaId}>{org?.id || 'â€”'}</span>
-          </div>
+      <section id="workspace" className={styles.block} aria-labelledby="org-workspace-title">
+        <div className={styles.blockCopy}>
+          <h2 id="org-workspace-title" className={styles.blockTitle}>
+            Workspace
+          </h2>
+          <p className={styles.blockDesc}>
+            Organisation details used across RegAnchor for this workspace.
+          </p>
         </div>
-      </Section>
-
-      <Section id="subscription" title="Subscription">
-        <div className={styles.metaGrid}>
-          <div className={styles.metaItem}>
-            <label>Registry phase</label>
-            <span>Phase 1</span>
-          </div>
-          <div className={styles.metaItem}>
-            <label>Membership tier</label>
-            <span>{planLabel}</span>
-          </div>
-          <div className={styles.metaItem}>
-            <label>Subscription status</label>
-            <span>{subStatusLabel(org?.subscription_status)}</span>
-          </div>
-          <div className={styles.metaItem}>
-            <label>AI assets registered</label>
-            <span>{systemCount}</span>
-          </div>
-        </div>
-        <div className={styles.actions}>
-          <Link to="/billing">
-            <Button variant="ghost" size="sm">
-              Billing
-            </Button>
-          </Link>
-          <Link to="/plans">
-            <Button variant="ghost" size="sm">
-              Plans
-            </Button>
-          </Link>
-        </div>
-      </Section>
-
-      <Section
-        id="providers"
-        title="Provider admin keys"
-        description="Connect a Governance Admin key once per AI provider. AI assets then attach only a runtime key on their Connection tab."
-      >
-        {!anthropic ? (
-          <EmptyState title="No provider Admin connectors available yet." />
-        ) : (
-          <div className={styles.providerSlot}>
-            <div className={styles.providerHead}>
-              <span className={styles.keyTitle}>
-                <BrandIcon slug="anthropic" size={18} />
-                {anthropic.name}
-              </span>
-              <StatusLabel tone={hasAdmin ? 'ok' : 'info'}>
-                {hasAdmin ? 'Connected' : 'Recommended'}
-              </StatusLabel>
+        <div className={styles.blockBody}>
+          <div className={styles.metaGrid}>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Organisation name</span>
+              <span className={styles.metaValue}>{org?.name || 'Not set'}</span>
             </div>
-            <p className={styles.providerCopy}>
-              Unlocks usage monitoring, cost reporting, and workspace visibility for every{' '}
-              {anthropic.name} asset in this organisation.
-            </p>
-            <p className={styles.providerCopy}>
-              <a href={PROVIDER_ADMIN_DOCS_URL} target="_blank" rel="noreferrer">
-                Admin API docs
-              </a>
-            </p>
-            {hasAdmin ? (
-              <p className={styles.providerCopy}>
-                {anthropicCred?.last_verified_at
-                  ? `Last verified ${fmtDate(anthropicCred.last_verified_at)}. `
-                  : ''}
-                {anthropicCred?.connected_at
-                  ? `Connected ${fmtDate(anthropicCred.connected_at)}. `
-                  : ''}
-                Stored key is never shown.
-              </p>
-            ) : null}
-            {anthropicCred?.last_error ? (
-              <Notice tone="risk">{anthropicCred.last_error}</Notice>
-            ) : null}
-            {canDeleteRegistry ? (
-              <>
-                <label className={styles.field}>
-                  Admin API key (sk-ant-admin...)
-                  <input
-                    type="text"
-                    className={styles.secret}
-                    autoComplete="off"
-                    spellCheck={false}
-                    placeholder="Paste governance admin key"
-                    value={adminKey}
-                    onChange={(e) => setAdminKey(e.target.value)}
-                  />
-                </label>
-                <div className={styles.actions}>
-                  <Button
-                    pending={providerBusy === 'connect'}
-                    onClick={() => void connectProvider(anthropic.slug)}
-                  >
-                    {hasAdmin ? 'Replace Admin key' : 'Connect Admin key'}
-                  </Button>
-                  {hasAdmin ? (
-                    <>
-                      <Button
-                        variant="ghost"
-                        pending={providerBusy === 'test'}
-                        onClick={() => void testProvider(anthropic.slug)}
-                      >
-                        Verify
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        pending={providerBusy === 'revoke'}
-                        onClick={() => void revokeProvider(anthropic.slug, anthropic.name)}
-                      >
-                        Revoke
-                      </Button>
-                    </>
-                  ) : null}
-                </div>
-              </>
-            ) : !hasAdmin ? (
-              <Notice>Only organisation owners and admins can manage provider Admin keys.</Notice>
-            ) : null}
-            {providerError ? <Notice tone="risk">{providerError}</Notice> : null}
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Sector</span>
+              <span className={styles.metaValue}>{org?.sector || 'Not set'}</span>
+            </div>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Organisation size</span>
+              <span className={styles.metaValue}>{org?.org_size || 'Not set'}</span>
+            </div>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Organisation ID</span>
+              <span className={styles.metaId}>{org?.id || 'Not set'}</span>
+            </div>
           </div>
-        )}
-      </Section>
+        </div>
+      </section>
 
-      <Section
-        id="members"
-        title="Members"
-        description={`${members.length} member${members.length !== 1 ? 's' : ''}`}
-      >
-        {members.length === 0 ? (
-          <EmptyState title="No members found" />
-        ) : (
-          <Ledger>
-            {members.map((m) => {
-              const p = profiles[m.user_id] || {}
-              const name = p.full_name || 'Unknown'
-              const email = p.email || 'Not set'
-              const sc = sysByUser[m.user_id] || 0
-              return (
-                <LedgerRow
-                  key={m.id}
-                  title={name}
-                  description={email}
-                  meta={
-                    <div className={styles.memberMeta}>
-                      <span className={styles.sysCount}>
-                        {sc} system{sc !== 1 ? 's' : ''}
-                      </span>
-                      <StatusLabel tone="info">{m.role || 'viewer'}</StatusLabel>
-                    </div>
-                  }
-                />
-              )
-            })}
-          </Ledger>
-        )}
-        {canManageMembers ? (
+      <section id="subscription" className={styles.block} aria-labelledby="org-subscription-title">
+        <div className={styles.blockCopy}>
+          <h2 id="org-subscription-title" className={styles.blockTitle}>
+            Subscription
+          </h2>
+          <p className={styles.blockDesc}>
+            Plan and billing status for this workspace. Manage invoices and upgrades from Billing or
+            Plans.
+          </p>
+        </div>
+        <div className={styles.blockBody}>
+          <div className={styles.metaGrid}>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Plan</span>
+              <span className={styles.metaValue}>{planLabel}</span>
+            </div>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Status</span>
+              <span className={styles.statusPair}>
+                <StatusLabel tone={subStatusTone(org?.subscription_status)}>
+                  {subStatusLabel(org?.subscription_status)}
+                </StatusLabel>
+              </span>
+            </div>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>AI assets registered</span>
+              <span className={styles.metaValue}>{systemCount}</span>
+            </div>
+            <div className={styles.metaItem}>
+              <span className={styles.metaLabel}>Members</span>
+              <span className={styles.metaValue}>{members.length}</span>
+            </div>
+          </div>
           <div className={styles.actions}>
-            <Link to="/users">
-              <Button>Manage access</Button>
+            <Link to="/billing">
+              <Button variant="ghost" size="sm">
+                Billing
+              </Button>
+            </Link>
+            <Link to="/plans">
+              <Button variant="ghost" size="sm">
+                Plans
+              </Button>
             </Link>
           </div>
-        ) : null}
-      </Section>
+        </div>
+      </section>
+
+      <section id="providers" className={styles.block} aria-labelledby="org-providers-title">
+        <div className={styles.blockCopy}>
+          <h2 id="org-providers-title" className={styles.blockTitle}>
+            Provider admin keys
+          </h2>
+          <p className={styles.blockDesc}>
+            Connect a Governance Admin key once per AI provider. Assets then attach only a runtime
+            key on their Connection tab.
+          </p>
+        </div>
+        <div className={`${styles.blockBody} ${styles.blockBodyWide}`}>
+          {!anthropic ? (
+            <EmptyState title="No provider Admin connectors available yet." />
+          ) : (
+            <div className={styles.panel}>
+              <div className={styles.panelHead}>
+                <div className={styles.panelTitleRow}>
+                  <BrandIcon slug="anthropic" size={18} />
+                  <span className={styles.panelTitle}>{anthropic.name}</span>
+                </div>
+                <StatusLabel tone={hasAdmin ? 'ok' : 'info'}>
+                  {hasAdmin ? 'Connected' : 'Not connected'}
+                </StatusLabel>
+              </div>
+              <p className={styles.panelDesc}>
+                Unlocks usage monitoring, cost reporting, and workspace visibility for every{' '}
+                {anthropic.name} asset in this organisation.{' '}
+                <a href={PROVIDER_ADMIN_DOCS_URL} target="_blank" rel="noreferrer">
+                  Admin API docs
+                </a>
+              </p>
+              {hasAdmin ? (
+                <p className={styles.panelMeta}>
+                  {anthropicCred?.last_verified_at
+                    ? `Last verified ${fmtDate(anthropicCred.last_verified_at)}. `
+                    : ''}
+                  {anthropicCred?.connected_at
+                    ? `Connected ${fmtDate(anthropicCred.connected_at)}. `
+                    : ''}
+                  Stored key is never shown.
+                </p>
+              ) : null}
+              {anthropicCred?.last_error ? (
+                <Notice tone="risk" title="Provider error">
+                  {anthropicCred.last_error}
+                </Notice>
+              ) : null}
+
+              <hr className={styles.panelDivider} />
+
+              {canDeleteRegistry ? (
+                <div className={styles.panelForm}>
+                  <label className={styles.field}>
+                    <span className={styles.label}>Admin API key</span>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      autoComplete="off"
+                      spellCheck={false}
+                      placeholder="sk-ant-admin…"
+                      value={adminKey}
+                      onChange={(e) => setAdminKey(e.target.value)}
+                    />
+                  </label>
+                  <div className={styles.formActions}>
+                    <Button
+                      size="sm"
+                      pending={providerBusy === 'connect'}
+                      onClick={() => void connectProvider(anthropic.slug)}
+                    >
+                      {hasAdmin ? 'Replace Admin key' : 'Connect Admin key'}
+                    </Button>
+                    {hasAdmin ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          pending={providerBusy === 'test'}
+                          onClick={() => void testProvider(anthropic.slug)}
+                        >
+                          Verify
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          pending={providerBusy === 'revoke'}
+                          onClick={() => void revokeProvider(anthropic.slug, anthropic.name)}
+                        >
+                          Revoke
+                        </Button>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              ) : !hasAdmin ? (
+                <div className={styles.panelForm}>
+                  <Notice>
+                    Only workspace admins and admins can manage provider Admin keys.
+                  </Notice>
+                </div>
+              ) : (
+                <div className={styles.panelForm}>
+                  <p className={styles.panelMeta}>Admin key is connected for this organisation.</p>
+                </div>
+              )}
+              {providerError ? (
+                <Notice tone="risk" title="Could not update provider">
+                  {providerError}
+                </Notice>
+              ) : null}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section id="members" className={styles.block} aria-labelledby="org-members-title">
+        <div className={styles.blockCopy}>
+          <h2 id="org-members-title" className={styles.blockTitle}>
+            Members
+          </h2>
+          <p className={styles.blockDesc}>
+            People with workspace access. Invite, change roles, and manage seats from Users.
+          </p>
+        </div>
+        <div className={`${styles.blockBody} ${styles.blockBodyWide}`}>
+          {members.length === 0 ? (
+            <EmptyState title="No members found" />
+          ) : (
+            <Ledger>
+              {members.map((m) => {
+                const p = profiles[m.user_id] || {}
+                const name = p.full_name || 'Unknown'
+                const email = p.email || 'Email not set'
+                const roleKey = m.role || 'viewer'
+                const sc = sysByUser[m.user_id] || 0
+                return (
+                  <LedgerRow
+                    key={m.id}
+                    title={name}
+                    description={email}
+                    meta={
+                      <div className={styles.memberMeta}>
+                        <span className={styles.sysCount}>
+                          {sc} asset{sc !== 1 ? 's' : ''}
+                        </span>
+                        <StatusLabel tone={roleTone(roleKey)}>
+                          {MEMBER_ROLE_LABELS[roleKey] || roleKey}
+                        </StatusLabel>
+                      </div>
+                    }
+                  />
+                )
+              })}
+            </Ledger>
+          )}
+          {canManageMembers ? (
+            <div className={styles.actions}>
+              <Link to="/users">
+                <Button size="sm" variant="ghost">
+                  Manage users
+                </Button>
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      </section>
     </PageFrame>
   )
 }

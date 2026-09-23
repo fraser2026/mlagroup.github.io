@@ -1,6 +1,6 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useContext, useEffect, useRef, type ReactNode } from 'react'
+import { AuthContext } from '../auth/AuthProvider'
 import { ContextRail, type ContextRailItem, type ContextRailMember } from './ContextRail'
-import { useAuth } from '../auth/AuthProvider'
 import { useShellChrome } from './shellChrome'
 import styles from './PageFrame.module.css'
 
@@ -9,14 +9,17 @@ type Props = {
   railItems?: ContextRailItem[]
   /** Set false only when a page truly has no use for the rail. Default: available. */
   showRail?: boolean
+  /** Optional signed-in email for the context rail when AuthProvider is absent. */
+  userEmail?: string | null
 }
 
-export function PageFrame({ children, railItems = [], showRail = true }: Props) {
-  const { user } = useAuth()
+export function PageFrame({ children, railItems = [], showRail = true, userEmail = null }: Props) {
+  const auth = useContext(AuthContext)
   const { setRailAvailable, railOpen } = useShellChrome()
   const scrollRef = useRef<HTMLDivElement>(null)
-  const members: ContextRailMember[] = user?.email
-    ? [{ email: user.email, role: 'Member', you: true }]
+  const email = userEmail ?? auth?.user?.email ?? null
+  const members: ContextRailMember[] = email
+    ? [{ email, role: 'Member', you: true }]
     : []
 
   useEffect(() => {

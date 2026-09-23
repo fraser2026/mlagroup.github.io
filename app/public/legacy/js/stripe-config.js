@@ -34,8 +34,8 @@
         annual: 'price_1TD37VRfSQTwpCt914LUfLrf'
       },
       professional: {
-        monthly: 'price_1TD392RfSQTwpCt9yaJicEiY',
-        annual: 'price_1TD3AbRfSQTwpCt969zGi3bD'
+        monthly: 'price_1UF1yPRfSQTwpCt9ssDdo6uQ',
+        annual: 'price_1UF1zvRfSQTwpCt9rcSPUtkN'
       }
     },
 

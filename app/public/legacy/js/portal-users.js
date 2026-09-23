@@ -1,5 +1,9 @@
 function inviteLandingUrl(token){
-  return location.origin+location.pathname.replace(/portal\.html.*/,'login.html')+'?invite='+encodeURIComponent(token);
+  var host=location.hostname;
+  if(host==='app.reganchor.com'||host==='localhost'||host==='127.0.0.1'){
+    return location.origin+'/login?invite='+encodeURIComponent(token);
+  }
+  return 'https://app.reganchor.com/login?invite='+encodeURIComponent(token);
 }
 
 async function consumePendingInvite(){
@@ -40,12 +44,12 @@ async function renderUsersPage(){
   var profMap={};(memberProfiles||[]).forEach(function(p){profMap[p.id]=p});
   var seatNote=used+' of '+limit+' seats used';
   if((currentOrg.plan||'free')!=='professional'&&(currentOrg.plan||'')!=='enterprise'){
-    seatNote+='. Professional includes 5 seats';
+    seatNote+='. Professional includes 15 seats';
   }
   var inviteForm='';
   if(manage){
     if(used>=limit){
-      inviteForm='<p class="users-copy">Seat limit reached. Upgrade to Professional for 5 seats, or revoke a pending invite.</p>'+
+      inviteForm='<p class="users-copy">Seat limit reached. Upgrade to Professional for 15 seats, or revoke a pending invite.</p>'+
         ((currentOrg.plan||'')!=='professional'?'<button type="button" class="btn-topbar btn-topbar-primary" onclick="navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing()">View plans</button>':'');
     }else{
       inviteForm=

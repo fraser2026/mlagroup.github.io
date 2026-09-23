@@ -1,0 +1,300 @@
+.overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 8px 0 28px;
+}
+
+@media (max-width: 960px) {
+  .overview {
+    grid-template-columns: 1fr;
+  }
+}
+
+.overviewCard {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 14px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+  color: var(--ra-blurple);
+}
+
+.overviewTitle {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+}
+
+.overviewBody {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  line-height: 1.45;
+}
+
+.listSection {
+  margin-top: 8px;
+}
+
+.listTitle {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.list {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+  padding: 16px 16px 12px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  letter-spacing: -0.01em;
+}
+
+.cardMeta {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.scopeStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.scopeChip {
+  font-size: 11px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  padding: 3px 8px;
+  background: var(--ra-canvas);
+}
+
+.scopeEmpty {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.tokenList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ra-border);
+}
+
+.tokenRow {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.tokenRow:last-child {
+  border-bottom: 0;
+}
+
+.tokenKind {
+  font-size: 11px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tokenPrefix {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  font-family: var(--ra-font-mono, ui-monospace, monospace);
+}
+
+.tokenExpiry {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.noTokens {
+  margin: 0;
+  padding: 10px 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  border-top: 1px solid var(--ra-border);
+}
+
+.cardFoot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ra-border);
+}
+
+.reveal {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-canvas);
+}
+
+.revealHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.revealTitle {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
+.revealHint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.revealValue {
+  display: block;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-radius: var(--ra-radius-control);
+  border: 1px solid var(--ra-border);
+  background: var(--ra-surface);
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  word-break: break-all;
+  font-family: var(--ra-font-mono, ui-monospace, monospace);
+}
+
+.revealActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.input {
+  height: 36px;
+  border: 1px solid var(--ra-border-field);
+  border-radius: var(--ra-radius-control);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  background: var(--ra-canvas);
+}
+
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border-color: var(--ra-blurple);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.scopeFieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.legendHint {
+  margin: 6px 0 10px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.scopeGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.scopeCheck {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  line-height: 1.35;
+}
+
+.scopeCheck input {
+  margin-top: 2px;
+  width: 15px;
+  height: 15px;
+  accent-color: var(--ra-blurple);
+  flex-shrink: 0;
+}
+
+.scopeLabel {
+  display: block;
+  color: var(--ra-ink);
+}
+
+.scopeDesc {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--ra-text-3);
+}

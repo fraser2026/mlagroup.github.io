@@ -1,16 +1,10 @@
 /**
- * Soft cutover helper toward app.reganchor.com (Worker live).
- * Opt-IN until hard cutover:
- *   - ?app=1 on portal.html, or
- *   - localStorage.setItem('ra_use_app','1')
- * Opt out anytime: ?legacy=1 or localStorage.removeItem('ra_use_app')
- * When ready for hard cutover, flip DEFAULT_TO_APP to true (see docs/APP-CUTOVER.md / docs/PARITY.md).
- *
+ * Hard cutover from marketing portal.html → app.reganchor.com.
+ * Opt out: ?legacy=1
  * App hosts a same-origin copy at /legacy/portal.html for functional parity.
- * Opt-in redirect still sends users to React routes where ports exist.
  */
 (function () {
-  var DEFAULT_TO_APP = false
+  var DEFAULT_TO_APP = true
   try {
     var params = new URLSearchParams(window.location.search)
     if (params.get('legacy') === '1') return
@@ -23,7 +17,7 @@
     if (host !== 'reganchor.com' && host !== 'www.reganchor.com' && !/\.github\.io$/i.test(host)) return
 
     var target = 'https://app.reganchor.com'
-    var path = '/portal'
+    var path = '/registry'
     var hash = String(window.location.hash || '').replace(/^#/, '')
     if (params.get('mcp_oauth') === '1') {
       path = '/oauth/consent'
@@ -62,7 +56,7 @@
     } else if (hash.indexOf('settings') === 0) {
       path = '/settings'
     } else if (hash.indexOf('dashboard') === 0 || !hash) {
-      path = '/portal'
+      path = '/registry'
     }
     var qs = params.toString()
     window.location.replace(target + path + (qs ? '?' + qs : ''))

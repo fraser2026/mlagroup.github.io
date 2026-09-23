@@ -1075,7 +1075,7 @@ textarea.field-input { resize:vertical; min-height:80px; line-height:1.5; }
     </div>
     <div class="modal-body" id="ent-modal-body">
       <div class="ent-form">
-        <div class="modal-inset">Enterprise plans include unlimited users, multi-department portals, dedicated advisory, on-site sessions, and custom SLA. We respond within 24 hours.</div>
+        <div class="modal-inset">Enterprise plans include unlimited users, multi-department workspaces, dedicated advisory, on-site sessions, and custom SLA. We respond within 24 hours.</div>
         <div class="field-row">
           <div class="field-group" style="margin-bottom:0">
             <label class="field-label" for="ent-name">Full name</label>
@@ -1317,7 +1317,7 @@ async function subscribe(plan){
     var data=await res.json();
     if(data.error){
       loadEl.style.display='none';
-      if(data.existing){alert('Active subscription exists.');window.location.href='portal.html';return}
+      if(data.existing){alert('Active subscription exists.');window.location.href='https://app.reganchor.com/plans';return}
       alert(data.error);return;
     }
     if(!data.clientSecret){loadEl.style.display='none';alert('Could not load checkout.');return}

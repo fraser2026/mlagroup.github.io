@@ -11,7 +11,7 @@ const MEMBER_ROLE_LABELS={owner:'Owner',admin:'Admin',editor:'Editor',viewer:'Vi
 function canManageMembers(){return currentMemberRole==='owner'||currentMemberRole==='admin'}
 function canWriteRegistry(){return currentMemberRole==='owner'||currentMemberRole==='admin'||currentMemberRole==='editor'||currentMemberRole==='member'}
 function canDeleteRegistry(){return currentMemberRole==='owner'||currentMemberRole==='admin'}
-function orgSeatLimit(plan){var p=(plan||'free').toLowerCase();if(p==='professional')return 5;if(p==='enterprise')return 50;return 1}
+function orgSeatLimit(plan){var p=(plan||'free').toLowerCase();if(p==='professional')return 15;if(p==='enterprise')return 50;return 1}
 /* Paid plan badge only when subscription is live; DB default plan=essentials + status=none must read Free. */
 function hasLiveSubscription(org){
   if(!org)return false;
@@ -47,7 +47,7 @@ let profilesCache={};
 function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}
 function fmtDateLong(iso){return iso?new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Not set'}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-async function signOut(){await sb.auth.signOut();window.location.href='/login?next='+encodeURIComponent('/legacy/portal.html')}
+async function signOut(){await sb.auth.signOut();window.location.href='https://app.reganchor.com/login'}
 function actorName(){return currentProfile?.full_name||currentUser?.email?.split('@')[0]||'Unknown'} function isPaidTier(){return currentOrg&&(currentOrg.plan==='essentials'||currentOrg.plan==='professional')&&currentOrg.subscription_status==='active'}
  
 // ═══ AUDIT FORMATTING ═════════════════════════════════════════
@@ -304,7 +304,11 @@ async function init(){
       showPortalSubscriptionPreview(urlPreview.get('plan')||'essentials');
       return;
     }
-    window.location.href='/login?next='+encodeURIComponent('/legacy/portal.html'+window.location.hash);
+    var dest=new URL('https://app.reganchor.com/login');
+    var q=new URLSearchParams(window.location.search);
+    q.forEach(function(v,k){if(k!=='next'&&k!=='return')dest.searchParams.set(k,v)});
+    dest.searchParams.set('next','/registry');
+    window.location.href=dest.toString();
     return;
   }
   currentUser=session.user;
@@ -387,8 +391,8 @@ function showPortalSubscriptionPreview(plan){
         '<h1 style="font-family:var(--ra-font-brand,\'IBM Plex Sans\',sans-serif);font-size:1.5rem;font-weight:500;color:var(--ra-ink,#0A0E14);letter-spacing:-0.02em;line-height:1.2;margin:0 0 10px;">'+planLabel+' is<br><span style="color:var(--ra-text-3,#697386);font-weight:400;">now active.</span></h1>'+
         '<p style="font-size:0.85rem;color:var(--ra-text-2,#425466);line-height:1.6;margin:0 0 22px;">Your organisation subscription is linked. Continue to the dashboard, register systems, or open the plans page to manage billing.</p>'+
         '<div style="display:flex;flex-direction:column;gap:8px;">'+
-          '<a href="portal.html" style="display:block;text-align:center;padding:12px 16px;background:var(--ra-blurple,#533AFD);color:#fff;text-decoration:none;font-size:0.88rem;font-weight:500;border-radius:4px;">Open portal (sign in if needed)</a>'+
-          '<a href="portal.html?goto=plans" style="display:block;text-align:center;padding:11px 16px;border:1px solid var(--ra-border,#E6EBF1);color:var(--ra-ink,#0A0E14);text-decoration:none;font-size:0.84rem;border-radius:4px;">View subscription plans</a>'+
+          '<a href="https://app.reganchor.com/login?next=%2Fregistry" style="display:block;text-align:center;padding:12px 16px;background:var(--ra-blurple,#533AFD);color:#fff;text-decoration:none;font-size:0.88rem;font-weight:500;border-radius:4px;">Open workspace (sign in if needed)</a>'+
+          '<a href="https://app.reganchor.com/login?next=%2Fplans" style="display:block;text-align:center;padding:11px 16px;border:1px solid var(--ra-border,#E6EBF1);color:var(--ra-ink,#0A0E14);text-decoration:none;font-size:0.84rem;border-radius:4px;">View subscription plans</a>'+
           '<a href="design-checkout.html" style="display:block;text-align:center;padding:10px;color:var(--ra-text-3,#697386);font-size:0.78rem;text-decoration:none;">← Design launcher</a>'+
         '</div>'+
       '</div>'+

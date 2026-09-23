@@ -52,10 +52,10 @@ function renderPortalPricingCards(){
   var plan=currentOrg?currentOrg.plan:'free';
   var isActive=currentOrg&&currentOrg.subscription_status==='active';
   var ePrice=portalAnnual?'1,290':'129';
-  var pPrice=portalAnnual?'2,490':'249';
+  var pPrice=portalAnnual?'2,990':'299';
   var per=portalAnnual?'/year':'/month';
   var eSave=portalAnnual?'<div class="plan-card__save">Save £258/yr</div>':'';
-  var pSave=portalAnnual?'<div class="plan-card__save">Save £498/yr</div>':'';
+  var pSave=portalAnnual?'<div class="plan-card__save">Save £598/yr</div>':'';
   var essCurrent=plan==='essentials'&&isActive;
   var proCurrent=plan==='professional'&&isActive;
 
@@ -87,7 +87,7 @@ function renderPortalPricingCards(){
       '<div class="plan-card__rule"></div>'+
       '<div class="plan-card__feats">'+
         planFeature('Unlimited AI systems',true)+
-        planFeature('Multi-user access (5 seats)',true)+
+        planFeature('Multi-user access (15 seats)',true)+
         planFeature('Organisation-wide certification',true)+
         planFeature('Compliance automation',true)+
         planFeature('Priority support',true)+
@@ -191,7 +191,7 @@ function openUpgradeModal(contextMsg){
     '<button class="btn-topbar btn-topbar-primary plan-card__cta" onclick="closeUpgradeModal();portalAnnual=false;navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();setTimeout(function(){portalSubscribe(\'essentials\')},300)">Get started</button>');
 
   var proCard=miniCard('Professional','Compliance','Unlimited systems, multi-user access, and audit-ready coverage.','249',
-    ['Unlimited AI systems','Multi-user (5 seats)','Organisation-wide certification'],
+    ['Unlimited AI systems','Multi-user (15 seats)','Organisation-wide certification'],
     '<button class="btn-topbar btn-topbar-primary plan-card__cta" onclick="closeUpgradeModal();portalAnnual=false;navigate(\'plans\',document.getElementById(\'nav-plans\'));updatePortalPricing();setTimeout(function(){portalSubscribe(\'professional\')},300)">Upgrade to Professional</button>');
 
   var entCard='<div class="plan-card plan-card--modal">'+

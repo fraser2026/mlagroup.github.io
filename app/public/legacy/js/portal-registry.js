@@ -1107,7 +1107,7 @@ const PROVIDER_CONN_STATUS_LABELS={pending:'Not connected',connected:'Connected'
 
 async function invokeProviderFn(name,body){
   if(location.protocol==='file:'){
-    throw new Error('Open the portal at https://reganchor.com/portal.html or a local http:// server. Opening as a file blocks provider actions.');
+    throw new Error('Open the workspace at https://app.reganchor.com or a local http:// server. Opening as a file blocks provider actions.');
   }
   var sd=await sb.auth.getSession();
   var session=sd.data.session;
@@ -1530,7 +1530,7 @@ function renderProviderConnectionPanel(sys,connection,orgCredential){
   }
   var html='<div class="provider-connection-panel"><div class="provider-connection-head"><div class="stat-label">Provider connection</div><span class="conn-gov-tier '+tierCls+'">'+esc(tierLabel)+'</span></div>'+
     '<p class="provider-connection-copy">Connect a runtime API key for this asset. '+(supportsAdmin?'Governance Admin keys are managed once per provider under Organisation → Providers. ':'')+'Credentials are encrypted in Vault and never shown again.</p>'+
-    (location.protocol==='file:'?'<p class="provider-connection-copy" style="color:var(--ra-risk)">You opened this page as a local file. Use https://reganchor.com/portal.html or a local http:// server. Opening as a file blocks provider actions.</p>':'')+
+    (location.protocol==='file:'?'<p class="provider-connection-copy" style="color:var(--ra-risk)">You opened this page as a local file. Use https://app.reganchor.com or a local http:// server. Opening as a file blocks provider actions.</p>':'')+
     renderProviderCapabilityList(connection)+
     (profile&&profile.encouragement?'<p class="provider-connection-encourage">'+esc(profile.encouragement)+'</p>':'')+
     (profile&&profile.limitations&&profile.limitations.length?'<div class="provider-connection-notes">'+profile.limitations.map(function(note){return '<p>'+esc(note)+'</p>'}).join('')+'</div>':'')+
@@ -1602,7 +1602,7 @@ async function renderOrgProvidersPanel(){
   var canManage=typeof canDeleteRegistry==='function'&&canDeleteRegistry();
   var html='<div class="org-providers"><p class="org-providers-lead">Connect a Governance Admin key once per AI provider. AI assets then attach only a runtime key on their Connection tab.</p>';
   if(location.protocol==='file:'){
-    html+='<p class="provider-connection-copy" style="color:var(--ra-risk)">Open the portal via https://reganchor.com or a local http:// server. Opening as a file blocks provider actions.</p>';
+    html+='<p class="provider-connection-copy" style="color:var(--ra-risk)">Open the workspace via https://app.reganchor.com or a local http:// server. Opening as a file blocks provider actions.</p>';
   }
   connectors.forEach(function(p){
     var cred=bySlug[p.slug]||null;

@@ -21,6 +21,7 @@ import {
   Users,
   Database,
   Fingerprint,
+  ShieldCheck,
 } from 'lucide-react'
 
 const topItems: NavItem[] = [
@@ -50,6 +51,7 @@ const groups: NavGroup[] = [
       { to: '/authentication', label: 'Authentication', icon: Fingerprint },
       { to: '/data-backends', label: 'Data backends', icon: Database },
       { to: '/users', label: 'Users', icon: Users },
+      { to: '/auditor-access', label: 'Auditor access', icon: ShieldCheck },
       { to: '/billing', label: 'Billing', icon: CreditCard },
       { to: '/plans', label: 'Subscription', icon: CreditCard },
       { to: '/alerts', label: 'Notifications', icon: Bell },

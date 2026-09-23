@@ -13,6 +13,7 @@ import {
 } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
+import { invokeEdge } from '../lib/edge'
 import { fmtDate } from '../lib/rpc'
 import { sb } from '../lib/supabase'
 import styles from './AlertsPage.module.css'
@@ -31,6 +32,12 @@ type Alert = {
   ref_type?: string | null
 }
 
+type AlertMailCtx = {
+  accessToken: string
+  email: string
+  name: string
+}
+
 const TYPE_LABELS: Record<string, string> = {
   score_drop: 'Score drop',
   control_overdue: 'Control overdue',
@@ -46,6 +53,24 @@ function sevTone(sev?: string | null): StatusTone {
   return 'info'
 }
 
+async function sendAlertEmail(mail: AlertMailCtx, title: string, body: string) {
+  try {
+    await invokeEdge(
+      'send-mail',
+      {
+        kind: 'portal-alert',
+        to_email: mail.email,
+        to_name: mail.name,
+        alert_title: title,
+        alert_body: body,
+      },
+      mail.accessToken,
+    )
+  } catch (err) {
+    console.warn('Alert email skipped', err)
+  }
+}
+
 async function maybeCreateAlert(
   orgId: string,
   type: string,
@@ -54,6 +79,7 @@ async function maybeCreateAlert(
   body: string,
   refId: string | null,
   refType: string | null,
+  mail?: AlertMailCtx | null,
 ) {
   let query = sb
     .from('governance_alerts')
@@ -65,19 +91,26 @@ async function maybeCreateAlert(
   if (refId) query = query.eq('ref_id', refId)
   const { data: existing } = await query.limit(1)
   if (existing && existing.length) return
-  await sb.from('governance_alerts').insert({
-    org_id: orgId,
-    alert_type: type,
-    severity,
-    title,
-    body,
-    ref_id: refId,
-    ref_type: refType,
-  })
+  const { data, error } = await sb
+    .from('governance_alerts')
+    .insert({
+      org_id: orgId,
+      alert_type: type,
+      severity,
+      title,
+      body,
+      ref_id: refId,
+      ref_type: refType,
+    })
+    .select('id')
+    .single()
+  if (!error && data && mail) {
+    await sendAlertEmail(mail, title, body)
+  }
 }
 
 /** Port of portal checkAndCreateAlerts (Check Now). */
-async function runAlertChecks(orgId: string) {
+async function runAlertChecks(orgId: string, mail?: AlertMailCtx | null) {
   const { data: history } = await sb
     .from('governance_score_history')
     .select('composite_score,snapshot_at')
@@ -95,6 +128,7 @@ async function runAlertChecks(orgId: string) {
         `Your governance score has fallen by ${drop} points to ${history[0].composite_score}%. Review your controls and take action to restore your compliance position.`,
         null,
         null,
+        mail,
       )
     }
   }
@@ -122,6 +156,7 @@ async function runAlertChecks(orgId: string) {
         `${ctrlName} has been in progress for over 60 days without completion. Open the control and complete the implementation tasks.`,
         a.id,
         'control_assignment',
+        mail,
       )
     }
   }
@@ -149,13 +184,14 @@ async function runAlertChecks(orgId: string) {
         `${sys.name} has not been assessed in over 90 days. Run a new assessment to keep your governance score current and accurate.`,
         sys.id,
         'ai_system',
+        mail,
       )
     }
   }
 }
 
 export function AlertsPage() {
-  const { org, user } = useAuth()
+  const { org, user, session, profile } = useAuth()
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
   const [checking, setChecking] = useState(false)
@@ -202,7 +238,15 @@ export function AlertsPage() {
     setChecking(true)
     setError('')
     try {
-      await runAlertChecks(org.id)
+      const mail: AlertMailCtx | null =
+        session?.access_token && user?.email
+          ? {
+              accessToken: session.access_token,
+              email: user.email,
+              name: profile?.full_name?.split(' ')[0] || 'there',
+            }
+          : null
+      await runAlertChecks(org.id, mail)
       await load()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Alert check failed.')
@@ -308,9 +352,10 @@ export function AlertsPage() {
             })}
           </div>
         )}
-        <Notice title="Compliance automation">
+        <Notice title="Email alerts">
           Check now runs score-drop, overdue-control, and assessment-due evaluation (portal parity).
-          The full compliance_rules auto-advance engine still runs from the legacy portal boot path.
+          New alerts also email your signed-in address via Resend. The full compliance_rules
+          auto-advance engine still runs from the legacy portal boot path.
         </Notice>
       </Section>
     </PageFrame>

@@ -163,17 +163,18 @@ export function ReportsPage() {
     setError('')
     setDossierNotice('Assembling workspace snapshot and rendering PDF. This can take up to a minute.')
     try {
-      const data = await invokeEdge<{ download_url?: string; dossier_id?: string }>(
-        'generate-dossier',
-        { org_id: org.id },
-        session.access_token,
-      )
+      const data = await invokeEdge<{
+        download_url?: string
+        dossier_id?: string
+        catalogue_hash?: string
+        snapshot_hash?: string
+      }>('generate-dossier', { org_id: org.id }, session.access_token)
       if (!data?.download_url) throw new Error('No download URL returned.')
-      setDossierNotice(
-        data.dossier_id
-          ? `Dossier ${data.dossier_id} ready. Opening download…`
-          : 'Dossier ready. Opening download…',
-      )
+      const parts = [
+        data.dossier_id ? `Dossier ${data.dossier_id} ready` : 'Dossier ready',
+        data.catalogue_hash ? `catalogue ${data.catalogue_hash}` : null,
+      ].filter(Boolean)
+      setDossierNotice(`${parts.join(' · ')}. Opening download…`)
       window.open(data.download_url, '_blank')
     } catch (e) {
       setDossierNotice('')

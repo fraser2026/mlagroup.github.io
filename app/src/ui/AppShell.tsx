@@ -199,10 +199,10 @@ export function AppShell({
   }
 
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} data-ra-scroll="shell">
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
-          <img src={wordmarkSrc} alt="" width={140} height={26} />
+          <img src={wordmarkSrc} alt="RegAnchor" width={140} height={26} />
           <span className={styles.brandSr}>{title}</span>
         </div>
         <nav className={styles.nav} aria-label="Primary" data-ra-scroll="sidebar">

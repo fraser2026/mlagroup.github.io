@@ -61,11 +61,11 @@ function billingStatusMeta(status?: string | null): { label: string; tone: Statu
 function billingIntervalLabel(interval?: string | null) {
   if (interval === 'year' || interval === 'annual') return 'Annual'
   if (interval === 'month' || interval === 'monthly') return 'Monthly'
-  return interval || 'â€”'
+  return interval || '\u2014'
 }
 
 function billingPriceLine(amount?: string | null, interval?: string | null) {
-  if (!amount) return 'â€”'
+  if (!amount) return '\u2014'
   if (interval === 'year' || interval === 'annual') return `${amount} / year`
   if (interval === 'month' || interval === 'monthly') return `${amount} / month`
   return amount
@@ -141,7 +141,7 @@ export function BillingPage() {
     try {
       const data = await invokeEdge<{ url?: string }>(
         'create-billing-portal-session',
-        {},
+        { return_origin: window.location.origin },
         session.access_token,
       )
       if (!data?.url) throw new Error('no-url')
@@ -168,8 +168,8 @@ export function BillingPage() {
     PLAN_LABELS[planKey] ||
     (planKey && planKey !== 'free' ? planKey.charAt(0).toUpperCase() + planKey.slice(1) : '')
   const st = billingStatusMeta(statusKey)
-  const amountLine = overview ? billingPriceLine(overview.amount, overview.interval) : 'â€”'
-  const intervalLabel = overview ? billingIntervalLabel(overview.interval) : 'â€”'
+  const amountLine = overview ? billingPriceLine(overview.amount, overview.interval) : '\u2014'
+  const intervalLabel = overview ? billingIntervalLabel(overview.interval) : '\u2014'
   const nextCopy = billingNextPaymentCopy(periodEnd, statusKey)
   const invoices = overview?.invoices || []
   const pm = overview?.paymentMethod
@@ -188,7 +188,7 @@ export function BillingPage() {
     {
       accessorKey: 'amount',
       header: 'Amount',
-      cell: ({ row }) => row.original.amount || 'â€”',
+      cell: ({ row }) => row.original.amount || '\u2014',
     },
     {
       id: 'act',
@@ -199,7 +199,7 @@ export function BillingPage() {
             Invoice
           </a>
         ) : (
-          'â€”'
+          '\u2014'
         ),
     },
   ]
@@ -282,7 +282,7 @@ export function BillingPage() {
                   <div className={styles.metaItem}>
                     <label>Payment method</label>
                     <span>
-                      {pm.brand || 'Card'} â€¢â€¢â€¢â€¢ {pm.last4}
+                      {pm.brand || 'Card'} {'\u2022\u2022\u2022\u2022'} {pm.last4}
                     </span>
                   </div>
                   {pm.expMonth && pm.expYear ? (

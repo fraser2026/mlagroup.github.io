@@ -181,6 +181,8 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  /* Viewport-lock: scroll lives in the app shell / page canvas, not the browser. */
+  overflow: hidden;
 }
 
 /*
