@@ -1096,6 +1096,16 @@ table.data .ev-summary.quiet {
   border-bottom: 1px solid var(--ink);
   min-height: 28px;
 }
+.signoff-sig {
+  margin-top: 8px;
+  min-height: 48px;
+  max-width: 220px;
+}
+.signoff-sig svg {
+  display: block;
+  width: 100%;
+  height: 48px;
+}
 .signoff-date-val {
   margin-top: 28px;
   font-size: var(--t-body);
@@ -1105,6 +1115,62 @@ table.data .ev-summary.quiet {
   line-height: 1.35;
   min-height: 28px;
 }
+
+.signoff-time {
+  margin-top: 2px;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-sign {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 28px;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+  page-break-inside: avoid;
+}
+.audit-sig {
+  max-width: 240px;
+  min-height: 56px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.audit-sig svg {
+  display: block;
+  width: 100%;
+  height: 56px;
+}
+.audit-decl {
+  margin: 0;
+  font-size: var(--t-small);
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.audit-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 28px;
+  margin: 0 0 24px;
+  border-top: 1px solid var(--line);
+  page-break-inside: avoid;
+}
+.audit-fact {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-micro);
+  font-weight: 500;
+  line-height: 1.45;
+}
+.audit-k { color: var(--text-2); }
+.audit-v { color: var(--ink); word-break: break-word; }
+.audit-mono { font-variant-numeric: tabular-nums; word-break: break-all; }
 
 .export-ref {
   margin: 4px 0 0;
@@ -1263,6 +1329,15 @@ function fmtDate(iso) {
   try {
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   } catch { return 'Not recorded'; }
+}
+
+function fmtDateTimeUtc(iso) {
+  if (!iso) return 'Not recorded';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return 'Not recorded';
+  const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'UTC' });
+  return `${date}, ${time} UTC`;
 }
 
 function fmtShort(iso) {
@@ -1564,6 +1639,8 @@ function render(D) {
     ['10', 'Activity trail'],
     ['11', 'Approval and sign off'],
   ];
+  const sigAudit = D.signature_audit && D.signature_audit.signed_at ? D.signature_audit : null;
+  if (sigAudit) toc.push(['12', 'Signature audit trail']);
 
   /* ── Cover (book cover — no KPIs / boxes / blurb) ── */
   let html = `<section class="cover">
@@ -1993,7 +2070,11 @@ function render(D) {
 
   /* ── 11 Approval and sign off ── */
   const approvals = (D.approvals || []).slice(0, 6);
-  const approvalRows = (approvals.length ? approvals : [{ name: '', job_title: '', signed_at: null }]).map((a) => `<div class="signoff-row keep">
+  const approvalRows = (approvals.length ? approvals : [{ name: '', job_title: '', signed_at: null, signature_svg: null }]).map((a) => {
+    const sigInner = a.signature_svg
+      ? `<div class="signoff-sig">${a.signature_svg}</div>`
+      : `<div class="signoff-rule" aria-hidden="true"></div>`;
+    return `<div class="signoff-row keep">
       <div>
         <span class="signoff-lbl">Approved by</span>
         <div class="signoff-name">${a.name ? x(a.name) : '&nbsp;'}</div>
@@ -2001,25 +2082,82 @@ function render(D) {
       </div>
       <div>
         <span class="signoff-lbl">Signature</span>
-        <div class="signoff-rule" aria-hidden="true"></div>
+        ${sigInner}
       </div>
       <div>
         <span class="signoff-lbl">Date</span>
         <div class="signoff-date-val">${a.signed_at ? x(fmtDate(a.signed_at)) : '&nbsp;'}</div>
+        ${a.signed_at ? `<div class="signoff-time">${x(fmtDateTimeUtc(a.signed_at).split(', ').pop())}</div>` : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
+  const versionRef = D.meta && D.meta.snapshot_hash ? D.meta.snapshot_hash : '';
   html += `<section class="section" data-toc="11">
     ${pageHeader(dossierId)}
     <div class="section-body">
     <h1 class="page-title">11. Approval and sign off</h1>
-    <p class="approve-lede">This AI Governance Dossier is an export of data held in RegAnchor for <strong>${x(orgName)}</strong> as at <strong>${x(fmtDate(generatedAt))}</strong>. It has been reviewed and approved by the following authorised representatives of the organisation.</p>
+    <p class="approve-lede">This AI Governance Dossier is an export of data held in RegAnchor for <strong>${x(orgName)}</strong> as at <strong>${x(fmtDate(generatedAt))}</strong>. It provides evidence, assurance and accountability for the organisation's AI governance posture. It is not a regulatory certification. Where signed below, authorised representatives confirm they have reviewed this version and approve it as presented.</p>
     <div class="signoff-block">${approvalRows}</div>
-    <p class="export-ref">Export reference ${x(dossierId)}</p>
+    <p class="export-ref">Export reference ${x(dossierId)}${versionRef ? ` · Version ${x(versionRef)}` : ''}</p>
     <div class="disclaimer-slot" aria-hidden="true"></div>
     </div>
     ${pageFooter()}
   </section>`;
+
+  /* ── 12 Signature audit trail (signed versions only) ── */
+  if (sigAudit) {
+    const a = sigAudit;
+    const facts = [
+      ['Dossier reference', a.dossier_code],
+      ['Version', a.version],
+      ['Document hash (SHA-256)', a.content_hash],
+      ['Signature ID', a.signature_id],
+      ['Signer', a.signer_name],
+      ['Role', a.signer_role],
+      ['Account email', a.signer_email],
+      ['Signed', fmtDateTimeUtc(a.signed_at)],
+      ['Authentication', a.auth_method],
+      ['IP address', a.ip_address],
+      ['Device', a.user_agent],
+    ];
+    const factRows = facts.map(([k, v]) => `<div class="audit-fact">
+      <span class="audit-k">${x(k)}</span>
+      <span class="audit-v${/hash|ID|Version/.test(k) ? ' audit-mono' : ''}">${x(blank(v))}</span>
+    </div>`).join('');
+    const eventRows = (a.events || []).map((e) => `<tr>
+      <td class="num">${x(fmtDateTimeUtc(e.at))}</td>
+      <td>${x(blank(e.event))}</td>
+      <td>${x(blank(e.actor))}</td>
+      <td class="num">${x(blank(e.ip))}</td>
+    </tr>`).join('');
+
+    html += `<section class="section" data-toc="12">
+      ${pageHeader(dossierId)}
+      <div class="section-body">
+      <h1 class="page-title">12. Signature audit trail</h1>
+      <p class="sec-intro">Electronic signature record for this dossier version, captured by RegAnchor at the time of signing. All times are in Coordinated Universal Time (UTC).</p>
+      <div class="audit-sign keep">
+        <div>
+          <span class="signoff-lbl">Signature</span>
+          <div class="audit-sig">${a.signature_svg || ''}</div>
+          <div class="signoff-name">${x(blank(a.signer_name))}</div>
+          <div class="signoff-job">${x(blank(a.signer_role))}</div>
+        </div>
+        <div>
+          <span class="signoff-lbl">Declaration</span>
+          <p class="audit-decl">${x(blank(a.declaration))}</p>
+        </div>
+      </div>
+      <div class="audit-facts keep">${factRows}</div>
+      ${eventRows
+        ? `<table class="data"><thead><tr><th>Date and time (UTC)</th><th>Event</th><th>By</th><th>IP address</th></tr></thead><tbody>${eventRows}</tbody></table>`
+        : ''}
+      <p class="export-ref">The document hash identifies the exact dossier content that was reviewed and signed. Any change to the workspace data produces a different hash and requires a new version.</p>
+      </div>
+      ${pageFooter()}
+    </section>`;
+  }
 
   root.innerHTML = html;
   document.title = `RegAnchor · AI Governance Dossier · ${orgName}`;

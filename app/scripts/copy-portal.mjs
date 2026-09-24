@@ -107,4 +107,14 @@ ensureDir(destRoot)
 for (const f of FILES) copyFile(f)
 for (const d of DIRS) copyDir(d)
 
+// Shared dossier HTML (in-app preview + Puppeteer SoT)
+const dossierSrc = path.join(repoRoot, 'dossier-template.html')
+const dossierDest = path.join(appRoot, 'public', 'dossier-template.html')
+if (fs.existsSync(dossierSrc)) {
+  fs.copyFileSync(dossierSrc, dossierDest)
+  console.log('[copy-portal] dossier-template.html → public/')
+} else {
+  console.warn('[copy-portal] skip missing dossier-template.html')
+}
+
 console.log('[copy-portal] ready at', destRoot)

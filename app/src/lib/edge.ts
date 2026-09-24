@@ -2,10 +2,12 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config'
 
 export class EdgeError extends Error {
   status: number
-  constructor(message: string, status: number) {
+  code?: string
+  constructor(message: string, status: number, code?: string) {
     super(message)
     this.name = 'EdgeError'
     this.status = status
+    this.code = code
   }
 }
 
@@ -23,9 +25,9 @@ export async function invokeEdge<T = Record<string, unknown>>(
     },
     body: JSON.stringify(body),
   })
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string }
+  const data = (await res.json().catch(() => ({}))) as T & { error?: string; code?: string }
   if (!res.ok) {
-    throw new EdgeError(data.error || 'Request failed.', res.status)
+    throw new EdgeError(data.error || 'Request failed.', res.status, data.code)
   }
   return data
 }

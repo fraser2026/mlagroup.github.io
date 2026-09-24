@@ -50,6 +50,13 @@
   letter-spacing: -0.01em;
 }
 
+.dossierTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .dossierBody {
   margin: 0;
   font-size: var(--ra-fs-body, 13px);
@@ -58,8 +65,32 @@
   color: var(--ra-text-2);
 }
 
+.dossierQuiet {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  line-height: 1.4;
+  color: var(--ra-text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.signedList {
+  margin-top: 24px;
+}
+
+.signedHeading {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
 .dossierAction {
   flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 @media (max-width: 720px) {

@@ -113,11 +113,70 @@ function isOutstandingStatus(status: unknown) {
 }
 
 async function sha16(payload: unknown) {
+  const hex = await sha256Hex(payload)
+  return hex.slice(0, 16)
+}
+
+async function sha256Hex(payload: unknown) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(payload)))
   return Array.from(new Uint8Array(buf))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
-    .slice(0, 16)
+}
+
+function sanitizeSignatureSvg(raw: unknown): string | null {
+  const s = String(raw || '').trim()
+  if (!s.startsWith('<svg') || !s.endsWith('</svg>')) return null
+  if (s.length > 80_000) return null
+  if (/<script|on\w+\s*=|javascript:|data:/i.test(s)) return null
+  return s
+}
+
+const DOSSIER_DECLARATION =
+  'I confirm that I have reviewed this dossier and approve it as presented.'
+
+const EVENT_LABELS: Record<string, string> = {
+  generated: 'Version generated',
+  viewed: 'Dossier viewed',
+  signed: 'Signed',
+  finalised: 'Signed PDF sealed',
+  downloaded: 'Downloaded',
+}
+
+function requestMeta(req: Request) {
+  const fwd = req.headers.get('x-forwarded-for') || ''
+  return {
+    ip: req.headers.get('cf-connecting-ip') || fwd.split(',')[0].trim() || null,
+    userAgent: req.headers.get('user-agent') || null,
+  }
+}
+
+type Actor = { id: string; name: string | null; email: string | null }
+
+// deno-lint-ignore no-explicit-any
+async function recordEvent(supabase: any, input: {
+  versionId: string
+  orgId: string
+  type: 'generated' | 'viewed' | 'signed' | 'finalised' | 'downloaded'
+  actor: Actor
+  req: Request
+  metadata?: Record<string, unknown>
+  occurredAt?: string
+}) {
+  const meta = requestMeta(input.req)
+  const { error } = await supabase.from('governance_dossier_events').insert({
+    dossier_version_id: input.versionId,
+    org_id: input.orgId,
+    event_type: input.type,
+    actor_user_id: input.actor.id,
+    actor_name: input.actor.name,
+    actor_email: input.actor.email,
+    ip_address: meta.ip,
+    user_agent: meta.userAgent,
+    metadata: input.metadata || {},
+    occurred_at: input.occurredAt || new Date().toISOString(),
+  })
+  if (error) console.error('[generate-dossier] audit event failed', input.type, error.message)
 }
 
 function buildObservations(input: {
@@ -259,6 +318,7 @@ serve(async (req) => {
     if (authError || !user) return json({ error: 'Authentication required' }, 401)
 
     const body = await req.json().catch(() => ({}))
+    const action = String(body?.action || 'assemble').trim().toLowerCase()
     let orgId = String(body?.org_id || '').trim()
 
     if (!orgId) {
@@ -299,6 +359,189 @@ serve(async (req) => {
         },
         403,
       )
+    }
+
+    const { data: actorProfile } = await supabase
+      .from('profiles')
+      .select('full_name,email')
+      .eq('id', user.id)
+      .maybeSingle()
+    const actor: Actor = {
+      id: user.id,
+      name: actorProfile?.full_name || null,
+      email: actorProfile?.email || user.email || null,
+    }
+
+    if (action === 'record_view') {
+      const versionId = String(body?.version_id || '').trim()
+      if (!versionId) return json({ error: 'version_id is required' }, 400)
+      const { data: version } = await supabase
+        .from('governance_dossiers')
+        .select('id,dossier_code,snapshot_hash,status')
+        .eq('id', versionId)
+        .eq('org_id', orgId)
+        .maybeSingle()
+      if (!version) return json({ error: 'Dossier version not found' }, 404)
+      await recordEvent(supabase, {
+        versionId: version.id,
+        orgId,
+        type: 'viewed',
+        actor,
+        req,
+        metadata: { dossier_code: version.dossier_code, snapshot_hash: version.snapshot_hash, status: version.status },
+      })
+      return json({ success: true })
+    }
+
+    if (action === 'list') {
+      const { data: rows, error: listErr } = await supabase
+        .from('governance_dossiers')
+        .select('id,dossier_code,snapshot_hash,signed_at,signature_id')
+        .eq('org_id', orgId)
+        .eq('status', 'signed')
+        .order('signed_at', { ascending: false })
+        .limit(50)
+      if (listErr) throw new Error('Could not load signed dossiers')
+      const sigIds = (rows || []).map((r) => r.signature_id).filter(Boolean)
+      const sigMap = new Map<string, { signatory_name: string | null; signatory_role: string | null }>()
+      if (sigIds.length) {
+        const { data: sigs } = await supabase
+          .from('e_signatures')
+          .select('id,signatory_name,signatory_role')
+          .in('id', sigIds)
+        for (const s of sigs || []) sigMap.set(s.id, s)
+      }
+      return json({
+        success: true,
+        dossiers: (rows || []).map((r) => {
+          const sig = r.signature_id ? sigMap.get(r.signature_id) : null
+          return {
+            version_id: r.id,
+            dossier_id: r.dossier_code,
+            snapshot_hash: r.snapshot_hash,
+            signed_at: r.signed_at,
+            signer: sig ? { name: sig.signatory_name, role: sig.signatory_role } : null,
+          }
+        }),
+      })
+    }
+
+    if (action === 'audit') {
+      const versionId = String(body?.version_id || '').trim()
+      if (!versionId) return json({ error: 'version_id is required' }, 400)
+      const { data: version } = await supabase
+        .from('governance_dossiers')
+        .select('id,dossier_code,snapshot_hash,content_hash,status,created_at,signed_at,signature_id')
+        .eq('id', versionId)
+        .eq('org_id', orgId)
+        .maybeSingle()
+      if (!version) return json({ error: 'Dossier version not found' }, 404)
+
+      let signature: Record<string, unknown> | null = null
+      if (version.signature_id) {
+        const { data: sig } = await supabase
+          .from('e_signatures')
+          .select('id,signatory_name,signatory_email,signatory_role,declaration_text,content_hash,ip_address,user_agent,signed_at')
+          .eq('id', version.signature_id)
+          .maybeSingle()
+        signature = sig || null
+      }
+
+      const { data: events } = await supabase
+        .from('governance_dossier_events')
+        .select('id,event_type,actor_name,actor_email,ip_address,user_agent,metadata,occurred_at')
+        .eq('dossier_version_id', version.id)
+        .order('occurred_at', { ascending: true })
+
+      return json({
+        success: true,
+        version: {
+          version_id: version.id,
+          dossier_id: version.dossier_code,
+          snapshot_hash: version.snapshot_hash,
+          content_hash: version.content_hash,
+          status: version.status,
+          created_at: version.created_at,
+          signed_at: version.signed_at,
+        },
+        signature,
+        events: events || [],
+      })
+    }
+
+    if (action === 'status' || action === 'download') {
+      const requestedVersion = String(body?.version_id || '').trim()
+      const baseQuery = supabase
+        .from('governance_dossiers')
+        .select(
+          'id,dossier_code,snapshot_hash,catalogue_hash,status,signed_at,reviewed_at,created_at,signed_storage_path,unsigned_storage_path,signature_id',
+        )
+        .eq('org_id', orgId)
+      const { data: latest } = requestedVersion
+        ? await baseQuery.eq('id', requestedVersion).maybeSingle()
+        : await baseQuery.order('created_at', { ascending: false }).limit(1).maybeSingle()
+
+      if (!latest) {
+        return json({ success: true, dossier: null })
+      }
+
+      if (action === 'download') {
+        const storagePath =
+          latest.status === 'signed'
+            ? latest.signed_storage_path
+            : latest.unsigned_storage_path
+        if (!storagePath) {
+          return json({ error: 'No dossier PDF is available to download yet' }, 404)
+        }
+        const { data: urlData } = await supabase.storage
+          .from('governance-reports')
+          .createSignedUrl(storagePath, 60 * 60 * 24 * 7)
+        await recordEvent(supabase, {
+          versionId: latest.id,
+          orgId,
+          type: 'downloaded',
+          actor,
+          req,
+          metadata: { dossier_code: latest.dossier_code, status: latest.status, file: storagePath.split('/').pop() },
+        })
+        return json({
+          success: true,
+          dossier_id: latest.dossier_code,
+          version_id: latest.id,
+          status: latest.status,
+          download_url: urlData?.signedUrl || null,
+        })
+      }
+
+      let signer: { name?: string; role?: string } | null = null
+      if (latest.signature_id) {
+        const { data: sig } = await supabase
+          .from('e_signatures')
+          .select('signatory_name,signatory_role')
+          .eq('id', latest.signature_id)
+          .maybeSingle()
+        if (sig) {
+          signer = {
+            name: sig.signatory_name || undefined,
+            role: sig.signatory_role || undefined,
+          }
+        }
+      }
+
+      return json({
+        success: true,
+        dossier: {
+          version_id: latest.id,
+          dossier_id: latest.dossier_code,
+          snapshot_hash: latest.snapshot_hash,
+          catalogue_hash: latest.catalogue_hash,
+          status: latest.status,
+          signed_at: latest.signed_at,
+          reviewed_at: latest.reviewed_at,
+          created_at: latest.created_at,
+          signer,
+        },
+      })
     }
 
     // Single parallel fetch — one point-in-time snapshot
@@ -909,6 +1152,7 @@ serve(async (req) => {
     }
 
     const snapshotHash = await sha16(coreSnapshot)
+    const contentHash = await sha256Hex(coreSnapshot)
     const dossierId = `RAD-${snapshotHash.slice(0, 4).toUpperCase()}-${snapshotHash.slice(4, 10).toUpperCase()}`
 
     const payload = {
@@ -921,62 +1165,341 @@ serve(async (req) => {
         methodology_version_id: currentMethodology?.id || null,
         methodology_version_label: currentMethodology?.version_label || null,
         methodology_catalogue_hash: currentMethodology?.catalogue_hash || null,
-    generator_version: '2.5.0',
+        generator_version: '2.6.0',
         requested_by: user.id,
       },
     }
 
     console.log(
-      `[generate-dossier] user=${user.id} org=${orgId} id=${dossierId} snapshot=${snapshotHash} catalogue=${catalogueHash} methodology=${currentMethodology?.version_label || 'none'}`,
+      `[generate-dossier] action=${action} user=${user.id} org=${orgId} id=${dossierId} snapshot=${snapshotHash} catalogue=${catalogueHash}`,
     )
 
-    if (!RENDERER_URL) {
-      return json({ error: 'RENDER_SERVICE_URL not configured' }, 500)
-    }
+    if (action === 'sign') {
+      const versionId = String(body?.version_id || '').trim()
+      const signatoryName = String(body?.signatory_name || '').trim()
+      const signatoryRole = String(body?.signatory_role || '').trim()
+      const signatureSvg = sanitizeSignatureSvg(body?.signature_svg)
+      const confirmed = body?.confirmed === true
 
-    const renderResponse = await fetch(`${RENDERER_URL}/render-dossier`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
+      if (!versionId) return json({ error: 'version_id is required to sign' }, 400)
+      if (!signatoryName || signatoryName.length < 2) {
+        return json({ error: 'Signer name is required' }, 400)
+      }
+      if (!signatoryRole) return json({ error: 'Signer role is required' }, 400)
+      if (!signatureSvg) return json({ error: 'A valid signature is required' }, 400)
+      if (!confirmed) return json({ error: 'Confirmation is required before signing' }, 400)
 
-    if (!renderResponse.ok) {
-      const detail = await renderResponse.text().catch(() => '')
-      console.error('[generate-dossier] renderer failed', renderResponse.status, detail)
-      throw new Error(`Renderer error: ${renderResponse.status}`)
-    }
+      const { data: version, error: versionErr } = await supabase
+        .from('governance_dossiers')
+        .select('*')
+        .eq('id', versionId)
+        .eq('org_id', orgId)
+        .maybeSingle()
 
-    const pdfBuffer = await renderResponse.arrayBuffer()
-    const orgSlug = String(org.name || 'organisation')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-    const dateSlug = generatedAt.slice(0, 10)
-    const filename = `RegAnchor-Governance-Dossier_${orgSlug}_${dateSlug}_${snapshotHash}.pdf`
-    const storagePath = `dossiers/${orgId}/${filename}`
+      if (versionErr || !version) return json({ error: 'Dossier version not found' }, 404)
+      if (version.status === 'signed') {
+        return json({ error: 'This dossier version is already signed', code: 'already_signed' }, 409)
+      }
+      if (version.snapshot_hash !== snapshotHash) {
+        return json(
+          {
+            error: 'This dossier has changed since it was generated. Generate a new version before signing.',
+            code: 'dossier_changed',
+            reviewed_hash: version.snapshot_hash,
+            current_hash: snapshotHash,
+          },
+          409,
+        )
+      }
 
-    const { error: uploadError } = await supabase.storage
-      .from('governance-reports')
-      .upload(storagePath, new Uint8Array(pdfBuffer), {
-        contentType: 'application/pdf',
-        upsert: true,
+      const signedAt = new Date().toISOString()
+      const signatureId = crypto.randomUUID()
+      const reqMeta = requestMeta(req)
+
+      const { data: priorEvents } = await supabase
+        .from('governance_dossier_events')
+        .select('event_type,actor_name,actor_email,ip_address,occurred_at')
+        .eq('dossier_version_id', version.id)
+        .order('occurred_at', { ascending: true })
+
+      const trail = [
+        ...(priorEvents || []).map((e) => ({
+          event: EVENT_LABELS[e.event_type] || e.event_type,
+          at: e.occurred_at,
+          actor: e.actor_name || e.actor_email || null,
+          ip: e.ip_address || null,
+        })),
+        { event: EVENT_LABELS.signed, at: signedAt, actor: signatoryName, ip: reqMeta.ip },
+      ]
+      // First event (generation) plus the most recent activity keeps the certificate on one page.
+      const trailForPdf = trail.length > 14 ? [trail[0], ...trail.slice(-13)] : trail
+
+      const reviewedPayload = {
+        ...(version.snapshot as Record<string, unknown>),
+        approvals: [
+          {
+            name: signatoryName,
+            job_title: signatoryRole,
+            signed_at: signedAt,
+            signature_svg: signatureSvg,
+          },
+        ],
+        signature_audit: {
+          dossier_code: version.dossier_code,
+          version: version.snapshot_hash,
+          content_hash: version.content_hash,
+          signature_id: signatureId,
+          signer_name: signatoryName,
+          signer_role: signatoryRole,
+          signer_email: actor.email,
+          signed_at: signedAt,
+          ip_address: reqMeta.ip,
+          user_agent: reqMeta.userAgent,
+          auth_method: 'Authenticated RegAnchor account session',
+          declaration: DOSSIER_DECLARATION,
+          signature_svg: signatureSvg,
+          events: trailForPdf,
+        },
+        meta: {
+          ...((version.snapshot as { meta?: Record<string, unknown> })?.meta || {}),
+          signed_at: signedAt,
+          signed_by: user.id,
+        },
+      }
+
+      if (!RENDERER_URL) {
+        return json({ error: 'RENDER_SERVICE_URL not configured' }, 500)
+      }
+
+      const renderResponse = await fetch(`${RENDERER_URL}/render-dossier`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reviewedPayload),
       })
 
-    if (uploadError) {
-      console.error('[generate-dossier] Upload error:', uploadError.message)
+      if (!renderResponse.ok) {
+        const detail = await renderResponse.text().catch(() => '')
+        console.error('[generate-dossier] signed render failed', renderResponse.status, detail)
+        throw new Error(`Renderer error: ${renderResponse.status}`)
+      }
+
+      const pdfBuffer = await renderResponse.arrayBuffer()
+      const orgSlug = String(org.name || 'organisation')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+      const dateSlug = signedAt.slice(0, 10)
+      const filename = `RegAnchor-Governance-Dossier_${orgSlug}_${dateSlug}_${version.snapshot_hash}_signed.pdf`
+      const storagePath = `dossiers/${orgId}/${filename}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('governance-reports')
+        .upload(storagePath, new Uint8Array(pdfBuffer), {
+          contentType: 'application/pdf',
+          upsert: true,
+        })
+      if (uploadError) {
+        console.error('[generate-dossier] Signed upload error:', uploadError.message)
+        throw new Error('Could not store signed dossier PDF')
+      }
+
+      const { data: sigRow, error: sigErr } = await supabase
+        .from('e_signatures')
+        .insert({
+          id: signatureId,
+          org_id: orgId,
+          user_id: user.id,
+          document_type: 'dossier',
+          document_id: version.id,
+          signatory_name: signatoryName,
+          signatory_email: user.email || '',
+          signatory_role: signatoryRole,
+          signature_svg: signatureSvg,
+          declaration_text: DOSSIER_DECLARATION,
+          content_hash: version.content_hash,
+          ip_address: reqMeta.ip,
+          user_agent: reqMeta.userAgent,
+          signed_at: signedAt,
+        })
+        .select('id')
+        .single()
+
+      if (sigErr || !sigRow) {
+        console.error('[generate-dossier] e_signatures insert failed', sigErr?.message)
+        throw new Error('Could not record dossier signature')
+      }
+
+      const { error: lockErr } = await supabase
+        .from('governance_dossiers')
+        .update({
+          status: 'signed',
+          signed_at: signedAt,
+          signed_storage_path: storagePath,
+          signature_id: sigRow.id,
+          snapshot: reviewedPayload,
+        })
+        .eq('id', version.id)
+        .eq('status', 'ready_for_signoff')
+
+      if (lockErr) {
+        // Allow ready_for_review → signed as well
+        const { error: lockErr2 } = await supabase
+          .from('governance_dossiers')
+          .update({
+            status: 'signed',
+            signed_at: signedAt,
+            signed_storage_path: storagePath,
+            signature_id: sigRow.id,
+            snapshot: reviewedPayload,
+          })
+          .eq('id', version.id)
+          .neq('status', 'signed')
+        if (lockErr2) {
+          console.error('[generate-dossier] lock version failed', lockErr2.message)
+          throw new Error('Could not finalise signed dossier version')
+        }
+      }
+
+      await recordEvent(supabase, {
+        versionId: version.id,
+        orgId,
+        type: 'signed',
+        actor: { ...actor, name: signatoryName },
+        req,
+        occurredAt: signedAt,
+        metadata: {
+          signature_id: sigRow.id,
+          signatory_role: signatoryRole,
+          content_hash: version.content_hash,
+          declaration: DOSSIER_DECLARATION,
+        },
+      })
+      await recordEvent(supabase, {
+        versionId: version.id,
+        orgId,
+        type: 'finalised',
+        actor: { ...actor, name: signatoryName },
+        req,
+        metadata: { file: filename, pdf_bytes: pdfBuffer.byteLength },
+      })
+
+      await supabase.from('registry_audit_log').insert({
+        org_id: orgId,
+        user_id: user.id,
+        action: 'dossier_signed',
+        entity_type: 'governance_dossier',
+        entity_id: version.id,
+        changes: {
+          dossier_code: version.dossier_code,
+          snapshot_hash: version.snapshot_hash,
+          signatory_name: signatoryName,
+          signatory_role: signatoryRole,
+          _actor_name: signatoryName,
+        },
+      })
+
+      const { data: urlData } = await supabase.storage
+        .from('governance-reports')
+        .createSignedUrl(storagePath, 60 * 60 * 24 * 7)
+
+      return json({
+        success: true,
+        version_id: version.id,
+        dossier_id: version.dossier_code,
+        snapshot_hash: version.snapshot_hash,
+        status: 'signed',
+        signed_at: signedAt,
+        download_url: urlData?.signedUrl || null,
+        filename,
+      })
     }
 
-    const { data: urlData } = await supabase.storage
-      .from('governance-reports')
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 7)
+    // Default: assemble for review (no PDF until sign-off)
+    const { data: existing } = await supabase
+      .from('governance_dossiers')
+      .select('id,status,dossier_code,snapshot_hash,catalogue_hash,signed_at,signed_storage_path,created_at,reviewed_at')
+      .eq('org_id', orgId)
+      .eq('snapshot_hash', snapshotHash)
+      .maybeSingle()
+
+    if (existing?.status === 'signed') {
+      let downloadUrl: string | null = null
+      if (existing.signed_storage_path) {
+        const { data: urlData } = await supabase.storage
+          .from('governance-reports')
+          .createSignedUrl(existing.signed_storage_path, 60 * 60 * 24 * 7)
+        downloadUrl = urlData?.signedUrl || null
+      }
+      return json({
+        success: true,
+        version_id: existing.id,
+        dossier_id: existing.dossier_code,
+        snapshot_hash: existing.snapshot_hash,
+        catalogue_hash: existing.catalogue_hash,
+        status: 'signed',
+        signed_at: existing.signed_at,
+        download_url: downloadUrl,
+        already_signed: true,
+      })
+    }
+
+    const reviewedAt = new Date().toISOString()
+    let versionId = existing?.id || null
+
+    if (existing?.id) {
+      await supabase
+        .from('governance_dossiers')
+        .update({
+          status: 'ready_for_signoff',
+          snapshot: payload,
+          content_hash: contentHash,
+          catalogue_hash: catalogueHash,
+          dossier_code: dossierId,
+          reviewed_at: reviewedAt,
+        })
+        .eq('id', existing.id)
+      versionId = existing.id
+    } else {
+      const { data: inserted, error: insertErr } = await supabase
+        .from('governance_dossiers')
+        .insert({
+          org_id: orgId,
+          dossier_code: dossierId,
+          snapshot_hash: snapshotHash,
+          content_hash: contentHash,
+          catalogue_hash: catalogueHash,
+          status: 'ready_for_signoff',
+          snapshot: payload,
+          created_by: user.id,
+          reviewed_at: reviewedAt,
+        })
+        .select('id')
+        .single()
+      if (insertErr || !inserted) {
+        console.error('[generate-dossier] insert version failed', insertErr?.message)
+        throw new Error('Could not store dossier version for review')
+      }
+      versionId = inserted.id
+      await recordEvent(supabase, {
+        versionId: inserted.id,
+        orgId,
+        type: 'generated',
+        actor,
+        req,
+        metadata: { dossier_code: dossierId, snapshot_hash: snapshotHash, content_hash: contentHash },
+      })
+    }
 
     return json({
       success: true,
+      version_id: versionId,
       dossier_id: dossierId,
       snapshot_hash: snapshotHash,
       catalogue_hash: catalogueHash,
-      filename,
-      download_url: urlData?.signedUrl || null,
+      content_hash: contentHash,
+      status: 'ready_for_signoff',
+      reviewed_at: reviewedAt,
+      snapshot: payload,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Dossier generation failed'
