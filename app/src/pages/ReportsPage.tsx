@@ -94,9 +94,11 @@ async function buildDossierPreviewUrl(snapshot: Record<string, unknown>) {
   html = html.replace('/*__DOSSIER_DATA__*/', injection)
   // Blob URLs have no path, so relative assets (cover swoosh) need an explicit base.
   html = html.replace(/<head([^>]*)>/i, `<head$1><base href="${window.location.origin}/legacy/">`)
-  // Preview only: scale A4 pages to the frame width on narrow screens (after pagination measures).
-  const fitScript = `<script>(function(){var PAGE=860;function fit(){var w=document.documentElement.clientWidth;document.body.style.zoom=w<PAGE?String(w/PAGE):'';}function later(){setTimeout(fit,60);}if(document.fonts&&document.fonts.ready){document.fonts.ready.then(later,later);}else{addEventListener('load',later);}addEventListener('resize',fit);})();</script>`
-  html = html.replace(/<\/body>/i, `${fitScript}</body>`)
+  // Mobile browsers inflate text in narrow frames; the preview must match the desktop layout exactly.
+  html = html.replace(
+    /<head([^>]*)>/i,
+    `<head$1><style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>`,
+  )
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 

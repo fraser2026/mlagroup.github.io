@@ -7,6 +7,9 @@ import styles from './DossierReview.module.css'
 
 export type DossierSnapshot = Record<string, unknown>
 
+/** Desktop frame width the dossier is laid out at; narrower stages scale this down. */
+const PREVIEW_WIDTH = 860
+
 type PreviewProps = {
   open: boolean
   dossierId: string
@@ -27,6 +30,21 @@ export function DossierPreviewOverlay({
   onSign,
 }: PreviewProps) {
   useOverlayScrollLock(open)
+  const stageRef = useRef<HTMLDivElement | null>(null)
+  const [fit, setFit] = useState({ scale: 1, height: 0 })
+
+  useEffect(() => {
+    const el = stageRef.current
+    if (!open || !el) return
+    const measure = () => {
+      const w = el.clientWidth
+      setFit({ scale: w < PREVIEW_WIDTH ? w / PREVIEW_WIDTH : 1, height: el.clientHeight })
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [open, iframeUrl])
 
   useEffect(() => {
     if (!open) return
@@ -67,9 +85,22 @@ export function DossierPreviewOverlay({
             </Button>
           </div>
         </header>
-        <div className={styles.stage}>
+        <div className={styles.stage} ref={stageRef}>
           {iframeUrl ? (
-            <iframe title="AI Governance Dossier preview" className={styles.frame} src={iframeUrl} />
+            <iframe
+              title="AI Governance Dossier preview"
+              className={styles.frame}
+              src={iframeUrl}
+              style={
+                fit.scale < 1
+                  ? {
+                      width: PREVIEW_WIDTH,
+                      height: fit.height / fit.scale,
+                      transform: `scale(${fit.scale})`,
+                    }
+                  : undefined
+              }
+            />
           ) : (
             <div className={styles.loading}>Preparing dossier preview…</div>
           )}
