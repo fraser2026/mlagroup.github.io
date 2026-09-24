@@ -94,6 +94,9 @@ async function buildDossierPreviewUrl(snapshot: Record<string, unknown>) {
   html = html.replace('/*__DOSSIER_DATA__*/', injection)
   // Blob URLs have no path, so relative assets (cover swoosh) need an explicit base.
   html = html.replace(/<head([^>]*)>/i, `<head$1><base href="${window.location.origin}/legacy/">`)
+  // Preview only: scale A4 pages to the frame width on narrow screens (after pagination measures).
+  const fitScript = `<script>(function(){var PAGE=860;function fit(){var w=document.documentElement.clientWidth;document.body.style.zoom=w<PAGE?String(w/PAGE):'';}function later(){setTimeout(fit,60);}if(document.fonts&&document.fonts.ready){document.fonts.ready.then(later,later);}else{addEventListener('load',later);}addEventListener('resize',fit);})();</script>`
+  html = html.replace(/<\/body>/i, `${fitScript}</body>`)
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
@@ -243,7 +246,7 @@ export function ReportsPage() {
       if (!data?.download_url) throw new Error('No download URL returned.')
       window.open(data.download_url, '_blank')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'PDF generation failed.')
+      setError(e instanceof Error ? e.message : 'Report generation failed.')
     } finally {
       setPdfBusy(null)
     }
@@ -446,7 +449,7 @@ export function ReportsPage() {
                   ) : null}
                 </div>
                 <p className={styles.dossierBody}>
-                  Review the complete dossier before sign-off. The signed PDF is generated only after
+                  Review the complete dossier before sign-off. The signed dossier is generated only after
                   you approve a specific version.
                 </p>
               </div>
@@ -476,8 +479,10 @@ export function ReportsPage() {
                         .filter(Boolean)
                         .join(' · ')}
                       meta={
-                        <div className={styles.meta}>
-                          <StatusLabel tone="ok">Signed</StatusLabel>
+                        <div className={`${styles.meta} ${styles.metaWide}`}>
+                          <div className={styles.score}>
+                            <StatusLabel tone="ok">Signed</StatusLabel>
+                          </div>
                           <div className={styles.actions}>
                             <Button
                               size="sm"
@@ -492,7 +497,7 @@ export function ReportsPage() {
                               pending={rowBusy === d.version_id}
                               onClick={() => void downloadSigned(d.version_id)}
                             >
-                              PDF
+                              Dossier
                             </Button>
                           </div>
                         </div>
@@ -544,7 +549,7 @@ export function ReportsPage() {
                   meta={
                     <div className={styles.meta}>
                       <div className={styles.score}>
-                        <span className={styles.scoreNum}>{r.adjusted_score ?? '—'}</span>
+                        <span className={styles.scoreNum}>{r.adjusted_score ?? ''}</span>
                         <StatusLabel tone={bandTone(band)}>
                           {BAND_LABELS[band] || band}
                         </StatusLabel>
@@ -557,7 +562,7 @@ export function ReportsPage() {
                             pending={pdfBusy === r.id}
                             onClick={() => void savePdf(r.id)}
                           >
-                            PDF
+                            Report
                           </Button>
                         ) : (
                           <Link to="/plans">
@@ -600,12 +605,14 @@ export function ReportsPage() {
                   meta={
                     <div className={styles.meta}>
                       <div className={styles.score}>
-                        <span className={styles.scoreNum}>{a.overall_score ?? '—'}</span>
+                        <span className={styles.scoreNum}>{a.overall_score ?? ''}</span>
                         {band ? (
                           <StatusLabel tone={bandTone(band)}>
                             {BAND_LABELS[band] || band}
                           </StatusLabel>
-                        ) : null}
+                        ) : (
+                          <StatusLabel tone="neutral">Not scored</StatusLabel>
+                        )}
                       </div>
                       <div className={styles.actions}>
                         <a
@@ -614,7 +621,7 @@ export function ReportsPage() {
                           rel="noreferrer"
                         >
                           <Button size="sm" variant="ghost">
-                            Open
+                            Report
                           </Button>
                         </a>
                       </div>

@@ -1,19 +1,27 @@
+/* Fixed columns so status and actions line up down the list */
 .meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 148px var(--reports-action-w, 84px);
+  align-items: center;
+  gap: 20px;
+}
+
+.metaWide {
+  --reports-action-w: 196px;
 }
 
 .score {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .scoreNum {
+  min-width: 26px;
+  text-align: right;
   font-family: var(--ra-font-num);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: var(--ra-fw-medium);
   font-variant-numeric: tabular-nums;
   color: var(--ra-ink);
@@ -21,7 +29,6 @@
 
 .actions {
   display: inline-flex;
-  flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
 }
@@ -107,5 +114,10 @@
 
   .dossierButton {
     width: 100%;
+  }
+
+  .meta {
+    grid-template-columns: auto auto;
+    gap: 12px;
   }
 }

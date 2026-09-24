@@ -170,6 +170,47 @@
   --ra-scrollbar-thumb-hover: #6a6a6a;
 }
 
+/* Light island: surfaces that stay on paper in any theme (dossier review + signing,
+   like hosted checkout). Aliases are redeclared because var() resolves where declared. */
+.ra-light {
+  color-scheme: light;
+  --ra-canvas: #ffffff;
+  --ra-mist: #f6f9fc;
+  --ra-surface: #ffffff;
+  --ra-elevated: #ffffff;
+  --ra-sidebar: #f6f9fc;
+  --ra-chrome: #ffffff;
+  --ra-border: #cfd7e3;
+  --ra-border-hover: #b4bfce;
+  --ra-border-field: #b8c2d0;
+  --ra-navy: #0a2540;
+  --ra-ink: #000000;
+  --ra-body: #425466;
+  --ra-muted: #697386;
+  --ra-blurple-fg: #533afd;
+  --ra-blurple-soft: color-mix(in srgb, #533afd 8%, #ffffff);
+  --ra-focus-fill: color-mix(in srgb, #533afd 4%, #ffffff);
+  --ra-focus-ring: color-mix(in srgb, #533afd 12%, transparent);
+  --ra-risk: #c8102e;
+  --ra-risk-bg: #fce8eb;
+  --ra-warn: #b45309;
+  --ra-warn-bg: #fff4e0;
+  --ra-ok: #0f766e;
+  --ra-ok-bg: #e6f5f3;
+  --ra-bar-ink: #0a2540;
+  --ra-bg: #ffffff;
+  --ra-text: #000000;
+  --ra-text-2: #425466;
+  --ra-text-3: #697386;
+  --ra-hover: rgba(10, 14, 20, 0.04);
+  --ra-pressed: rgba(10, 14, 20, 0.07);
+  --ra-selected: color-mix(in srgb, #533afd 8%, #ffffff);
+  --ra-shadow-menu: 0 8px 24px rgba(10, 14, 20, 0.1);
+  --ra-scrollbar-thumb: #c5cad1;
+  --ra-scrollbar-thumb-hover: #b0b6bf;
+  color: var(--ra-ink);
+}
+
 *,
 *::before,
 *::after {

@@ -41,7 +41,12 @@ export function DossierPreviewOverlay({
   if (!open) return null
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="dossier-preview-title">
+    <div
+      className={`${styles.overlay} ra-light`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dossier-preview-title"
+    >
       <div className={styles.shell}>
         <header className={styles.topbar}>
           <div className={styles.topbarCopy}>
@@ -122,6 +127,7 @@ export function DossierSignDrawer({
     <Drawer
       open={open}
       elevated
+      className="ra-light"
       title="Sign dossier"
       description="Confirm you have reviewed this version, then finalise with your signature."
       onClose={onClose}
@@ -258,7 +264,7 @@ const AUDIT_EVENT_LABELS: Record<string, string> = {
   generated: 'Version generated',
   viewed: 'Dossier viewed',
   signed: 'Signed',
-  finalised: 'Signed PDF sealed',
+  finalised: 'Signed dossier sealed',
   downloaded: 'Downloaded',
 }
 

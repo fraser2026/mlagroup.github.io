@@ -68,7 +68,9 @@ body {
 }
 
 @media screen {
-  body { background: #ECEFF3; }
+  /* Grey desk must span the full scroll area, not just the viewport width */
+  html, body { background: #ECEFF3; }
+  body { min-width: max-content; margin: 0; padding: 1px 16px; }
 }
 
 .section { page-break-before: always; }

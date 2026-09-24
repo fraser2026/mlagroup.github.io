@@ -22,6 +22,8 @@ type Props = {
   headerMeta?: ReactNode
   /** Sit above other full-screen overlays (e.g. dossier preview at z-index 1100). */
   elevated?: boolean
+  /** Extra class on the overlay root (e.g. `ra-light` to keep a surface in light theme). */
+  className?: string
 }
 
 export function Drawer({
@@ -35,6 +37,7 @@ export function Drawer({
   variant = 'modal',
   headerMeta,
   elevated = false,
+  className,
 }: Props) {
   const isPreview = variant === 'preview'
   const [mounted, setMounted] = useState(open)
@@ -81,6 +84,7 @@ export function Drawer({
         isPreview && styles.overlayPreview,
         elevated && styles.overlayElevated,
         exiting && styles.overlayExit,
+        className,
       )}
       role="presentation"
       data-ra-overlay-root=""

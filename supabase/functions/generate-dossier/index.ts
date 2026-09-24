@@ -139,7 +139,7 @@ const EVENT_LABELS: Record<string, string> = {
   generated: 'Version generated',
   viewed: 'Dossier viewed',
   signed: 'Signed',
-  finalised: 'Signed PDF sealed',
+  finalised: 'Signed dossier sealed',
   downloaded: 'Downloaded',
 }
 
