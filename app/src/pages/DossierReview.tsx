@@ -159,8 +159,8 @@ export function DossierSignDrawer({
       open={open}
       elevated
       className="ra-light"
-      title="Sign dossier"
-      description="Confirm you have reviewed this version, then finalise with your signature."
+      title="eSign"
+      description="By signing, you confirm that you have reviewed and approve this dossier version."
       onClose={onClose}
       footer={
         <>

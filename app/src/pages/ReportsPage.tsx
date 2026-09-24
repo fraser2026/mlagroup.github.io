@@ -402,8 +402,7 @@ export function ReportsPage() {
 
   const defaultSignerName =
     profile?.full_name || user?.email?.split('@')[0] || ''
-  const defaultSignerRole =
-    role === 'owner' ? 'Organisation owner' : role === 'admin' ? 'Organisation admin' : ''
+  const defaultSignerRole = String(profile?.job_title || '').trim()
 
   if (loading) {
     return (
