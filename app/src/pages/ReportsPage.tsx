@@ -92,6 +92,8 @@ async function buildDossierPreviewUrl(snapshot: Record<string, unknown>) {
     throw new Error('Dossier template is missing the data injection marker.')
   }
   html = html.replace('/*__DOSSIER_DATA__*/', injection)
+  // Blob URLs have no path, so relative assets (cover swoosh) need an explicit base.
+  html = html.replace(/<head([^>]*)>/i, `<head$1><base href="${window.location.origin}/legacy/">`)
   return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 }
 
