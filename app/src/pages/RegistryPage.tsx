@@ -279,9 +279,28 @@ export function RegistryPage() {
       if (c.asset_id && !byAsset.has(c.asset_id)) byAsset.set(c.asset_id, c.status || 'pending')
       if (c.status === 'connected') byAsset.set(c.asset_id as string, 'connected')
     }
+    const rows = (data as RegistryAsset[]) || []
+    const ownerIds = [
+      ...new Set(
+        rows
+          .flatMap((a) => [a.business_owner_id, a.compliance_owner_id, a.technical_owner_id])
+          .filter((id): id is string => !!id),
+      ),
+    ]
+    const ownerNames = new Map<string, string>()
+    if (ownerIds.length) {
+      const { data: profs } = await sb.from('profiles').select('id,full_name,email').in('id', ownerIds)
+      for (const p of (profs as { id: string; full_name?: string | null; email?: string | null }[]) || []) {
+        ownerNames.set(p.id, (p.full_name || p.email || 'Member').trim())
+      }
+    }
+    const nameOf = (id?: string | null) => (id ? ownerNames.get(id) || null : null)
     setAssets(
-      ((data as RegistryAsset[]) || []).map((a) => ({
+      rows.map((a) => ({
         ...a,
+        business_owner_name: nameOf(a.business_owner_id),
+        compliance_owner_name: nameOf(a.compliance_owner_id),
+        technical_owner_name: nameOf(a.technical_owner_id),
         connection_status: byAsset.get(a.id) || null,
       })),
     )
