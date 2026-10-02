@@ -48,9 +48,9 @@ type CreditBalance = {
 type ThreadMsg = { id: string; role: 'user' | 'assistant'; content: string }
 
 const TIER_OPTIONS = [
-  { value: 'eco', label: 'Eco' },
-  { value: 'standard', label: 'Standard' },
-  { value: 'premium', label: 'Premium' },
+  { value: 'eco', label: 'Regan Eco' },
+  { value: 'standard', label: 'Regan Pro' },
+  { value: 'premium', label: 'Regan Ultra' },
 ]
 
 function uid() {
@@ -91,7 +91,7 @@ export function PoliciesDraftPage() {
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Describe what you need in the chat. The policy body streams here.',
+        placeholder: 'Ask Regan to draft or amend a policy. The document streams here.',
       }),
       Table.configure({ resizable: false }),
       TableRow,
@@ -291,7 +291,7 @@ export function PoliciesDraftPage() {
       .insert({
         org_id: orgId,
         title: saveTitle,
-        description: 'Drafted with RegAnchor AI',
+        description: 'Drafted with Regan',
         content: markdown,
         version: '0.1',
         category: 'ai_governance',
@@ -394,7 +394,7 @@ export function PoliciesDraftPage() {
     <PageFrame>
       <PageHeader
         title="Draft with AI"
-        description="Chat on the left. The policy document streams on the right. Save as an unpublished draft for review."
+        description="Chat with Regan on the left. The policy document streams on the right. Save as an unpublished draft for review."
         actions={
           <Link to="/policies">
             <Button variant="ghost">Back to policies</Button>
@@ -410,17 +410,17 @@ export function PoliciesDraftPage() {
       ) : null}
       {lowBalance && !noBalance ? (
         <Notice tone="warn" title="Low AI credits">
-          Balance is below {formatUsdCents(credits!.low_balance_cents)}. Consider a shorter prompt or Eco tier.
+          Balance is below {formatUsdCents(credits!.low_balance_cents)}. Consider a shorter prompt or Regan Eco.
         </Notice>
       ) : null}
 
       <div className={styles.shell}>
         <aside className={styles.chatPane}>
           <div className={styles.chatHead}>
-            <div className={styles.chatHeadTitle}>Assistant</div>
+            <div className={styles.chatHeadTitle}>Regan</div>
             <div className={styles.tierWrap}>
               <SelectMenu
-                aria-label="AI model tier"
+                aria-label="Regan model tier"
                 value={tier}
                 options={TIER_OPTIONS}
                 disabled={streaming}
@@ -438,14 +438,15 @@ export function PoliciesDraftPage() {
               </span>
             </span>
             {streaming ? (
-              <StatusLabel tone="neutral">Streaming</StatusLabel>
+              <StatusLabel tone="neutral">Regan is drafting…</StatusLabel>
             ) : null}
           </div>
           <div className={styles.messages}>
             {messages.length === 0 ? (
               <p className={styles.msgHint}>
-                Ask for a policy (for example: “Draft an acceptable use policy for generative AI in customer
-                support”). The assistant replies briefly here; the full document appears on the right.
+                Ask Regan to draft a policy (for example: “Draft an acceptable use policy for generative AI in
+                customer support”), or ask Regan to amend section 3 of the document. Regan replies briefly here;
+                the full document appears on the right.
               </p>
             ) : null}
             {messages.map((m) => (
@@ -453,7 +454,7 @@ export function PoliciesDraftPage() {
                 key={m.id}
                 className={`${styles.msg} ${m.role === 'user' ? styles.msgUser : styles.msgAssistant}`}
               >
-                {m.content || (streaming && m.role === 'assistant' ? '…' : '')}
+                {m.content || (streaming && m.role === 'assistant' ? 'Regan is drafting…' : '')}
               </div>
             ))}
             <div ref={messagesEndRef} />
@@ -463,7 +464,7 @@ export function PoliciesDraftPage() {
               className={styles.composerInput}
               value={prompt}
               disabled={streaming || noBalance}
-              placeholder="Describe the policy to draft or revise…"
+              placeholder="Ask Regan to draft or revise a policy…"
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -487,7 +488,7 @@ export function PoliciesDraftPage() {
                 disabled={!prompt.trim() || noBalance}
                 onClick={() => void sendPrompt()}
               >
-                Generate
+                Ask Regan
               </Button>
             </div>
           </div>
@@ -504,7 +505,9 @@ export function PoliciesDraftPage() {
                 aria-label="Policy title"
               />
               <div className={styles.docMeta}>
-                {streaming ? 'Updating from stream…' : 'Editable after generation · saves as unpublished draft'}
+                {streaming
+                  ? 'Regan is drafting…'
+                  : 'Editable after generation · saves as unpublished draft'}
               </div>
             </div>
             <div className={styles.docActions}>
