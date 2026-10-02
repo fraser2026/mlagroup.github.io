@@ -4,6 +4,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno'
+import { refillAiCredits } from '../_shared/org-ai-credits.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
@@ -116,6 +117,10 @@ serve(async (req) => {
               subscription_id: subscriptionId,
             },
           })
+          await refillAiCredits(supabase, orgId, event.id, {
+            plan,
+            source: 'checkout.session.completed',
+          })
         }
         break
       }
@@ -150,6 +155,11 @@ serve(async (req) => {
           })
           .eq('org_id', orgId)
           .eq('status', 'suspended')
+
+        await refillAiCredits(supabase, orgId, event.id, {
+          plan,
+          source: 'invoice.paid',
+        })
 
         console.log('Invoice paid — renewed org:', orgId, 'until:', periodEnd)
         break
