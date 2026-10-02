@@ -1,6 +1,7 @@
 // ═══ PHASE 3: POLICIES ════════════════════════════════════════
 const POLICY_CATS={ai_governance:'AI Governance',data_protection:'Data Protection',acceptable_use:'Acceptable Use',risk_management:'Risk Management',security:'Security',ethics:'Ethics',other:'Other'};
 let allPolicies=[],allAcknowledgments=[],allPolicyTemplates=[],currentPolicyId=null;
+let policyEditMode=false;
  
 async function navigatePolicies(navEl){navigate('policies',navEl);if(!currentOrg)await ensureOrg();await loadPolicies()}
  
@@ -161,6 +162,7 @@ function renderMarkdown(md,opts){
  
 async function openPolicyDetail(policyId){
   currentPolicyId=policyId;
+  policyEditMode=false;
   var pol=allPolicies.find(function(p){return p.id===policyId});
   if(!pol)return;
   var cat=POLICY_CATS[pol.category]||pol.category;
@@ -187,6 +189,9 @@ async function openPolicyDetail(policyId){
   descEl.textContent=pol.description||'';
   descEl.hidden=!pol.description;
   document.getElementById('pd-updated').textContent='Updated '+fmtDate(pol.updated_at);
+
+  showPolicyReadMode();
+  renderPolicyHeadActions();
 
   // Acknowledgment first — then the document — so the action is never buried.
   var ackSection=document.getElementById('pd-ack-section');
@@ -226,7 +231,106 @@ async function openPolicyDetail(policyId){
   navigate('policy-detail',null);
   document.getElementById('nav-policies').classList.add('active');
 }
- 
+
+function renderPolicyHeadActions(){
+  var el=document.getElementById('pd-head-actions');
+  if(!el)return;
+  if(canManageMembers()&&!policyEditMode){
+    el.innerHTML='<button type="button" class="btn-topbar btn-topbar-ghost" onclick="startEditPolicy()"><svg viewBox="0 0 12 12"><path d="M9 1l2 2-7 7H2V8z"/></svg>Edit</button>';
+  }else{
+    el.innerHTML='';
+  }
+}
+
+function showPolicyReadMode(){
+  policyEditMode=false;
+  var ack=document.getElementById('pd-ack-section');
+  var contentPanel=document.getElementById('pd-content-panel');
+  var editPanel=document.getElementById('pd-edit-panel');
+  var histPanel=document.getElementById('pd-ack-history-panel');
+  if(ack)ack.hidden=false;
+  if(contentPanel)contentPanel.hidden=false;
+  if(editPanel)editPanel.hidden=true;
+  if(histPanel)histPanel.hidden=false;
+  renderPolicyHeadActions();
+}
+
+function showPolicyEditMode(){
+  policyEditMode=true;
+  var ack=document.getElementById('pd-ack-section');
+  var contentPanel=document.getElementById('pd-content-panel');
+  var editPanel=document.getElementById('pd-edit-panel');
+  var histPanel=document.getElementById('pd-ack-history-panel');
+  if(ack)ack.hidden=true;
+  if(contentPanel)contentPanel.hidden=true;
+  if(editPanel)editPanel.hidden=false;
+  if(histPanel)histPanel.hidden=true;
+  renderPolicyHeadActions();
+}
+
+function startEditPolicy(){
+  if(!canManageMembers())return;
+  var pol=allPolicies.find(function(p){return p.id===currentPolicyId});
+  if(!pol)return;
+  document.getElementById('pd-edit-title').value=pol.title||'';
+  document.getElementById('pd-edit-desc').value=pol.description||'';
+  document.getElementById('pd-edit-content').value=pol.content||'';
+  showPolicyEditMode();
+}
+
+function cancelPolicyEdit(){
+  if(!currentPolicyId)return;
+  openPolicyDetail(currentPolicyId);
+}
+
+function bumpPolicyVersion(version){
+  var v=String(version||'1.0').trim();
+  var parts=v.split('.');
+  if(parts.length>=2&&parts.every(function(p){return /^\d+$/.test(p)})){
+    parts[parts.length-1]=String(parseInt(parts[parts.length-1],10)+1);
+    return parts.join('.');
+  }
+  var m=v.match(/^(.*?)(\d+)$/);
+  if(m)return m[1]+(parseInt(m[2],10)+1);
+  return v+'.1';
+}
+
+async function savePolicyEdit(){
+  if(!canManageMembers()||!currentPolicyId||!currentOrg)return;
+  var pol=allPolicies.find(function(p){return p.id===currentPolicyId});
+  if(!pol)return;
+  var title=(document.getElementById('pd-edit-title').value||'').trim();
+  if(!title){alert('Policy title is required.');return}
+  var description=(document.getElementById('pd-edit-desc').value||'').trim()||null;
+  var content=document.getElementById('pd-edit-content').value||'';
+  var oldVersion=pol.version||'1.0';
+  var newVersion=bumpPolicyVersion(oldVersion);
+  var btn=document.getElementById('pd-save-btn');
+  if(btn){btn.disabled=true;btn.textContent='Saving…'}
+  var result=await sb.from('policy_documents').update({
+    title:title,
+    description:description,
+    content:content,
+    version:newVersion,
+    updated_at:new Date().toISOString()
+  }).eq('id',currentPolicyId).eq('org_id',currentOrg.id).select().single();
+  if(result.error){
+    if(btn){btn.disabled=false;btn.textContent='Save changes'}
+    alert('Error saving policy: '+result.error.message);
+    return;
+  }
+  await sb.from('registry_audit_log').insert({
+    org_id:currentOrg.id,
+    user_id:currentUser.id,
+    action:'policy_updated',
+    entity_type:'policy',
+    entity_id:currentPolicyId,
+    changes:{_actor_name:actorName(),policy:title,old_version:oldVersion,new_version:newVersion,version:newVersion,previous_version:oldVersion}
+  });
+  await loadPolicies();
+  await openPolicyDetail(currentPolicyId);
+}
+
 async function acknowledgePolicyClick(){
   if(!currentPolicyId||!currentOrg)return;
   var pol=allPolicies.find(function(p){return p.id===currentPolicyId});
