@@ -97,8 +97,8 @@ export default function App() {
               <Route path="controls" element={<ControlsPage />} />
               <Route path="controls/:id" element={<ControlsDetailPage />} />
               <Route path="policies" element={<PoliciesPage />} />
-              <Route path="policies/draft" element={<PoliciesDraftPage />} />
-              <Route path="policies/draft/:policyId" element={<PoliciesDraftPage />} />
+              {/* Single route so first-save navigate does not remount and wipe the chat thread. */}
+              <Route path="policies/draft/:policyId?" element={<PoliciesDraftPage />} />
               <Route path="policies/:id" element={<PoliciesDetailPage />} />
               <Route path="integrations" element={<IntegrationsPage />} />
               <Route path="monitoring" element={<MonitoringPage />} />

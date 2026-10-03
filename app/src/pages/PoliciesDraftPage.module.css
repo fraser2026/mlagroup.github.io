@@ -14,14 +14,6 @@
   line-height: 1.25;
 }
 
-.orgLine {
-  display: block;
-  margin-top: 4px;
-  font-size: var(--draft-fs-meta);
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-3);
-}
-
 /* —— Shell: shared head row so pane hairlines align —— */
 
 .shell {
@@ -190,6 +182,13 @@
   opacity: 0.7;
 }
 
+.docMetaRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 16px;
+}
+
 .docMeta {
   font-size: var(--draft-fs-meta);
   font-weight: var(--ra-fw-medium);
@@ -197,12 +196,57 @@
   line-height: 1.3;
 }
 
+/* Reserved save-state slot — always present so New/Save/Publish do not jump. */
+.saveSlot {
+  min-width: 4.5em;
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
 .docActions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
   flex-shrink: 0;
   padding-top: 2px;
+  max-width: 100%;
+}
+
+.autosaveToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 4px;
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.autosaveToggle input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--ra-blurple);
+  cursor: pointer;
+}
+
+.autosaveToggle:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.noticeActions {
+  display: inline-flex;
+  margin-left: 10px;
+  vertical-align: middle;
 }
 
 /* TipTap toolbar — sits inside shared head so its bottom rule is the shared hairline */
@@ -286,7 +330,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 16px 18px 56px;
+  padding: 16px 18px 72px;
   background: var(--ra-mist, var(--ra-canvas, #f4f4f5));
   -webkit-overflow-scrolling: touch;
 }
@@ -331,6 +375,25 @@
   background: var(--ra-canvas, var(--ra-bg, transparent));
   border: 1px solid var(--ra-line);
   color: var(--ra-ink);
+}
+
+.thinkingRow,
+.thinkingInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.thinkingInline {
+  align-self: flex-start;
+  padding: 2px 0 4px;
+}
+
+.thinkingCopy {
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  line-height: 1.35;
 }
 
 /* Row 3 — sticky composer (left only) */
@@ -428,14 +491,55 @@
 }
 
 .paper {
+  position: relative;
   margin: 0 auto;
   max-width: 760px;
   min-height: min(100%, 480px);
-  padding: 28px 36px 56px;
+  padding: 28px 36px 72px;
   border: 1px solid var(--ra-line, var(--ra-border));
   border-radius: var(--ra-radius-control);
   background: var(--ra-surface);
   box-shadow: 0 1px 0 color-mix(in srgb, var(--ra-ink) 4%, transparent);
+}
+
+.paperLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 280px;
+  padding: 40px 16px;
+}
+
+.paperLoadingCopy {
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  line-height: 1.35;
+}
+
+.paperStreamingBadge {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.paperEnd {
+  height: 1px;
+  width: 100%;
+  pointer-events: none;
+}
+
+.editorHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 @media (max-width: 720px) {

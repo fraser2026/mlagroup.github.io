@@ -38,7 +38,7 @@ import {
   type DraftChatMessage,
   type DraftTier,
 } from '../lib/draftPolicy'
-import { canDraftPolicies, canUsePolicyDrafting } from '../lib/org'
+import { canDraftPolicies, canPublishPolicies, canUsePolicyDrafting } from '../lib/org'
 import { sb } from '../lib/supabase'
 import {
   formatUsdCents,
@@ -58,6 +58,8 @@ type ThreadMsg = { id: string; role: 'user' | 'assistant'; content: string }
 
 const DEFAULT_TITLE = 'Untitled policy'
 const AUTOSAVE_MS = 900
+const AUTOSAVE_PREF_KEY = 'ra:policy-draft:autosave'
+const THREAD_KEY_PREFIX = 'ra:policy-draft:thread:'
 
 const TIER_OPTIONS = [
   { value: 'eco', label: 'Eco', description: 'Fast drafting' },
@@ -78,6 +80,10 @@ function isUntitled(value: string) {
 
 function lastDraftKey(orgId: string) {
   return `ra:policy-draft:last:${orgId}`
+}
+
+function threadKey(orgId: string, draftId: string | null) {
+  return `${THREAD_KEY_PREFIX}${orgId}:${draftId || 'new'}`
 }
 
 function readLastDraftId(orgId: string): string | null {
@@ -102,6 +108,56 @@ function clearLastDraftId(orgId: string) {
   } catch {
     /* ignore */
   }
+}
+
+function readAutosavePref(): boolean {
+  try {
+    return localStorage.getItem(AUTOSAVE_PREF_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function writeAutosavePref(on: boolean) {
+  try {
+    localStorage.setItem(AUTOSAVE_PREF_KEY, on ? '1' : '0')
+  } catch {
+    /* ignore */
+  }
+}
+
+function readThread(orgId: string, draftId: string | null): ThreadMsg[] {
+  try {
+    const raw = sessionStorage.getItem(threadKey(orgId, draftId))
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as ThreadMsg[]
+    return Array.isArray(parsed) ? parsed.filter((m) => m?.id && m?.role && typeof m.content === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+function writeThread(orgId: string, draftId: string | null, messages: ThreadMsg[]) {
+  try {
+    sessionStorage.setItem(threadKey(orgId, draftId), JSON.stringify(messages))
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearThread(orgId: string, draftId: string | null) {
+  try {
+    sessionStorage.removeItem(threadKey(orgId, draftId))
+  } catch {
+    /* ignore */
+  }
+}
+
+function migrateThread(orgId: string, fromId: string | null, toId: string) {
+  if (fromId === toId) return
+  const msgs = readThread(orgId, fromId)
+  if (msgs.length) writeThread(orgId, toId, msgs)
+  clearThread(orgId, fromId)
 }
 
 function ToolBtn({
@@ -260,10 +316,10 @@ export function PoliciesDraftPage() {
   const { session, org, role, profile, orgReady } = useAuth()
   const navigate = useNavigate()
   const orgId = org?.id || null
-  const orgName = org?.name?.trim() || ''
   const userId = session?.user?.id
   const entitled = canUsePolicyDrafting(org)
   const canDraft = canDraftPolicies(role)
+  const canPublish = canPublishPolicies(role)
 
   const [tier, setTier] = useState<DraftTier>('eco')
   const [title, setTitle] = useState(DEFAULT_TITLE)
@@ -271,27 +327,35 @@ export function PoliciesDraftPage() {
   const [messages, setMessages] = useState<ThreadMsg[]>([])
   const [streaming, setStreaming] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [publishing, setPublishing] = useState(false)
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'unsaved' | 'error'>('idle')
+  const [autosaveOn, setAutosaveOn] = useState(() => readAutosavePref())
   const [policyId, setPolicyId] = useState<string | null>(routePolicyId || null)
   const [hydrating, setHydrating] = useState(true)
   const [credits, setCredits] = useState<CreditBalance | null>(null)
   const [error, setError] = useState('')
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const [docEmpty, setDocEmpty] = useState(true)
+  const [offerSavePrompt, setOfferSavePrompt] = useState(false)
 
   const abortRef = useRef<AbortController | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  const paperEndRef = useRef<HTMLDivElement | null>(null)
   const composerRef = useRef<HTMLTextAreaElement | null>(null)
   const editorStageRef = useRef<HTMLDivElement | null>(null)
   const titleRef = useRef(title)
   const policyIdRef = useRef<string | null>(policyId)
+  const autosaveOnRef = useRef(autosaveOn)
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastPersistedRef = useRef('')
   const skipAutosaveRef = useRef(false)
   const persistInFlightRef = useRef<Promise<boolean> | null>(null)
+  const streamDocRafRef = useRef(0)
+  const pendingStreamMdRef = useRef<string | null>(null)
 
   titleRef.current = title
   policyIdRef.current = policyId
+  autosaveOnRef.current = autosaveOn
 
   usePageChrome({
     title: 'Draft a policy',
@@ -302,6 +366,7 @@ export function PoliciesDraftPage() {
   })
 
   const scheduleAutosaveRef = useRef<() => void>(() => {})
+  const markDirtyRef = useRef<() => void>(() => {})
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -339,6 +404,7 @@ export function PoliciesDraftPage() {
         return
       }
       if (streaming) return
+      markDirtyRef.current()
       scheduleAutosaveRef.current()
     },
     onCreate: ({ editor: ed }) => {
@@ -361,6 +427,60 @@ export function PoliciesDraftPage() {
     if (next && next !== DEFAULT_TITLE) setTitle(next)
   }
 
+  function fingerprintNow(): string {
+    if (!editor) return ''
+    const markdown = tipTapJsonToMarkdown(editor.getJSON())
+    const saveTitle = titleRef.current.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
+    return `${saveTitle}\n${markdown}`
+  }
+
+  function markDirty() {
+    const fp = fingerprintNow()
+    if (!fp.trim() || fp === lastPersistedRef.current) {
+      if (fp === lastPersistedRef.current && policyIdRef.current) setSaveState('saved')
+      return
+    }
+    setSaveState('unsaved')
+    setOfferSavePrompt(false)
+  }
+
+  markDirtyRef.current = markDirty
+
+  function scrollPaperToEnd(behavior: ScrollBehavior = 'smooth') {
+    const stage = editorStageRef.current
+    const end = paperEndRef.current
+    if (!stage) return
+    requestAnimationFrame(() => {
+      if (end) {
+        end.scrollIntoView({ behavior, block: 'end' })
+      } else {
+        stage.scrollTo({ top: stage.scrollHeight, behavior })
+      }
+    })
+  }
+
+  function applyStreamDoc(markdown: string) {
+    if (!editor) return
+    skipAutosaveRef.current = true
+    const html = markdownToHtml(markdown)
+    editor.commands.setContent(html || '')
+    setDocEmpty(!markdown.trim())
+    maybeAutofillTitle(markdown)
+    scrollPaperToEnd('auto')
+  }
+
+  /** Coalesce rapid doc_set bursts onto one frame so the paper still grows progressively. */
+  function queueStreamDoc(markdown: string) {
+    pendingStreamMdRef.current = markdown
+    if (streamDocRafRef.current) return
+    streamDocRafRef.current = requestAnimationFrame(() => {
+      streamDocRafRef.current = 0
+      const next = pendingStreamMdRef.current
+      pendingStreamMdRef.current = null
+      if (next != null) applyStreamDoc(next)
+    })
+  }
+
   async function loadCredits() {
     if (!orgId) return
     const { data, error: creditErr } = await sb
@@ -380,6 +500,8 @@ export function PoliciesDraftPage() {
 
   async function persistDraft(source: 'auto' | 'manual' | 'post-stream'): Promise<boolean> {
     if (!orgId || !userId || !editor) return false
+    if (source === 'auto' && !autosaveOnRef.current) return false
+
     const markdown = tipTapJsonToMarkdown(editor.getJSON())
     if (!markdown.trim()) {
       if (source === 'manual') setError('Add policy content before saving.')
@@ -404,6 +526,7 @@ export function PoliciesDraftPage() {
 
       const existingId = policyIdRef.current
       const now = new Date().toISOString()
+      const previousId = existingId
 
       if (existingId) {
         const { error: updateErr } = await sb
@@ -454,6 +577,7 @@ export function PoliciesDraftPage() {
         setPolicyId(data.id)
         policyIdRef.current = data.id
         writeLastDraftId(orgId, data.id)
+        migrateThread(orgId, previousId, data.id)
         navigate(`/policies/draft/${data.id}`, { replace: true })
 
         await writeAuditLog({
@@ -467,7 +591,7 @@ export function PoliciesDraftPage() {
             policy: saveTitle,
             published: false,
             tier,
-            autosave: source !== 'manual',
+            autosave: source === 'auto',
           },
         })
       }
@@ -479,6 +603,7 @@ export function PoliciesDraftPage() {
       lastPersistedRef.current = fingerprint
       if (orgId && policyIdRef.current) writeLastDraftId(orgId, policyIdRef.current)
       setSaveState('saved')
+      setOfferSavePrompt(false)
       if (source === 'manual') {
         setSaving(false)
         pushToast('Draft saved.')
@@ -495,10 +620,72 @@ export function PoliciesDraftPage() {
   }
 
   scheduleAutosaveRef.current = () => {
+    if (!autosaveOnRef.current) return
     if (persistTimerRef.current) clearTimeout(persistTimerRef.current)
     persistTimerRef.current = setTimeout(() => {
       void persistDraft('auto')
     }, AUTOSAVE_MS)
+  }
+
+  async function publishPolicy() {
+    if (!orgId || !userId || !canPublish || !editor) return
+    const markdown = tipTapJsonToMarkdown(editor.getJSON())
+    if (!markdown.trim()) {
+      setError('Add policy content before publishing.')
+      return
+    }
+
+    setPublishing(true)
+    setError('')
+
+    // Ensure latest content is persisted before publish.
+    const saved = await persistDraft('manual')
+    const id = policyIdRef.current
+    if (!saved || !id) {
+      setPublishing(false)
+      return
+    }
+
+    const publishedAt = new Date().toISOString()
+    const saveTitle = titleRef.current.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
+    const { error: updateErr } = await sb
+      .from('policy_documents')
+      .update({
+        published_at: publishedAt,
+        requires_acknowledgment: true,
+        acknowledgment_frequency: 'on_update',
+        updated_at: publishedAt,
+      })
+      .eq('id', id)
+      .eq('org_id', orgId)
+
+    if (updateErr) {
+      setPublishing(false)
+      setError(updateErr.message || 'Could not publish policy.')
+      return
+    }
+
+    await writeAuditLog({
+      orgId,
+      userId,
+      action: 'policy_published',
+      entityType: 'policy',
+      entityId: id,
+      changes: {
+        _actor_name: actorName(profile?.full_name, session?.user?.email),
+        policy: saveTitle,
+        version: '0.1',
+      },
+    })
+
+    if (orgId) {
+      clearLastDraftId(orgId)
+      clearThread(orgId, id)
+      clearThread(orgId, null)
+    }
+    setPublishing(false)
+    pushToast('Policy published.')
+    navigate(`/policies/${id}`, { replace: true })
   }
 
   useEffect(() => {
@@ -509,6 +696,12 @@ export function PoliciesDraftPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages, streaming])
+
+  // Persist chat thread for this session (survives soft remounts / first-save URL change).
+  useEffect(() => {
+    if (!orgId || hydrating) return
+    writeThread(orgId, policyId, messages)
+  }, [orgId, policyId, messages, hydrating])
 
   useEffect(() => {
     if (!editor) return
@@ -521,8 +714,21 @@ export function PoliciesDraftPage() {
     return () => {
       abortRef.current?.abort()
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current)
+      if (streamDocRafRef.current) cancelAnimationFrame(streamDocRafRef.current)
     }
   }, [])
+
+  // Warn when leaving with unsaved edits (autosave off).
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (autosaveOnRef.current) return
+      if (saveState !== 'unsaved') return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [saveState])
 
   // Restore unpublished draft from URL, or last local draft id for this org.
   useEffect(() => {
@@ -550,6 +756,12 @@ export function PoliciesDraftPage() {
             .is('published_at', null)
             .maybeSingle()
           if (!cancelled && data?.id) {
+            // Restore session thread before navigate so the single route keeps chat.
+            const rememberedThread = readThread(orgId!, remembered)
+            const newThread = readThread(orgId!, null)
+            if (!rememberedThread.length && newThread.length) {
+              migrateThread(orgId!, null, remembered)
+            }
             navigate(`/policies/draft/${data.id}`, { replace: true })
             return
           }
@@ -558,8 +770,18 @@ export function PoliciesDraftPage() {
         if (!cancelled) {
           setPolicyId(null)
           policyIdRef.current = null
+          setMessages(readThread(orgId!, null))
           setHydrating(false)
         }
+        return
+      }
+
+      // Soft restore: keep in-memory thread when we already own this draft id
+      // (first-save URL update on the unified route).
+      const alreadyLoaded = policyIdRef.current === id && !editor!.isEmpty
+      if (alreadyLoaded) {
+        setMessages((prev) => (prev.length ? prev : readThread(orgId!, id)))
+        setHydrating(false)
         return
       }
 
@@ -596,9 +818,9 @@ export function PoliciesDraftPage() {
       lastPersistedRef.current = `${(data.title as string) || ''}\n${md}`
       writeLastDraftId(orgId!, data.id)
       setSaveState(md.trim() ? 'saved' : 'idle')
+      setMessages(readThread(orgId!, data.id))
       setHydrating(false)
 
-      // Scroll document pane to top after restore
       requestAnimationFrame(() => {
         editorStageRef.current?.scrollTo({ top: 0 })
       })
@@ -611,13 +833,24 @@ export function PoliciesDraftPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgReady, orgId, entitled, canDraft, editor, routePolicyId])
 
-  // Debounced autosave when title changes
+  // Debounced autosave when title changes (only if toggle on).
   useEffect(() => {
-    if (hydrating || streaming || !editor) return
+    if (hydrating || streaming || !editor || !autosaveOn) return
     if (docEmpty && !policyId) return
+    markDirty()
     scheduleAutosaveRef.current()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title])
+
+  useEffect(() => {
+    if (hydrating || streaming || !editor) return
+    if (!autosaveOn) {
+      markDirty()
+      return
+    }
+    scheduleAutosaveRef.current()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autosaveOn])
 
   async function sendPrompt() {
     if (!orgId || !session?.access_token || !editor || streaming) return
@@ -630,9 +863,15 @@ export function PoliciesDraftPage() {
 
     setError('')
     setPrompt('')
+    setOfferSavePrompt(false)
     const userMsg: ThreadMsg = { id: uid(), role: 'user', content: text }
     const assistantId = uid()
-    setMessages((prev) => [...prev, userMsg, { id: assistantId, role: 'assistant', content: '' }])
+    // Append user message immediately; keep a placeholder assistant row for MLA status.
+    setMessages((prev) => {
+      const next = [...prev, userMsg, { id: assistantId, role: 'assistant' as const, content: '' }]
+      writeThread(orgId, policyIdRef.current, next)
+      return next
+    })
     setStreaming(true)
     editor.setEditable(false)
 
@@ -678,15 +917,9 @@ export function PoliciesDraftPage() {
             )
           },
           onDocSet: (markdown) => {
+            if (!markdown.trim()) return
             gotDoc = true
-            skipAutosaveRef.current = true
-            const html = markdownToHtml(markdown)
-            editor.commands.setContent(html || '')
-            setDocEmpty(!markdown.trim())
-            maybeAutofillTitle(markdown)
-            requestAnimationFrame(() => {
-              editorStageRef.current?.scrollTo({ top: 0 })
-            })
+            queueStreamDoc(markdown)
           },
           onCredit: (credit) => {
             setCredits((prev) =>
@@ -707,10 +940,13 @@ export function PoliciesDraftPage() {
             }
             if (done.doc_markdown) {
               gotDoc = true
-              skipAutosaveRef.current = true
-              editor.commands.setContent(markdownToHtml(done.doc_markdown))
-              setDocEmpty(!done.doc_markdown.trim())
-              maybeAutofillTitle(done.doc_markdown)
+              // Flush any coalesced frame, then apply final doc.
+              if (streamDocRafRef.current) {
+                cancelAnimationFrame(streamDocRafRef.current)
+                streamDocRafRef.current = 0
+              }
+              pendingStreamMdRef.current = null
+              applyStreamDoc(done.doc_markdown)
             }
             if (typeof done.balance_cents === 'number') {
               setCredits((prev) =>
@@ -755,7 +991,14 @@ export function PoliciesDraftPage() {
       void loadCredits()
       const md = tipTapJsonToMarkdown(editor.getJSON())
       if (gotDoc || md.trim()) {
-        void persistDraft('post-stream')
+        if (autosaveOnRef.current) {
+          void persistDraft('post-stream')
+        } else {
+          // Keep stream result in the editor; mark unsaved and offer Save.
+          setSaveState('unsaved')
+          setOfferSavePrompt(true)
+          scrollPaperToEnd('smooth')
+        }
       }
     }
   }
@@ -765,9 +1008,20 @@ export function PoliciesDraftPage() {
     void sendPrompt()
   }
 
+  function confirmDiscardUnsaved(): boolean {
+    if (autosaveOn || saveState !== 'unsaved') return true
+    return window.confirm('You have unsaved changes. Leave without saving?')
+  }
+
   function startFresh() {
+    if (!confirmDiscardUnsaved()) return
     abortRef.current?.abort()
     if (persistTimerRef.current) clearTimeout(persistTimerRef.current)
+    if (orgId) {
+      clearThread(orgId, policyId)
+      clearThread(orgId, null)
+      clearLastDraftId(orgId)
+    }
     setPolicyId(null)
     policyIdRef.current = null
     setTitle(DEFAULT_TITLE)
@@ -775,12 +1029,26 @@ export function PoliciesDraftPage() {
     setPrompt('')
     setError('')
     setSaveState('idle')
+    setOfferSavePrompt(false)
     lastPersistedRef.current = ''
     skipAutosaveRef.current = true
     editor?.commands.clearContent()
     setDocEmpty(true)
-    if (orgId) clearLastDraftId(orgId)
     navigate('/policies/draft', { replace: true })
+  }
+
+  function toggleAutosave() {
+    const next = !autosaveOn
+    setAutosaveOn(next)
+    writeAutosavePref(next)
+    if (next) {
+      scheduleAutosaveRef.current()
+      pushToast('Autosave on.')
+    } else {
+      if (persistTimerRef.current) clearTimeout(persistTimerRef.current)
+      markDirty()
+      pushToast('Autosave off. Save draft explicitly.')
+    }
   }
 
   if (!orgReady) {
@@ -855,21 +1123,35 @@ export function PoliciesDraftPage() {
   const balanceTone = noBalance ? 'risk' : lowBalance ? 'warn' : 'neutral'
   const pageBlurb =
     'Use MLA to draft, revise and structure your policy. Edit the document directly before saving.'
-  const statusLine = streaming ? 'Drafting…' : docEmpty ? '' : 'Unpublished'
+
+  // Doc status stays "Unpublished" only. Save state lives in a reserved slot so chrome does not jump.
+  const docStatus = 'Unpublished'
+  const saveSlotLabel =
+    streaming
+      ? 'Drafting…'
+      : saveState === 'saving'
+        ? 'Saving…'
+        : saveState === 'unsaved'
+          ? 'Unsaved'
+          : saveState === 'error'
+            ? 'Save failed'
+            : saveState === 'saved'
+              ? 'Saved'
+              : '\u00a0'
 
   return (
     <PageFrame>
       <div className={styles.draftPage}>
         <PageHeader
           title="Draft a policy"
-          description={
-            <>
-              <span>{pageBlurb}</span>
-              {orgName ? <span className={styles.orgLine}>Drafting for {orgName}</span> : null}
-            </>
-          }
+          description={pageBlurb}
           actions={
-            <Link to="/policies">
+            <Link
+              to="/policies"
+              onClick={(e) => {
+                if (!confirmDiscardUnsaved()) e.preventDefault()
+              }}
+            >
               <Button variant="ghost">Back to policies</Button>
             </Link>
           }
@@ -884,6 +1166,16 @@ export function PoliciesDraftPage() {
         {lowBalance && !noBalance ? (
           <Notice tone="warn" title="Low AI credits">
             Balance is below {formatUsdCents(credits!.low_balance_cents)}. Consider a shorter prompt or Eco.
+          </Notice>
+        ) : null}
+        {offerSavePrompt && saveState === 'unsaved' && !autosaveOn ? (
+          <Notice tone="quiet" title="Draft ready">
+            MLA finished generating. Save draft to keep this version, or turn on autosave.
+            <span className={styles.noticeActions}>
+              <Button size="sm" onClick={() => void persistDraft('manual')}>
+                Save draft
+              </Button>
+            </span>
           </Notice>
         ) : null}
 
@@ -920,13 +1212,30 @@ export function PoliciesDraftPage() {
                 <input
                   className={styles.docTitleInput}
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) => {
+                    setTitle(e.target.value)
+                    setSaveState((s) => (s === 'saved' ? 'unsaved' : s === 'idle' ? 'unsaved' : s))
+                  }}
                   disabled={streaming}
                   aria-label="Policy title"
                 />
-                <div className={styles.docMeta}>{statusLine}</div>
+                <div className={styles.docMetaRow}>
+                  <span className={styles.docMeta}>{docStatus}</span>
+                  <span className={styles.saveSlot} aria-live="polite">
+                    {saveSlotLabel}
+                  </span>
+                </div>
               </div>
               <div className={styles.docActions}>
+                <label className={styles.autosaveToggle}>
+                  <input
+                    type="checkbox"
+                    checked={autosaveOn}
+                    disabled={streaming}
+                    onChange={() => toggleAutosave()}
+                  />
+                  <span>Autosave</span>
+                </label>
                 <Button
                   type="button"
                   size="sm"
@@ -939,26 +1248,54 @@ export function PoliciesDraftPage() {
                 <Button
                   type="button"
                   size="sm"
+                  variant="ghost"
                   pending={saving}
-                  disabled={streaming || saving || docEmpty}
+                  disabled={streaming || saving || docEmpty || saveState === 'saved'}
                   onClick={() => void persistDraft('manual')}
                 >
                   {saveState === 'saved' && !saving ? 'Saved' : 'Save draft'}
                 </Button>
+                {canPublish ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    pending={publishing}
+                    disabled={streaming || publishing || docEmpty}
+                    onClick={() => void publishPolicy()}
+                  >
+                    Publish
+                  </Button>
+                ) : null}
               </div>
             </div>
             <EditorToolbar editor={editor} locked={streaming} />
           </div>
 
           <div className={styles.messages} aria-label="MLA conversation">
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`${styles.msg} ${m.role === 'user' ? styles.msgUser : styles.msgAssistant}`}
-              >
-                {m.content || (streaming && m.role === 'assistant' ? 'Drafting…' : '')}
+            {messages.map((m) => {
+              const thinking = streaming && m.role === 'assistant' && !m.content
+              return (
+                <div
+                  key={m.id}
+                  className={`${styles.msg} ${m.role === 'user' ? styles.msgUser : styles.msgAssistant}`}
+                >
+                  {thinking ? (
+                    <div className={styles.thinkingRow}>
+                      <BrandLoader size="sm" label="MLA is thinking" />
+                      <span className={styles.thinkingCopy}>MLA is drafting…</span>
+                    </div>
+                  ) : (
+                    m.content
+                  )}
+                </div>
+              )
+            })}
+            {streaming && messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content ? (
+              <div className={styles.thinkingInline} aria-live="polite">
+                <BrandLoader size="sm" label="MLA is drafting" />
+                <span className={styles.thinkingCopy}>MLA is drafting…</span>
               </div>
-            ))}
+            ) : null}
             <div ref={messagesEndRef} />
           </div>
 
@@ -972,12 +1309,26 @@ export function PoliciesDraftPage() {
             }}
           >
             <div className={styles.paper}>
-              {docEmpty && !streaming ? (
+              {streaming && docEmpty ? (
+                <div className={styles.paperLoading} aria-live="polite">
+                  <BrandLoader size="md" label="Drafting policy" />
+                  <div className={styles.paperLoadingCopy}>Drafting on the page…</div>
+                </div>
+              ) : null}
+              {!streaming && docEmpty ? (
                 <div className={styles.docEmpty}>
                   <div className={styles.docEmptyTitle}>Your policy will appear here</div>
                 </div>
               ) : null}
-              <EditorContent editor={editor} />
+              {streaming && !docEmpty ? (
+                <div className={styles.paperStreamingBadge}>
+                  <BrandLoader size="sm" label="Drafting policy" />
+                </div>
+              ) : null}
+              <div className={streaming && docEmpty ? styles.editorHidden : undefined}>
+                <EditorContent editor={editor} />
+              </div>
+              <div ref={paperEndRef} className={styles.paperEnd} aria-hidden />
             </div>
           </div>
 
