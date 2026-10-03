@@ -58,9 +58,9 @@ type CreditBalance = {
 type ThreadMsg = { id: string; role: 'user' | 'assistant'; content: string }
 
 const TIER_OPTIONS = [
-  { value: 'eco', label: 'Regan Eco' },
-  { value: 'standard', label: 'Regan Pro' },
-  { value: 'premium', label: 'Regan Ultra' },
+  { value: 'eco', label: 'MLA Eco' },
+  { value: 'standard', label: 'MLA Pro' },
+  { value: 'premium', label: 'MLA Ultra' },
 ]
 
 function uid() {
@@ -440,7 +440,7 @@ export function PoliciesDraftPage() {
       .insert({
         org_id: orgId,
         title: saveTitle,
-        description: 'Drafted with Regan',
+        description: 'Drafted with MLA',
         content: markdown,
         version: '0.1',
         category: 'ai_governance',
@@ -544,7 +544,7 @@ export function PoliciesDraftPage() {
     <PageFrame>
       <PageHeader
         title="Draft with AI"
-        description="Ask Regan on the left. Edit the policy document on the right. Save as an unpublished draft."
+        description="Ask MLA on the left. Edit the policy document on the right. Save as an unpublished draft."
         actions={
           <Link to="/policies">
             <Button variant="ghost">Back to policies</Button>
@@ -560,26 +560,26 @@ export function PoliciesDraftPage() {
       ) : null}
       {lowBalance && !noBalance ? (
         <Notice tone="warn" title="Low AI credits">
-          Balance is below {formatUsdCents(credits!.low_balance_cents)}. Consider a shorter prompt or Regan Eco.
+          Balance is below {formatUsdCents(credits!.low_balance_cents)}. Consider a shorter prompt or MLA Eco.
         </Notice>
       ) : null}
 
       <div className={styles.shell}>
-        <aside className={styles.chatPane} aria-label="Regan conversation">
+        <aside className={styles.chatPane} aria-label="MLA conversation">
           <div className={styles.chatHead}>
             <div className={styles.chatBrand}>
-              <span className={styles.reganMark} aria-hidden>
-                R
+              <span className={styles.mlaMark} aria-hidden>
+                M
               </span>
               <div className={styles.chatBrandText}>
-                <div className={styles.chatHeadTitle}>Regan</div>
-                <p className={styles.chatHeadSupport}>Compliance drafting assistant</p>
+                <div className={styles.chatHeadTitle}>MLA</div>
+                <p className={styles.chatHeadSupport}>Machine Learning Assurance</p>
               </div>
             </div>
             <div className={styles.chatMeta}>
               <div className={styles.tierWrap}>
                 <SelectMenu
-                  aria-label="Regan model tier"
+                  aria-label="MLA model tier"
                   value={tier}
                   options={TIER_OPTIONS}
                   disabled={streaming}
@@ -598,7 +598,7 @@ export function PoliciesDraftPage() {
           <div className={styles.messages}>
             {messages.length === 0 ? (
               <div className={styles.emptyTeach}>
-                <div className={styles.emptyTeachTitle}>Type below to ask Regan</div>
+                <div className={styles.emptyTeachTitle}>Type below to ask MLA</div>
                 <p className={styles.emptyTeachBody}>
                   Example: draft an acceptable use policy for generative AI in customer support.
                 </p>
@@ -616,24 +616,24 @@ export function PoliciesDraftPage() {
                 key={m.id}
                 className={`${styles.msg} ${m.role === 'user' ? styles.msgUser : styles.msgAssistant}`}
               >
-                {m.role === 'assistant' ? <span className={styles.msgRole}>Regan</span> : null}
-                {m.content || (streaming && m.role === 'assistant' ? 'Drafting…' : '')}
+                {m.role === 'assistant' ? <span className={styles.msgRole}>MLA</span> : null}
+                {m.content || (streaming && m.role === 'assistant' ? 'MLA is drafting…' : '')}
               </div>
             ))}
             <div ref={messagesEndRef} />
           </div>
 
           <div className={styles.composer}>
-            <label className={styles.composerLabel} htmlFor="regan-composer">
-              Message Regan
+            <label className={styles.composerLabel} htmlFor="mla-composer">
+              Message MLA
             </label>
             <textarea
-              id="regan-composer"
+              id="mla-composer"
               ref={composerRef}
               className={styles.composerInput}
               value={prompt}
               disabled={streaming || noBalance}
-              placeholder="Ask Regan to draft or revise a policy…"
+              placeholder="Ask MLA to draft or revise a policy…"
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -659,7 +659,7 @@ export function PoliciesDraftPage() {
                   disabled={!prompt.trim() || noBalance}
                   onClick={() => void sendPrompt()}
                 >
-                  Ask Regan
+                  Ask MLA
                 </Button>
               </div>
             </div>
@@ -679,7 +679,7 @@ export function PoliciesDraftPage() {
               />
               <div className={styles.docMeta}>
                 {streaming
-                  ? 'Streaming from Regan · editing locked'
+                  ? 'MLA is drafting… · editing locked'
                   : 'Editable · saves as unpublished markdown draft'}
               </div>
             </div>
@@ -704,7 +704,7 @@ export function PoliciesDraftPage() {
                 <div className={styles.docEmpty}>
                   <div className={styles.emptyTeachTitle}>Policy appears here</div>
                   <p className={styles.emptyTeachBody}>
-                    Regan writes the document on this paper. You can edit with the toolbar after generation.
+                    MLA writes the document on this paper. You can edit with the toolbar after generation.
                   </p>
                 </div>
               ) : null}
