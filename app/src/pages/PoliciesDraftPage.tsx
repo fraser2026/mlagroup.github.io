@@ -1408,12 +1408,21 @@ export function PoliciesDraftPage() {
           row3 composer | (editor spans)
         */}
         <div className={styles.shell}>
-          <div className={styles.chatHead} aria-label="MLA">
-            <div className={styles.chatBrand}>
-              <div className={styles.chatHeadTitle}>MLA</div>
-              <p className={styles.chatHeadSupport}>Machine Learning Assurance</p>
-            </div>
-            <div className={styles.chatMeta}>
+          <div
+            className={styles.chatHead}
+            aria-label="MLA — Machine Learning Assurance"
+            title="Machine Learning Assurance"
+          >
+            {/*
+              Inner band packs at the top of the shared grid head track so the
+              MLA meta row lines up with Editor title; bottom hairline stays Δ0
+              with docChrome (title + toolbar).
+            */}
+            <div className={styles.chatHeadBand}>
+              <div className={styles.chatBrand}>
+                <div className={styles.chatHeadTitle}>MLA</div>
+                <UsageLine credits={credits} balanceTone={balanceTone} />
+              </div>
               <div className={styles.tierWrap}>
                 <SelectMenu
                   aria-label="Model tier"
@@ -1423,7 +1432,6 @@ export function PoliciesDraftPage() {
                   onChange={(v) => setTier((v as DraftTier) || 'eco')}
                 />
               </div>
-              <UsageLine credits={credits} balanceTone={balanceTone} />
             </div>
           </div>
 
