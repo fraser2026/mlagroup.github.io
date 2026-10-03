@@ -3,9 +3,51 @@ import { marked } from 'marked'
 
 marked.setOptions({ gfm: true, breaks: false })
 
+/**
+ * Light GFM cleanup so TipTap/marked get real tables and headings:
+ * blank lines around pipe tables and ATX headings; drop lone incomplete
+ * trailing table stubs (header without separator) during progressive paint.
+ */
+export function normalizePolicyMarkdown(markdown: string): string {
+  const raw = (markdown || '').replace(/\r\n/g, '\n')
+  if (!raw.trim()) return ''
+  const lines = raw.split('\n')
+  const out: string[] = []
+  const isTable = (line: string) => /^\s*\|/.test(line)
+  const isHeading = (line: string) => /^#{1,6}\s+\S/.test(line.trim())
+  const isSep = (line: string) =>
+    /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line.trim())
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i]
+    const prev = out.length ? out[out.length - 1] : ''
+    if (isHeading(line) && prev.trim() !== '') out.push('')
+    if (isTable(line) && prev.trim() !== '' && !isTable(prev)) out.push('')
+    out.push(line)
+    const next = lines[i + 1]
+    if (next != null) {
+      if (isHeading(line) && next.trim() !== '' && !isHeading(next)) out.push('')
+      if (isTable(line) && !isTable(next) && next.trim() !== '') out.push('')
+    }
+  }
+
+  // Hold back a trailing incomplete table (no separator yet).
+  let end = out.length - 1
+  while (end >= 0 && out[end].trim() === '') end -= 1
+  if (end >= 0 && isTable(out[end])) {
+    let start = end
+    while (start > 0 && isTable(out[start - 1])) start -= 1
+    const block = out.slice(start, end + 1)
+    if (block.length < 2 || !isSep(block[1])) {
+      return out.slice(0, start).join('\n').replace(/\n{3,}/g, '\n\n').trimEnd()
+    }
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n')
+}
+
 /** Convert policy markdown to HTML for TipTap setContent. */
 export function markdownToHtml(markdown: string): string {
-  const src = (markdown || '').trim()
+  const src = normalizePolicyMarkdown(markdown || '')
   if (!src) return ''
   return marked.parse(src, { async: false }) as string
 }

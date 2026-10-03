@@ -1,8 +1,8 @@
 /**
- * RegAnchor — Platform AI policy drafting (SSE).
+ * RegAnchor - Platform AI policy drafting (SSE).
  *
  * JWT user + org membership (owner|admin|editor). Uses RegAnchor-owned
- * ANTHROPIC_API_KEY — not asset gateway tokens or customer vault keys.
+ * ANTHROPIC_API_KEY - not asset gateway tokens or customer vault keys.
  *
  * verify_jwt: true
  */
@@ -77,34 +77,129 @@ async function getAuthedUser(req: Request) {
   return { user, supabase, token }
 }
 
-function buildSystemPrompt(orgName: string, existingDoc?: string): string {
-  const docHint = existingDoc?.trim()
-    ? `\nThe user already has a draft document. Revise or extend it as requested. Current document:\n---\n${existingDoc.trim()}\n---`
-    : ''
-  return `You are MLA (Machine Learning Assurance), the proprietary assurance intelligence layer for RegAnchor, developed by MLA Group Ltd. When referred to by name, acknowledge you are MLA. Maintain a highly precise, expert governance and compliance persona.
+const TIER_MAX_TOKENS: Record<Tier, number> = {
+  eco: 4096,
+  standard: 8192,
+  premium: 12288,
+}
 
-You draft for the organisation "${orgName || 'the organisation'}".
+function tierDepthBrief(tier: Tier): string {
+  if (tier === 'eco') {
+    return `DEPTH (Eco - lean, complete):
+- Produce a usable first policy the organisation can adopt after light review.
+- Cover every required section, but keep each section tight (typically 2-6 bullets or short paragraphs).
+- Prefer one focused roles list and one small RACI or requirements table only when it clarifies duties.
+- Skip extended rationale, multi-framework crosswalks, and long appendices.`
+  }
+  if (tier === 'premium') {
+    return `DEPTH (Ultra - rigorous, analysis-ready):
+- Produce a diligence-grade policy: audit and procurement reviewers should find clear ownership, requirements, evidence hooks, and review cadence without asking for a rewrite.
+- Expand requirements into testable statements; include RACI and/or control-mapping tables where useful.
+- Add a brief Related frameworks / controls section with hooks (e.g. EU AI Act risk tier, ISO/IEC 42001 themes, GDPR DPIA triggers, SOC 2 trust criteria) - map themes, do not invent clause numbers.
+- Include exceptions, escalation, records/evidence, and change-control language where relevant.
+- Still put all substance in the document channel; chat stays short.`
+  }
+  return `DEPTH (Pro - balanced governance work):
+- Complete policy with enough substance for internal approval and external sharing.
+- Roles, requirements, and review cycle must be concrete; use one or two tables where they aid auditors (RACI, risk class, or control mapping).
+- Mention relevant frameworks at theme level; avoid sprawling appendices unless the user asks.`
+}
+
+function buildSystemPrompt(orgName: string, tier: Tier, existingDoc?: string): string {
+  const org = (orgName || '').trim() || 'the organisation'
+  const docHint = existingDoc?.trim()
+    ? `\nREVISION MODE:\nThe user already has a draft document. Revise or extend it as requested. Preserve sound structure; improve substance, formality, and table quality. Do not discard unrelated sections unless asked. Current document:\n<<<CURRENT_DOC\n${existingDoc.trim()}\nCURRENT_DOC<<<\n`
+    : ''
+
+  return `You are MLA (Machine Learning Assurance), the proprietary assurance intelligence layer for RegAnchor (product). MLA Group Ltd is the legal entity behind the capability. When referred to by name, acknowledge you are MLA. Persona: precise governance and compliance operator - not a chatbot, not a marketer.
+
+You draft for the organisation "${org}". Use that name in the document where an organisation name belongs. For any other org-specific fact you do not know (named owners, dates, systems, jurisdictions, contact emails), use square-bracket placeholders such as [AI Governance Lead], [Effective date], [System name] - or ask one short clarifying question in the chat channel if the missing fact is critical to the draft. Never invent people, dates, citations, registration numbers, or audit findings.
+
+BUYER JOBS (write so both can skim the document):
+1) Audit / regulatory readiness - clear purpose, scope, requirements, ownership, review cycle, evidence hooks.
+2) Procurement / M&A diligence - counterparties can see governance posture without marketing language.
 
 NON-NEGOTIABLE SCOPE:
-- Strictly AI Governance, Risk, and Corporate Compliance only.
-- In scope: policy drafting and revision, regulatory frameworks (ISO, GDPR, SOC 2, EU AI Act, and similar), legal compliance, employee handbooks, and operational risk.
+- Strictly AI governance, risk, and corporate compliance.
+- In scope: policy drafting and revision; frameworks such as EU AI Act, UK GDPR / GDPR, ISO/IEC 42001, ISO/IEC 27001, SOC 2, NIST AI RMF, and similar; handbooks and operational risk controls tied to AI systems.
 - Out of scope: fiction, unrelated coding, personal advice, trivia, recipes, casual chat, or any non-compliance topic.
 - If the user asks for anything out of scope, do not produce a ---POLICY--- document. Reply only with this exact refusal (and nothing else):
 I am MLA, the assurance intelligence layer for RegAnchor. I am only configured to handle corporate policy, risk management, and regulatory compliance workflows. Please submit a compliance-related request.
 
-Output format (strict) when the request is in scope:
-1) First line(s): a short conversational reply to the user (1–3 sentences). Speak as MLA. No policy body here.
+DUAL CHANNEL (strict when in scope):
+1) Chat channel first: 1-3 short sentences only. Status, what you drafted/revised, or a single clarifying question. No policy body, no section dumps, no essays.
 2) Then a line that is exactly: ---POLICY---
-3) Then the full policy document in GitHub-flavored markdown only (headings, lists, tables as needed). No chat fluff, no "Sure!", no wrapping code fences around the whole document.
+3) Document channel: the full policy in GitHub-flavored markdown only. All substance lives here. No chat fluff, no "Sure!", no wrapping the whole document in a code fence.
 
+DOCUMENT QUALITY (anti-slop):
+- No filler openers ("In today's rapidly evolving…", "In an era of…", "It is important to note…").
+- No fake legal citations, fabricated article/clause numbers, or invented case law.
+- No emoji. No bold walls. Sentence case headings.
+- Formal, usable corporate policy voice. Prefer requirements language ("must", "shall") over vague aspiration.
+- Match RegAnchor / MLA catalogue structure: numbered H2 sections under a single H1 title (e.g. Purpose, Scope, Principles or Requirements, Roles, Review). Adapt sections to the policy type; do not force irrelevant sections.
+
+PREFERRED LAYOUT (adapt to the ask; omit only when clearly irrelevant):
+- H1: policy title
+- Document control line(s): version, [Effective date], owner role placeholder, classification if useful
+- ## 1. Purpose
+- ## 2. Scope (inclusions / exclusions)
+- ## 3. Definitions (only if terms would otherwise be ambiguous)
+- ## 4. Roles and responsibilities (named role titles; use a RACI table when several roles interact)
+- ## 5. Requirements / controls (testable obligations; sub-headings as needed)
+- ## 6. Risk, exceptions, and escalation (as relevant)
+- ## 7. Records and evidence (what is retained for audit / diligence)
+- ## 8. Related frameworks and controls (hooks only - theme-level; optional control IDs if the user supplied them)
+- ## 9. Review cycle (cadence, trigger events, approver)
+- Closing line: _Version x.y - Effective from [Effective date]_
+
+MARKDOWN FOR THE EDITOR (TipTap / GFM):
+- Use real ATX headings (# ## ###). Put a blank line before and after headings, lists, and tables.
+- Lists: "- " or "1. " at line start; one item per line.
+- Tables: GitHub-flavored pipe tables only. Header row, separator row (| --- | --- |), then body rows. Same column count every row. No broken pipes, no ASCII art boxes, no tables inside code fences.
+- Emit each table row as a complete line; do not stream mid-cell commentary.
+- Horizontal rules: use *** on its own line if needed (avoid a lone --- which is reserved for the channel marker pattern).
+- Do not put the policy title only in chat; the H1 must appear in the document.
+
+${tierDepthBrief(tier)}
 ${docHint}`
+}
+
+/** Hold back an incomplete trailing GFM table so TipTap does not flash broken pipes mid-stream. */
+function stabilizeDocMarkdown(doc: string): string {
+  if (!doc) return doc
+  const lines = doc.split('\n')
+  let i = lines.length - 1
+  while (i >= 0 && lines[i].trim() === '') i -= 1
+  if (i < 0) return doc
+
+  const isTableLine = (line: string) => /^\s*\|/.test(line)
+  if (!isTableLine(lines[i])) return doc
+
+  let start = i
+  while (start > 0 && isTableLine(lines[start - 1])) start -= 1
+  const table = lines.slice(start, i + 1).map((l) => l.trimEnd())
+  if (table.length < 2) {
+    return lines.slice(0, start).join('\n')
+  }
+  const sepOk = /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(table[1].trim())
+  if (!sepOk) {
+    return lines.slice(0, start).join('\n')
+  }
+  const cols = (row: string) => row.split('|').filter((_, idx, arr) => idx > 0 && idx < arr.length - 1).length
+  const width = cols(table[0])
+  if (width < 1) return lines.slice(0, start).join('\n')
+  for (const row of table) {
+    if (cols(row) !== width) return lines.slice(0, start).join('\n')
+  }
+  // Complete table - keep as-is (including any trailing incomplete non-table text after blank lines handled above).
+  return doc
 }
 
 function parseDualChannel(raw: string): { chat: string; doc: string } {
   const marker = '---POLICY---'
   const idx = raw.indexOf(marker)
   if (idx === -1) {
-    // Model may still be in chat portion, or forgot marker — treat as chat until marker appears.
+    // Model may still be in chat portion, or forgot marker - treat as chat until marker appears.
     return { chat: raw, doc: '' }
   }
   return {
@@ -255,7 +350,8 @@ Deno.serve(async (req) => {
   }))
 
   const wantStream = body.stream !== false
-  const system = buildSystemPrompt(org.name || 'Organisation', body.doc_markdown)
+  const system = buildSystemPrompt(org.name || 'Organisation', tier, body.doc_markdown)
+  const maxTokens = TIER_MAX_TOKENS[tier]
 
   const upstream = await fetch(ANTHROPIC_MESSAGES_URL, {
     method: 'POST',
@@ -266,7 +362,7 @@ Deno.serve(async (req) => {
     },
     body: JSON.stringify({
       model,
-      max_tokens: 8192,
+      max_tokens: maxTokens,
       stream: wantStream,
       system,
       messages: anthropicMessages,
@@ -320,7 +416,7 @@ Deno.serve(async (req) => {
       const nextBalance = await finalizeDebit(usage)
       return json({
         chat,
-        doc_markdown: doc,
+        doc_markdown: stabilizeDocMarkdown(doc),
         usage,
         balance_cents: nextBalance,
         tier,
@@ -368,10 +464,12 @@ Deno.serve(async (req) => {
               if (piece) controller.enqueue(encoder.encode(sseLine({ type: 'chat_delta', text: piece })))
               lastChat = chat
             }
-            if (doc !== lastDoc) {
-              // Prefer full doc_set for TipTap sync fidelity after marker appears
-              controller.enqueue(encoder.encode(sseLine({ type: 'doc_set', markdown: doc })))
-              lastDoc = doc
+            const stableDoc = stabilizeDocMarkdown(doc)
+            if (stableDoc !== lastDoc) {
+              // Prefer full doc_set for TipTap sync fidelity after marker appears.
+              // Incomplete trailing tables are held back until column-complete.
+              controller.enqueue(encoder.encode(sseLine({ type: 'doc_set', markdown: stableDoc })))
+              lastDoc = stableDoc
             }
           }
         }
@@ -385,13 +483,19 @@ Deno.serve(async (req) => {
             if (chat !== lastChat) {
               const piece = chat.slice(lastChat.length)
               if (piece) controller.enqueue(encoder.encode(sseLine({ type: 'chat_delta', text: piece })))
+              lastChat = chat
             }
-            if (doc !== lastDoc) {
-              controller.enqueue(encoder.encode(sseLine({ type: 'doc_set', markdown: doc })))
+            const stableDoc = stabilizeDocMarkdown(doc)
+            if (stableDoc !== lastDoc) {
+              controller.enqueue(encoder.encode(sseLine({ type: 'doc_set', markdown: stableDoc })))
+              lastDoc = stableDoc
             }
           }
         }
 
+        const finalParsed = parseDualChannel(assembled)
+        const finalDoc = finalParsed.doc || lastDoc
+        const finalChat = finalParsed.chat || lastChat
         const nextBalance = await finalizeDebit(usage)
         controller.enqueue(encoder.encode(sseLine({
           type: 'usage',
@@ -406,8 +510,8 @@ Deno.serve(async (req) => {
         })))
         controller.enqueue(encoder.encode(sseLine({
           type: 'done',
-          chat: lastChat || parseDualChannel(assembled).chat,
-          doc_markdown: lastDoc || parseDualChannel(assembled).doc,
+          chat: finalChat,
+          doc_markdown: finalDoc,
           balance_cents: nextBalance,
           usage,
         })))
