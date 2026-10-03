@@ -347,8 +347,8 @@ export function PoliciesDraftPage() {
   /** RA mark on paper only while waiting for first bytes or a stalled stream. */
   const [paperWaiting, setPaperWaiting] = useState(false)
   /**
-   * Default composer highlight on draft load / chat-side attention.
-   * Cleared when focus moves to Editor or elsewhere outside the composer.
+   * Default composer highlight on draft load.
+   * Cleared on pointer-down anywhere outside the composer form; restored only on focus.
    */
   const [composerInvite, setComposerInvite] = useState(true)
   const [composerPulse, setComposerPulse] = useState(false)
@@ -357,6 +357,7 @@ export function PoliciesDraftPage() {
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const paperEndRef = useRef<HTMLDivElement | null>(null)
   const composerRef = useRef<HTMLTextAreaElement | null>(null)
+  const composerFormRef = useRef<HTMLFormElement | null>(null)
   const editorStageRef = useRef<HTMLDivElement | null>(null)
   const titleRef = useRef(title)
   const policyIdRef = useRef<string | null>(policyId)
@@ -826,6 +827,20 @@ export function PoliciesDraftPage() {
     const t = window.setTimeout(() => setComposerPulse(false), 900)
     return () => window.clearTimeout(t)
   }, [hydrating, routePolicyId])
+
+  // Clear default invite on any pointer-down outside the composer (Ask MLA controls included).
+  // Re-highlight only when the textarea receives focus again — not on chat/Eco/Editor clicks.
+  useEffect(() => {
+    if (!composerInvite) return
+    function onPointerDown(e: PointerEvent) {
+      const t = e.target as Node | null
+      if (!t) return
+      if (composerFormRef.current?.contains(t)) return
+      setComposerInvite(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () => document.removeEventListener('pointerdown', onPointerDown, true)
+  }, [composerInvite])
 
   // Warn when leaving with unsaved edits (autosave off).
   useEffect(() => {
@@ -1412,11 +1427,7 @@ export function PoliciesDraftPage() {
             </div>
           </div>
 
-          <div
-            className={styles.docChrome}
-            aria-label="Editor"
-            onPointerDown={() => setComposerInvite(false)}
-          >
+          <div className={styles.docChrome} aria-label="Editor">
             <div className={styles.docHeadRow}>
               <div className={styles.docPaneTitle}>Editor</div>
               <div className={styles.docActions}>
@@ -1467,11 +1478,7 @@ export function PoliciesDraftPage() {
             <EditorToolbar editor={editor} locked={streaming} />
           </div>
 
-          <div
-            className={styles.messages}
-            aria-label="MLA conversation"
-            onPointerDown={() => setComposerInvite(true)}
-          >
+          <div className={styles.messages} aria-label="MLA conversation">
             {messages.map((m) => {
               const thinking = streaming && m.role === 'assistant' && !m.content
               return (
@@ -1501,8 +1508,6 @@ export function PoliciesDraftPage() {
           <div
             ref={editorStageRef}
             className={`${styles.editorStage}${streaming ? ` ${styles.editorStageLocked}` : ''}`}
-            onPointerDown={() => setComposerInvite(false)}
-            onFocusCapture={() => setComposerInvite(false)}
             onKeyDown={(e) => {
               if (e.key === ' ' || e.key === 'PageDown' || e.key === 'PageUp') {
                 e.stopPropagation()
@@ -1533,11 +1538,7 @@ export function PoliciesDraftPage() {
             </div>
           </div>
 
-          <form
-            className={styles.composer}
-            onSubmit={onComposerSubmit}
-            onPointerDown={() => setComposerInvite(true)}
-          >
+          <form ref={composerFormRef} className={styles.composer} onSubmit={onComposerSubmit}>
             <textarea
               id="mla-composer"
               ref={composerRef}

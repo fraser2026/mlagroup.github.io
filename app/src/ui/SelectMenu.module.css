@@ -30,16 +30,33 @@
     box-shadow 0.12s;
 }
 
+/* Same interactive tokens as Search / Copy link / Back to policies (ghost). */
 .trigger:hover:not(:disabled) {
-  border-color: var(--ra-border-hover);
+  border-color: var(--ra-blurple);
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
 }
 
-.triggerOpen,
 .trigger:focus-visible {
   outline: none;
   border-color: var(--ra-blurple);
-  background: var(--ra-focus-fill);
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
   box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+/* Open = ghost.selected fill + blurple border/ring (no --ra-focus-fill wash). */
+.triggerOpen {
+  outline: none;
+  border-color: var(--ra-blurple);
+  background: var(--ra-selected);
+  color: var(--ra-blurple-fg);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.triggerOpen:hover:not(:disabled) {
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
 }
 
 .triggerDisabled {
