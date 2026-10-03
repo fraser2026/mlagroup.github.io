@@ -111,7 +111,7 @@ function isUntitled(value: string) {
   return !t || t === DEFAULT_TITLE
 }
 
-/** Keep the paper H1 aligned when the conflict drawer renames the policy. */
+/** Keep the paper H1 aligned when the conflict modal renames the policy. */
 function replaceLeadingTitle(markdown: string, newTitle: string): string {
   const heading = `# ${newTitle.trim()}`
   if (/^#{1,2}\s+.+$/m.test(markdown)) {
@@ -393,7 +393,7 @@ export function PoliciesDraftPage() {
   /** Active org titles for lineage prefill + optional near-match hint. */
   const [titleCatalog, setTitleCatalog] = useState<PolicyTitleCatalogEntry[]>([])
   const [titleHint, setTitleHint] = useState<string | null>(null)
-  /** Quiet Drawer when title+version collides with another active org policy. */
+  /** Centred modal when title+version collides with another active org policy. */
   const [conflictOpen, setConflictOpen] = useState(false)
   const [conflictDraft, setConflictDraft] = useState<ConflictDraft | null>(null)
   const [conflictTitle, setConflictTitle] = useState('')
@@ -428,7 +428,7 @@ export function PoliciesDraftPage() {
   const policyIdRef = useRef<string | null>(policyId)
   const autosaveOnRef = useRef(autosaveOn)
   const conflictOpenRef = useRef(false)
-  /** Last conflict key shown so autosave does not re-open the Drawer every tick. */
+  /** Last conflict key shown so autosave does not re-open the modal every tick. */
   const conflictShownKeyRef = useRef('')
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const threadPersistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -758,7 +758,7 @@ export function PoliciesDraftPage() {
     setSaveState('unsaved')
   }
 
-  function closeConflictDrawer() {
+  function closeConflictModal() {
     conflictOpenRef.current = false
     setConflictOpen(false)
     setConflictBusy(false)
@@ -846,7 +846,7 @@ export function PoliciesDraftPage() {
     const pending = conflictDraft.pending
     applyConflictIdentity(nextTitle, nextVersion)
     conflictShownKeyRef.current = ''
-    closeConflictDrawer()
+    closeConflictModal()
     setError('')
     setConflictBusy(false)
 
@@ -1685,7 +1685,7 @@ export function PoliciesDraftPage() {
     setComposerInvite(true)
     lastPersistedRef.current = ''
     conflictShownKeyRef.current = ''
-    closeConflictDrawer()
+    closeConflictModal()
     setConflictDraft(null)
     setReviewTokens([])
     setReviewDrafts({})
@@ -2159,7 +2159,8 @@ export function PoliciesDraftPage() {
 
         <Drawer
           open={conflictOpen}
-          onClose={() => closeConflictDrawer()}
+          placement="center"
+          onClose={() => closeConflictModal()}
           title="Title and version already in use"
           description={
             conflictDraft
@@ -2168,7 +2169,7 @@ export function PoliciesDraftPage() {
           }
           footer={
             <div className={styles.drawerActions}>
-              <Button variant="ghost" size="sm" disabled={conflictBusy} onClick={() => closeConflictDrawer()}>
+              <Button variant="ghost" size="sm" disabled={conflictBusy} onClick={() => closeConflictModal()}>
                 Cancel
               </Button>
               <Button size="sm" pending={conflictBusy} onClick={() => void resolveConflictContinue()}>
