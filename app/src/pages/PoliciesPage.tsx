@@ -20,6 +20,7 @@ import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { actorName, writeAuditLog } from '../lib/audit'
 import { canDraftPolicies, canUsePolicyDrafting } from '../lib/org'
+import { isPolicyUniqueViolation, lookupPolicyTitleVersionConflict } from '../lib/policyVersionGuard'
 import { POLICY_CATS } from '../lib/policyMarkdown'
 import { sb } from '../lib/supabase'
 import styles from './PoliciesPage.module.css'
@@ -159,6 +160,19 @@ export function PoliciesPage() {
     setBusyId(templateId)
     setError('')
     pushToast('')
+    const adoptVersion = '1.0'
+    const collision = await lookupPolicyTitleVersionConflict({
+      orgId,
+      title: tpl.title,
+      version: adoptVersion,
+    })
+    if (collision.conflict) {
+      setBusyId('')
+      setError(
+        `Cannot adopt "${tpl.title}" v${adoptVersion}: an active ${collision.conflict.published ? 'published' : 'draft'} policy already uses that title and version. Rename or bump the existing policy first.`,
+      )
+      return
+    }
     const orgName = org?.name || 'Our Organisation'
     const content = (tpl.content_template || '').replace(/\{\{org_name\}\}/g, orgName)
     const { data, error: insertErr } = await sb
@@ -168,7 +182,7 @@ export function PoliciesPage() {
         title: tpl.title,
         description: tpl.description,
         content,
-        version: '1.0',
+        version: adoptVersion,
         category: tpl.category,
         requires_acknowledgment: true,
         acknowledgment_frequency: 'on_update',
@@ -180,7 +194,11 @@ export function PoliciesPage() {
       .single()
     if (insertErr) {
       setBusyId('')
-      setError(`Error adopting template: ${insertErr.message}`)
+      setError(
+        isPolicyUniqueViolation(insertErr)
+          ? `Cannot adopt "${tpl.title}" v${adoptVersion}: that title and version is already in use.`
+          : `Error adopting template: ${insertErr.message}`,
+      )
       return
     }
     if (tpl.linked_control_number) {

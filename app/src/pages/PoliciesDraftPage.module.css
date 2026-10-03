@@ -764,3 +764,51 @@
 .gated {
   max-width: 520px;
 }
+
+.drawerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.conflictField {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.conflictInput {
+  height: 32px;
+  border: 1px solid var(--ra-border-field, var(--ra-border));
+  border-radius: var(--ra-radius-control);
+  padding: 0 12px;
+  font: inherit;
+  font-size: var(--draft-fs-ui);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  background: var(--ra-canvas, var(--ra-surface));
+}
+
+.conflictInput:focus,
+.conflictInput:focus-visible {
+  outline: none;
+  border-color: var(--ra-blurple);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.conflictHint {
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.conflictError {
+  margin-top: 4px;
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-risk, #b42318);
+}

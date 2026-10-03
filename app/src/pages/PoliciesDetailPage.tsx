@@ -16,6 +16,11 @@ import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { actorName, writeAuditLog } from '../lib/audit'
 import { canDraftPolicies, canPublishPolicies, canUsePolicyDrafting } from '../lib/org'
+import {
+  isPolicyUniqueViolation,
+  lookupPolicyTitleVersionConflict,
+  suggestNextPolicyVersion,
+} from '../lib/policyVersionGuard'
 import { POLICY_CATS, renderPolicyMarkdown } from '../lib/policyMarkdown'
 import { sb } from '../lib/supabase'
 import styles from './PoliciesPage.module.css'
@@ -159,6 +164,21 @@ export function PoliciesDetailPage() {
 
   async function publishPolicy() {
     if (!policy || !orgId || !userId || !canPublish || policy.published_at) return
+    const title = policy.title || 'Untitled policy'
+    const version = policy.version || '0.1'
+    const lookup = await lookupPolicyTitleVersionConflict({
+      orgId,
+      title,
+      version,
+      excludeId: policy.id,
+    })
+    if (lookup.conflict) {
+      const suggested = suggestNextPolicyVersion(version, lookup.titleVersions)
+      setError(
+        `Cannot publish: another active policy already uses "${title}" v${version}. Open Edit and set version ${suggested}, or choose a new title.`,
+      )
+      return
+    }
     setPublishing(true)
     setError('')
     const publishedAt = new Date().toISOString()
@@ -177,7 +197,11 @@ export function PoliciesDetailPage() {
       .maybeSingle()
     if (updateErr || !publishedRow?.published_at) {
       setPublishing(false)
-      setError(updateErr?.message || 'Could not publish policy.')
+      setError(
+        isPolicyUniqueViolation(updateErr)
+          ? `Cannot publish: "${title}" v${version} is already in use by another active policy.`
+          : updateErr?.message || 'Could not publish policy.',
+      )
       return
     }
     // Hide orphan same-title unpublished drafts so the list does not show an Unpublished twin.

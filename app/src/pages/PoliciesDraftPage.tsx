@@ -20,6 +20,7 @@ import {
 import {
   BrandLoader,
   Button,
+  Drawer,
   EmptyState,
   Notice,
   PageFrame,
@@ -51,6 +52,13 @@ import {
   type ThreadMsg,
 } from '../lib/draftChatSession'
 import { canDraftPolicies, canPublishPolicies, canUsePolicyDrafting } from '../lib/org'
+import {
+  isPolicyUniqueViolation,
+  lookupPolicyTitleVersionConflict,
+  normalizePolicyTitle,
+  suggestNextPolicyVersion,
+  type PolicyTitleVersionConflict,
+} from '../lib/policyVersionGuard'
 import { sb } from '../lib/supabase'
 import { PlaceholderHighlight } from '../lib/placeholderHighlight'
 import {
@@ -93,6 +101,26 @@ function uid() {
 function isUntitled(value: string) {
   const t = value.trim()
   return !t || t === DEFAULT_TITLE
+}
+
+/** Keep the paper H1 aligned when the conflict drawer renames the policy. */
+function replaceLeadingTitle(markdown: string, newTitle: string): string {
+  const heading = `# ${newTitle.trim()}`
+  if (/^#{1,2}\s+.+$/m.test(markdown)) {
+    return markdown.replace(/^#{1,2}\s+.+$/m, heading)
+  }
+  if (!markdown.trim()) return `${heading}\n`
+  return `${heading}\n\n${markdown}`
+}
+
+type ConflictPending = 'save' | 'publish'
+
+type ConflictDraft = {
+  title: string
+  version: string
+  suggestedVersion: string
+  pending: ConflictPending
+  conflict: PolicyTitleVersionConflict
 }
 
 function lastDraftKey(orgId: string) {
@@ -350,6 +378,13 @@ export function PoliciesDraftPage() {
   /** True when editing a published policy body (owner/admin only). */
   const [isPublished, setIsPublished] = useState(false)
   const [policyVersion, setPolicyVersion] = useState('0.1')
+  /** Quiet Drawer when title+version collides with another active org policy. */
+  const [conflictOpen, setConflictOpen] = useState(false)
+  const [conflictDraft, setConflictDraft] = useState<ConflictDraft | null>(null)
+  const [conflictTitle, setConflictTitle] = useState('')
+  const [conflictVersion, setConflictVersion] = useState('')
+  const [conflictError, setConflictError] = useState('')
+  const [conflictBusy, setConflictBusy] = useState(false)
   /** RA mark on paper only while waiting for first bytes or a stalled stream. */
   const [paperWaiting, setPaperWaiting] = useState(false)
   /**
@@ -370,8 +405,12 @@ export function PoliciesDraftPage() {
   const composerFormRef = useRef<HTMLFormElement | null>(null)
   const editorStageRef = useRef<HTMLDivElement | null>(null)
   const titleRef = useRef(title)
+  const policyVersionRef = useRef(policyVersion)
   const policyIdRef = useRef<string | null>(policyId)
   const autosaveOnRef = useRef(autosaveOn)
+  const conflictOpenRef = useRef(false)
+  /** Last conflict key shown so autosave does not re-open the Drawer every tick. */
+  const conflictShownKeyRef = useRef('')
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const threadPersistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastPersistedRef = useRef('')
@@ -391,8 +430,10 @@ export function PoliciesDraftPage() {
   promptRef.current = prompt
 
   titleRef.current = title
+  policyVersionRef.current = policyVersion
   policyIdRef.current = policyId
   autosaveOnRef.current = autosaveOn
+  conflictOpenRef.current = conflictOpen
 
   function bumpStreamActivity(hasDocBytes: boolean) {
     if (streamStallTimerRef.current) clearTimeout(streamStallTimerRef.current)
@@ -588,9 +629,134 @@ export function PoliciesDraftPage() {
     }
   }
 
+  function conflictKey(titleValue: string, versionValue: string) {
+    return `${normalizePolicyTitle(titleValue)}::${versionValue.trim()}`
+  }
+
+  function openTitleVersionConflict(args: {
+    title: string
+    version: string
+    suggestedVersion: string
+    pending: ConflictPending
+    conflict: PolicyTitleVersionConflict
+  }) {
+    conflictShownKeyRef.current = conflictKey(args.title, args.version)
+    setConflictDraft(args)
+    setConflictTitle(args.title)
+    setConflictVersion(args.suggestedVersion)
+    setConflictError('')
+    setConflictBusy(false)
+    setConflictOpen(true)
+    setSaveState('unsaved')
+  }
+
+  function closeConflictDrawer() {
+    conflictOpenRef.current = false
+    setConflictOpen(false)
+    setConflictBusy(false)
+    setConflictError('')
+  }
+
+  async function ensureTitleVersionAvailable(
+    saveTitle: string,
+    version: string,
+    source: 'auto' | 'manual' | 'post-stream' | 'publish',
+  ): Promise<boolean> {
+    if (!orgId) return false
+    if (source === 'auto' && conflictOpenRef.current) return false
+
+    const key = conflictKey(saveTitle, version)
+    if (source === 'auto' && conflictShownKeyRef.current === key) return false
+
+    const lookup = await lookupPolicyTitleVersionConflict({
+      orgId,
+      title: saveTitle,
+      version,
+      excludeId: policyIdRef.current,
+    })
+    if (!lookup.conflict) return true
+
+    const suggested = suggestNextPolicyVersion(version, lookup.titleVersions)
+    openTitleVersionConflict({
+      title: saveTitle,
+      version,
+      suggestedVersion: suggested,
+      pending: source === 'publish' ? 'publish' : 'save',
+      conflict: lookup.conflict,
+    })
+    if (source === 'manual' || source === 'publish') {
+      setError('Another active policy already uses this title and version.')
+    } else {
+      console.warn('autosave blocked: title+version collision', saveTitle, version)
+    }
+    return false
+  }
+
+  function applyConflictIdentity(nextTitle: string, nextVersion: string) {
+    setTitle(nextTitle)
+    titleRef.current = nextTitle
+    setPolicyVersion(nextVersion)
+    policyVersionRef.current = nextVersion
+    if (!editor) return
+    const markdown = tipTapJsonToMarkdown(editor.getJSON())
+    const currentHeading = titleFromMarkdown(markdown, DEFAULT_TITLE)
+    if (normalizePolicyTitle(currentHeading) !== normalizePolicyTitle(nextTitle)) {
+      skipAutosaveRef.current = true
+      const nextMd = replaceLeadingTitle(markdown, nextTitle)
+      editor.commands.setContent(markdownToHtml(nextMd) || '')
+      setDocEmpty(!nextMd.trim())
+    }
+  }
+
+  async function resolveConflictContinue() {
+    if (!conflictDraft) return
+    const nextTitle = conflictTitle.trim()
+    const nextVersion = conflictVersion.trim()
+    if (!nextTitle) {
+      setConflictError('Enter a title.')
+      return
+    }
+    if (!nextVersion) {
+      setConflictError('Enter a version.')
+      return
+    }
+
+    setConflictBusy(true)
+    setConflictError('')
+    const lookup = await lookupPolicyTitleVersionConflict({
+      orgId: orgId!,
+      title: nextTitle,
+      version: nextVersion,
+      excludeId: policyIdRef.current,
+    })
+    if (lookup.conflict) {
+      const suggested = suggestNextPolicyVersion(nextVersion, lookup.titleVersions)
+      setConflictVersion(suggested)
+      setConflictError(
+        `Still in use (${lookup.conflict.published ? 'published' : 'draft'}). Try version ${suggested} or another title.`,
+      )
+      setConflictBusy(false)
+      return
+    }
+
+    const pending = conflictDraft.pending
+    applyConflictIdentity(nextTitle, nextVersion)
+    conflictShownKeyRef.current = ''
+    closeConflictDrawer()
+    setError('')
+    setConflictBusy(false)
+
+    if (pending === 'publish') {
+      await publishPolicy()
+    } else {
+      await persistDraft('manual')
+    }
+  }
+
   async function persistDraft(source: 'auto' | 'manual' | 'post-stream'): Promise<boolean> {
     if (!orgId || !userId || !editor) return false
     if (source === 'auto' && !autosaveOnRef.current) return false
+    if (source === 'auto' && conflictOpenRef.current) return false
 
     const markdown = tipTapJsonToMarkdown(editor.getJSON())
     if (!markdown.trim()) {
@@ -599,10 +765,17 @@ export function PoliciesDraftPage() {
     }
 
     const saveTitle = titleRef.current.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
-    const fingerprint = `${saveTitle}\n${markdown}`
+    const saveVersion = policyVersionRef.current.trim() || '0.1'
+    const fingerprint = `${saveTitle}\n${saveVersion}\n${markdown}`
     if (source !== 'manual' && fingerprint === lastPersistedRef.current && policyIdRef.current) {
       if (source === 'auto') setSaveState('saved')
       return true
+    }
+
+    const allowed = await ensureTitleVersionAvailable(saveTitle, saveVersion, source)
+    if (!allowed) {
+      setSaveState('unsaved')
+      return false
     }
 
     if (persistInFlightRef.current) {
@@ -635,6 +808,7 @@ export function PoliciesDraftPage() {
           .update({
             title: saveTitle,
             content: markdown,
+            version: saveVersion,
             meta,
             updated_at: now,
           })
@@ -648,6 +822,30 @@ export function PoliciesDraftPage() {
         const { error: updateErr } = await updateQuery
 
         if (updateErr) {
+          if (isPolicyUniqueViolation(updateErr)) {
+            const lookup = await lookupPolicyTitleVersionConflict({
+              orgId,
+              title: saveTitle,
+              version: saveVersion,
+              excludeId: existingId,
+            })
+            openTitleVersionConflict({
+              title: saveTitle,
+              version: saveVersion,
+              suggestedVersion: suggestNextPolicyVersion(saveVersion, lookup.titleVersions),
+              pending: 'save',
+              conflict: lookup.conflict || {
+                id: '',
+                title: saveTitle,
+                version: saveVersion,
+                published: true,
+              },
+            })
+            setSaveState('unsaved')
+            if (source === 'manual') setError('Another active policy already uses this title and version.')
+            if (source === 'manual') setSaving(false)
+            return false
+          }
           setSaveState('error')
           if (source === 'manual') setError(updateErr.message || 'Could not save draft.')
           else console.warn('autosave', updateErr.message)
@@ -665,7 +863,7 @@ export function PoliciesDraftPage() {
             title: saveTitle,
             description: 'Drafted with MLA',
             content: markdown,
-            version: '0.1',
+            version: saveVersion,
             category: 'ai_governance',
             requires_acknowledgment: false,
             acknowledgment_frequency: 'once',
@@ -678,6 +876,30 @@ export function PoliciesDraftPage() {
           .single()
 
         if (insertErr || !data?.id) {
+          if (isPolicyUniqueViolation(insertErr)) {
+            const lookup = await lookupPolicyTitleVersionConflict({
+              orgId,
+              title: saveTitle,
+              version: saveVersion,
+              excludeId: null,
+            })
+            openTitleVersionConflict({
+              title: saveTitle,
+              version: saveVersion,
+              suggestedVersion: suggestNextPolicyVersion(saveVersion, lookup.titleVersions),
+              pending: 'save',
+              conflict: lookup.conflict || {
+                id: '',
+                title: saveTitle,
+                version: saveVersion,
+                published: true,
+              },
+            })
+            setSaveState('unsaved')
+            if (source === 'manual') setError('Another active policy already uses this title and version.')
+            if (source === 'manual') setSaving(false)
+            return false
+          }
           setSaveState('error')
           if (source === 'manual') setError(insertErr?.message || 'Could not save draft.')
           else console.warn('autosave insert', insertErr?.message)
@@ -701,6 +923,7 @@ export function PoliciesDraftPage() {
           changes: {
             _actor_name: actorName(profile?.full_name, session?.user?.email),
             policy: saveTitle,
+            version: saveVersion,
             published: false,
             tier,
             autosave: source === 'auto',
@@ -712,6 +935,7 @@ export function PoliciesDraftPage() {
         setTitle(saveTitle)
       }
 
+      conflictShownKeyRef.current = ''
       lastPersistedRef.current = fingerprint
       if (orgId && policyIdRef.current) writeLastDraftId(orgId, policyIdRef.current)
       setSaveState('saved')
@@ -760,6 +984,11 @@ export function PoliciesDraftPage() {
       return
     }
 
+    const saveTitle = titleRef.current.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
+    const saveVersion = policyVersionRef.current.trim() || '0.1'
+    const allowed = await ensureTitleVersionAvailable(saveTitle, saveVersion, 'publish')
+    if (!allowed) return
+
     setPublishing(true)
     setError('')
 
@@ -772,7 +1001,6 @@ export function PoliciesDraftPage() {
     }
 
     const publishedAt = new Date().toISOString()
-    const saveTitle = titleRef.current.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
     const { data: publishedRow, error: updateErr } = await sb
       .from('policy_documents')
       .update({
@@ -789,6 +1017,28 @@ export function PoliciesDraftPage() {
 
     if (updateErr || !publishedRow?.published_at) {
       setPublishing(false)
+      if (isPolicyUniqueViolation(updateErr)) {
+        const lookup = await lookupPolicyTitleVersionConflict({
+          orgId,
+          title: saveTitle,
+          version: saveVersion,
+          excludeId: id,
+        })
+        openTitleVersionConflict({
+          title: saveTitle,
+          version: saveVersion,
+          suggestedVersion: suggestNextPolicyVersion(saveVersion, lookup.titleVersions),
+          pending: 'publish',
+          conflict: lookup.conflict || {
+            id: '',
+            title: saveTitle,
+            version: saveVersion,
+            published: true,
+          },
+        })
+        setError('Another active policy already uses this title and version.')
+        return
+      }
       setError(updateErr?.message || 'Could not publish policy.')
       return
     }
@@ -1016,12 +1266,15 @@ export function PoliciesDraftPage() {
       setPolicyId(data.id)
       policyIdRef.current = data.id
       setIsPublished(published)
-      setPolicyVersion((data.version as string) || '0.1')
+      const loadedVersion = (data.version as string) || '0.1'
+      setPolicyVersion(loadedVersion)
+      policyVersionRef.current = loadedVersion
       setTitle((data.title as string) || DEFAULT_TITLE)
       editor!.commands.setContent(md ? markdownToHtml(md) : '')
       setDocEmpty(!md.trim())
       contentAppliedForIdRef.current = data.id
-      lastPersistedRef.current = `${(data.title as string) || ''}\n${md}`
+      lastPersistedRef.current = `${(data.title as string) || ''}\n${loadedVersion}\n${md}`
+      conflictShownKeyRef.current = ''
       if (!published) writeLastDraftId(orgId!, data.id)
       setSaveState(md.trim() ? 'saved' : 'idle')
 
@@ -1288,6 +1541,7 @@ export function PoliciesDraftPage() {
     policyIdRef.current = null
     setIsPublished(false)
     setPolicyVersion('0.1')
+    policyVersionRef.current = '0.1'
     setTitle(DEFAULT_TITLE)
     setMessages([])
     setPrompt('')
@@ -1297,6 +1551,9 @@ export function PoliciesDraftPage() {
     setPaperWaiting(false)
     setComposerInvite(true)
     lastPersistedRef.current = ''
+    conflictShownKeyRef.current = ''
+    closeConflictDrawer()
+    setConflictDraft(null)
     setReviewTokens([])
     setReviewDrafts({})
     skipAutosaveRef.current = true
@@ -1697,6 +1954,54 @@ export function PoliciesDraftPage() {
             </div>
           </form>
         </div>
+
+        <Drawer
+          open={conflictOpen}
+          onClose={() => closeConflictDrawer()}
+          title="Title and version already in use"
+          description={
+            conflictDraft
+              ? `Another active ${conflictDraft.conflict.published ? 'published' : 'draft'} policy already uses "${conflictDraft.conflict.title}" v${conflictDraft.conflict.version}. Choose a new title, or keep the title and set a new version.`
+              : 'Choose a new title, or keep the title and set a new version.'
+          }
+          footer={
+            <div className={styles.drawerActions}>
+              <Button variant="ghost" size="sm" disabled={conflictBusy} onClick={() => closeConflictDrawer()}>
+                Cancel
+              </Button>
+              <Button size="sm" pending={conflictBusy} onClick={() => void resolveConflictContinue()}>
+                Continue
+              </Button>
+            </div>
+          }
+        >
+          <label className={styles.conflictField}>
+            <span>Title</span>
+            <input
+              className={styles.conflictInput}
+              value={conflictTitle}
+              onChange={(e) => setConflictTitle(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </label>
+          <label className={styles.conflictField}>
+            <span>Version</span>
+            <input
+              className={styles.conflictInput}
+              value={conflictVersion}
+              onChange={(e) => setConflictVersion(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+            />
+            {conflictDraft?.suggestedVersion ? (
+              <span className={styles.conflictHint}>
+                Suggested next revision: {conflictDraft.suggestedVersion}
+              </span>
+            ) : null}
+          </label>
+          {conflictError ? <div className={styles.conflictError}>{conflictError}</div> : null}
+        </Drawer>
 
         <ToastStack items={toasts} onDismiss={dismissToast} />
       </div>
