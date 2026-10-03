@@ -362,20 +362,16 @@
   min-height: 84px;
   resize: vertical;
   padding: 10px 12px;
-  border: 1px solid var(--ra-border-field, var(--ra-border));
+  /* Rest: blend with pane — no mist/grey slab (light or dark). */
+  border: 1px solid var(--ra-line, var(--ra-border));
   border-radius: var(--ra-radius-control);
-  background: color-mix(in srgb, var(--ra-ink) 4%, var(--ra-mist, var(--ra-canvas)));
+  background: transparent;
   color: var(--ra-ink);
   font: inherit;
   font-size: var(--draft-fs-ui);
   font-weight: var(--ra-fw-medium);
   line-height: 1.45;
-  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
-}
-
-:global([data-theme='dark']) .composerInput {
-  background: color-mix(in srgb, #ffffff 10%, var(--ra-mist, #111));
-  border-color: var(--ra-border-field, rgba(255, 255, 255, 0.22));
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .composerInput::placeholder {
@@ -386,15 +382,12 @@
   border-color: var(--ra-border-hover, var(--ra-border));
 }
 
-.composerInput:focus {
+.composerInput:focus,
+.composerInput:focus-visible {
   outline: none;
   border-color: var(--ra-blurple);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--ra-blurple) 22%, transparent);
-  background: var(--ra-surface);
-}
-
-:global([data-theme='dark']) .composerInput:focus {
-  background: color-mix(in srgb, #ffffff 6%, var(--ra-surface));
+  background: transparent;
 }
 
 .composerInput:disabled {
