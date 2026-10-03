@@ -1,12 +1,26 @@
-/* Draft workspace — restrained type: 16 / 13 / 12. Shared head row via CSS grid. */
+/* Draft workspace — quiet chrome; 16 / 14 / 13 / 12 type ramp. Shared head via CSS grid. */
 
 .draftPage {
   --draft-fs-title: 16px;
+  --draft-fs-editor: 14px;
   --draft-fs-ui: 13px;
   --draft-fs-meta: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
 }
 
-/* PageHeader override: page title stays on the 16/13/12 scale. */
+/* Compact page header — less stacked meta above the shell. */
+.draftPage :global(header) {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
 .draftPage :global(h1) {
   font-size: var(--draft-fs-title);
   font-weight: var(--ra-fw-medium);
@@ -14,45 +28,57 @@
   line-height: 1.25;
 }
 
+.draftPage :global([class*='desc']) {
+  max-width: 42rem;
+}
+
 /* —— Shell: shared head row so pane hairlines align —— */
 
 .shell {
   display: grid;
-  grid-template-columns: minmax(300px, 36%) minmax(0, 1fr);
+  grid-template-columns: minmax(240px, 34%) minmax(280px, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
-  height: calc(100vh - 128px);
-  max-height: calc(100vh - 128px);
-  min-height: 420px;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
   border: 1px solid var(--ra-line, var(--ra-border));
   border-radius: var(--ra-radius-control);
   background: var(--ra-surface);
   overflow: hidden;
 }
 
+/* When the app rail is open, prefer a slightly narrower chat column. */
+:global(.frameRailOpen) .shell {
+  grid-template-columns: minmax(220px, 30%) minmax(260px, 1fr);
+}
+
 @media (max-width: 960px) {
-  .shell {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(280px, 50vh) auto auto minmax(320px, 50vh);
+  .draftPage {
     height: auto;
     max-height: none;
-    min-height: 0;
+  }
+
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(240px, 42vh) auto auto minmax(280px, 48vh);
   }
 }
 
-/* Row 1 — equal height across panes (grid stretches both cells) */
+/* Row 1 — single calm band across panes */
 
 .chatHead {
   grid-column: 1;
   grid-row: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   min-width: 0;
-  padding: 12px 14px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--ra-line);
   border-right: 1px solid var(--ra-line, var(--ra-border));
-  background: color-mix(in srgb, var(--ra-mist, var(--ra-canvas)) 55%, var(--ra-surface));
+  background: color-mix(in srgb, var(--ra-mist, var(--ra-canvas)) 40%, var(--ra-surface));
 }
 
 .docChrome {
@@ -60,10 +86,10 @@
   grid-row: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
+  gap: 0;
   min-width: 0;
-  padding: 12px 14px 0;
+  padding: 0;
   border-bottom: 1px solid var(--ra-line);
   background: var(--ra-surface);
 }
@@ -73,19 +99,19 @@
     grid-column: 1;
     grid-row: 1;
     border-right: none;
+    flex-wrap: wrap;
   }
 
   .docChrome {
     grid-column: 1;
     grid-row: 4;
-    padding-bottom: 0;
   }
 }
 
 .chatBrand {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
 }
 
@@ -94,7 +120,7 @@
   font-weight: var(--ra-fw-medium);
   color: var(--ra-ink);
   letter-spacing: -0.01em;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .chatHeadSupport {
@@ -102,20 +128,22 @@
   font-size: var(--draft-fs-meta);
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .chatMeta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  min-height: 32px;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .tierWrap {
-  min-width: 128px;
-  flex: 1 1 128px;
+  min-width: 104px;
+  max-width: 140px;
+  flex: 0 1 128px;
 }
 
 .usageLine {
@@ -136,74 +164,25 @@
   color: var(--ra-risk);
 }
 
-/* Doc chrome top row */
+/* Doc chrome — Editor title + one control row */
 
 .docHeadRow {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   min-width: 0;
+  min-height: 40px;
+  padding: 6px 12px;
 }
 
-.docHeadLeft {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
-}
-
-.docPaneLabel {
-  font-size: var(--draft-fs-meta);
+.docPaneTitle {
+  flex-shrink: 0;
+  font-size: var(--draft-fs-editor);
   font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-2);
-  line-height: 1.3;
-}
-
-.docTitleInput {
-  width: 100%;
-  border: none;
-  background: transparent;
   color: var(--ra-ink);
-  font: inherit;
-  font-size: var(--draft-fs-ui);
-  font-weight: var(--ra-fw-medium);
-  letter-spacing: -0.01em;
-  padding: 0;
-  line-height: 1.3;
-}
-
-.docTitleInput:focus {
-  outline: none;
-}
-
-.docTitleInput:disabled {
-  opacity: 0.7;
-}
-
-.docMetaRow {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  min-height: 16px;
-}
-
-.docMeta {
-  font-size: var(--draft-fs-meta);
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-3);
-  line-height: 1.3;
-}
-
-/* Reserved save-state slot — always present so New/Save/Publish do not jump. */
-.saveSlot {
-  min-width: 4.5em;
-  font-size: var(--draft-fs-meta);
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-3);
-  line-height: 1.3;
-  white-space: nowrap;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
 }
 
 .docActions {
@@ -212,16 +191,14 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
-  flex-shrink: 0;
-  padding-top: 2px;
-  max-width: 100%;
+  min-width: 0;
 }
 
 .autosaveToggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-right: 4px;
+  height: 28px;
   font-size: var(--draft-fs-meta);
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
@@ -243,21 +220,30 @@
   cursor: not-allowed;
 }
 
+/* Quiet status text — not a disabled button. */
+.saveStatus {
+  min-width: 4.25em;
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
 .noticeActions {
   display: inline-flex;
   margin-left: 10px;
   vertical-align: middle;
 }
 
-/* TipTap toolbar — sits inside shared head so its bottom rule is the shared hairline */
+/* TipTap toolbar */
 
 .toolbar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 2px;
-  margin: 0 -14px;
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-top: 1px solid var(--ra-line);
   background: var(--ra-surface);
 }
@@ -313,10 +299,10 @@
   min-height: 0;
   min-width: 0;
   overflow: auto;
-  padding: 12px 14px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   border-right: 1px solid var(--ra-line, var(--ra-border));
   background: var(--ra-surface);
 }
@@ -330,7 +316,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 16px 18px 72px;
+  padding: 14px 16px 64px;
   background: var(--ra-mist, var(--ra-canvas, #f4f4f5));
   -webkit-overflow-scrolling: touch;
 }
@@ -377,13 +363,6 @@
   color: var(--ra-ink);
 }
 
-.thinkingRow,
-.thinkingInline {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .thinkingInline {
   align-self: flex-start;
   padding: 2px 0 4px;
@@ -405,7 +384,7 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  padding: 10px 14px 12px;
+  padding: 8px 12px 10px;
   border-top: 1px solid var(--ra-line);
   border-right: 1px solid var(--ra-line, var(--ra-border));
   background: var(--ra-surface);
@@ -422,10 +401,9 @@
 
 .composerInput {
   width: 100%;
-  min-height: 84px;
+  min-height: 64px;
   resize: vertical;
-  padding: 10px 12px;
-  /* Rest: blend with pane — no mist/grey slab (light or dark). */
+  padding: 8px 10px;
   border: 1px solid var(--ra-line, var(--ra-border));
   border-radius: var(--ra-radius-control);
   background: transparent;
@@ -519,7 +497,8 @@
   line-height: 1.35;
 }
 
-.paperStreamingBadge {
+/* RA mark only while lagging — not while text is flowing. */
+.paperWaitingBadge {
   position: absolute;
   top: 14px;
   right: 16px;
@@ -556,7 +535,6 @@
   letter-spacing: -0.01em;
   color: var(--ra-ink);
   line-height: 1.7;
-  /* Comfortable end padding inside the scrollable paper */
   padding-bottom: 8px;
 }
 

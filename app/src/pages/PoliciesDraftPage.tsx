@@ -56,16 +56,28 @@ type CreditBalance = {
 
 type ThreadMsg = { id: string; role: 'user' | 'assistant'; content: string }
 
+type DraftChatSession = {
+  orgId: string
+  policyId: string | null
+  messages: ThreadMsg[]
+  prompt: string
+}
+
 const DEFAULT_TITLE = 'Untitled policy'
 const AUTOSAVE_MS = 900
 const AUTOSAVE_PREF_KEY = 'ra:policy-draft:autosave'
 const THREAD_KEY_PREFIX = 'ra:policy-draft:thread:'
+const PROMPT_KEY_PREFIX = 'ra:policy-draft:prompt:'
+const STREAM_STALL_MS = 2200
 
 const TIER_OPTIONS = [
   { value: 'eco', label: 'Eco', description: 'Fast drafting' },
   { value: 'standard', label: 'Pro', description: 'Balanced governance work' },
   { value: 'premium', label: 'Ultra', description: 'Deep analysis and framework alignment' },
 ]
+
+/** In-memory session survives remounts (autosave toggle, soft navigate) without wiping chat. */
+let liveChatSession: DraftChatSession | null = null
 
 function uid() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -84,6 +96,10 @@ function lastDraftKey(orgId: string) {
 
 function threadKey(orgId: string, draftId: string | null) {
   return `${THREAD_KEY_PREFIX}${orgId}:${draftId || 'new'}`
+}
+
+function promptKey(orgId: string, draftId: string | null) {
+  return `${PROMPT_KEY_PREFIX}${orgId}:${draftId || 'new'}`
 }
 
 function readLastDraftId(orgId: string): string | null {
@@ -126,12 +142,19 @@ function writeAutosavePref(on: boolean) {
   }
 }
 
-function readThread(orgId: string, draftId: string | null): ThreadMsg[] {
+function parseThread(raw: string | null): ThreadMsg[] {
+  if (!raw) return []
   try {
-    const raw = sessionStorage.getItem(threadKey(orgId, draftId))
-    if (!raw) return []
     const parsed = JSON.parse(raw) as ThreadMsg[]
     return Array.isArray(parsed) ? parsed.filter((m) => m?.id && m?.role && typeof m.content === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+function readThread(orgId: string, draftId: string | null): ThreadMsg[] {
+  try {
+    return parseThread(sessionStorage.getItem(threadKey(orgId, draftId)))
   } catch {
     return []
   }
@@ -145,9 +168,27 @@ function writeThread(orgId: string, draftId: string | null, messages: ThreadMsg[
   }
 }
 
+function readPrompt(orgId: string, draftId: string | null): string {
+  try {
+    return sessionStorage.getItem(promptKey(orgId, draftId)) || ''
+  } catch {
+    return ''
+  }
+}
+
+function writePrompt(orgId: string, draftId: string | null, value: string) {
+  try {
+    if (value) sessionStorage.setItem(promptKey(orgId, draftId), value)
+    else sessionStorage.removeItem(promptKey(orgId, draftId))
+  } catch {
+    /* ignore */
+  }
+}
+
 function clearThread(orgId: string, draftId: string | null) {
   try {
     sessionStorage.removeItem(threadKey(orgId, draftId))
+    sessionStorage.removeItem(promptKey(orgId, draftId))
   } catch {
     /* ignore */
   }
@@ -157,7 +198,48 @@ function migrateThread(orgId: string, fromId: string | null, toId: string) {
   if (fromId === toId) return
   const msgs = readThread(orgId, fromId)
   if (msgs.length) writeThread(orgId, toId, msgs)
+  const p = readPrompt(orgId, fromId)
+  if (p) writePrompt(orgId, toId, p)
   clearThread(orgId, fromId)
+  if (liveChatSession?.orgId === orgId) {
+    liveChatSession = { orgId, policyId: toId, messages: msgs.length ? msgs : liveChatSession.messages, prompt: p || liveChatSession.prompt }
+  }
+}
+
+/** Prefer live memory, then storage for this draft / new, then sibling key. Never invent empty over a live thread. */
+function restoreChatSession(orgId: string, draftId: string | null): { messages: ThreadMsg[]; prompt: string } {
+  if (liveChatSession?.orgId === orgId) {
+    const sameDraft =
+      liveChatSession.policyId === draftId ||
+      (liveChatSession.policyId == null && draftId == null) ||
+      (liveChatSession.policyId != null && draftId != null && liveChatSession.policyId === draftId)
+    if (sameDraft || liveChatSession.messages.length) {
+      return { messages: liveChatSession.messages, prompt: liveChatSession.prompt }
+    }
+  }
+  const primary = readThread(orgId, draftId)
+  if (primary.length) return { messages: primary, prompt: readPrompt(orgId, draftId) }
+  if (draftId) {
+    const asNew = readThread(orgId, null)
+    if (asNew.length) {
+      migrateThread(orgId, null, draftId)
+      return { messages: asNew, prompt: readPrompt(orgId, draftId) || readPrompt(orgId, null) }
+    }
+  } else {
+    const remembered = readLastDraftId(orgId)
+    if (remembered) {
+      const fromLast = readThread(orgId, remembered)
+      if (fromLast.length) return { messages: fromLast, prompt: readPrompt(orgId, remembered) }
+    }
+  }
+  return { messages: [], prompt: readPrompt(orgId, draftId) }
+}
+
+function rememberChatSession(orgId: string, draftId: string | null, messages: ThreadMsg[], prompt: string) {
+  liveChatSession = { orgId, policyId: draftId, messages, prompt }
+  // Never clobber a stored thread with an empty array (common during remount / editor-null hydrate).
+  if (messages.length) writeThread(orgId, draftId, messages)
+  writePrompt(orgId, draftId, prompt)
 }
 
 function ToolBtn({
@@ -337,6 +419,8 @@ export function PoliciesDraftPage() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const [docEmpty, setDocEmpty] = useState(true)
   const [offerSavePrompt, setOfferSavePrompt] = useState(false)
+  /** RA mark on paper only while waiting for first bytes or a stalled stream. */
+  const [paperWaiting, setPaperWaiting] = useState(false)
 
   const abortRef = useRef<AbortController | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
@@ -352,10 +436,25 @@ export function PoliciesDraftPage() {
   const persistInFlightRef = useRef<Promise<boolean> | null>(null)
   const streamDocRafRef = useRef(0)
   const pendingStreamMdRef = useRef<string | null>(null)
+  const streamStallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const chatHydratedRef = useRef(false)
 
   titleRef.current = title
   policyIdRef.current = policyId
   autosaveOnRef.current = autosaveOn
+
+  function bumpStreamActivity(hasDocBytes: boolean) {
+    if (streamStallTimerRef.current) clearTimeout(streamStallTimerRef.current)
+    if (hasDocBytes) {
+      setPaperWaiting(false)
+      return
+    }
+    // Still waiting for first paper bytes (or stalled before any land).
+    setPaperWaiting(true)
+    streamStallTimerRef.current = setTimeout(() => {
+      setPaperWaiting((prev) => prev || true)
+    }, STREAM_STALL_MS)
+  }
 
   usePageChrome({
     title: 'Draft a policy',
@@ -682,6 +781,7 @@ export function PoliciesDraftPage() {
       clearLastDraftId(orgId)
       clearThread(orgId, id)
       clearThread(orgId, null)
+      liveChatSession = { orgId, policyId: null, messages: [], prompt: '' }
     }
     setPublishing(false)
     pushToast('Policy published.')
@@ -697,11 +797,20 @@ export function PoliciesDraftPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages, streaming])
 
-  // Persist chat thread for this session (survives soft remounts / first-save URL change).
+  // Seed chat once per org mount from live memory / sessionStorage (before hydrate can wipe).
   useEffect(() => {
-    if (!orgId || hydrating) return
-    writeThread(orgId, policyId, messages)
-  }, [orgId, policyId, messages, hydrating])
+    if (!orgId || chatHydratedRef.current) return
+    const restored = restoreChatSession(orgId, routePolicyId || policyIdRef.current)
+    chatHydratedRef.current = true
+    if (restored.messages.length) setMessages(restored.messages)
+    if (restored.prompt) setPrompt(restored.prompt)
+  }, [orgId, routePolicyId])
+
+  // Persist chat + composer for this session. Never write empty over a stored thread.
+  useEffect(() => {
+    if (!orgId || !chatHydratedRef.current) return
+    rememberChatSession(orgId, policyId, messages, prompt)
+  }, [orgId, policyId, messages, prompt])
 
   useEffect(() => {
     if (!editor) return
@@ -711,10 +820,18 @@ export function PoliciesDraftPage() {
   }, [editor, streaming])
 
   useEffect(() => {
+    if (!streaming) {
+      setPaperWaiting(false)
+      if (streamStallTimerRef.current) clearTimeout(streamStallTimerRef.current)
+    }
+  }, [streaming])
+
+  useEffect(() => {
     return () => {
       abortRef.current?.abort()
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current)
       if (streamDocRafRef.current) cancelAnimationFrame(streamDocRafRef.current)
+      if (streamStallTimerRef.current) clearTimeout(streamStallTimerRef.current)
     }
   }, [])
 
@@ -732,18 +849,37 @@ export function PoliciesDraftPage() {
 
   // Restore unpublished draft from URL, or last local draft id for this org.
   useEffect(() => {
+    // Wait for editor — do not flip hydrating false early (that used to persist [] and wipe chat).
     if (!orgReady || !orgId || !editor || !entitled || !canDraft) {
-      if (orgReady) setHydrating(false)
+      if (orgReady && (!entitled || !canDraft || !orgId)) setHydrating(false)
       return
     }
 
     let cancelled = false
 
     async function hydrate() {
-      setHydrating(true)
-      setError('')
+      const id = routePolicyId || null
 
-      let id = routePolicyId || null
+      // Soft restore: keep thread + editor when we already own this draft (first-save URL, remount).
+      const alreadyLoaded =
+        (policyIdRef.current === id || (id == null && policyIdRef.current == null)) &&
+        (messages.length > 0 || !editor!.isEmpty || liveChatSession?.orgId === orgId)
+      if (alreadyLoaded && policyIdRef.current === id && id) {
+        const restored = restoreChatSession(orgId!, id)
+        setMessages((prev) => (prev.length ? prev : restored.messages))
+        if (restored.prompt) setPrompt((p) => p || restored.prompt)
+        setHydrating(false)
+        return
+      }
+
+      setError('')
+      // Only show full-page loader when we have no in-session content yet.
+      const hasSession =
+        messages.length > 0 ||
+        (liveChatSession?.orgId === orgId && liveChatSession.messages.length > 0) ||
+        !editor!.isEmpty
+      if (!hasSession) setHydrating(true)
+
       if (!id) {
         const remembered = readLastDraftId(orgId!)
         if (remembered) {
@@ -756,7 +892,6 @@ export function PoliciesDraftPage() {
             .is('published_at', null)
             .maybeSingle()
           if (!cancelled && data?.id) {
-            // Restore session thread before navigate so the single route keeps chat.
             const rememberedThread = readThread(orgId!, remembered)
             const newThread = readThread(orgId!, null)
             if (!rememberedThread.length && newThread.length) {
@@ -770,17 +905,18 @@ export function PoliciesDraftPage() {
         if (!cancelled) {
           setPolicyId(null)
           policyIdRef.current = null
-          setMessages(readThread(orgId!, null))
+          const restored = restoreChatSession(orgId!, null)
+          setMessages((prev) => (prev.length ? prev : restored.messages))
+          if (restored.prompt) setPrompt((p) => p || restored.prompt)
           setHydrating(false)
         }
         return
       }
 
-      // Soft restore: keep in-memory thread when we already own this draft id
-      // (first-save URL update on the unified route).
-      const alreadyLoaded = policyIdRef.current === id && !editor!.isEmpty
-      if (alreadyLoaded) {
-        setMessages((prev) => (prev.length ? prev : readThread(orgId!, id)))
+      if (policyIdRef.current === id && !editor!.isEmpty) {
+        const restored = restoreChatSession(orgId!, id)
+        setMessages((prev) => (prev.length ? prev : restored.messages))
+        if (restored.prompt) setPrompt((p) => p || restored.prompt)
         setHydrating(false)
         return
       }
@@ -818,7 +954,9 @@ export function PoliciesDraftPage() {
       lastPersistedRef.current = `${(data.title as string) || ''}\n${md}`
       writeLastDraftId(orgId!, data.id)
       setSaveState(md.trim() ? 'saved' : 'idle')
-      setMessages(readThread(orgId!, data.id))
+      const restored = restoreChatSession(orgId!, data.id)
+      setMessages((prev) => (prev.length ? prev : restored.messages))
+      if (restored.prompt) setPrompt((p) => p || restored.prompt)
       setHydrating(false)
 
       requestAnimationFrame(() => {
@@ -869,10 +1007,12 @@ export function PoliciesDraftPage() {
     // Append user message immediately; keep a placeholder assistant row for MLA status.
     setMessages((prev) => {
       const next = [...prev, userMsg, { id: assistantId, role: 'assistant' as const, content: '' }]
-      writeThread(orgId, policyIdRef.current, next)
+      rememberChatSession(orgId, policyIdRef.current, next, '')
       return next
     })
     setStreaming(true)
+    setPaperWaiting(true)
+    bumpStreamActivity(false)
     editor.setEditable(false)
 
     const history: DraftChatMessage[] = [...messages, userMsg].map((m) => ({
@@ -912,6 +1052,7 @@ export function PoliciesDraftPage() {
             )
           },
           onChatDelta: (delta) => {
+            bumpStreamActivity(gotDoc)
             setMessages((prev) =>
               prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + delta } : m)),
             )
@@ -919,6 +1060,7 @@ export function PoliciesDraftPage() {
           onDocSet: (markdown) => {
             if (!markdown.trim()) return
             gotDoc = true
+            bumpStreamActivity(true)
             queueStreamDoc(markdown)
           },
           onCredit: (credit) => {
@@ -940,6 +1082,7 @@ export function PoliciesDraftPage() {
             }
             if (done.doc_markdown) {
               gotDoc = true
+              bumpStreamActivity(true)
               // Flush any coalesced frame, then apply final doc.
               if (streamDocRafRef.current) {
                 cancelAnimationFrame(streamDocRafRef.current)
@@ -1022,6 +1165,8 @@ export function PoliciesDraftPage() {
       clearThread(orgId, null)
       clearLastDraftId(orgId)
     }
+    liveChatSession = orgId ? { orgId, policyId: null, messages: [], prompt: '' } : null
+    chatHydratedRef.current = true
     setPolicyId(null)
     policyIdRef.current = null
     setTitle(DEFAULT_TITLE)
@@ -1030,6 +1175,7 @@ export function PoliciesDraftPage() {
     setError('')
     setSaveState('idle')
     setOfferSavePrompt(false)
+    setPaperWaiting(false)
     lastPersistedRef.current = ''
     skipAutosaveRef.current = true
     editor?.commands.clearContent()
@@ -1038,9 +1184,11 @@ export function PoliciesDraftPage() {
   }
 
   function toggleAutosave() {
+    // Preference only — do not remount, clear chat, or touch message state.
     const next = !autosaveOn
     setAutosaveOn(next)
     writeAutosavePref(next)
+    if (orgId) rememberChatSession(orgId, policyIdRef.current, messages, prompt)
     if (next) {
       scheduleAutosaveRef.current()
       pushToast('Autosave on.')
@@ -1053,7 +1201,7 @@ export function PoliciesDraftPage() {
 
   if (!orgReady) {
     return (
-      <PageFrame>
+      <PageFrame denseWorkspace>
         <PageHeader title="Draft a policy" description="Loading workspace" />
         <BrandLoader fill label="Loading" />
       </PageFrame>
@@ -1062,7 +1210,7 @@ export function PoliciesDraftPage() {
 
   if (!orgId) {
     return (
-      <PageFrame>
+      <PageFrame denseWorkspace>
         <PageHeader title="Draft a policy" description="Organisation context required." />
         <EmptyState title="No organisation" body="Join or create an organisation to draft policies." />
       </PageFrame>
@@ -1071,7 +1219,7 @@ export function PoliciesDraftPage() {
 
   if (!entitled) {
     return (
-      <PageFrame>
+      <PageFrame denseWorkspace>
         <PageHeader
           title="Draft a policy"
           description="AI policy drafting is included with Essentials, Professional, and Enterprise."
@@ -1098,7 +1246,7 @@ export function PoliciesDraftPage() {
 
   if (!canDraft) {
     return (
-      <PageFrame>
+      <PageFrame denseWorkspace>
         <PageHeader title="Draft a policy" description="Editor access or higher is required." />
         <EmptyState
           title="View-only access"
@@ -1110,7 +1258,7 @@ export function PoliciesDraftPage() {
 
   if (hydrating) {
     return (
-      <PageFrame>
+      <PageFrame denseWorkspace>
         <PageHeader title="Draft a policy" description="Loading workspace" />
         <BrandLoader fill label="Loading draft" />
       </PageFrame>
@@ -1124,8 +1272,6 @@ export function PoliciesDraftPage() {
   const pageBlurb =
     'Use MLA to draft, revise and structure your policy. Edit the document directly before saving.'
 
-  // Doc status stays "Unpublished" only. Save state lives in a reserved slot so chrome does not jump.
-  const docStatus = 'Unpublished'
   const saveSlotLabel =
     streaming
       ? 'Drafting…'
@@ -1137,10 +1283,12 @@ export function PoliciesDraftPage() {
             ? 'Save failed'
             : saveState === 'saved'
               ? 'Saved'
-              : '\u00a0'
+              : ''
+
+  const showPaperLoader = paperWaiting && (docEmpty || streaming)
 
   return (
-    <PageFrame>
+    <PageFrame denseWorkspace>
       <div className={styles.draftPage}>
         <PageHeader
           title="Draft a policy"
@@ -1152,7 +1300,9 @@ export function PoliciesDraftPage() {
                 if (!confirmDiscardUnsaved()) e.preventDefault()
               }}
             >
-              <Button variant="ghost">Back to policies</Button>
+              <Button variant="ghost" size="sm">
+                Back to policies
+              </Button>
             </Link>
           }
         />
@@ -1170,10 +1320,10 @@ export function PoliciesDraftPage() {
         ) : null}
         {offerSavePrompt && saveState === 'unsaved' && !autosaveOn ? (
           <Notice tone="quiet" title="Draft ready">
-            MLA finished generating. Save draft to keep this version, or turn on autosave.
+            MLA finished generating. Save to keep this version, or turn on autosave.
             <span className={styles.noticeActions}>
               <Button size="sm" onClick={() => void persistDraft('manual')}>
-                Save draft
+                Save
               </Button>
             </span>
           </Notice>
@@ -1205,27 +1355,9 @@ export function PoliciesDraftPage() {
             </div>
           </div>
 
-          <div className={styles.docChrome} aria-label="Policy document">
+          <div className={styles.docChrome} aria-label="Editor">
             <div className={styles.docHeadRow}>
-              <div className={styles.docHeadLeft}>
-                <div className={styles.docPaneLabel}>Policy document</div>
-                <input
-                  className={styles.docTitleInput}
-                  value={title}
-                  onChange={(e) => {
-                    setTitle(e.target.value)
-                    setSaveState((s) => (s === 'saved' ? 'unsaved' : s === 'idle' ? 'unsaved' : s))
-                  }}
-                  disabled={streaming}
-                  aria-label="Policy title"
-                />
-                <div className={styles.docMetaRow}>
-                  <span className={styles.docMeta}>{docStatus}</span>
-                  <span className={styles.saveSlot} aria-live="polite">
-                    {saveSlotLabel}
-                  </span>
-                </div>
-              </div>
+              <div className={styles.docPaneTitle}>Editor</div>
               <div className={styles.docActions}>
                 <label className={styles.autosaveToggle}>
                   <input
@@ -1236,13 +1368,16 @@ export function PoliciesDraftPage() {
                   />
                   <span>Autosave</span>
                 </label>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  disabled={streaming}
-                  onClick={() => startFresh()}
-                >
+                {saveSlotLabel ? (
+                  <span className={styles.saveStatus} aria-live="polite">
+                    {saveSlotLabel}
+                  </span>
+                ) : (
+                  <span className={styles.saveStatus} aria-hidden>
+                    {'\u00a0'}
+                  </span>
+                )}
+                <Button type="button" size="sm" variant="ghost" disabled={streaming} onClick={() => startFresh()}>
                   New
                 </Button>
                 <Button
@@ -1253,7 +1388,7 @@ export function PoliciesDraftPage() {
                   disabled={streaming || saving || docEmpty || saveState === 'saved'}
                   onClick={() => void persistDraft('manual')}
                 >
-                  {saveState === 'saved' && !saving ? 'Saved' : 'Save draft'}
+                  Save
                 </Button>
                 {canPublish ? (
                   <Button
@@ -1280,19 +1415,18 @@ export function PoliciesDraftPage() {
                   className={`${styles.msg} ${m.role === 'user' ? styles.msgUser : styles.msgAssistant}`}
                 >
                   {thinking ? (
-                    <div className={styles.thinkingRow}>
-                      <BrandLoader size="sm" label="MLA is thinking" />
-                      <span className={styles.thinkingCopy}>MLA is drafting…</span>
-                    </div>
+                    <span className={styles.thinkingCopy}>MLA is drafting…</span>
                   ) : (
                     m.content
                   )}
                 </div>
               )
             })}
-            {streaming && messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content ? (
+            {streaming &&
+            messages.length > 0 &&
+            messages[messages.length - 1]?.role === 'assistant' &&
+            messages[messages.length - 1]?.content ? (
               <div className={styles.thinkingInline} aria-live="polite">
-                <BrandLoader size="sm" label="MLA is drafting" />
                 <span className={styles.thinkingCopy}>MLA is drafting…</span>
               </div>
             ) : null}
@@ -1309,7 +1443,7 @@ export function PoliciesDraftPage() {
             }}
           >
             <div className={styles.paper}>
-              {streaming && docEmpty ? (
+              {showPaperLoader && docEmpty ? (
                 <div className={styles.paperLoading} aria-live="polite">
                   <BrandLoader size="md" label="Drafting policy" />
                   <div className={styles.paperLoadingCopy}>Drafting on the page…</div>
@@ -1320,12 +1454,12 @@ export function PoliciesDraftPage() {
                   <div className={styles.docEmptyTitle}>Your policy will appear here</div>
                 </div>
               ) : null}
-              {streaming && !docEmpty ? (
-                <div className={styles.paperStreamingBadge}>
-                  <BrandLoader size="sm" label="Drafting policy" />
+              {showPaperLoader && !docEmpty ? (
+                <div className={styles.paperWaitingBadge}>
+                  <BrandLoader size="sm" label="Waiting for draft" />
                 </div>
               ) : null}
-              <div className={streaming && docEmpty ? styles.editorHidden : undefined}>
+              <div className={streaming && docEmpty && showPaperLoader ? styles.editorHidden : undefined}>
                 <EditorContent editor={editor} />
               </div>
               <div ref={paperEndRef} className={styles.paperEnd} aria-hidden />
@@ -1341,7 +1475,7 @@ export function PoliciesDraftPage() {
               disabled={streaming || noBalance}
               placeholder="Tell MLA what you want to draft, revise or review…"
               aria-label="Ask MLA"
-              rows={4}
+              rows={3}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -1367,12 +1501,7 @@ export function PoliciesDraftPage() {
                 >
                   Stop
                 </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  pending={streaming}
-                  disabled={!prompt.trim() || noBalance}
-                >
+                <Button type="submit" size="sm" pending={streaming} disabled={!prompt.trim() || noBalance}>
                   Ask MLA
                 </Button>
               </div>
