@@ -7,6 +7,7 @@
  * verify_jwt: true
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { ensureInitialPaidAiCredits } from '../_shared/org-ai-credits.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -220,6 +221,9 @@ Deno.serve(async (req) => {
       code: 'plan_required',
     }, 403)
   }
+
+  // Paid live orgs that never got a subscription grant (pre-credits checkout) get a one-time seed.
+  await ensureInitialPaidAiCredits(supabase, orgId, { source: 'draft-policy' })
 
   const { data: balanceRow } = await supabase
     .from('org_ai_credit_balances')

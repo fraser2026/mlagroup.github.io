@@ -261,11 +261,15 @@ export function PoliciesDraftPage() {
 
   async function loadCredits() {
     if (!orgId) return
-    const { data } = await sb
+    // Org ledger only (not Claude Console). Missing row => $0 until webhook/backfill/ensure seeds it.
+    const { data, error } = await sb
       .from('org_ai_credit_balances')
       .select('balance_cents,monthly_allowance_cents,low_balance_cents')
       .eq('org_id', orgId)
       .maybeSingle()
+    if (error) {
+      console.warn('loadCredits', error.message)
+    }
     if (data) {
       setCredits(data as CreditBalance)
     } else {

@@ -4,7 +4,11 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno'
-import { refillAiCredits } from '../_shared/org-ai-credits.ts'
+import {
+  ensureInitialPaidAiCredits,
+  refillAiCredits,
+  resolveOrgIdForSubscription,
+} from '../_shared/org-ai-credits.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
@@ -131,8 +135,20 @@ serve(async (req) => {
         if (!subscriptionId) break
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-        const orgId = subscription.metadata?.org_id
-        if (!orgId) break
+        const customerId =
+          typeof invoice.customer === 'string'
+            ? invoice.customer
+            : (invoice.customer as { id?: string } | null)?.id ||
+              (typeof subscription.customer === 'string' ? subscription.customer : null)
+        const orgId = await resolveOrgIdForSubscription(supabase, {
+          metadataOrgId: subscription.metadata?.org_id,
+          subscriptionId,
+          customerId,
+        })
+        if (!orgId) {
+          console.error('invoice.paid: could not resolve org for subscription', subscriptionId)
+          break
+        }
 
         const periodEnd = new Date(subscription.current_period_end * 1000).toISOString()
         const priceId = subscription.items.data[0]?.price?.id || ''
@@ -144,6 +160,8 @@ serve(async (req) => {
             subscription_status: 'active',
             subscription_period_end: periodEnd,
             plan: plan,
+            stripe_subscription_id: subscriptionId,
+            ...(customerId ? { stripe_customer_id: customerId } : {}),
           })
           .eq('id', orgId)
 
@@ -161,7 +179,7 @@ serve(async (req) => {
           source: 'invoice.paid',
         })
 
-        console.log('Invoice paid — renewed org:', orgId, 'until:', periodEnd)
+        console.log('Invoice paid - renewed org:', orgId, 'until:', periodEnd)
         break
       }
 
@@ -171,7 +189,15 @@ serve(async (req) => {
         if (!subscriptionId) break
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-        const orgId = subscription.metadata?.org_id
+        const customerId =
+          typeof invoice.customer === 'string'
+            ? invoice.customer
+            : (typeof subscription.customer === 'string' ? subscription.customer : null)
+        const orgId = await resolveOrgIdForSubscription(supabase, {
+          metadataOrgId: subscription.metadata?.org_id,
+          subscriptionId,
+          customerId,
+        })
         if (!orgId) break
 
         await supabase
@@ -191,7 +217,13 @@ serve(async (req) => {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription
-        const orgId = subscription.metadata?.org_id
+        const customerId =
+          typeof subscription.customer === 'string' ? subscription.customer : null
+        const orgId = await resolveOrgIdForSubscription(supabase, {
+          metadataOrgId: subscription.metadata?.org_id,
+          subscriptionId: subscription.id,
+          customerId,
+        })
         if (!orgId) break
 
         const priceId = subscription.items.data[0]?.price?.id || ''
@@ -210,6 +242,8 @@ serve(async (req) => {
             plan: plan,
             subscription_status: status,
             subscription_period_end: periodEnd,
+            stripe_subscription_id: subscription.id,
+            ...(customerId ? { stripe_customer_id: customerId } : {}),
           })
           .eq('id', orgId)
 
@@ -219,6 +253,16 @@ serve(async (req) => {
             .update({ status: 'suspended' })
             .eq('org_id', orgId)
             .eq('status', 'active')
+        }
+
+        // Only seed credits if this paid org never received a subscription grant
+        // (migration gap). Do not refill-to-cap on every subscription.updated.
+        if (status === 'active' || status === 'trialing') {
+          await ensureInitialPaidAiCredits(supabase, orgId, {
+            plan,
+            source: 'customer.subscription.updated',
+            stripe_event_id: event.id,
+          })
         }
 
         await supabase.from('registry_audit_log').insert({
@@ -239,7 +283,13 @@ serve(async (req) => {
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
-        const orgId = subscription.metadata?.org_id
+        const customerId =
+          typeof subscription.customer === 'string' ? subscription.customer : null
+        const orgId = await resolveOrgIdForSubscription(supabase, {
+          metadataOrgId: subscription.metadata?.org_id,
+          subscriptionId: subscription.id,
+          customerId,
+        })
         if (!orgId) break
 
         await supabase
