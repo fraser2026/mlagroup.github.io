@@ -15,6 +15,7 @@ import type { ToastItem } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { actorName, writeAuditLog } from '../lib/audit'
+import { canDraftPolicies, canPublishPolicies, canUsePolicyDrafting } from '../lib/org'
 import { POLICY_CATS, renderPolicyMarkdown } from '../lib/policyMarkdown'
 import { sb } from '../lib/supabase'
 import styles from './PoliciesPage.module.css'
@@ -43,15 +44,18 @@ type Ack = {
 
 export function PoliciesDetailPage() {
   const { id } = useParams()
-  const { session, org, profile } = useAuth()
+  const { session, org, profile, role } = useAuth()
   const orgId = org?.id || null
   const userId = session?.user?.id
+  const canPublish = canPublishPolicies(role)
+  const canContinueDraft = canUsePolicyDrafting(org) && canDraftPolicies(role)
   const [policy, setPolicy] = useState<Policy | null>(null)
   const [acks, setAcks] = useState<Ack[]>([])
   const [names, setNames] = useState<Record<string, string>>({})
   const [docUrl, setDocUrl] = useState('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  const [publishing, setPublishing] = useState(false)
   const [error, setError] = useState('')
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
@@ -153,8 +157,57 @@ export function PoliciesDetailPage() {
     (a) => a.user_id === userId && a.version_acknowledged === policy?.version,
   )
 
+  async function publishPolicy() {
+    if (!policy || !orgId || !userId || !canPublish || policy.published_at) return
+    setPublishing(true)
+    setError('')
+    const publishedAt = new Date().toISOString()
+    const { data: publishedRow, error: updateErr } = await sb
+      .from('policy_documents')
+      .update({
+        published_at: publishedAt,
+        requires_acknowledgment: true,
+        acknowledgment_frequency: 'on_update',
+        updated_at: publishedAt,
+      })
+      .eq('id', policy.id)
+      .eq('org_id', orgId)
+      .is('published_at', null)
+      .select('id,published_at,version,title')
+      .maybeSingle()
+    if (updateErr || !publishedRow?.published_at) {
+      setPublishing(false)
+      setError(updateErr?.message || 'Could not publish policy.')
+      return
+    }
+    // Hide orphan same-title unpublished drafts so the list does not show an Unpublished twin.
+    await sb
+      .from('policy_documents')
+      .update({ is_active: false, updated_at: publishedAt })
+      .eq('org_id', orgId)
+      .eq('title', policy.title || '')
+      .eq('is_active', true)
+      .is('published_at', null)
+      .neq('id', policy.id)
+    await writeAuditLog({
+      orgId,
+      userId,
+      action: 'policy_published',
+      entityType: 'policy',
+      entityId: policy.id,
+      changes: {
+        _actor_name: actorName(profile?.full_name, session?.user?.email),
+        policy: (publishedRow.title as string) || policy.title,
+        version: (publishedRow.version as string) || policy.version,
+      },
+    })
+    await refresh()
+    setPublishing(false)
+    pushToast('Policy published.')
+  }
+
   async function acknowledge() {
-    if (!policy || !orgId || !userId) return
+    if (!policy || !orgId || !userId || !policy.published_at) return
     setBusy(true)
     setError('')
     pushToast('')
@@ -233,11 +286,12 @@ export function PoliciesDetailPage() {
   const metaLine = [POLICY_CATS[policy.category || ''] || policy.category, policy.version ? `v${policy.version}` : null]
     .filter(Boolean)
     .join(' ')
+  const isDraft = !policy.published_at
 
   return (
     <PageFrame
       railItems={[
-        { id: 'ack', label: 'Acknowledgment' },
+        { id: 'ack', label: isDraft ? 'Review' : 'Acknowledgment' },
         { id: 'content', label: 'Content' },
         { id: 'history', label: 'History' },
       ]}
@@ -246,7 +300,11 @@ export function PoliciesDetailPage() {
         title={title}
         description={
           <div className={styles.pageMeta}>
-            {userAcked ? (
+            {isDraft ? (
+              <StatusLabel badge tone="warn">
+                Unpublished
+              </StatusLabel>
+            ) : userAcked ? (
               <StatusLabel badge tone="ok">
                 Acknowledged
               </StatusLabel>
@@ -263,9 +321,26 @@ export function PoliciesDetailPage() {
           </div>
         }
         actions={
-          <Link to="/policies">
-            <Button variant="ghost">Back to policies</Button>
-          </Link>
+          <>
+            {isDraft && canContinueDraft ? (
+              <Link to={`/policies/draft/${policy.id}`}>
+                <Button variant="ghost">Continue editing</Button>
+              </Link>
+            ) : null}
+            {!isDraft && canPublish && canContinueDraft ? (
+              <Link to={`/policies/draft/${policy.id}`}>
+                <Button variant="ghost">Edit</Button>
+              </Link>
+            ) : null}
+            {isDraft && canPublish ? (
+              <Button pending={publishing} onClick={() => void publishPolicy()}>
+                Publish
+              </Button>
+            ) : null}
+            <Link to="/policies">
+              <Button variant="ghost">Back to policies</Button>
+            </Link>
+          </>
         }
       />
 
@@ -275,19 +350,34 @@ export function PoliciesDetailPage() {
         <Section id="ack" className={styles.block}>
           <div className={styles.work}>
             <div className={styles.workHead}>
-              <h2 className={styles.workTitle}>Acknowledgment</h2>
+              <h2 className={styles.workTitle}>{isDraft ? 'Review' : 'Acknowledgment'}</h2>
             </div>
             <div className={styles.lead}>
               {policy.description ? <p className={styles.bodyCopy}>{policy.description}</p> : null}
               <div className={styles.meta}>
-                {policy.updated_at
-                  ? `Updated ${new Date(policy.updated_at).toLocaleDateString()}`
-                  : policy.published_at
-                    ? `Published ${new Date(policy.published_at).toLocaleDateString()}`
-                    : 'Draft / unpublished'}
+                {isDraft
+                  ? 'Unpublished draft — review the content, then publish when ready.'
+                  : policy.updated_at
+                    ? `Updated ${new Date(policy.updated_at).toLocaleDateString()}`
+                    : policy.published_at
+                      ? `Published ${new Date(policy.published_at).toLocaleDateString()}`
+                      : 'Draft / unpublished'}
               </div>
 
-              {userAcked ? (
+              {isDraft ? (
+                <div className={styles.ackBlock}>
+                  <p className={styles.ackCopy}>
+                    This draft is not live for acknowledgment. Owner or admin can publish it to the library.
+                  </p>
+                  {canPublish ? (
+                    <div className={styles.actions}>
+                      <Button pending={publishing} onClick={() => void publishPolicy()}>
+                        Publish policy
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : userAcked ? (
                 <p className={styles.ackDone}>
                   You acknowledged this policy on{' '}
                   {userAcked.acknowledged_at
