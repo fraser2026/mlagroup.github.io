@@ -33,3 +33,11 @@
 .mainSolo {
   padding-bottom: var(--ra-space-6);
 }
+
+/* Fixed-height tools (draft workspace): keep rail, drop spy pad. */
+.mainDense {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--ra-space-5);
+  overflow: hidden;
+}

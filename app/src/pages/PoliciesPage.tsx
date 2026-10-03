@@ -19,6 +19,7 @@ import type { ToastItem } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { actorName, writeAuditLog } from '../lib/audit'
+import { canDraftPolicies, canUsePolicyDrafting } from '../lib/org'
 import { POLICY_CATS } from '../lib/policyMarkdown'
 import { sb } from '../lib/supabase'
 import styles from './PoliciesPage.module.css'
@@ -50,10 +51,11 @@ type Ack = {
 }
 
 export function PoliciesPage() {
-  const { session, org, profile } = useAuth()
+  const { session, org, profile, role } = useAuth()
   const navigate = useNavigate()
   const orgId = org?.id || null
   const userId = session?.user?.id
+  const showDraftCta = canUsePolicyDrafting(org) && canDraftPolicies(role)
   const [rows, setRows] = useState<Policy[]>([])
   const [acks, setAcks] = useState<Ack[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
@@ -120,7 +122,9 @@ export function PoliciesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, orgId])
 
-  const published = rows.filter((p) => p.published_at)
+  // published_at is the sole publish signal — never treat a published row as Unpublished.
+  const published = rows.filter((p) => Boolean(p.published_at))
+  const drafts = rows.filter((p) => !p.published_at)
   const pending = published.filter((p) => {
     if (!p.requires_acknowledgment) return false
     return !acks.some((a) => a.policy_id === p.id && a.version_acknowledged === p.version)
@@ -131,6 +135,12 @@ export function PoliciesPage() {
     if (!q) return published
     return published.filter((r) => `${r.title || ''} ${r.category || ''}`.toLowerCase().includes(q))
   }, [published, search])
+
+  const filteredDrafts = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return drafts
+    return drafts.filter((r) => `${r.title || ''} ${r.category || ''}`.toLowerCase().includes(q))
+  }, [drafts, search])
 
   const adoptedTitles = useMemo(() => {
     const set = new Set<string>()
@@ -221,6 +231,11 @@ export function PoliciesPage() {
       <PageHeader
         title="Governance Policies"
         description="Organisation policies requiring acknowledgment. Review, adopt templates, and track compliance."
+        actions={
+          showDraftCta ? (
+            <Button onClick={() => navigate('/policies/draft')}>Draft a policy</Button>
+          ) : undefined
+        }
       />
 
       {error ? <Notice tone="risk" title="Error">{error}</Notice> : null}
@@ -237,6 +252,7 @@ export function PoliciesPage() {
                 tone: 'ok',
               },
               { id: 'pending', label: 'Pending', value: pending.length, tone: pending.length ? 'warn' : 'ok' },
+              { id: 'drafts', label: 'Drafts', value: drafts.length },
             ]}
           />
           <FilterBar search={search} onSearchChange={setSearch} searchPlaceholder="Search policies" />
@@ -244,7 +260,14 @@ export function PoliciesPage() {
         {filtered.length === 0 ? (
           <EmptyState
             title="No policies published yet"
-            body="Adopt a template below to create your first governance policy."
+            body="Adopt a template below, or draft a policy, then publish when ready."
+            action={
+              showDraftCta ? (
+                <Button variant="ghost" onClick={() => navigate('/policies/draft')}>
+                  Draft a policy
+                </Button>
+              ) : undefined
+            }
           />
         ) : (
           <Ledger flush>
@@ -269,10 +292,34 @@ export function PoliciesPage() {
             })}
           </Ledger>
         )}
+        {filteredDrafts.length > 0 ? (
+          <>
+            <h2 className={styles.sectionLabelSpaced}>Drafts</h2>
+            <Ledger flush>
+              {filteredDrafts.map((p) => {
+                const cat = POLICY_CATS[p.category || ''] || p.category
+                const metaLine = [cat, p.version ? `v${p.version}` : null].filter(Boolean).join(' ')
+                return (
+                  <LedgerRow
+                    key={p.id}
+                    title={p.title || 'Untitled policy'}
+                    description={metaLine || undefined}
+                    meta={<StatusLabel tone="warn">Unpublished</StatusLabel>}
+                    onClick={() =>
+                      navigate(
+                        showDraftCta ? `/policies/draft/${p.id}` : `/policies/${p.id}`,
+                      )
+                    }
+                  />
+                )
+              })}
+            </Ledger>
+          </>
+        ) : null}
       </Section>
 
       <Section id="templates">
-        <h2 className={styles.sectionLabel}>Templates</h2>
+        <h2 className={styles.sectionLabelSpaced}>Templates</h2>
         {availableTemplates.length === 0 ? (
           <EmptyState title="No templates left" body="All available templates have been adopted." />
         ) : (
