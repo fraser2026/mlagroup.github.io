@@ -38,6 +38,18 @@ import {
   type DraftChatMessage,
   type DraftTier,
 } from '../lib/draftPolicy'
+import {
+  buildMetaWithThread,
+  clearAllDraftChatMemory,
+  getLiveChatSession,
+  migrateThread,
+  readThread,
+  rememberChatSession,
+  restoreChatSession as restoreChatSessionBase,
+  setLiveChatSession,
+  threadFromMeta,
+  type ThreadMsg,
+} from '../lib/draftChatSession'
 import { canDraftPolicies, canPublishPolicies, canUsePolicyDrafting } from '../lib/org'
 import { sb } from '../lib/supabase'
 import {
@@ -54,20 +66,10 @@ type CreditBalance = {
   low_balance_cents: number
 }
 
-type ThreadMsg = { id: string; role: 'user' | 'assistant'; content: string }
-
-type DraftChatSession = {
-  orgId: string
-  policyId: string | null
-  messages: ThreadMsg[]
-  prompt: string
-}
-
 const DEFAULT_TITLE = 'Untitled policy'
 const AUTOSAVE_MS = 900
 const AUTOSAVE_PREF_KEY = 'ra:policy-draft:autosave'
-const THREAD_KEY_PREFIX = 'ra:policy-draft:thread:'
-const PROMPT_KEY_PREFIX = 'ra:policy-draft:prompt:'
+const THREAD_PERSIST_MS = 500
 const STREAM_STALL_MS = 2200
 
 const TIER_OPTIONS = [
@@ -75,9 +77,6 @@ const TIER_OPTIONS = [
   { value: 'standard', label: 'Pro', description: 'Balanced governance work' },
   { value: 'premium', label: 'Ultra', description: 'Deep analysis and framework alignment' },
 ]
-
-/** In-memory session survives remounts (autosave toggle, soft navigate) without wiping chat. */
-let liveChatSession: DraftChatSession | null = null
 
 function uid() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -92,14 +91,6 @@ function isUntitled(value: string) {
 
 function lastDraftKey(orgId: string) {
   return `ra:policy-draft:last:${orgId}`
-}
-
-function threadKey(orgId: string, draftId: string | null) {
-  return `${THREAD_KEY_PREFIX}${orgId}:${draftId || 'new'}`
-}
-
-function promptKey(orgId: string, draftId: string | null) {
-  return `${PROMPT_KEY_PREFIX}${orgId}:${draftId || 'new'}`
 }
 
 function readLastDraftId(orgId: string): string | null {
@@ -142,104 +133,35 @@ function writeAutosavePref(on: boolean) {
   }
 }
 
-function parseThread(raw: string | null): ThreadMsg[] {
-  if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw) as ThreadMsg[]
-    return Array.isArray(parsed) ? parsed.filter((m) => m?.id && m?.role && typeof m.content === 'string') : []
-  } catch {
-    return []
-  }
+function restoreChatSession(orgId: string, draftId: string | null) {
+  return restoreChatSessionBase(orgId, draftId, readLastDraftId)
 }
 
-function readThread(orgId: string, draftId: string | null): ThreadMsg[] {
-  try {
-    return parseThread(sessionStorage.getItem(threadKey(orgId, draftId)))
-  } catch {
-    return []
+async function persistThreadMeta(
+  orgId: string,
+  policyId: string,
+  messages: ThreadMsg[],
+  prompt: string,
+) {
+  // Empty must not wipe a stored durable thread (remount races); New clears explicitly.
+  if (!messages.length && !prompt.trim()) return
+  const { data, error: loadErr } = await sb
+    .from('policy_documents')
+    .select('meta')
+    .eq('id', policyId)
+    .eq('org_id', orgId)
+    .maybeSingle()
+  if (loadErr) {
+    console.warn('persistThreadMeta load', loadErr.message)
+    return
   }
-}
-
-function writeThread(orgId: string, draftId: string | null, messages: ThreadMsg[]) {
-  try {
-    sessionStorage.setItem(threadKey(orgId, draftId), JSON.stringify(messages))
-  } catch {
-    /* ignore */
-  }
-}
-
-function readPrompt(orgId: string, draftId: string | null): string {
-  try {
-    return sessionStorage.getItem(promptKey(orgId, draftId)) || ''
-  } catch {
-    return ''
-  }
-}
-
-function writePrompt(orgId: string, draftId: string | null, value: string) {
-  try {
-    if (value) sessionStorage.setItem(promptKey(orgId, draftId), value)
-    else sessionStorage.removeItem(promptKey(orgId, draftId))
-  } catch {
-    /* ignore */
-  }
-}
-
-function clearThread(orgId: string, draftId: string | null) {
-  try {
-    sessionStorage.removeItem(threadKey(orgId, draftId))
-    sessionStorage.removeItem(promptKey(orgId, draftId))
-  } catch {
-    /* ignore */
-  }
-}
-
-function migrateThread(orgId: string, fromId: string | null, toId: string) {
-  if (fromId === toId) return
-  const msgs = readThread(orgId, fromId)
-  if (msgs.length) writeThread(orgId, toId, msgs)
-  const p = readPrompt(orgId, fromId)
-  if (p) writePrompt(orgId, toId, p)
-  clearThread(orgId, fromId)
-  if (liveChatSession?.orgId === orgId) {
-    liveChatSession = { orgId, policyId: toId, messages: msgs.length ? msgs : liveChatSession.messages, prompt: p || liveChatSession.prompt }
-  }
-}
-
-/** Prefer live memory, then storage for this draft / new, then sibling key. Never invent empty over a live thread. */
-function restoreChatSession(orgId: string, draftId: string | null): { messages: ThreadMsg[]; prompt: string } {
-  if (liveChatSession?.orgId === orgId) {
-    const sameDraft =
-      liveChatSession.policyId === draftId ||
-      (liveChatSession.policyId == null && draftId == null) ||
-      (liveChatSession.policyId != null && draftId != null && liveChatSession.policyId === draftId)
-    if (sameDraft || liveChatSession.messages.length) {
-      return { messages: liveChatSession.messages, prompt: liveChatSession.prompt }
-    }
-  }
-  const primary = readThread(orgId, draftId)
-  if (primary.length) return { messages: primary, prompt: readPrompt(orgId, draftId) }
-  if (draftId) {
-    const asNew = readThread(orgId, null)
-    if (asNew.length) {
-      migrateThread(orgId, null, draftId)
-      return { messages: asNew, prompt: readPrompt(orgId, draftId) || readPrompt(orgId, null) }
-    }
-  } else {
-    const remembered = readLastDraftId(orgId)
-    if (remembered) {
-      const fromLast = readThread(orgId, remembered)
-      if (fromLast.length) return { messages: fromLast, prompt: readPrompt(orgId, remembered) }
-    }
-  }
-  return { messages: [], prompt: readPrompt(orgId, draftId) }
-}
-
-function rememberChatSession(orgId: string, draftId: string | null, messages: ThreadMsg[], prompt: string) {
-  liveChatSession = { orgId, policyId: draftId, messages, prompt }
-  // Never clobber a stored thread with an empty array (common during remount / editor-null hydrate).
-  if (messages.length) writeThread(orgId, draftId, messages)
-  writePrompt(orgId, draftId, prompt)
+  const meta = buildMetaWithThread(data?.meta, messages, prompt)
+  const { error: updateErr } = await sb
+    .from('policy_documents')
+    .update({ meta })
+    .eq('id', policyId)
+    .eq('org_id', orgId)
+  if (updateErr) console.warn('persistThreadMeta', updateErr.message)
 }
 
 function ToolBtn({
@@ -424,6 +346,12 @@ export function PoliciesDraftPage() {
   const [policyVersion, setPolicyVersion] = useState('0.1')
   /** RA mark on paper only while waiting for first bytes or a stalled stream. */
   const [paperWaiting, setPaperWaiting] = useState(false)
+  /**
+   * Default composer highlight on draft load / chat-side attention.
+   * Cleared when focus moves to Editor or elsewhere outside the composer.
+   */
+  const [composerInvite, setComposerInvite] = useState(true)
+  const [composerPulse, setComposerPulse] = useState(false)
 
   const abortRef = useRef<AbortController | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
@@ -434,6 +362,7 @@ export function PoliciesDraftPage() {
   const policyIdRef = useRef<string | null>(policyId)
   const autosaveOnRef = useRef(autosaveOn)
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const threadPersistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastPersistedRef = useRef('')
   const skipAutosaveRef = useRef(false)
   const persistInFlightRef = useRef<Promise<boolean> | null>(null)
@@ -441,6 +370,14 @@ export function PoliciesDraftPage() {
   const pendingStreamMdRef = useRef<string | null>(null)
   const streamStallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const chatHydratedRef = useRef(false)
+  /** Which policy id's body was last applied into TipTap (prevents blank Edit skip). */
+  const contentAppliedForIdRef = useRef<string | null>(null)
+  /** Last known policy meta (for merge on save / thread persist). */
+  const policyMetaRef = useRef<Record<string, unknown>>({})
+  const messagesRef = useRef<ThreadMsg[]>(messages)
+  const promptRef = useRef(prompt)
+  messagesRef.current = messages
+  promptRef.current = prompt
 
   titleRef.current = title
   policyIdRef.current = policyId
@@ -639,11 +576,15 @@ export function PoliciesDraftPage() {
           return false
         }
 
+        const meta = buildMetaWithThread(policyMetaRef.current, messagesRef.current, promptRef.current)
+        policyMetaRef.current = meta
+
         let updateQuery = sb
           .from('policy_documents')
           .update({
             title: saveTitle,
             content: markdown,
+            meta,
             updated_at: now,
           })
           .eq('id', existingId)
@@ -662,7 +603,10 @@ export function PoliciesDraftPage() {
           if (source === 'manual') setSaving(false)
           return false
         }
+        contentAppliedForIdRef.current = existingId
       } else {
+        const meta = buildMetaWithThread({}, messagesRef.current, promptRef.current)
+        policyMetaRef.current = meta
         const { data, error: insertErr } = await sb
           .from('policy_documents')
           .insert({
@@ -677,6 +621,7 @@ export function PoliciesDraftPage() {
             published_at: null,
             created_by: userId,
             is_active: true,
+            meta,
           })
           .select('id')
           .single()
@@ -691,6 +636,7 @@ export function PoliciesDraftPage() {
 
         setPolicyId(data.id)
         policyIdRef.current = data.id
+        contentAppliedForIdRef.current = data.id
         writeLastDraftId(orgId, data.id)
         migrateThread(orgId, previousId, data.id)
         navigate(`/policies/draft/${data.id}`, { replace: true })
@@ -813,11 +759,11 @@ export function PoliciesDraftPage() {
       },
     })
 
+    // Keep MLA thread on the policy (meta + live cache) so Publish → Edit restores chat.
     if (orgId) {
       clearLastDraftId(orgId)
-      clearThread(orgId, id)
-      clearThread(orgId, null)
-      liveChatSession = { orgId, policyId: null, messages: [], prompt: '' }
+      rememberChatSession(orgId, id, messagesRef.current, promptRef.current)
+      void persistThreadMeta(orgId, id, messagesRef.current, promptRef.current)
     }
     setIsPublished(true)
     setPublishing(false)
@@ -867,10 +813,19 @@ export function PoliciesDraftPage() {
     return () => {
       abortRef.current?.abort()
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current)
+      if (threadPersistTimerRef.current) clearTimeout(threadPersistTimerRef.current)
       if (streamDocRafRef.current) cancelAnimationFrame(streamDocRafRef.current)
       if (streamStallTimerRef.current) clearTimeout(streamStallTimerRef.current)
     }
   }, [])
+
+  // One-shot restrained pulse when the default composer invite appears after hydrate.
+  useEffect(() => {
+    if (hydrating || !composerInvite) return
+    setComposerPulse(true)
+    const t = window.setTimeout(() => setComposerPulse(false), 900)
+    return () => window.clearTimeout(t)
+  }, [hydrating, routePolicyId])
 
   // Warn when leaving with unsaved edits (autosave off).
   useEffect(() => {
@@ -884,9 +839,9 @@ export function PoliciesDraftPage() {
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [saveState])
 
-  // Restore unpublished draft from URL, or last local draft id for this org.
+  // Restore draft/published body from URL. Always load TipTap from the row for an id
+  // unless we already applied that id's content this mount (first-save URL / remount).
   useEffect(() => {
-    // Wait for editor — do not flip hydrating false early (that used to persist [] and wipe chat).
     if (!orgReady || !orgId || !editor || !entitled || !canDraft) {
       if (orgReady && (!entitled || !canDraft || !orgId)) setHydrating(false)
       return
@@ -896,12 +851,17 @@ export function PoliciesDraftPage() {
 
     async function hydrate() {
       const id = routePolicyId || null
+      const live = getLiveChatSession()
 
-      // Soft restore: keep thread + editor when we already own this draft (first-save URL, remount).
-      const alreadyLoaded =
-        (policyIdRef.current === id || (id == null && policyIdRef.current == null)) &&
-        (messages.length > 0 || !editor!.isEmpty || liveChatSession?.orgId === orgId)
-      if (alreadyLoaded && policyIdRef.current === id && id) {
+      setError('')
+
+      // Soft path: same id already applied into the editor — only refresh chat cache.
+      if (
+        id &&
+        contentAppliedForIdRef.current === id &&
+        policyIdRef.current === id &&
+        !editor!.isEmpty
+      ) {
         const restored = restoreChatSession(orgId!, id)
         setMessages((prev) => (prev.length ? prev : restored.messages))
         if (restored.prompt) setPrompt((p) => p || restored.prompt)
@@ -909,15 +869,15 @@ export function PoliciesDraftPage() {
         return
       }
 
-      setError('')
-      // Only show full-page loader when we have no in-session content yet.
       const hasSession =
-        messages.length > 0 ||
-        (liveChatSession?.orgId === orgId && liveChatSession.messages.length > 0) ||
+        messagesRef.current.length > 0 ||
+        (live?.orgId === orgId && live.messages.length > 0) ||
         !editor!.isEmpty
       if (!hasSession) setHydrating(true)
 
       if (!id) {
+        contentAppliedForIdRef.current = null
+        policyMetaRef.current = {}
         const remembered = readLastDraftId(orgId!)
         if (remembered) {
           const { data } = await sb
@@ -942,25 +902,19 @@ export function PoliciesDraftPage() {
         if (!cancelled) {
           setPolicyId(null)
           policyIdRef.current = null
+          setIsPublished(false)
           const restored = restoreChatSession(orgId!, null)
           setMessages((prev) => (prev.length ? prev : restored.messages))
           if (restored.prompt) setPrompt((p) => p || restored.prompt)
           setHydrating(false)
+          setComposerInvite(true)
         }
-        return
-      }
-
-      if (policyIdRef.current === id && !editor!.isEmpty) {
-        const restored = restoreChatSession(orgId!, id)
-        setMessages((prev) => (prev.length ? prev : restored.messages))
-        if (restored.prompt) setPrompt((p) => p || restored.prompt)
-        setHydrating(false)
         return
       }
 
       const { data, error: loadErr } = await sb
         .from('policy_documents')
-        .select('id,title,content,published_at,version')
+        .select('id,title,content,published_at,version,meta')
         .eq('id', id)
         .eq('org_id', orgId!)
         .eq('is_active', true)
@@ -972,6 +926,8 @@ export function PoliciesDraftPage() {
         setError(loadErr?.message || 'Draft not found.')
         setPolicyId(null)
         policyIdRef.current = null
+        contentAppliedForIdRef.current = null
+        policyMetaRef.current = {}
         setIsPublished(false)
         setHydrating(false)
         return
@@ -985,6 +941,12 @@ export function PoliciesDraftPage() {
 
       const md = typeof data.content === 'string' ? data.content : ''
       const published = !!data.published_at
+      const metaObj =
+        data.meta && typeof data.meta === 'object' && !Array.isArray(data.meta)
+          ? { ...(data.meta as Record<string, unknown>) }
+          : {}
+      policyMetaRef.current = metaObj
+
       skipAutosaveRef.current = true
       setPolicyId(data.id)
       policyIdRef.current = data.id
@@ -993,13 +955,24 @@ export function PoliciesDraftPage() {
       setTitle((data.title as string) || DEFAULT_TITLE)
       editor!.commands.setContent(md ? markdownToHtml(md) : '')
       setDocEmpty(!md.trim())
+      contentAppliedForIdRef.current = data.id
       lastPersistedRef.current = `${(data.title as string) || ''}\n${md}`
       if (!published) writeLastDraftId(orgId!, data.id)
       setSaveState(md.trim() ? 'saved' : 'idle')
+
+      // Durable thread on the policy wins; fall back to live/session cache for same id.
+      const fromMeta = threadFromMeta(metaObj)
       const restored = restoreChatSession(orgId!, data.id)
-      setMessages((prev) => (prev.length ? prev : restored.messages))
-      if (restored.prompt) setPrompt((p) => p || restored.prompt)
+      const nextMessages = fromMeta?.messages?.length
+        ? fromMeta.messages
+        : restored.messages
+      const nextPrompt = fromMeta?.prompt || restored.prompt || ''
+      setMessages((prev) => (prev.length && !fromMeta?.messages?.length ? prev : nextMessages))
+      if (nextPrompt) setPrompt((p) => p || nextPrompt)
+      rememberChatSession(orgId!, data.id, nextMessages.length ? nextMessages : messagesRef.current, nextPrompt || promptRef.current)
+
       setHydrating(false)
+      setComposerInvite(true)
 
       requestAnimationFrame(() => {
         editorStageRef.current?.scrollTo({ top: 0 })
@@ -1012,6 +985,18 @@ export function PoliciesDraftPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgReady, orgId, entitled, canDraft, canPublish, editor, routePolicyId])
+
+  // Debounced durable chat persist onto policy_documents.meta.mla_thread.
+  useEffect(() => {
+    if (!orgId || !policyId || hydrating || !chatHydratedRef.current) return
+    if (threadPersistTimerRef.current) clearTimeout(threadPersistTimerRef.current)
+    threadPersistTimerRef.current = setTimeout(() => {
+      void persistThreadMeta(orgId, policyId, messages, prompt)
+    }, THREAD_PERSIST_MS)
+    return () => {
+      if (threadPersistTimerRef.current) clearTimeout(threadPersistTimerRef.current)
+    }
+  }, [orgId, policyId, messages, prompt, hydrating])
 
   // Debounced autosave when title changes (only if toggle on).
   useEffect(() => {
@@ -1202,6 +1187,7 @@ export function PoliciesDraftPage() {
     if (!confirmDiscardUnsaved()) return
     abortRef.current?.abort()
     if (persistTimerRef.current) clearTimeout(persistTimerRef.current)
+    if (threadPersistTimerRef.current) clearTimeout(threadPersistTimerRef.current)
 
     // Abandoning an unpublished draft via New should not leave an Unpublished twin in the library.
     const abandonId = policyIdRef.current
@@ -1210,7 +1196,11 @@ export function PoliciesDraftPage() {
       const now = new Date().toISOString()
       void sb
         .from('policy_documents')
-        .update({ is_active: false, updated_at: now })
+        .update({
+          is_active: false,
+          updated_at: now,
+          meta: buildMetaWithThread(policyMetaRef.current, [], ''),
+        })
         .eq('id', abandonId)
         .eq('org_id', orgId)
         .is('published_at', null)
@@ -1220,12 +1210,15 @@ export function PoliciesDraftPage() {
     }
 
     if (orgId) {
-      clearThread(orgId, policyId)
-      clearThread(orgId, null)
+      clearAllDraftChatMemory(orgId)
       clearLastDraftId(orgId)
+      setLiveChatSession({ orgId, policyId: null, messages: [], prompt: '' })
+    } else {
+      clearAllDraftChatMemory()
     }
-    liveChatSession = orgId ? { orgId, policyId: null, messages: [], prompt: '' } : null
     chatHydratedRef.current = true
+    contentAppliedForIdRef.current = null
+    policyMetaRef.current = {}
     setPolicyId(null)
     policyIdRef.current = null
     setIsPublished(false)
@@ -1237,6 +1230,7 @@ export function PoliciesDraftPage() {
     setSaveState('idle')
     setOfferSavePrompt(false)
     setPaperWaiting(false)
+    setComposerInvite(true)
     lastPersistedRef.current = ''
     skipAutosaveRef.current = true
     editor?.commands.clearContent()
@@ -1418,7 +1412,11 @@ export function PoliciesDraftPage() {
             </div>
           </div>
 
-          <div className={styles.docChrome} aria-label="Editor">
+          <div
+            className={styles.docChrome}
+            aria-label="Editor"
+            onPointerDown={() => setComposerInvite(false)}
+          >
             <div className={styles.docHeadRow}>
               <div className={styles.docPaneTitle}>Editor</div>
               <div className={styles.docActions}>
@@ -1469,7 +1467,11 @@ export function PoliciesDraftPage() {
             <EditorToolbar editor={editor} locked={streaming} />
           </div>
 
-          <div className={styles.messages} aria-label="MLA conversation">
+          <div
+            className={styles.messages}
+            aria-label="MLA conversation"
+            onPointerDown={() => setComposerInvite(true)}
+          >
             {messages.map((m) => {
               const thinking = streaming && m.role === 'assistant' && !m.content
               return (
@@ -1499,6 +1501,8 @@ export function PoliciesDraftPage() {
           <div
             ref={editorStageRef}
             className={`${styles.editorStage}${streaming ? ` ${styles.editorStageLocked}` : ''}`}
+            onPointerDown={() => setComposerInvite(false)}
+            onFocusCapture={() => setComposerInvite(false)}
             onKeyDown={(e) => {
               if (e.key === ' ' || e.key === 'PageDown' || e.key === 'PageUp') {
                 e.stopPropagation()
@@ -1529,17 +1533,28 @@ export function PoliciesDraftPage() {
             </div>
           </div>
 
-          <form className={styles.composer} onSubmit={onComposerSubmit}>
+          <form
+            className={styles.composer}
+            onSubmit={onComposerSubmit}
+            onPointerDown={() => setComposerInvite(true)}
+          >
             <textarea
               id="mla-composer"
               ref={composerRef}
-              className={styles.composerInput}
+              className={[
+                styles.composerInput,
+                composerInvite ? styles.composerInputInvite : '',
+                composerPulse ? styles.composerInputPulse : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               value={prompt}
               disabled={streaming || noBalance}
               placeholder="Tell MLA what you want to draft, revise or review…"
               aria-label="Ask MLA"
               rows={3}
               onChange={(e) => setPrompt(e.target.value)}
+              onFocus={() => setComposerInvite(true)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                   e.preventDefault()

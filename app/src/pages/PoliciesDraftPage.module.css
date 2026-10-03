@@ -276,14 +276,19 @@
 }
 
 .toolBtn:hover:not(:disabled) {
-  background: var(--ra-mist, color-mix(in srgb, var(--ra-ink) 5%, var(--ra-surface)));
-  color: var(--ra-ink);
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
 }
 
 .toolBtnActive {
-  background: color-mix(in srgb, var(--ra-blurple) 10%, var(--ra-surface));
-  border-color: color-mix(in srgb, var(--ra-blurple) 28%, var(--ra-line));
-  color: var(--ra-blurple-fg, var(--ra-blurple));
+  background: var(--ra-selected);
+  border-color: var(--ra-blurple);
+  color: var(--ra-blurple-fg);
+}
+
+.toolBtnActive:hover:not(:disabled) {
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
 }
 
 .toolBtn:disabled {
@@ -351,15 +356,29 @@
 
 .msgUser {
   align-self: flex-end;
-  background: color-mix(in srgb, var(--ra-blurple) 10%, var(--ra-surface));
-  border: 1px solid color-mix(in srgb, var(--ra-blurple) 28%, var(--ra-line));
+  background: var(--ra-selected);
+  border: 1px solid var(--ra-blurple);
   color: var(--ra-ink);
+}
+
+.msgUser:hover {
+  background: var(--ra-hover);
 }
 
 .msgAssistant {
   align-self: flex-start;
   background: var(--ra-canvas, var(--ra-bg, transparent));
   border: 1px solid var(--ra-line);
+  color: var(--ra-ink);
+}
+
+.msgAssistant:hover {
+  background: var(--ra-hover);
+}
+
+.msg::selection,
+.msg *::selection {
+  background: color-mix(in srgb, var(--ra-blurple) 28%, var(--ra-canvas));
   color: var(--ra-ink);
 }
 
@@ -412,23 +431,51 @@
   font-size: var(--draft-fs-ui);
   font-weight: var(--ra-fw-medium);
   line-height: 1.45;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
 }
 
 .composerInput::placeholder {
   color: var(--ra-text-3);
 }
 
-.composerInput:hover:not(:disabled) {
+.composerInput:hover:not(:disabled):not(:focus):not(.composerInputInvite) {
   border-color: var(--ra-border-hover, var(--ra-border));
 }
 
+/* Default chat-side invite + real focus — same blurple ring tokens as app inputs. */
+.composerInputInvite:not(:disabled),
 .composerInput:focus,
 .composerInput:focus-visible {
   outline: none;
   border-color: var(--ra-blurple);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ra-blurple) 22%, transparent);
-  background: transparent;
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+  background: var(--ra-focus-fill);
+}
+
+/* One-shot restrained attention on first paint / route open — not a looping glow. */
+.composerInputPulse:not(:disabled) {
+  animation: composerInvitePulse 900ms var(--ra-ease-out, ease) 1;
+}
+
+@keyframes composerInvitePulse {
+  0% {
+    box-shadow: 0 0 0 3px var(--ra-focus-ring);
+  }
+  45% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ra-blurple) 22%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 3px var(--ra-focus-ring);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composerInputPulse:not(:disabled) {
+    animation: none;
+  }
 }
 
 .composerInput:disabled {

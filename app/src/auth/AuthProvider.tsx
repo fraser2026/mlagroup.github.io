@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
+import { clearAllDraftChatMemory } from '../lib/draftChatSession'
 import { sb } from '../lib/supabase'
 import {
   loadOrgContext,
@@ -146,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) throw error
       },
       async signOut() {
+        clearAllDraftChatMemory()
         await sb.auth.signOut()
       },
     }),
