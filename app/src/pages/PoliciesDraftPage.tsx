@@ -53,10 +53,17 @@ import {
 } from '../lib/draftChatSession'
 import { canDraftPolicies, canPublishPolicies, canUsePolicyDrafting } from '../lib/org'
 import {
+  DEFAULT_DRAFT_VERSION,
   isPolicyUniqueViolation,
+  listActivePolicyTitleCatalog,
   lookupPolicyTitleVersionConflict,
   normalizePolicyTitle,
+  suggestCanonicalTitle,
   suggestNextPolicyVersion,
+  suggestVersionForTitleLineage,
+  trimPolicyTitle,
+  versionsForTitle,
+  type PolicyTitleCatalogEntry,
   type PolicyTitleVersionConflict,
 } from '../lib/policyVersionGuard'
 import { sb } from '../lib/supabase'
@@ -85,6 +92,7 @@ const AUTOSAVE_MS = 900
 const AUTOSAVE_PREF_KEY = 'ra:policy-draft:autosave'
 const THREAD_PERSIST_MS = 500
 const STREAM_STALL_MS = 2200
+const TITLE_CATALOG_MS = 400
 
 const TIER_OPTIONS = [
   { value: 'eco', label: 'Eco', description: 'Fast drafting' },
@@ -377,7 +385,14 @@ export function PoliciesDraftPage() {
   const [offerSavePrompt, setOfferSavePrompt] = useState(false)
   /** True when editing a published policy body (owner/admin only). */
   const [isPublished, setIsPublished] = useState(false)
-  const [policyVersion, setPolicyVersion] = useState('0.1')
+  const [policyVersion, setPolicyVersion] = useState(DEFAULT_DRAFT_VERSION)
+  /** User edited title in the identity row (stops silent AI overwrite). */
+  const [titleTouched, setTitleTouched] = useState(false)
+  /** User edited version explicitly (stops lineage prefill from replacing it). */
+  const [versionTouched, setVersionTouched] = useState(false)
+  /** Active org titles for lineage prefill + optional near-match hint. */
+  const [titleCatalog, setTitleCatalog] = useState<PolicyTitleCatalogEntry[]>([])
+  const [titleHint, setTitleHint] = useState<string | null>(null)
   /** Quiet Drawer when title+version collides with another active org policy. */
   const [conflictOpen, setConflictOpen] = useState(false)
   const [conflictDraft, setConflictDraft] = useState<ConflictDraft | null>(null)
@@ -406,6 +421,10 @@ export function PoliciesDraftPage() {
   const editorStageRef = useRef<HTMLDivElement | null>(null)
   const titleRef = useRef(title)
   const policyVersionRef = useRef(policyVersion)
+  const titleTouchedRef = useRef(titleTouched)
+  const versionTouchedRef = useRef(versionTouched)
+  const titleCatalogRef = useRef<PolicyTitleCatalogEntry[]>([])
+  const titleCatalogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const policyIdRef = useRef<string | null>(policyId)
   const autosaveOnRef = useRef(autosaveOn)
   const conflictOpenRef = useRef(false)
@@ -431,6 +450,9 @@ export function PoliciesDraftPage() {
 
   titleRef.current = title
   policyVersionRef.current = policyVersion
+  titleTouchedRef.current = titleTouched
+  versionTouchedRef.current = versionTouched
+  titleCatalogRef.current = titleCatalog
   policyIdRef.current = policyId
   autosaveOnRef.current = autosaveOn
   conflictOpenRef.current = conflictOpen
@@ -545,17 +567,103 @@ export function PoliciesDraftPage() {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }
 
+  function syncPaperTitle(nextTitle: string) {
+    if (!editor) return
+    const trimmed = trimPolicyTitle(nextTitle)
+    if (!trimmed || isUntitled(trimmed)) return
+    const markdown = tipTapJsonToMarkdown(editor.getJSON())
+    if (!markdown.trim()) return
+    const currentHeading = titleFromMarkdown(markdown, DEFAULT_TITLE)
+    if (normalizePolicyTitle(currentHeading) === normalizePolicyTitle(trimmed)) return
+    skipAutosaveRef.current = true
+    const nextMd = replaceLeadingTitle(markdown, trimmed)
+    editor.commands.setContent(markdownToHtml(nextMd) || '')
+    setDocEmpty(!nextMd.trim())
+  }
+
+  function refreshTitleHint(candidate: string, catalog = titleCatalogRef.current) {
+    if (isUntitled(candidate)) {
+      setTitleHint(null)
+      return
+    }
+    const suggested = suggestCanonicalTitle(candidate, catalog)
+    if (!suggested || normalizePolicyTitle(suggested) === normalizePolicyTitle(candidate)) {
+      setTitleHint(null)
+      return
+    }
+    setTitleHint(suggested)
+  }
+
+  function applyLineageVersion(forTitle: string, catalog = titleCatalogRef.current) {
+    if (versionTouchedRef.current || isUntitled(forTitle)) return
+    const next = suggestVersionForTitleLineage(versionsForTitle(catalog, forTitle))
+    if (next === policyVersionRef.current) return
+    setPolicyVersion(next)
+    policyVersionRef.current = next
+  }
+
+  async function refreshTitleCatalog() {
+    if (!orgId) {
+      setTitleCatalog([])
+      titleCatalogRef.current = []
+      return
+    }
+    const catalog = await listActivePolicyTitleCatalog(orgId, policyIdRef.current)
+    setTitleCatalog(catalog)
+    titleCatalogRef.current = catalog
+    refreshTitleHint(titleRef.current, catalog)
+    if (!versionTouchedRef.current && !isUntitled(titleRef.current)) {
+      applyLineageVersion(titleRef.current, catalog)
+    }
+  }
+
+  function scheduleTitleCatalogRefresh() {
+    if (titleCatalogTimerRef.current) clearTimeout(titleCatalogTimerRef.current)
+    titleCatalogTimerRef.current = setTimeout(() => {
+      void refreshTitleCatalog()
+    }, TITLE_CATALOG_MS)
+  }
+
+  function commitIdentityTitle(raw: string, opts?: { touched?: boolean; syncPaper?: boolean }) {
+    const next = trimPolicyTitle(raw) || DEFAULT_TITLE
+    const touched = opts?.touched ?? true
+    setTitle(next)
+    titleRef.current = next
+    if (touched) setTitleTouched(true)
+    if (opts?.syncPaper !== false) syncPaperTitle(next)
+    refreshTitleHint(next)
+    if (!versionTouchedRef.current) applyLineageVersion(next)
+    markDirty()
+    scheduleAutosaveRef.current()
+  }
+
+  function commitIdentityVersion(raw: string, opts?: { touched?: boolean }) {
+    const next = raw.trim() || DEFAULT_DRAFT_VERSION
+    setPolicyVersion(next)
+    policyVersionRef.current = next
+    if (opts?.touched !== false) setVersionTouched(true)
+    markDirty()
+    scheduleAutosaveRef.current()
+  }
+
   function maybeAutofillTitle(markdown: string) {
+    if (titleTouchedRef.current) return
     if (!isUntitled(titleRef.current)) return
     const next = titleFromMarkdown(markdown, DEFAULT_TITLE)
-    if (next && next !== DEFAULT_TITLE) setTitle(next)
+    if (!next || next === DEFAULT_TITLE) return
+    setTitle(next)
+    titleRef.current = next
+    refreshTitleHint(next)
+    applyLineageVersion(next)
+    scheduleTitleCatalogRefresh()
   }
 
   function fingerprintNow(): string {
     if (!editor) return ''
     const markdown = tipTapJsonToMarkdown(editor.getJSON())
     const saveTitle = titleRef.current.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
-    return `${saveTitle}\n${markdown}`
+    const saveVersion = policyVersionRef.current.trim() || DEFAULT_DRAFT_VERSION
+    return `${saveTitle}\n${saveVersion}\n${markdown}`
   }
 
   function markDirty() {
@@ -693,19 +801,15 @@ export function PoliciesDraftPage() {
   }
 
   function applyConflictIdentity(nextTitle: string, nextVersion: string) {
-    setTitle(nextTitle)
-    titleRef.current = nextTitle
+    const trimmed = trimPolicyTitle(nextTitle) || DEFAULT_TITLE
+    setTitle(trimmed)
+    titleRef.current = trimmed
+    setTitleTouched(true)
     setPolicyVersion(nextVersion)
     policyVersionRef.current = nextVersion
-    if (!editor) return
-    const markdown = tipTapJsonToMarkdown(editor.getJSON())
-    const currentHeading = titleFromMarkdown(markdown, DEFAULT_TITLE)
-    if (normalizePolicyTitle(currentHeading) !== normalizePolicyTitle(nextTitle)) {
-      skipAutosaveRef.current = true
-      const nextMd = replaceLeadingTitle(markdown, nextTitle)
-      editor.commands.setContent(markdownToHtml(nextMd) || '')
-      setDocEmpty(!nextMd.trim())
-    }
+    setVersionTouched(true)
+    setTitleHint(null)
+    syncPaperTitle(trimmed)
   }
 
   async function resolveConflictContinue() {
@@ -764,8 +868,9 @@ export function PoliciesDraftPage() {
       return false
     }
 
-    const saveTitle = titleRef.current.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
-    const saveVersion = policyVersionRef.current.trim() || '0.1'
+    const saveTitle =
+      trimPolicyTitle(titleRef.current) || titleFromMarkdown(markdown, DEFAULT_TITLE)
+    const saveVersion = policyVersionRef.current.trim() || DEFAULT_DRAFT_VERSION
     const fingerprint = `${saveTitle}\n${saveVersion}\n${markdown}`
     if (source !== 'manual' && fingerprint === lastPersistedRef.current && policyIdRef.current) {
       if (source === 'auto') setSaveState('saved')
@@ -984,8 +1089,9 @@ export function PoliciesDraftPage() {
       return
     }
 
-    const saveTitle = titleRef.current.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
-    const saveVersion = policyVersionRef.current.trim() || '0.1'
+    const saveTitle =
+      trimPolicyTitle(titleRef.current) || titleFromMarkdown(markdown, DEFAULT_TITLE)
+    const saveVersion = policyVersionRef.current.trim() || DEFAULT_DRAFT_VERSION
     const allowed = await ensureTitleVersionAvailable(saveTitle, saveVersion, 'publish')
     if (!allowed) return
 
@@ -1046,7 +1152,7 @@ export function PoliciesDraftPage() {
     // Drop orphan same-title drafts so the library does not keep an Unpublished twin.
     await deactivateUnpublishedSiblings(orgId, saveTitle, id)
 
-    const version = (publishedRow.version as string) || policyVersion || '0.1'
+    const version = (publishedRow.version as string) || policyVersion || DEFAULT_DRAFT_VERSION
     await writeAuditLog({
       orgId,
       userId,
@@ -1076,6 +1182,19 @@ export function PoliciesDraftPage() {
     if (orgId && entitled) void loadCredits()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId, entitled])
+
+  useEffect(() => {
+    if (!orgId || !entitled || !canDraft) {
+      setTitleCatalog([])
+      titleCatalogRef.current = []
+      return
+    }
+    void refreshTitleCatalog()
+    return () => {
+      if (titleCatalogTimerRef.current) clearTimeout(titleCatalogTimerRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId, entitled, canDraft, policyId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -1266,17 +1385,25 @@ export function PoliciesDraftPage() {
       setPolicyId(data.id)
       policyIdRef.current = data.id
       setIsPublished(published)
-      const loadedVersion = (data.version as string) || '0.1'
+      const loadedVersion = (data.version as string) || DEFAULT_DRAFT_VERSION
+      const loadedTitle = (data.title as string) || DEFAULT_TITLE
       setPolicyVersion(loadedVersion)
       policyVersionRef.current = loadedVersion
-      setTitle((data.title as string) || DEFAULT_TITLE)
+      setVersionTouched(true)
+      versionTouchedRef.current = true
+      setTitle(loadedTitle)
+      titleRef.current = loadedTitle
+      setTitleTouched(!isUntitled(loadedTitle))
+      titleTouchedRef.current = !isUntitled(loadedTitle)
+      setTitleHint(null)
       editor!.commands.setContent(md ? markdownToHtml(md) : '')
       setDocEmpty(!md.trim())
       contentAppliedForIdRef.current = data.id
-      lastPersistedRef.current = `${(data.title as string) || ''}\n${loadedVersion}\n${md}`
+      lastPersistedRef.current = `${loadedTitle}\n${loadedVersion}\n${md}`
       conflictShownKeyRef.current = ''
       if (!published) writeLastDraftId(orgId!, data.id)
       setSaveState(md.trim() ? 'saved' : 'idle')
+      void refreshTitleCatalog()
 
       // Durable thread on the policy wins; fall back to live/session cache for same id.
       const fromMeta = threadFromMeta(metaObj)
@@ -1540,9 +1667,15 @@ export function PoliciesDraftPage() {
     setPolicyId(null)
     policyIdRef.current = null
     setIsPublished(false)
-    setPolicyVersion('0.1')
-    policyVersionRef.current = '0.1'
+    setPolicyVersion(DEFAULT_DRAFT_VERSION)
+    policyVersionRef.current = DEFAULT_DRAFT_VERSION
+    setVersionTouched(false)
+    versionTouchedRef.current = false
     setTitle(DEFAULT_TITLE)
+    titleRef.current = DEFAULT_TITLE
+    setTitleTouched(false)
+    titleTouchedRef.current = false
+    setTitleHint(null)
     setMessages([])
     setPrompt('')
     setError('')
@@ -1560,6 +1693,7 @@ export function PoliciesDraftPage() {
     editor?.commands.clearContent()
     setDocEmpty(true)
     navigate('/policies/draft', { replace: true })
+    void refreshTitleCatalog()
   }
 
   function toggleAutosave() {
@@ -1792,6 +1926,74 @@ export function PoliciesDraftPage() {
                 ) : null}
               </div>
             </div>
+            <div className={styles.identityRow} aria-label="Policy title and version">
+              <label className={styles.identityField}>
+                <span className={styles.identityLabel}>Title</span>
+                <input
+                  className={styles.identityInput}
+                  type="text"
+                  value={isUntitled(title) ? '' : title}
+                  placeholder={DEFAULT_TITLE}
+                  disabled={streaming}
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-label="Policy title"
+                  onChange={(e) => {
+                    const next = e.target.value
+                    setTitle(next)
+                    titleRef.current = next
+                    setTitleTouched(true)
+                    titleTouchedRef.current = true
+                    refreshTitleHint(next)
+                    markDirty()
+                  }}
+                  onBlur={() => {
+                    commitIdentityTitle(titleRef.current, { touched: true, syncPaper: true })
+                    scheduleTitleCatalogRefresh()
+                  }}
+                />
+              </label>
+              <label className={`${styles.identityField} ${styles.identityVersion}`}>
+                <span className={styles.identityLabel}>Version</span>
+                <input
+                  className={styles.identityInput}
+                  type="text"
+                  value={policyVersion}
+                  disabled={streaming}
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-label="Policy version"
+                  onChange={(e) => {
+                    const next = e.target.value
+                    setPolicyVersion(next)
+                    policyVersionRef.current = next
+                    setVersionTouched(true)
+                    versionTouchedRef.current = true
+                    markDirty()
+                  }}
+                  onBlur={() => {
+                    commitIdentityVersion(policyVersionRef.current, { touched: true })
+                  }}
+                />
+              </label>
+            </div>
+            {titleHint ? (
+              <div className={styles.identityHint} role="note">
+                Similar to "{titleHint}".{' '}
+                <button
+                  type="button"
+                  className={styles.identityHintAction}
+                  disabled={streaming}
+                  onClick={() => {
+                    commitIdentityTitle(titleHint, { touched: true, syncPaper: true })
+                    setTitleHint(null)
+                    scheduleTitleCatalogRefresh()
+                  }}
+                >
+                  Use that title
+                </button>
+              </div>
+            ) : null}
             <EditorToolbar editor={editor} locked={streaming} />
           </div>
 

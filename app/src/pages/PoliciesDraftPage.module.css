@@ -191,6 +191,100 @@
   min-width: 0;
 }
 
+/* Title + version identity — same input family as conflict Drawer */
+.identityRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px;
+  gap: 8px;
+  padding: 0 12px 8px;
+  border-bottom: 1px solid var(--ra-line);
+  min-width: 0;
+}
+
+.identityField {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.identityVersion {
+  width: 88px;
+}
+
+.identityLabel {
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  line-height: 1.2;
+}
+
+.identityInput {
+  height: 28px;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--ra-border-field, var(--ra-border));
+  border-radius: var(--ra-radius-control);
+  padding: 0 10px;
+  font: inherit;
+  font-size: var(--draft-fs-ui);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+  background: var(--ra-canvas, var(--ra-surface));
+}
+
+.identityInput::placeholder {
+  color: var(--ra-text-3);
+}
+
+.identityInput:focus,
+.identityInput:focus-visible {
+  outline: none;
+  border-color: var(--ra-blurple);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.identityInput:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.identityHint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  padding: 6px 12px 8px;
+  border-bottom: 1px solid var(--ra-line);
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  line-height: 1.35;
+}
+
+.identityHintAction {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  font: inherit;
+  font-size: inherit;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-blurple);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.identityHintAction:hover:not(:disabled) {
+  color: var(--ra-blurple-hover, var(--ra-blurple));
+}
+
+.identityHintAction:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .autosaveToggle {
   display: inline-flex;
   align-items: center;
