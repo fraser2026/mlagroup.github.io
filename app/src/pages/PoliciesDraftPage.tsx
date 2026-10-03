@@ -375,6 +375,8 @@ export function PoliciesDraftPage() {
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'unsaved' | 'error'>('idle')
+  /** Brief ok-coloured "Saved" beside Save (Controls detail pattern); auto-clears. */
+  const [saveCue, setSaveCue] = useState(false)
   const [autosaveOn, setAutosaveOn] = useState(() => readAutosavePref())
   const [policyId, setPolicyId] = useState<string | null>(routePolicyId || null)
   const [hydrating, setHydrating] = useState(true)
@@ -431,6 +433,7 @@ export function PoliciesDraftPage() {
   /** Last conflict key shown so autosave does not re-open the modal every tick. */
   const conflictShownKeyRef = useRef('')
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const saveCueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const threadPersistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastPersistedRef = useRef('')
   const skipAutosaveRef = useRef(false)
@@ -567,6 +570,16 @@ export function PoliciesDraftPage() {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }
 
+  /** Quiet success on the Editor status slot — ok colour on the label only, then clear. */
+  function flashSavedCue() {
+    if (saveCueTimerRef.current) clearTimeout(saveCueTimerRef.current)
+    setSaveCue(true)
+    saveCueTimerRef.current = setTimeout(() => {
+      setSaveCue(false)
+      saveCueTimerRef.current = null
+    }, 2500)
+  }
+
   function syncPaperTitle(nextTitle: string) {
     if (!editor) return
     const trimmed = trimPolicyTitle(nextTitle)
@@ -672,6 +685,11 @@ export function PoliciesDraftPage() {
       if (fp === lastPersistedRef.current && policyIdRef.current) setSaveState('saved')
       return
     }
+    if (saveCueTimerRef.current) {
+      clearTimeout(saveCueTimerRef.current)
+      saveCueTimerRef.current = null
+    }
+    setSaveCue(false)
     setSaveState('unsaved')
     setOfferSavePrompt(false)
   }
@@ -1047,6 +1065,7 @@ export function PoliciesDraftPage() {
       setOfferSavePrompt(false)
       if (source === 'manual') {
         setSaving(false)
+        flashSavedCue()
         pushToast(isPublished ? 'Policy saved.' : 'Draft saved.')
       }
       return true
@@ -1174,6 +1193,7 @@ export function PoliciesDraftPage() {
     }
     setIsPublished(true)
     setPublishing(false)
+    flashSavedCue()
     pushToast('Policy published.')
     navigate(`/policies/${id}`, { replace: true })
   }
@@ -1233,6 +1253,7 @@ export function PoliciesDraftPage() {
     return () => {
       abortRef.current?.abort()
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current)
+      if (saveCueTimerRef.current) clearTimeout(saveCueTimerRef.current)
       if (threadPersistTimerRef.current) clearTimeout(threadPersistTimerRef.current)
       if (streamDocRafRef.current) cancelAnimationFrame(streamDocRafRef.current)
       if (streamStallTimerRef.current) clearTimeout(streamStallTimerRef.current)
@@ -1680,6 +1701,11 @@ export function PoliciesDraftPage() {
     setPrompt('')
     setError('')
     setSaveState('idle')
+    if (saveCueTimerRef.current) {
+      clearTimeout(saveCueTimerRef.current)
+      saveCueTimerRef.current = null
+    }
+    setSaveCue(false)
     setOfferSavePrompt(false)
     setPaperWaiting(false)
     setComposerInvite(true)
@@ -1796,7 +1822,7 @@ export function PoliciesDraftPage() {
           ? 'Unsaved'
           : saveState === 'error'
             ? 'Save failed'
-            : saveState === 'saved'
+            : saveCue
               ? 'Saved'
               : ''
 
@@ -1892,7 +1918,14 @@ export function PoliciesDraftPage() {
                   <span>Autosave</span>
                 </label>
                 {saveSlotLabel ? (
-                  <span className={styles.saveStatus} aria-live="polite">
+                  <span
+                    className={
+                      saveCue && saveSlotLabel === 'Saved'
+                        ? `${styles.saveStatus} ${styles.saveStatusOk}`
+                        : styles.saveStatus
+                    }
+                    aria-live="polite"
+                  >
                     {saveSlotLabel}
                   </span>
                 ) : (
