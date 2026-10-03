@@ -8,6 +8,12 @@
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { ensureInitialPaidAiCredits } from '../_shared/org-ai-credits.ts'
+import {
+  applyOrgFill,
+  formatDraftEffectiveDate,
+  orgFillPromptBlock,
+  type OrgFillContext,
+} from '../_shared/org-fill.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -105,15 +111,17 @@ function tierDepthBrief(tier: Tier): string {
 - Mention relevant frameworks at theme level; avoid sprawling appendices unless the user asks.`
 }
 
-function buildSystemPrompt(orgName: string, tier: Tier, existingDoc?: string): string {
-  const org = (orgName || '').trim() || 'the organisation'
+function buildSystemPrompt(fill: OrgFillContext, tier: Tier, existingDoc?: string): string {
+  const org = (fill.orgName || '').trim() || 'the organisation'
   const docHint = existingDoc?.trim()
     ? `\nREVISION MODE:\nThe user already has a draft document. Revise or extend it as requested. Preserve sound structure; improve substance, formality, and table quality. Do not discard unrelated sections unless asked. Current document:\n<<<CURRENT_DOC\n${existingDoc.trim()}\nCURRENT_DOC<<<\n`
     : ''
 
   return `You are MLA (Machine Learning Assurance), the proprietary assurance intelligence layer for RegAnchor (product). MLA Group Ltd is the legal entity behind the capability. When referred to by name, acknowledge you are MLA. Persona: precise governance and compliance operator - not a chatbot, not a marketer.
 
-You draft for the organisation "${org}". Use that name in the document where an organisation name belongs. For any other org-specific fact you do not know (named owners, dates, systems, jurisdictions, contact emails), use square-bracket placeholders such as [AI Governance Lead], [Effective date], [System name] - or ask one short clarifying question in the chat channel if the missing fact is critical to the draft. Never invent people, dates, citations, registration numbers, or audit findings.
+You draft for the organisation "${org}". Use that name in the document where an organisation name belongs. For any other org-specific fact you do not know (named owners beyond KNOWN ORG FACTS, systems, jurisdictions, contact emails, timeframes, tool register names), use square-bracket placeholders such as [AI Governance Lead], [System name], [timeframe] - or ask one short clarifying question in the chat channel if the missing fact is critical to the draft. Never invent people, dates, citations, registration numbers, or audit findings.
+
+${orgFillPromptBlock(fill)}
 
 BUYER JOBS (write so both can skim the document - jobs, not a forced outline):
 1) Audit / regulatory readiness - clear obligations, ownership, and evidence/review hooks appropriate to the policy type.
@@ -141,7 +149,7 @@ DOCUMENT QUALITY (anti-slop):
 
 STRUCTURE PRINCIPLES (not a fixed skeleton - vary by policy type):
 - Deliver publishable substance that serves the buyer jobs above. Structure follows the job and policy type, not a universal Mad Libs outline.
-- Always: single H1 title; short document-control line (version, [Effective date], owner role placeholder when useful); numbered ## sections with real content; closing _Version x.y - Effective from [Effective date]_.
+- Always: single H1 title; short document-control line (version, effective date from KNOWN ORG FACTS, owner from KNOWN ORG FACTS or a role placeholder when useful); numbered ## sections with real content; closing _Version x.y - Effective from {effective date}_.
 - Choose sections that belong to this instrument. AUP ≠ model/risk ≠ vendor AI ≠ data governance ≠ roles matrix. Do not force Purpose/Scope/RACI/Records/Frameworks/Review onto every draft.
 - When the ask maps to a RegAnchor catalogue type, prefer that type's natural outline (live policy_templates cues):
   - Acceptable Use: Purpose → Acceptable use → Prohibited use → Reporting (add ownership/review only if needed)
@@ -309,6 +317,20 @@ Deno.serve(async (req) => {
 
   if (!org) return json({ error: 'Organisation not found' }, 404)
 
+  // Stage A: deterministic fill context (org name, draft-day date, requesting member when named).
+  const { data: actorProfile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .maybeSingle()
+  const documentOwner = String(actorProfile?.full_name || '').trim() || null
+  const orgFill: OrgFillContext = {
+    orgName: String(org.name || '').trim() || 'Organisation',
+    effectiveDate: formatDraftEffectiveDate(),
+    documentOwner,
+  }
+  const fillDoc = (doc: string) => applyOrgFill(stabilizeDocMarkdown(doc), orgFill)
+
   const plan = String(org.plan || '').toLowerCase()
   const status = String(org.subscription_status || '').toLowerCase()
   const live = status === 'active' || status === 'trialing'
@@ -352,7 +374,7 @@ Deno.serve(async (req) => {
   }))
 
   const wantStream = body.stream !== false
-  const system = buildSystemPrompt(org.name || 'Organisation', tier, body.doc_markdown)
+  const system = buildSystemPrompt(orgFill, tier, body.doc_markdown)
   const maxTokens = TIER_MAX_TOKENS[tier]
 
   const upstream = await fetch(ANTHROPIC_MESSAGES_URL, {
@@ -418,11 +440,16 @@ Deno.serve(async (req) => {
       const nextBalance = await finalizeDebit(usage)
       return json({
         chat,
-        doc_markdown: stabilizeDocMarkdown(doc),
+        doc_markdown: fillDoc(doc),
         usage,
         balance_cents: nextBalance,
         tier,
         model: usage.model,
+        org_fill: {
+          org_name: orgFill.orgName,
+          effective_date: orgFill.effectiveDate,
+          document_owner: orgFill.documentOwner,
+        },
       })
     } catch {
       return json({ error: 'Failed to parse provider response' }, 502)
@@ -466,10 +493,11 @@ Deno.serve(async (req) => {
               if (piece) controller.enqueue(encoder.encode(sseLine({ type: 'chat_delta', text: piece })))
               lastChat = chat
             }
-            const stableDoc = stabilizeDocMarkdown(doc)
+            const stableDoc = fillDoc(doc)
             if (stableDoc !== lastDoc) {
               // Prefer full doc_set for TipTap sync fidelity after marker appears.
               // Incomplete trailing tables are held back until column-complete.
+              // Stage A org fill applied before paint so dates/owners land progressively.
               controller.enqueue(encoder.encode(sseLine({ type: 'doc_set', markdown: stableDoc })))
               lastDoc = stableDoc
             }
@@ -487,7 +515,7 @@ Deno.serve(async (req) => {
               if (piece) controller.enqueue(encoder.encode(sseLine({ type: 'chat_delta', text: piece })))
               lastChat = chat
             }
-            const stableDoc = stabilizeDocMarkdown(doc)
+            const stableDoc = fillDoc(doc)
             if (stableDoc !== lastDoc) {
               controller.enqueue(encoder.encode(sseLine({ type: 'doc_set', markdown: stableDoc })))
               lastDoc = stableDoc
@@ -496,7 +524,7 @@ Deno.serve(async (req) => {
         }
 
         const finalParsed = parseDualChannel(assembled)
-        const finalDoc = finalParsed.doc || lastDoc
+        const finalDoc = fillDoc(finalParsed.doc || lastDoc)
         const finalChat = finalParsed.chat || lastChat
         const nextBalance = await finalizeDebit(usage)
         controller.enqueue(encoder.encode(sseLine({
@@ -516,6 +544,11 @@ Deno.serve(async (req) => {
           doc_markdown: finalDoc,
           balance_cents: nextBalance,
           usage,
+          org_fill: {
+            org_name: orgFill.orgName,
+            effective_date: orgFill.effectiveDate,
+            document_owner: orgFill.documentOwner,
+          },
         })))
       } catch (err) {
         console.error('draft-policy stream failed', err instanceof Error ? err.message : err)

@@ -52,6 +52,12 @@ import {
 } from '../lib/draftChatSession'
 import { canDraftPolicies, canPublishPolicies, canUsePolicyDrafting } from '../lib/org'
 import { sb } from '../lib/supabase'
+import { PlaceholderHighlight } from '../lib/placeholderHighlight'
+import {
+  listUniquePlaceholders,
+  placeholderLabel,
+  replacePlaceholderAll,
+} from '../lib/policyPlaceholders'
 import {
   formatUsdCents,
   markdownToHtml,
@@ -352,6 +358,10 @@ export function PoliciesDraftPage() {
    */
   const [composerInvite, setComposerInvite] = useState(true)
   const [composerPulse, setComposerPulse] = useState(false)
+  /** Unique remaining [bracket] fields after stream / edits (Stage B). */
+  const [reviewTokens, setReviewTokens] = useState<string[]>([])
+  /** Draft values keyed by placeholder token for the Review fields strip. */
+  const [reviewDrafts, setReviewDrafts] = useState<Record<string, string>>({})
 
   const abortRef = useRef<AbortController | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
@@ -419,6 +429,7 @@ export function PoliciesDraftPage() {
       TableRow,
       TableHeader,
       TableCell,
+      PlaceholderHighlight,
     ],
     content: '',
     editable: true,
@@ -451,6 +462,38 @@ export function PoliciesDraftPage() {
       setDocEmpty(ed.isEmpty)
     },
   })
+
+  function refreshReviewFields(markdown?: string) {
+    if (!editor && markdown == null) {
+      setReviewTokens([])
+      return
+    }
+    const md = markdown ?? (editor ? tipTapJsonToMarkdown(editor.getJSON()) : '')
+    const tokens = listUniquePlaceholders(md)
+    setReviewTokens(tokens)
+    setReviewDrafts((prev) => {
+      const next: Record<string, string> = {}
+      for (const token of tokens) {
+        if (prev[token] != null) next[token] = prev[token]
+      }
+      return next
+    })
+  }
+
+  function applyReviewField(token: string) {
+    if (!editor || streaming) return
+    const value = (reviewDrafts[token] || '').trim()
+    if (!value) return
+    const markdown = tipTapJsonToMarkdown(editor.getJSON())
+    const next = replacePlaceholderAll(markdown, token, value)
+    if (next === markdown) return
+    skipAutosaveRef.current = true
+    editor.commands.setContent(markdownToHtml(next) || '')
+    setDocEmpty(!next.trim())
+    refreshReviewFields(next)
+    markDirty()
+    scheduleAutosaveRef.current()
+  }
 
   function pushToast(text: string) {
     if (!text.trim()) return
@@ -508,6 +551,13 @@ export function PoliciesDraftPage() {
     maybeAutofillTitle(markdown)
     scrollPaperToEnd('auto')
   }
+
+  // Stage B: rescan remaining [brackets] when the paper settles (not mid-stream).
+  useEffect(() => {
+    if (!editor || streaming || hydrating) return
+    refreshReviewFields()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, streaming, hydrating, docEmpty])
 
   /** Coalesce rapid doc_set bursts onto one frame so the paper still grows progressively. */
   function queueStreamDoc(markdown: string) {
@@ -1247,6 +1297,8 @@ export function PoliciesDraftPage() {
     setPaperWaiting(false)
     setComposerInvite(true)
     lastPersistedRef.current = ''
+    setReviewTokens([])
+    setReviewDrafts({})
     skipAutosaveRef.current = true
     editor?.commands.clearContent()
     setDocEmpty(true)
@@ -1544,6 +1596,56 @@ export function PoliciesDraftPage() {
               </div>
               <div ref={paperEndRef} className={styles.paperEnd} aria-hidden />
             </div>
+
+            {!streaming && !docEmpty && reviewTokens.length > 0 ? (
+              <div className={styles.reviewFields} aria-label="Review fields">
+                <div className={styles.reviewFieldsTitle}>Review fields</div>
+                <div className={styles.reviewFieldsHint}>
+                  Remaining gaps in the document. Apply replaces every instance.
+                </div>
+                <ul className={styles.reviewFieldsList}>
+                  {reviewTokens.map((token, index) => {
+                    const draft = reviewDrafts[token] || ''
+                    const canApply = Boolean(draft.trim())
+                    const fieldId = `review-field-${index}`
+                    return (
+                      <li key={token} className={styles.reviewFieldRow}>
+                        <label className={styles.reviewFieldLabel} htmlFor={fieldId}>
+                          {placeholderLabel(token)}
+                        </label>
+                        <input
+                          id={fieldId}
+                          className={styles.reviewFieldInput}
+                          type="text"
+                          value={draft}
+                          disabled={streaming}
+                          placeholder={token}
+                          autoComplete="off"
+                          onChange={(e) =>
+                            setReviewDrafts((prev) => ({ ...prev, [token]: e.target.value }))
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              applyReviewField(token)
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          disabled={!canApply || streaming}
+                          onClick={() => applyReviewField(token)}
+                        >
+                          Apply
+                        </Button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ) : null}
           </div>
 
           <form ref={composerFormRef} className={styles.composer} onSubmit={onComposerSubmit}>
