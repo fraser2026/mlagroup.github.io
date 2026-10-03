@@ -9,7 +9,7 @@ type Props = {
   /** Centre in the viewport (auth / bridge gates). */
   viewport?: boolean
   /** Compact mark for tight chrome; default is page-scale. */
-  size?: 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg'
   className?: string
 }
 
@@ -29,7 +29,10 @@ export function BrandLoader({
       aria-label={label}
     >
       <svg
-        className={clsx(styles.mark, size === 'md' ? styles.md : styles.lg)}
+        className={clsx(
+          styles.mark,
+          size === 'sm' ? styles.sm : size === 'md' ? styles.md : styles.lg,
+        )}
         viewBox="0 0 85.28 54"
         aria-hidden
       >

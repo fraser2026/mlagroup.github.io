@@ -13,6 +13,7 @@ import { ControlsPage } from './pages/ControlsPage'
 import { ControlsDetailPage } from './pages/ControlsDetailPage'
 import { PoliciesPage } from './pages/PoliciesPage'
 import { PoliciesDetailPage } from './pages/PoliciesDetailPage'
+import { PoliciesDraftPage } from './pages/PoliciesDraftPage'
 import { FrameworksPage } from './pages/FrameworksPage'
 import { FrameworkDetailPage } from './pages/FrameworkDetailPage'
 import { BuiltinFrameworkPage } from './pages/BuiltinFrameworkPage'
@@ -96,6 +97,8 @@ export default function App() {
               <Route path="controls" element={<ControlsPage />} />
               <Route path="controls/:id" element={<ControlsDetailPage />} />
               <Route path="policies" element={<PoliciesPage />} />
+              {/* Single route so first-save navigate does not remount and wipe the chat thread. */}
+              <Route path="policies/draft/:policyId?" element={<PoliciesDraftPage />} />
               <Route path="policies/:id" element={<PoliciesDetailPage />} />
               <Route path="integrations" element={<IntegrationsPage />} />
               <Route path="monitoring" element={<MonitoringPage />} />

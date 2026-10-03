@@ -95,6 +95,10 @@ verify_jwt = false
 # Authenticates a RegAnchor asset gateway capability, not a Supabase JWT.
 verify_jwt = false
 
+[functions.draft-policy]
+# Platform AI policy drafting. User JWT required; uses RegAnchor-owned provider secrets.
+verify_jwt = true
+
 [functions.mcp-auth]
 # Device start/token are public; approve validates the portal user JWT in-function.
 verify_jwt = false

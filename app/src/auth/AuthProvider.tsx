@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
+import { clearAllDraftChatMemory } from '../lib/draftChatSession'
 import { sb } from '../lib/supabase'
 import {
   loadOrgContext,
@@ -14,7 +15,10 @@ import {
   type Organisation,
   type OrgRole,
   canDeleteRegistry,
+  canDraftPolicies,
   canManageMembers,
+  canPublishPolicies,
+  canUsePolicyDrafting,
   canWriteRegistry,
   isPaidTier,
 } from '../lib/org'
@@ -31,6 +35,9 @@ type AuthState = {
   canWriteRegistry: boolean
   canDeleteRegistry: boolean
   isPaidTier: boolean
+  canUsePolicyDrafting: boolean
+  canDraftPolicies: boolean
+  canPublishPolicies: boolean
   refreshOrg: () => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signUp: (input: {
@@ -102,6 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       canWriteRegistry: canWriteRegistry(orgCtx.role),
       canDeleteRegistry: canDeleteRegistry(orgCtx.role),
       isPaidTier: isPaidTier(orgCtx.org),
+      canUsePolicyDrafting: canUsePolicyDrafting(orgCtx.org),
+      canDraftPolicies: canDraftPolicies(orgCtx.role),
+      canPublishPolicies: canPublishPolicies(orgCtx.role),
       async refreshOrg() {
         if (session?.user) await hydrateOrg(session.user)
       },
@@ -137,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) throw error
       },
       async signOut() {
+        clearAllDraftChatMemory()
         await sb.auth.signOut()
       },
     }),

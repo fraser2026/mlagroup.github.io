@@ -12,6 +12,7 @@
  */
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { refillAiCredits } from '../_shared/org-ai-credits.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
   apiVersion: '2023-10-16',
@@ -215,6 +216,13 @@ Deno.serve(async (req: Request) => {
         subscription_period_end: periodEnd,
       })
       .eq('id', orgId)
+
+    // Guest claim often has no Stripe event id with org yet — key by checkout session.
+    await refillAiCredits(supabase, orgId, `claim:${session_id}`, {
+      plan,
+      source: 'link-subscription',
+      checkout_session_id: session_id,
+    })
 
     await stripe.subscriptions.update(subscriptionId, {
       metadata: {

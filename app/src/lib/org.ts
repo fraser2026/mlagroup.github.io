@@ -73,6 +73,25 @@ export function canUseGovernanceDossier(org: Organisation | null) {
   return canUseAuditorAccess(org)
 }
 
+/** AI policy drafting — Essentials / Professional / Enterprise with live subscription. */
+export function canUsePolicyDrafting(org: Organisation | null) {
+  const plan = (org?.plan || '').toLowerCase()
+  return (
+    (plan === 'essentials' || plan === 'professional' || plan === 'enterprise') &&
+    hasLiveSubscription(org)
+  )
+}
+
+/** Roles that may create/edit unpublished policy drafts in the AI workspace. */
+export function canDraftPolicies(role: OrgRole | null) {
+  return role === 'owner' || role === 'admin' || role === 'editor'
+}
+
+/** Owner/admin may publish and edit published policy bodies. */
+export function canPublishPolicies(role: OrgRole | null) {
+  return role === 'owner' || role === 'admin'
+}
+
 /** Portal-parity profile self-heal (non-privileged fields only). */
 export async function ensureProfile(userId: string, email?: string | null) {
   const { data: profile } = await sb
