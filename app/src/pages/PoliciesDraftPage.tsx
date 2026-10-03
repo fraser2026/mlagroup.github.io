@@ -26,7 +26,6 @@ import {
   PageHeader,
   RaNum,
   SelectMenu,
-  StatusLabel,
   ToastStack,
 } from '../ui'
 import type { ToastItem } from '../ui'
@@ -228,39 +227,31 @@ function EditorToolbar({ editor, locked }: { editor: Editor | null; locked: bool
   )
 }
 
-function UsageMeter({
+function UsageLine({
   credits,
   balanceTone,
 }: {
   credits: CreditBalance | null
   balanceTone: 'neutral' | 'warn' | 'risk'
 }) {
-  const balance = credits?.balance_cents ?? 0
-  const low = credits?.low_balance_cents ?? 50
-  const showRemaining = balanceTone !== 'neutral' || balance <= low
+  if (!credits) {
+    return <span className={styles.usageLine}>Usage included</span>
+  }
+
+  const balance = credits.balance_cents
+  const allowance = credits.monthly_allowance_cents
+  const atFullAllowance = balanceTone === 'neutral' && balance >= allowance
 
   return (
-    <div className={styles.usageInline} data-tone={balanceTone}>
-      <span className={styles.usageLabel}>
-        {showRemaining ? (
-          <>
-            <RaNum>{formatUsdCents(balance)}</RaNum> remaining
-          </>
-        ) : (
-          'Included'
-        )}
-      </span>
-      <a
-        href="#"
-        className={styles.topUpLink}
-        title="Coming soon"
-        onClick={(e) => {
-          e.preventDefault()
-        }}
-      >
-        Top up
-      </a>
-    </div>
+    <span className={styles.usageLine} data-tone={balanceTone}>
+      {atFullAllowance ? (
+        'Usage included'
+      ) : (
+        <>
+          <RaNum>{formatUsdCents(balance)}</RaNum> remaining
+        </>
+      )}
+    </span>
   )
 }
 
@@ -864,54 +855,49 @@ export function PoliciesDraftPage() {
   const balanceTone = noBalance ? 'risk' : lowBalance ? 'warn' : 'neutral'
   const pageBlurb =
     'Use MLA to draft, revise and structure your policy. Edit the document directly before saving.'
-  const saveHint =
-    saveState === 'saving'
-      ? 'Saving…'
-      : saveState === 'saved'
-        ? 'Saved'
-        : saveState === 'error'
-          ? 'Save failed'
-          : streaming
-            ? 'Drafting… · editing locked'
-            : 'Unpublished'
+  const statusLine = streaming ? 'Drafting…' : docEmpty ? '' : 'Unpublished'
 
   return (
     <PageFrame>
-      <PageHeader
-        title="Draft a policy"
-        description={
-          <>
-            <span>{pageBlurb}</span>
-            {orgName ? <span className={styles.orgLine}>Drafting for {orgName}</span> : null}
-          </>
-        }
-        actions={
-          <Link to="/policies">
-            <Button variant="ghost">Back to policies</Button>
-          </Link>
-        }
-      />
+      <div className={styles.draftPage}>
+        <PageHeader
+          title="Draft a policy"
+          description={
+            <>
+              <span>{pageBlurb}</span>
+              {orgName ? <span className={styles.orgLine}>Drafting for {orgName}</span> : null}
+            </>
+          }
+          actions={
+            <Link to="/policies">
+              <Button variant="ghost">Back to policies</Button>
+            </Link>
+          }
+        />
 
-      {error ? <Notice tone="risk" title="Error">{error}</Notice> : null}
-      {noBalance ? (
-        <Notice tone="warn" title="No AI credits">
-          Balance is empty. Credits refill to $5 USD on subscription renewal. Top-ups will be available later.
-        </Notice>
-      ) : null}
-      {lowBalance && !noBalance ? (
-        <Notice tone="warn" title="Low AI credits">
-          Balance is below {formatUsdCents(credits!.low_balance_cents)}. Consider a shorter prompt or Eco.
-        </Notice>
-      ) : null}
+        {error ? <Notice tone="risk" title="Error">{error}</Notice> : null}
+        {noBalance ? (
+          <Notice tone="warn" title="No AI credits">
+            Balance is empty. Credits refill to $5 USD on subscription renewal.
+          </Notice>
+        ) : null}
+        {lowBalance && !noBalance ? (
+          <Notice tone="warn" title="Low AI credits">
+            Balance is below {formatUsdCents(credits!.low_balance_cents)}. Consider a shorter prompt or Eco.
+          </Notice>
+        ) : null}
 
-      <div className={styles.shell}>
-        <aside className={styles.chatPane} aria-label="MLA conversation">
-          <div className={styles.chatHead}>
+        {/*
+          Shell layout (CSS grid):
+          row1 chatHead | docChrome  — equal height, shared hairline
+          row2 messages | editorStage
+          row3 composer | (editor spans)
+        */}
+        <div className={styles.shell}>
+          <div className={styles.chatHead} aria-label="MLA">
             <div className={styles.chatBrand}>
-              <div className={styles.chatBrandText}>
-                <div className={styles.chatHeadTitle}>MLA</div>
-                <p className={styles.chatHeadSupport}>Machine Learning Assurance</p>
-              </div>
+              <div className={styles.chatHeadTitle}>MLA</div>
+              <p className={styles.chatHeadSupport}>Machine Learning Assurance</p>
             </div>
             <div className={styles.chatMeta}>
               <div className={styles.tierWrap}>
@@ -923,11 +909,48 @@ export function PoliciesDraftPage() {
                   onChange={(v) => setTier((v as DraftTier) || 'eco')}
                 />
               </div>
-              <UsageMeter credits={credits} balanceTone={balanceTone} />
+              <UsageLine credits={credits} balanceTone={balanceTone} />
             </div>
           </div>
 
-          <div className={styles.messages}>
+          <div className={styles.docChrome} aria-label="Policy document">
+            <div className={styles.docHeadRow}>
+              <div className={styles.docHeadLeft}>
+                <div className={styles.docPaneLabel}>Policy document</div>
+                <input
+                  className={styles.docTitleInput}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  disabled={streaming}
+                  aria-label="Policy title"
+                />
+                <div className={styles.docMeta}>{statusLine}</div>
+              </div>
+              <div className={styles.docActions}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  disabled={streaming}
+                  onClick={() => startFresh()}
+                >
+                  New
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  pending={saving}
+                  disabled={streaming || saving || docEmpty}
+                  onClick={() => void persistDraft('manual')}
+                >
+                  {saveState === 'saved' && !saving ? 'Saved' : 'Save draft'}
+                </Button>
+              </div>
+            </div>
+            <EditorToolbar editor={editor} locked={streaming} />
+          </div>
+
+          <div className={styles.messages} aria-label="MLA conversation">
             {messages.map((m) => (
               <div
                 key={m.id}
@@ -937,6 +960,25 @@ export function PoliciesDraftPage() {
               </div>
             ))}
             <div ref={messagesEndRef} />
+          </div>
+
+          <div
+            ref={editorStageRef}
+            className={`${styles.editorStage}${streaming ? ` ${styles.editorStageLocked}` : ''}`}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || e.key === 'PageDown' || e.key === 'PageUp') {
+                e.stopPropagation()
+              }
+            }}
+          >
+            <div className={styles.paper}>
+              {docEmpty && !streaming ? (
+                <div className={styles.docEmpty}>
+                  <div className={styles.docEmptyTitle}>Your policy will appear here</div>
+                </div>
+              ) : null}
+              <EditorContent editor={editor} />
+            </div>
           </div>
 
           <form className={styles.composer} onSubmit={onComposerSubmit}>
@@ -957,7 +999,6 @@ export function PoliciesDraftPage() {
                   void sendPrompt()
                   return
                 }
-                // Plain Enter must never submit a parent form / reload.
                 if (e.key === 'Enter' && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
                   e.stopPropagation()
                 }
@@ -986,72 +1027,10 @@ export function PoliciesDraftPage() {
               </div>
             </div>
           </form>
-        </aside>
+        </div>
 
-        <section className={styles.docPane} aria-label="Policy document">
-          <div className={styles.docHead}>
-            <div className={styles.docHeadLeft}>
-              <div className={styles.docPaneLabel}>Policy document</div>
-              <input
-                className={styles.docTitleInput}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                disabled={streaming}
-                aria-label="Policy title"
-              />
-              <div className={styles.docMeta}>{saveHint}</div>
-            </div>
-            <div className={styles.docActions}>
-              {streaming ? <StatusLabel tone="info">Locked</StatusLabel> : null}
-              {!streaming && !docEmpty ? (
-                <StatusLabel tone="warn">Unpublished</StatusLabel>
-              ) : null}
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                disabled={streaming}
-                onClick={() => startFresh()}
-              >
-                New
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                pending={saving}
-                disabled={streaming || saving || docEmpty}
-                onClick={() => void persistDraft('manual')}
-              >
-                {saveState === 'saved' && !saving ? 'Saved' : 'Save draft'}
-              </Button>
-            </div>
-          </div>
-
-          <EditorToolbar editor={editor} locked={streaming} />
-
-          <div
-            ref={editorStageRef}
-            className={`${styles.editorStage}${streaming ? ` ${styles.editorStageLocked}` : ''}`}
-            onKeyDown={(e) => {
-              // Prevent browser chrome / page navigation side-effects while scrolling the doc.
-              if (e.key === ' ' || e.key === 'PageDown' || e.key === 'PageUp') {
-                e.stopPropagation()
-              }
-            }}
-          >
-            <div className={styles.paper}>
-              {docEmpty && !streaming ? (
-                <div className={styles.docEmpty}>
-                  <div className={styles.docEmptyTitle}>Your policy will appear here</div>
-                </div>
-              ) : null}
-              <EditorContent editor={editor} />
-            </div>
-          </div>
-        </section>
+        <ToastStack items={toasts} onDismiss={dismissToast} />
       </div>
-
-      <ToastStack items={toasts} onDismiss={dismissToast} />
     </PageFrame>
   )
 }

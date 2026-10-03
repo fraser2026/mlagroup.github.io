@@ -1,8 +1,33 @@
+/* Draft workspace — restrained type: 16 / 13 / 12. Shared head row via CSS grid. */
+
+.draftPage {
+  --draft-fs-title: 16px;
+  --draft-fs-ui: 13px;
+  --draft-fs-meta: 12px;
+}
+
+/* PageHeader override: page title stays on the 16/13/12 scale. */
+.draftPage :global(h1) {
+  font-size: var(--draft-fs-title);
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.orgLine {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+/* —— Shell: shared head row so pane hairlines align —— */
+
 .shell {
   display: grid;
   grid-template-columns: minmax(300px, 36%) minmax(0, 1fr);
-  gap: 0;
-  /* Explicit height so pane children can scroll (max-height alone does not). */
+  grid-template-rows: auto minmax(0, 1fr) auto;
   height: calc(100vh - 128px);
   max-height: calc(100vh - 128px);
   min-height: 420px;
@@ -15,76 +40,74 @@
 @media (max-width: 960px) {
   .shell {
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(280px, 50vh) auto auto minmax(320px, 50vh);
     height: auto;
     max-height: none;
     min-height: 0;
   }
 }
 
-.orgLine {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-3);
-}
+/* Row 1 — equal height across panes (grid stretches both cells) */
 
-/* —— MLA conversation (left) —— */
-
-.chatPane {
+.chatHead {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  justify-content: space-between;
+  gap: 10px;
   min-width: 0;
-  overflow: hidden;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--ra-line);
   border-right: 1px solid var(--ra-line, var(--ra-border));
+  background: color-mix(in srgb, var(--ra-mist, var(--ra-canvas)) 55%, var(--ra-surface));
+}
+
+.docChrome {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px 0;
+  border-bottom: 1px solid var(--ra-line);
   background: var(--ra-surface);
 }
 
 @media (max-width: 960px) {
-  .chatPane {
+  .chatHead {
+    grid-column: 1;
+    grid-row: 1;
     border-right: none;
-    border-bottom: 1px solid var(--ra-line);
-    min-height: 480px;
-    max-height: min(70vh, 640px);
   }
-}
 
-.chatHead {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex-shrink: 0;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--ra-line);
-  background: color-mix(in srgb, var(--ra-mist, var(--ra-canvas)) 55%, var(--ra-surface));
+  .docChrome {
+    grid-column: 1;
+    grid-row: 4;
+    padding-bottom: 0;
+  }
 }
 
 .chatBrand {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-width: 0;
-}
-
-.chatBrandText {
-  min-width: 0;
-  display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .chatHeadTitle {
-  font-size: 15px;
+  font-size: var(--draft-fs-ui);
   font-weight: var(--ra-fw-medium);
   color: var(--ra-ink);
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 .chatHeadSupport {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--draft-fs-meta);
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
   line-height: 1.35;
@@ -93,8 +116,9 @@
 .chatMeta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+  min-height: 32px;
 }
 
 .tierWrap {
@@ -102,183 +126,32 @@
   flex: 1 1 128px;
 }
 
-.usageInline {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.usageLine {
   flex-shrink: 0;
-  padding: 4px 2px;
-}
-
-.usageLabel {
-  font-size: 12px;
+  font-size: var(--draft-fs-meta);
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
   font-variant-numeric: tabular-nums;
   font-family: var(--ra-font-num), inherit;
+  line-height: 1.3;
 }
 
-.usageInline[data-tone='warn'] .usageLabel {
+.usageLine[data-tone='warn'] {
   color: var(--ra-warn);
 }
 
-.usageInline[data-tone='risk'] .usageLabel {
+.usageLine[data-tone='risk'] {
   color: var(--ra-risk);
 }
 
-.topUpLink {
-  font-size: 12px;
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-3);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
+/* Doc chrome top row */
 
-.topUpLink:hover {
-  color: var(--ra-blurple-fg, var(--ra-blurple));
-  border-bottom-color: color-mix(in srgb, var(--ra-blurple) 40%, transparent);
-}
-
-.messages {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: var(--ra-surface);
-}
-
-.msg {
-  max-width: 94%;
-  padding: 8px 10px;
-  border-radius: var(--ra-radius-control);
-  font-size: 13px;
-  font-weight: var(--ra-fw-medium);
-  line-height: 1.5;
-  white-space: pre-wrap;
-}
-
-.msgUser {
-  align-self: flex-end;
-  background: color-mix(in srgb, var(--ra-blurple) 10%, var(--ra-surface));
-  border: 1px solid color-mix(in srgb, var(--ra-blurple) 28%, var(--ra-line));
-  color: var(--ra-ink);
-}
-
-.msgAssistant {
-  align-self: flex-start;
-  background: var(--ra-canvas, var(--ra-bg, transparent));
-  border: 1px solid var(--ra-line);
-  color: var(--ra-ink);
-}
-
-.composer {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex-shrink: 0;
-  position: sticky;
-  bottom: 0;
-  padding: 10px 14px 12px;
-  border-top: 1px solid var(--ra-line);
-  background: var(--ra-surface);
-  z-index: 2;
-}
-
-.composerInput {
-  width: 100%;
-  min-height: 84px;
-  resize: vertical;
-  padding: 10px 12px;
-  border: 1px solid var(--ra-border-field, var(--ra-border));
-  border-radius: var(--ra-radius-control);
-  /* Light: slightly darker wash so the field reads at rest; dark: light grey wash. */
-  background: color-mix(in srgb, var(--ra-ink) 4%, var(--ra-mist, var(--ra-canvas)));
-  color: var(--ra-ink);
-  font: inherit;
-  font-size: 13px;
-  font-weight: var(--ra-fw-medium);
-  line-height: 1.45;
-  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
-}
-
-:global([data-theme='dark']) .composerInput {
-  background: color-mix(in srgb, #ffffff 10%, var(--ra-mist, #111));
-  border-color: var(--ra-border-field, rgba(255, 255, 255, 0.22));
-}
-
-.composerInput::placeholder {
-  color: var(--ra-text-3);
-}
-
-.composerInput:hover:not(:disabled) {
-  border-color: var(--ra-border-hover, var(--ra-border));
-}
-
-.composerInput:focus {
-  outline: none;
-  border-color: var(--ra-blurple);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ra-blurple) 22%, transparent);
-  background: var(--ra-surface);
-}
-
-:global([data-theme='dark']) .composerInput:focus {
-  background: color-mix(in srgb, #ffffff 6%, var(--ra-surface));
-}
-
-.composerInput:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.composerActions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.composerHint {
-  font-size: 11px;
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-3);
-}
-
-.composerButtons {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* —— Policy document (right) —— */
-
-.docPane {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  background: var(--ra-mist, var(--ra-canvas, #f4f4f5));
-}
-
-@media (max-width: 960px) {
-  .docPane {
-    min-height: 480px;
-    max-height: min(80vh, 720px);
-  }
-}
-
-.docHead {
+.docHeadRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  flex-shrink: 0;
-  padding: 10px 14px 10px 16px;
-  border-bottom: 1px solid var(--ra-line);
-  background: var(--ra-surface);
+  min-width: 0;
 }
 
 .docHeadLeft {
@@ -290,11 +163,10 @@
 }
 
 .docPaneLabel {
-  font-size: 11px;
+  font-size: var(--draft-fs-meta);
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
-  letter-spacing: -0.01em;
-  text-transform: none;
+  line-height: 1.3;
 }
 
 .docTitleInput {
@@ -303,9 +175,9 @@
   background: transparent;
   color: var(--ra-ink);
   font: inherit;
-  font-size: 16px;
+  font-size: var(--draft-fs-ui);
   font-weight: var(--ra-fw-medium);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   padding: 0;
   line-height: 1.3;
 }
@@ -319,9 +191,10 @@
 }
 
 .docMeta {
-  font-size: 12px;
+  font-size: var(--draft-fs-meta);
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-3);
+  line-height: 1.3;
 }
 
 .docActions {
@@ -329,19 +202,19 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-  padding-top: 14px;
+  padding-top: 2px;
 }
 
-/* TipTap toolbar */
+/* TipTap toolbar — sits inside shared head so its bottom rule is the shared hairline */
 
 .toolbar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 2px;
+  margin: 0 -14px;
   padding: 6px 12px;
-  border-bottom: 1px solid var(--ra-line);
+  border-top: 1px solid var(--ra-line);
   background: var(--ra-surface);
 }
 
@@ -388,27 +261,174 @@
   cursor: not-allowed;
 }
 
-.editorStage {
-  position: relative;
-  flex: 1 1 0;
+/* Row 2 — scroll bodies */
+
+.messages {
+  grid-column: 1;
+  grid-row: 2;
   min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-right: 1px solid var(--ra-line, var(--ra-border));
+  background: var(--ra-surface);
+}
+
+.editorStage {
+  grid-column: 2;
+  grid-row: 2 / 4;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 16px 18px 28px;
+  padding: 16px 18px 56px;
+  background: var(--ra-mist, var(--ra-canvas, #f4f4f5));
   -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 960px) {
+  .messages {
+    grid-column: 1;
+    grid-row: 2;
+    border-right: none;
+    border-bottom: 1px solid var(--ra-line);
+  }
+
+  .editorStage {
+    grid-column: 1;
+    grid-row: 5;
+  }
 }
 
 .editorStageLocked {
   cursor: progress;
 }
 
+.msg {
+  max-width: 94%;
+  padding: 8px 10px;
+  border-radius: var(--ra-radius-control);
+  font-size: var(--draft-fs-ui);
+  font-weight: var(--ra-fw-medium);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.msgUser {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--ra-blurple) 10%, var(--ra-surface));
+  border: 1px solid color-mix(in srgb, var(--ra-blurple) 28%, var(--ra-line));
+  color: var(--ra-ink);
+}
+
+.msgAssistant {
+  align-self: flex-start;
+  background: var(--ra-canvas, var(--ra-bg, transparent));
+  border: 1px solid var(--ra-line);
+  color: var(--ra-ink);
+}
+
+/* Row 3 — sticky composer (left only) */
+
+.composer {
+  grid-column: 1;
+  grid-row: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--ra-line);
+  border-right: 1px solid var(--ra-line, var(--ra-border));
+  background: var(--ra-surface);
+  z-index: 2;
+}
+
+@media (max-width: 960px) {
+  .composer {
+    grid-column: 1;
+    grid-row: 3;
+    border-right: none;
+  }
+}
+
+.composerInput {
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--ra-border-field, var(--ra-border));
+  border-radius: var(--ra-radius-control);
+  background: color-mix(in srgb, var(--ra-ink) 4%, var(--ra-mist, var(--ra-canvas)));
+  color: var(--ra-ink);
+  font: inherit;
+  font-size: var(--draft-fs-ui);
+  font-weight: var(--ra-fw-medium);
+  line-height: 1.45;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+:global([data-theme='dark']) .composerInput {
+  background: color-mix(in srgb, #ffffff 10%, var(--ra-mist, #111));
+  border-color: var(--ra-border-field, rgba(255, 255, 255, 0.22));
+}
+
+.composerInput::placeholder {
+  color: var(--ra-text-3);
+}
+
+.composerInput:hover:not(:disabled) {
+  border-color: var(--ra-border-hover, var(--ra-border));
+}
+
+.composerInput:focus {
+  outline: none;
+  border-color: var(--ra-blurple);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ra-blurple) 22%, transparent);
+  background: var(--ra-surface);
+}
+
+:global([data-theme='dark']) .composerInput:focus {
+  background: color-mix(in srgb, #ffffff 6%, var(--ra-surface));
+}
+
+.composerInput:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.composerActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.composerHint {
+  font-size: var(--draft-fs-meta);
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.composerButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Document paper */
+
 .docEmpty {
   margin: 0 0 18px;
 }
 
 .docEmptyTitle {
-  font-size: 13px;
+  font-size: var(--draft-fs-ui);
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
   letter-spacing: -0.01em;
@@ -418,7 +438,7 @@
   margin: 0 auto;
   max-width: 760px;
   min-height: min(100%, 480px);
-  padding: 28px 36px 40px;
+  padding: 28px 36px 56px;
   border: 1px solid var(--ra-line, var(--ra-border));
   border-radius: var(--ra-radius-control);
   background: var(--ra-surface);
@@ -427,18 +447,20 @@
 
 @media (max-width: 720px) {
   .paper {
-    padding: 18px 16px 28px;
+    padding: 18px 16px 48px;
   }
 }
 
 .paper :global(.ProseMirror) {
   min-height: 420px;
   outline: none;
-  font-size: 14px;
+  font-size: var(--draft-fs-ui);
   font-weight: var(--ra-fw-medium);
   letter-spacing: -0.01em;
   color: var(--ra-ink);
   line-height: 1.7;
+  /* Comfortable end padding inside the scrollable paper */
+  padding-bottom: 8px;
 }
 
 .paper :global(.ProseMirror p.is-editor-empty:first-child::before) {
@@ -450,7 +472,8 @@
 }
 
 .paper :global(.ProseMirror h1),
-.paper :global(.ProseMirror h2) {
+.paper :global(.ProseMirror h2),
+.paper :global(.ProseMirror h3) {
   color: var(--ra-ink);
   font-weight: var(--ra-fw-medium);
   letter-spacing: -0.02em;
@@ -459,19 +482,18 @@
 }
 
 .paper :global(.ProseMirror h1) {
-  font-size: 22px;
+  font-size: var(--draft-fs-title);
 }
 
-.paper :global(.ProseMirror h2) {
-  font-size: 17px;
+.paper :global(.ProseMirror h2),
+.paper :global(.ProseMirror h3) {
+  font-size: var(--draft-fs-ui);
   margin-top: 20px;
 }
 
 .paper :global(.ProseMirror h3) {
-  color: var(--ra-ink);
-  font-size: 14px;
-  font-weight: var(--ra-fw-semibold, var(--ra-fw-medium));
-  margin: 18px 0 8px;
+  margin-top: 16px;
+  color: var(--ra-text-2);
 }
 
 .paper :global(.ProseMirror p) {
@@ -494,7 +516,7 @@
   border-collapse: collapse;
   width: 100%;
   margin: 0 0 16px;
-  font-size: 13px;
+  font-size: var(--draft-fs-ui);
 }
 
 .paper :global(.ProseMirror th),
