@@ -2,9 +2,11 @@
   display: grid;
   grid-template-columns: minmax(300px, 36%) minmax(0, 1fr);
   gap: 0;
-  min-height: calc(100vh - 128px);
+  /* Explicit height so pane children can scroll (max-height alone does not). */
+  height: calc(100vh - 128px);
   max-height: calc(100vh - 128px);
-  border: 1px solid var(--ra-line);
+  min-height: 420px;
+  border: 1px solid var(--ra-line, var(--ra-border));
   border-radius: var(--ra-radius-control);
   background: var(--ra-surface);
   overflow: hidden;
@@ -13,8 +15,9 @@
 @media (max-width: 960px) {
   .shell {
     grid-template-columns: 1fr;
-    min-height: auto;
+    height: auto;
     max-height: none;
+    min-height: 0;
   }
 }
 
@@ -32,8 +35,9 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  height: 100%;
-  border-right: 1px solid var(--ra-line);
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--ra-line, var(--ra-border));
   background: var(--ra-surface);
 }
 
@@ -98,81 +102,41 @@
   flex: 1 1 128px;
 }
 
-.usageWrap {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.usageChip {
-  appearance: none;
+.usageInline {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border-radius: var(--ra-radius-control);
-  border: 1px solid var(--ra-line);
-  background: var(--ra-surface);
-  cursor: pointer;
-  font: inherit;
-}
-
-.usageChip:hover {
-  border-color: color-mix(in srgb, var(--ra-ink) 18%, var(--ra-line));
-}
-
-.usageChip[data-tone='warn'] {
-  border-color: color-mix(in srgb, var(--ra-warn) 40%, var(--ra-line));
-}
-
-.usageChip[data-tone='risk'] {
-  border-color: color-mix(in srgb, var(--ra-risk) 40%, var(--ra-line));
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 4px 2px;
 }
 
 .usageLabel {
   font-size: 12px;
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
-}
-
-.usageChip[data-tone='warn'] .usageLabel {
-  color: var(--ra-warn);
-}
-
-.usageChip[data-tone='risk'] .usageLabel {
-  color: var(--ra-risk);
-}
-
-.usagePopover {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: 20;
-  min-width: 168px;
-  padding: 8px 10px;
-  border: 1px solid var(--ra-line);
-  border-radius: var(--ra-radius-control);
-  background: var(--ra-surface);
-  box-shadow: var(--ra-shadow-menu, 0 8px 24px color-mix(in srgb, var(--ra-ink) 8%, transparent));
-}
-
-.usagePopoverValue {
-  font-size: 12px;
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-ink);
   font-variant-numeric: tabular-nums;
   font-family: var(--ra-font-num), inherit;
 }
 
-.usagePopoverSep {
-  color: var(--ra-text-3);
+.usageInline[data-tone='warn'] .usageLabel {
+  color: var(--ra-warn);
 }
 
-.usagePopoverHint {
-  margin: 4px 0 0;
-  font-size: 11px;
+.usageInline[data-tone='risk'] .usageLabel {
+  color: var(--ra-risk);
+}
+
+.topUpLink {
+  font-size: 12px;
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-3);
-  line-height: 1.35;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.topUpLink:hover {
+  color: var(--ra-blurple-fg, var(--ra-blurple));
+  border-bottom-color: color-mix(in srgb, var(--ra-blurple) 40%, transparent);
 }
 
 .messages {
@@ -228,15 +192,21 @@
   min-height: 84px;
   resize: vertical;
   padding: 10px 12px;
-  border: 1px solid var(--ra-line);
+  border: 1px solid var(--ra-border-field, var(--ra-border));
   border-radius: var(--ra-radius-control);
-  background: var(--ra-canvas, var(--ra-bg, #fff));
+  /* Light: slightly darker wash so the field reads at rest; dark: light grey wash. */
+  background: color-mix(in srgb, var(--ra-ink) 4%, var(--ra-mist, var(--ra-canvas)));
   color: var(--ra-ink);
   font: inherit;
   font-size: 13px;
   font-weight: var(--ra-fw-medium);
   line-height: 1.45;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+:global([data-theme='dark']) .composerInput {
+  background: color-mix(in srgb, #ffffff 10%, var(--ra-mist, #111));
+  border-color: var(--ra-border-field, rgba(255, 255, 255, 0.22));
 }
 
 .composerInput::placeholder {
@@ -244,13 +214,18 @@
 }
 
 .composerInput:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--ra-ink) 18%, var(--ra-line));
+  border-color: var(--ra-border-hover, var(--ra-border));
 }
 
 .composerInput:focus {
   outline: none;
   border-color: var(--ra-blurple);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--ra-blurple) 22%, transparent);
+  background: var(--ra-surface);
+}
+
+:global([data-theme='dark']) .composerInput:focus {
+  background: color-mix(in srgb, #ffffff 6%, var(--ra-surface));
 }
 
 .composerInput:disabled {
@@ -284,13 +259,14 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  overflow: hidden;
   background: var(--ra-mist, var(--ra-canvas, #f4f4f5));
 }
 
 @media (max-width: 960px) {
   .docPane {
     min-height: 480px;
+    max-height: min(80vh, 720px);
   }
 }
 
@@ -414,10 +390,13 @@
 
 .editorStage {
   position: relative;
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 16px 18px 28px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .editorStageLocked {
@@ -438,9 +417,9 @@
 .paper {
   margin: 0 auto;
   max-width: 760px;
-  min-height: calc(100% - 8px);
+  min-height: min(100%, 480px);
   padding: 28px 36px 40px;
-  border: 1px solid var(--ra-line);
+  border: 1px solid var(--ra-line, var(--ra-border));
   border-radius: var(--ra-radius-control);
   background: var(--ra-surface);
   box-shadow: 0 1px 0 color-mix(in srgb, var(--ra-ink) 4%, transparent);

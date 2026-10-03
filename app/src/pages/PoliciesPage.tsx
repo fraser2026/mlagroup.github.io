@@ -293,7 +293,7 @@ export function PoliciesPage() {
         )}
         {filteredDrafts.length > 0 ? (
           <>
-            <h2 className={styles.sectionLabel}>Unpublished drafts</h2>
+            <h2 className={styles.sectionLabel}>Unpublished</h2>
             <Ledger flush>
               {filteredDrafts.map((p) => {
                 const cat = POLICY_CATS[p.category || ''] || p.category
@@ -301,10 +301,14 @@ export function PoliciesPage() {
                 return (
                   <LedgerRow
                     key={p.id}
-                    title={p.title || 'Policy draft'}
+                    title={p.title || 'Untitled policy'}
                     description={metaLine || undefined}
-                    meta={<StatusLabel tone="warn">Draft</StatusLabel>}
-                    onClick={() => navigate(`/policies/${p.id}`)}
+                    meta={<StatusLabel tone="warn">Unpublished</StatusLabel>}
+                    onClick={() =>
+                      navigate(
+                        showDraftCta ? `/policies/draft/${p.id}` : `/policies/${p.id}`,
+                      )
+                    }
                   />
                 )
               })}

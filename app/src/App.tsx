@@ -98,6 +98,7 @@ export default function App() {
               <Route path="controls/:id" element={<ControlsDetailPage />} />
               <Route path="policies" element={<PoliciesPage />} />
               <Route path="policies/draft" element={<PoliciesDraftPage />} />
+              <Route path="policies/draft/:policyId" element={<PoliciesDraftPage />} />
               <Route path="policies/:id" element={<PoliciesDetailPage />} />
               <Route path="integrations" element={<IntegrationsPage />} />
               <Route path="monitoring" element={<MonitoringPage />} />

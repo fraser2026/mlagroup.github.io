@@ -15,7 +15,7 @@ import type { ToastItem } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { actorName, writeAuditLog } from '../lib/audit'
-import { canPublishPolicies } from '../lib/org'
+import { canDraftPolicies, canPublishPolicies, canUsePolicyDrafting } from '../lib/org'
 import { POLICY_CATS, renderPolicyMarkdown } from '../lib/policyMarkdown'
 import { sb } from '../lib/supabase'
 import styles from './PoliciesPage.module.css'
@@ -48,6 +48,7 @@ export function PoliciesDetailPage() {
   const orgId = org?.id || null
   const userId = session?.user?.id
   const canPublish = canPublishPolicies(role)
+  const canContinueDraft = canUsePolicyDrafting(org) && canDraftPolicies(role)
   const [policy, setPolicy] = useState<Policy | null>(null)
   const [acks, setAcks] = useState<Ack[]>([])
   const [names, setNames] = useState<Record<string, string>>({})
@@ -289,7 +290,7 @@ export function PoliciesDetailPage() {
           <div className={styles.pageMeta}>
             {isDraft ? (
               <StatusLabel badge tone="warn">
-                Draft
+                Unpublished
               </StatusLabel>
             ) : userAcked ? (
               <StatusLabel badge tone="ok">
@@ -309,6 +310,11 @@ export function PoliciesDetailPage() {
         }
         actions={
           <>
+            {isDraft && canContinueDraft ? (
+              <Link to={`/policies/draft/${policy.id}`}>
+                <Button variant="ghost">Continue editing</Button>
+              </Link>
+            ) : null}
             {isDraft && canPublish ? (
               <Button pending={publishing} onClick={() => void publishPolicy()}>
                 Publish
