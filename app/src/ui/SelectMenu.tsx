@@ -8,6 +8,8 @@ import styles from './SelectMenu.module.css'
 export type SelectOption = {
   value: string
   label: string
+  /** Quiet supporting line under the label (e.g. tier why). */
+  description?: string
   icon?: ReactNode
   disabled?: boolean
 }
@@ -33,14 +35,15 @@ function flatten(options: SelectOption[] | undefined, groups: SelectOptionGroup[
   return options || []
 }
 
-function menuPlacement(trigger: HTMLElement): CSSProperties {
+function menuPlacement(trigger: HTMLElement, wide = false): CSSProperties {
   const r = trigger.getBoundingClientRect()
   const spaceBelow = window.innerHeight - r.bottom - 12
-  const maxH = Math.min(280, Math.max(120, spaceBelow))
+  const maxH = Math.min(wide ? 360 : 280, Math.max(120, spaceBelow))
   const openUp = spaceBelow < 160 && r.top > spaceBelow
+  const width = wide ? Math.max(r.width, 220) : r.width
   return {
     left: Math.round(r.left),
-    width: Math.round(r.width),
+    width: Math.round(width),
     maxHeight: maxH,
     ...(openUp
       ? { bottom: Math.round(window.innerHeight - r.top + 6), top: 'auto' }
@@ -65,6 +68,7 @@ export function SelectMenu({
   const listId = useId()
   const all = flatten(options, groups)
   const selected = all.find((o) => o.value === value)
+  const hasDescriptions = all.some((o) => !!o.description)
 
   function close() {
     setOpen(false)
@@ -74,7 +78,7 @@ export function SelectMenu({
   function openMenu() {
     const trigger = rootRef.current
     if (!trigger || disabled) return
-    setMenuStyle(menuPlacement(trigger))
+    setMenuStyle(menuPlacement(trigger, hasDescriptions))
     setOpen(true)
   }
 
@@ -83,7 +87,7 @@ export function SelectMenu({
     function place() {
       const trigger = rootRef.current
       if (!trigger) return
-      setMenuStyle(menuPlacement(trigger))
+      setMenuStyle(menuPlacement(trigger, hasDescriptions))
     }
     place()
     window.addEventListener('resize', place)
@@ -92,7 +96,7 @@ export function SelectMenu({
       window.removeEventListener('resize', place)
       window.removeEventListener('scroll', place, true)
     }
-  }, [open])
+  }, [open, hasDescriptions])
 
   useEffect(() => {
     if (!open) return
@@ -207,7 +211,10 @@ function OptionRow({
       onClick={onPick}
     >
       {option.icon ? <span className={styles.optionIcon}>{option.icon}</span> : null}
-      <span className={styles.optionLabel}>{option.label}</span>
+      <span className={styles.optionText}>
+        <span className={styles.optionLabel}>{option.label}</span>
+        {option.description ? <span className={styles.optionDesc}>{option.description}</span> : null}
+      </span>
     </button>
   )
 }

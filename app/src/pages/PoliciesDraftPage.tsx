@@ -57,16 +57,23 @@ type CreditBalance = {
 
 type ThreadMsg = { id: string; role: 'user' | 'assistant'; content: string }
 
+const DEFAULT_TITLE = 'Untitled policy'
+
 const TIER_OPTIONS = [
-  { value: 'eco', label: 'MLA Eco' },
-  { value: 'standard', label: 'MLA Pro' },
-  { value: 'premium', label: 'MLA Ultra' },
+  { value: 'eco', label: 'Eco', description: 'Fast drafting' },
+  { value: 'standard', label: 'Pro', description: 'Balanced governance work' },
+  { value: 'premium', label: 'Ultra', description: 'Deep analysis and framework alignment' },
 ]
 
 function uid() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : `m-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+function isUntitled(value: string) {
+  const t = value.trim()
+  return !t || t === DEFAULT_TITLE
 }
 
 function ToolBtn({
@@ -192,16 +199,72 @@ function EditorToolbar({ editor, locked }: { editor: Editor | null; locked: bool
   )
 }
 
+function UsageChip({
+  credits,
+  balanceTone,
+}: {
+  credits: CreditBalance | null
+  balanceTone: 'neutral' | 'warn' | 'risk'
+}) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const balance = credits?.balance_cents ?? 0
+  const allowance = credits?.monthly_allowance_cents ?? 500
+
+  useEffect(() => {
+    if (!open) return
+    function onDoc(e: MouseEvent) {
+      if (rootRef.current?.contains(e.target as Node)) return
+      setOpen(false)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  return (
+    <div className={styles.usageWrap} ref={rootRef}>
+      <button
+        type="button"
+        className={styles.usageChip}
+        data-tone={balanceTone}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className={styles.usageLabel}>Included usage</span>
+      </button>
+      {open ? (
+        <div className={styles.usagePopover} role="dialog" aria-label="Usage this month">
+          <div className={styles.usagePopoverValue}>
+            <RaNum>{formatUsdCents(balance)}</RaNum>
+            <span className={styles.usagePopoverSep}> / </span>
+            <RaNum>{formatUsdCents(allowance)}</RaNum>
+          </div>
+          <p className={styles.usagePopoverHint}>this month · refills to cap on renewal</p>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export function PoliciesDraftPage() {
   const { session, org, role, profile, orgReady } = useAuth()
   const navigate = useNavigate()
   const orgId = org?.id || null
+  const orgName = org?.name?.trim() || ''
   const userId = session?.user?.id
   const entitled = canUsePolicyDrafting(org)
   const canDraft = canDraftPolicies(role)
 
   const [tier, setTier] = useState<DraftTier>('eco')
-  const [title, setTitle] = useState('AI governance policy')
+  const [title, setTitle] = useState(DEFAULT_TITLE)
   const [prompt, setPrompt] = useState('')
   const [messages, setMessages] = useState<ThreadMsg[]>([])
   const [streaming, setStreaming] = useState(false)
@@ -213,12 +276,14 @@ export function PoliciesDraftPage() {
   const abortRef = useRef<AbortController | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const composerRef = useRef<HTMLTextAreaElement | null>(null)
+  const titleRef = useRef(title)
+  titleRef.current = title
 
   usePageChrome({
-    title: 'Draft with AI',
+    title: 'Draft a policy',
     breadcrumbs: [
       { label: 'Policies', to: '/policies' },
-      { label: 'Draft with AI' },
+      { label: 'Draft a policy' },
     ],
   })
 
@@ -257,6 +322,12 @@ export function PoliciesDraftPage() {
 
   function dismissToast(id: string) {
     setToasts((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  function maybeAutofillTitle(markdown: string) {
+    if (!isUntitled(titleRef.current)) return
+    const next = titleFromMarkdown(markdown, DEFAULT_TITLE)
+    if (next && next !== DEFAULT_TITLE) setTitle(next)
   }
 
   async function loadCredits() {
@@ -356,9 +427,7 @@ export function PoliciesDraftPage() {
             const html = markdownToHtml(markdown)
             editor.commands.setContent(html || '')
             setDocEmpty(!markdown.trim())
-            if (!title.trim() || title === 'AI governance policy') {
-              setTitle(titleFromMarkdown(markdown, 'AI governance policy'))
-            }
+            maybeAutofillTitle(markdown)
           },
           onCredit: (credit) => {
             setCredits((prev) =>
@@ -380,6 +449,7 @@ export function PoliciesDraftPage() {
             if (done.doc_markdown) {
               editor.commands.setContent(markdownToHtml(done.doc_markdown))
               setDocEmpty(!done.doc_markdown.trim())
+              maybeAutofillTitle(done.doc_markdown)
             }
             if (typeof done.balance_cents === 'number') {
               setCredits((prev) =>
@@ -434,7 +504,7 @@ export function PoliciesDraftPage() {
     }
     setSaving(true)
     setError('')
-    const saveTitle = title.trim() || titleFromMarkdown(markdown)
+    const saveTitle = title.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
     const { data, error: insertErr } = await sb
       .from('policy_documents')
       .insert({
@@ -481,7 +551,7 @@ export function PoliciesDraftPage() {
   if (!orgReady) {
     return (
       <PageFrame>
-        <PageHeader title="Draft with AI" description="Loading workspace" />
+        <PageHeader title="Draft a policy" description="Loading workspace" />
         <BrandLoader fill label="Loading" />
       </PageFrame>
     )
@@ -490,7 +560,7 @@ export function PoliciesDraftPage() {
   if (!orgId) {
     return (
       <PageFrame>
-        <PageHeader title="Draft with AI" description="Organisation context required." />
+        <PageHeader title="Draft a policy" description="Organisation context required." />
         <EmptyState title="No organisation" body="Join or create an organisation to draft policies." />
       </PageFrame>
     )
@@ -500,7 +570,7 @@ export function PoliciesDraftPage() {
     return (
       <PageFrame>
         <PageHeader
-          title="Draft with AI"
+          title="Draft a policy"
           description="AI policy drafting is included with Essentials, Professional, and Enterprise."
           actions={
             <Link to="/plans">
@@ -510,7 +580,7 @@ export function PoliciesDraftPage() {
         />
         <div className={styles.gated}>
           <EmptyState
-            title="Upgrade to draft with AI"
+            title="Upgrade to draft policies"
             body="Paid plans unlock the drafting workspace with a $5 USD monthly AI credit allowance (refill to cap)."
             action={
               <Link to="/plans">
@@ -526,7 +596,7 @@ export function PoliciesDraftPage() {
   if (!canDraft) {
     return (
       <PageFrame>
-        <PageHeader title="Draft with AI" description="Editor access or higher is required." />
+        <PageHeader title="Draft a policy" description="Editor access or higher is required." />
         <EmptyState
           title="View-only access"
           body="Ask an organisation owner or admin to grant editor access if you need to draft policies."
@@ -539,12 +609,19 @@ export function PoliciesDraftPage() {
     credits != null && credits.balance_cents > 0 && credits.balance_cents < credits.low_balance_cents
   const noBalance = credits != null && credits.balance_cents <= 0
   const balanceTone = noBalance ? 'risk' : lowBalance ? 'warn' : 'neutral'
+  const pageBlurb =
+    'Use MLA to draft, revise and structure your policy. Edit the document directly before saving.'
 
   return (
     <PageFrame>
       <PageHeader
-        title="Draft with AI"
-        description="Ask MLA on the left. Edit the policy document on the right. Save as an unpublished draft."
+        title="Draft a policy"
+        description={
+          <>
+            <span>{pageBlurb}</span>
+            {orgName ? <span className={styles.orgLine}>Drafting for {orgName}</span> : null}
+          </>
+        }
         actions={
           <Link to="/policies">
             <Button variant="ghost">Back to policies</Button>
@@ -560,7 +637,7 @@ export function PoliciesDraftPage() {
       ) : null}
       {lowBalance && !noBalance ? (
         <Notice tone="warn" title="Low AI credits">
-          Balance is below {formatUsdCents(credits!.low_balance_cents)}. Consider a shorter prompt or MLA Eco.
+          Balance is below {formatUsdCents(credits!.low_balance_cents)}. Consider a shorter prompt or Eco.
         </Notice>
       ) : null}
 
@@ -568,9 +645,6 @@ export function PoliciesDraftPage() {
         <aside className={styles.chatPane} aria-label="MLA conversation">
           <div className={styles.chatHead}>
             <div className={styles.chatBrand}>
-              <span className={styles.mlaMark} aria-hidden>
-                M
-              </span>
               <div className={styles.chatBrandText}>
                 <div className={styles.chatHeadTitle}>MLA</div>
                 <p className={styles.chatHeadSupport}>Machine Learning Assurance</p>
@@ -579,61 +653,38 @@ export function PoliciesDraftPage() {
             <div className={styles.chatMeta}>
               <div className={styles.tierWrap}>
                 <SelectMenu
-                  aria-label="MLA model tier"
+                  aria-label="Model tier"
                   value={tier}
                   options={TIER_OPTIONS}
                   disabled={streaming}
                   onChange={(v) => setTier((v as DraftTier) || 'eco')}
                 />
               </div>
-              <span className={styles.creditsChip} data-tone={balanceTone}>
-                <span className={styles.creditsLabel}>Credits</span>
-                <span className={styles.creditsValue}>
-                  <RaNum>{formatUsdCents(credits?.balance_cents ?? 0)}</RaNum>
-                </span>
-              </span>
+              <UsageChip credits={credits} balanceTone={balanceTone} />
             </div>
           </div>
 
           <div className={styles.messages}>
-            {messages.length === 0 ? (
-              <div className={styles.emptyTeach}>
-                <div className={styles.emptyTeachTitle}>Type below to ask MLA</div>
-                <p className={styles.emptyTeachBody}>
-                  Example: draft an acceptable use policy for generative AI in customer support.
-                </p>
-                <button
-                  type="button"
-                  className={styles.emptyTeachAction}
-                  onClick={() => composerRef.current?.focus()}
-                >
-                  Focus message
-                </button>
-              </div>
-            ) : null}
             {messages.map((m) => (
               <div
                 key={m.id}
                 className={`${styles.msg} ${m.role === 'user' ? styles.msgUser : styles.msgAssistant}`}
               >
-                {m.role === 'assistant' ? <span className={styles.msgRole}>MLA</span> : null}
-                {m.content || (streaming && m.role === 'assistant' ? 'MLA is drafting…' : '')}
+                {m.content || (streaming && m.role === 'assistant' ? 'Drafting…' : '')}
               </div>
             ))}
             <div ref={messagesEndRef} />
           </div>
 
           <div className={styles.composer}>
-            <label className={styles.composerLabel} htmlFor="mla-composer">
-              Message MLA
-            </label>
             <textarea
               id="mla-composer"
               ref={composerRef}
               className={styles.composerInput}
               value={prompt}
               disabled={streaming || noBalance}
-              placeholder="Ask MLA to draft or revise a policy…"
+              placeholder="Tell MLA what you want to draft, revise or review…"
+              aria-label="Ask MLA"
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -678,9 +729,7 @@ export function PoliciesDraftPage() {
                 aria-label="Policy title"
               />
               <div className={styles.docMeta}>
-                {streaming
-                  ? 'MLA is drafting… · editing locked'
-                  : 'Editable · saves as unpublished markdown draft'}
+                {streaming ? 'Drafting… · editing locked' : 'Draft · Unpublished'}
               </div>
             </div>
             <div className={styles.docActions}>
@@ -702,10 +751,7 @@ export function PoliciesDraftPage() {
             <div className={styles.paper}>
               {docEmpty && !streaming ? (
                 <div className={styles.docEmpty}>
-                  <div className={styles.emptyTeachTitle}>Policy appears here</div>
-                  <p className={styles.emptyTeachBody}>
-                    MLA writes the document on this paper. You can edit with the toolbar after generation.
-                  </p>
+                  <div className={styles.docEmptyTitle}>Your policy will appear here</div>
                 </div>
               ) : null}
               <EditorContent editor={editor} />

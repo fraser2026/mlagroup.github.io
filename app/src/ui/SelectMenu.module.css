@@ -106,7 +106,7 @@
   appearance: none;
   width: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   border: 0;
   background: transparent;
@@ -146,6 +146,14 @@
 .optionIcon {
   display: inline-flex;
   flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.optionText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .optionLabel {
@@ -153,4 +161,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.optionDesc {
+  font-size: 11px;
+  font-weight: var(--ra-fw-medium, 500);
+  font-style: italic;
+  color: var(--ra-text-3);
+  line-height: 1.35;
+  white-space: normal;
 }

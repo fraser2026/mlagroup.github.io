@@ -232,7 +232,7 @@ export function PoliciesPage() {
         description="Organisation policies requiring acknowledgment. Review, adopt templates, and track compliance."
         actions={
           showDraftCta ? (
-            <Button onClick={() => navigate('/policies/draft')}>Draft with AI</Button>
+            <Button onClick={() => navigate('/policies/draft')}>Draft a policy</Button>
           ) : undefined
         }
       />
@@ -259,11 +259,11 @@ export function PoliciesPage() {
         {filtered.length === 0 ? (
           <EmptyState
             title="No policies published yet"
-            body="Adopt a template below, or draft a policy with AI, then publish when ready."
+            body="Adopt a template below, or draft a policy, then publish when ready."
             action={
               showDraftCta ? (
                 <Button variant="ghost" onClick={() => navigate('/policies/draft')}>
-                  Draft with AI
+                  Draft a policy
                 </Button>
               ) : undefined
             }

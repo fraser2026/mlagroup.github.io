@@ -3,6 +3,7 @@
   grid-template-columns: minmax(300px, 36%) minmax(0, 1fr);
   gap: 0;
   min-height: calc(100vh - 128px);
+  max-height: calc(100vh - 128px);
   border: 1px solid var(--ra-line);
   border-radius: var(--ra-radius-control);
   background: var(--ra-surface);
@@ -13,7 +14,16 @@
   .shell {
     grid-template-columns: 1fr;
     min-height: auto;
+    max-height: none;
   }
+}
+
+.orgLine {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
 }
 
 /* —— MLA conversation (left) —— */
@@ -21,7 +31,8 @@
 .chatPane {
   display: flex;
   flex-direction: column;
-  min-height: 480px;
+  min-height: 0;
+  height: 100%;
   border-right: 1px solid var(--ra-line);
   background: var(--ra-surface);
 }
@@ -30,6 +41,8 @@
   .chatPane {
     border-right: none;
     border-bottom: 1px solid var(--ra-line);
+    min-height: 480px;
+    max-height: min(70vh, 640px);
   }
 }
 
@@ -37,6 +50,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex-shrink: 0;
   padding: 12px 14px;
   border-bottom: 1px solid var(--ra-line);
   background: color-mix(in srgb, var(--ra-mist, var(--ra-canvas)) 55%, var(--ra-surface));
@@ -47,22 +61,6 @@
   align-items: flex-start;
   gap: 10px;
   min-width: 0;
-}
-
-.mlaMark {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--ra-radius-control);
-  background: var(--ra-blurple);
-  color: #fff;
-  font-size: 13px;
-  font-weight: var(--ra-fw-medium);
-  letter-spacing: -0.02em;
-  line-height: 1;
 }
 
 .chatBrandText {
@@ -100,7 +98,13 @@
   flex: 1 1 128px;
 }
 
-.creditsChip {
+.usageWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.usageChip {
+  appearance: none;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -108,24 +112,50 @@
   border-radius: var(--ra-radius-control);
   border: 1px solid var(--ra-line);
   background: var(--ra-surface);
-  flex-shrink: 0;
+  cursor: pointer;
+  font: inherit;
 }
 
-.creditsChip[data-tone='warn'] {
+.usageChip:hover {
+  border-color: color-mix(in srgb, var(--ra-ink) 18%, var(--ra-line));
+}
+
+.usageChip[data-tone='warn'] {
   border-color: color-mix(in srgb, var(--ra-warn) 40%, var(--ra-line));
 }
 
-.creditsChip[data-tone='risk'] {
+.usageChip[data-tone='risk'] {
   border-color: color-mix(in srgb, var(--ra-risk) 40%, var(--ra-line));
 }
 
-.creditsLabel {
-  font-size: 11px;
+.usageLabel {
+  font-size: 12px;
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
 }
 
-.creditsValue {
+.usageChip[data-tone='warn'] .usageLabel {
+  color: var(--ra-warn);
+}
+
+.usageChip[data-tone='risk'] .usageLabel {
+  color: var(--ra-risk);
+}
+
+.usagePopover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 168px;
+  padding: 8px 10px;
+  border: 1px solid var(--ra-line);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+  box-shadow: var(--ra-shadow-menu, 0 8px 24px color-mix(in srgb, var(--ra-ink) 8%, transparent));
+}
+
+.usagePopoverValue {
   font-size: 12px;
   font-weight: var(--ra-fw-medium);
   color: var(--ra-ink);
@@ -133,64 +163,27 @@
   font-family: var(--ra-font-num), inherit;
 }
 
-.creditsChip[data-tone='warn'] .creditsValue {
-  color: var(--ra-warn);
+.usagePopoverSep {
+  color: var(--ra-text-3);
 }
 
-.creditsChip[data-tone='risk'] .creditsValue {
-  color: var(--ra-risk);
+.usagePopoverHint {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+  line-height: 1.35;
 }
 
 .messages {
   flex: 1;
+  min-height: 0;
   overflow: auto;
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   background: var(--ra-surface);
-}
-
-.emptyTeach {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 14px 12px;
-  border: 1px dashed var(--ra-line);
-  border-radius: var(--ra-radius-control);
-  background: color-mix(in srgb, var(--ra-mist, var(--ra-canvas)) 40%, var(--ra-surface));
-}
-
-.emptyTeachTitle {
-  font-size: 13px;
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-ink);
-  letter-spacing: -0.01em;
-}
-
-.emptyTeachBody {
-  margin: 0;
-  font-size: 12px;
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-2);
-  line-height: 1.45;
-}
-
-.emptyTeachAction {
-  align-self: flex-start;
-  margin-top: 4px;
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: 12px;
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-blurple-fg, var(--ra-blurple));
-  cursor: pointer;
-}
-
-.emptyTeachAction:hover {
-  text-decoration: underline;
 }
 
 .msg {
@@ -201,15 +194,6 @@
   font-weight: var(--ra-fw-medium);
   line-height: 1.5;
   white-space: pre-wrap;
-}
-
-.msgRole {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 11px;
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-3);
-  letter-spacing: -0.01em;
 }
 
 .msgUser {
@@ -230,15 +214,13 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
   padding: 10px 14px 12px;
   border-top: 1px solid var(--ra-line);
   background: var(--ra-surface);
-}
-
-.composerLabel {
-  font-size: 12px;
-  font-weight: var(--ra-fw-medium);
-  color: var(--ra-text-2);
+  z-index: 2;
 }
 
 .composerInput {
@@ -301,8 +283,15 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 480px;
+  min-height: 0;
+  height: 100%;
   background: var(--ra-mist, var(--ra-canvas, #f4f4f5));
+}
+
+@media (max-width: 960px) {
+  .docPane {
+    min-height: 480px;
+  }
 }
 
 .docHead {
@@ -310,6 +299,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  flex-shrink: 0;
   padding: 10px 14px 10px 16px;
   border-bottom: 1px solid var(--ra-line);
   background: var(--ra-surface);
@@ -373,6 +363,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
+  flex-shrink: 0;
   padding: 6px 12px;
   border-bottom: 1px solid var(--ra-line);
   background: var(--ra-surface);
@@ -424,6 +415,7 @@
 .editorStage {
   position: relative;
   flex: 1;
+  min-height: 0;
   overflow: auto;
   padding: 16px 18px 28px;
 }
@@ -434,10 +426,13 @@
 
 .docEmpty {
   margin: 0 0 18px;
-  padding: 12px 14px;
-  border: 1px dashed var(--ra-line);
-  border-radius: var(--ra-radius-control);
-  background: color-mix(in srgb, var(--ra-mist, var(--ra-canvas)) 45%, var(--ra-surface));
+}
+
+.docEmptyTitle {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  letter-spacing: -0.01em;
 }
 
 .paper {
