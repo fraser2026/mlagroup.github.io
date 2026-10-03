@@ -419,6 +419,9 @@ export function PoliciesDraftPage() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const [docEmpty, setDocEmpty] = useState(true)
   const [offerSavePrompt, setOfferSavePrompt] = useState(false)
+  /** True when editing a published policy body (owner/admin only). */
+  const [isPublished, setIsPublished] = useState(false)
+  const [policyVersion, setPolicyVersion] = useState('0.1')
   /** RA mark on paper only while waiting for first bytes or a stalled stream. */
   const [paperWaiting, setPaperWaiting] = useState(false)
 
@@ -457,10 +460,10 @@ export function PoliciesDraftPage() {
   }
 
   usePageChrome({
-    title: 'Draft a policy',
+    title: isPublished ? 'Edit policy' : 'Draft a policy',
     breadcrumbs: [
       { label: 'Policies', to: '/policies' },
-      { label: 'Draft a policy' },
+      { label: isPublished ? 'Edit policy' : 'Draft a policy' },
     ],
   })
 
@@ -628,7 +631,15 @@ export function PoliciesDraftPage() {
       const previousId = existingId
 
       if (existingId) {
-        const { error: updateErr } = await sb
+        // Editors may only update unpublished rows (RLS). Owner/admin may save published bodies.
+        if (isPublished && !canPublish) {
+          setSaveState('error')
+          if (source === 'manual') setError('Only an owner or admin can edit a published policy.')
+          if (source === 'manual') setSaving(false)
+          return false
+        }
+
+        let updateQuery = sb
           .from('policy_documents')
           .update({
             title: saveTitle,
@@ -637,7 +648,12 @@ export function PoliciesDraftPage() {
           })
           .eq('id', existingId)
           .eq('org_id', orgId)
-          .is('published_at', null)
+
+        if (!isPublished) {
+          updateQuery = updateQuery.is('published_at', null)
+        }
+
+        const { error: updateErr } = await updateQuery
 
         if (updateErr) {
           setSaveState('error')
@@ -705,7 +721,7 @@ export function PoliciesDraftPage() {
       setOfferSavePrompt(false)
       if (source === 'manual') {
         setSaving(false)
-        pushToast('Draft saved.')
+        pushToast(isPublished ? 'Policy saved.' : 'Draft saved.')
       }
       return true
     })()
@@ -726,8 +742,21 @@ export function PoliciesDraftPage() {
     }, AUTOSAVE_MS)
   }
 
+  async function deactivateUnpublishedSiblings(org: string, title: string, keepId: string) {
+    const now = new Date().toISOString()
+    const { error: deactivateErr } = await sb
+      .from('policy_documents')
+      .update({ is_active: false, updated_at: now })
+      .eq('org_id', org)
+      .eq('title', title)
+      .eq('is_active', true)
+      .is('published_at', null)
+      .neq('id', keepId)
+    if (deactivateErr) console.warn('deactivate unpublished siblings', deactivateErr.message)
+  }
+
   async function publishPolicy() {
-    if (!orgId || !userId || !canPublish || !editor) return
+    if (!orgId || !userId || !canPublish || !editor || isPublished) return
     const markdown = tipTapJsonToMarkdown(editor.getJSON())
     if (!markdown.trim()) {
       setError('Add policy content before publishing.')
@@ -747,7 +776,7 @@ export function PoliciesDraftPage() {
 
     const publishedAt = new Date().toISOString()
     const saveTitle = titleRef.current.trim() || titleFromMarkdown(markdown, DEFAULT_TITLE)
-    const { error: updateErr } = await sb
+    const { data: publishedRow, error: updateErr } = await sb
       .from('policy_documents')
       .update({
         published_at: publishedAt,
@@ -757,13 +786,20 @@ export function PoliciesDraftPage() {
       })
       .eq('id', id)
       .eq('org_id', orgId)
+      .is('published_at', null)
+      .select('id,published_at,version,title')
+      .maybeSingle()
 
-    if (updateErr) {
+    if (updateErr || !publishedRow?.published_at) {
       setPublishing(false)
-      setError(updateErr.message || 'Could not publish policy.')
+      setError(updateErr?.message || 'Could not publish policy.')
       return
     }
 
+    // Drop orphan same-title drafts so the library does not keep an Unpublished twin.
+    await deactivateUnpublishedSiblings(orgId, saveTitle, id)
+
+    const version = (publishedRow.version as string) || policyVersion || '0.1'
     await writeAuditLog({
       orgId,
       userId,
@@ -772,8 +808,8 @@ export function PoliciesDraftPage() {
       entityId: id,
       changes: {
         _actor_name: actorName(profile?.full_name, session?.user?.email),
-        policy: saveTitle,
-        version: '0.1',
+        policy: (publishedRow.title as string) || saveTitle,
+        version,
       },
     })
 
@@ -783,6 +819,7 @@ export function PoliciesDraftPage() {
       clearThread(orgId, null)
       liveChatSession = { orgId, policyId: null, messages: [], prompt: '' }
     }
+    setIsPublished(true)
     setPublishing(false)
     pushToast('Policy published.')
     navigate(`/policies/${id}`, { replace: true })
@@ -923,7 +960,7 @@ export function PoliciesDraftPage() {
 
       const { data, error: loadErr } = await sb
         .from('policy_documents')
-        .select('id,title,content,published_at')
+        .select('id,title,content,published_at,version')
         .eq('id', id)
         .eq('org_id', orgId!)
         .eq('is_active', true)
@@ -935,24 +972,29 @@ export function PoliciesDraftPage() {
         setError(loadErr?.message || 'Draft not found.')
         setPolicyId(null)
         policyIdRef.current = null
+        setIsPublished(false)
         setHydrating(false)
         return
       }
 
-      if (data.published_at) {
+      // Published bodies: owner/admin may continue editing; editors stay locked on detail.
+      if (data.published_at && !canPublish) {
         navigate(`/policies/${data.id}`, { replace: true })
         return
       }
 
       const md = typeof data.content === 'string' ? data.content : ''
+      const published = !!data.published_at
       skipAutosaveRef.current = true
       setPolicyId(data.id)
       policyIdRef.current = data.id
+      setIsPublished(published)
+      setPolicyVersion((data.version as string) || '0.1')
       setTitle((data.title as string) || DEFAULT_TITLE)
       editor!.commands.setContent(md ? markdownToHtml(md) : '')
       setDocEmpty(!md.trim())
       lastPersistedRef.current = `${(data.title as string) || ''}\n${md}`
-      writeLastDraftId(orgId!, data.id)
+      if (!published) writeLastDraftId(orgId!, data.id)
       setSaveState(md.trim() ? 'saved' : 'idle')
       const restored = restoreChatSession(orgId!, data.id)
       setMessages((prev) => (prev.length ? prev : restored.messages))
@@ -969,7 +1011,7 @@ export function PoliciesDraftPage() {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgReady, orgId, entitled, canDraft, editor, routePolicyId])
+  }, [orgReady, orgId, entitled, canDraft, canPublish, editor, routePolicyId])
 
   // Debounced autosave when title changes (only if toggle on).
   useEffect(() => {
@@ -1160,6 +1202,23 @@ export function PoliciesDraftPage() {
     if (!confirmDiscardUnsaved()) return
     abortRef.current?.abort()
     if (persistTimerRef.current) clearTimeout(persistTimerRef.current)
+
+    // Abandoning an unpublished draft via New should not leave an Unpublished twin in the library.
+    const abandonId = policyIdRef.current
+    const abandonPublished = isPublished
+    if (orgId && abandonId && !abandonPublished) {
+      const now = new Date().toISOString()
+      void sb
+        .from('policy_documents')
+        .update({ is_active: false, updated_at: now })
+        .eq('id', abandonId)
+        .eq('org_id', orgId)
+        .is('published_at', null)
+        .then(({ error: deactivateErr }) => {
+          if (deactivateErr) console.warn('deactivate abandoned draft', deactivateErr.message)
+        })
+    }
+
     if (orgId) {
       clearThread(orgId, policyId)
       clearThread(orgId, null)
@@ -1169,6 +1228,8 @@ export function PoliciesDraftPage() {
     chatHydratedRef.current = true
     setPolicyId(null)
     policyIdRef.current = null
+    setIsPublished(false)
+    setPolicyVersion('0.1')
     setTitle(DEFAULT_TITLE)
     setMessages([])
     setPrompt('')
@@ -1269,8 +1330,10 @@ export function PoliciesDraftPage() {
     credits != null && credits.balance_cents > 0 && credits.balance_cents < credits.low_balance_cents
   const noBalance = credits != null && credits.balance_cents <= 0
   const balanceTone = noBalance ? 'risk' : lowBalance ? 'warn' : 'neutral'
-  const pageBlurb =
-    'Use MLA to draft, revise and structure your policy. Edit the document directly before saving.'
+  const pageTitle = isPublished ? 'Edit policy' : 'Draft a policy'
+  const pageBlurb = isPublished
+    ? 'Update the published policy document. Editors cannot change published policies.'
+    : 'Use MLA to draft, revise and structure your policy. Edit the document directly before saving.'
 
   const saveSlotLabel =
     streaming
@@ -1291,7 +1354,7 @@ export function PoliciesDraftPage() {
     <PageFrame denseWorkspace>
       <div className={styles.draftPage}>
         <PageHeader
-          title="Draft a policy"
+          title={pageTitle}
           description={pageBlurb}
           actions={
             <Link
@@ -1390,7 +1453,7 @@ export function PoliciesDraftPage() {
                 >
                   Save
                 </Button>
-                {canPublish ? (
+                {canPublish && !isPublished ? (
                   <Button
                     type="button"
                     size="sm"

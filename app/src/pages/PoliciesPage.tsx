@@ -122,7 +122,8 @@ export function PoliciesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, orgId])
 
-  const published = rows.filter((p) => p.published_at)
+  // published_at is the sole publish signal — never treat a published row as Unpublished.
+  const published = rows.filter((p) => Boolean(p.published_at))
   const drafts = rows.filter((p) => !p.published_at)
   const pending = published.filter((p) => {
     if (!p.requires_acknowledgment) return false
@@ -293,7 +294,7 @@ export function PoliciesPage() {
         )}
         {filteredDrafts.length > 0 ? (
           <>
-            <h2 className={styles.sectionLabel}>Unpublished</h2>
+            <h2 className={styles.sectionLabelSpaced}>Drafts</h2>
             <Ledger flush>
               {filteredDrafts.map((p) => {
                 const cat = POLICY_CATS[p.category || ''] || p.category
@@ -318,7 +319,7 @@ export function PoliciesPage() {
       </Section>
 
       <Section id="templates">
-        <h2 className={styles.sectionLabel}>Templates</h2>
+        <h2 className={styles.sectionLabelSpaced}>Templates</h2>
         {availableTemplates.length === 0 ? (
           <EmptyState title="No templates left" body="All available templates have been adopted." />
         ) : (

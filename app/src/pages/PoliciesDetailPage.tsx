@@ -162,7 +162,7 @@ export function PoliciesDetailPage() {
     setPublishing(true)
     setError('')
     const publishedAt = new Date().toISOString()
-    const { error: updateErr } = await sb
+    const { data: publishedRow, error: updateErr } = await sb
       .from('policy_documents')
       .update({
         published_at: publishedAt,
@@ -172,11 +172,23 @@ export function PoliciesDetailPage() {
       })
       .eq('id', policy.id)
       .eq('org_id', orgId)
-    if (updateErr) {
+      .is('published_at', null)
+      .select('id,published_at,version,title')
+      .maybeSingle()
+    if (updateErr || !publishedRow?.published_at) {
       setPublishing(false)
-      setError(updateErr.message)
+      setError(updateErr?.message || 'Could not publish policy.')
       return
     }
+    // Hide orphan same-title unpublished drafts so the list does not show an Unpublished twin.
+    await sb
+      .from('policy_documents')
+      .update({ is_active: false, updated_at: publishedAt })
+      .eq('org_id', orgId)
+      .eq('title', policy.title || '')
+      .eq('is_active', true)
+      .is('published_at', null)
+      .neq('id', policy.id)
     await writeAuditLog({
       orgId,
       userId,
@@ -185,8 +197,8 @@ export function PoliciesDetailPage() {
       entityId: policy.id,
       changes: {
         _actor_name: actorName(profile?.full_name, session?.user?.email),
-        policy: policy.title,
-        version: policy.version,
+        policy: (publishedRow.title as string) || policy.title,
+        version: (publishedRow.version as string) || policy.version,
       },
     })
     await refresh()
@@ -313,6 +325,11 @@ export function PoliciesDetailPage() {
             {isDraft && canContinueDraft ? (
               <Link to={`/policies/draft/${policy.id}`}>
                 <Button variant="ghost">Continue editing</Button>
+              </Link>
+            ) : null}
+            {!isDraft && canPublish && canContinueDraft ? (
+              <Link to={`/policies/draft/${policy.id}`}>
+                <Button variant="ghost">Edit</Button>
               </Link>
             ) : null}
             {isDraft && canPublish ? (
