@@ -179,7 +179,7 @@ export function UsersPage() {
       const invitedEmail = (payload as { email?: string }).email || email.trim()
       const inviteId = (payload as { invite_id?: string }).invite_id
       const url = token
-        ? `${window.location.origin}/login?invite=${encodeURIComponent(token)}`
+        ? `${window.location.origin}/invite?token=${encodeURIComponent(token)}`
         : ''
       let copied = false
       if (url) {
@@ -211,13 +211,15 @@ export function UsersPage() {
 
       if (emailed && copied) {
         pushToast(
-          `Invite emailed to ${invitedEmail}. Link also copied. They must sign in with that email.`,
+          `Invite emailed to ${invitedEmail}. Link also copied. They open it to create a password or sign in.`,
         )
       } else if (emailed) {
-        pushToast(`Invite emailed to ${invitedEmail}. They must sign in with that email.`)
+        pushToast(
+          `Invite emailed to ${invitedEmail}. They open it to create a password or sign in.`,
+        )
       } else if (copied) {
         pushToast(
-          `Invite created for ${invitedEmail}. Email could not be sent. Link copied. Send it to them. They must sign in with that email.`,
+          `Invite created for ${invitedEmail}. Email could not be sent. Link copied. They open it to create a password or sign in.`,
         )
       } else if (url) {
         setError(

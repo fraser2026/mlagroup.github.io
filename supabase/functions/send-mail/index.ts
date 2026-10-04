@@ -451,8 +451,11 @@ function inviteUrlOk(raw: string): boolean {
       host === 'localhost' ||
       host.endsWith('.workers.dev')
     if (!allowed) return false
-    if (!u.pathname.includes('/login')) return false
-    const token = u.searchParams.get('invite') || ''
+    const path = u.pathname.replace(/\/+$/, '') || '/'
+    const isInvitePath = path === '/invite' || path.endsWith('/invite')
+    const isLegacyLogin = path.includes('/login')
+    if (!isInvitePath && !isLegacyLogin) return false
+    const token = u.searchParams.get('token') || u.searchParams.get('invite') || ''
     return token.length >= 16 && token.length <= 200
   } catch {
     return false
@@ -475,7 +478,7 @@ function buildOrgInvite(opts: {
     '',
     `${who} invited you to join ${orgName} on RegAnchor as ${roleLabel}.`,
     '',
-    `Sign in with ${to} to accept:`,
+    `Open the link below with ${to} to accept. If you are new, create a password there:`,
     inviteUrl,
     '',
     'This link expires in 14 days. If you were not expecting this, you can ignore it.',
@@ -486,7 +489,7 @@ function buildOrgInvite(opts: {
     h1(heading),
     para('Hello,'),
     para(`${who} invited you to join ${orgName} on RegAnchor as ${roleLabel}.`),
-    para(`Sign in with ${to} to accept.`),
+    para(`Continue with ${to}. New to RegAnchor? Create a password on the next screen.`),
     cta(inviteUrl, 'Accept invite'),
     para('This link expires in 14 days. If you were not expecting this, you can ignore it.'),
   ].join('')

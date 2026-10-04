@@ -58,11 +58,12 @@ export function LoginPage() {
   const [ssoOpen, setSsoOpen] = useState(false)
   const [ssoEmail, setSsoEmail] = useState('')
 
+  const inviteToken = params.get('invite') || params.get('token')
+
   useEffect(() => {
-    const invite = params.get('invite')
-    if (invite) {
+    if (inviteToken) {
       try {
-        localStorage.setItem('ra_invite', invite)
+        localStorage.setItem('ra_invite', inviteToken)
       } catch {
         /* ignore */
       }
@@ -73,13 +74,17 @@ export function LoginPage() {
     } catch {
       /* ignore */
     }
-  }, [params])
+  }, [inviteToken, params])
 
   useEffect(() => {
     if (session && isLegacyNext(next)) {
       window.location.replace(next)
     }
   }, [session, next])
+
+  if (inviteToken) {
+    return <Navigate to={`/invite?token=${encodeURIComponent(inviteToken)}`} replace />
+  }
 
   if (session && !isLegacyNext(next)) return <Navigate to={next} replace />
   if (session && isLegacyNext(next)) {

@@ -1,4 +1,89 @@
 import { sb } from './supabase'
+import { parseRpcPayload } from './rpc'
+
+export type InvitePeek = {
+  ok: true
+  email: string
+  role: string
+  org_id: string
+  org_name: string
+  expires_at?: string
+}
+
+export type InviteAcceptResult = {
+  ok: boolean
+  error?: string
+  org_id?: string
+  role?: string
+}
+
+const INVITE_STORAGE_KEY = 'ra_invite'
+
+export function storeInviteToken(token: string) {
+  try {
+    localStorage.setItem(INVITE_STORAGE_KEY, token)
+  } catch {
+    /* ignore */
+  }
+}
+
+export function readInviteToken(): string | null {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const fromQuery = params.get('invite') || params.get('token')
+    if (fromQuery) return fromQuery
+    return localStorage.getItem(INVITE_STORAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function clearInviteToken() {
+  try {
+    localStorage.removeItem(INVITE_STORAGE_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function peekOrgInvite(token: string): Promise<InvitePeek | { ok: false; error: string }> {
+  const { data, error } = await sb.rpc('peek_org_invite', { p_token: token })
+  if (error) return { ok: false, error: error.message }
+  const payload = parseRpcPayload<{
+    ok?: boolean
+    error?: string
+    email?: string
+    role?: string
+    org_id?: string
+    org_name?: string
+    expires_at?: string
+  }>(data)
+  if (!payload || payload.ok !== true) {
+    return { ok: false, error: payload?.error || 'Invitation not found' }
+  }
+  return {
+    ok: true,
+    email: String(payload.email || ''),
+    role: String(payload.role || 'viewer'),
+    org_id: String(payload.org_id || ''),
+    org_name: String(payload.org_name || 'your organisation'),
+    expires_at: payload.expires_at,
+  }
+}
+
+export async function acceptOrgInviteToken(token: string): Promise<InviteAcceptResult> {
+  storeInviteToken(token)
+  const { data, error } = await sb.rpc('accept_org_invite', { p_token: token })
+  if (error) return { ok: false, error: error.message }
+  const payload = parseRpcPayload<InviteAcceptResult>(data)
+  if (!payload || payload.ok === false) {
+    const err = payload?.error || 'Could not accept invitation'
+    if (/not found|expired|revoked|already accepted/i.test(err)) clearInviteToken()
+    return { ok: false, error: err }
+  }
+  clearInviteToken()
+  return { ok: true, org_id: payload.org_id, role: payload.role }
+}
 
 export type OrgRole = 'owner' | 'admin' | 'editor' | 'viewer' | 'member' | string
 
@@ -202,24 +287,14 @@ export async function ensureOrg(userId: string, profileIn?: OrgContext['profile'
   return { profile, org: newOrg as Organisation, role: 'owner' }
 }
 
-export async function consumePendingInvite(): Promise<string | null> {
+export async function consumePendingInvite(): Promise<InviteAcceptResult | null> {
   try {
-    const params = new URLSearchParams(window.location.search)
-    let token = params.get('invite')
-    if (!token) {
-      token = localStorage.getItem('ra_invite')
-    }
+    const token = readInviteToken()
     if (!token) return null
-    const { data, error } = await sb.rpc('accept_org_invite', { p_token: token })
-    localStorage.removeItem('ra_invite')
-    if (error) {
-      console.error('accept_org_invite', error)
-      return null
-    }
-    return (data as string) || 'ok'
+    return acceptOrgInviteToken(token)
   } catch (e) {
     console.error(e)
-    return null
+    return { ok: false, error: 'Could not accept invitation' }
   }
 }
 

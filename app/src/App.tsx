@@ -3,6 +3,7 @@ import { NuqsAdapter } from 'nuqs/adapters/react-router/v7'
 import { AuthProvider } from './auth/AuthProvider'
 import { RequireAuth } from './auth/RequireAuth'
 import { LoginPage } from './auth/LoginPage'
+import { AcceptInvitePage } from './auth/AcceptInvitePage'
 import { AppLayout } from './layout/AppLayout'
 import { HomePage } from './pages/HomePage'
 import { SetupPage } from './pages/SetupPage'
@@ -44,6 +45,7 @@ export default function App() {
         <NuqsAdapter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/invite" element={<AcceptInvitePage />} />
             <Route path="/auditor/:token" element={<AuditorPortalPage />} />
             <Route
               path="/oauth/consent"
