@@ -55,6 +55,7 @@ export function AcceptInvitePage() {
   const [tab, setTab] = useState<'create' | 'signin'>('create')
   const [fullName, setFullName] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [accepting, setAccepting] = useState(false)
@@ -132,6 +133,10 @@ export function AcceptInvitePage() {
     setError('')
     if (password.length < 8) {
       setError('Password must be at least 8 characters.')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
       return
     }
     setBusy(true)
@@ -308,6 +313,18 @@ export function AcceptInvitePage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Minimum 8 characters"
+                      required
+                    />
+                  </label>
+                  <label className={styles.label}>
+                    Confirm password
+                    <input
+                      className={styles.input}
+                      type="password"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Retype password"
                       required
                     />
                   </label>
