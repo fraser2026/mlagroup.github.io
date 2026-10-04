@@ -19,6 +19,7 @@ import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { personDisplayName, personPickerLabel } from '../lib/accountLabel'
 import { actorName, writeAuditLog } from '../lib/audit'
+import { EdgeError, invokeEdge } from '../lib/edge'
 import {
   controlCode,
   labelCtrlRenewalOrStatus,
@@ -27,6 +28,22 @@ import {
 import { pct } from '../lib/workspace'
 import { sb } from '../lib/supabase'
 import styles from './ControlsDetailPage.module.css'
+
+/** Always refresh — getSession alone can return an expired JWT after a long tab. */
+async function freshAccessToken(): Promise<string | null> {
+  const { data: refreshed, error } = await sb.auth.refreshSession()
+  if (!error && refreshed.session?.access_token) {
+    return refreshed.session.access_token
+  }
+  const { data: first } = await sb.auth.getSession()
+  return first.session?.access_token || null
+}
+
+function mailErrorMessage(err: unknown): string {
+  if (err instanceof EdgeError) return err.message || 'Email could not be sent'
+  if (err instanceof Error && err.message) return err.message
+  return 'Email could not be sent'
+}
 
 type Control = {
   id: string
@@ -410,6 +427,8 @@ export function ControlsDetailPage() {
   async function saveAssignmentFields() {
     if (!assign || !orgId || !userId || !assign.control_id) return
     const assignTo = assignedTo || null
+    const prevAssigned = assign.assigned_to || null
+    const assigneeChanged = assignTo !== prevAssigned
     const update: Record<string, unknown> = {
       assigned_to: assignTo,
       due_date: dueDate || null,
@@ -458,8 +477,62 @@ export function ControlsDetailPage() {
       })
     }
     setAssignSuggestNote('')
-    setAssignStatus('Saved')
-    window.setTimeout(() => setAssignStatus(''), 2000)
+
+    // Notify only when assignee changes to someone else (not self).
+    if (assigneeChanged && assignTo && assignTo !== userId) {
+      const mail = await sendAssignmentMail(assign.id)
+      if (mail.emailed) {
+        setAssignInfo('')
+        setAssignStatus('Saved · notified')
+      } else {
+        const why = mail.detail ? ` ${mail.detail}` : ''
+        setAssignStatus(`Saved. Email was not sent.${why}`)
+        setAssignInfo(`Assignment saved, but email was not sent.${why}`)
+      }
+    } else {
+      if (assigneeChanged) setAssignInfo('')
+      setAssignStatus('Saved')
+    }
+    window.setTimeout(() => setAssignStatus(''), 3500)
+  }
+
+  async function sendAssignmentMail(assignmentId: string): Promise<{
+    emailed: boolean
+    detail?: string
+  }> {
+    const attempt = async (accessToken: string) =>
+      invokeEdge(
+        'send-mail',
+        {
+          kind: 'control-assignment',
+          assignment_id: assignmentId,
+        },
+        accessToken,
+      )
+
+    const accessToken = await freshAccessToken()
+    if (!accessToken) {
+      return { emailed: false, detail: 'Sign in expired. Refresh the page and try again.' }
+    }
+    try {
+      await attempt(accessToken)
+      return { emailed: true }
+    } catch (mailErr) {
+      if (mailErr instanceof EdgeError && mailErr.status === 401) {
+        const retryToken = await freshAccessToken()
+        if (retryToken) {
+          try {
+            await attempt(retryToken)
+            return { emailed: true }
+          } catch (retryErr) {
+            console.warn('Assignment email failed after refresh', retryErr)
+            return { emailed: false, detail: mailErrorMessage(retryErr) }
+          }
+        }
+      }
+      console.warn('Assignment email failed', mailErr)
+      return { emailed: false, detail: mailErrorMessage(mailErr) }
+    }
   }
 
   function setTaskValue(taskNumber: number, value: string, field?: string) {

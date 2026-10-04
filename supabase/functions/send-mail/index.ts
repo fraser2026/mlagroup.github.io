@@ -7,6 +7,7 @@
  *   - From is server-chosen per kind; client cannot set From
  *   - ops / ack / portal / admin-reply: RegAnchor <info@reganchor.com>
  *   - org-invite: RegAnchor <no-reply@reganchor.com> (reply-To info@)
+ *   - control-assignment: RegAnchor <no-reply@reganchor.com> (reply-To info@)
  *   - ops kinds (contact, demo, enterprise, diagnostic-lead): To always info@;
  *     reply-To is the form email; any client `to` is ignored
  *   - diagnostic-ack: To comes from diagnostic_results.respondent_email for the
@@ -16,6 +17,8 @@
  *     To may be the client to_email (admin → customer path)
  *   - org-invite: requires JWT owner/admin for the invite's org; To = invite email
  *     from org_invites (client to ignored); invite_url host allowlisted
+ *   - control-assignment: requires JWT org member; To = assignee profile email;
+ *     skips self-assign; open URL built server-side; Resend template when set
  *   - HTML is generated server-side from escaped values; client HTML is ignored
  *
  * DEPLOY (after merge — Pages does not ship Edge Functions):
@@ -28,6 +31,9 @@ const FROM_OPS = 'RegAnchor <info@reganchor.com>'
 const FROM_NOREPLY = 'RegAnchor <no-reply@reganchor.com>'
 const OPS = 'info@reganchor.com'
 const BUY_REPORT_BASE = 'https://reganchor.com/buy-report.html'
+const APP_ORIGIN = 'https://app.reganchor.com'
+/** Published Resend template: Control assignment */
+const CONTROL_ASSIGNMENT_TEMPLATE_ID = '58344186-6538-45dc-8ea4-c26e15b754c2'
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -47,6 +53,7 @@ type Kind =
   | 'portal-alert'
   | 'admin-reply'
   | 'org-invite'
+  | 'control-assignment'
 
 const KINDS: Kind[] = [
   'contact',
@@ -57,6 +64,7 @@ const KINDS: Kind[] = [
   'portal-alert',
   'admin-reply',
   'org-invite',
+  'control-assignment',
 ]
 
 const ROLE_LABELS: Record<string, string> = {
@@ -503,6 +511,77 @@ function buildOrgInvite(opts: {
   }
 }
 
+function formatDueLine(dueDate?: string | null) {
+  const raw = clip(dueDate, 32)
+  if (!raw) return 'No due date set.'
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw)
+  if (!m) return `Due ${raw}.`
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const d = Number(m[3])
+  if (!y || !mo || !d) return `Due ${raw}.`
+  const label = new Date(y, mo - 1, d).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+  return `Due ${label}.`
+}
+
+function buildControlAssignment(opts: {
+  to: string
+  controlTitle: string
+  dueDate?: string | null
+  openUrl: string
+  assignerName: string
+  orgName: string
+}) {
+  const { to, controlTitle, dueDate, openUrl, assignerName, orgName } = opts
+  const who = assignerName || 'A teammate'
+  const title = controlTitle || 'a control'
+  const dueLine = formatDueLine(dueDate)
+  const heading = "You've been assigned a control"
+  const text = [
+    'Hello,',
+    '',
+    `${who} assigned you ${title} in ${orgName}.`,
+    '',
+    dueLine,
+    '',
+    `Open the control: ${openUrl}`,
+    '',
+    'This appears under My work in RegAnchor.',
+    '',
+    'RegAnchor',
+  ].join('\n')
+  const inner = [
+    h1(heading),
+    para('Hello,'),
+    para(`${who} assigned you ${title} in ${orgName}.`),
+    para(dueLine),
+    cta(openUrl, 'Open control'),
+    `<p style="margin-top:16px;margin-bottom:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#6B7280;">This appears under My work in RegAnchor.</p>`,
+  ].join('')
+  return {
+    from: FROM_NOREPLY,
+    to,
+    replyTo: OPS,
+    subject: `You've been assigned ${title}`,
+    text,
+    html: shell(heading, inner),
+    template: {
+      id: CONTROL_ASSIGNMENT_TEMPLATE_ID,
+      variables: {
+        CONTROL_TITLE: title,
+        DUE_LINE: dueLine,
+        OPEN_URL: openUrl,
+        ASSIGNER_NAME: who,
+        ORG_NAME: orgName,
+      },
+    },
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -522,6 +601,10 @@ serve(async (req) => {
       subject: string
       text: string
       html: string
+      template?: {
+        id: string
+        variables: Record<string, string>
+      }
     }
 
     if (OPS_KINDS.includes(kind)) {
@@ -643,8 +726,107 @@ serve(async (req) => {
         inviteUrl,
         inviterName,
       })
+    } else if (kind === 'control-assignment') {
+      const auth = await requireUser(req)
+      if ('error' in auth && auth.error) return auth.error
+      const assignmentId = clip(body.assignment_id, 36)
+      if (!UUID_RE.test(assignmentId)) {
+        return json({ error: 'Valid assignment_id is required' }, 400)
+      }
+
+      const { data: assignment, error: assignErr } = await auth.supabase!
+        .from('control_assignments')
+        .select(
+          'id, org_id, assigned_to, due_date, governance_controls(title, control_number)',
+        )
+        .eq('id', assignmentId)
+        .maybeSingle()
+      if (assignErr) {
+        console.error('[send-mail] control-assignment lookup', assignErr.message)
+        return json({ error: 'Send failed' }, 500)
+      }
+      if (!assignment) return json({ error: 'Assignment not found' }, 404)
+      if (!assignment.assigned_to) {
+        return json({ error: 'Assignment has no assignee' }, 400)
+      }
+      if (assignment.assigned_to === auth.user!.id) {
+        return json({ ok: true, skipped: true })
+      }
+
+      const { data: membership } = await auth.supabase!
+        .from('org_members')
+        .select('role')
+        .eq('org_id', assignment.org_id)
+        .eq('user_id', auth.user!.id)
+        .maybeSingle()
+      if (!membership) {
+        return json({ error: 'Org access required' }, 403)
+      }
+
+      const [{ data: assignee }, { data: org }, { data: assigner }] = await Promise.all([
+        auth.supabase!
+          .from('profiles')
+          .select('id, email, full_name, first_name, last_name')
+          .eq('id', assignment.assigned_to)
+          .maybeSingle(),
+        auth.supabase!.from('organisations').select('name').eq('id', assignment.org_id).maybeSingle(),
+        auth.supabase!
+          .from('profiles')
+          .select('full_name, first_name, last_name, email')
+          .eq('id', auth.user!.id)
+          .maybeSingle(),
+      ])
+
+      const to = clip(assignee?.email, 254).toLowerCase()
+      if (!emailOk(to)) return json({ error: 'Assignee has no valid email' }, 400)
+
+      const ctrl = Array.isArray(assignment.governance_controls)
+        ? assignment.governance_controls[0]
+        : assignment.governance_controls
+      const rawTitle = clip(ctrl?.title, 200) || 'a control'
+      const num = ctrl?.control_number
+      const code =
+        num == null || num === ''
+          ? null
+          : `C${String(num).replace(/^c/i, '')}`
+      const controlTitle = code ? `${code} ${rawTitle}` : rawTitle
+      const orgName = clip(org?.name, 120) || 'your organisation'
+      const assignerName =
+        clip(
+          [assigner?.first_name, assigner?.last_name].filter(Boolean).join(' ') ||
+            assigner?.full_name ||
+            assigner?.email ||
+            auth.user!.email,
+          120,
+        ) || 'A teammate'
+      const openUrl = `${APP_ORIGIN}/controls/${assignment.id}`
+
+      mail = buildControlAssignment({
+        to,
+        controlTitle,
+        dueDate: assignment.due_date,
+        openUrl,
+        assignerName,
+        orgName,
+      })
     } else {
       return json({ error: 'Unknown kind' }, 400)
+    }
+
+    const payload: Record<string, unknown> = {
+      from: mail.from || FROM_OPS,
+      to: [mail.to],
+      reply_to: mail.replyTo,
+    }
+    if (mail.template?.id) {
+      payload.template = {
+        id: mail.template.id,
+        variables: mail.template.variables,
+      }
+    } else {
+      payload.subject = mail.subject
+      payload.text = mail.text
+      payload.html = mail.html
     }
 
     const res = await fetch('https://api.resend.com/emails', {
@@ -653,17 +835,35 @@ serve(async (req) => {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: mail.from || FROM_OPS,
-        to: [mail.to],
-        subject: mail.subject,
-        text: mail.text,
-        html: mail.html,
-        reply_to: mail.replyTo,
-      }),
+      body: JSON.stringify(payload),
     })
     const resJson = await res.json()
     if (!res.ok) {
+      // Template send can fail if unpublished / vars mismatch — fall back to HTML.
+      if (mail.template?.id) {
+        console.error('[send-mail] template send failed; falling back to HTML', resJson)
+        const fallback = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: mail.from || FROM_OPS,
+            to: [mail.to],
+            subject: mail.subject,
+            text: mail.text,
+            html: mail.html,
+            reply_to: mail.replyTo,
+          }),
+        })
+        const fallbackJson = await fallback.json()
+        if (!fallback.ok) {
+          console.error('[send-mail]', fallbackJson)
+          return json({ error: 'Send failed' }, 502)
+        }
+        return json({ ok: true, id: fallbackJson.id, fallback: true })
+      }
       console.error('[send-mail]', resJson)
       return json({ error: 'Send failed' }, 502)
     }

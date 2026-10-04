@@ -7,8 +7,8 @@ import {
   Building2,
   ClipboardList,
   FileText,
-  LayoutGrid,
   ListChecks,
+  ListTodo,
   Plug,
   ScrollText,
   Search,
@@ -29,7 +29,7 @@ import styles from './CommandPalette.module.css'
 type AssetHit = { id: string; name: string }
 
 const NAV = [
-  { to: '/', label: 'Home', icon: LayoutGrid },
+  { to: '/my-work', label: 'My work', icon: ListTodo },
   { to: '/setup', label: 'Getting started', icon: ListChecks },
   { to: '/registry', label: 'Registry', icon: Boxes },
   { to: '/frameworks', label: 'Frameworks', icon: Shield },

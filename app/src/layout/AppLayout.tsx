@@ -13,8 +13,8 @@ import {
   CreditCard,
   FileText,
   KeyRound,
-  LayoutGrid,
   ListChecks,
+  ListTodo,
   Plug,
   ScrollText,
   Settings,
@@ -65,8 +65,8 @@ const groups: NavGroup[] = [
     label: 'Workspace',
     defaultOpen: false,
     items: [
+      { to: '/my-work', label: 'My work', icon: ListTodo },
       { to: '/setup', label: 'Getting started', icon: ListChecks },
-      { to: '/home', label: 'Home (React)', icon: LayoutGrid },
     ],
   },
 ]

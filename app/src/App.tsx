@@ -5,7 +5,7 @@ import { RequireAuth } from './auth/RequireAuth'
 import { LoginPage } from './auth/LoginPage'
 import { AcceptInvitePage } from './auth/AcceptInvitePage'
 import { AppLayout } from './layout/AppLayout'
-import { HomePage } from './pages/HomePage'
+import { MyWorkPage } from './pages/MyWorkPage'
 import { SetupPage } from './pages/SetupPage'
 import { IntegrationsPage } from './pages/IntegrationsPage'
 import { RegistryPage } from './pages/RegistryPage'
@@ -115,7 +115,8 @@ export default function App() {
               <Route path="data-backends" element={<DataBackendsPage />} />
               <Route path="authentication" element={<AuthenticationPage />} />
               <Route path="auditor-access" element={<AuditorAccessPage />} />
-              <Route path="home" element={<HomePage />} />
+              <Route path="my-work" element={<MyWorkPage />} />
+              <Route path="home" element={<Navigate to="/my-work" replace />} />
               <Route path="legacy-portal" element={<LegacyPortalRedirect hash="dashboard" />} />
             </Route>
             <Route path="*" element={<Navigate to="/registry" replace />} />

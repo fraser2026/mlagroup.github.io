@@ -1,0 +1,36 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-top: 8px;
+}
+
+.group {
+  min-width: 0;
+}
+
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 6px;
+}
+
+.groupTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+}
+
+.groupCount {
+  font-family: var(--ra-font-num);
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-text-3);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
