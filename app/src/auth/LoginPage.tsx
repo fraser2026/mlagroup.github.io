@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type MouseEvent } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { BrandLoader, Button, Notice } from '../ui'
+import { authWordmarkSrc, useAuthSurfaceTheme } from '../theme/ThemeProvider'
 import { useAuth } from './AuthProvider'
 import { APP_ORIGIN, MARKETING_ORIGIN } from '../lib/config'
 import { LEGACY_PORTAL_PATH } from '../lib/legacyPortal'
@@ -38,6 +39,8 @@ const GOOGLE_ICON = (
 
 export function LoginPage() {
   const { session, signIn, signUp, signInWithGoogle, resetPassword } = useAuth()
+  const theme = useAuthSurfaceTheme()
+  const wordmarkSrc = authWordmarkSrc(theme)
   const [params] = useSearchParams()
   const next = params.get('next') || '/registry'
   const [tab, setTab] = useState<'signin' | 'signup'>('signin')
@@ -200,7 +203,7 @@ export function LoginPage() {
   return (
     <div className={styles.page}>
       <a className={styles.brand} href={MARKETING_ORIGIN} aria-label="RegAnchor home">
-        <img src="/wordmark.svg" alt="" width={140} height={26} decoding="async" />
+        <img src={wordmarkSrc} alt="" width={140} height={26} decoding="async" />
       </a>
 
       <div className={styles.card}>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { BrandLoader, Button, Notice } from '../ui'
+import { authWordmarkSrc, useAuthSurfaceTheme } from '../theme/ThemeProvider'
 import { useAuth } from './AuthProvider'
 import { APP_ORIGIN, MARKETING_ORIGIN } from '../lib/config'
 import {
@@ -45,6 +46,8 @@ function emailsMatch(a?: string | null, b?: string | null) {
 
 export function AcceptInvitePage() {
   const { session, user, ready, signIn, signUp, signInWithGoogle, signOut, refreshOrg } = useAuth()
+  const theme = useAuthSurfaceTheme()
+  const wordmarkSrc = authWordmarkSrc(theme)
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const token = params.get('token') || params.get('invite') || ''
@@ -205,7 +208,7 @@ export function AcceptInvitePage() {
     return (
       <div className={styles.page}>
         <a className={styles.brand} href={MARKETING_ORIGIN} aria-label="RegAnchor home">
-          <img src="/wordmark.svg" alt="" width={140} height={26} decoding="async" />
+          <img src={wordmarkSrc} alt="" width={140} height={26} decoding="async" />
         </a>
         <div className={styles.card}>
           <div className={styles.ssoPanel}>
@@ -233,7 +236,7 @@ export function AcceptInvitePage() {
   return (
     <div className={styles.page}>
       <a className={styles.brand} href={MARKETING_ORIGIN} aria-label="RegAnchor home">
-        <img src="/wordmark.svg" alt="" width={140} height={26} decoding="async" />
+        <img src={wordmarkSrc} alt="" width={140} height={26} decoding="async" />
       </a>
 
       <div className={styles.card}>

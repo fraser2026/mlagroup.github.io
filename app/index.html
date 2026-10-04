@@ -9,7 +9,12 @@
     <script>
       (function () {
         try {
-          var pref = localStorage.getItem('ra_theme') || 'light'
+          // Sign-in / invite always follow the device. In-app ThemePicker
+          // (localStorage ra_theme) only applies inside the authenticated shell.
+          var path = location.pathname || ''
+          var authSurface =
+            path === '/login' || path === '/invite' || path.indexOf('/invite/') === 0
+          var pref = authSurface ? 'system' : localStorage.getItem('ra_theme') || 'light'
           var dark =
             pref === 'dark' ||
             (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
