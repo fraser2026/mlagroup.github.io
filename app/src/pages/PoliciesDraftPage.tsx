@@ -15,7 +15,9 @@ import {
   Italic,
   List,
   ListOrdered,
+  Redo2,
   Table as TableIcon,
+  Undo2,
 } from 'lucide-react'
 import {
   BrandLoader,
@@ -251,8 +253,30 @@ function EditorToolbar({ editor, locked }: { editor: Editor | null; locked: bool
 
   if (!editor) return null
 
+  const canUndo = editor.can().undo()
+  const canRedo = editor.can().redo()
+  const inTable = editor.isActive('table')
+  const canDeleteTable = inTable && editor.can().deleteTable()
+
   return (
     <div className={styles.toolbar} role="toolbar" aria-label="Policy formatting">
+      <div className={styles.toolGroup}>
+        <ToolBtn
+          label="Undo"
+          disabled={locked || !canUndo}
+          onClick={() => editor.chain().focus().undo().run()}
+        >
+          <Undo2 size={14} strokeWidth={2} />
+        </ToolBtn>
+        <ToolBtn
+          label="Redo"
+          disabled={locked || !canRedo}
+          onClick={() => editor.chain().focus().redo().run()}
+        >
+          <Redo2 size={14} strokeWidth={2} />
+        </ToolBtn>
+      </div>
+      <span className={styles.toolDivider} aria-hidden />
       <div className={styles.toolGroup}>
         <ToolBtn
           label="Bold"
@@ -325,6 +349,16 @@ function EditorToolbar({ editor, locked }: { editor: Editor | null; locked: bool
         >
           <TableIcon size={14} strokeWidth={2} />
         </ToolBtn>
+        {canDeleteTable ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={locked}
+            onClick={() => editor.chain().focus().deleteTable().run()}
+          >
+            Delete table
+          </Button>
+        ) : null}
       </div>
     </div>
   )
