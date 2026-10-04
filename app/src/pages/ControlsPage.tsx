@@ -14,14 +14,7 @@ import {
 } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
-import {
-  controlCode,
-  dueUrgency,
-  formatDueDateLabel,
-  labelCtrlRenewalOrStatus,
-  maturityLabel,
-  toneForCtrlRenewalOrStatus,
-} from '../lib/registry'
+import { controlCode, labelCtrlStatus, maturityLabel } from '../lib/registry'
 import { pct } from '../lib/workspace'
 import { sb } from '../lib/supabase'
 import styles from './ControlsPage.module.css'
@@ -60,30 +53,28 @@ const LAYER_ORDER: { key: LayerKey; label: string }[] = [
   { key: 'assurance', label: 'Assurance' },
 ]
 
+function toneFor(status?: string | null) {
+  if (status === 'implemented' || status === 'verified') return 'ok' as const
+  if (status === 'overdue') return 'risk' as const
+  if (status === 'in_progress') return 'warn' as const
+  return 'neutral' as const
+}
+
 function isDone(status?: string | null) {
   return status === 'implemented' || status === 'verified'
 }
 
-/** Overdue first, then due soon, then open work; due_date ascending within band. */
-function urgencyRank(row: Assignment) {
-  if (isDone(row.status)) return 4
-  const due = dueUrgency(row.due_date, row.status)
-  if (due === 'overdue' || row.status === 'overdue') return 0
-  if (due === 'upcoming') return 1
-  if (!row.status || row.status === 'not_started') return 2
-  if (row.status === 'in_progress') return 3
-  return 4
+function urgency(status?: string | null) {
+  if (status === 'overdue') return 0
+  if (!status || status === 'not_started') return 1
+  if (status === 'in_progress') return 2
+  return 3
 }
 
 function sortAssignments(list: Assignment[]) {
   return [...list].sort((a, b) => {
-    const u = urgencyRank(a) - urgencyRank(b)
+    const u = urgency(a.status) - urgency(b.status)
     if (u !== 0) return u
-    const ad = a.due_date || ''
-    const bd = b.due_date || ''
-    if (ad && bd && ad !== bd) return ad.localeCompare(bd)
-    if (ad && !bd) return -1
-    if (!ad && bd) return 1
     const an = a.governance_controls?.control_number
     const bn = b.governance_controls?.control_number
     const ac = an == null ? 9999 : Number(an)
@@ -250,7 +241,7 @@ export function ControlsPage() {
       const code = controlCode(r.governance_controls?.control_number) || ''
       const sys = r.ai_systems?.name || ''
       const type = r.governance_controls?.control_type || ''
-      return `${code} ${title} ${sys} ${type} ${r.status || ''} ${r.due_date || ''}`.toLowerCase().includes(q)
+      return `${code} ${title} ${sys} ${type} ${r.status || ''}`.toLowerCase().includes(q)
     })
   }, [view, search])
 
@@ -353,16 +344,12 @@ export function ControlsPage() {
                   {g.items.map((c) => {
                     const title = c.governance_controls?.title || 'Control'
                     const code = controlCode(c.governance_controls?.control_number)
-                    const due = formatDueDateLabel(c.due_date)
                     return (
                       <LedgerRow
                         key={c.id}
                         title={code ? `${code} ${title}` : title}
-                        description={due || undefined}
                         meta={
-                          <StatusLabel tone={toneForCtrlRenewalOrStatus(c.status, c.due_date)}>
-                            {labelCtrlRenewalOrStatus(c.status, c.due_date)}
-                          </StatusLabel>
+                          <StatusLabel tone={toneFor(c.status)}>{labelCtrlStatus(c.status)}</StatusLabel>
                         }
                         onClick={() => navigate(`/controls/${c.id}`, { state: { from: 'controls' } })}
                       />
