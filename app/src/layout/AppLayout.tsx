@@ -3,6 +3,7 @@ import { ShellChromeProvider } from '../ui/shellChrome'
 import { PageTransition } from '../ui/PageTransition'
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette'
 import { useAuth } from '../auth/AuthProvider'
+import { accountInitials, sidebarAccountLabel } from '../lib/accountLabel'
 import {
   Activity,
   Bell,
@@ -71,8 +72,13 @@ const groups: NavGroup[] = [
 ]
 
 export function AppLayout() {
-  const { user, signOut } = useAuth()
-  const label = user?.email ?? 'Signed in'
+  const { user, profile, signOut } = useAuth()
+  const metaName =
+    typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null
+  const fullName = profile?.full_name || metaName
+  const email = profile?.email || user?.email || null
+  const label = sidebarAccountLabel(fullName, email)
+  const initials = accountInitials(fullName, email)
   const { open, setOpen, openPalette } = useCommandPalette()
 
   return (
@@ -80,6 +86,8 @@ export function AppLayout() {
       <AppShell
         title="RegAnchor"
         userLabel={label}
+        userInitials={initials}
+        userEmail={email ?? undefined}
         topItems={topItems}
         groups={groups}
         onSignOut={async () => {
