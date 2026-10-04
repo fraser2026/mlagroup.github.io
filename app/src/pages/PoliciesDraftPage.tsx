@@ -44,11 +44,11 @@ import {
 import {
   buildMetaWithThread,
   clearAllDraftChatMemory,
+  clearThread,
   getLiveChatSession,
   migrateThread,
-  readThread,
   rememberChatSession,
-  restoreChatSession as restoreChatSessionBase,
+  restoreChatSession,
   setLiveChatSession,
   threadFromMeta,
   type ThreadMsg,
@@ -138,14 +138,6 @@ function lastDraftKey(orgId: string) {
   return `ra:policy-draft:last:${orgId}`
 }
 
-function readLastDraftId(orgId: string): string | null {
-  try {
-    return localStorage.getItem(lastDraftKey(orgId))
-  } catch {
-    return null
-  }
-}
-
 function writeLastDraftId(orgId: string, id: string) {
   try {
     localStorage.setItem(lastDraftKey(orgId), id)
@@ -176,10 +168,6 @@ function writeAutosavePref(on: boolean) {
   } catch {
     /* ignore */
   }
-}
-
-function restoreChatSession(orgId: string, draftId: string | null) {
-  return restoreChatSessionBase(orgId, draftId, readLastDraftId)
 }
 
 async function persistThreadMeta(
@@ -1255,13 +1243,26 @@ export function PoliciesDraftPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages, streaming])
 
-  // Seed chat once per org mount from live memory / sessionStorage (before hydrate can wipe).
+  // Seed chat for this route id only (before hydrate). Re-run when route id changes.
   useEffect(() => {
-    if (!orgId || chatHydratedRef.current) return
-    const restored = restoreChatSession(orgId, routePolicyId || policyIdRef.current)
+    if (!orgId) return
+    const draftKey = routePolicyId || null
+    // New policy route: never seed another policy’s live thread.
+    if (!draftKey) {
+      const live = getLiveChatSession()
+      if (live?.orgId === orgId && live.policyId != null) {
+        setLiveChatSession({ orgId, policyId: null, messages: [], prompt: '' })
+        clearThread(orgId, null)
+        setMessages([])
+        setPrompt('')
+        chatHydratedRef.current = true
+        return
+      }
+    }
+    const restored = restoreChatSession(orgId, draftKey)
     chatHydratedRef.current = true
-    if (restored.messages.length) setMessages(restored.messages)
-    if (restored.prompt) setPrompt(restored.prompt)
+    setMessages(restored.messages)
+    setPrompt(restored.prompt)
   }, [orgId, routePolicyId])
 
   // Persist chat + composer for this session. Never write empty over a stored thread.
@@ -1366,36 +1367,51 @@ export function PoliciesDraftPage() {
       if (!hasSession) setHydrating(true)
 
       if (!id) {
+        // Draft a policy / /policies/draft with no id = blank canvas.
+        // Do not resume last draft or inherit another policy’s MLA thread.
         contentAppliedForIdRef.current = null
         policyMetaRef.current = {}
-        const remembered = readLastDraftId(orgId!)
-        if (remembered) {
-          const { data } = await sb
-            .from('policy_documents')
-            .select('id')
-            .eq('id', remembered)
-            .eq('org_id', orgId!)
-            .eq('is_active', true)
-            .is('published_at', null)
-            .maybeSingle()
-          if (!cancelled && data?.id) {
-            const rememberedThread = readThread(orgId!, remembered)
-            const newThread = readThread(orgId!, null)
-            if (!rememberedThread.length && newThread.length) {
-              migrateThread(orgId!, null, remembered)
-            }
-            navigate(`/policies/draft/${data.id}`, { replace: true })
-            return
-          }
-          clearLastDraftId(orgId!)
+        clearLastDraftId(orgId!)
+        const live = getLiveChatSession()
+        const switchingFromExisting =
+          policyIdRef.current != null || (live?.orgId === orgId && live.policyId != null)
+        if (switchingFromExisting) {
+          clearThread(orgId!, null)
+          setLiveChatSession({ orgId: orgId!, policyId: null, messages: [], prompt: '' })
         }
         if (!cancelled) {
           setPolicyId(null)
           policyIdRef.current = null
           setIsPublished(false)
-          const restored = restoreChatSession(orgId!, null)
-          setMessages((prev) => (prev.length ? prev : restored.messages))
-          if (restored.prompt) setPrompt((p) => p || restored.prompt)
+          setPolicyVersion(DEFAULT_DRAFT_VERSION)
+          policyVersionRef.current = DEFAULT_DRAFT_VERSION
+          setVersionTouched(false)
+          versionTouchedRef.current = false
+          setTitle(DEFAULT_TITLE)
+          titleRef.current = DEFAULT_TITLE
+          setTitleTouched(false)
+          titleTouchedRef.current = false
+          setTitleHint(null)
+          if (switchingFromExisting || editor!.isEmpty === false) {
+            skipAutosaveRef.current = true
+            editor!.commands.clearContent()
+            setDocEmpty(true)
+            lastPersistedRef.current = ''
+          }
+          if (switchingFromExisting) {
+            setMessages([])
+            setPrompt('')
+            setSaveState('idle')
+            setOfferSavePrompt(false)
+            rememberChatSession(orgId!, null, [], '')
+          } else {
+            const restored = restoreChatSession(orgId!, null)
+            const nextMessages = messagesRef.current.length ? messagesRef.current : restored.messages
+            const nextPrompt = promptRef.current || restored.prompt || ''
+            setMessages(nextMessages)
+            setPrompt(nextPrompt)
+            rememberChatSession(orgId!, null, nextMessages, nextPrompt)
+          }
           setHydrating(false)
           setComposerInvite(true)
         }
@@ -1461,16 +1477,14 @@ export function PoliciesDraftPage() {
       setSaveState(md.trim() ? 'saved' : 'idle')
       void refreshTitleCatalog()
 
-      // Durable thread on the policy wins; fall back to live/session cache for same id.
+      // This policy’s durable thread only; never keep another policy’s prev messages.
       const fromMeta = threadFromMeta(metaObj)
       const restored = restoreChatSession(orgId!, data.id)
-      const nextMessages = fromMeta?.messages?.length
-        ? fromMeta.messages
-        : restored.messages
-      const nextPrompt = fromMeta?.prompt || restored.prompt || ''
-      setMessages((prev) => (prev.length && !fromMeta?.messages?.length ? prev : nextMessages))
-      if (nextPrompt) setPrompt((p) => p || nextPrompt)
-      rememberChatSession(orgId!, data.id, nextMessages.length ? nextMessages : messagesRef.current, nextPrompt || promptRef.current)
+      const nextMessages = fromMeta?.messages?.length ? fromMeta.messages : restored.messages
+      const nextPrompt = fromMeta ? fromMeta.prompt || '' : restored.prompt || ''
+      setMessages(nextMessages)
+      setPrompt(nextPrompt)
+      rememberChatSession(orgId!, data.id, nextMessages, nextPrompt)
 
       setHydrating(false)
       setComposerInvite(true)

@@ -178,20 +178,30 @@ export function buildMetaWithThread(existingMeta: unknown, messages: ThreadMsg[]
 }
 
 /**
- * Restore chat for a draft. Prefer live memory for same org (remount), then
- * sessionStorage. Callers overlay durable meta.mla_thread when loading a row.
+ * Restore chat for one draft key only.
+ *
+ * - Live / sessionStorage apply only when the cached policyId matches `draftId`
+ *   (both null = unsaved New). Never reuse another policy’s thread for New.
+ * - After first save (null → id), allow migrate from the `new` slot only.
+ * - Callers overlay durable `meta.mla_thread` when loading an existing row.
  */
 export function restoreChatSession(
   orgId: string,
   draftId: string | null,
-  readLastDraftId?: (orgId: string) => string | null,
 ): { messages: ThreadMsg[]; prompt: string } {
   if (liveChatSession?.orgId === orgId) {
     const sameDraft =
-      liveChatSession.policyId === draftId ||
       (liveChatSession.policyId == null && draftId == null) ||
       (liveChatSession.policyId != null && draftId != null && liveChatSession.policyId === draftId)
-    if (sameDraft || liveChatSession.messages.length) {
+    if (sameDraft) {
+      return { messages: liveChatSession.messages, prompt: liveChatSession.prompt }
+    }
+    // First save: live still keyed as New while route/id is the new row.
+    if (
+      draftId &&
+      liveChatSession.policyId == null &&
+      (liveChatSession.messages.length > 0 || liveChatSession.prompt)
+    ) {
       return { messages: liveChatSession.messages, prompt: liveChatSession.prompt }
     }
   }
@@ -203,14 +213,9 @@ export function restoreChatSession(
       migrateThread(orgId, null, draftId)
       return { messages: asNew, prompt: readPrompt(orgId, draftId) || readPrompt(orgId, null) }
     }
-  } else if (readLastDraftId) {
-    const remembered = readLastDraftId(orgId)
-    if (remembered) {
-      const fromLast = readThread(orgId, remembered)
-      if (fromLast.length) return { messages: fromLast, prompt: readPrompt(orgId, remembered) }
-    }
   }
-  return { messages: [], prompt: readPrompt(orgId, draftId) }
+  // New draft: do not pull thread from a previous policy id / last-draft pointer.
+  return { messages: [], prompt: draftId ? readPrompt(orgId, draftId) : '' }
 }
 
 export function rememberChatSession(
