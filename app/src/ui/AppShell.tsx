@@ -39,6 +39,10 @@ export type NavGroup = {
 type Props = {
   title?: string
   userLabel?: string
+  /** Avatar letters; when omitted, derived from userLabel. */
+  userInitials?: string
+  /** Full email for the account menu header (sidebar shows userLabel). */
+  userEmail?: string
   groups: NavGroup[]
   topItems?: NavItem[]
   bottomItems?: NavItem[]
@@ -116,6 +120,8 @@ export function NavSection({
 export function AppShell({
   title = 'RegAnchor',
   userLabel,
+  userInitials,
+  userEmail,
   groups,
   topItems = [],
   bottomItems = [],
@@ -131,7 +137,8 @@ export function AppShell({
   const navigate = useNavigate()
   const { resolved } = useTheme()
   const wordmarkSrc = resolved === 'dark' ? '/wordmark-light.svg' : '/wordmark.svg'
-  const initials = (userLabel || 'U').slice(0, 2).toUpperCase()
+  const initials = (userInitials || userLabel || 'U').slice(0, 2).toUpperCase()
+  const accountDetail = userEmail || userLabel || 'Signed in'
 
   async function handleSignOut() {
     if (!onSignOut) return
@@ -258,7 +265,7 @@ export function AppShell({
                 <div className={styles.accountAvatar} aria-hidden>
                   {initials}
                 </div>
-                <div className={styles.accountEmail}>{userLabel || 'Signed in'}</div>
+                <div className={styles.accountEmail}>{accountDetail}</div>
               </div>
               <button type="button" className={styles.accountItem} role="menuitem" onClick={() => go('/organisation')}>
                 <Icon icon={UserRound} size="sm" />
