@@ -18,6 +18,7 @@ import {
 import type { ToastItem } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
+import { APP_ORIGIN } from '../lib/config'
 import { sb } from '../lib/supabase'
 import { EdgeError, invokeEdge } from '../lib/edge'
 import { orgSeatLimit } from '../lib/org'
@@ -34,13 +35,31 @@ type InviteRpc = {
   invite_id?: string
 }
 
+/** Always refresh — getSession alone can return an expired JWT after a long tab. */
 async function freshAccessToken(): Promise<string | null> {
-  const { data: first } = await sb.auth.getSession()
-  let token = first.session?.access_token || null
-  if (token) return token
   const { data: refreshed, error } = await sb.auth.refreshSession()
-  if (error) return null
-  return refreshed.session?.access_token || null
+  if (!error && refreshed.session?.access_token) {
+    return refreshed.session.access_token
+  }
+  const { data: first } = await sb.auth.getSession()
+  return first.session?.access_token || null
+}
+
+/** Never block invite email on clipboard permission / hang after async RPC. */
+async function copyInviteLink(url: string): Promise<boolean> {
+  try {
+    const write = navigator.clipboard?.writeText?.(url)
+    if (!write) return false
+    await Promise.race([
+      write,
+      new Promise<never>((_, reject) => {
+        window.setTimeout(() => reject(new Error('clipboard timeout')), 800)
+      }),
+    ])
+    return true
+  } catch {
+    return false
+  }
 }
 
 function mailErrorMessage(err: unknown): string {
@@ -188,12 +207,8 @@ export function UsersPage() {
     emailed: boolean
     detail?: string
   }> {
-    const accessToken = await freshAccessToken()
-    if (!accessToken) {
-      return { emailed: false, detail: 'Sign in expired. Refresh the page and try again.' }
-    }
-    try {
-      await invokeEdge(
+    const attempt = async (accessToken: string) =>
+      invokeEdge(
         'send-mail',
         {
           kind: 'org-invite',
@@ -202,8 +217,28 @@ export function UsersPage() {
         },
         accessToken,
       )
+
+    const accessToken = await freshAccessToken()
+    if (!accessToken) {
+      return { emailed: false, detail: 'Sign in expired. Refresh the page and try again.' }
+    }
+    try {
+      await attempt(accessToken)
       return { emailed: true }
     } catch (mailErr) {
+      // One retry with a forced refresh when Edge rejects the JWT.
+      if (mailErr instanceof EdgeError && mailErr.status === 401) {
+        const retryToken = await freshAccessToken()
+        if (retryToken) {
+          try {
+            await attempt(retryToken)
+            return { emailed: true }
+          } catch (retryErr) {
+            console.warn('Invite email failed after refresh', retryErr)
+            return { emailed: false, detail: mailErrorMessage(retryErr) }
+          }
+        }
+      }
       console.warn('Invite email failed', mailErr)
       return { emailed: false, detail: mailErrorMessage(mailErr) }
     }
@@ -227,19 +262,15 @@ export function UsersPage() {
     const token = payload.token
     const invitedEmail = payload.email || input.email
     const inviteId = payload.invite_id
+    // Prefer APP_ORIGIN so Edge inviteUrlOk always sees app.reganchor.com
+    // (preview / alternate hosts can reject the link and block Resend).
     const url = token
-      ? `${window.location.origin}/invite?token=${encodeURIComponent(token)}`
+      ? `${APP_ORIGIN}/invite?token=${encodeURIComponent(token)}`
       : ''
-    let copied = false
-    if (url) {
-      try {
-        await navigator.clipboard.writeText(url)
-        copied = true
-      } catch {
-        /* clipboard may be blocked; email path still tries */
-      }
-    }
 
+    // Email first. Clipboard after async RPC can hang on permission prompts and
+    // previously blocked the Resend call entirely (revoke → invite-again looked
+    // successful in the table, with zero POST /emails).
     let emailed = false
     let mailDetail = ''
     if (!url || !inviteId) {
@@ -249,6 +280,8 @@ export function UsersPage() {
       emailed = mail.emailed
       mailDetail = mail.detail || ''
     }
+
+    const copied = url ? await copyInviteLink(url) : false
 
     if (emailed && copied) {
       pushToast(
