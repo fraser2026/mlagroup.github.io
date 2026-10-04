@@ -72,13 +72,18 @@
 
 .nameRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
+  width: 100%;
+}
+
+.nameRow > .label {
+  min-width: 0;
 }
 
 @media (max-width: 420px) {
   .nameRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -89,6 +94,7 @@
   font-size: 12px;
   font-weight: 500;
   color: var(--ra-text-2);
+  min-width: 0;
 }
 
 .labelRow {
@@ -110,6 +116,9 @@
 }
 
 .input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   height: 36px;
   padding: 0 10px;
   border: 1px solid var(--ra-border-field);
