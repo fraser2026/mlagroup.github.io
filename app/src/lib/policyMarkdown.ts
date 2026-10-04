@@ -1,108 +1,33 @@
-function esc(s: string) {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+import { markdownToHtml } from './tiptapMarkdown'
+
+function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-function inlineFmt(s: string) {
-  let h = esc(s)
-  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  h = h.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
-  return h
-}
-
-/** Portal-parity markdown subset for policy documents. */
-export function renderPolicyMarkdown(md?: string | null, title?: string | null) {
-  if (!md) return '<div class="empty">No content available.</div>'
-  let text = String(md).replace(/\r\n/g, '\n').trim()
+/** Strip a leading ATX title that duplicates the policy title chrome. */
+export function stripPolicyTitleMarkdown(md: string, title?: string | null): string {
+  let text = String(md || '').replace(/\r\n/g, '\n').trim()
+  if (!text) return ''
   if (title) {
-    const titleRe = new RegExp(
-      '^#\\s+' + String(title).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*(?:\\n+|$)',
-      'i',
-    )
+    const titleRe = new RegExp('^#\\s+' + escapeRegExp(String(title)) + '\\s*(?:\\n+|$)', 'i')
     text = text.replace(titleRe, '')
   } else {
     text = text.replace(/^#\s+[^\n]+\n+/, '')
   }
-  text = text.trim()
+  return text.trim()
+}
+
+/**
+ * Render policy markdown for the published/detail read view.
+ * Uses the same GFM → HTML path as the TipTap draft Editor (`marked` + normalize).
+ */
+export function renderPolicyMarkdown(md?: string | null, title?: string | null) {
+  if (!md) return '<div class="empty">No content available.</div>'
+  const text = stripPolicyTitleMarkdown(md, title)
   if (!text) return '<div class="empty">No content available.</div>'
-
-  const lines = text.split('\n')
-  const out: string[] = []
-  let listBuf: string[] = []
-  let paraBuf: string[] = []
-
-  function flushList() {
-    if (!listBuf.length) return
-    out.push(`<ul class="md-list">${listBuf.join('')}</ul>`)
-    listBuf = []
-  }
-  function flushPara() {
-    if (!paraBuf.length) return
-    const p = paraBuf.join(' ').trim()
-    if (p) out.push(`<p class="md-p">${inlineFmt(p)}</p>`)
-    paraBuf = []
-  }
-
-  for (const line of lines) {
-    const trimmed = line.trim()
-    if (!trimmed) {
-      flushList()
-      flushPara()
-      continue
-    }
-    let m: RegExpMatchArray | null
-    if ((m = trimmed.match(/^###\s+(.+)$/))) {
-      flushList()
-      flushPara()
-      out.push(`<h4 class="md-h4">${inlineFmt(m[1])}</h4>`)
-      continue
-    }
-    if ((m = trimmed.match(/^##\s+(.+)$/))) {
-      flushList()
-      flushPara()
-      out.push(`<h3 class="md-h3">${inlineFmt(m[1])}</h3>`)
-      continue
-    }
-    if ((m = trimmed.match(/^#\s+(.+)$/))) {
-      flushList()
-      flushPara()
-      out.push(`<h2 class="md-h2">${inlineFmt(m[1])}</h2>`)
-      continue
-    }
-    if ((m = trimmed.match(/^\*\*(\d+\.\s+[^*]+)\*\*$/))) {
-      flushList()
-      flushPara()
-      out.push(`<h3 class="md-h3">${esc(m[1])}</h3>`)
-      continue
-    }
-    if ((m = trimmed.match(/^\*\*([^*]+)\*\*$/))) {
-      flushList()
-      flushPara()
-      out.push(`<h4 class="md-h4">${esc(m[1])}</h4>`)
-      continue
-    }
-    if ((m = trimmed.match(/^_(.+)_$/))) {
-      flushList()
-      flushPara()
-      out.push(`<div class="md-foot">${inlineFmt(m[1])}</div>`)
-      continue
-    }
-    if ((m = trimmed.match(/^[-*]\s+(.+)$/))) {
-      flushPara()
-      listBuf.push(
-        `<li class="md-li"><span class="md-li__bullet" aria-hidden="true"></span><span class="md-li__text">${inlineFmt(m[1])}</span></li>`,
-      )
-      continue
-    }
-    flushList()
-    paraBuf.push(trimmed)
-  }
-  flushList()
-  flushPara()
-  return `<div class="policy-doc">${out.join('')}</div>`
+  const html = markdownToHtml(text).trim()
+  if (!html) return '<div class="empty">No content available.</div>'
+  return `<div class="policy-doc">${html}</div>`
 }
 
 export const POLICY_CATS: Record<string, string> = {

@@ -776,14 +776,10 @@
   }
 }
 
+/* Document typography/tables: shared policyProse.module.css on .paper */
 .paper :global(.ProseMirror) {
   min-height: 420px;
   outline: none;
-  font-size: var(--draft-fs-ui);
-  font-weight: var(--ra-fw-medium);
-  letter-spacing: -0.01em;
-  color: var(--ra-ink);
-  line-height: 1.7;
   padding-bottom: 8px;
 }
 
@@ -793,67 +789,6 @@
   color: var(--ra-text-3);
   pointer-events: none;
   height: 0;
-}
-
-.paper :global(.ProseMirror h1),
-.paper :global(.ProseMirror h2),
-.paper :global(.ProseMirror h3) {
-  color: var(--ra-ink);
-  font-weight: var(--ra-fw-medium);
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-  margin: 0 0 12px;
-}
-
-.paper :global(.ProseMirror h1) {
-  font-size: var(--draft-fs-title);
-}
-
-.paper :global(.ProseMirror h2),
-.paper :global(.ProseMirror h3) {
-  font-size: var(--draft-fs-ui);
-  margin-top: 20px;
-}
-
-.paper :global(.ProseMirror h3) {
-  margin-top: 16px;
-  color: var(--ra-text-2);
-}
-
-.paper :global(.ProseMirror p) {
-  margin: 0 0 12px;
-  color: var(--ra-ink);
-}
-
-.paper :global(.ProseMirror ul),
-.paper :global(.ProseMirror ol) {
-  margin: 0 0 14px;
-  padding-left: 1.25em;
-  color: var(--ra-ink);
-}
-
-.paper :global(.ProseMirror li) {
-  margin: 0 0 4px;
-}
-
-.paper :global(.ProseMirror table) {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 0 0 16px;
-  font-size: var(--draft-fs-ui);
-}
-
-.paper :global(.ProseMirror th),
-.paper :global(.ProseMirror td) {
-  border: 1px solid var(--ra-line);
-  padding: 8px 10px;
-  text-align: left;
-  vertical-align: top;
-}
-
-.paper :global(.ProseMirror th) {
-  color: var(--ra-ink);
-  background: color-mix(in srgb, var(--ra-ink) 4%, var(--ra-surface));
 }
 
 .paper :global(.ProseMirror.readonly) {

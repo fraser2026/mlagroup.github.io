@@ -79,6 +79,7 @@ import {
   tipTapJsonToMarkdown,
   titleFromMarkdown,
 } from '../lib/tiptapMarkdown'
+import proseStyles from '../styles/policyProse.module.css'
 import styles from './PoliciesDraftPage.module.css'
 
 type CreditBalance = {
@@ -1740,7 +1741,7 @@ export function PoliciesDraftPage() {
 
   if (!orgReady) {
     return (
-      <PageFrame denseWorkspace>
+      <PageFrame denseWorkspace showRail={false}>
         <PageHeader title="Draft a policy" description="Loading workspace" />
         <BrandLoader fill label="Loading" />
       </PageFrame>
@@ -1749,7 +1750,7 @@ export function PoliciesDraftPage() {
 
   if (!orgId) {
     return (
-      <PageFrame denseWorkspace>
+      <PageFrame denseWorkspace showRail={false}>
         <PageHeader title="Draft a policy" description="Organisation context required." />
         <EmptyState title="No organisation" body="Join or create an organisation to draft policies." />
       </PageFrame>
@@ -1758,7 +1759,7 @@ export function PoliciesDraftPage() {
 
   if (!entitled) {
     return (
-      <PageFrame denseWorkspace>
+      <PageFrame denseWorkspace showRail={false}>
         <PageHeader
           title="Draft a policy"
           description="AI policy drafting is included with Essentials, Professional, and Enterprise."
@@ -1785,7 +1786,7 @@ export function PoliciesDraftPage() {
 
   if (!canDraft) {
     return (
-      <PageFrame denseWorkspace>
+      <PageFrame denseWorkspace showRail={false}>
         <PageHeader title="Draft a policy" description="Editor access or higher is required." />
         <EmptyState
           title="View-only access"
@@ -1797,7 +1798,7 @@ export function PoliciesDraftPage() {
 
   if (hydrating) {
     return (
-      <PageFrame denseWorkspace>
+      <PageFrame denseWorkspace showRail={false}>
         <PageHeader title="Draft a policy" description="Loading workspace" />
         <BrandLoader fill label="Loading draft" />
       </PageFrame>
@@ -1829,7 +1830,7 @@ export function PoliciesDraftPage() {
   const showPaperLoader = paperWaiting && (docEmpty || streaming)
 
   return (
-    <PageFrame denseWorkspace>
+    <PageFrame denseWorkspace showRail={false}>
       <div className={styles.draftPage}>
         <PageHeader
           title={pageTitle}
@@ -2066,7 +2067,7 @@ export function PoliciesDraftPage() {
               }
             }}
           >
-            <div className={styles.paper}>
+            <div className={`${styles.paper} ${proseStyles.prose}`}>
               {showPaperLoader && docEmpty ? (
                 <div className={styles.paperLoading} aria-live="polite">
                   <BrandLoader size="md" label="Drafting policy" />

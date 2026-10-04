@@ -23,6 +23,7 @@ import {
 } from '../lib/policyVersionGuard'
 import { POLICY_CATS, renderPolicyMarkdown } from '../lib/policyMarkdown'
 import { sb } from '../lib/supabase'
+import proseStyles from '../styles/policyProse.module.css'
 import styles from './PoliciesPage.module.css'
 
 type Policy = {
@@ -282,7 +283,7 @@ export function PoliciesDetailPage() {
 
   if (loading) {
     return (
-      <PageFrame>
+      <PageFrame showRail={false}>
         <PageHeader title="Policy" description="Loading policy" />
         <BrandLoader fill label="Loading policy" />
       </PageFrame>
@@ -291,7 +292,7 @@ export function PoliciesDetailPage() {
 
   if (!policy) {
     return (
-      <PageFrame>
+      <PageFrame showRail={false}>
         <PageHeader
           title="Policy"
           description="Policy not found."
@@ -313,13 +314,7 @@ export function PoliciesDetailPage() {
   const isDraft = !policy.published_at
 
   return (
-    <PageFrame
-      railItems={[
-        { id: 'ack', label: isDraft ? 'Review' : 'Acknowledgment' },
-        { id: 'content', label: 'Content' },
-        { id: 'history', label: 'History' },
-      ]}
-    >
+    <PageFrame showRail={false}>
       <PageHeader
         title={title}
         description={
@@ -393,11 +388,18 @@ export function PoliciesDetailPage() {
                   <p className={styles.ackCopy}>
                     This draft is not live for acknowledgment. Owner or admin can publish it to the library.
                   </p>
-                  {canPublish ? (
+                  {canContinueDraft || canPublish ? (
                     <div className={styles.actions}>
-                      <Button pending={publishing} onClick={() => void publishPolicy()}>
-                        Publish policy
-                      </Button>
+                      {canContinueDraft ? (
+                        <Link to={`/policies/draft/${policy.id}`}>
+                          <Button variant="ghost">Continue editing</Button>
+                        </Link>
+                      ) : null}
+                      {canPublish ? (
+                        <Button pending={publishing} onClick={() => void publishPolicy()}>
+                          Publish policy
+                        </Button>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
@@ -432,7 +434,7 @@ export function PoliciesDetailPage() {
             </div>
             {policy.content ? (
               <div
-                className={styles.doc}
+                className={`${styles.doc} ${proseStyles.prose}`}
                 dangerouslySetInnerHTML={{
                   __html: renderPolicyMarkdown(policy.content, policy.title),
                 }}
