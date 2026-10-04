@@ -204,8 +204,12 @@ export function MyWorkPage() {
 
         {groups.length === 0 ? (
           <EmptyState
-            title="Nothing assigned to you"
-            body="When someone assigns you a control, it shows up here."
+            title={rows.length === 0 ? 'Nothing assigned to you' : 'No open controls'}
+            body={
+              rows.length === 0
+                ? 'When someone assigns you a control, it shows up here.'
+                : 'Completed controls stay under All and Complete.'
+            }
           />
         ) : (
           <div className={styles.stack}>

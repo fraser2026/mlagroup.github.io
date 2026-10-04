@@ -14,6 +14,7 @@ import {
 } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
+import { personDisplayName } from '../lib/accountLabel'
 import { controlCode, labelCtrlStatus, maturityLabel } from '../lib/registry'
 import { pct } from '../lib/workspace'
 import { sb } from '../lib/supabase'
@@ -26,6 +27,7 @@ type Assignment = {
   due_date?: string | null
   control_id?: string | null
   system_id?: string | null
+  assigned_to?: string | null
   governance_controls?: {
     title?: string | null
     control_number?: string | number | null
@@ -166,6 +168,7 @@ export function ControlsPage() {
   const navigate = useNavigate()
   const orgId = org?.id || null
   const [rows, setRows] = useState<Assignment[]>([])
+  const [assigneeNames, setAssigneeNames] = useState<Record<string, string>>({})
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState('all')
   const [loading, setLoading] = useState(true)
@@ -181,6 +184,7 @@ export function ControlsPage() {
       if (!session?.user || !orgId) {
         if (!cancelled) {
           setRows([])
+          setAssigneeNames({})
           setLoading(false)
         }
         return
@@ -189,15 +193,28 @@ export function ControlsPage() {
       const { data } = await sb
         .from('control_assignments')
         .select(
-          'id,status,notes,due_date,control_id,system_id,governance_controls(title,control_number,control_type,pillar,description),ai_systems(name)',
+          'id,status,notes,due_date,control_id,system_id,assigned_to,governance_controls(title,control_number,control_type,pillar,description),ai_systems(name)',
         )
         .eq('org_id', orgId)
         .order('updated_at', { ascending: false })
         .limit(250)
-      if (!cancelled) {
-        setRows((data as Assignment[]) || [])
-        setLoading(false)
+      if (cancelled) return
+      const list = (data as Assignment[]) || []
+      setRows(list)
+      const ids = [...new Set(list.map((r) => r.assigned_to).filter((v): v is string => Boolean(v)))]
+      if (ids.length) {
+        const { data: profiles } = await sb
+          .from('profiles')
+          .select('id,first_name,last_name,full_name,email')
+          .in('id', ids)
+        if (cancelled) return
+        const map: Record<string, string> = {}
+        for (const p of profiles || []) map[p.id] = personDisplayName(p)
+        setAssigneeNames(map)
+      } else {
+        setAssigneeNames({})
       }
+      setLoading(false)
     }
     void load()
     return () => {
@@ -260,8 +277,8 @@ export function ControlsPage() {
     return (
       <PageFrame>
         <PageHeader
-          title="Governance Controls"
-          description="Foundational controls assigned across your organisation, systems, and assurance layers."
+          title="Controls"
+          description="Controls triggered for your organisation, assets, and assurance layers."
         />
         <BrandLoader fill label="Loading controls" />
       </PageFrame>
@@ -271,14 +288,14 @@ export function ControlsPage() {
   return (
     <PageFrame railItems={railItems}>
       <PageHeader
-        title="Governance Controls"
-        description="Foundational controls assigned across your organisation, systems, and assurance layers."
+        title="Controls"
+        description="Controls triggered for your organisation, assets, and assurance layers."
       />
 
       <Section id="controls">
         {rows.length === 0 ? (
           <p className={styles.postureEmpty}>
-            Assignments appear when assets trigger controls or admins assign them.
+            No controls yet. An assessment triggers them.
           </p>
         ) : (
           <div className={styles.posture}>
@@ -327,8 +344,8 @@ export function ControlsPage() {
 
         {groups.length === 0 ? (
           <EmptyState
-            title="No assignments"
-            body="Assignments appear when assets trigger controls or admins assign them."
+            title="No controls yet"
+            body="An assessment triggers them."
           />
         ) : (
           <div className={styles.stack}>
@@ -344,10 +361,13 @@ export function ControlsPage() {
                   {g.items.map((c) => {
                     const title = c.governance_controls?.title || 'Control'
                     const code = controlCode(c.governance_controls?.control_number)
+                    const assignee =
+                      (c.assigned_to && assigneeNames[c.assigned_to]) || 'Unassigned'
                     return (
                       <LedgerRow
                         key={c.id}
                         title={code ? `${code} ${title}` : title}
+                        description={assignee}
                         meta={
                           <StatusLabel tone={toneFor(c.status)}>{labelCtrlStatus(c.status)}</StatusLabel>
                         }

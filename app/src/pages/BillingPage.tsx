@@ -133,7 +133,7 @@ export function BillingPage() {
   async function openBillingPortal() {
     setPortalError('')
     if (!canManageMembers) {
-      setPortalError('Only an owner or admin can manage the organisation subscription.')
+      setPortalError('Only a Workspace admin or admin can manage the organisation subscription.')
       return
     }
     if (!session?.access_token) return
@@ -151,7 +151,7 @@ export function BillingPage() {
       const status = err instanceof EdgeError ? err.status : 0
       if (status === 400) setPortalError('No subscription is linked yet. Choose a plan to get started.')
       else if (status === 403)
-        setPortalError('Only an owner or admin can manage the organisation subscription.')
+        setPortalError('Only a Workspace admin or admin can manage the organisation subscription.')
       else
         setPortalError(
           'Billing settings could not be opened. Try again, or contact support if this continues.',
@@ -261,7 +261,7 @@ export function BillingPage() {
             {nextCopy ? <p className={styles.copy}>{nextCopy}</p> : null}
             <div className={styles.actions}>
               {!canManageMembers ? (
-                <Notice>Only an owner or admin can change payment details or the plan.</Notice>
+                <Notice>Only a Workspace admin or admin can change payment details or the plan.</Notice>
               ) : !hasCustomer ? (
                 <Link to="/plans">
                   <Button>View plans</Button>

@@ -285,8 +285,8 @@ export function AuditorAccessPage() {
   if (!canManage) {
     return (
       <PageFrame>
-        <PageHeader title="Auditor access" description="Owners and admins manage auditor engagements." />
-        <Notice tone="quiet">View only. Ask an organisation owner or admin to create auditor access.</Notice>
+        <PageHeader title="Auditor access" description="Workspace admins and admins manage auditor engagements." />
+        <Notice tone="quiet">View only. Ask a Workspace admin or admin to create auditor access.</Notice>
       </PageFrame>
     )
   }

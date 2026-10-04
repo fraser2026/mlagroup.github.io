@@ -25,9 +25,17 @@ import {
   labelCtrlRenewalOrStatus,
   toneForCtrlRenewalOrStatus,
 } from '../lib/registry'
+import { MEMBER_ROLE_LABELS } from '../lib/stripe'
 import { pct } from '../lib/workspace'
 import { sb } from '../lib/supabase'
 import styles from './ControlsDetailPage.module.css'
+
+/** Roles that can update control assignments (matches RLS ca_update / eu_insert). */
+const ASSIGNABLE_ROLES = new Set(['owner', 'admin', 'editor'])
+
+function canBeAssignee(role?: string | null) {
+  return ASSIGNABLE_ROLES.has(String(role || '').toLowerCase())
+}
 
 /** Always refresh — getSession alone can return an expired JWT after a long tab. */
 async function freshAccessToken(): Promise<string | null> {
@@ -99,7 +107,7 @@ type SupportReq = {
   mla_response?: string | null
 }
 
-type Member = { id: string; name: string }
+type Member = { id: string; name: string; role: string }
 
 const CONTROL_DETAIL_RAIL = [
   { id: 'overview', label: 'Overview' },
@@ -153,9 +161,10 @@ export function ControlsDetailPage() {
   const location = useLocation()
   const nav = (location.state || {}) as NavState
   const fromRegistry = nav.from === 'registry'
-  const { session, org, profile } = useAuth()
+  const { session, org, profile, canWriteRegistry } = useAuth()
   const orgId = org?.id || null
   const userId = session?.user?.id
+  const canWrite = Boolean(canWriteRegistry)
 
   const [assign, setAssign] = useState<Assignment | null>(null)
   const [tasks, setTasks] = useState<ControlTask[]>([])
@@ -313,13 +322,19 @@ export function ControlsDetailPage() {
       controlId
         ? sb.from('control_tasks').select('*').eq('control_id', controlId).order('display_order')
         : Promise.resolve({ data: [] }),
-      sb.from('org_members').select('user_id').eq('org_id', orgId),
+      sb.from('org_members').select('user_id,role').eq('org_id', orgId),
     ])
 
     setTasks(((taskRows as ControlTask[]) || []).sort((a, b) => a.task_number - b.task_number))
 
-    const memberIds = (memRows || []).map((m) => m.user_id as string)
-    const memberSet = new Set(memberIds)
+    const roleByUser = new Map<string, string>()
+    for (const m of memRows || []) {
+      roleByUser.set(m.user_id as string, String(m.role || 'viewer'))
+    }
+    const memberIds = [...roleByUser.keys()]
+    const assignableIds = new Set(
+      [...roleByUser.entries()].filter(([, role]) => canBeAssignee(role)).map(([id]) => id),
+    )
     let nextMembers: Member[] = []
     if (memberIds.length) {
       const { data: profiles } = await sb
@@ -330,6 +345,7 @@ export function ControlsDetailPage() {
         .map((p) => ({
           id: p.id as string,
           name: personPickerLabel(p),
+          role: roleByUser.get(p.id as string) || 'viewer',
         }))
         .sort((a, b) => a.name.localeCompare(b.name))
       setMembers(nextMembers)
@@ -338,7 +354,8 @@ export function ControlsDetailPage() {
     }
 
     // Suggest (never persist) an assignee from asset owners when unassigned: compliance, business, technical.
-    if (!row.assigned_to && row.system_id && userId) {
+    // Only suggest members who can update the control (not Viewers).
+    if (!row.assigned_to && row.system_id && userId && canWriteRegistry) {
       const { data: asset } = await sb
         .from('ai_systems')
         .select('compliance_owner_id,business_owner_id,technical_owner_id')
@@ -348,7 +365,7 @@ export function ControlsDetailPage() {
         asset?.compliance_owner_id,
         asset?.business_owner_id,
         asset?.technical_owner_id,
-      ].filter((id): id is string => Boolean(id) && memberSet.has(id as string))
+      ].filter((id): id is string => Boolean(id) && assignableIds.has(id as string))
       const suggested = candidates[0] || ''
       if (suggested) {
         setAssignedTo(suggested)
@@ -392,9 +409,25 @@ export function ControlsDetailPage() {
   const savedPriority = assign?.priority || 'medium'
   const assignDirty =
     !!assign &&
+    canWrite &&
     (assignedTo !== savedAssignedTo || dueDate !== savedDueDate || priority !== savedPriority)
-  const assigneeDraftChanged = !!assign && assignedTo !== savedAssignedTo
+  const assigneeDraftChanged = !!assign && canWrite && assignedTo !== savedAssignedTo
   const assignSaving = busy === 'assign'
+  const assigneeOptions = useMemo(() => {
+    const opts: { value: string; label: string }[] = [{ value: '', label: 'Unassigned' }]
+    for (const m of members) {
+      if (canBeAssignee(m.role)) {
+        opts.push({ value: m.id, label: m.name })
+        continue
+      }
+      // Keep an existing non-writable assignee visible so admins can reassign away.
+      if (m.id === (assign?.assigned_to || '') || m.id === assignedTo) {
+        const roleLabel = MEMBER_ROLE_LABELS[m.role] || m.role
+        opts.push({ value: m.id, label: `${m.name} · ${roleLabel}, cannot update` })
+      }
+    }
+    return opts
+  }, [members, assign?.assigned_to, assignedTo])
 
   useEffect(() => {
     if (!assignDirty) return
@@ -426,7 +459,18 @@ export function ControlsDetailPage() {
 
   async function saveAssignmentFields() {
     if (!assign || !orgId || !userId || !assign.control_id || !assignDirty || assignSaving) return
+    if (!canWrite) {
+      setAssignStatus('Error: View only. You cannot update this control.')
+      return
+    }
     const assignTo = assignedTo || null
+    if (assignTo) {
+      const target = members.find((m) => m.id === assignTo)
+      if (target && !canBeAssignee(target.role)) {
+        setAssignStatus('Error: Viewers cannot be control assignees.')
+        return
+      }
+    }
     const prevAssigned = assign.assigned_to || null
     const assigneeChanged = assignTo !== prevAssigned
     const update: Record<string, unknown> = {
@@ -547,6 +591,12 @@ export function ControlsDetailPage() {
 
   async function saveProgress(opts?: { silent?: boolean }) {
     if (!assign || !orgId || !userId || !assign.control_id) return false
+    if (!canWrite) {
+      if (!opts?.silent) {
+        setError('View only. You cannot update this control.')
+      }
+      return false
+    }
     if (!opts?.silent) {
       setBusy('save')
       setError('')
@@ -583,6 +633,10 @@ export function ControlsDetailPage() {
 
   async function markImplemented() {
     if (!assign || !orgId || !userId || !assign.control_id || complete) return
+    if (!canWrite) {
+      setError('View only. You cannot update this control.')
+      return
+    }
     setBusy('complete')
     setError('')
     pushToast('')
@@ -622,6 +676,10 @@ export function ControlsDetailPage() {
 
   async function uploadEvidence(file: File) {
     if (!assign || !orgId || !userId) return
+    if (!canWrite) {
+      setError('View only. You cannot update this control.')
+      return
+    }
     if (file.size > 5 * 1024 * 1024) {
       setError('File must be under 5MB.')
       return
@@ -759,6 +817,7 @@ export function ControlsDetailPage() {
       />
 
       {error ? <Notice tone="risk" title="Error">{error}</Notice> : null}
+      {!canWrite ? <Notice tone="quiet">View only. Your role cannot update this control.</Notice> : null}
 
       <div className={styles.page}>
         <Section id="overview" className={styles.block}>
@@ -807,12 +866,9 @@ export function ControlsDetailPage() {
                   aria-label="Assigned to"
                   value={assignedTo}
                   placeholder="Unassigned"
-                  disabled={assignSaving}
+                  disabled={!canWrite || assignSaving}
                   onChange={setAssignedTo}
-                  options={[
-                    { value: '', label: 'Unassigned' },
-                    ...members.map((m) => ({ value: m.id, label: m.name })),
-                  ]}
+                  options={assigneeOptions}
                 />
               </div>
               <div className={styles.fieldControl}>
@@ -820,7 +876,7 @@ export function ControlsDetailPage() {
                 <DateField
                   aria-label="Due date"
                   value={dueDate}
-                  disabled={assignSaving}
+                  disabled={!canWrite || assignSaving}
                   onChange={setDueDate}
                   placeholder="Select date"
                 />
@@ -830,7 +886,7 @@ export function ControlsDetailPage() {
                 <SelectMenu
                   aria-label="Priority"
                   value={priority}
-                  disabled={assignSaving}
+                  disabled={!canWrite || assignSaving}
                   onChange={setPriority}
                   options={[
                     { value: 'low', label: 'Low' },
@@ -841,7 +897,7 @@ export function ControlsDetailPage() {
                 />
               </div>
             </div>
-            {assignSuggestNote ? <p className={styles.saveNote}>{assignSuggestNote}</p> : null}
+            {canWrite && assignSuggestNote ? <p className={styles.saveNote}>{assignSuggestNote}</p> : null}
             {assignInfo && !assigneeDraftChanged ? <p className={styles.saveNote}>{assignInfo}</p> : null}
             {assigneeDraftChanged && assignedTo && assignedTo !== userId ? (
               <p className={styles.saveNote}>
@@ -851,14 +907,14 @@ export function ControlsDetailPage() {
             <div className={styles.actions}>
               <Button
                 variant="ghost"
-                disabled={!assignDirty || assignSaving}
+                disabled={!canWrite || !assignDirty || assignSaving}
                 onClick={cancelAssignmentEdits}
               >
                 Cancel
               </Button>
               <Button
                 pending={assignSaving}
-                disabled={!assignDirty}
+                disabled={!canWrite || !assignDirty}
                 onClick={() => void saveAssignmentFields()}
               >
                 Save assignment
@@ -927,6 +983,7 @@ export function ControlsDetailPage() {
                             <input
                               type="checkbox"
                               checked={val === 'done'}
+                              disabled={!canWrite}
                               onChange={(e) => setTaskValue(t.task_number, e.target.checked ? 'done' : '')}
                             />
                             Mark as complete
@@ -939,6 +996,7 @@ export function ControlsDetailPage() {
                               aria-label={`Task ${t.task_number} response`}
                               value={val}
                               placeholder="Select"
+                              disabled={!canWrite}
                               onChange={(v) => setTaskValue(t.task_number, v)}
                               options={[
                                 { value: '', label: 'Select' },
@@ -954,6 +1012,7 @@ export function ControlsDetailPage() {
                               rows={3}
                               value={val}
                               placeholder="Add notes or findings"
+                              disabled={!canWrite}
                               onChange={(e) => setTaskValue(t.task_number, e.target.value)}
                             />
                           </label>
@@ -967,6 +1026,7 @@ export function ControlsDetailPage() {
                                   type="text"
                                   value={responses[`${key}_${f}`] || ''}
                                   placeholder={fieldHint(f)}
+                                  disabled={!canWrite}
                                   onChange={(e) => setTaskValue(t.task_number, e.target.value, f)}
                                 />
                               </label>
@@ -981,10 +1041,19 @@ export function ControlsDetailPage() {
             ) : null}
 
             <div className={styles.actions}>
-              <Button variant="ghost" pending={busy === 'save'} onClick={() => void saveProgress()}>
+              <Button
+                variant="ghost"
+                pending={busy === 'save'}
+                disabled={!canWrite}
+                onClick={() => void saveProgress()}
+              >
                 Save progress
               </Button>
-              <Button pending={busy === 'complete'} disabled={complete} onClick={() => void markImplemented()}>
+              <Button
+                pending={busy === 'complete'}
+                disabled={!canWrite || complete}
+                onClick={() => void markImplemented()}
+              >
                 {complete ? 'Implemented' : 'Mark as implemented'}
               </Button>
             </div>
@@ -1040,7 +1109,12 @@ export function ControlsDetailPage() {
                   e.target.value = ''
                 }}
               />
-              <Button variant="ghost" pending={busy === 'upload'} onClick={() => fileRef.current?.click()}>
+              <Button
+                variant="ghost"
+                pending={busy === 'upload'}
+                disabled={!canWrite}
+                onClick={() => fileRef.current?.click()}
+              >
                 Upload evidence
               </Button>
               <p className={styles.uploadNote}>PDF, Word, or image. Max 5MB.</p>

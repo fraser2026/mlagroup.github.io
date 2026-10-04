@@ -414,7 +414,7 @@ export function UsersPage() {
           >
             {!canManageMembers ? (
               <p className={styles.copy}>
-                Only workspace admins and admins can invite people or change roles.
+                Only Workspace admins and admins can invite people or change roles.
               </p>
             ) : atLimit ? (
               <p className={styles.copy}>
@@ -461,7 +461,7 @@ export function UsersPage() {
           <Section
             id="members"
             title="People"
-            description="Directory for AI asset ownership. Each person updates their own job title and contact details in Settings."
+            description="Everyone who can sign in. Asset owners and control assignees are picked from this list. Each person updates their own job title and contact details in Settings."
           >
             {members.length === 0 ? (
               <EmptyState title="No members yet" body="Invite a colleague to get started." />
@@ -578,7 +578,7 @@ export function UsersPage() {
           <Section
             id="roles"
             title="Workspace access"
-            description="These roles control who can sign in and change records. They are not AI asset governance owners. Business, Compliance, and Technical owners are assigned on each asset."
+            description="These roles control who can sign in and change records. They are not AI asset governance owners. Business, Compliance, and Technical owners are assigned on each asset, or who is assigned a control."
           >
             <div className={styles.roleList}>
               {ACCESS_ROLES.map((r) => (

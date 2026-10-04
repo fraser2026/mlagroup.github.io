@@ -1,6 +1,5 @@
-import { useContext, useEffect, useRef, type ReactNode } from 'react'
-import { AuthContext } from '../auth/AuthProvider'
-import { ContextRail, type ContextRailItem, type ContextRailMember } from './ContextRail'
+import { useEffect, useRef, type ReactNode } from 'react'
+import { ContextRail, type ContextRailItem } from './ContextRail'
 import { useShellChrome } from './shellChrome'
 import styles from './PageFrame.module.css'
 
@@ -14,7 +13,7 @@ type Props = {
    * Skips the scroll-spy bottom pad so two panes are not crushed.
    */
   denseWorkspace?: boolean
-  /** Optional signed-in email for the context rail when AuthProvider is absent. */
+  /** @deprecated Unused. Kept so call sites that passed userEmail keep typechecking. */
   userEmail?: string | null
 }
 
@@ -23,15 +22,9 @@ export function PageFrame({
   railItems = [],
   showRail = true,
   denseWorkspace = false,
-  userEmail = null,
 }: Props) {
-  const auth = useContext(AuthContext)
   const { setRailAvailable, railOpen } = useShellChrome()
   const scrollRef = useRef<HTMLDivElement>(null)
-  const email = userEmail ?? auth?.user?.email ?? null
-  const members: ContextRailMember[] = email
-    ? [{ email, role: 'Member', you: true }]
-    : []
 
   useEffect(() => {
     setRailAvailable(showRail)
@@ -56,7 +49,7 @@ export function PageFrame({
       >
         {children}
       </div>
-      {showRail ? <ContextRail items={railItems} members={members} scrollRootRef={scrollRef} /> : null}
+      {showRail ? <ContextRail items={railItems} scrollRootRef={scrollRef} /> : null}
     </div>
   )
 }

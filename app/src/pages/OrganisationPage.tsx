@@ -78,7 +78,6 @@ export function OrganisationPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [profiles, setProfiles] = useState<Record<string, Profile>>({})
   const [systemCount, setSystemCount] = useState(0)
-  const [sysByUser, setSysByUser] = useState<Record<string, number>>({})
   const [creds, setCreds] = useState<AdminCred[]>([])
   const [catalog, setCatalog] = useState<CatalogRow[]>([])
   const [adminKey, setAdminKey] = useState('')
@@ -113,7 +112,7 @@ export function OrganisationPage() {
           .eq('slug', 'anthropic'),
         sb
           .from('ai_systems')
-          .select('id,created_by')
+          .select('id')
           .eq('org_id', org.id)
           .is('deleted_at', null),
       ])
@@ -129,16 +128,11 @@ export function OrganisationPage() {
           profMap[p.id] = p as Profile
         })
       }
-      const byUser: Record<string, number> = {}
-      ;(sys.data || []).forEach((s: { created_by?: string }) => {
-        if (s.created_by) byUser[s.created_by] = (byUser[s.created_by] || 0) + 1
-      })
       setMembers(mems)
       setProfiles(profMap)
       setCreds((k.data as AdminCred[]) || [])
       setCatalog(((cat.data as CatalogRow[]) || []).filter((p) => p.connector_available))
       setSystemCount((sys.data || []).length)
-      setSysByUser(byUser)
     } finally {
       setLoading(false)
     }
@@ -423,7 +417,7 @@ export function OrganisationPage() {
               ) : !hasAdmin ? (
                 <div className={styles.panelForm}>
                   <Notice>
-                    Only workspace admins and admins can manage provider Admin keys.
+                    Only Workspace admins and admins can manage provider Admin keys.
                   </Notice>
                 </div>
               ) : (
@@ -460,21 +454,15 @@ export function OrganisationPage() {
                 const name = personDisplayName(p)
                 const email = p.email && name !== p.email ? p.email : p.email || 'Email not set'
                 const roleKey = m.role || 'viewer'
-                const sc = sysByUser[m.user_id] || 0
                 return (
                   <LedgerRow
                     key={m.id}
                     title={name}
                     description={email}
                     meta={
-                      <div className={styles.memberMeta}>
-                        <span className={styles.sysCount}>
-                          {sc} asset{sc !== 1 ? 's' : ''}
-                        </span>
-                        <StatusLabel tone={roleTone(roleKey)}>
-                          {MEMBER_ROLE_LABELS[roleKey] || roleKey}
-                        </StatusLabel>
-                      </div>
+                      <StatusLabel tone={roleTone(roleKey)}>
+                        {MEMBER_ROLE_LABELS[roleKey] || roleKey}
+                      </StatusLabel>
                     }
                   />
                 )

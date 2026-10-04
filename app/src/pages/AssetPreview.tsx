@@ -200,11 +200,11 @@ export function AssetPreview({ asset, orgId }: Props) {
             <dd>{asset.business_owner_name || asset.system_owner || '—'}</dd>
           </div>
           <div>
-            <dt>Compliance / risk</dt>
+            <dt>Compliance / risk owner</dt>
             <dd>{asset.compliance_owner_name || '—'}</dd>
           </div>
           <div>
-            <dt>Technical / model</dt>
+            <dt>Technical / model owner</dt>
             <dd>{asset.technical_owner_name || '—'}</dd>
           </div>
           <div>

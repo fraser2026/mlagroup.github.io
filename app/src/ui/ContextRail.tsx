@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ChevronDown, Moon, UserPlus, Users } from 'lucide-react'
+import { ChevronDown, Moon } from 'lucide-react'
 import { useShellChrome } from './shellChrome'
 import { Icon } from './Icon'
 import { ThemePicker } from './ThemePicker'
@@ -11,6 +11,7 @@ export type ContextRailItem = {
   label: string
 }
 
+/** @deprecated Members block removed from the rail; type kept for import stability. */
 export type ContextRailMember = {
   email: string
   role?: string
@@ -19,7 +20,6 @@ export type ContextRailMember = {
 
 type Props = {
   items?: ContextRailItem[]
-  members?: ContextRailMember[]
   scrollRootRef?: RefObject<HTMLElement | null>
 }
 
@@ -39,7 +39,7 @@ function pickActiveSection(scroller: HTMLElement, ids: string[]) {
   return current
 }
 
-export function ContextRail({ items = [], members = [], scrollRootRef }: Props) {
+export function ContextRail({ items = [], scrollRootRef }: Props) {
   const { railOpen } = useShellChrome()
   const reduce = useReducedMotion()
   const [active, setActive] = useState(items[0]?.id ?? '')
@@ -121,37 +121,6 @@ export function ContextRail({ items = [], members = [], scrollRootRef }: Props) 
                 ))}
               </nav>
             ) : null}
-
-            <div className={styles.block}>
-              <div className={styles.blockHeading}>
-                <Icon icon={UserPlus} size="sm" className={styles.blockIcon} />
-                <span>Members</span>
-              </div>
-              <div className={styles.memberCard}>
-                {members.length === 0 ? (
-                  <div className={styles.muted}>No members loaded.</div>
-                ) : (
-                  members.map((m) => (
-                    <div key={m.email} className={styles.memberRow}>
-                      <div className={styles.avatar} aria-hidden>
-                        {m.email.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div className={styles.memberMeta}>
-                        <div className={styles.memberEmail}>
-                          {m.email}
-                          {m.you ? <span className={styles.you}> (you)</span> : null}
-                        </div>
-                        {m.role ? <div className={styles.memberRole}>{m.role}</div> : null}
-                      </div>
-                    </div>
-                  ))
-                )}
-                <button type="button" className={styles.viewMembers} disabled>
-                  <Icon icon={Users} size="sm" />
-                  View {Math.max(members.length, 1)} member{members.length === 1 ? '' : 's'}
-                </button>
-              </div>
-            </div>
 
             <div className={styles.block}>
               <div className={styles.blockHeading}>Recent activity</div>

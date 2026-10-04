@@ -129,6 +129,7 @@ type ControlAssign = {
   status?: string | null
   control_id?: string | null
   system_id?: string | null
+  assigned_to?: string | null
   governance_controls?: {
     title?: string | null
     control_number?: string | null
@@ -180,6 +181,7 @@ export function RegistryDetailPage() {
   const [usage, setUsage] = useState<UsageEvent[]>([])
   const [assessments, setAssessments] = useState<Assessment[]>([])
   const [controls, setControls] = useState<ControlAssign[]>([])
+  const [assigneeNames, setAssigneeNames] = useState<Record<string, string>>({})
   const [audit, setAudit] = useState<AuditEntry[]>([])
   const [auditNames, setAuditNames] = useState<Record<string, string>>({})
   const [apiKey, setApiKey] = useState('')
@@ -335,19 +337,37 @@ export function RegistryDetailPage() {
     // Controls for this system (+ org-level if assessed)
     const { data: sysAssign } = await sb
       .from('control_assignments')
-      .select('id,status,control_id,system_id,governance_controls(title,control_number,control_type)')
+      .select(
+        'id,status,control_id,system_id,assigned_to,governance_controls(title,control_number,control_type)',
+      )
       .eq('system_id', id)
       .eq('org_id', org.id)
     let allCtrl = (sysAssign as ControlAssign[]) || []
     if ((assessmentsRows || []).length) {
       const { data: orgAssign } = await sb
         .from('control_assignments')
-        .select('id,status,control_id,system_id,governance_controls(title,control_number,control_type)')
+        .select(
+          'id,status,control_id,system_id,assigned_to,governance_controls(title,control_number,control_type)',
+        )
         .eq('org_id', org.id)
         .is('system_id', null)
       allCtrl = allCtrl.concat((orgAssign as ControlAssign[]) || [])
     }
     setControls(allCtrl)
+    const assigneeIds = [
+      ...new Set(allCtrl.map((c) => c.assigned_to).filter((v): v is string => Boolean(v))),
+    ]
+    if (assigneeIds.length) {
+      const { data: assigneeProfiles } = await sb
+        .from('profiles')
+        .select('id,first_name,last_name,full_name,email')
+        .in('id', assigneeIds)
+      const map: Record<string, string> = {}
+      for (const p of assigneeProfiles || []) map[p.id] = personDisplayName(p)
+      setAssigneeNames(map)
+    } else {
+      setAssigneeNames({})
+    }
 
     if (session.access_token && sys.provider_slug === 'anthropic') {
       try {
@@ -1009,12 +1029,12 @@ export function RegistryDetailPage() {
         <Section
           id="controls"
           title={controls.length === 0 ? 'Controls' : undefined}
-          description={controls.length === 0 ? 'Control assignments for this system.' : undefined}
+          description={controls.length === 0 ? 'Controls triggered for this asset.' : undefined}
         >
           {controls.length === 0 ? (
             <EmptyState
               title="No controls triggered yet"
-              body="Run an assessment on this AI system. Controls will be automatically triggered based on governance gaps identified."
+              body="Run an assessment on this asset. Controls are triggered from governance gaps identified."
               action={
                 id ? (
                   <a href={assessmentUrl(id)}>
@@ -1042,10 +1062,13 @@ export function RegistryDetailPage() {
                       {group.items.map((c) => {
                         const code = controlCode(c.governance_controls?.control_number)
                         const title = c.governance_controls?.title || 'Control'
+                        const assignee =
+                          (c.assigned_to && assigneeNames[c.assigned_to]) || 'Unassigned'
                         return (
                           <LedgerRow
                             key={c.id}
                             title={code ? `${code} ${title}` : title}
+                            description={assignee}
                             meta={<StatusLabel tone={ctrlTone(c.status)}>{labelCtrlStatus(c.status)}</StatusLabel>}
                             onClick={() =>
                               navigate(`/controls/${c.id}`, {
@@ -1173,7 +1196,7 @@ export function RegistryDetailPage() {
                     </div>
                   </>
                 ) : (
-                  <Notice>Only organisation owners and admins can manage runtime keys.</Notice>
+                  <Notice>Only Workspace admins and admins can manage runtime keys.</Notice>
                 )}
               </div>
 

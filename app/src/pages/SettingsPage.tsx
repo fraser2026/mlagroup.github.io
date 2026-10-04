@@ -162,8 +162,8 @@ export function SettingsPage() {
             Your details
           </h2>
           <p className={styles.blockDesc}>
-            Shown in Users and when you are assigned as a Business, Compliance, or Technical owner on
-            an AI asset. Contact details stay in the app and are omitted from dossier exports.
+            Shown in Users, on assets you own, and on controls assigned to you. Contact details stay
+            in the app and are omitted from dossier exports.
           </p>
         </div>
         <div className={styles.blockBody}>
@@ -255,7 +255,7 @@ export function SettingsPage() {
           </h2>
           <p className={styles.blockDesc}>
             Your role controls who can invite people and change records. It is separate from Business,
-            Compliance, and Technical ownership on individual assets.
+            Compliance, and Technical ownership on individual assets, or who is assigned a control.
           </p>
         </div>
         <div className={styles.blockBody}>

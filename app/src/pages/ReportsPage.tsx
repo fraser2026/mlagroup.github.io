@@ -519,7 +519,7 @@ export function ReportsPage() {
           </>
         ) : dossierOk ? (
           <Notice tone="quiet">
-            AI Governance Dossier export is available to organisation owners and admins on this plan.
+            AI Governance Dossier export is available to Workspace admins and admins on this plan.
           </Notice>
         ) : (
           <EmptyState

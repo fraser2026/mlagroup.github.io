@@ -942,7 +942,7 @@ export function PoliciesDraftPage() {
         // Editors may only update unpublished rows (RLS). Owner/admin may save published bodies.
         if (isPublished && !canPublish) {
           setSaveState('error')
-          if (source === 'manual') setError('Only an owner or admin can edit a published policy.')
+          if (source === 'manual') setError('Only a Workspace admin or admin can edit a published policy.')
           if (source === 'manual') setSaving(false)
           return false
         }
@@ -1839,7 +1839,7 @@ export function PoliciesDraftPage() {
         <PageHeader title="Draft a policy" description="Editor access or higher is required." />
         <EmptyState
           title="View-only access"
-          body="Ask an organisation owner or admin to grant editor access if you need to draft policies."
+          body="Ask a Workspace admin or admin to grant editor access if you need to draft policies."
         />
       </PageFrame>
     )

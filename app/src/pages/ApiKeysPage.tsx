@@ -232,7 +232,7 @@ export function ApiKeysPage() {
 
       {!canManage ? (
         <Notice title="View only">
-          Only organisation owners and admins can add or change API keys and variables.
+          Only Workspace admins and admins can add or change API keys and variables.
         </Notice>
       ) : null}
 

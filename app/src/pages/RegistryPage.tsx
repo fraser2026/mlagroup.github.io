@@ -601,7 +601,7 @@ export function RegistryPage() {
 
   async function confirmDelete(targets: RegistryAsset[]) {
     if (!canDeleteRegistry) {
-      setDeleteError('Only organisation owners and admins can delete assets.')
+      setDeleteError('Only Workspace admins and admins can delete assets.')
       return
     }
     if (targets.length !== 1) {
@@ -902,7 +902,12 @@ export function RegistryPage() {
                   }
                 >
                   <span className={styles.ownerAvatar}>{ownerInitials(m.label)}</span>
-                  <span className={styles.ownerOptionLabel}>{m.email || m.label}</span>
+                  <span className={styles.ownerOptionText}>
+                    <span className={styles.ownerOptionLabel}>{m.label}</span>
+                    {m.email && m.email !== m.label ? (
+                      <span className={styles.ownerOptionEmail}>{m.email}</span>
+                    ) : null}
+                  </span>
                   {on ? <Icon icon={Check} size="sm" className={styles.ownerTick} /> : null}
                 </button>
               )
