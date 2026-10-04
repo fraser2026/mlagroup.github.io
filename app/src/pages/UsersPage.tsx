@@ -19,11 +19,35 @@ import type { ToastItem } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { sb } from '../lib/supabase'
-import { invokeEdge } from '../lib/edge'
+import { EdgeError, invokeEdge } from '../lib/edge'
 import { orgSeatLimit } from '../lib/org'
 import { parseRpcPayload, fmtDate } from '../lib/rpc'
 import { MEMBER_ROLE_LABELS, PLAN_LABELS } from '../lib/stripe'
 import styles from './UsersPage.module.css'
+
+type InviteRpc = {
+  ok?: boolean
+  error?: string
+  token?: string
+  email?: string
+  role?: string
+  invite_id?: string
+}
+
+async function freshAccessToken(): Promise<string | null> {
+  const { data: first } = await sb.auth.getSession()
+  let token = first.session?.access_token || null
+  if (token) return token
+  const { data: refreshed, error } = await sb.auth.refreshSession()
+  if (error) return null
+  return refreshed.session?.access_token || null
+}
+
+function mailErrorMessage(err: unknown): string {
+  if (err instanceof EdgeError) return err.message || 'Email could not be sent'
+  if (err instanceof Error && err.message) return err.message
+  return 'Email could not be sent'
+}
 
 type Member = { id: string; user_id: string; role: string }
 type Invite = { id: string; email: string; role: string; expires_at: string; invited_by?: string }
@@ -78,7 +102,7 @@ const MEMBER_ROLE_OPTIONS = [
 ]
 
 export function UsersPage() {
-  const { org, canManageMembers, user, session, refreshOrg } = useAuth()
+  const { org, canManageMembers, user, refreshOrg } = useAuth()
   const [members, setMembers] = useState<Member[]>([])
   const [invites, setInvites] = useState<Invite[]>([])
   const [profiles, setProfiles] = useState<Record<string, Profile>>({})
@@ -89,6 +113,7 @@ export function UsersPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [inviteBusy, setInviteBusy] = useState(false)
+  const [resendBusyId, setResendBusyId] = useState<string | null>(null)
 
   usePageChrome({ title: 'Users', breadcrumbs: [{ label: 'Users' }] })
 
@@ -159,79 +184,121 @@ export function UsersPage() {
       ? 'Professional includes 15 seats'
       : undefined
 
+  async function sendOrgInviteMail(inviteId: string, inviteUrl: string): Promise<{
+    emailed: boolean
+    detail?: string
+  }> {
+    const accessToken = await freshAccessToken()
+    if (!accessToken) {
+      return { emailed: false, detail: 'Sign in expired. Refresh the page and try again.' }
+    }
+    try {
+      await invokeEdge(
+        'send-mail',
+        {
+          kind: 'org-invite',
+          invite_id: inviteId,
+          invite_url: inviteUrl,
+        },
+        accessToken,
+      )
+      return { emailed: true }
+    } catch (mailErr) {
+      console.warn('Invite email failed', mailErr)
+      return { emailed: false, detail: mailErrorMessage(mailErr) }
+    }
+  }
+
+  async function createAndDeliverInvite(input: {
+    email: string
+    role: string
+  }): Promise<{ ok: boolean }> {
+    if (!org?.id) return { ok: false }
+    const { data, error: err } = await sb.rpc('invite_org_member', {
+      p_org_id: org.id,
+      p_email: input.email,
+      p_role: input.role,
+    })
+    const payload = parseRpcPayload<InviteRpc>(data)
+    if (err || !payload || payload.ok === false) {
+      setError(payload?.error || err?.message || 'Invite failed')
+      return { ok: false }
+    }
+    const token = payload.token
+    const invitedEmail = payload.email || input.email
+    const inviteId = payload.invite_id
+    const url = token
+      ? `${window.location.origin}/invite?token=${encodeURIComponent(token)}`
+      : ''
+    let copied = false
+    if (url) {
+      try {
+        await navigator.clipboard.writeText(url)
+        copied = true
+      } catch {
+        /* clipboard may be blocked; email path still tries */
+      }
+    }
+
+    let emailed = false
+    let mailDetail = ''
+    if (!url || !inviteId) {
+      mailDetail = 'Invite row was created without a deliverable link.'
+    } else {
+      const mail = await sendOrgInviteMail(inviteId, url)
+      emailed = mail.emailed
+      mailDetail = mail.detail || ''
+    }
+
+    if (emailed && copied) {
+      pushToast(
+        `Invite emailed to ${invitedEmail}. Link also copied. They open it to create a password or sign in.`,
+      )
+    } else if (emailed) {
+      pushToast(
+        `Invite emailed to ${invitedEmail}. They open it to create a password or sign in.`,
+      )
+    } else if (copied) {
+      const why = mailDetail ? ` ${mailDetail}` : ''
+      pushToast(
+        `Invite created for ${invitedEmail}. Email was not sent.${why} Link copied. They open it to create a password or sign in.`,
+      )
+      setError(`Invite saved for ${invitedEmail}, but email was not sent.${why}`)
+    } else if (url) {
+      setError(
+        `Invite created for ${invitedEmail}, but email and clipboard both failed.${
+          mailDetail ? ` ${mailDetail}` : ''
+        } Copy this link: ${url}`,
+      )
+    } else {
+      setError(`Invite created for ${invitedEmail}, but email was not sent.${mailDetail ? ` ${mailDetail}` : ''}`)
+    }
+    await load()
+    return { ok: true }
+  }
+
   async function onInvite(e: FormEvent) {
     e.preventDefault()
     if (!org?.id || !email.trim()) return
     setError('')
     setInviteBusy(true)
     try {
-      const { data, error: err } = await sb.rpc('invite_org_member', {
-        p_org_id: org.id,
-        p_email: email.trim(),
-        p_role: role,
-      })
-      const payload = parseRpcPayload(data)
-      if (err || !payload || payload.ok === false) {
-        setError(payload?.error || err?.message || 'Invite failed')
-        return
-      }
-      const token = (payload as { token?: string }).token
-      const invitedEmail = (payload as { email?: string }).email || email.trim()
-      const inviteId = (payload as { invite_id?: string }).invite_id
-      const url = token
-        ? `${window.location.origin}/invite?token=${encodeURIComponent(token)}`
-        : ''
-      let copied = false
-      if (url) {
-        try {
-          await navigator.clipboard.writeText(url)
-          copied = true
-        } catch {
-          /* clipboard may be blocked; email path still tries */
-        }
-      }
-
-      let emailed = false
-      if (url && inviteId && session?.access_token) {
-        try {
-          await invokeEdge(
-            'send-mail',
-            {
-              kind: 'org-invite',
-              invite_id: inviteId,
-              invite_url: url,
-            },
-            session.access_token,
-          )
-          emailed = true
-        } catch (mailErr) {
-          console.warn('Invite email skipped', mailErr)
-        }
-      }
-
-      if (emailed && copied) {
-        pushToast(
-          `Invite emailed to ${invitedEmail}. Link also copied. They open it to create a password or sign in.`,
-        )
-      } else if (emailed) {
-        pushToast(
-          `Invite emailed to ${invitedEmail}. They open it to create a password or sign in.`,
-        )
-      } else if (copied) {
-        pushToast(
-          `Invite created for ${invitedEmail}. Email could not be sent. Link copied. They open it to create a password or sign in.`,
-        )
-      } else if (url) {
-        setError(
-          `Invite created for ${invitedEmail}, but email and clipboard both failed. Copy this link: ${url}`,
-        )
-      } else {
-        pushToast(`Invite created for ${invitedEmail}.`)
-      }
-      setEmail('')
-      await load()
+      const result = await createAndDeliverInvite({ email: email.trim(), role })
+      if (result.ok) setEmail('')
     } finally {
       setInviteBusy(false)
+    }
+  }
+
+  async function emailAgain(inv: Invite) {
+    if (!org?.id) return
+    setError('')
+    setResendBusyId(inv.id)
+    try {
+      // invite_org_member revokes any active invite for this email and mints a new token.
+      await createAndDeliverInvite({ email: inv.email, role: inv.role })
+    } finally {
+      setResendBusyId(null)
     }
   }
 
@@ -442,14 +509,27 @@ export function UsersPage() {
                     }
                     trailing={
                       canManageMembers ? (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          type="button"
-                          onClick={() => void revoke(inv.id)}
-                        >
-                          Revoke
-                        </Button>
+                        <div className={styles.pendingActions}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            type="button"
+                            pending={resendBusyId === inv.id}
+                            disabled={inviteBusy || resendBusyId != null}
+                            onClick={() => void emailAgain(inv)}
+                          >
+                            Email again
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            type="button"
+                            disabled={inviteBusy || resendBusyId != null}
+                            onClick={() => void revoke(inv.id)}
+                          >
+                            Revoke
+                          </Button>
+                        </div>
                       ) : null
                     }
                   />

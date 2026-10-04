@@ -582,7 +582,15 @@ serve(async (req) => {
       const inviteId = clip(body.invite_id, 36)
       if (!UUID_RE.test(inviteId)) return json({ error: 'Valid invite_id is required' }, 400)
       const inviteUrl = clip(body.invite_url, 2000)
-      if (!inviteUrlOk(inviteUrl)) return json({ error: 'Valid invite_url is required' }, 400)
+      if (!inviteUrlOk(inviteUrl)) {
+        return json(
+          {
+            error:
+              'Invite link was rejected. Use https://app.reganchor.com/invite?token=… (or legacy /login?invite=).',
+          },
+          400,
+        )
+      }
 
       const { data: invite, error: inviteErr } = await auth.supabase!
         .from('org_invites')
