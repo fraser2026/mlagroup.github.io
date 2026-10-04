@@ -20,7 +20,8 @@ export function SettingsPage() {
   const { user, profile, org, role, refreshOrg, signOut } = useAuth()
   const navigate = useNavigate()
 
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
   const [department, setDepartment] = useState('')
   const [workPhone, setWorkPhone] = useState('')
@@ -52,7 +53,19 @@ export function SettingsPage() {
   })
 
   useEffect(() => {
-    setFullName(String(profile?.full_name || '').trim())
+    const first = String(profile?.first_name || '').trim()
+    const last = String(profile?.last_name || '').trim()
+    if (first || last) {
+      setFirstName(first)
+      setLastName(last)
+    } else {
+      const parts = String(profile?.full_name || '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+      setFirstName(parts[0] || '')
+      setLastName(parts.slice(1).join(' ') || '')
+    }
     setJobTitle(String(profile?.job_title || '').trim())
     setDepartment(String(profile?.department || '').trim())
     setWorkPhone(String(profile?.work_phone || '').trim())
@@ -63,10 +76,15 @@ export function SettingsPage() {
     setSaving(true)
     setProfileError('')
     try {
+      const first = firstName.trim()
+      const last = lastName.trim()
+      const full = [first, last].filter(Boolean).join(' ')
       const { error } = await sb.from('profiles').upsert(
         {
           id: user.id,
-          full_name: fullName.trim() || null,
+          first_name: first || null,
+          last_name: last || null,
+          full_name: full || null,
           job_title: jobTitle.trim() || null,
           department: department.trim() || null,
           work_phone: workPhone.trim() || null,
@@ -158,16 +176,28 @@ export function SettingsPage() {
           </div>
 
           <div className={styles.fields}>
-            <label className={styles.field}>
-              <span className={styles.label}>Full name</span>
-              <input
-                className={styles.input}
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                autoComplete="name"
-                placeholder="Jane Smith"
-              />
-            </label>
+            <div className={styles.fieldGrid}>
+              <label className={styles.field}>
+                <span className={styles.label}>First name</span>
+                <input
+                  className={styles.input}
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  autoComplete="given-name"
+                  placeholder="Jane"
+                />
+              </label>
+              <label className={styles.field}>
+                <span className={styles.label}>Last name</span>
+                <input
+                  className={styles.input}
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  autoComplete="family-name"
+                  placeholder="Smith"
+                />
+              </label>
+            </div>
 
             <div className={styles.fieldGrid}>
               <label className={styles.field}>

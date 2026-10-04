@@ -21,6 +21,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { APP_ORIGIN } from '../lib/config'
 import { sb } from '../lib/supabase'
 import { EdgeError, invokeEdge } from '../lib/edge'
+import { personDisplayName } from '../lib/accountLabel'
 import { orgSeatLimit } from '../lib/org'
 import { parseRpcPayload, fmtDate } from '../lib/rpc'
 import { MEMBER_ROLE_LABELS, PLAN_LABELS } from '../lib/stripe'
@@ -72,6 +73,8 @@ type Member = { id: string; user_id: string; role: string }
 type Invite = { id: string; email: string; role: string; expires_at: string; invited_by?: string }
 type Profile = {
   id: string
+  first_name?: string | null
+  last_name?: string | null
   full_name?: string | null
   email?: string | null
   job_title?: string | null
@@ -182,7 +185,7 @@ export function UsersPage() {
     if (ids.length) {
       const { data: profs } = await sb
         .from('profiles')
-        .select('id,full_name,email,job_title,department,work_phone')
+        .select('id,first_name,last_name,full_name,email,job_title,department,work_phone')
         .in('id', ids)
       const map: Record<string, Profile> = {}
       for (const p of profs || []) map[p.id] = p as Profile
@@ -466,12 +469,13 @@ export function UsersPage() {
               <Ledger>
                 {members.map((m) => {
                   const p = profiles[m.user_id] || {}
-                  const name = p.full_name || 'Unknown'
+                  const name = personDisplayName(p)
                   const isYou = m.user_id === user?.id
                   const detailParts = [
                     p.job_title || null,
                     p.department || null,
-                    p.email || null,
+                    // Name is primary on the title; email stays secondary here.
+                    name !== p.email ? p.email || null : null,
                     p.work_phone || null,
                   ].filter(Boolean)
                   const description = detailParts.length

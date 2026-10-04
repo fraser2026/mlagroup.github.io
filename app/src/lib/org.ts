@@ -100,20 +100,33 @@ export type Organisation = {
   created_by?: string | null
 }
 
+export type ProfileRow = {
+  id: string
+  first_name?: string | null
+  last_name?: string | null
+  full_name?: string | null
+  organisation?: string | null
+  org_id?: string | null
+  email?: string | null
+  paid?: boolean | null
+  job_title?: string | null
+  department?: string | null
+  work_phone?: string | null
+}
+
 export type OrgContext = {
-  profile: {
-    id: string
-    full_name?: string | null
-    organisation?: string | null
-    org_id?: string | null
-    email?: string | null
-    paid?: boolean | null
-    job_title?: string | null
-    department?: string | null
-    work_phone?: string | null
-  } | null
+  profile: ProfileRow | null
   org: Organisation | null
   role: OrgRole | null
+}
+
+const PROFILE_SELECT =
+  'id,first_name,last_name,full_name,organisation,org_id,email,paid,job_title,department,work_phone'
+
+export type ProfileNameSeed = {
+  first_name?: string | null
+  last_name?: string | null
+  full_name?: string | null
 }
 
 export function canManageMembers(role: OrgRole | null) {
@@ -158,32 +171,80 @@ export function canUseGovernanceDossier(org: Organisation | null) {
   return canUseAuditorAccess(org)
 }
 
+function nameSeedFromMeta(meta?: Record<string, unknown> | null): ProfileNameSeed {
+  if (!meta) return {}
+  const first = typeof meta.first_name === 'string' ? meta.first_name.trim() : ''
+  const last = typeof meta.last_name === 'string' ? meta.last_name.trim() : ''
+  const full = typeof meta.full_name === 'string' ? meta.full_name.trim() : ''
+  return {
+    first_name: first || null,
+    last_name: last || null,
+    full_name: full || null,
+  }
+}
+
 /** Portal-parity profile self-heal (non-privileged fields only). */
-export async function ensureProfile(userId: string, email?: string | null) {
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('id,full_name,organisation,org_id,email,paid,job_title,department,work_phone')
-    .eq('id', userId)
-    .maybeSingle()
-  if (profile) return profile
+export async function ensureProfile(
+  userId: string,
+  email?: string | null,
+  nameSeed?: ProfileNameSeed | null,
+  userMeta?: Record<string, unknown> | null,
+) {
+  const seed = {
+    ...nameSeedFromMeta(userMeta),
+    ...(nameSeed || {}),
+  }
+  const first = String(seed.first_name || '').trim() || null
+  const last = String(seed.last_name || '').trim() || null
+  const full =
+    String(seed.full_name || '').trim() ||
+    [first, last].filter(Boolean).join(' ') ||
+    null
+
+  const { data: profile } = await sb.from('profiles').select(PROFILE_SELECT).eq('id', userId).maybeSingle()
+  if (profile) {
+    const row = profile as ProfileRow
+    const needsName =
+      !(row.first_name || row.last_name || row.full_name) && (first || last || full)
+    const needsEmail = !row.email && email
+    if (needsName || needsEmail) {
+      const patch: Record<string, unknown> = {}
+      if (needsEmail) patch.email = email
+      if (needsName) {
+        if (first) patch.first_name = first
+        if (last) patch.last_name = last
+        if (full) patch.full_name = full
+      }
+      const { data: updated } = await sb
+        .from('profiles')
+        .update(patch)
+        .eq('id', userId)
+        .select(PROFILE_SELECT)
+        .maybeSingle()
+      return (updated as ProfileRow) || row
+    }
+    return row
+  }
+
+  const insert: Record<string, unknown> = {
+    id: userId,
+    email: email || null,
+  }
+  if (first) insert.first_name = first
+  if (last) insert.last_name = last
+  if (full) insert.full_name = full
+  // Do not invent email local-part as a display name
+
   const { data: created, error } = await sb
     .from('profiles')
-    .insert({
-      id: userId,
-      email: email || null,
-      full_name: email?.split('@')[0] || null,
-    })
-    .select('id,full_name,organisation,org_id,email,paid,job_title,department,work_phone')
+    .insert(insert)
+    .select(PROFILE_SELECT)
     .maybeSingle()
   if (error) {
-    const { data: again } = await sb
-      .from('profiles')
-      .select('id,full_name,organisation,org_id,email,paid,job_title,department,work_phone')
-      .eq('id', userId)
-      .maybeSingle()
-    return again
+    const { data: again } = await sb.from('profiles').select(PROFILE_SELECT).eq('id', userId).maybeSingle()
+    return again as ProfileRow | null
   }
-  return created
+  return created as ProfileRow | null
 }
 
 /**
@@ -298,8 +359,12 @@ export async function consumePendingInvite(): Promise<InviteAcceptResult | null>
   }
 }
 
-export async function loadOrgContext(userId: string, email?: string | null): Promise<OrgContext> {
+export async function loadOrgContext(
+  userId: string,
+  email?: string | null,
+  userMeta?: Record<string, unknown> | null,
+): Promise<OrgContext> {
   await consumePendingInvite()
-  const profile = await ensureProfile(userId, email)
+  const profile = await ensureProfile(userId, email, null, userMeta)
   return ensureOrg(userId, profile)
 }

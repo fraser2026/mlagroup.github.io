@@ -37,7 +37,10 @@ type AuthState = {
   signUp: (input: {
     email: string
     password: string
-    fullName: string
+    firstName?: string
+    lastName?: string
+    /** Compat / composed; preferred path is firstName + lastName. */
+    fullName?: string
     organisation?: string
   }) => Promise<void>
   signInWithGoogle: (redirectTo: string) => Promise<void>
@@ -60,7 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // the prior profile painted so the sidebar never flashes email fallback.
     if (!orgCtxRef.current.profile) setOrgReady(false)
     try {
-      const ctx = await loadOrgContext(user.id, user.email)
+      const ctx = await loadOrgContext(
+        user.id,
+        user.email,
+        (user.user_metadata || null) as Record<string, unknown> | null,
+      )
       setOrgCtx(ctx)
     } finally {
       setOrgReady(true)
@@ -114,13 +121,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await sb.auth.signInWithPassword({ email, password })
         if (error) throw error
       },
-      async signUp({ email, password, fullName, organisation }) {
+      async signUp({ email, password, firstName, lastName, fullName, organisation }) {
+        const first = String(firstName || '').trim()
+        const last = String(lastName || '').trim()
+        const composed =
+          String(fullName || '').trim() || [first, last].filter(Boolean).join(' ')
         const { error } = await sb.auth.signUp({
           email,
           password,
           options: {
             data: {
-              full_name: fullName,
+              first_name: first || undefined,
+              last_name: last || undefined,
+              full_name: composed || undefined,
               organisation: organisation || undefined,
             },
           },

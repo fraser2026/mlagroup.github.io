@@ -43,7 +43,8 @@ export function LoginPage() {
   const [tab, setTab] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [organisation, setOrganisation] = useState('')
   const [remember, setRemember] = useState(() => {
     try {
@@ -119,6 +120,10 @@ export function LoginPage() {
     e.preventDefault()
     setError('')
     setNotice('')
+    if (!firstName.trim() || !lastName.trim()) {
+      setError('Enter your first and last name.')
+      return
+    }
     if (password.length < 8) {
       setError('Password must be at least 8 characters.')
       return
@@ -129,7 +134,8 @@ export function LoginPage() {
       await signUp({
         email: email.trim(),
         password,
-        fullName: fullName.trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
         organisation: organisation.trim() || undefined,
       })
       setNotice('Check your email to confirm your account, then sign in.')
@@ -314,18 +320,32 @@ export function LoginPage() {
               </form>
             ) : (
               <form onSubmit={onSignUp} className={styles.form}>
-                <label className={styles.label}>
-                  Full name
-                  <input
-                    className={styles.input}
-                    type="text"
-                    autoComplete="name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Jane Smith"
-                    required
-                  />
-                </label>
+                <div className={styles.nameRow}>
+                  <label className={styles.label}>
+                    First name
+                    <input
+                      className={styles.input}
+                      type="text"
+                      autoComplete="given-name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="Jane"
+                      required
+                    />
+                  </label>
+                  <label className={styles.label}>
+                    Last name
+                    <input
+                      className={styles.input}
+                      type="text"
+                      autoComplete="family-name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Smith"
+                      required
+                    />
+                  </label>
+                </div>
                 <label className={styles.label}>
                   Organisation
                   <input

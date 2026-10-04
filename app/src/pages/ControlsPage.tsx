@@ -241,7 +241,7 @@ export function ControlsPage() {
       const code = controlCode(r.governance_controls?.control_number) || ''
       const sys = r.ai_systems?.name || ''
       const type = r.governance_controls?.control_type || ''
-      return `${code} ${title} ${sys} ${type} ${r.status || ''}`.toLowerCase().includes(q)
+      return `${code} ${title} ${sys} ${type} ${r.status || ''} ${r.due_date || ''}`.toLowerCase().includes(q)
     })
   }, [view, search])
 
@@ -344,10 +344,15 @@ export function ControlsPage() {
                   {g.items.map((c) => {
                     const title = c.governance_controls?.title || 'Control'
                     const code = controlCode(c.governance_controls?.control_number)
+                    const due =
+                      c.due_date && !Number.isNaN(Date.parse(c.due_date))
+                        ? `Due ${new Date(c.due_date).toLocaleDateString()}`
+                        : null
                     return (
                       <LedgerRow
                         key={c.id}
                         title={code ? `${code} ${title}` : title}
+                        description={due || undefined}
                         meta={
                           <StatusLabel tone={toneFor(c.status)}>{labelCtrlStatus(c.status)}</StatusLabel>
                         }

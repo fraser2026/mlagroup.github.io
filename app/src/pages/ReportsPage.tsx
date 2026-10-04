@@ -16,6 +16,7 @@ import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { MARKETING_ORIGIN } from '../lib/config'
 import { EdgeError, invokeEdge } from '../lib/edge'
+import { personDisplayName } from '../lib/accountLabel'
 import { canManageMembers, canUseGovernanceDossier } from '../lib/org'
 import { fmtDate } from '../lib/rpc'
 import { sb } from '../lib/supabase'
@@ -400,8 +401,15 @@ export function ReportsPage() {
     }
   }
 
-  const defaultSignerName =
-    profile?.full_name || user?.email?.split('@')[0] || ''
+  const defaultSignerName = personDisplayName(
+    {
+      first_name: profile?.first_name,
+      last_name: profile?.last_name,
+      full_name: profile?.full_name,
+      email: profile?.email || user?.email,
+    },
+    { fallback: '' },
+  )
   const defaultSignerRole = String(profile?.job_title || '').trim()
 
   if (loading) {

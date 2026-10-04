@@ -1,7 +1,14 @@
+import { personDisplayName, type PersonName } from './accountLabel'
 import { sb } from './supabase'
 
-export function actorName(profileName?: string | null, email?: string | null) {
-  return profileName || email?.split('@')[0] || 'Unknown'
+export function actorName(
+  profileOrName?: string | PersonName | null,
+  email?: string | null,
+) {
+  if (profileOrName && typeof profileOrName === 'object') {
+    return personDisplayName({ ...profileOrName, email: profileOrName.email ?? email })
+  }
+  return personDisplayName({ full_name: profileOrName, email })
 }
 
 export async function writeAuditLog(input: {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { Icon, StatusLabel } from '../ui'
 import { BrandIcon } from '../icons/BrandIcon'
+import { personDisplayName } from '../lib/accountLabel'
 import { sb } from '../lib/supabase'
 import {
   connectionLabel,
@@ -152,10 +153,13 @@ export function AssetPreview({ asset, orgId }: Props) {
       setAudit(entries)
       const userIds = [...new Set(entries.map((e) => e.user_id).filter(Boolean) as string[])]
       if (userIds.length) {
-        const { data: profiles } = await sb.from('profiles').select('id,full_name,email').in('id', userIds)
+        const { data: profiles } = await sb
+          .from('profiles')
+          .select('id,first_name,last_name,full_name,email')
+          .in('id', userIds)
         if (cancelled) return
         const map: Record<string, string> = {}
-        for (const p of profiles || []) map[p.id] = p.full_name || p.email || 'Unknown'
+        for (const p of profiles || []) map[p.id] = personDisplayName(p)
         setAuditNames(map)
       } else {
         setAuditNames({})

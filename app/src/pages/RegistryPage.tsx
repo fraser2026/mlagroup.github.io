@@ -21,6 +21,7 @@ import {
 } from '../ui'
 import { BrandIcon, hasBrandIcon } from '../icons/BrandIcon'
 import { usePageChrome } from '../ui/shellChrome'
+import { personPickerLabel } from '../lib/accountLabel'
 import { sb } from '../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
 import {
@@ -289,9 +290,18 @@ export function RegistryPage() {
     ]
     const ownerNames = new Map<string, string>()
     if (ownerIds.length) {
-      const { data: profs } = await sb.from('profiles').select('id,full_name,email').in('id', ownerIds)
-      for (const p of (profs as { id: string; full_name?: string | null; email?: string | null }[]) || []) {
-        ownerNames.set(p.id, (p.full_name || p.email || 'Member').trim())
+      const { data: profs } = await sb
+        .from('profiles')
+        .select('id,first_name,last_name,full_name,email')
+        .in('id', ownerIds)
+      for (const p of (profs as {
+        id: string
+        first_name?: string | null
+        last_name?: string | null
+        full_name?: string | null
+        email?: string | null
+      }[]) || []) {
+        ownerNames.set(p.id, personPickerLabel(p))
       }
     }
     const nameOf = (id?: string | null) => (id ? ownerNames.get(id) || null : null)
@@ -330,13 +340,20 @@ export function RegistryPage() {
       }
       const { data: profs } = await sb
         .from('profiles')
-        .select('id,full_name,email,job_title')
+        .select('id,first_name,last_name,full_name,email,job_title')
         .in('id', ids)
       if (cancelled) return
-      const rows = ((profs as { id: string; full_name?: string | null; email?: string | null; job_title?: string | null }[]) || [])
+      const rows = ((profs as {
+        id: string
+        first_name?: string | null
+        last_name?: string | null
+        full_name?: string | null
+        email?: string | null
+        job_title?: string | null
+      }[]) || [])
         .map((p) => ({
           id: p.id,
-          label: (p.full_name || p.email || 'Member').trim(),
+          label: personPickerLabel(p),
           email: (p.email || '').trim(),
           job_title: p.job_title || null,
         }))

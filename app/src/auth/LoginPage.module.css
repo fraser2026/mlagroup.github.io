@@ -70,6 +70,18 @@
   gap: 14px;
 }
 
+.nameRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 420px) {
+  .nameRow {
+    grid-template-columns: 1fr;
+  }
+}
+
 .label {
   display: flex;
   flex-direction: column;

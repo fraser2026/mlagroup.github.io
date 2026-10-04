@@ -1,18 +1,56 @@
+/** Shared person label helpers for sidebar, member pickers, and assignee menus. */
+
+export type PersonName = {
+  first_name?: string | null
+  last_name?: string | null
+  full_name?: string | null
+  email?: string | null
+}
+
+/**
+ * Primary people label: "First Last".
+ * Never uses the email local-part when a real name exists.
+ * When no name exists, returns the full email (not local-part) or fallback.
+ */
+export function personDisplayName(
+  person?: PersonName | null,
+  opts?: { fallback?: string },
+): string {
+  const named = structuredOrFullName(person)
+  if (named) return named
+  const email = String(person?.email || '').trim()
+  if (email) return email
+  return opts?.fallback || 'Unknown'
+}
+
+/** SelectMenu / assignee / owner picker label — same as personDisplayName. */
+export function personPickerLabel(person?: PersonName | null): string {
+  return personDisplayName(person, { fallback: 'Unknown' })
+}
+
 /** Sidebar / account chip: "Jessica Smith" → "Jessica S". */
-export function sidebarAccountLabel(fullName?: string | null, email?: string | null): string {
-  const parts = splitName(fullName)
+export function sidebarAccountLabel(
+  fullNameOrPerson?: string | PersonName | null,
+  email?: string | null,
+): string {
+  const person = asPerson(fullNameOrPerson, email)
+  const parts = nameParts(person)
   if (parts.length === 1) return parts[0]
   if (parts.length >= 2) {
     const last = parts[parts.length - 1]
     return `${parts[0]} ${last.charAt(0).toUpperCase()}`
   }
-  const local = emailLocalPart(email)
+  const local = emailLocalPart(person.email)
   return local || 'Signed in'
 }
 
 /** Avatar initials: "Jessica Smith" → "JS"; email local-part fallback. */
-export function accountInitials(fullName?: string | null, email?: string | null): string {
-  const parts = splitName(fullName)
+export function accountInitials(
+  fullNameOrPerson?: string | PersonName | null,
+  email?: string | null,
+): string {
+  const person = asPerson(fullNameOrPerson, email)
+  const parts = nameParts(person)
   if (parts.length >= 2) {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
   }
@@ -20,7 +58,7 @@ export function accountInitials(fullName?: string | null, email?: string | null)
     const word = parts[0]
     return word.slice(0, Math.min(2, word.length)).toUpperCase()
   }
-  const local = emailLocalPart(email) || 'U'
+  const local = emailLocalPart(person.email) || 'U'
   const segs = local.split(/[._\-\s]+/).filter(Boolean)
   if (segs.length >= 2) {
     return (segs[0].charAt(0) + segs[1].charAt(0)).toUpperCase()
@@ -48,22 +86,30 @@ let memoryChip: CachedChip | null = null
 
 /**
  * Resolve sidebar label + initials without flashing the email local-part while
- * profile `full_name` (or auth metadata) is still loading.
+ * profile name (or auth metadata) is still loading.
  *
  * Priority: resolved name → cached prior chip for this user → quiet pending hold
  * → email local-part only after profile load confirms no name.
  */
 export function resolveAccountChip(input: {
   userId?: string | null
+  firstName?: string | null
+  lastName?: string | null
   fullName?: string | null
   email?: string | null
   profileReady: boolean
 }): AccountChip {
-  const name = String(input.fullName || '').trim()
-  if (name) {
+  const person: PersonName = {
+    first_name: input.firstName,
+    last_name: input.lastName,
+    full_name: input.fullName,
+    email: input.email,
+  }
+  const named = structuredOrFullName(person)
+  if (named) {
     const chip = {
-      label: sidebarAccountLabel(name, null),
-      initials: accountInitials(name, null),
+      label: sidebarAccountLabel(person),
+      initials: accountInitials(person),
       pending: false,
     }
     rememberAccountChip(input.userId, chip)
@@ -136,11 +182,53 @@ export function clearAccountChipCache() {
   }
 }
 
-function splitName(fullName?: string | null): string[] {
-  return String(fullName || '')
+/** Compose full_name from first + last for writers / metadata. */
+export function composeFullName(firstName?: string | null, lastName?: string | null): string {
+  return [String(firstName || '').trim(), String(lastName || '').trim()].filter(Boolean).join(' ')
+}
+
+/** Split a free-text full name into first + remainder last. */
+export function splitFullName(fullName?: string | null): { first_name: string; last_name: string } {
+  const parts = String(fullName || '')
     .trim()
     .split(/\s+/)
     .filter(Boolean)
+  if (parts.length === 0) return { first_name: '', last_name: '' }
+  if (parts.length === 1) return { first_name: parts[0], last_name: '' }
+  return { first_name: parts[0], last_name: parts.slice(1).join(' ') }
+}
+
+function asPerson(
+  fullNameOrPerson?: string | PersonName | null,
+  email?: string | null,
+): PersonName {
+  if (fullNameOrPerson && typeof fullNameOrPerson === 'object') {
+    return {
+      ...fullNameOrPerson,
+      email: fullNameOrPerson.email ?? email,
+    }
+  }
+  return { full_name: fullNameOrPerson || null, email }
+}
+
+function structuredOrFullName(person?: PersonName | null): string {
+  const first = String(person?.first_name || '').trim()
+  const last = String(person?.last_name || '').trim()
+  if (first && last) return `${first} ${last}`
+  if (first) return first
+  if (last) return last
+
+  const full = String(person?.full_name || '').trim()
+  if (!full) return ''
+  // Reject email local-part masquerading as a name
+  const local = emailLocalPart(person?.email)
+  if (local && full.toLowerCase() === local.toLowerCase()) return ''
+  return full
+}
+
+function nameParts(person?: PersonName | null): string[] {
+  const named = structuredOrFullName(person)
+  return named.split(/\s+/).filter(Boolean)
 }
 
 function emailLocalPart(email?: string | null): string {

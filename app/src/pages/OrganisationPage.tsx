@@ -15,6 +15,7 @@ import { BrandIcon } from '../icons/BrandIcon'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { invokeEdge } from '../lib/edge'
+import { personDisplayName } from '../lib/accountLabel'
 import { MEMBER_ROLE_LABELS, PLAN_LABELS } from '../lib/stripe'
 import { fmtDate } from '../lib/rpc'
 import { sb } from '../lib/supabase'
@@ -30,6 +31,8 @@ type Member = {
 
 type Profile = {
   id: string
+  first_name?: string | null
+  last_name?: string | null
   full_name?: string | null
   email?: string | null
 }
@@ -120,7 +123,7 @@ export function OrganisationPage() {
       if (ids.length) {
         const { data: memberProfiles } = await sb
           .from('profiles')
-          .select('id,full_name,email')
+          .select('id,first_name,last_name,full_name,email')
           .in('id', ids)
         ;(memberProfiles || []).forEach((p) => {
           profMap[p.id] = p as Profile
@@ -454,8 +457,8 @@ export function OrganisationPage() {
             <Ledger>
               {members.map((m) => {
                 const p = profiles[m.user_id] || {}
-                const name = p.full_name || 'Unknown'
-                const email = p.email || 'Email not set'
+                const name = personDisplayName(p)
+                const email = p.email && name !== p.email ? p.email : p.email || 'Email not set'
                 const roleKey = m.role || 'viewer'
                 const sc = sysByUser[m.user_id] || 0
                 return (

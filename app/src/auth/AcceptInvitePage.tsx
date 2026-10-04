@@ -53,7 +53,8 @@ export function AcceptInvitePage() {
   const [peekError, setPeekError] = useState('')
   const [peekReady, setPeekReady] = useState(false)
   const [tab, setTab] = useState<'create' | 'signin'>('create')
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -139,13 +140,18 @@ export function AcceptInvitePage() {
       setError('Passwords do not match.')
       return
     }
+    if (!firstName.trim() || !lastName.trim()) {
+      setError('Enter your first and last name.')
+      return
+    }
     setBusy(true)
     try {
       storeInviteToken(token)
       await signUp({
         email: peek.email,
         password,
-        fullName: fullName.trim() || peek.email.split('@')[0] || 'Member',
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
       })
       await finishAfterAuth()
     } catch (err) {
@@ -292,18 +298,32 @@ export function AcceptInvitePage() {
                     Work email
                     <input className={styles.input} type="email" value={peek.email} readOnly />
                   </label>
-                  <label className={styles.label}>
-                    Full name
-                    <input
-                      className={styles.input}
-                      type="text"
-                      autoComplete="name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Jane Smith"
-                      required
-                    />
-                  </label>
+                  <div className={styles.nameRow}>
+                    <label className={styles.label}>
+                      First name
+                      <input
+                        className={styles.input}
+                        type="text"
+                        autoComplete="given-name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="Jane"
+                        required
+                      />
+                    </label>
+                    <label className={styles.label}>
+                      Last name
+                      <input
+                        className={styles.input}
+                        type="text"
+                        autoComplete="family-name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Smith"
+                        required
+                      />
+                    </label>
+                  </div>
                   <label className={styles.label}>
                     Password
                     <input

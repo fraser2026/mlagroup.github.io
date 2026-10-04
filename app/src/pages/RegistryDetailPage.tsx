@@ -22,6 +22,7 @@ import type { ToastItem } from '../ui'
 import { BrandIcon } from '../icons/BrandIcon'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
+import { personDisplayName, personPickerLabel } from '../lib/accountLabel'
 import { sb } from '../lib/supabase'
 import { invokeEdge } from '../lib/edge'
 import { GATEWAY_MESSAGES_URL } from '../lib/config'
@@ -252,12 +253,16 @@ export function RegistryDetailPage() {
     if (ownerIds.length) {
       const { data: ownerProfs } = await sb
         .from('profiles')
-        .select('id,full_name,email')
+        .select('id,first_name,last_name,full_name,email')
         .in('id', ownerIds)
       const byId = new Map(
-        ((ownerProfs as { id: string; full_name?: string | null; email?: string | null }[]) || []).map(
-          (p) => [p.id, (p.full_name || p.email || 'Member').trim()],
-        ),
+        ((ownerProfs as {
+          id: string
+          first_name?: string | null
+          last_name?: string | null
+          full_name?: string | null
+          email?: string | null
+        }[]) || []).map((p) => [p.id, personPickerLabel(p)]),
       )
       sys.business_owner_name = sys.business_owner_id ? byId.get(sys.business_owner_id) || null : null
       sys.compliance_owner_name = sys.compliance_owner_id
@@ -318,9 +323,12 @@ export function RegistryDetailPage() {
       ...((assessmentsRows || []).map((a: Assessment) => a.completed_by).filter(Boolean) as string[]),
     ]
     if (userIds.length) {
-      const { data: profiles } = await sb.from('profiles').select('id,full_name,email').in('id', [...new Set(userIds)])
+      const { data: profiles } = await sb
+        .from('profiles')
+        .select('id,first_name,last_name,full_name,email')
+        .in('id', [...new Set(userIds)])
       const map: Record<string, string> = {}
-      for (const p of profiles || []) map[p.id] = p.full_name || p.email || 'Unknown'
+      for (const p of profiles || []) map[p.id] = personDisplayName(p)
       setAuditNames(map)
     } else setAuditNames({})
 
@@ -385,14 +393,21 @@ export function RegistryDetailPage() {
       }
       const { data: profs } = await sb
         .from('profiles')
-        .select('id,full_name,email,job_title')
+        .select('id,first_name,last_name,full_name,email,job_title')
         .in('id', ids)
       if (cancelled) return
       setOrgMembers(
-        ((profs as { id: string; full_name?: string | null; email?: string | null; job_title?: string | null }[]) || [])
+        ((profs as {
+          id: string
+          first_name?: string | null
+          last_name?: string | null
+          full_name?: string | null
+          email?: string | null
+          job_title?: string | null
+        }[]) || [])
           .map((p) => ({
             id: p.id,
-            label: (p.full_name || p.email || 'Member').trim(),
+            label: personPickerLabel(p),
             email: (p.email || '').trim(),
             job_title: p.job_title || null,
           }))

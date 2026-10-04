@@ -1,3 +1,4 @@
+import { personDisplayName } from './accountLabel'
 import { sb } from './supabase'
 
 export const TIER_LABELS: Record<string, string> = {
@@ -492,8 +493,21 @@ export function assetHaystack(a: RegistryAsset) {
     .toLowerCase()
 }
 
-export function actorName(profile?: { full_name?: string | null } | null, email?: string | null) {
-  return profile?.full_name || email?.split('@')[0] || 'Unknown'
+export function actorName(
+  profile?: {
+    first_name?: string | null
+    last_name?: string | null
+    full_name?: string | null
+    email?: string | null
+  } | null,
+  email?: string | null,
+) {
+  return personDisplayName({
+    first_name: profile?.first_name,
+    last_name: profile?.last_name,
+    full_name: profile?.full_name,
+    email: profile?.email ?? email,
+  })
 }
 
 export function assessmentUrl(systemId: string) {

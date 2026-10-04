@@ -17,6 +17,7 @@ import {
 import type { ToastItem } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
+import { personDisplayName, personPickerLabel } from '../lib/accountLabel'
 import { actorName, writeAuditLog } from '../lib/audit'
 import { controlCode, labelCtrlStatus } from '../lib/registry'
 import { pct } from '../lib/workspace'
@@ -152,6 +153,7 @@ export function ControlsDetailPage() {
   const [dueDate, setDueDate] = useState('')
   const [priority, setPriority] = useState('medium')
   const [assignInfo, setAssignInfo] = useState('')
+  const [assignSuggestNote, setAssignSuggestNote] = useState('')
   const [assignStatus, setAssignStatus] = useState('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
@@ -283,14 +285,15 @@ export function ControlsDetailPage() {
     if (row.assigned_at && row.assigned_by) {
       const { data: p } = await sb
         .from('profiles')
-        .select('full_name,email')
+        .select('first_name,last_name,full_name,email')
         .eq('id', row.assigned_by)
         .maybeSingle()
-      const who = p?.full_name || p?.email || 'Unknown'
+      const who = personDisplayName(p)
       setAssignInfo(`Assigned by ${who} on ${new Date(row.assigned_at).toLocaleDateString()}`)
     } else {
       setAssignInfo('')
     }
+    setAssignSuggestNote('')
 
     const controlId = row.control_id
     const [{ data: taskRows }, { data: memRows }] = await Promise.all([
@@ -303,16 +306,70 @@ export function ControlsDetailPage() {
     setTasks(((taskRows as ControlTask[]) || []).sort((a, b) => a.task_number - b.task_number))
 
     const memberIds = (memRows || []).map((m) => m.user_id as string)
+    const memberSet = new Set(memberIds)
+    let nextMembers: Member[] = []
     if (memberIds.length) {
-      const { data: profiles } = await sb.from('profiles').select('id,full_name,email').in('id', memberIds)
-      setMembers(
-        (profiles || []).map((p) => ({
+      const { data: profiles } = await sb
+        .from('profiles')
+        .select('id,first_name,last_name,full_name,email')
+        .in('id', memberIds)
+      nextMembers = (profiles || [])
+        .map((p) => ({
           id: p.id as string,
-          name: (p.full_name as string) || (p.email as string) || 'Unknown',
-        })),
-      )
+          name: personPickerLabel(p),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+      setMembers(nextMembers)
     } else {
       setMembers([])
+    }
+
+    // M1: soft-default assignee from asset owners when still unassigned (compliance → business → technical)
+    if (!row.assigned_to && row.system_id && userId) {
+      const { data: asset } = await sb
+        .from('ai_systems')
+        .select('compliance_owner_id,business_owner_id,technical_owner_id')
+        .eq('id', row.system_id)
+        .maybeSingle()
+      const candidates = [
+        asset?.compliance_owner_id,
+        asset?.business_owner_id,
+        asset?.technical_owner_id,
+      ].filter((id): id is string => Boolean(id) && memberSet.has(id as string))
+      const suggested = candidates[0] || ''
+      if (suggested) {
+        const assignedAt = new Date().toISOString()
+        const { error: suggestErr } = await sb
+          .from('control_assignments')
+          .update({
+            assigned_to: suggested,
+            assigned_by: userId,
+            assigned_at: assignedAt,
+          })
+          .eq('id', row.id)
+        if (!suggestErr) {
+          setAssignedTo(suggested)
+          setAssign((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  assigned_to: suggested,
+                  assigned_by: userId,
+                  assigned_at: assignedAt,
+                }
+              : prev,
+          )
+          const source =
+            suggested === asset?.compliance_owner_id
+              ? 'compliance owner'
+              : suggested === asset?.business_owner_id
+                ? 'business owner'
+                : 'technical owner'
+          setAssignSuggestNote(`Assignee set from asset ${source}`)
+          const who = nextMembers.find((m) => m.id === suggested)?.name || 'Unknown'
+          setAssignInfo(`Assigned by you on ${new Date(assignedAt).toLocaleDateString()} · ${who}`)
+        }
+      }
     }
 
     await Promise.all([loadEvidence(row.id), loadSupport(row.id)])
@@ -395,7 +452,7 @@ export function ControlsDetailPage() {
         entityType: 'governance_control',
         entityId: assign.control_id,
         changes: {
-          _actor_name: actorName(profile?.full_name, session?.user?.email),
+          _actor_name: actorName(profile, session?.user?.email),
           control: ctrl?.title,
           assigned_to_name: nm,
           due_date: dueDate || null,
@@ -403,6 +460,7 @@ export function ControlsDetailPage() {
         },
       })
     }
+    setAssignSuggestNote('')
     setAssignStatus('Saved')
     window.setTimeout(() => setAssignStatus(''), 2000)
   }
@@ -437,7 +495,7 @@ export function ControlsDetailPage() {
       entityType: 'governance_control',
       entityId: assign.control_id,
       changes: {
-        _actor_name: actorName(profile?.full_name, session?.user?.email),
+        _actor_name: actorName(profile, session?.user?.email),
         control: ctrl?.title,
       },
     })
@@ -479,7 +537,7 @@ export function ControlsDetailPage() {
       entityType: 'governance_control',
       entityId: assign.control_id,
       changes: {
-        _actor_name: actorName(profile?.full_name, session?.user?.email),
+        _actor_name: actorName(profile, session?.user?.email),
         control: ctrl?.title,
       },
     })
@@ -560,7 +618,7 @@ export function ControlsDetailPage() {
       entityType: 'governance_control',
       entityId: assign.system_id || assign.control_id,
       changes: {
-        _actor_name: actorName(profile?.full_name, session?.user?.email),
+        _actor_name: actorName(profile, session?.user?.email),
         control: ctrl?.title,
       },
     })
@@ -704,6 +762,7 @@ export function ControlsDetailPage() {
                 />
               </div>
             </div>
+            {assignSuggestNote ? <p className={styles.saveNote}>{assignSuggestNote}</p> : null}
             {assignInfo ? <p className={styles.saveNote}>{assignInfo}</p> : null}
             {assignStatus ? (
               <p
