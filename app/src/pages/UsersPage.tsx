@@ -18,6 +18,7 @@ import type { ToastItem } from '../ui'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { sb } from '../lib/supabase'
+import { invokeEdge } from '../lib/edge'
 import { orgSeatLimit } from '../lib/org'
 import { parseRpcPayload, fmtDate } from '../lib/rpc'
 import { MEMBER_ROLE_LABELS, PLAN_LABELS } from '../lib/stripe'
@@ -64,7 +65,7 @@ const ACCESS_ROLES: { id: string; name: string; description: string }[] = [
 ]
 
 export function UsersPage() {
-  const { org, canManageMembers, user, refreshOrg } = useAuth()
+  const { org, canManageMembers, user, session, refreshOrg } = useAuth()
   const [members, setMembers] = useState<Member[]>([])
   const [invites, setInvites] = useState<Invite[]>([])
   const [profiles, setProfiles] = useState<Record<string, Profile>>({})
@@ -162,18 +163,56 @@ export function UsersPage() {
         return
       }
       const token = (payload as { token?: string }).token
-      const invitedEmail = (payload as { email?: string }).email
-      if (token) {
-        const url = `${window.location.origin}/login?invite=${encodeURIComponent(token)}`
+      const invitedEmail = (payload as { email?: string }).email || email.trim()
+      const inviteId = (payload as { invite_id?: string }).invite_id
+      const url = token
+        ? `${window.location.origin}/login?invite=${encodeURIComponent(token)}`
+        : ''
+      let copied = false
+      if (url) {
         try {
           await navigator.clipboard.writeText(url)
+          copied = true
         } catch {
-          /* ignore */
+          /* clipboard may be blocked; email path still tries */
         }
       }
-      pushToast(
-        `Invite created for ${invitedEmail || email}. Link copied. Send it to them. They must sign in with that email.`,
-      )
+
+      let emailed = false
+      if (url && inviteId && session?.access_token) {
+        try {
+          await invokeEdge(
+            'send-mail',
+            {
+              kind: 'org-invite',
+              invite_id: inviteId,
+              invite_url: url,
+            },
+            session.access_token,
+          )
+          emailed = true
+        } catch (mailErr) {
+          console.warn('Invite email skipped', mailErr)
+        }
+      }
+
+      if (emailed && copied) {
+        pushToast(
+          `Invite emailed to ${invitedEmail}. Link also copied. They must sign in with that email.`,
+        )
+      } else if (emailed) {
+        pushToast(`Invite emailed to ${invitedEmail}. They must sign in with that email.`)
+      } else if (copied) {
+        pushToast(
+          `Invite created for ${invitedEmail}. Email could not be sent. Link copied. Send it to them. They must sign in with that email.`,
+        )
+      } else if (url) {
+        setError(
+          `Invite created for ${invitedEmail}, but email and clipboard both failed. Copy this link: ${url}`,
+        )
+      } else {
+        pushToast(`Invite created for ${invitedEmail}.`)
+      }
       setEmail('')
       await load()
     } finally {
