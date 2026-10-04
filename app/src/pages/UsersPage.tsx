@@ -11,6 +11,7 @@ import {
   PageFrame,
   PageHeader,
   Section,
+  SelectMenu,
   StatusLabel,
   ToastStack,
 } from '../ui'
@@ -62,6 +63,18 @@ const ACCESS_ROLES: { id: string; name: string; description: string }[] = [
     name: 'Viewer',
     description: 'Read the registry and reports. Cannot change records.',
   },
+]
+
+const INVITE_ROLE_OPTIONS = [
+  { value: 'editor', label: 'Editor' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'viewer', label: 'Viewer' },
+]
+
+const MEMBER_ROLE_OPTIONS = [
+  { value: 'admin', label: 'Admin' },
+  { value: 'editor', label: 'Editor' },
+  { value: 'viewer', label: 'Viewer' },
 ]
 
 export function UsersPage() {
@@ -322,18 +335,15 @@ export function UsersPage() {
                     required
                   />
                 </label>
-                <label className={`${styles.field} ${styles.fieldRole}`}>
+                <div className={`${styles.field} ${styles.fieldRole}`}>
                   <span className={styles.label}>Role</span>
-                  <select
-                    className={styles.select}
+                  <SelectMenu
+                    aria-label="Role"
                     value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                  >
-                    <option value="editor">Editor</option>
-                    <option value="admin">Admin</option>
-                    <option value="viewer">Viewer</option>
-                  </select>
-                </label>
+                    onChange={setRole}
+                    options={INVITE_ROLE_OPTIONS}
+                  />
+                </div>
                 <div className={styles.inviteAction}>
                   <Button type="submit" size="sm" pending={inviteBusy}>
                     Send invite
@@ -378,16 +388,13 @@ export function UsersPage() {
                       meta={
                         <div className={styles.rowMeta}>
                           {canManageMembers && m.role !== 'owner' ? (
-                            <select
-                              className={`${styles.select} ${styles.roleSelect}`}
+                            <SelectMenu
+                              className={styles.roleSelect}
                               value={m.role}
                               aria-label={`Role for ${name}`}
-                              onChange={(e) => void changeRole(m.id, e.target.value)}
-                            >
-                              <option value="admin">Admin</option>
-                              <option value="editor">Editor</option>
-                              <option value="viewer">Viewer</option>
-                            </select>
+                              onChange={(v) => void changeRole(m.id, v)}
+                              options={MEMBER_ROLE_OPTIONS}
+                            />
                           ) : (
                             <StatusLabel tone={roleTone(m.role)}>
                               {MEMBER_ROLE_LABELS[m.role] || m.role}
