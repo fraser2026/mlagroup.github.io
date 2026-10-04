@@ -5,6 +5,8 @@ import { useOverlayScrollLock } from './useOverlayScrollLock'
 import styles from './Drawer.module.css'
 
 type Variant = 'modal' | 'preview'
+/** side = right sheet; center = compact centred card (actionable announce / conflict). */
+type Placement = 'side' | 'center'
 
 type Props = {
   open: boolean
@@ -18,6 +20,11 @@ type Props = {
   actions?: ReactNode
   /** modal = form overlay with blur; preview = dim inventory card, no blur */
   variant?: Variant
+  /**
+   * side (default) = right Drawer. center = centred card with the same blur +
+   * `--ra-radius-control` language — use for short actionable announce/conflict prompts.
+   */
+  placement?: Placement
   /** Optional meta row under the title (badges, etc.) */
   headerMeta?: ReactNode
   /** Sit above other full-screen overlays (e.g. dossier preview at z-index 1100). */
@@ -35,11 +42,13 @@ export function Drawer({
   footer,
   actions,
   variant = 'modal',
+  placement = 'side',
   headerMeta,
   elevated = false,
   className,
 }: Props) {
   const isPreview = variant === 'preview'
+  const isCenter = placement === 'center'
   const [mounted, setMounted] = useState(open)
   const [exiting, setExiting] = useState(false)
 
@@ -50,7 +59,7 @@ export function Drawer({
       return
     }
     if (!mounted) return
-    if (isPreview) {
+    if (isPreview || isCenter) {
       setExiting(true)
       const t = window.setTimeout(() => {
         setMounted(false)
@@ -59,7 +68,7 @@ export function Drawer({
       return () => window.clearTimeout(t)
     }
     setMounted(false)
-  }, [open, isPreview, mounted])
+  }, [open, isPreview, isCenter, mounted])
 
   useEffect(() => {
     if (!mounted || exiting) return
@@ -82,6 +91,7 @@ export function Drawer({
       className={clsx(
         styles.overlay,
         isPreview && styles.overlayPreview,
+        isCenter && styles.overlayCenter,
         elevated && styles.overlayElevated,
         exiting && styles.overlayExit,
         className,
@@ -96,7 +106,8 @@ export function Drawer({
         className={clsx(
           styles.panel,
           isPreview && styles.panelPreview,
-          exiting && styles.panelExit,
+          isCenter && styles.panelCenter,
+          exiting && (isCenter ? styles.panelCenterExit : styles.panelExit),
         )}
         role="dialog"
         aria-modal="true"
@@ -123,7 +134,14 @@ export function Drawer({
             </button>
           </div>
         </header>
-        <div className={clsx(styles.body, isPreview && styles.bodyPreview)} data-ra-scroll="overlay">
+        <div
+          className={clsx(
+            styles.body,
+            isPreview && styles.bodyPreview,
+            isCenter && styles.bodyCenter,
+          )}
+          data-ra-scroll="overlay"
+        >
           {children}
         </div>
         {footerContent ? (

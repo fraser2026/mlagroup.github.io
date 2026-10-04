@@ -65,6 +65,33 @@
   width: min(420px, 100%);
 }
 
+/* Centred card: same blur overlay + radius as side modal; compact height. */
+.overlayCenter {
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+@media (min-width: 861px) {
+  .overlayCenter {
+    padding: 32px;
+  }
+}
+
+.panelCenter {
+  width: min(420px, 100%);
+  height: auto;
+  max-height: min(90vh, 100%);
+  border-right: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  animation: raDrawerPanelCenterIn 200ms var(--ra-ease-out) both;
+}
+
+.bodyCenter {
+  flex: 0 1 auto;
+  padding: 16px 22px 8px;
+}
+
 @media (min-width: 861px) {
   .panel {
     border-right: 1px solid var(--ra-border);
@@ -112,6 +139,28 @@
   }
 }
 
+@keyframes raDrawerPanelCenterIn {
+  from {
+    opacity: 0.96;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes raDrawerPanelCenterOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0.96;
+    transform: translateY(8px);
+  }
+}
+
 .overlayExit {
   animation: raDrawerOverlayOut 180ms var(--ra-ease-out) both;
   pointer-events: none;
@@ -121,9 +170,14 @@
   animation: raDrawerPanelOut 180ms var(--ra-ease-out) both;
 }
 
+.panelCenterExit {
+  animation: raDrawerPanelCenterOut 180ms var(--ra-ease-out) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay,
   .overlayPreview,
+  .overlayCenter,
   .overlayExit {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -132,7 +186,9 @@
 
   .panel,
   .panelPreview,
-  .panelExit {
+  .panelCenter,
+  .panelExit,
+  .panelCenterExit {
     animation: none;
   }
 }

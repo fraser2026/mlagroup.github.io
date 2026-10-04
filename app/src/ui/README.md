@@ -46,6 +46,6 @@ See repo [DESIGN.md](../../../DESIGN.md): Apple-like clarity, Cloudflare/Supabas
 | `Ledger` / `LedgerRow` | Work queues |
 | `ConnectorRow` | Integrations |
 | `StatusLabel` | OK / warn / risk typography |
-| `Drawer` | Detail without leaving the list |
+| `Drawer` | Detail without leaving the list. Default `placement="side"` (right sheet). Use `placement="center"` for short actionable announce/conflict cards (same blur + `--ra-radius-control`). |
 | `EmptyState` / `Notice` | Quiet empty and alerts |
 | `usePageChrome` | Set breadcrumbs / title per page |

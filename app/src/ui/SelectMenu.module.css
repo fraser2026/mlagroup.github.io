@@ -30,16 +30,33 @@
     box-shadow 0.12s;
 }
 
+/* Same interactive tokens as Search / Copy link / Back to policies (ghost). */
 .trigger:hover:not(:disabled) {
-  border-color: var(--ra-border-hover);
+  border-color: var(--ra-blurple);
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
 }
 
-.triggerOpen,
 .trigger:focus-visible {
   outline: none;
   border-color: var(--ra-blurple);
-  background: var(--ra-focus-fill);
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
   box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+/* Open = ghost.selected fill + blurple border/ring (no --ra-focus-fill wash). */
+.triggerOpen {
+  outline: none;
+  border-color: var(--ra-blurple);
+  background: var(--ra-selected);
+  color: var(--ra-blurple-fg);
+  box-shadow: 0 0 0 3px var(--ra-focus-ring);
+}
+
+.triggerOpen:hover:not(:disabled) {
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
 }
 
 .triggerDisabled {
@@ -106,7 +123,7 @@
   appearance: none;
   width: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   border: 0;
   background: transparent;
@@ -121,20 +138,33 @@
   cursor: pointer;
 }
 
+/* Match app menus / ghost hover: grey wash + blurple label (not ink, not rogue purple). */
 .option:hover:not(:disabled) {
   background: var(--ra-hover);
-  color: var(--ra-ink);
+  color: var(--ra-blurple-fg);
 }
 
-/* Selected stays legible; hover mist (not weight) shows the interactive state */
+.option:focus-visible:not(:disabled) {
+  outline: none;
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
+  box-shadow: inset 0 0 0 1px var(--ra-blurple);
+}
+
+/* Selected = same soft fill as Copy link / ghost.selected */
 .optionActive {
-  background: transparent;
+  background: var(--ra-selected);
   color: var(--ra-blurple-fg);
   font-weight: 400;
 }
 
 .optionActive:hover:not(:disabled) {
-  background: var(--ra-pressed);
+  background: var(--ra-hover);
+  color: var(--ra-blurple-fg);
+}
+
+.optionActive:focus-visible:not(:disabled) {
+  background: var(--ra-hover);
   color: var(--ra-blurple-fg);
 }
 
@@ -146,6 +176,14 @@
 .optionIcon {
   display: inline-flex;
   flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.optionText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .optionLabel {
@@ -153,4 +191,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.optionDesc {
+  font-size: 11px;
+  font-weight: var(--ra-fw-medium, 500);
+  font-style: italic;
+  color: var(--ra-text-3);
+  line-height: 1.35;
+  white-space: normal;
 }

@@ -171,6 +171,25 @@ export function canUseGovernanceDossier(org: Organisation | null) {
   return canUseAuditorAccess(org)
 }
 
+/** AI policy drafting — Essentials / Professional / Enterprise with live subscription. */
+export function canUsePolicyDrafting(org: Organisation | null) {
+  const plan = (org?.plan || '').toLowerCase()
+  return (
+    (plan === 'essentials' || plan === 'professional' || plan === 'enterprise') &&
+    hasLiveSubscription(org)
+  )
+}
+
+/** Roles that may create/edit unpublished policy drafts in the AI workspace. */
+export function canDraftPolicies(role: OrgRole | null) {
+  return role === 'owner' || role === 'admin' || role === 'editor'
+}
+
+/** Owner/admin may publish and edit published policy bodies. */
+export function canPublishPolicies(role: OrgRole | null) {
+  return role === 'owner' || role === 'admin'
+}
+
 function nameSeedFromMeta(meta?: Record<string, unknown> | null): ProfileNameSeed {
   if (!meta) return {}
   const first = typeof meta.first_name === 'string' ? meta.first_name.trim() : ''
