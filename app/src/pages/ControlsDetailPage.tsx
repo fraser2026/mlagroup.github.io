@@ -175,7 +175,7 @@ export function ControlsDetailPage() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const [supportMsg, setSupportMsg] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
-  const skipAssignSave = useRef(true)
+  const assignStatusTimer = useRef<number | undefined>(undefined)
 
   const ctrl = assign?.governance_controls
   const rawTitle = ctrl?.title || 'Control'
@@ -290,7 +290,6 @@ export function ControlsDetailPage() {
       ai_systems: asOne(raw.ai_systems),
     }
     setAssign(row)
-    skipAssignSave.current = true
     setAssignedTo(row.assigned_to || '')
     setDueDate(row.due_date || '')
     setPriority(row.priority || 'medium')
@@ -338,7 +337,7 @@ export function ControlsDetailPage() {
       setMembers([])
     }
 
-    // M1: soft-default assignee from asset owners when still unassigned (compliance → business → technical)
+    // Suggest (never persist) an assignee from asset owners when unassigned: compliance, business, technical.
     if (!row.assigned_to && row.system_id && userId) {
       const { data: asset } = await sb
         .from('ai_systems')
@@ -352,37 +351,14 @@ export function ControlsDetailPage() {
       ].filter((id): id is string => Boolean(id) && memberSet.has(id as string))
       const suggested = candidates[0] || ''
       if (suggested) {
-        const assignedAt = new Date().toISOString()
-        const { error: suggestErr } = await sb
-          .from('control_assignments')
-          .update({
-            assigned_to: suggested,
-            assigned_by: userId,
-            assigned_at: assignedAt,
-          })
-          .eq('id', row.id)
-        if (!suggestErr) {
-          setAssignedTo(suggested)
-          setAssign((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  assigned_to: suggested,
-                  assigned_by: userId,
-                  assigned_at: assignedAt,
-                }
-              : prev,
-          )
-          const source =
-            suggested === asset?.compliance_owner_id
-              ? 'compliance owner'
-              : suggested === asset?.business_owner_id
-                ? 'business owner'
-                : 'technical owner'
-          setAssignSuggestNote(`Assignee set from asset ${source}`)
-          const who = nextMembers.find((m) => m.id === suggested)?.name || 'Unknown'
-          setAssignInfo(`Assigned by you on ${new Date(assignedAt).toLocaleDateString()} · ${who}`)
-        }
+        setAssignedTo(suggested)
+        const source =
+          suggested === asset?.compliance_owner_id
+            ? 'compliance owner'
+            : suggested === asset?.business_owner_id
+              ? 'business owner'
+              : 'technical owner'
+        setAssignSuggestNote(`Suggested from asset ${source}. Save to confirm.`)
       }
     }
 
@@ -411,21 +387,45 @@ export function ControlsDetailPage() {
   const taskPct = pct(doneCount, tasks.length)
   const complete = isDone(assign?.status)
 
+  const savedAssignedTo = assign?.assigned_to || ''
+  const savedDueDate = assign?.due_date || ''
+  const savedPriority = assign?.priority || 'medium'
+  const assignDirty =
+    !!assign &&
+    (assignedTo !== savedAssignedTo || dueDate !== savedDueDate || priority !== savedPriority)
+  const assigneeDraftChanged = !!assign && assignedTo !== savedAssignedTo
+  const assignSaving = busy === 'assign'
+
   useEffect(() => {
-    if (!assign || !orgId || !userId || !assign.control_id) return
-    if (skipAssignSave.current) {
-      skipAssignSave.current = false
-      return
+    if (!assignDirty) return
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
     }
-    const timer = window.setTimeout(() => {
-      void saveAssignmentFields()
-    }, 400)
-    return () => window.clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assignedTo, dueDate, priority])
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [assignDirty])
+
+  useEffect(() => () => window.clearTimeout(assignStatusTimer.current), [])
+
+  function flashAssignStatus(text: string) {
+    window.clearTimeout(assignStatusTimer.current)
+    setAssignStatus(text)
+    assignStatusTimer.current = window.setTimeout(() => setAssignStatus(''), 3500)
+  }
+
+  function cancelAssignmentEdits() {
+    if (!assign) return
+    setAssignedTo(savedAssignedTo)
+    setDueDate(savedDueDate)
+    setPriority(savedPriority)
+    setAssignSuggestNote('')
+    window.clearTimeout(assignStatusTimer.current)
+    setAssignStatus('')
+  }
 
   async function saveAssignmentFields() {
-    if (!assign || !orgId || !userId || !assign.control_id) return
+    if (!assign || !orgId || !userId || !assign.control_id || !assignDirty || assignSaving) return
     const assignTo = assignedTo || null
     const prevAssigned = assign.assigned_to || null
     const assigneeChanged = assignTo !== prevAssigned
@@ -434,16 +434,19 @@ export function ControlsDetailPage() {
       due_date: dueDate || null,
       priority: priority || 'medium',
     }
-    if (assignTo && !assign.assigned_to) {
+    if (assignTo && assigneeChanged) {
       update.assigned_by = userId
       update.assigned_at = new Date().toISOString()
     } else if (!assignTo) {
       update.assigned_by = null
       update.assigned_at = null
     }
-    setAssignStatus('Saving…')
+    setBusy('assign')
+    window.clearTimeout(assignStatusTimer.current)
+    setAssignStatus('')
     const { error: err } = await sb.from('control_assignments').update(update).eq('id', assign.id)
     if (err) {
+      setBusy('')
       setAssignStatus(`Error: ${err.message}`)
       return
     }
@@ -477,23 +480,25 @@ export function ControlsDetailPage() {
       })
     }
     setAssignSuggestNote('')
+    if (assigneeChanged) {
+      setAssignInfo(assignTo ? `Assigned by you on ${new Date().toLocaleDateString()}` : '')
+    }
 
-    // Notify only when assignee changes to someone else (not self).
+    // Notify only after a confirmed save that hands the control to someone else.
     if (assigneeChanged && assignTo && assignTo !== userId) {
       const mail = await sendAssignmentMail(assign.id)
+      setBusy('')
       if (mail.emailed) {
-        setAssignInfo('')
-        setAssignStatus('Saved · notified')
+        flashAssignStatus('Saved · notified')
       } else {
         const why = mail.detail ? ` ${mail.detail}` : ''
-        setAssignStatus(`Saved. Email was not sent.${why}`)
+        flashAssignStatus('Saved')
         setAssignInfo(`Assignment saved, but email was not sent.${why}`)
       }
-    } else {
-      if (assigneeChanged) setAssignInfo('')
-      setAssignStatus('Saved')
+      return
     }
-    window.setTimeout(() => setAssignStatus(''), 3500)
+    setBusy('')
+    flashAssignStatus('Saved')
   }
 
   async function sendAssignmentMail(assignmentId: string): Promise<{
@@ -740,8 +745,8 @@ export function ControlsDetailPage() {
         title={title}
         description={
           <div className={styles.pageMeta}>
-            <StatusLabel badge tone={toneForCtrlRenewalOrStatus(assign.status, dueDate || assign.due_date)}>
-              {labelCtrlRenewalOrStatus(assign.status, dueDate || assign.due_date)}
+            <StatusLabel badge tone={toneForCtrlRenewalOrStatus(assign.status, assign.due_date)}>
+              {labelCtrlRenewalOrStatus(assign.status, assign.due_date)}
             </StatusLabel>
             <span className={styles.pageMetaAsset}>{assetLabel}</span>
           </div>
@@ -793,6 +798,7 @@ export function ControlsDetailPage() {
           <div className={styles.work}>
             <div className={styles.workHead}>
               <h2 className={styles.workTitle}>Assignment</h2>
+              {assignDirty ? <StatusLabel tone="warn">Unsaved changes</StatusLabel> : null}
             </div>
             <div className={styles.assignGrid}>
               <div className={styles.fieldControl}>
@@ -801,6 +807,7 @@ export function ControlsDetailPage() {
                   aria-label="Assigned to"
                   value={assignedTo}
                   placeholder="Unassigned"
+                  disabled={assignSaving}
                   onChange={setAssignedTo}
                   options={[
                     { value: '', label: 'Unassigned' },
@@ -813,6 +820,7 @@ export function ControlsDetailPage() {
                 <DateField
                   aria-label="Due date"
                   value={dueDate}
+                  disabled={assignSaving}
                   onChange={setDueDate}
                   placeholder="Select date"
                 />
@@ -822,6 +830,7 @@ export function ControlsDetailPage() {
                 <SelectMenu
                   aria-label="Priority"
                   value={priority}
+                  disabled={assignSaving}
                   onChange={setPriority}
                   options={[
                     { value: 'low', label: 'Low' },
@@ -833,18 +842,40 @@ export function ControlsDetailPage() {
               </div>
             </div>
             {assignSuggestNote ? <p className={styles.saveNote}>{assignSuggestNote}</p> : null}
-            {assignInfo ? <p className={styles.saveNote}>{assignInfo}</p> : null}
-            {assignStatus ? (
-              <p
-                className={
-                  assignStatus.startsWith('Error')
-                    ? `${styles.saveNote} ${styles.saveNoteErr}`
-                    : `${styles.saveNote} ${styles.saveNoteOk}`
-                }
-              >
-                {assignStatus}
+            {assignInfo && !assigneeDraftChanged ? <p className={styles.saveNote}>{assignInfo}</p> : null}
+            {assigneeDraftChanged && assignedTo && assignedTo !== userId ? (
+              <p className={styles.saveNote}>
+                {members.find((m) => m.id === assignedTo)?.name || 'They'} will be emailed when you save.
               </p>
             ) : null}
+            <div className={styles.actions}>
+              <Button
+                variant="ghost"
+                disabled={!assignDirty || assignSaving}
+                onClick={cancelAssignmentEdits}
+              >
+                Cancel
+              </Button>
+              <Button
+                pending={assignSaving}
+                disabled={!assignDirty}
+                onClick={() => void saveAssignmentFields()}
+              >
+                Save assignment
+              </Button>
+              {assignStatus ? (
+                <span
+                  className={
+                    assignStatus.startsWith('Error')
+                      ? `${styles.saveNote} ${styles.saveNoteErr}`
+                      : `${styles.saveNote} ${styles.saveNoteOk}`
+                  }
+                  aria-live="polite"
+                >
+                  {assignStatus}
+                </span>
+              ) : null}
+            </div>
           </div>
         </Section>
 
