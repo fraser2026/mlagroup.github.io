@@ -946,11 +946,24 @@ serve(async (req) => {
       }
     })
 
-    // Attach policy + catalogue maps + custom-framework requirement links (real FKs only)
+    // Attach policy + catalogue maps + custom-framework requirement links (real FKs only).
+    // Linked policy is optional org wiring (not evidence). Drafts never qualify.
+    // Omit linked_policies entirely when none mapped — template must not invent empty rows.
     const controlsEnriched = controls.map((c) => {
       const linkedPolicies = policies
-        .filter((p) => p.linked_control_id && String(p.linked_control_id) === String(c.control_id))
-        .map((p) => ({ title: p.title, version: p.version, is_active: p.is_active }))
+        .filter(
+          (p) =>
+            p.linked_control_id &&
+            String(p.linked_control_id) === String(c.control_id) &&
+            p.published_at &&
+            p.is_active !== false,
+        )
+        .map((p) => ({
+          id: p.id,
+          title: p.title,
+          version: p.version,
+          published_at: p.published_at,
+        }))
 
       const catalogueMapped = (mapsByControlId.get(String(c.control_id || '')) || [])
         .slice()
@@ -984,7 +997,7 @@ serve(async (req) => {
 
       return {
         ...c,
-        linked_policies: linkedPolicies,
+        ...(linkedPolicies.length ? { linked_policies: linkedPolicies } : {}),
         mapped_requirements: [...catalogueMapped, ...customMapped],
       }
     })

@@ -1891,13 +1891,19 @@ function render(D) {
       </tbody></table>`;
   }
 
-  const policyRows = policies.slice(0, 40).map((p) => `<tr>
+  const anyPolicyLinked = policies.some((p) => p.linked_control_title || p.linked_control_number != null);
+  const policyRows = policies.slice(0, 40).map((p) => {
+    const linkedCell = p.linked_control_title
+      ? x(controlCode(p.linked_control_number) + ', ' + p.linked_control_title)
+      : '';
+    return `<tr>
     <td>${x(p.title)}</td>
     <td>${x(blank(p.version))}</td>
     <td><span class="status ${p.is_active ? 's-ok' : 's-muted'}">${p.is_active ? 'Active' : 'Inactive'}</span></td>
     <td>${x(fmtShort(p.published_at || p.updated_at))}</td>
-    <td>${p.linked_control_title ? x(controlCode(p.linked_control_number) + ', ' + p.linked_control_title) : 'Not recorded'}</td>
-  </tr>`).join('');
+    ${anyPolicyLinked ? `<td>${linkedCell}</td>` : ''}
+  </tr>`;
+  }).join('');
 
   html += `<section class="section" data-toc="6">
     ${pageHeader(dossierId)}
@@ -1923,7 +1929,7 @@ function render(D) {
         : ''}` : ''}
     <span class="sub-label">Policies</span>
     ${policies.length
-      ? `<table class="data"><thead><tr><th>Policy</th><th>Version</th><th>Status</th><th>Date</th><th>Linked control</th></tr></thead><tbody>${policyRows}</tbody></table>`
+      ? `<table class="data"><thead><tr><th>Policy</th><th>Version</th><th>Status</th><th>Date</th>${anyPolicyLinked ? '<th>Linked control</th>' : ''}</tr></thead><tbody>${policyRows}</tbody></table>`
       : empty('No policies recorded.')}
     </div>
     ${pageFooter()}
@@ -1953,6 +1959,11 @@ function render(D) {
           return head && title ? `${head}: ${title}` : head || title;
         }).join('; ')
       : 'No external requirement currently mapped.';
+    // Optional linked policy — omit row entirely when unmapped (never "Not recorded").
+    const linkedPol = (c.linked_policies || []).filter((p) => p && p.title);
+    const linkedPolRow = linkedPol.length
+      ? `<div><dt>Linked policy</dt><dd>${x(linkedPol.map((p) => p.version ? `${p.title} (v${p.version})` : p.title).join('; '))}</dd></div>`
+      : '';
     return `<div class="ctrl-block keep">
       <div class="ctrl-head">
         <span class="ctrl-code">${x(controlCode(c.control_number))}</span>
@@ -1966,6 +1977,7 @@ function render(D) {
         <div><dt>Due</dt><dd>${x(fmtShort(c.due_date))}</dd></div>
         <div><dt>Evidence status</dt><dd>${(c.evidence_count || 0) > 0 ? (c.evidence_count + ' file(s) uploaded') : 'No evidence uploaded'}</dd></div>
         <div><dt>Regulatory / framework mapping</dt><dd>${x(req)}</dd></div>
+        ${linkedPolRow}
       </dl>
       <div class="ctrl-ev">
         <div class="ctrl-ev-box"><span class="ev-label">Suggested evidence</span><ul>${suggested}</ul></div>
@@ -2414,6 +2426,7 @@ const PREVIEW_DOSSIER = {
       suggested_evidence: ['AI governance policy document', 'Board or leadership approval record'],
       evidence_provided: [],
       evidence_count: 0, owner_name: 'A. Patel', due_date: null, mapped_requirements: [],
+      linked_policies: [{ title: 'AI Governance Policy', version: '1.2' }],
     },
     {
       control_number: 5, title: 'Human Oversight Framework', status: 'in_progress', asset_name: 'Credit Decision Assistant', pillar: 'control', control_type: 'system',
@@ -2421,6 +2434,7 @@ const PREVIEW_DOSSIER = {
       suggested_evidence: ['Oversight procedure document', 'Training records', 'Oversight workflow diagram'],
       evidence_provided: [{ file_name: 'oversight-sop-v3.pdf', uploaded_at: '2026-08-20' }],
       evidence_count: 1, owner_name: 'A. Patel', due_date: '2026-09-30', mapped_requirements: [],
+      linked_policies: [{ title: 'Human Oversight Procedure', version: '1.0' }],
     },
     {
       control_number: 4, title: 'AI Asset Risk Classification', status: 'not_started', asset_name: 'Doc Summariser', pillar: 'visibility', control_type: 'system',

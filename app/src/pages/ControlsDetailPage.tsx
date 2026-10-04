@@ -79,6 +79,15 @@ type SupportReq = {
 
 type Member = { id: string; name: string }
 
+type LinkablePolicy = {
+  id: string
+  title: string
+  version?: string | null
+  published_at?: string | null
+  requires_acknowledgment?: boolean | null
+  linked_control_id?: string | null
+}
+
 const CONTROL_DETAIL_RAIL = [
   { id: 'overview', label: 'Overview' },
   { id: 'assignment', label: 'Assignment' },
@@ -138,7 +147,7 @@ export function ControlsDetailPage() {
   const location = useLocation()
   const nav = (location.state || {}) as NavState
   const fromRegistry = nav.from === 'registry'
-  const { session, org, profile } = useAuth()
+  const { session, org, profile, canManageMembers } = useAuth()
   const orgId = org?.id || null
   const userId = session?.user?.id
 
@@ -147,6 +156,9 @@ export function ControlsDetailPage() {
   const [evidence, setEvidence] = useState<Evidence[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [support, setSupport] = useState<SupportReq[]>([])
+  const [linkablePolicies, setLinkablePolicies] = useState<LinkablePolicy[]>([])
+  const [linkedPolicyId, setLinkedPolicyId] = useState('')
+  const [policyLinkStatus, setPolicyLinkStatus] = useState('')
   const [responses, setResponses] = useState<Record<string, string>>({})
   const [assignedTo, setAssignedTo] = useState('')
   const [dueDate, setDueDate] = useState('')
@@ -160,6 +172,7 @@ export function ControlsDetailPage() {
   const [supportMsg, setSupportMsg] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
   const skipAssignSave = useRef(true)
+  const skipPolicyLinkSave = useRef(true)
 
   const ctrl = assign?.governance_controls
   const rawTitle = ctrl?.title || 'Control'
@@ -222,6 +235,25 @@ export function ControlsDetailPage() {
       .eq('control_assignment_id', assignmentId)
       .order('requested_at', { ascending: true })
     setSupport((data as SupportReq[]) || [])
+  }
+
+  async function loadPolicyLink(controlId: string | null | undefined) {
+    if (!orgId || !controlId) {
+      setLinkablePolicies([])
+      setLinkedPolicyId('')
+      return
+    }
+    const { data } = await sb
+      .from('policy_documents')
+      .select('id,title,version,published_at,requires_acknowledgment,linked_control_id')
+      .eq('org_id', orgId)
+      .eq('is_active', true)
+      .order('title')
+    const rows = ((data as LinkablePolicy[]) || []).filter((p) => !!p.published_at)
+    setLinkablePolicies(rows)
+    const current = rows.find((p) => p.linked_control_id === controlId)
+    skipPolicyLinkSave.current = true
+    setLinkedPolicyId(current?.id || '')
   }
 
   async function refresh() {
@@ -315,7 +347,7 @@ export function ControlsDetailPage() {
       setMembers([])
     }
 
-    await Promise.all([loadEvidence(row.id), loadSupport(row.id)])
+    await Promise.all([loadEvidence(row.id), loadSupport(row.id), loadPolicyLink(row.control_id)])
     setLoading(false)
   }
 
@@ -352,6 +384,69 @@ export function ControlsDetailPage() {
     return () => window.clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignedTo, dueDate, priority])
+
+  useEffect(() => {
+    if (!assign || !orgId || !userId || !assign.control_id || !canManageMembers) return
+    if (skipPolicyLinkSave.current) {
+      skipPolicyLinkSave.current = false
+      return
+    }
+    const timer = window.setTimeout(() => {
+      void savePolicyLink(linkedPolicyId)
+    }, 300)
+    return () => window.clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedPolicyId])
+
+  async function savePolicyLink(nextPolicyId: string) {
+    if (!assign?.control_id || !orgId || !userId || !canManageMembers) return
+    const controlId = assign.control_id
+    setPolicyLinkStatus('Saving…')
+    const { error: clearErr } = await sb
+      .from('policy_documents')
+      .update({ linked_control_id: null })
+      .eq('org_id', orgId)
+      .eq('linked_control_id', controlId)
+    if (clearErr) {
+      setPolicyLinkStatus(`Error: ${clearErr.message}`)
+      return
+    }
+    if (nextPolicyId) {
+      const { error: linkErr } = await sb
+        .from('policy_documents')
+        .update({ linked_control_id: controlId })
+        .eq('id', nextPolicyId)
+        .eq('org_id', orgId)
+      if (linkErr) {
+        setPolicyLinkStatus(`Error: ${linkErr.message}`)
+        await loadPolicyLink(controlId)
+        return
+      }
+    }
+    setLinkablePolicies((prev) =>
+      prev.map((p) => ({
+        ...p,
+        linked_control_id: p.id === nextPolicyId ? controlId : p.linked_control_id === controlId ? null : p.linked_control_id,
+      })),
+    )
+    await writeAuditLog({
+      orgId,
+      userId,
+      action: nextPolicyId ? 'control_policy_linked' : 'control_policy_unlinked',
+      entityType: 'governance_control',
+      entityId: controlId,
+      changes: {
+        _actor_name: actorName(profile?.full_name, session?.user?.email),
+        control: ctrl?.title,
+        policy_id: nextPolicyId || null,
+        policy_title: nextPolicyId
+          ? linkablePolicies.find((p) => p.id === nextPolicyId)?.title || null
+          : null,
+      },
+    })
+    setPolicyLinkStatus('Saved')
+    window.setTimeout(() => setPolicyLinkStatus(''), 2000)
+  }
 
   async function saveAssignmentFields() {
     if (!assign || !orgId || !userId || !assign.control_id) return
@@ -704,6 +799,24 @@ export function ControlsDetailPage() {
                 />
               </div>
             </div>
+            <div className={`${styles.fieldControl} ${styles.fieldControlNarrow}`}>
+              <span>Linked policy</span>
+              <SelectMenu
+                aria-label="Linked policy"
+                value={linkedPolicyId}
+                placeholder="None"
+                disabled={!canManageMembers}
+                onChange={setLinkedPolicyId}
+                options={[
+                  { value: '', label: 'None' },
+                  ...linkablePolicies.map((p) => ({
+                    value: p.id,
+                    label: p.version ? `${p.title} (v${p.version})` : p.title,
+                  })),
+                ]}
+              />
+            </div>
+            <p className={styles.saveNote}>Optional. Published policies only; not evidence.</p>
             {assignInfo ? <p className={styles.saveNote}>{assignInfo}</p> : null}
             {assignStatus ? (
               <p
@@ -714,6 +827,17 @@ export function ControlsDetailPage() {
                 }
               >
                 {assignStatus}
+              </p>
+            ) : null}
+            {policyLinkStatus ? (
+              <p
+                className={
+                  policyLinkStatus.startsWith('Error')
+                    ? `${styles.saveNote} ${styles.saveNoteErr}`
+                    : `${styles.saveNote} ${styles.saveNoteOk}`
+                }
+              >
+                {policyLinkStatus}
               </p>
             ) : null}
           </div>
