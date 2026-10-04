@@ -1,11 +1,12 @@
 /**
- * RegAnchor outbound mail — Resend from info@reganchor.com.
+ * RegAnchor outbound mail — Resend on verified reganchor.com.
  *
  * verify_jwt is OFF at the gateway because public contact / demo / enterprise
  * and diagnostic forms have no user JWT (same pattern as create-checkout-session).
  * Sending is locked down here instead:
- *   - From is always RegAnchor <info@reganchor.com>
- *   - kind is an allowlist; client cannot set From
+ *   - From is server-chosen per kind; client cannot set From
+ *   - ops / ack / portal / admin-reply: RegAnchor <info@reganchor.com>
+ *   - org-invite: RegAnchor <no-reply@reganchor.com> (reply-To info@)
  *   - ops kinds (contact, demo, enterprise, diagnostic-lead): To always info@;
  *     reply-To is the form email; any client `to` is ignored
  *   - diagnostic-ack: To comes from diagnostic_results.respondent_email for the
@@ -13,6 +14,8 @@
  *   - portal-alert: requires a real user JWT; To = that user's email
  *   - admin-reply: requires a real user JWT whose profiles.role is mla_admin;
  *     To may be the client to_email (admin → customer path)
+ *   - org-invite: requires JWT owner/admin for the invite's org; To = invite email
+ *     from org_invites (client to ignored); invite_url host allowlisted
  *   - HTML is generated server-side from escaped values; client HTML is ignored
  *
  * DEPLOY (after merge — Pages does not ship Edge Functions):
@@ -21,7 +24,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const FROM = 'RegAnchor <info@reganchor.com>'
+const FROM_OPS = 'RegAnchor <info@reganchor.com>'
+const FROM_NOREPLY = 'RegAnchor <no-reply@reganchor.com>'
 const OPS = 'info@reganchor.com'
 const BUY_REPORT_BASE = 'https://reganchor.com/buy-report.html'
 const UUID_RE =
@@ -42,6 +46,7 @@ type Kind =
   | 'enterprise'
   | 'portal-alert'
   | 'admin-reply'
+  | 'org-invite'
 
 const KINDS: Kind[] = [
   'contact',
@@ -51,7 +56,15 @@ const KINDS: Kind[] = [
   'enterprise',
   'portal-alert',
   'admin-reply',
+  'org-invite',
 ]
+
+const ROLE_LABELS: Record<string, string> = {
+  owner: 'Workspace admin',
+  admin: 'Admin',
+  editor: 'Editor',
+  viewer: 'Viewer',
+}
 
 const OPS_KINDS: Kind[] = ['contact', 'demo', 'enterprise', 'diagnostic-lead']
 
@@ -426,6 +439,67 @@ function buildAdminReply(to: string, body: Record<string, unknown>) {
   }
 }
 
+function inviteUrlOk(raw: string): boolean {
+  try {
+    const u = new URL(raw)
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false
+    const host = u.hostname.toLowerCase()
+    const allowed =
+      host === 'app.reganchor.com' ||
+      host === 'reganchor.com' ||
+      host === 'www.reganchor.com' ||
+      host === 'localhost' ||
+      host.endsWith('.workers.dev')
+    if (!allowed) return false
+    if (!u.pathname.includes('/login')) return false
+    const token = u.searchParams.get('invite') || ''
+    return token.length >= 16 && token.length <= 200
+  } catch {
+    return false
+  }
+}
+
+function buildOrgInvite(opts: {
+  to: string
+  orgName: string
+  role: string
+  inviteUrl: string
+  inviterName: string
+}) {
+  const { to, orgName, role, inviteUrl, inviterName } = opts
+  const roleLabel = ROLE_LABELS[role] || role
+  const who = inviterName || 'A teammate'
+  const heading = `Join ${orgName} on RegAnchor`
+  const text = [
+    `Hello,`,
+    '',
+    `${who} invited you to join ${orgName} on RegAnchor as ${roleLabel}.`,
+    '',
+    `Sign in with ${to} to accept:`,
+    inviteUrl,
+    '',
+    'This link expires in 14 days. If you were not expecting this, you can ignore it.',
+    '',
+    'RegAnchor',
+  ].join('\n')
+  const inner = [
+    h1(heading),
+    para('Hello,'),
+    para(`${who} invited you to join ${orgName} on RegAnchor as ${roleLabel}.`),
+    para(`Sign in with ${to} to accept.`),
+    cta(inviteUrl, 'Accept invite'),
+    para('This link expires in 14 days. If you were not expecting this, you can ignore it.'),
+  ].join('')
+  return {
+    from: FROM_NOREPLY,
+    to,
+    replyTo: OPS,
+    subject: `You're invited to ${orgName} on RegAnchor`,
+    text,
+    html: shell(heading, inner),
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -438,7 +512,14 @@ serve(async (req) => {
     const kind = clip(body.kind, 40) as Kind
     if (!KINDS.includes(kind)) return json({ error: 'Unknown kind' }, 400)
 
-    let mail: { to: string; replyTo: string; subject: string; text: string; html: string }
+    let mail: {
+      from?: string
+      to: string
+      replyTo: string
+      subject: string
+      text: string
+      html: string
+    }
 
     if (OPS_KINDS.includes(kind)) {
       mail = buildOps(kind, body)
@@ -492,6 +573,65 @@ serve(async (req) => {
       const to = clip(body.to_email || body.email, 254).toLowerCase()
       if (!emailOk(to)) return json({ error: 'Valid email is required' }, 400)
       mail = buildAdminReply(to, body)
+    } else if (kind === 'org-invite') {
+      const auth = await requireUser(req)
+      if ('error' in auth && auth.error) return auth.error
+      const inviteId = clip(body.invite_id, 36)
+      if (!UUID_RE.test(inviteId)) return json({ error: 'Valid invite_id is required' }, 400)
+      const inviteUrl = clip(body.invite_url, 2000)
+      if (!inviteUrlOk(inviteUrl)) return json({ error: 'Valid invite_url is required' }, 400)
+
+      const { data: invite, error: inviteErr } = await auth.supabase!
+        .from('org_invites')
+        .select('id, org_id, email, role, expires_at, accepted_at, revoked_at, invited_by')
+        .eq('id', inviteId)
+        .maybeSingle()
+      if (inviteErr) {
+        console.error('[send-mail] org-invite lookup', inviteErr.message)
+        return json({ error: 'Send failed' }, 500)
+      }
+      if (!invite) return json({ error: 'Invite not found' }, 404)
+      if (invite.accepted_at || invite.revoked_at) {
+        return json({ error: 'Invite is no longer active' }, 400)
+      }
+      if (invite.expires_at && new Date(invite.expires_at).getTime() <= Date.now()) {
+        return json({ error: 'Invite has expired' }, 400)
+      }
+
+      const { data: membership } = await auth.supabase!
+        .from('org_members')
+        .select('role')
+        .eq('org_id', invite.org_id)
+        .eq('user_id', auth.user!.id)
+        .maybeSingle()
+      if (!membership || !['owner', 'admin'].includes(membership.role)) {
+        return json({ error: 'Admin access required' }, 403)
+      }
+
+      const to = clip(invite.email, 254).toLowerCase()
+      if (!emailOk(to)) return json({ error: 'Valid email is required' }, 400)
+
+      const [{ data: org }, { data: inviter }] = await Promise.all([
+        auth.supabase!.from('organisations').select('name').eq('id', invite.org_id).maybeSingle(),
+        invite.invited_by
+          ? auth.supabase!
+              .from('profiles')
+              .select('full_name, email')
+              .eq('id', invite.invited_by)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
+      ])
+      const orgName = clip(org?.name, 120) || 'your organisation'
+      const inviterName =
+        clip(inviter?.full_name, 120) || clip(inviter?.email, 120) || clip(auth.user!.email, 120)
+
+      mail = buildOrgInvite({
+        to,
+        orgName,
+        role: clip(invite.role, 40),
+        inviteUrl,
+        inviterName,
+      })
     } else {
       return json({ error: 'Unknown kind' }, 400)
     }
@@ -503,7 +643,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: FROM,
+        from: mail.from || FROM_OPS,
         to: [mail.to],
         subject: mail.subject,
         text: mail.text,

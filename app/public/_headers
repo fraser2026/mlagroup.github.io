@@ -1,0 +1,7 @@
+# SPA shell must not stick behind CDN after Worker deploys.
+# Hashed /assets/* keep default long-cache from the platform.
+/
+  Cache-Control: no-store
+
+/index.html
+  Cache-Control: no-store
