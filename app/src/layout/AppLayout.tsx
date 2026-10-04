@@ -3,7 +3,7 @@ import { ShellChromeProvider } from '../ui/shellChrome'
 import { PageTransition } from '../ui/PageTransition'
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette'
 import { useAuth } from '../auth/AuthProvider'
-import { accountInitials, sidebarAccountLabel } from '../lib/accountLabel'
+import { clearAccountChipCache, resolveAccountChip } from '../lib/accountLabel'
 import {
   Activity,
   Bell,
@@ -72,25 +72,33 @@ const groups: NavGroup[] = [
 ]
 
 export function AppLayout() {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, orgReady, signOut } = useAuth()
   const metaName =
     typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null
   const fullName = profile?.full_name || metaName
   const email = profile?.email || user?.email || null
-  const label = sidebarAccountLabel(fullName, email)
-  const initials = accountInitials(fullName, email)
+  // Session email is available before profiles.full_name — never paint the
+  // email local-part (e.g. "admin") until org/profile hydrate finishes.
+  const chip = resolveAccountChip({
+    userId: user?.id,
+    fullName,
+    email,
+    profileReady: orgReady,
+  })
   const { open, setOpen, openPalette } = useCommandPalette()
 
   return (
     <ShellChromeProvider>
       <AppShell
         title="RegAnchor"
-        userLabel={label}
-        userInitials={initials}
+        userLabel={chip.label || undefined}
+        userInitials={chip.initials || undefined}
+        userPending={chip.pending}
         userEmail={email ?? undefined}
         topItems={topItems}
         groups={groups}
         onSignOut={async () => {
+          clearAccountChipCache()
           await signOut()
           window.location.href = '/login'
         }}

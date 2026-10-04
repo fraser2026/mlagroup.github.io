@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -51,9 +52,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [orgCtx, setOrgCtx] = useState<OrgContext>({ profile: null, org: null, role: null })
   const [orgReady, setOrgReady] = useState(false)
+  const orgCtxRef = useRef(orgCtx)
+  orgCtxRef.current = orgCtx
 
   async function hydrateOrg(user: User) {
-    setOrgReady(false)
+    // Only mark not-ready on the first load (no profile yet). Re-hydrates keep
+    // the prior profile painted so the sidebar never flashes email fallback.
+    if (!orgCtxRef.current.profile) setOrgReady(false)
     try {
       const ctx = await loadOrgContext(user.id, user.email)
       setOrgCtx(ctx)
