@@ -63,7 +63,7 @@ const groups: NavGroup[] = [
   {
     id: 'workspace',
     label: 'Workspace',
-    defaultOpen: false,
+    defaultOpen: true,
     items: [
       { to: '/my-work', label: 'My work', icon: ListTodo },
       { to: '/setup', label: 'Getting started', icon: ListChecks },

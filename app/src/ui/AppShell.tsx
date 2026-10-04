@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { startTransition, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import {
@@ -92,7 +92,12 @@ export function NavSection({
   items: NavItem[]
   defaultOpen?: boolean
 }) {
-  const [open, setOpen] = useState(defaultOpen)
+  const { pathname } = useLocation()
+  const hasActive = items.some((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))
+  const [open, setOpen] = useState(defaultOpen || hasActive)
+  useEffect(() => {
+    if (hasActive) setOpen(true)
+  }, [hasActive])
   return (
     <div className={styles.section}>
       <button
