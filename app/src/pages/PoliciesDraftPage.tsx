@@ -29,6 +29,7 @@ import {
   PageHeader,
   RaNum,
   SelectMenu,
+  StatusLabel,
   ToastStack,
 } from '../ui'
 import type { ToastItem } from '../ui'
@@ -1938,7 +1939,12 @@ export function PoliciesDraftPage() {
             */}
             <div className={styles.chatHeadBand}>
               <div className={styles.chatBrand}>
-                <div className={styles.chatHeadTitle}>MLA</div>
+                <div className={styles.chatHeadTitleRow}>
+                  <div className={styles.chatHeadTitle}>MLA</div>
+                  <StatusLabel badge tone="info">
+                    Beta
+                  </StatusLabel>
+                </div>
                 <UsageLine credits={credits} balanceTone={balanceTone} />
               </div>
               <div className={styles.tierWrap}>

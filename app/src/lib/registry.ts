@@ -412,6 +412,70 @@ export function labelCtrlStatus(status?: string | null) {
   return CTRL_STATUS_LABELS[status] || status
 }
 
+/** Calendar day YYYY-MM-DD in local time (due_date is date-only). */
+export function localYmd(d = new Date()) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/** Normalize stored due_date / ISO to YYYY-MM-DD, or null. */
+export function dueDateYmd(dueDate?: string | null) {
+  if (!dueDate) return null
+  const m = /^(\d{4}-\d{2}-\d{2})/.exec(dueDate.trim())
+  return m ? m[1] : null
+}
+
+export type DueUrgency = 'overdue' | 'upcoming' | null
+
+/**
+ * Display-only renewal urgency from due_date.
+ * Does not write status=`overdue` — open work past due / within upcomingDays.
+ */
+export function dueUrgency(
+  dueDate?: string | null,
+  status?: string | null,
+  upcomingDays = 14,
+): DueUrgency {
+  if (status === 'implemented' || status === 'verified') return null
+  const ymd = dueDateYmd(dueDate)
+  if (!ymd) return null
+  const today = localYmd()
+  if (ymd < today) return 'overdue'
+  const limit = new Date()
+  limit.setHours(0, 0, 0, 0)
+  limit.setDate(limit.getDate() + upcomingDays)
+  if (ymd <= localYmd(limit)) return 'upcoming'
+  return null
+}
+
+/** Quiet list/detail label: Overdue / Due soon, else work status. */
+export function labelCtrlRenewalOrStatus(status?: string | null, dueDate?: string | null) {
+  const u = dueUrgency(dueDate, status)
+  if (u === 'overdue') return 'Overdue'
+  if (u === 'upcoming') return 'Due soon'
+  return labelCtrlStatus(status)
+}
+
+export function toneForCtrlRenewalOrStatus(status?: string | null, dueDate?: string | null) {
+  const u = dueUrgency(dueDate, status)
+  if (u === 'overdue') return 'risk' as const
+  if (u === 'upcoming') return 'warn' as const
+  if (status === 'implemented' || status === 'verified') return 'ok' as const
+  if (status === 'overdue') return 'risk' as const
+  if (status === 'in_progress') return 'warn' as const
+  return 'neutral' as const
+}
+
+export function formatDueDateLabel(dueDate?: string | null) {
+  const ymd = dueDateYmd(dueDate)
+  if (!ymd) return null
+  const [y, m, d] = ymd.split('-').map(Number)
+  if (!y || !m || !d) return null
+  return `Due ${new Date(y, m - 1, d).toLocaleDateString()}`
+}
+
 /** Catalogue code, e.g. C5. */
 export function controlCode(controlNumber?: string | number | null) {
   if (controlNumber == null || controlNumber === '') return null

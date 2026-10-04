@@ -19,7 +19,11 @@ import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { personDisplayName, personPickerLabel } from '../lib/accountLabel'
 import { actorName, writeAuditLog } from '../lib/audit'
-import { controlCode, labelCtrlStatus } from '../lib/registry'
+import {
+  controlCode,
+  labelCtrlRenewalOrStatus,
+  toneForCtrlRenewalOrStatus,
+} from '../lib/registry'
 import { pct } from '../lib/workspace'
 import { sb } from '../lib/supabase'
 import styles from './ControlsDetailPage.module.css'
@@ -91,13 +95,6 @@ const CONTROL_DETAIL_RAIL = [
 function asOne<T>(value: T | T[] | null | undefined): T | null {
   if (!value) return null
   return Array.isArray(value) ? value[0] || null : value
-}
-
-function toneFor(status?: string | null) {
-  if (status === 'implemented' || status === 'verified') return 'ok' as const
-  if (status === 'overdue') return 'risk' as const
-  if (status === 'in_progress') return 'warn' as const
-  return 'neutral' as const
 }
 
 function isDone(status?: string | null) {
@@ -670,8 +667,8 @@ export function ControlsDetailPage() {
         title={title}
         description={
           <div className={styles.pageMeta}>
-            <StatusLabel badge tone={toneFor(assign.status)}>
-              {labelCtrlStatus(assign.status)}
+            <StatusLabel badge tone={toneForCtrlRenewalOrStatus(assign.status, dueDate || assign.due_date)}>
+              {labelCtrlRenewalOrStatus(assign.status, dueDate || assign.due_date)}
             </StatusLabel>
             <span className={styles.pageMetaAsset}>{assetLabel}</span>
           </div>
