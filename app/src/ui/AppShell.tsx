@@ -39,8 +39,10 @@ export type NavGroup = {
 type Props = {
   title?: string
   userLabel?: string
-  /** Avatar letters; when omitted, derived from userLabel. */
+  /** Avatar letters; when omitted, derived from userLabel (never while pending). */
   userInitials?: string
+  /** Profile/name still loading — hold empty mark, do not derive from email. */
+  userPending?: boolean
   /** Full email for the account menu header (sidebar shows userLabel). */
   userEmail?: string
   groups: NavGroup[]
@@ -121,6 +123,7 @@ export function AppShell({
   title = 'RegAnchor',
   userLabel,
   userInitials,
+  userPending = false,
   userEmail,
   groups,
   topItems = [],
@@ -137,8 +140,12 @@ export function AppShell({
   const navigate = useNavigate()
   const { resolved } = useTheme()
   const wordmarkSrc = resolved === 'dark' ? '/wordmark-light.svg' : '/wordmark.svg'
-  const initials = (userInitials || userLabel || 'U').slice(0, 2).toUpperCase()
+  // While name is loading, keep the mark empty rather than email-derived letters.
+  const initials = userPending
+    ? ''
+    : (userInitials || (userLabel ? userLabel.slice(0, 2) : '') || 'U').slice(0, 2).toUpperCase()
   const accountDetail = userEmail || userLabel || 'Signed in'
+  const sidebarLabel = userPending ? '' : userLabel || 'Signed in'
 
   async function handleSignOut() {
     if (!onSignOut) return
@@ -232,7 +239,7 @@ export function AppShell({
             <div className={styles.userAvatar} aria-hidden>
               {initials}
             </div>
-            <div className={styles.userLabel}>{userLabel || 'Signed in'}</div>
+            <div className={styles.userLabel}>{sidebarLabel}</div>
           </div>
           <button
             ref={accountBtnRef}
