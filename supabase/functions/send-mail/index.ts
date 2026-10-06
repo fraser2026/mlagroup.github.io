@@ -151,9 +151,12 @@ function nl2br(s: string): string {
   return esc(s).replace(/\r\n|\n|\r/g, '<br>')
 }
 
-function shell(title: string, inner: string): string {
+function shell(title: string, inner: string, opts: { preheader?: string } = {}): string {
+  const pre = opts.preheader
+    ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(opts.preheader)}</div>`
+    : ''
   return `<!DOCTYPE html>
-<html>
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -161,13 +164,15 @@ function shell(title: string, inner: string): string {
 <title>${esc(title)}</title>
 </head>
 <body style="margin-top:0;margin-right:0;margin-bottom:0;margin-left:0;background-color:#F6F9FC;" bgcolor="#F6F9FC">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F6F9FC" style="background-color:#F6F9FC;">
+${pre}
+<div lang="en" dir="ltr">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F6F9FC" style="background-color:#F6F9FC;">
   <tr>
     <td align="center" style="padding-top:32px;padding-bottom:32px;padding-left:16px;padding-right:16px;">
       <!--[if mso]>
-      <table width="600" cellpadding="0" cellspacing="0" border="0"><tr><td>
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td>
       <![endif]-->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#FFFFFF;" bgcolor="#FFFFFF">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#FFFFFF;" bgcolor="#FFFFFF">
         <tr>
           <td bgcolor="#533AFD" style="background-color:#533AFD;height:4px;font-size:0;line-height:0;">&nbsp;</td>
         </tr>
@@ -183,8 +188,9 @@ function shell(title: string, inner: string): string {
         </tr>
         <tr>
           <td style="padding-top:16px;padding-right:32px;padding-bottom:24px;padding-left:32px;border-top-width:1px;border-top-style:solid;border-top-color:#E4E7EC;">
-            <p style="margin-top:0;margin-bottom:4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B7280;">MLA Group Ltd · Companies House 16117562</p>
-            <p style="margin-top:0;margin-bottom:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B7280;"><a href="mailto:info@reganchor.com" style="color:#533AFD;text-decoration:none;">info@reganchor.com</a></p>
+            <p style="margin-top:0;margin-bottom:4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B7280;">MLA Group Ltd</p>
+            <p style="margin-top:0;margin-bottom:4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B7280;"><a href="mailto:info@reganchor.com" style="color:#533AFD;text-decoration:none;">info@reganchor.com</a></p>
+            <p style="margin-top:0;margin-bottom:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B7280;">&copy; 2026 RegAnchor</p>
           </td>
         </tr>
       </table>
@@ -192,8 +198,9 @@ function shell(title: string, inner: string): string {
     </td>
   </tr>
 </table>
+</div>
 </body>
-</HTML>`
+</html>`
 }
 
 function fieldTable(rows: Row[]): string {
@@ -403,14 +410,20 @@ function buildAck(opts: {
     para('Thank you for completing the RegAnchor AI Risk Diagnostic.'),
     quietContext(company, band),
     para('The full report is £295. It covers domain findings, regulatory mapping, and a board-ready PDF.'),
-    cta(href, 'Get Full Report'),
+    cta(href, 'Access Full Exposure Report'),
   ].join('')
+  const subject = company
+    ? `AI Risk Diagnostic Complete: ${company}`
+    : 'AI Risk Diagnostic Complete'
+  const preheader = company
+    ? `Diagnostic summary complete for ${company}. Access the full Exposure Report.`
+    : 'Diagnostic summary complete. Access the full Exposure Report.'
   return {
     to,
     replyTo: OPS,
-    subject: `Your RegAnchor diagnostic${band ? ': ' + band : ''}`,
+    subject,
     text: parts.join('\n'),
-    html: shell('Your RegAnchor diagnostic', inner),
+    html: shell('Your RegAnchor diagnostic', inner, { preheader }),
   }
 }
 
