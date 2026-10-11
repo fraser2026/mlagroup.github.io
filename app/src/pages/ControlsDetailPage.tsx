@@ -97,7 +97,16 @@ type Evidence = {
   file_name: string
   file_path: string
   uploaded_at?: string | null
+  review_status?: 'submitted' | 'accepted' | 'changes_requested' | null
+  review_note?: string | null
+  reviewed_at?: string | null
 }
+
+const REVIEW_LABEL = {
+  submitted: { tone: 'neutral', label: 'In review' },
+  accepted: { tone: 'ok', label: 'Accepted' },
+  changes_requested: { tone: 'warn', label: 'Changes requested' },
+} as const
 
 type SupportReq = {
   id: string
@@ -234,7 +243,7 @@ export function ControlsDetailPage() {
   async function loadEvidence(assignmentId: string) {
     const { data } = await sb
       .from('evidence_uploads')
-      .select('id,file_name,file_path,uploaded_at')
+      .select('id,file_name,file_path,uploaded_at,review_status,review_note,reviewed_at')
       .eq('control_assignment_id', assignmentId)
       .order('uploaded_at', { ascending: false })
     setEvidence((data as Evidence[]) || [])
@@ -1077,23 +1086,36 @@ export function ControlsDetailPage() {
               </p>
             ) : null}
 
+            {evidence.some((e) => e.review_status === 'changes_requested') ? (
+              <Notice tone="warn" title="RegAnchor requested changes to your evidence">
+                Read the note on the file below, then upload a revised version.
+              </Notice>
+            ) : null}
+
             {evidence.length === 0 ? (
               <p className={styles.empty}>No evidence uploaded yet.</p>
             ) : (
               <div className={styles.evidenceList}>
-                {evidence.map((e) => (
+                {evidence.map((e) => {
+                  const review = REVIEW_LABEL[e.review_status || 'submitted']
+                  return (
                   <div key={e.id} className={styles.evidenceRow}>
-                    <div>
+                    <div className={styles.evidenceMain}>
                       <div className={styles.evidenceName}>{e.file_name}</div>
                       <div className={styles.evidenceDate}>
                         {e.uploaded_at ? new Date(e.uploaded_at).toLocaleString() : ''}
+                        <span className={styles.evidenceReview}>
+                          <StatusLabel tone={review.tone}>{review.label}</StatusLabel>
+                        </span>
                       </div>
+                      {e.review_note ? <p className={styles.evidenceNote}>{e.review_note}</p> : null}
                     </div>
                     <button type="button" className={styles.linkBtn} onClick={() => void viewEvidence(e.file_path)}>
                       View
                     </button>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )}
 

@@ -1,7 +1,8 @@
 import { useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
 import { CircleHelp, Paperclip, X } from 'lucide-react'
-import { Button, Drawer, Icon, Notice } from '../ui'
+import { Button, Drawer, Icon, Notice, SelectMenu } from '../ui'
 import { DelayTip } from '../ui/DelayTip'
 import { useShellChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
@@ -10,7 +11,7 @@ import { sb } from '../lib/supabase'
 import styles from './HelpRequest.module.css'
 
 const TOPICS = [
-  'Using RegAnchor',
+  'General enquiry',
   'AI assets and registry',
   'Controls and evidence',
   'Assessments and reports',
@@ -37,7 +38,8 @@ export function HelpButton() {
           <span className={styles.btnLabel}>Help</span>
         </Button>
       </DelayTip>
-      <HelpRequestDrawer open={open} onClose={() => setOpen(false)} />
+      {/* Portal: the top bar creates a containing block that clips fixed overlays on mobile */}
+      {createPortal(<HelpRequestDrawer open={open} onClose={() => setOpen(false)} />, document.body)}
     </>
   )
 }
@@ -46,7 +48,7 @@ function HelpRequestDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   const { org, user, session, profile } = useAuth()
   const { breadcrumbs, pageTitle } = useShellChrome()
   const { pathname, search } = useLocation()
-  const ids = { topic: useId(), subject: useId(), message: useId() }
+  const ids = { subject: useId(), message: useId() }
   const fileRef = useRef<HTMLInputElement | null>(null)
 
   const [topic, setTopic] = useState(TOPICS[0])
@@ -198,22 +200,15 @@ function HelpRequestDrawer({ open, onClose }: { open: boolean; onClose: () => vo
             <span className={styles.contextValue}>{pageLabel}</span>
           </div>
 
-          <label className={styles.field} htmlFor={ids.topic}>
+          <div className={styles.field}>
             Topic
-            <select
-              id={ids.topic}
-              className={styles.input}
+            <SelectMenu
               value={topic}
-              onChange={(e) => setTopic(e.target.value)}
+              options={TOPICS.map((t) => ({ value: t, label: t }))}
+              onChange={setTopic}
               disabled={busy}
-            >
-              {TOPICS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </label>
+            />
+          </div>
 
           <label className={styles.field} htmlFor={ids.subject}>
             Subject

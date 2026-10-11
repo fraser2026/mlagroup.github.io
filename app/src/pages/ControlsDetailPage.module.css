@@ -385,6 +385,27 @@
   font-weight: var(--ra-fw-medium);
   letter-spacing: -0.01em;
   color: var(--ra-text-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.evidenceMain {
+  min-width: 0;
+  flex: 1;
+}
+
+.evidenceReview {
+  font-size: 12px;
+}
+
+.evidenceNote {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ra-text-2);
+  white-space: pre-wrap;
 }
 
 .upload {

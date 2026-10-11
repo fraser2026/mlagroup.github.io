@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   BrandLoader,
   Button,
@@ -45,6 +46,7 @@ const TYPE_LABELS: Record<string, string> = {
   control_regression: 'Regression',
   compliance_rule_fired: 'Automation',
   support_response: 'Support',
+  evidence_review: 'Evidence review',
 }
 
 function sevTone(sev?: string | null): StatusTone {
@@ -191,6 +193,7 @@ async function runAlertChecks(orgId: string, mail?: AlertMailCtx | null) {
 }
 
 export function AlertsPage() {
+  const navigate = useNavigate()
   const { org, user, session, profile } = useAuth()
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
@@ -340,7 +343,16 @@ export function AlertsPage() {
                   <div className={styles.title}>{a.title}</div>
                   <div className={styles.body}>{a.body || ''}</div>
                   <div className={styles.actions}>
-                    <Button size="sm" onClick={() => void resolveAlert(a.id)}>
+                    {a.ref_type === 'control_assignment' && a.ref_id ? (
+                      <Button size="sm" onClick={() => navigate(`/controls/${a.ref_id}`)}>
+                        View control
+                      </Button>
+                    ) : null}
+                    <Button
+                      size="sm"
+                      variant={a.ref_type === 'control_assignment' && a.ref_id ? 'ghost' : 'primary'}
+                      onClick={() => void resolveAlert(a.id)}
+                    >
                       Mark resolved
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => void dismissAlert(a.id)}>

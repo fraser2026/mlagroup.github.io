@@ -174,24 +174,24 @@ export function EvidenceReviewPage() {
         })
         .eq('id', current.id)
       if (upErr) throw upErr
-      if (status === 'changes_requested' && uploader?.email) {
-        const { error: mailErr } = await sb.functions.invoke('send-mail', {
-          body: {
-            kind: 'admin-reply',
-            to_email: uploader.email,
-            to_name: uploader.name,
-            subject: `Evidence update needed: ${current.file_name}`,
-            message: `We reviewed the evidence you uploaded${controlLabel ? ` for ${controlLabel}` : ''} and need a change before we can accept it.\n\n${text}\n\nYou can upload a revised file from the control in RegAnchor.`,
-          },
-        })
-        if (mailErr) throw new Error(`Review saved, but the email failed: ${mailErr.message}`)
-      }
+      const accepted = status === 'accepted'
+      const { error: alertErr } = await sb.from('governance_alerts').insert({
+        org_id: current.org_id,
+        system_id: current.system_id,
+        alert_type: 'evidence_review',
+        severity: accepted ? 'info' : 'warning',
+        title: accepted
+          ? `Evidence accepted: ${current.file_name}`
+          : `Changes requested: ${current.file_name}`,
+        body: [controlLabel, text].filter(Boolean).join('. ') || null,
+        ref_id: current.control_assignment_id,
+        ref_type: 'control_assignment',
+      })
+      if (alertErr) throw new Error(`Review saved, but the client notification failed: ${alertErr.message}`)
       setNotice(
-        status === 'accepted'
-          ? 'Evidence accepted.'
-          : uploader?.email
-            ? `Changes requested. ${uploader.email} has been emailed.`
-            : 'Changes requested.',
+        accepted
+          ? 'Evidence accepted. The client has been notified in RegAnchor.'
+          : 'Changes requested. The client has been notified in RegAnchor.',
       )
       setOpenId(null)
       await load()
@@ -206,7 +206,7 @@ export function EvidenceReviewPage() {
     <PageFrame>
       <PageHeader
         title="Evidence review"
-        description="Files clients upload against controls. Accept them, or request a change with a note emailed to the uploader."
+        description="Files clients upload against controls. Accept them, or request a change with a note. The client sees the outcome on the control and in their notifications."
       />
       {error ? <Notice tone="risk">{error}</Notice> : null}
       {notice && !error ? <Notice tone="quiet">{notice}</Notice> : null}
@@ -346,7 +346,7 @@ export function EvidenceReviewPage() {
                 className={styles.textarea}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Required when requesting changes. Emailed to the uploader."
+                placeholder="Required when requesting changes. Shown to the client on the control."
               />
             </section>
           </div>
