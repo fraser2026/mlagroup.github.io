@@ -50,6 +50,8 @@ type Props = {
   bottomItems?: NavItem[]
   onSignOut?: () => void | Promise<void>
   onOpenCommand?: () => void
+  /** Extra controls in the top bar (e.g. Help). */
+  chromeActions?: ReactNode
   children: ReactNode
 }
 
@@ -135,6 +137,7 @@ export function AppShell({
   bottomItems = [],
   onSignOut,
   onOpenCommand,
+  chromeActions,
   children,
 }: Props) {
   const [signingOut, setSigningOut] = useState(false)
@@ -260,7 +263,7 @@ export function AppShell({
         </div>
       </aside>
       <div className={styles.main}>
-        <TopChrome onOpenCommand={onOpenCommand} />
+        <TopChrome onOpenCommand={onOpenCommand} actions={chromeActions} />
         <div className={styles.content}>{children}</div>
       </div>
 

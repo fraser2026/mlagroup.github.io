@@ -157,6 +157,55 @@
   gap: 10px;
 }
 
+.recentList {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  min-height: 120px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  display: flex;
+  flex-direction: column;
+}
+
+.recentRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  text-decoration: none;
+  transition: background var(--ra-motion-fast) var(--ra-ease-out);
+}
+
+.recentRow:hover,
+.recentRow:focus-visible {
+  outline: none;
+  background: var(--ra-hover);
+}
+
+.recentLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
+.recentWhen {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: var(--ra-fw-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--ra-text-3);
+}
+
+.recentRow:hover .recentLabel {
+  color: var(--ra-blurple-fg);
+}
+
 .activityEmpty {
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-control);

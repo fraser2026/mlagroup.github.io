@@ -2,6 +2,8 @@ import { AppShell, type NavGroup, type NavItem } from '../ui/AppShell'
 import { ShellChromeProvider } from '../ui/shellChrome'
 import { PageTransition } from '../ui/PageTransition'
 import { CommandPalette, useCommandPalette } from '../ui/CommandPalette'
+import { RECENT_PAGES_KEY } from '../ui/ContextRail'
+import { HelpButton } from './HelpRequest'
 import { useAuth } from '../auth/AuthProvider'
 import { clearAccountChipCache, resolveAccountChip } from '../lib/accountLabel'
 import {
@@ -13,7 +15,6 @@ import {
   CreditCard,
   FileText,
   KeyRound,
-  ListChecks,
   ListTodo,
   Plug,
   ScrollText,
@@ -66,7 +67,6 @@ const groups: NavGroup[] = [
     defaultOpen: true,
     items: [
       { to: '/my-work', label: 'My work', icon: ListTodo },
-      { to: '/setup', label: 'Getting started', icon: ListChecks },
     ],
   },
 ]
@@ -102,10 +102,16 @@ export function AppLayout() {
         groups={groups}
         onSignOut={async () => {
           clearAccountChipCache()
+          try {
+            localStorage.removeItem(RECENT_PAGES_KEY)
+          } catch {
+            /* storage disabled */
+          }
           await signOut()
           window.location.href = '/login'
         }}
         onOpenCommand={openPalette}
+        chromeActions={<HelpButton />}
       >
         <PageTransition />
       </AppShell>

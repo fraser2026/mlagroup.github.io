@@ -54,8 +54,10 @@ type Kind =
   | 'admin-reply'
   | 'org-invite'
   | 'control-assignment'
+  | 'help-request'
 
 const KINDS: Kind[] = [
+  'help-request',
   'contact',
   'diagnostic-ack',
   'diagnostic-lead',
@@ -652,6 +654,41 @@ serve(async (req) => {
       const band = clip(body.risk_band, 40) || clip(row.risk_band, 40)
 
       mail = buildAck({ to, name, company, band, resultId: row.id })
+    } else if (kind === 'help-request') {
+      const auth = await requireUser(req)
+      if ('error' in auth && auth.error) return auth.error
+      const requestId = clip(body.request_id, 36)
+      if (!UUID_RE.test(requestId)) return json({ error: 'Valid request_id is required' }, 400)
+      const { data: hr } = await auth.supabase!
+        .from('support_requests')
+        .select('id,org_id,requested_by,subject,category,client_message,page_title,page_path,attachment_name')
+        .eq('id', requestId)
+        .maybeSingle()
+      if (!hr || hr.requested_by !== auth.user!.id) return json({ error: 'Request not found' }, 404)
+      const [{ data: org }, { data: who }] = await Promise.all([
+        auth.supabase!.from('organisations').select('name').eq('id', hr.org_id).maybeSingle(),
+        auth.supabase!.from('profiles').select('full_name,email').eq('id', auth.user!.id).maybeSingle(),
+      ])
+      const requester = clip(who?.full_name, 120) || clip(who?.email || auth.user!.email, 254)
+      const replyTo = clip(who?.email || auth.user!.email, 254).toLowerCase()
+      const rows: Row[] = [
+        { label: 'Organisation', value: clip(org?.name, 200) },
+        { label: 'From', value: requester },
+        { label: 'Email', value: replyTo },
+        { label: 'Topic', value: clip(hr.category, 60) },
+        { label: 'Page', value: [clip(hr.page_title, 120), clip(hr.page_path, 300)].filter(Boolean).join(' · ') },
+        { label: 'Subject', value: clip(hr.subject, 200) },
+        { label: 'Message', value: clip(hr.client_message, 4000) },
+        { label: 'Attachment', value: clip(hr.attachment_name, 200) },
+        { label: 'Open in Control Centre', value: 'https://admin.reganchor.com/requests' },
+      ].filter((r) => r.value)
+      const built = opsMail('New client help request', rows)
+      mail = {
+        to: OPS,
+        replyTo: emailOk(replyTo) ? replyTo : OPS,
+        subject: `Help request: ${clip(org?.name, 120) || requester}${hr.subject ? ' - ' + clip(hr.subject, 120) : ''}`,
+        ...built,
+      }
     } else if (kind === 'portal-alert') {
       const auth = await requireUser(req)
       if ('error' in auth && auth.error) return auth.error

@@ -1,11 +1,20 @@
 import { AppShell, PageTransition, type NavGroup, type NavItem } from '@ra/ui'
 import { ShellChromeProvider } from '@ra/ui/shellChrome'
 import { useMlaAuth } from '../auth/MlaAuthProvider'
-import { ClipboardList, FileQuestion, FileStack, Gauge, GitBranch, Home, HelpCircle, History, Scale, ScrollText } from 'lucide-react'
+import { ClipboardList, FileCheck, FileQuestion, LifeBuoy, FileStack, Gauge, GitBranch, Home, HelpCircle, History, Scale, ScrollText } from 'lucide-react'
 
 const topItems: NavItem[] = [{ to: '/', label: 'Overview', icon: Home as NavItem['icon'], end: true }]
 
 const groups: NavGroup[] = [
+  {
+    id: 'clients',
+    label: 'Clients',
+    defaultOpen: true,
+    items: [
+      { to: '/requests', label: 'Requests', icon: LifeBuoy as NavItem['icon'] },
+      { to: '/evidence', label: 'Evidence review', icon: FileCheck as NavItem['icon'] },
+    ],
+  },
   {
     id: 'methodology',
     label: 'Methodology',

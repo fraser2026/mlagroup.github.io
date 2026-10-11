@@ -13,6 +13,8 @@ import { DiagnosticRegsPage } from './pages/DiagnosticRegsPage'
 import { AssessmentQuestionsPage } from './pages/AssessmentQuestionsPage'
 import { DiagnosticQuestionsPage } from './pages/DiagnosticQuestionsPage'
 import { MethodologyVersionsPage } from './pages/MethodologyVersionsPage'
+import { ClientRequestsPage } from './pages/ClientRequestsPage'
+import { EvidenceReviewPage } from './pages/EvidenceReviewPage'
 
 export default function App() {
   return (
@@ -38,6 +40,8 @@ export default function App() {
             <Route path="diagnostic-regs" element={<DiagnosticRegsPage />} />
             <Route path="diagnostic-questions" element={<DiagnosticQuestionsPage />} />
             <Route path="assessment-questions" element={<AssessmentQuestionsPage />} />
+            <Route path="requests" element={<ClientRequestsPage />} />
+            <Route path="evidence" element={<EvidenceReviewPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

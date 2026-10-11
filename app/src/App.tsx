@@ -6,7 +6,6 @@ import { LoginPage } from './auth/LoginPage'
 import { AcceptInvitePage } from './auth/AcceptInvitePage'
 import { AppLayout } from './layout/AppLayout'
 import { MyWorkPage } from './pages/MyWorkPage'
-import { SetupPage } from './pages/SetupPage'
 import { IntegrationsPage } from './pages/IntegrationsPage'
 import { RegistryPage } from './pages/RegistryPage'
 import { RegistryDetailPage } from './pages/RegistryDetailPage'
@@ -90,7 +89,7 @@ export default function App() {
               }
             >
               <Route index element={<Navigate to="/registry" replace />} />
-              <Route path="setup" element={<SetupPage />} />
+              <Route path="setup" element={<Navigate to="/registry" replace />} />
               <Route path="registry" element={<RegistryPage />} />
               <Route path="registry/:id" element={<RegistryDetailPage />} />
               <Route path="frameworks" element={<FrameworksPage />} />

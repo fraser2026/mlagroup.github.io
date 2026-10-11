@@ -683,71 +683,56 @@ function showResultsScreen(result, triggered, assessId) {
   if (fill) fill.style.width = '0%';
 
   var band = result.band;
-  var bandLabel = band === 'low' ? 'Low Risk': band === 'high' ? 'High Risk': 'Medium Risk';
-  var score = result.overall || 0;
-  var ss = result.sectionScores || {};
-
-  var secBars = Object.entries(ss).map(function (entry) {
-    var v = entry[1];
-    var pct = Math.round(v.score || 0);
-    var lvl = pct >= 70 ? 'Low': pct >= 40 ? 'Moderate': 'High';
-    return '' +
-      '<div class="domain-item">' +
-        '<div><div class="domain-name">' + esc(v.title || entry[0]) + '</div></div>' +
-        '<div style="display:flex;align-items:center;gap:12px;">' +
-          '<div class="domain-track"><div class="domain-track__fill" style="width:' + pct + '%"></div></div>' +
-          '<span class="domain-pct">' + pct + '</span>' +
-          '<span class="risk-pill">' + lvl + '</span>' +
-        '</div>' +
-      '</div>';
-  }).join('');
-
-  var ctrlHtml = '';
-  if (triggered.length) {
-    ctrlHtml = '' +
-      '<div style="margin-top:28px;text-align:left;">' +
-        '<div class="label">Controls Triggered</div>' +
-        '<div style="display:flex;flex-direction:column;">' +
-          triggered.map(function (c) {
-            return '' +
-              '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">' +
-                '<span style="font-family:var(--ra-font-brand);font-size:12px;font-weight:500;color:var(--muted);width:28px;flex-shrink:0;">' +
-                  c.control_number +
-                '</span>' +
-                '<span style="font-size:14px;color:var(--main);">' + esc(c.title || ('Control ' + c.control_number)) + '</span>' +
-              '</div>';
-          }).join('') +
-        '</div>' +
-      '</div>';
-  } else {
-    ctrlHtml = '' +
-      '<div style="margin-top:28px;padding:16px 0;border-top:1px solid var(--border);text-align:left;">' +
-        '<div style="font-size:14px;font-weight:500;color:var(--main);margin-bottom:4px;">No controls triggered</div>' +
-        '<div style="font-size:13px;color:var(--muted);">This system scored well across all governance domains.</div>' +
-      '</div>';
-  }
+  var bandLabel = band === 'low' ? 'Low risk' : band === 'high' ? 'High risk' : 'Medium risk';
+  var bandTone = band === 'low' ? 'ok' : band === 'high' ? 'risk' : 'warn';
+  var score = Math.round(result.overall || 0);
+  var lvl = raLevel(score) || { code: 'L1', label: 'Initial' };
+  var n = (triggered || []).length;
+  var ctrlLine = n
+    ? n + ' control' + (n === 1 ? ' was' : 's were') + ' assigned to this asset from your answers.'
+    : 'No new controls were needed. This asset scored well across every governance area.';
 
   var reportCta = isPaidTier()
-    ? '<a href="system-report.html?aid=' + (assessId || '') + '" target="_blank" class="btn-secondary">View Full Report</a>': '<a href="' + appHome('/plans') + '" class="btn-secondary">Upgrade to View Report</a>';
+    ? '<a href="system-report.html?aid=' + (assessId || '') + '" target="_blank" rel="noopener" class="ra-done__btn ra-done__btn--ghost">View report</a>'
+    : '<a href="' + appHome('/plans') + '" class="ra-done__btn ra-done__btn--ghost">Upgrade to view report</a>';
+
+  if (!document.getElementById('ra-done-css')) {
+    var st = document.createElement('style');
+    st.id = 'ra-done-css';
+    st.textContent = '' +
+      '.ra-done{max-width:560px;margin:0 auto;padding:40px 32px 36px;background:#fff;border:1px solid #E3E8EE;border-radius:4px;font-family:var(--ra-font,Inter,sans-serif);font-weight:500;color:#0A0E14}' +
+      '.ra-done__eyebrow{font-size:12px;color:#697386;margin:0 0 6px}' +
+      '.ra-done__name{font-size:22px;letter-spacing:-0.02em;margin:0 0 28px;line-height:1.25}' +
+      '.ra-done__level{display:flex;align-items:baseline;gap:14px;padding:24px 0;border-top:1px solid #E3E8EE;border-bottom:1px solid #E3E8EE}' +
+      '.ra-done__code{font-size:56px;line-height:1;letter-spacing:-0.04em;font-variant-numeric:tabular-nums}' +
+      '.ra-done__lvlname{font-size:17px;letter-spacing:-0.01em}' +
+      '.ra-done__facts{margin-left:auto;text-align:right;font-size:13px;color:#425466;line-height:1.6;font-variant-numeric:tabular-nums}' +
+      '.ra-done__facts strong{color:#0A0E14;font-weight:500}' +
+      '.ra-done__tone--ok{color:#0F766E}.ra-done__tone--warn{color:#B45309}.ra-done__tone--risk{color:#C8102E}' +
+      '.ra-done__note{font-size:14px;color:#425466;line-height:1.5;margin:20px 0 28px}' +
+      '.ra-done__actions{display:flex;flex-wrap:wrap;gap:8px}' +
+      '.ra-done__btn{display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:4px;font-size:14px;font-weight:500;text-decoration:none;border:1px solid transparent;transition:background .12s,border-color .12s,color .12s}' +
+      '.ra-done__btn--primary{background:#533AFD;color:#fff}.ra-done__btn--primary:hover{background:#4434E0}' +
+      '.ra-done__btn--ghost{background:#fff;color:#0A0E14;border-color:#CFD7E3}.ra-done__btn--ghost:hover{border-color:#533AFD;color:#533AFD}' +
+      '@media (max-width:560px){.ra-done{padding:28px 20px}.ra-done__level{flex-wrap:wrap}.ra-done__facts{margin-left:0;text-align:left;width:100%}.ra-done__btn{flex:1 1 100%;justify-content:center}}';
+    document.head.appendChild(st);
+  }
 
   document.getElementById('screens-container').innerHTML = '' +
-    '<div class="card" style="padding:36px 28px;">' +
-      '<div class="label">Assessment Complete</div>' +
-      '<h2 style="margin-bottom:8px;">' + esc(systemData.name) + '</h2>' +
-      '<div class="diag-score" style="justify-content:flex-start;margin-top:16px;">' +
-        '<span class="diag-score__num" style="font-size:64px;">' + Math.round(score) + '</span>' +
-        '<span class="diag-score__of">/ 100</span>' +
+    '<div class="ra-done">' +
+      '<p class="ra-done__eyebrow">Assessment complete</p>' +
+      '<h2 class="ra-done__name">' + esc(systemData.name) + '</h2>' +
+      '<div class="ra-done__level" role="img" aria-label="Governance maturity ' + lvl.code + ', ' + esc(lvl.label) + '">' +
+        '<span class="ra-done__code">' + lvl.code + '</span>' +
+        '<span class="ra-done__lvlname">' + esc(lvl.label) + '</span>' +
+        '<span class="ra-done__facts"><strong>' + score + '</strong> / 100<br>' +
+          '<span class="ra-done__tone--' + bandTone + '">' + bandLabel + '</span></span>' +
       '</div>' +
-      '<p class="diag-tier"><strong>' + raLevelText(score) + '</strong> / ' + bandLabel + '</p>' +
-      '<div class="diag-maturity-row" style="margin:20px 0 28px;">' +
-        raComplianceBar(score) + raLadderScale(score) +
-      '</div>' +
-      '<div class="domain-list" style="max-width:none;">' + secBars + '</div>' +
-      ctrlHtml +
-      '<div class="nav-btns" style="margin-top:28px;flex-wrap:wrap;">' +
-        '<a href="' + appHome('/registry/' + SYSTEM_ID + '?tab=controls') + '" class="btn-primary">View Controls</a>' +
+      '<p class="ra-done__note">' + ctrlLine + '</p>' +
+      '<div class="ra-done__actions">' +
+        '<a href="' + appHome('/registry/' + SYSTEM_ID + '?tab=controls') + '" class="ra-done__btn ra-done__btn--primary">View controls</a>' +
         reportCta +
-        '<a href="' + appHome('/registry/' + SYSTEM_ID + '?tab=assessment') + '" class="btn-secondary">Back to System</a>' +
+        '<a href="' + appHome('/registry/' + SYSTEM_ID + '?tab=assessment') + '" class="ra-done__btn ra-done__btn--ghost">Back to asset</a>' +
       '</div>' +
     '</div>';
 }

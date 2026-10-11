@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ChevronDown, Moon } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
 import { useShellChrome } from './shellChrome'
 import { Icon } from './Icon'
 import { ThemePicker } from './ThemePicker'
@@ -23,6 +24,40 @@ type Props = {
   scrollRootRef?: RefObject<HTMLElement | null>
 }
 
+type RecentPage = { path: string; label: string; at: number }
+
+export const RECENT_PAGES_KEY = 'ra.recent-pages.v1'
+const RECENT_KEEP = 8
+/** Four rows fill the activity box at its resting height without crowding. */
+const RECENT_SHOW = 4
+
+function readRecent(): RecentPage[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(RECENT_PAGES_KEY) || '[]')
+    return Array.isArray(raw) ? raw.filter((r) => r && r.path && r.label) : []
+  } catch {
+    return []
+  }
+}
+
+function writeRecent(list: RecentPage[]) {
+  try {
+    localStorage.setItem(RECENT_PAGES_KEY, JSON.stringify(list))
+  } catch {
+    /* storage full or disabled */
+  }
+}
+
+function relativeWhen(at: number, now: number) {
+  const mins = Math.floor((now - at) / 60_000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  return days === 1 ? 'Yesterday' : `${days}d ago`
+}
+
 function sectionOffsetTop(scroller: HTMLElement, el: HTMLElement) {
   return el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop
 }
@@ -40,8 +75,34 @@ function pickActiveSection(scroller: HTMLElement, ids: string[]) {
 }
 
 export function ContextRail({ items = [], scrollRootRef }: Props) {
-  const { railOpen } = useShellChrome()
+  const { railOpen, breadcrumbs, pageTitle } = useShellChrome()
   const reduce = useReducedMotion()
+  const { pathname, search } = useLocation()
+  const path = pathname + search
+  const currentLabel = breadcrumbs.length ? breadcrumbs[breadcrumbs.length - 1].label : pageTitle || ''
+  const [recent, setRecent] = useState<RecentPage[]>(() => readRecent())
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    if (!currentLabel) return
+    setRecent((prev) => {
+      const next = [{ path, label: currentLabel, at: Date.now() }, ...prev.filter((r) => r.path !== path)].slice(
+        0,
+        RECENT_KEEP,
+      )
+      writeRecent(next)
+      return next
+    })
+  }, [path, currentLabel])
+
+  useEffect(() => {
+    if (!railOpen) return
+    setNow(Date.now())
+    const t = window.setInterval(() => setNow(Date.now()), 60_000)
+    return () => window.clearInterval(t)
+  }, [railOpen, path])
+
+  const recentOthers = recent.filter((r) => r.path !== path).slice(0, RECENT_SHOW)
   const [active, setActive] = useState(items[0]?.id ?? '')
   const [tocOpen, setTocOpen] = useState(true)
   const lockUntil = useRef(0)
@@ -124,7 +185,20 @@ export function ContextRail({ items = [], scrollRootRef }: Props) {
 
             <div className={styles.block}>
               <div className={styles.blockHeading}>Recent activity</div>
-              <div className={styles.activityEmpty}>No activity yet</div>
+              {recentOthers.length ? (
+                <ul className={styles.recentList}>
+                  {recentOthers.map((r) => (
+                    <li key={r.path}>
+                      <Link className={styles.recentRow} to={r.path} title={r.label}>
+                        <span className={styles.recentLabel}>{r.label}</span>
+                        <span className={styles.recentWhen}>{relativeWhen(r.at, now)}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className={styles.activityEmpty}>No recent pages yet</div>
+              )}
             </div>
 
             <div className={styles.appearance}>
