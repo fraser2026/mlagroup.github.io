@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   LogOut,
   Plug,
+  X,
   ScrollText,
   Settings,
   Building2,
@@ -141,6 +142,8 @@ export function AppShell({
   children,
 }: Props) {
   const [signingOut, setSigningOut] = useState(false)
+  const [navOpen, setNavOpen] = useState(false)
+  const { pathname } = useLocation()
   const [accountOpen, setAccountOpen] = useState(false)
   const [accountStyle, setAccountStyle] = useState<CSSProperties | null>(null)
   const accountBtnRef = useRef<HTMLButtonElement>(null)
@@ -215,17 +218,56 @@ export function AppShell({
     }
   }, [accountOpen])
 
+  useEffect(() => {
+    setNavOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!navOpen) return
+    const mq = window.matchMedia('(min-width: 861px)')
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !accountOpen) setNavOpen(false)
+    }
+    const onMq = () => {
+      if (mq.matches) setNavOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    mq.addEventListener('change', onMq)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      mq.removeEventListener('change', onMq)
+    }
+  }, [navOpen, accountOpen])
+
   function go(path: string) {
     setAccountOpen(false)
+    setNavOpen(false)
     startTransition(() => navigate(path))
   }
 
   return (
     <div className={styles.shell} data-ra-scroll="shell">
-      <aside className={styles.sidebar}>
+      {navOpen ? (
+        <button
+          type="button"
+          className={styles.navBackdrop}
+          aria-label="Close menu"
+          tabIndex={-1}
+          onClick={() => setNavOpen(false)}
+        />
+      ) : null}
+      <aside id="ra-primary-nav" className={clsx(styles.sidebar, navOpen && styles.sidebarOpen)}>
         <div className={styles.brand}>
           <img src={wordmarkSrc} alt="RegAnchor" width={140} height={26} />
           <span className={styles.brandSr}>{title}</span>
+          <button
+            type="button"
+            className={styles.navClose}
+            aria-label="Close menu"
+            onClick={() => setNavOpen(false)}
+          >
+            <Icon icon={X} size="sm" />
+          </button>
         </div>
         <nav className={styles.nav} aria-label="Primary" data-ra-scroll="sidebar">
           {topItems.map((item) => (
@@ -263,7 +305,12 @@ export function AppShell({
         </div>
       </aside>
       <div className={styles.main}>
-        <TopChrome onOpenCommand={onOpenCommand} actions={chromeActions} />
+        <TopChrome
+          onOpenCommand={onOpenCommand}
+          actions={chromeActions}
+          navOpen={navOpen}
+          onOpenNav={() => setNavOpen(true)}
+        />
         <div className={styles.content}>{children}</div>
       </div>
 

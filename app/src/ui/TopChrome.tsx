@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { PanelRight, PanelRightClose, Search } from 'lucide-react'
+import { Menu, PanelRight, PanelRightClose, Search } from 'lucide-react'
 import { Breadcrumbs } from './Breadcrumbs'
 import { CopyLink } from './CopyLink'
 import { Button } from './Button'
@@ -12,6 +12,9 @@ type Props = {
   actions?: ReactNode
   showRailToggle?: boolean
   onOpenCommand?: () => void
+  /** Mobile only: opens the off-canvas primary nav. */
+  onOpenNav?: () => void
+  navOpen?: boolean
 }
 
 function searchShortcutLabel() {
@@ -20,13 +23,25 @@ function searchShortcutLabel() {
   return mac ? '⌘K' : 'Ctrl K'
 }
 
-export function TopChrome({ actions, showRailToggle = true, onOpenCommand }: Props) {
+export function TopChrome({ actions, showRailToggle = true, onOpenCommand, onOpenNav, navOpen = false }: Props) {
   const { railOpen, toggleRail, railAvailable } = useShellChrome()
   const showToggle = showRailToggle && railAvailable
   const searchTip = `Search (${searchShortcutLabel()})`
 
   return (
     <header className={styles.chrome}>
+      {onOpenNav ? (
+        <button
+          type="button"
+          className={styles.menuBtn}
+          aria-label="Open menu"
+          aria-controls="ra-primary-nav"
+          aria-expanded={navOpen}
+          onClick={onOpenNav}
+        >
+          <Icon icon={Menu} size="sm" />
+        </button>
+      ) : null}
       <div className={styles.left}>
         <Breadcrumbs />
       </div>

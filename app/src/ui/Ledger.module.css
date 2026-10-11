@@ -79,6 +79,7 @@ button.row:hover {
   font-size: 13px;
   font-weight: var(--ra-fw-medium);
   color: var(--ra-ink);
+  overflow-wrap: anywhere;
 }
 
 .desc {
@@ -87,6 +88,7 @@ button.row:hover {
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
   letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
 }
 
 .meta {
@@ -98,4 +100,25 @@ button.row:hover {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+/* Phones: text gets the full width; meta and actions drop to their own line. */
+@media (max-width: 640px) {
+  .row {
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+
+  .main {
+    flex: 1 1 100%;
+  }
+
+  .meta {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .trailing {
+    margin-left: auto;
+  }
 }

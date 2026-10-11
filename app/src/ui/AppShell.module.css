@@ -224,7 +224,7 @@
 }
 
 .accountMenu {
-  z-index: var(--ra-z-toast);
+  z-index: 1300;
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-control);
   background: var(--ra-canvas);
@@ -328,6 +328,11 @@
   }
 }
 
+.navClose,
+.navBackdrop {
+  display: none;
+}
+
 @media (max-width: 860px) {
   .shell {
     flex-direction: column;
@@ -338,16 +343,82 @@
     padding: var(--ra-shell-pad-y);
   }
 
+  /* Off-canvas nav: slides in from the left, closed by default. */
   .sidebar {
-    width: 100%;
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-    flex-shrink: 0;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 900;
+    width: min(var(--ra-sidebar-w), 84vw);
+    height: 100%;
+    height: 100dvh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+    border-right: 1px solid var(--ra-border);
+    box-shadow: 0 0 0 transparent;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform var(--ra-motion-med) var(--ra-ease-out),
+      box-shadow var(--ra-motion-med) var(--ra-ease-out),
+      visibility 0s linear var(--ra-motion-med);
   }
 
-  .nav {
-    max-height: 220px;
+  .sidebarOpen {
+    transform: translateX(0);
+    visibility: visible;
+    box-shadow: 0 16px 48px rgba(10, 14, 20, 0.18);
+    transition:
+      transform var(--ra-motion-med) var(--ra-ease-out),
+      box-shadow var(--ra-motion-med) var(--ra-ease-out),
+      visibility 0s;
+  }
+
+  .brand {
+    justify-content: space-between;
+    gap: var(--ra-space-2);
+    padding-right: var(--ra-space-2);
+  }
+
+  .navClose {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    border-radius: var(--ra-radius-control);
+    background: transparent;
+    color: var(--ra-text-2);
+    cursor: pointer;
+  }
+
+  .navClose:hover,
+  .navClose:focus-visible {
+    outline: none;
+    background: var(--ra-hover);
+    border-color: var(--ra-border);
+    color: var(--ra-ink);
+  }
+
+  .navBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 890;
+    border: 0;
+    padding: 0;
+    background: rgba(10, 14, 20, 0.22);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    animation: navFade var(--ra-motion-med) var(--ra-ease-out);
+  }
+
+  :global([data-theme='dark']) .navBackdrop {
+    background: rgba(0, 0, 0, 0.5);
   }
 
   .main {
@@ -365,10 +436,24 @@
   }
 }
 
+@keyframes navFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sectionChevron,
   .headingChevron,
-  .navItem {
+  .navItem,
+  .sidebar {
     transition: none;
+  }
+
+  .navBackdrop {
+    animation: none;
   }
 }

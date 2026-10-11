@@ -578,7 +578,7 @@ export function UsersPage() {
           <Section
             id="roles"
             title="Workspace access"
-            description="These roles control who can sign in and change records. They are not AI asset governance owners. Business, Compliance, and Technical owners are assigned on each asset, or who is assigned a control."
+            description="These roles control who can sign in and change records."
           >
             <div className={styles.roleList}>
               {ACCESS_ROLES.map((r) => (
