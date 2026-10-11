@@ -47,7 +47,7 @@ const groups: NavGroup[] = [
   {
     id: 'admin',
     label: 'Administration',
-    defaultOpen: false,
+    defaultOpen: true,
     items: [
       { to: '/api-keys', label: 'API keys', icon: KeyRound },
       { to: '/authentication', label: 'Authentication', icon: Fingerprint },

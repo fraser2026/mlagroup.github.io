@@ -6,7 +6,9 @@
   "scripts": {
     "generate": "node generate-report.js",
     "generate:preview": "node generate-report.js --preview",
-    "build:fines": "vite build --config vite.fines.config.js"
+    "build:fines": "vite build --config vite.fines.config.js",
+    "deploy": "npm run build:fines && wrangler deploy",
+    "preview": "npm run build:fines && wrangler dev"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
@@ -19,7 +21,9 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.63.1",
     "@vitejs/plugin-react": "^6.0.5",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "wrangler": "^4.149.0"
   }
 }
