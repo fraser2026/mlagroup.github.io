@@ -1008,7 +1008,7 @@ export function PoliciesDraftPage() {
           .insert({
             org_id: orgId,
             title: saveTitle,
-            description: 'Drafted with MLA',
+            description: 'Drafted with RegAnchor',
             content: markdown,
             version: saveVersion,
             category: 'ai_governance',

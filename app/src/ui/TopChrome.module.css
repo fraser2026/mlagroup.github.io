@@ -50,6 +50,13 @@
   display: none;
 }
 
+/* ContextRail is hidden at this width, so its toggle has no job. */
+@media (max-width: 1100px) {
+  .railToggle {
+    display: none !important;
+  }
+}
+
 @media (max-width: 860px) {
   .chrome {
     gap: var(--ra-space-2);

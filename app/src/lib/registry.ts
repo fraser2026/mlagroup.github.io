@@ -29,14 +29,14 @@ export const KIND_LABELS: Record<string, string> = {
 }
 
 export const ASSESS_STATUS_LABELS: Record<string, string> = {
-  submitted: 'Awaiting RegAnchor Review',
-  in_review: 'Under Review',
-  controls_issued: 'Controls Issued',
+  submitted: 'Awaiting RegAnchor review',
+  in_review: 'Under review',
+  controls_issued: 'Controls issued',
 }
 
 export const CTRL_STATUS_LABELS: Record<string, string> = {
-  not_started: 'Not Started',
-  in_progress: 'In Progress',
+  not_started: 'Not started',
+  in_progress: 'In progress',
   implemented: 'Implemented',
   verified: 'Verified',
 }
@@ -408,7 +408,7 @@ export function labelAssessStatus(status?: string | null) {
 }
 
 export function labelCtrlStatus(status?: string | null) {
-  if (!status) return 'Not Started'
+  if (!status) return 'Not started'
   return CTRL_STATUS_LABELS[status] || status
 }
 
@@ -487,9 +487,9 @@ export function controlCode(controlNumber?: string | number | null) {
 /** Portal family label: System Controls / Organisation Controls / Assurance Controls. */
 export function controlFamilyLabel(controlType?: string | null) {
   const t = (controlType || '').toLowerCase()
-  if (t === 'organisation' || t === 'organization') return 'Organisation Controls'
-  if (t === 'assurance') return 'Assurance Controls'
-  if (t === 'system') return 'System Controls'
+  if (t === 'organisation' || t === 'organization') return 'Organisation controls'
+  if (t === 'assurance') return 'Assurance controls'
+  if (t === 'system') return 'System controls'
   return 'Controls'
 }
 

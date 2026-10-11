@@ -369,7 +369,7 @@ export function PoliciesDetailPage() {
         <Section id="ack" className={styles.block}>
           <div className={styles.work}>
             <div className={styles.workHead}>
-              <h2 className={styles.workTitle}>{isDraft ? 'Review' : 'Acknowledgment'}</h2>
+              <h2 className={styles.workTitle}>{isDraft ? 'Review' : 'Acknowledgement'}</h2>
             </div>
             <div className={styles.lead}>
               {policy.description ? <p className={styles.bodyCopy}>{policy.description}</p> : null}
@@ -377,16 +377,16 @@ export function PoliciesDetailPage() {
                 {isDraft
                   ? 'Unpublished draft — review the content, then publish when ready.'
                   : policy.updated_at
-                    ? `Updated ${new Date(policy.updated_at).toLocaleDateString()}`
+                    ? `Updated ${new Date(policy.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
                     : policy.published_at
-                      ? `Published ${new Date(policy.published_at).toLocaleDateString()}`
+                      ? `Published ${new Date(policy.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
                       : 'Draft / unpublished'}
               </div>
 
               {isDraft ? (
                 <div className={styles.ackBlock}>
                   <p className={styles.ackCopy}>
-                    This draft is not live for acknowledgment. Owner or admin can publish it to the library.
+                    This draft is not live for acknowledgement. Owner or admin can publish it to the library.
                   </p>
                   {canContinueDraft || canPublish ? (
                     <div className={styles.actions}>
@@ -407,7 +407,7 @@ export function PoliciesDetailPage() {
                 <p className={styles.ackDone}>
                   You acknowledged this policy on{' '}
                   {userAcked.acknowledged_at
-                    ? new Date(userAcked.acknowledged_at).toLocaleString()
+                    ? new Date(userAcked.acknowledged_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                     : 'an earlier date'}
                   . Version {userAcked.version_acknowledged}.
                 </p>
@@ -459,7 +459,7 @@ export function PoliciesDetailPage() {
         <Section id="history" className={styles.block}>
           <div className={styles.work}>
             <div className={styles.workHead}>
-              <h2 className={styles.workTitle}>Acknowledgments</h2>
+              <h2 className={styles.workTitle}>Acknowledgements</h2>
               {acks.length > 0 ? (
                 <span className={styles.workSub}>
                   {acks.length} record{acks.length === 1 ? '' : 's'}
@@ -476,7 +476,7 @@ export function PoliciesDetailPage() {
                     <div className={styles.meta}>
                       v{a.version_acknowledged}
                       {a.acknowledgment_method === 'e_signature' ? ' E-signature' : ' Click'}
-                      {a.acknowledged_at ? ` ${new Date(a.acknowledged_at).toLocaleString()}` : ''}
+                      {a.acknowledged_at ? ` ${new Date(a.acknowledged_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}
                     </div>
                   </div>
                 ))}

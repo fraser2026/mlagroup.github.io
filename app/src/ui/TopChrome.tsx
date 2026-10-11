@@ -69,6 +69,7 @@ export function TopChrome({ actions, showRailToggle = true, onOpenCommand, onOpe
               variant="ghost"
               size="sm"
               selected={railOpen}
+              className={styles.railToggle}
               onClick={toggleRail}
               aria-label={railOpen ? 'Hide On this page' : 'Show On this page'}
             >

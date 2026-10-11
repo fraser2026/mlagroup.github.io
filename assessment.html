@@ -437,7 +437,7 @@ function buildScreens(){
         <span class="assess-sys-meta__v">${esc(systemData.name)}</span>
       </div>
       <div class="assess-sys-meta__row">
-        <span class="assess-sys-meta__k">Risk Tier</span>
+        <span class="assess-sys-meta__k">Risk tier</span>
         <span class="assess-sys-meta__v">${esc(riskLbl)}</span>
       </div>
       <div class="assess-sys-meta__row">
@@ -481,7 +481,7 @@ function buildScreens(){
         <button class="btn-secondary" onclick="goTo('${si===0?'pre':SECTIONS[si-1].id}')">&#8592; Back</button>
         ${si<SECTIONS.length-1
           ?`<button class="btn-primary" onclick="nextSection('${section.id}','${SECTIONS[si+1].id}')">Continue &#8594;</button>`
-          :`<button class="btn-primary" onclick="finishAssessment('${section.id}')">Complete Assessment &#8594;</button>`
+          :`<button class="btn-primary" onclick="finishAssessment('${section.id}')">Complete assessment &#8594;</button>`
         }
       </div>
     </div></div>`;
@@ -519,7 +519,7 @@ function raSelect(sel){
     menu.style.left=r.left+'px';menu.style.width=r.width+'px';menu.style.maxHeight=maxH+'px';
     if(up){menu.style.top='';menu.style.bottom=(window.innerHeight-r.top+4)+'px'}else{menu.style.bottom='';menu.style.top=(r.bottom+4)+'px'}
   };
-  const onDoc=e=>{if(!root.contains(e.target))close()};
+  const onDoc=e=>{if(!root.contains(e.target)&&!menu.contains(e.target))close()};
   const onKey=e=>{
     const opts=Array.from(menu.querySelectorAll('.ra-sel__opt')),i=opts.indexOf(document.activeElement);
     if(e.key==='Escape'){close();btn.focus()}
@@ -536,7 +536,8 @@ function raSelect(sel){
   btn.onclick=()=>menu.hidden?open():close();
   if(sel.id){const l=document.querySelector('label[for="'+sel.id+'"]');if(l){l.removeAttribute('for');l.onclick=()=>btn.focus()}}
   sel.hidden=true;sel.tabIndex=-1;
-  sel.parentNode.insertBefore(root,sel);root.append(btn,menu,sel);
+  // Menu lives on body: .screen keeps a transform, which would offset position:fixed.
+  sel.parentNode.insertBefore(root,sel);root.append(btn,sel);document.body.appendChild(menu);
   sel.addEventListener('change',sync);sync();
 }
  
