@@ -15,14 +15,17 @@
   min-width: 0;
 }
 
+/* Parents keep their name (capped); the current page truncates first. */
 .item {
   min-width: 0;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
+  max-width: 40%;
   overflow: hidden;
 }
 
 .item:last-child {
-  flex-shrink: 0.5;
+  flex: 0 1 auto;
+  max-width: none;
 }
 
 .sep {

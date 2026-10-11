@@ -86,14 +86,17 @@ export function ContextRail({ items = [], scrollRootRef }: Props) {
   useEffect(() => {
     if (!currentLabel) return
     setRecent((prev) => {
-      const next = [{ path, label: currentLabel, at: Date.now() }, ...prev.filter((r) => r.path !== path)].slice(
+      const next = [
+        { path, label: currentLabel, at: Date.now() },
+        ...prev.filter((r) => r.path.split('?')[0] !== pathname),
+      ].slice(
         0,
         RECENT_KEEP,
       )
       writeRecent(next)
       return next
     })
-  }, [path, currentLabel])
+  }, [path, pathname, currentLabel])
 
   useEffect(() => {
     if (!railOpen) return
@@ -102,7 +105,12 @@ export function ContextRail({ items = [], scrollRootRef }: Props) {
     return () => window.clearInterval(t)
   }, [railOpen, path])
 
-  const recentOthers = recent.filter((r) => r.path !== path).slice(0, RECENT_SHOW)
+  const recentOthers = recent
+    .filter((r, i, all) => {
+      const base = r.path.split('?')[0]
+      return base !== pathname && all.findIndex((o) => o.path.split('?')[0] === base) === i
+    })
+    .slice(0, RECENT_SHOW)
   const [active, setActive] = useState(items[0]?.id ?? '')
   const [tocOpen, setTocOpen] = useState(true)
   const lockUntil = useRef(0)
