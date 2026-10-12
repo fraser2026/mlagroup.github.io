@@ -150,7 +150,7 @@ serve(async (req) => {
       generated_at: generatedAt,
       snapshot_hash: snapshotHash,
       framework_version: response.framework_version || '2.0.0',
-      generator_version: '1.1.0',
+      generator_version: '2.0.0',
     }
 
     console.log(`[generate-report] user=${user.id} org=${response.organisation} hash=${snapshotHash}`)
@@ -219,7 +219,7 @@ serve(async (req) => {
         action: 'generated',
         snapshot_hash: snapshotHash,
         generated_at: generatedAt,
-        generator_version: '1.1.0',
+        generator_version: '2.0.0',
         framework_version: frameworkVersion,
       })
 
