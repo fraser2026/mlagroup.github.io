@@ -633,7 +633,7 @@ function rebuildDomainScreens(bank) {
     const req = (sec.questions || [])
       .filter((q) => q.is_required !== false && q.question_kind !== 'multi')
       .map((q) => q.question_key);
-    const reqLit = JSON.stringify(req);
+    const reqLit = escDiag(JSON.stringify(req));
 
     html += `<div class="screen" id="screen-${escDiag(sid)}"><div class="card">`;
     html += `<div class="section-title">${escDiag(sec.title)}</div>`;
