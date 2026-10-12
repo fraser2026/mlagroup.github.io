@@ -8,6 +8,10 @@
  *   - ops / ack / portal / admin-reply: RegAnchor <info@reganchor.com>
  *   - org-invite: RegAnchor <no-reply@reganchor.com> (reply-To info@)
  *   - control-assignment: RegAnchor <no-reply@reganchor.com> (reply-To info@)
+ *   - help-request: RegAnchor <info@reganchor.com> (ops kind); To info@; reply-To requester;
+ *     requires JWT; request must belong to caller (support_requests.requested_by)
+ *   - help-request-ack (sent inside help-request, after ops send; best-effort):
+ *     RegAnchor <info@reganchor.com>, reply-To info@; To = requester profile email
  *   - ops kinds (contact, demo, enterprise, diagnostic-lead): To always info@;
  *     reply-To is the form email; any client `to` is ignored
  *   - diagnostic-ack: To comes from diagnostic_results.respondent_email for the
@@ -32,6 +36,9 @@ const FROM_NOREPLY = 'RegAnchor <no-reply@reganchor.com>'
 const OPS = 'info@reganchor.com'
 const BUY_REPORT_BASE = 'https://reganchor.com/buy-report.html'
 const APP_ORIGIN = 'https://app.reganchor.com'
+const ADMIN_REQUESTS_URL = 'https://admin.reganchor.com/requests'
+/** Client app has no dedicated help/requests page yet (see app/src/App.tsx routes) */
+const CLIENT_REQUESTS_URL = APP_ORIGIN
 /** Published Resend template: Control assignment */
 const CONTROL_ASSIGNMENT_TEMPLATE_ID = '58344186-6538-45dc-8ea4-c26e15b754c2'
 const UUID_RE =
@@ -386,6 +393,63 @@ function buildOps(kind: Kind, body: Record<string, unknown>) {
   }
 }
 
+function quote(t: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:0;margin-bottom:16px;">
+  <tr>
+    <td style="border-left-width:3px;border-left-style:solid;border-left-color:#533AFD;padding-top:4px;padding-bottom:4px;padding-left:16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#374151;">${nl2br(t)}</td>
+  </tr>
+</table>`
+}
+
+function buildHelpAck(opts: {
+  to: string
+  firstName: string
+  subject: string
+  topic: string
+  page: string
+  message: string
+}) {
+  const { to, firstName } = opts
+  const reqSubject = clip(opts.subject, 120)
+  const msg = clip(opts.message, 600)
+  const excerpt = msg.length >= 600 ? msg.slice(0, 280).trimEnd() + '…' : msg.length > 280 ? msg.slice(0, 280).trimEnd() + '…' : msg
+  const greeting = `Dear ${firstName || 'there'},`
+  const l1 = `Thank you for getting in touch. This is to confirm that we have received your request.`
+  const l2 = 'For your reference, you wrote:'
+  const quoted = [reqSubject, excerpt].filter(Boolean).join('\n\n')
+  const l4 = 'Should you wish to add anything in the meantime, simply reply to this email.'
+  const signoff = 'With kind regards,'
+  const heading = "We've received your request"
+  const subject = reqSubject ? `We've received your request: ${reqSubject}` : "We've received your request"
+  const inner = [
+    h1(heading),
+    para(greeting),
+    para(l1),
+    quoted ? para(l2) + quote(quoted) : '',
+    para(l4),
+    cta(CLIENT_REQUESTS_URL, 'View your request'),
+    `<p style="margin-top:24px;margin-bottom:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#0A0E14;">${esc(signoff)}<br>The RegAnchor team</p>`,
+  ].join('')
+  const text = [
+    greeting, '', l1, '',
+    ...(quoted ? [l2, '', quoted.split('\n').map((x) => '> ' + x).join('\n'), ''] : []),
+    l4, '',
+    `View your request: ${CLIENT_REQUESTS_URL}`, '',
+    signoff, 'The RegAnchor team', '', 'RegAnchor', OPS,
+  ].join('\n')
+  return {
+    to,
+    replyTo: OPS,
+    subject,
+    text,
+    html: shell(heading, inner, {
+      preheader: reqSubject
+        ? `Thank you, we have received "${reqSubject}".`
+        : 'Thank you, we have received your request.',
+    }),
+  }
+}
+
 function buildAck(opts: {
   to: string
   name: string
@@ -609,6 +673,7 @@ serve(async (req) => {
     const kind = clip(body.kind, 40) as Kind
     if (!KINDS.includes(kind)) return json({ error: 'Unknown kind' }, 400)
 
+    let helpAck: { to: string; replyTo: string; subject: string; text: string; html: string } | null = null
     let mail: {
       from?: string
       to: string
@@ -672,22 +737,40 @@ serve(async (req) => {
       const requester = clip(who?.full_name, 120) || clip(who?.email || auth.user!.email, 254)
       const replyTo = clip(who?.email || auth.user!.email, 254).toLowerCase()
       const rows: Row[] = [
-        { label: 'Organisation', value: clip(org?.name, 200) },
-        { label: 'From', value: requester },
+        { label: 'Name', value: requester },
         { label: 'Email', value: replyTo },
+        { label: 'Organisation', value: clip(org?.name, 200) },
         { label: 'Topic', value: clip(hr.category, 60) },
         { label: 'Page', value: [clip(hr.page_title, 120), clip(hr.page_path, 300)].filter(Boolean).join(' · ') },
-        { label: 'Subject', value: clip(hr.subject, 200) },
+        { label: 'Request subject', value: clip(hr.subject, 200) },
         { label: 'Message', value: clip(hr.client_message, 4000) },
-        { label: 'Attachment', value: clip(hr.attachment_name, 200) },
-        { label: 'Open in Control Centre', value: 'https://admin.reganchor.com/requests' },
+        {
+          label: 'Attachment',
+          value: hr.attachment_name ? `${clip(hr.attachment_name, 200)} (view in Control Centre)` : '',
+        },
       ].filter((r) => r.value)
-      const built = opsMail('New client help request', rows)
+      const orgName = clip(org?.name, 120)
+      const heading = 'New client help request'
+      // Client acknowledgement, sent after the ops email succeeds (best-effort)
+      if (emailOk(replyTo)) {
+        helpAck = buildHelpAck({
+          to: replyTo,
+          firstName: clip(who?.full_name, 120).split(/\s+/)[0] || '',
+          subject: clip(hr.subject, 120),
+          topic: clip(hr.category, 60),
+          page: clip(hr.page_title, 120) || clip(hr.page_path, 300),
+          message: clip(hr.client_message, 4000),
+        })
+      }
       mail = {
         to: OPS,
         replyTo: emailOk(replyTo) ? replyTo : OPS,
-        subject: `Help request: ${clip(org?.name, 120) || requester}${hr.subject ? ' - ' + clip(hr.subject, 120) : ''}`,
-        ...built,
+        // House pattern '<Kind>: <Name> - <Org>' (as Contact)
+        subject: `Help request: ${requester}${orgName ? ' - ' + orgName : ''}`,
+        text: `${heading}\n\n${rowsText(rows)}\n\nOpen in Control Centre: ${ADMIN_REQUESTS_URL}`,
+        html: shell(heading, h1(heading) + fieldTable(rows) + cta(ADMIN_REQUESTS_URL, 'Open in Control Centre'), {
+          preheader: [requester, orgName, clip(hr.subject, 120)].filter(Boolean).join(' · '),
+        }),
       }
     } else if (kind === 'portal-alert') {
       const auth = await requireUser(req)
@@ -917,7 +1000,30 @@ serve(async (req) => {
       console.error('[send-mail]', resJson)
       return json({ error: 'Send failed' }, 502)
     }
-    return json({ ok: true, id: resJson.id })
+    let ackId: string | undefined
+    if (helpAck) {
+      // Ack failure must never fail the ops send
+      try {
+        const ackRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: FROM_OPS,
+            to: [helpAck.to],
+            reply_to: helpAck.replyTo,
+            subject: helpAck.subject,
+            text: helpAck.text,
+            html: helpAck.html,
+          }),
+        })
+        const ackJson = await ackRes.json().catch(() => ({}))
+        if (ackRes.ok) ackId = ackJson.id
+        else console.error('[send-mail] help-request-ack failed', ackJson)
+      } catch (e) {
+        console.error('[send-mail] help-request-ack error', e)
+      }
+    }
+    return json({ ok: true, id: resJson.id, ...(ackId ? { ack_id: ackId } : {}) })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Send failed'
     console.error('[send-mail]', message)
