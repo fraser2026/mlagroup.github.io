@@ -8,9 +8,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
   <script src="js/stripe-config.js"></script>
-  <link rel="stylesheet" href="css/reganchor.css">
-  <link rel="stylesheet" href="css/reganchor-flow.css">
-  <script src="js/ra-maturity.js"></script>
+  <link rel="stylesheet" href="css/reganchor.css?v=20261012b">
+  <link rel="stylesheet" href="css/reganchor-flow.css?v=20261012b">
+  <script src="js/ra-maturity.js?v=20261012b"></script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
 <body class="results-page">
@@ -248,20 +248,8 @@ function renderMaturity(score) {
   document.getElementById('diagTier').innerHTML =
     '<strong>' + raLevelText(score) + '</strong>';
   const mount = document.getElementById('maturityMount');
-  const now = raLevel(score);
-  const cur = now ? now.n : 0;
-  const rows = RA_LEVELS.slice().reverse().map((L) => {
-    const state = L.n === cur ? 'now' : L.n < cur ? 'done' : 'ahead';
-    const depth = state === 'done' ? ' mlad__row--d' + Math.min(cur - L.n, 3) : '';
-    return `<li class="mlad__row mlad__row--${state}${depth}" style="--i:${L.n - 1}">` +
-      `<span class="mlad__bar"><span class="mlad__fill"></span></span>` +
-      `<span class="mlad__code">${L.code}</span>` +
-      `<span class="mlad__label">${L.label}</span>` +
-      `<span class="mlad__range">${state === 'now' ? 'Your level' : L.min + ' to ' + L.max}</span>` +
-      `</li>`;
-  }).join('');
-  mount.innerHTML = `<ol class="mlad" aria-label="Governance maturity ${raLevelText(score)}">${rows}</ol>`;
-  requestAnimationFrame(() => mount.querySelector('.mlad').classList.add('is-in'));
+  mount.innerHTML = raComplianceBar(score, { animate: true }) + raLadderScale(score).replace(' (current)', '');
+  requestAnimationFrame(() => animateMaturity(mount));
 }
 
 function renderDomains(ss) {

@@ -453,54 +453,51 @@ h3 { font-size: 20px; font-weight: 400; color: var(--main); margin-bottom: 8px }
 .diag-cbar-wrap .label { margin-bottom: 16px }
 .diag-cbar-wrap .eyebrow-label { display: block; margin-bottom: 12px }
 
-/* Maturity ladder: one row per level, bar and name aligned on the same
-   line so the scale reads as a single instrument. Fixed bar width keeps
-   it from stretching on narrow screens. */
-.mlad {
-  list-style: none; margin: 0; padding: 0;
-  display: flex; flex-direction: column; gap: 2px;
-  max-width: 440px;
+/* Same compliance bar as the homepage maturity strip (index.html): fixed
+   120px stack, 5px rungs, current rung overhangs by 5px either side.
+   The bar never stretches with the card, on any width. */
+.diag-maturity-row {
+  display: flex; align-items: flex-end; gap: 28px;
 }
-.mlad__row {
-  display: grid;
-  grid-template-columns: 64px 28px minmax(0, 1fr) auto;
-  align-items: center; column-gap: 14px;
-  min-height: 30px; padding: 0 10px;
-  border-radius: 4px;
-  font-size: 13px; font-weight: 500; letter-spacing: -0.005em;
+.diag-maturity-row .ra-cbar {
+  flex-shrink: 0; width: 120px; margin-left: 5px; margin-bottom: 7px;
+}
+.diag-maturity-row .ra-cbar__row { height: 5px; background: var(--accent) }
+.diag-maturity-row .ra-cbar__row--current {
+  height: 6px; width: 130px; margin-left: -5px;
+  background: var(--accent);
+}
+@keyframes ra-cbar-grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.diag-maturity-row .ra-cbar--animate .ra-cbar__row {
+  transform-origin: left center;
+  animation: ra-cbar-grow 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ra-cbar-i, 0) * 220ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .diag-maturity-row .ra-cbar--animate .ra-cbar__row { animation: none }
+}
+
+/* Level names: one weight, hierarchy by colour. Levels above the reading
+   are tertiary, levels already reached are secondary, the reading is ink
+   with the blurple marker (DOM order is L7 first, so reached levels are
+   the siblings that follow the current one). */
+.diag-maturity-row .ra-ladder {
+  flex: 1; min-width: 0; gap: 0;
+  font-size: 13px; font-weight: 500; line-height: 20px;
+  letter-spacing: -0.005em; color: var(--muted);
   font-feature-settings: 'tnum';
 }
-.mlad__bar {
-  display: block; height: 6px; border-radius: 2px;
-  background: var(--border); overflow: hidden;
+.diag-maturity-row .ra-ladder__step { white-space: nowrap }
+.diag-maturity-row .ra-ladder__step--now ~ .ra-ladder__step { color: var(--sub) }
+.diag-maturity-row .ra-ladder__step--now {
+  position: relative; color: var(--main); font-weight: 500;
 }
-.mlad__fill {
-  display: block; height: 100%; width: 100%;
+.diag-maturity-row .ra-ladder__step--now::before {
+  content: ''; position: absolute; left: -12px; top: 50%;
+  width: 6px; height: 6px; margin-top: -3px; border-radius: 50%;
   background: var(--accent);
-  transform: scaleX(0); transform-origin: left center;
-  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: calc(var(--i, 0) * 70ms);
 }
-.mlad.is-in .mlad__row--done .mlad__fill,
-.mlad.is-in .mlad__row--now .mlad__fill { transform: scaleX(1) }
-.mlad__row--d1 .mlad__fill { opacity: 0.7 }
-.mlad__row--d2 .mlad__fill { opacity: 0.5 }
-.mlad__row--d3 .mlad__fill { opacity: 0.35 }
-
-.mlad__code { color: var(--main) }
-.mlad__label { color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.mlad__range { color: var(--muted); font-size: 12px; text-align: right }
-
-.mlad__row--ahead .mlad__code,
-.mlad__row--ahead .mlad__label { color: var(--muted) }
-
-.mlad__row--now { background: #F3F1FF }
-.mlad__row--now .mlad__label { color: var(--main) }
-.mlad__row--now .mlad__range { color: var(--accent) }
-
-@media (prefers-reduced-motion: reduce) {
-  .mlad__fill { transition: none }
-}
+.diag-maturity-row .ra-ladder { padding-left: 12px }
 /* This headline — not the score number — is the one thing on the
    card that has to land as an actual statement, so it gets a real
    heading size instead of sitting at body-text scale like everything
@@ -909,6 +906,18 @@ footer {
 .no-data[hidden], #resultsContent[hidden], #buyContent[hidden], .flags-locked[hidden] { display: none !important }
 /* .nav-cta sets display: inline-flex in reganchor.css, which beats bare [hidden] */
 .nav-cta[hidden] { display: none !important }
+
+/* Results header matches index.html: full wordmark that settles to 26px
+   on scroll, and the homepage nav button size. */
+.results-page .logo img { transition: height 0.22s ease }
+.results-page .site-chrome.is-scrolled .logo img { height: 26px }
+.results-page .nav-cta,
+.results-page a.nav-signin {
+  padding: 9px 18px; font-size: 0.85rem; white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .results-page .logo img { transition: none }
+}
 .no-data-inner { text-align: center; padding: 60px 24px; max-width: 420px }
 .no-data-inner a:not(.btn-primary):not(.btn-ghost) { color: var(--accent); text-decoration: none }
 .no-data-inner a:not(.btn-primary):not(.btn-ghost):hover { text-decoration: underline }
@@ -1269,14 +1278,8 @@ footer {
   .wrapper { padding: 28px 18px 64px }
   .diag-score__num { font-size: 64px }
   .score-card { padding: 24px 22px }
-  .logo img, .nav-logo img { height: 26px }
-  .nav-right a { white-space: nowrap }
-  .mlad { max-width: none }
-  .mlad__row { grid-template-columns: 48px 26px minmax(0, 1fr) auto; column-gap: 12px; padding: 0 8px }
-}
-@media (max-width: 420px) {
-  .logo img, .nav-logo img { height: 22px }
-  .site-nav { gap: 12px }
+  .results-page .nav-signin { display: none }
+  .diag-maturity-row { gap: 24px }
   .progress-wrap, .progress-strip { padding-left: 20px; padding-right: 20px }
   .ft-row { flex-direction: column; text-align: center; gap: 12px }
   .results-page .domain-list { padding: 4px 18px }
