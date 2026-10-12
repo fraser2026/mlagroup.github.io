@@ -248,8 +248,20 @@ function renderMaturity(score) {
   document.getElementById('diagTier').innerHTML =
     '<strong>' + raLevelText(score) + '</strong>';
   const mount = document.getElementById('maturityMount');
-  mount.innerHTML = raComplianceBar(score, { animate: true }) + raLadderScale(score);
-  requestAnimationFrame(() => animateMaturity(mount));
+  const now = raLevel(score);
+  const cur = now ? now.n : 0;
+  const rows = RA_LEVELS.slice().reverse().map((L) => {
+    const state = L.n === cur ? 'now' : L.n < cur ? 'done' : 'ahead';
+    const depth = state === 'done' ? ' mlad__row--d' + Math.min(cur - L.n, 3) : '';
+    return `<li class="mlad__row mlad__row--${state}${depth}" style="--i:${L.n - 1}">` +
+      `<span class="mlad__bar"><span class="mlad__fill"></span></span>` +
+      `<span class="mlad__code">${L.code}</span>` +
+      `<span class="mlad__label">${L.label}</span>` +
+      `<span class="mlad__range">${state === 'now' ? 'Your level' : L.min + ' to ' + L.max}</span>` +
+      `</li>`;
+  }).join('');
+  mount.innerHTML = `<ol class="mlad" aria-label="Governance maturity ${raLevelText(score)}">${rows}</ol>`;
+  requestAnimationFrame(() => mount.querySelector('.mlad').classList.add('is-in'));
 }
 
 function renderDomains(ss) {

@@ -451,41 +451,55 @@ h3 { font-size: 20px; font-weight: 400; color: var(--main); margin-bottom: 8px }
 .diag-tier strong { color: var(--sub); font-weight: 600 }
 .diag-cbar-wrap { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border) }
 .diag-cbar-wrap .label { margin-bottom: 16px }
-.diag-maturity-row {
-  display: flex; align-items: stretch; gap: 32px;
+.diag-cbar-wrap .eyebrow-label { display: block; margin-bottom: 12px }
+
+/* Maturity ladder: one row per level, bar and name aligned on the same
+   line so the scale reads as a single instrument. Fixed bar width keeps
+   it from stretching on narrow screens. */
+.mlad {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 2px;
+  max-width: 440px;
 }
-.diag-maturity-row .ra-cbar { flex-shrink: 0; width: 156px }
-/* Match the portal dashboard's compliance bar: every row is the accent
-   colour, and the achieved/pending opacity steps carry the gradient. This
-   keeps the diagnostic result and the portal dashboard visually consistent. */
-.diag-maturity-row .ra-cbar__row { height: 6px; background: var(--ra-blurple) }
-.diag-maturity-row .ra-cbar__row--current {
-  height: 7px; width: 169px; margin-left: -6.5px;
-  background: var(--ra-blurple);
+.mlad__row {
+  display: grid;
+  grid-template-columns: 64px 28px minmax(0, 1fr) auto;
+  align-items: center; column-gap: 14px;
+  min-height: 30px; padding: 0 10px;
+  border-radius: 4px;
+  font-size: 13px; font-weight: 500; letter-spacing: -0.005em;
+  font-feature-settings: 'tnum';
 }
-/* Grow-on-paint animation, mirroring the portal (portal.css). Staggered from
-   the bottom rung upward via the --ra-cbar-i index set in raComplianceBar. */
-@keyframes ra-cbar-grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
-.diag-maturity-row .ra-cbar--animate .ra-cbar__row {
-  transform-origin: left center;
-  animation: ra-cbar-grow 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--ra-cbar-i, 0) * 95ms);
+.mlad__bar {
+  display: block; height: 6px; border-radius: 2px;
+  background: var(--border); overflow: hidden;
 }
+.mlad__fill {
+  display: block; height: 100%; width: 100%;
+  background: var(--accent);
+  transform: scaleX(0); transform-origin: left center;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+.mlad.is-in .mlad__row--done .mlad__fill,
+.mlad.is-in .mlad__row--now .mlad__fill { transform: scaleX(1) }
+.mlad__row--d1 .mlad__fill { opacity: 0.7 }
+.mlad__row--d2 .mlad__fill { opacity: 0.5 }
+.mlad__row--d3 .mlad__fill { opacity: 0.35 }
+
+.mlad__code { color: var(--main) }
+.mlad__label { color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.mlad__range { color: var(--muted); font-size: 12px; text-align: right }
+
+.mlad__row--ahead .mlad__code,
+.mlad__row--ahead .mlad__label { color: var(--muted) }
+
+.mlad__row--now { background: #F3F1FF }
+.mlad__row--now .mlad__label { color: var(--main) }
+.mlad__row--now .mlad__range { color: var(--accent) }
+
 @media (prefers-reduced-motion: reduce) {
-  .diag-maturity-row .ra-cbar--animate .ra-cbar__row { animation: none }
-}
-.diag-maturity-row .ra-ladder {
-  flex: 1; min-width: 0; font-size: 12px; gap: 4px;
-  letter-spacing: 0; text-transform: none;
-}
-.diag-maturity-row .ra-ladder__step--now {
-  position: relative; padding-left: 13px; color: var(--main);
-}
-.diag-maturity-row .ra-ladder__step--now::before {
-  content: ''; position: absolute; left: 0; top: 50%;
-  transform: translateY(-50%);
-  width: 5px; height: 5px; border-radius: 50%;
-  background: currentColor;
+  .mlad__fill { transition: none }
 }
 /* This headline — not the score number — is the one thing on the
    card that has to land as an actual statement, so it gets a real
@@ -1255,9 +1269,14 @@ footer {
   .wrapper { padding: 28px 18px 64px }
   .diag-score__num { font-size: 64px }
   .score-card { padding: 24px 22px }
-  .diag-maturity-row { flex-direction: column; gap: 18px }
-  .diag-maturity-row .ra-cbar { width: 100% }
-  .diag-maturity-row .ra-cbar__row--current { width: calc(100% + 13px) }
+  .logo img, .nav-logo img { height: 26px }
+  .nav-right a { white-space: nowrap }
+  .mlad { max-width: none }
+  .mlad__row { grid-template-columns: 48px 26px minmax(0, 1fr) auto; column-gap: 12px; padding: 0 8px }
+}
+@media (max-width: 420px) {
+  .logo img, .nav-logo img { height: 22px }
+  .site-nav { gap: 12px }
   .progress-wrap, .progress-strip { padding-left: 20px; padding-right: 20px }
   .ft-row { flex-direction: column; text-align: center; gap: 12px }
   .results-page .domain-list { padding: 4px 18px }
