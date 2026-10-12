@@ -30,7 +30,7 @@ type Assignment = {
   assigned_to?: string | null
   governance_controls?: {
     title?: string | null
-    control_number?: string | number | null
+    control_number?: string | number | null; reference?: string | null
     control_type?: string | null
     pillar?: string | null
     description?: string | null
@@ -193,7 +193,7 @@ export function ControlsPage() {
       const { data } = await sb
         .from('control_assignments')
         .select(
-          'id,status,notes,due_date,control_id,system_id,assigned_to,governance_controls(title,control_number,control_type,pillar,description),ai_systems(name)',
+          'id,status,notes,due_date,control_id,system_id,assigned_to,governance_controls(title,control_number,reference,control_type,pillar,description),ai_systems(name)',
         )
         .eq('org_id', orgId)
         .order('updated_at', { ascending: false })
@@ -255,7 +255,7 @@ export function ControlsPage() {
     if (!q) return view
     return view.filter((r) => {
       const title = r.governance_controls?.title || ''
-      const code = controlCode(r.governance_controls?.control_number) || ''
+      const code = controlCode(r.governance_controls?.control_number, r.governance_controls?.reference) || ''
       const sys = r.ai_systems?.name || ''
       const type = r.governance_controls?.control_type || ''
       return `${code} ${title} ${sys} ${type} ${r.status || ''}`.toLowerCase().includes(q)
@@ -360,7 +360,7 @@ export function ControlsPage() {
                 <Ledger flush>
                   {g.items.map((c) => {
                     const title = c.governance_controls?.title || 'Control'
-                    const code = controlCode(c.governance_controls?.control_number)
+                    const code = controlCode(c.governance_controls?.control_number, c.governance_controls?.reference)
                     const assignee =
                       (c.assigned_to && assigneeNames[c.assigned_to]) || 'Unassigned'
                     return (

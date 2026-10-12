@@ -1,50 +1,238 @@
 .form {
   display: grid;
-  gap: 14px;
+  gap: 22px;
+}
+
+.group {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.group + .group {
+  padding-top: 18px;
+  border-top: 1px solid var(--ra-line);
+}
+
+.group legend {
+  padding: 0;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
+.group > :global(button) {
+  justify-self: start;
 }
 
 .field {
   display: grid;
   gap: 6px;
+  min-width: 0;
   font-size: 12px;
-  color: var(--ra-text-3);
+  color: var(--ra-text-2);
 }
 
 .field input,
-.field textarea {
+.field textarea,
+.inline input {
+  width: 100%;
+  box-sizing: border-box;
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-control);
-  padding: 9px 10px;
+  padding: 8px 10px;
   font: inherit;
+  font-size: 13px;
   color: var(--ra-ink);
   background: var(--ra-canvas);
 }
 
-.field input:focus,
+.field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field input::placeholder,
+.field textarea::placeholder,
+.inline input::placeholder {
+  color: var(--ra-text-3);
+}
+
 .field input:focus-visible,
-.field textarea:focus,
-.field textarea:focus-visible {
+.field textarea:focus-visible,
+.inline input:focus-visible {
   outline: none;
   border-color: var(--ra-blurple);
   background: var(--ra-focus-fill);
   box-shadow: 0 0 0 3px var(--ra-focus-ring);
 }
 
-.copy {
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.task {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--ra-line);
+  border-radius: var(--ra-radius-control);
+}
+
+.taskHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.marker {
+  font-family: var(--ra-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--ra-text-2);
+}
+
+.taskTools {
+  display: flex;
+  gap: 2px;
+}
+
+.taskTools button,
+.iconBtn {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--ra-radius-control);
+  background: transparent;
+  color: var(--ra-text-2);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.taskTools button:hover:not(:disabled),
+.iconBtn:hover {
+  background: var(--ra-hover);
+  color: var(--ra-ink);
+}
+
+.taskTools button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.inline {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.checks {
+  display: grid;
+  gap: 8px;
+}
+
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--ra-ink);
+}
+
+.check input {
+  accent-color: var(--ra-blurple);
+}
+
+.quiet {
   margin: 0;
   font-size: 13px;
   color: var(--ra-text-2);
-  line-height: 1.5;
 }
 
-.statusRow {
+.footer {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 
-.link {
+.spacer {
+  flex: 1;
+}
+
+.detail {
+  display: grid;
+  gap: 20px;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.facts:empty {
+  display: none;
+}
+
+.facts dt {
+  font-size: 12px;
+  color: var(--ra-text-2);
+  margin-bottom: 4px;
+}
+
+.facts dd {
+  margin: 0;
   font-size: 13px;
-  color: var(--ra-blurple);
+  color: var(--ra-ink);
+  overflow-wrap: anywhere;
+}
+
+.block h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
   font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
+.block p,
+.copy {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ra-text-2);
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ra-ink);
+}
+
+.list li span:first-child {
+  margin-right: 8px;
+}
+
+.listMeta {
+  color: var(--ra-text-3);
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .pair,
+  .facts {
+    grid-template-columns: 1fr;
+  }
 }

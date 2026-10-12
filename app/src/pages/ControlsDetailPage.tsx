@@ -56,7 +56,7 @@ function mailErrorMessage(err: unknown): string {
 type Control = {
   id: string
   title?: string | null
-  control_number?: string | number | null
+  control_number?: string | number | null; reference?: string | null
   control_type?: string | null
   pillar?: string | null
   description?: string | null
@@ -197,7 +197,7 @@ export function ControlsDetailPage() {
 
   const ctrl = assign?.governance_controls
   const rawTitle = ctrl?.title || 'Control'
-  const code = controlCode(ctrl?.control_number)
+  const code = controlCode(ctrl?.control_number, ctrl?.reference)
   const title = code ? `${code} ${rawTitle}` : rawTitle
   const systemId = (fromRegistry && nav.assetId) || assign?.system_id || null
   const assetLabel =
@@ -264,7 +264,7 @@ export function ControlsDetailPage() {
     const { data, error: loadErr } = await sb
       .from('control_assignments')
       .select(
-        'id,status,notes,due_date,priority,assigned_to,assigned_by,assigned_at,control_id,system_id,task_responses,governance_controls(id,title,control_number,control_type,pillar,description,purpose,evidence_types,is_org_level),ai_systems(name)',
+        'id,status,notes,due_date,priority,assigned_to,assigned_by,assigned_at,control_id,system_id,task_responses,governance_controls(id,title,control_number,reference,control_type,pillar,description,purpose,evidence_types,is_org_level),ai_systems(name)',
       )
       .eq('id', id)
       .eq('org_id', orgId)

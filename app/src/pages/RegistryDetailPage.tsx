@@ -133,6 +133,7 @@ type ControlAssign = {
   governance_controls?: {
     title?: string | null
     control_number?: string | null
+    reference?: string | null
     control_type?: string | null
   } | null
 }
@@ -338,7 +339,7 @@ export function RegistryDetailPage() {
     const { data: sysAssign } = await sb
       .from('control_assignments')
       .select(
-        'id,status,control_id,system_id,assigned_to,governance_controls(title,control_number,control_type)',
+        'id,status,control_id,system_id,assigned_to,governance_controls(title,control_number,reference,control_type)',
       )
       .eq('system_id', id)
       .eq('org_id', org.id)
@@ -347,7 +348,7 @@ export function RegistryDetailPage() {
       const { data: orgAssign } = await sb
         .from('control_assignments')
         .select(
-          'id,status,control_id,system_id,assigned_to,governance_controls(title,control_number,control_type)',
+          'id,status,control_id,system_id,assigned_to,governance_controls(title,control_number,reference,control_type)',
         )
         .eq('org_id', org.id)
         .is('system_id', null)
@@ -1060,7 +1061,7 @@ export function RegistryDetailPage() {
                     <div className={styles.ctrlGroupTitle}>{group.label}</div>
                     <Ledger flush>
                       {group.items.map((c) => {
-                        const code = controlCode(c.governance_controls?.control_number)
+                        const code = controlCode(c.governance_controls?.control_number, c.governance_controls?.reference)
                         const title = c.governance_controls?.title || 'Control'
                         const assignee =
                           (c.assigned_to && assigneeNames[c.assigned_to]) || 'Unassigned'

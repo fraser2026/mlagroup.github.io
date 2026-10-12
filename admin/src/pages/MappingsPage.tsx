@@ -154,6 +154,7 @@ export function MappingsPage() {
         sb
           .from('governance_controls')
           .select('id,control_number,title')
+          .is('org_id', null)
           .order('control_number', { ascending: true }),
         sb
           .from('compliance_frameworks')

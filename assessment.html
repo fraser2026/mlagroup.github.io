@@ -735,7 +735,8 @@ async function triggerControls(responses,assessId){
   try{
     const{data:controls}=await sb.from('governance_controls')
       .select('id,control_number,title,is_org_level,trigger_rules')
-      .eq('is_active',true);
+      .eq('is_active',true)
+      .is('org_id',null);
     if(!controls)return;
     const triggered=controls.filter(c=>controlTriggeredByResponses(c,responses));
     if(!triggered.length)return;

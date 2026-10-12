@@ -652,6 +652,7 @@ serve(async (req) => {
         .select(
           'id,control_number,title,description,purpose,control_type,pillar,is_org_level,evidence_types,trigger_rules,display_order,is_active',
         )
+        .is('org_id', null)
         .order('control_number'),
       supabase
         .from('compliance_frameworks')

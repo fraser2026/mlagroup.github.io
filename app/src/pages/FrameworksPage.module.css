@@ -41,7 +41,6 @@
   font-size: 13px;
   color: var(--ra-text-2);
   line-height: 1.45;
-  min-height: 2.9em;
 }
 
 .cardMeta {
@@ -49,12 +48,11 @@
   color: var(--ra-text-3);
 }
 
-.hint {
-  margin: 0;
-  font-size: 13px;
-  color: var(--ra-text-2);
-  max-width: 62ch;
-  line-height: 1.5;
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
 }
 
 .form {
@@ -66,6 +64,11 @@
   display: grid;
   gap: 6px;
   font-size: 12px;
+  color: var(--ra-text-2);
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
   color: var(--ra-text-3);
 }
 

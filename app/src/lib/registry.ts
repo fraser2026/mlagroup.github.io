@@ -477,8 +477,8 @@ export function formatDueDateLabel(dueDate?: string | null) {
 }
 
 /** Catalogue code, e.g. C5. */
-export function controlCode(controlNumber?: string | number | null) {
-  if (controlNumber == null || controlNumber === '') return null
+export function controlCode(controlNumber?: string | number | null, reference?: string | null) {
+  if (controlNumber == null || controlNumber === '') return reference || null
   const n = String(controlNumber).replace(/^c/i, '')
   if (!n) return null
   return `C${n}`

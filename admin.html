@@ -360,7 +360,7 @@ async function loadData(){
     sb.from('ai_systems').select('id,name,org_id,asset_kind,risk_tier,lifecycle,system_owner,vendor,description').order('created_at',{ascending:false}),
     sb.from('registry_assessments').select('*').order('requested_at',{ascending:false}),
     sb.from('support_requests').select('*').order('requested_at',{ascending:false}),
-    sb.from('governance_controls').select('id,control_number,title,control_type').eq('is_active',true),
+    sb.from('governance_controls').select('id,control_number,title,control_type').eq('is_active',true).is('org_id',null),
     sb.from('policy_documents').select('*').order('created_at',{ascending:false}),
     sb.from('policy_acknowledgments').select('*').order('acknowledged_at',{ascending:false}),
     sb.from('policy_templates').select('*').eq('is_active',true).order('display_order'),

@@ -107,12 +107,12 @@ export function EvidenceReviewPage() {
       const assigns = (assignRes.data as { id: string; control_id: string }[]) || []
       const ctrlIds = [...new Set(assigns.map((a) => a.control_id).filter(Boolean))]
       const { data: ctrls } = ctrlIds.length
-        ? await sb.from('governance_controls').select('id,control_number,title').in('id', ctrlIds)
+        ? await sb.from('governance_controls').select('id,control_number,reference,title').in('id', ctrlIds)
         : { data: [] }
       const ctrlById = new Map(
-        ((ctrls as { id: string; control_number: number; title: string }[]) || []).map((c) => [
+        ((ctrls as { id: string; control_number: number | null; reference: string | null; title: string }[]) || []).map((c) => [
           c.id,
-          `C${c.control_number} ${c.title}`,
+          c.control_number != null ? `C${c.control_number} ${c.title}` : c.reference ? `${c.reference} ${c.title}` : c.title,
         ]),
       )
       setControls(new Map(assigns.map((a) => [a.id, ctrlById.get(a.control_id) || 'Control'])))

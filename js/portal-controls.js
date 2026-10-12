@@ -30,7 +30,7 @@ async function navigateControls(navEl){navigate('controls',navEl);if(!currentOrg
 async function loadControls(){
   if(!currentOrg)return;
   const[{data:controls},{data:tasks},{data:assignments}]=await Promise.all([
-    sb.from('governance_controls').select('*').eq('is_active',true).order('display_order'),
+    sb.from('governance_controls').select('*').eq('is_active',true).is('org_id',null).order('display_order'),
     sb.from('control_tasks').select('*').order('display_order'),
     sb.from('control_assignments').select('*').eq('org_id',currentOrg.id)
   ]);

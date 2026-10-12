@@ -33,7 +33,7 @@ type Assignment = {
   system_id?: string | null
   governance_controls?: {
     title?: string | null
-    control_number?: string | number | null
+    control_number?: string | number | null; reference?: string | null
     control_type?: string | null
   } | null
   ai_systems?: { name?: string | null } | null
@@ -137,7 +137,7 @@ export function MyWorkPage() {
       const { data } = await sb
         .from('control_assignments')
         .select(
-          'id,status,due_date,priority,control_id,system_id,governance_controls(title,control_number,control_type),ai_systems(name)',
+          'id,status,due_date,priority,control_id,system_id,governance_controls(title,control_number,reference,control_type),ai_systems(name)',
         )
         .eq('org_id', orgId)
         .eq('assigned_to', userId)
@@ -163,7 +163,7 @@ export function MyWorkPage() {
     if (!q) return view
     return view.filter((r) => {
       const title = r.governance_controls?.title || ''
-      const code = controlCode(r.governance_controls?.control_number) || ''
+      const code = controlCode(r.governance_controls?.control_number, r.governance_controls?.reference) || ''
       const sys = r.ai_systems?.name || ''
       return `${code} ${title} ${sys} ${r.status || ''} ${r.due_date || ''}`.toLowerCase().includes(q)
     })
@@ -224,7 +224,7 @@ export function MyWorkPage() {
                 <Ledger flush>
                   {g.items.map((c) => {
                     const title = c.governance_controls?.title || 'Control'
-                    const code = controlCode(c.governance_controls?.control_number)
+                    const code = controlCode(c.governance_controls?.control_number, c.governance_controls?.reference)
                     return (
                       <LedgerRow
                         key={c.id}

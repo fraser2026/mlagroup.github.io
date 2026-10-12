@@ -105,6 +105,7 @@ export function ControlsCataloguePage() {
         .select(
           'id,control_number,title,description,purpose,control_type,pillar,is_org_level,evidence_types,trigger_rules,display_order,is_active',
         )
+        .is('org_id', null)
         .order('display_order', { ascending: true })
       if (qErr) throw qErr
       setRows((data as GovernanceControl[]) || [])

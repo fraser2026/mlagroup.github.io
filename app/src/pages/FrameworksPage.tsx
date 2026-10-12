@@ -139,23 +139,37 @@ export function FrameworksPage() {
         .eq('is_active', true)
         .order('created_at', { ascending: false })
       const frameworks = fws || []
-      const withCounts: CustomFramework[] = []
-      for (const fw of frameworks) {
-        const { data: ctrls } = await sb
-          .from('org_framework_controls')
-          .select('status')
-          .eq('framework_id', fw.id)
-        const list = ctrls || []
-        const done = list.filter((c) => c.status === 'implemented' || c.status === 'verified').length
-        withCounts.push({
-          id: fw.id,
-          name: fw.name,
-          description: fw.description || '',
-          controlCount: list.length,
-          done,
-        })
-      }
-      setCustom(withCounts)
+      const { data: ctrls } = frameworks.length
+        ? await sb
+            .from('org_framework_controls')
+            .select('framework_id,mapped_control_id')
+            .in(
+              'framework_id',
+              frameworks.map((f) => f.id),
+            )
+        : { data: [] }
+      const mapped = (ctrls || []).map((c) => c.mapped_control_id).filter(Boolean) as string[]
+      const { data: asg } = mapped.length
+        ? await sb.from('control_assignments').select('control_id,status').in('control_id', mapped)
+        : { data: [] }
+      const byControl = new Map<string, string[]>()
+      for (const a of asg || []) byControl.set(a.control_id, [...(byControl.get(a.control_id) || []), a.status])
+      setCustom(
+        frameworks.map((fw) => {
+          const list = (ctrls || []).filter((c) => c.framework_id === fw.id)
+          const done = list.filter((c) => {
+            const st = c.mapped_control_id ? byControl.get(c.mapped_control_id) || [] : []
+            return st.length > 0 && st.every((s) => s === 'implemented' || s === 'verified')
+          }).length
+          return {
+            id: fw.id,
+            name: fw.name,
+            description: fw.description || '',
+            controlCount: list.length,
+            done,
+          }
+        }),
+      )
     } else {
       setCustom([])
     }
@@ -223,7 +237,7 @@ export function FrameworksPage() {
       <PageFrame>
         <PageHeader
           title="Frameworks"
-          description="Built-in obligation packs, plus frameworks you write yourself."
+          description="Regulatory packs and your own control frameworks."
         />
         <BrandLoader fill label="Loading frameworks" />
       </PageFrame>
@@ -231,15 +245,10 @@ export function FrameworksPage() {
   }
 
   return (
-    <PageFrame
-      railItems={[
-        { id: 'library', label: 'Library' },
-        { id: 'custom', label: 'Custom' },
-      ]}
-    >
+    <PageFrame>
       <PageHeader
         title="Frameworks"
-        description="Built-in obligation packs, plus frameworks you write yourself."
+        description="Regulatory packs and your own control frameworks."
         actions={
           <Button onClick={() => setCreateOpen(true)} disabled={!orgId}>
             Create framework
@@ -247,12 +256,7 @@ export function FrameworksPage() {
         }
       />
 
-      <Notice title="How frameworks work here">
-        Built-in packs (EU AI Act, UK GDPR, FCA) score from live asset compliance. Custom frameworks stay in your
-        organisation. Add controls and track status here.
-      </Notice>
-
-      <Section id="library" title="Framework library" description="Search and open a pack to review coverage.">
+      <Section id="library" title="Framework library">
         <Tabs
           items={[
             { id: 'library', label: 'Built-in', count: builtin.length },
@@ -265,7 +269,7 @@ export function FrameworksPage() {
 
         {tab === 'library' ? (
           filteredBuiltin.length === 0 ? (
-            <EmptyState title="No built-in packs" body="Obligation reference data is not loaded for this environment." />
+            <EmptyState title="No regulatory packs found" body="Try a different search." />
           ) : (
             <div className={styles.grid}>
               {filteredBuiltin.map((f) => (
@@ -287,8 +291,8 @@ export function FrameworksPage() {
           )
         ) : filteredCustom.length === 0 ? (
           <EmptyState
-            title="No custom frameworks yet"
-            body="Create a framework for an internal standard, customer questionnaire, or board-approved control set."
+            title="No frameworks yet"
+            body="Build your own control set for an internal standard or client requirement."
             action={
               <Button onClick={() => setCreateOpen(true)} disabled={!orgId}>
                 Create framework
@@ -303,8 +307,10 @@ export function FrameworksPage() {
                   <div className={styles.cardTitle}>{f.name}</div>
                   <StatusLabel tone="ok">Custom</StatusLabel>
                 </div>
-                <p className={styles.cardBody}>{f.description || 'No description.'}</p>
-                <div className={styles.cardMeta}>{f.controlCount} controls</div>
+                {f.description ? <p className={styles.cardBody}>{f.description}</p> : null}
+                <div className={styles.cardMeta}>
+                  {f.controlCount} {f.controlCount === 1 ? 'control' : 'controls'}
+                </div>
                 <ProgressMeter
                   size="sm"
                   value={pct(f.done, f.controlCount)}
@@ -316,36 +322,43 @@ export function FrameworksPage() {
         )}
       </Section>
 
-      <Section id="custom" title="Custom frameworks" description="For internal standards or customer questionnaires.">
-        <p className={styles.hint}>
-          Use a custom framework when a customer questionnaire or internal standard does not match EU AI Act, UK GDPR, or
-          FCA packs.
-        </p>
-      </Section>
-
       <Drawer
         open={createOpen}
         title="Create framework"
         onClose={() => setCreateOpen(false)}
-        actions={
-          <Button onClick={() => void createFramework()} pending={busy}>
-            Create
-          </Button>
+        footer={
+          <div className={styles.footer}>
+            <Button variant="ghost" size="sm" onClick={() => setCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={() => void createFramework()} pending={busy}>
+              Create framework
+            </Button>
+          </div>
         }
       >
         <div className={styles.form}>
-          {error ? <StatusLabel tone="risk">{error}</StatusLabel> : null}
+          {error ? (
+            <Notice tone="risk" title="Check this framework">
+              {error}
+            </Notice>
+          ) : null}
           <label className={styles.field}>
             <span>Name</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Customer AI questionnaire" />
+            <input
+              value={name}
+              maxLength={120}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. ISO/IEC 42001"
+            />
           </label>
           <label className={styles.field}>
             <span>Description</span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Who this framework is for and what good looks like."
-              rows={4}
+              placeholder="Optional"
+              rows={3}
             />
           </label>
         </div>

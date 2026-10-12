@@ -97,15 +97,15 @@ export function ClientRequestsPage() {
         orgIds.length ? sb.from('organisations').select('id,name').in('id', orgIds) : Promise.resolve({ data: [] }),
         loadPeople(list.map((r) => r.requested_by)),
         ctrlIds.length
-          ? sb.from('governance_controls').select('id,control_number,title').in('id', ctrlIds)
+          ? sb.from('governance_controls').select('id,control_number,reference,title').in('id', ctrlIds)
           : Promise.resolve({ data: [] }),
         sysIds.length ? sb.from('ai_systems').select('id,name').in('id', sysIds) : Promise.resolve({ data: [] }),
       ])
       setOrgs(new Map(((orgRes.data as { id: string; name: string }[]) || []).map((o) => [o.id, o.name])))
       setPeople(peopleMap)
       const ctx = new Map<string, string>()
-      for (const c of (ctrlRes.data as { id: string; control_number: number; title: string }[]) || []) {
-        ctx.set(c.id, `C${c.control_number} ${c.title}`)
+      for (const c of (ctrlRes.data as { id: string; control_number: number | null; reference: string | null; title: string }[]) || []) {
+        ctx.set(c.id, c.control_number != null ? `C${c.control_number} ${c.title}` : c.reference ? `${c.reference} ${c.title}` : c.title)
       }
       for (const s of (sysRes.data as { id: string; name: string }[]) || []) ctx.set(s.id, s.name)
       setContext(ctx)
