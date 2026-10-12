@@ -62,14 +62,20 @@
     .center { text-align: center }
 
     /* Status mark: soft halo, solid disc with depth, crisp white glyph */
-    .mark { display: block; width: 64px; height: 64px; margin: 0 0 22px; }
+    .mark { display: block; width: 52px; height: 52px; margin: 0 0 22px; }
     .center .mark { margin-left: auto; margin-right: auto; }
-    .mark__halo { transform-origin: 32px 32px; animation: halo 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
-    .mark__disc { transform-origin: 32px 32px; animation: disc 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) 0.08s both; }
-    .mark__glyph { stroke-dasharray: 24; stroke-dashoffset: 24; animation: draw 0.35s ease-out 0.42s forwards; }
-    @keyframes halo { from { transform: scale(0.6); opacity: 0 } to { transform: none; opacity: 1 } }
+    .mark__disc { transform-origin: 32px 32px; animation: disc 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+    /* Hidden until the stroke starts so round caps never show as a dot */
+    .mark__glyph {
+      stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0;
+      animation: draw 0.4s cubic-bezier(0.65, 0, 0.35, 1) 0.38s forwards;
+    }
     @keyframes disc { from { transform: scale(0.4); opacity: 0 } to { transform: none; opacity: 1 } }
-    @keyframes draw { to { stroke-dashoffset: 0 } }
+    @keyframes draw {
+      0% { stroke-dashoffset: 1; opacity: 0 }
+      35% { opacity: 1 }
+      100% { stroke-dashoffset: 0; opacity: 1 }
+    }
 
     h1 {
       font-size: 22px; font-weight: 500; line-height: 1.25;
@@ -169,8 +175,8 @@
     .stack { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
 
     @media (prefers-reduced-motion: reduce) {
-      .card, .mark__halo, .mark__disc { animation: none; }
-      .mark__glyph { animation: none; stroke-dashoffset: 0; }
+      .card, .mark__disc { animation: none; }
+      .mark__glyph { animation: none; stroke-dashoffset: 0; opacity: 1; }
     }
     @media (max-width: 520px) {
       .brand { left: 20px; top: 18px; }
@@ -214,11 +220,10 @@
               <stop offset="0" stop-color="#2BC08A"/><stop offset="1" stop-color="#139562"/>
             </linearGradient>
           </defs>
-          <circle class="mark__halo" cx="32" cy="32" r="32" fill="#15A06A" fill-opacity="0.10"/>
           <g class="mark__disc">
-            <circle cx="32" cy="32" r="21" fill="url(#okDiscA)"/>
-            <circle cx="32" cy="32" r="20.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.22"/>
-            <path class="mark__glyph" d="M23.5 32.5l5.5 5.5 11.5-12" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="32" cy="32" r="31" fill="url(#okDiscA)"/>
+            <circle cx="32" cy="32" r="30.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.2"/>
+            <path class="mark__glyph" pathLength="1" d="M18.7 32.7L27.1 41.1L44.6 23.6" fill="none" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
           </g>
         </svg>
         <h1>Your report is ready</h1>
@@ -240,11 +245,10 @@
               <stop offset="0" stop-color="#2BC08A"/><stop offset="1" stop-color="#139562"/>
             </linearGradient>
           </defs>
-          <circle class="mark__halo" cx="32" cy="32" r="32" fill="#15A06A" fill-opacity="0.10"/>
           <g class="mark__disc">
-            <circle cx="32" cy="32" r="21" fill="url(#okDiscB)"/>
-            <circle cx="32" cy="32" r="20.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.22"/>
-            <path class="mark__glyph" d="M23.5 32.5l5.5 5.5 11.5-12" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="32" cy="32" r="31" fill="url(#okDiscB)"/>
+            <circle cx="32" cy="32" r="30.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.2"/>
+            <path class="mark__glyph" pathLength="1" d="M18.7 32.7L27.1 41.1L44.6 23.6" fill="none" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
           </g>
         </svg>
         <h1>Payment confirmed</h1>
@@ -295,11 +299,10 @@
       <!-- ERROR -->
       <div class="state center" id="state-error">
         <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
-          <circle class="mark__halo" cx="32" cy="32" r="32" fill="#C8102E" fill-opacity="0.08"/>
           <g class="mark__disc">
-            <circle cx="32" cy="32" r="21" fill="#C8102E"/>
-            <path d="M32 22.5v12" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
-            <circle cx="32" cy="40.5" r="1.9" fill="#FFFFFF"/>
+            <circle cx="32" cy="32" r="31" fill="#C8102E"/>
+            <path d="M32 18.5v16" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round"/>
+            <circle cx="32" cy="44" r="2.7" fill="#FFFFFF"/>
           </g>
         </svg>
         <h1>We couldn't activate your access</h1>

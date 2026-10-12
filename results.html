@@ -9,7 +9,7 @@
   <script src="https://js.stripe.com/v3/"></script>
   <script src="js/stripe-config.js"></script>
   <link rel="stylesheet" href="css/reganchor.css?v=20261012b">
-  <link rel="stylesheet" href="css/reganchor-flow.css?v=20261012b">
+  <link rel="stylesheet" href="css/reganchor-flow.css?v=20261012c">
   <script src="js/ra-maturity.js?v=20261012b"></script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
@@ -180,12 +180,8 @@
 </div>
 
 <footer>
-  <div class="ft-row">
+  <div class="ft-row ft-row--center">
     <span>RegAnchor is a trading name of MLA Group Ltd (No. 16117562). This assessment is not legal advice.</span>
-    <div class="ft-links">
-      <a href="methodology.html">Methodology</a>
-      <a href="privacy.html">Privacy</a>
-    </div>
   </div>
 </footer>
 
@@ -248,8 +244,53 @@ function renderMaturity(score) {
   document.getElementById('diagTier').innerHTML =
     '<strong>' + raLevelText(score) + '</strong>';
   const mount = document.getElementById('maturityMount');
-  mount.innerHTML = raComplianceBar(score, { animate: true }) + raLadderScale(score).replace(' (current)', '');
-  requestAnimationFrame(() => animateMaturity(mount));
+  mount.innerHTML = raComplianceBar(score, { animate: false }) + raLadderScale(score).replace(' (current)', '');
+}
+
+/* Same behaviour as the homepage maturity strip: bars rise every time the
+   block comes into view, and reset when it leaves. */
+const REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function replayMaturity() {
+  const bar = document.querySelector('#maturityMount .ra-cbar');
+  if (!bar || REDUCE_MOTION) return;
+  bar.classList.remove('ra-cbar--animate');
+  void bar.offsetWidth;
+  bar.classList.add('ra-cbar--animate');
+}
+
+function replayDomains() {
+  const fills = document.querySelectorAll('.domain-track__fill[data-width]');
+  if (REDUCE_MOTION) {
+    fills.forEach(el => { el.style.width = el.getAttribute('data-width') + '%'; });
+    return;
+  }
+  fills.forEach(el => { el.style.transition = 'none'; el.style.width = '0%'; });
+  void document.body.offsetWidth;
+  fills.forEach((el, i) => {
+    el.style.transition = '';
+    el.style.transitionDelay = (i * 90) + 'ms';
+    el.style.width = el.getAttribute('data-width') + '%';
+  });
+}
+
+function resetDomains() {
+  if (REDUCE_MOTION) return;
+  document.querySelectorAll('.domain-track__fill[data-width]').forEach(el => {
+    el.style.transition = 'none'; el.style.width = '0%';
+  });
+}
+
+function bindReplayOnView() {
+  const watch = (el, onIn, onOut) => {
+    if (!el) return;
+    if (!('IntersectionObserver' in window)) { onIn(); return; }
+    new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) onIn(); else if (onOut) onOut(); });
+    }, { threshold: 0.4 }).observe(el);
+  };
+  watch(document.getElementById('maturityMount'), replayMaturity);
+  watch(document.querySelector('.domain-panel'), replayDomains, resetDomains);
 }
 
 function renderDomains(ss) {
@@ -267,12 +308,6 @@ function renderDomains(ss) {
       `<span class="${badgeClass}">${lbl}</span>` +
       `</div>`;
   }).join('');
-
-  requestAnimationFrame(() => {
-    document.querySelectorAll('.domain-track__fill[data-width]').forEach(el => {
-      el.style.width = el.getAttribute('data-width') + '%';
-    });
-  });
 }
 
 function cleanCopy(s) {
@@ -454,6 +489,7 @@ function init() {
   requestAnimationFrame(() => {
     root.classList.add('is-ready');
     bindScrollChrome();
+    bindReplayOnView();
   });
 }
 
