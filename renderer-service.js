@@ -41,8 +41,56 @@ const TEMPLATE_PATH = join(__dirname, 'report-template.html');
 // Override via env at the reganchor.com cutover rather than editing this file.
 const SITE_DOMAIN = process.env.SITE_DOMAIN || 'reganchor.com';
 
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// Locked chrome on every body page, matching the dossier.
+function documentChrome(reference, wordmarkSvg) {
+  const ref = escapeHtml(reference || '');
+  const mark = String(wordmarkSvg || '').replace(/<svg class="brand-wordmark"/, '<svg width="78" height="17"');
+  const headerTemplate = `
+      <div style="width:100%;height:22mm;padding:5mm 24mm 0;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;font-size:7.5pt;font-weight:500;color:#6B7280;display:flex;justify-content:space-between;align-items:flex-start;">
+        <span>Confidential</span>
+        <span style="font-variant-numeric:tabular-nums;">${ref}</span>
+      </div>`;
+  const footerTemplate = `
+      <div style="width:100%;height:14mm;padding:3mm 24mm 0;box-sizing:border-box;font-family:Inter,Helvetica,Arial,sans-serif;font-size:7.5pt;font-weight:500;color:#6B7280;display:flex;justify-content:space-between;align-items:flex-start;">
+        ${mark || '<span>RegAnchor</span>'}
+        <span style="font-variant-numeric:tabular-nums;">Page <span class="pageNumber"></span> out of <span class="totalPages"></span></span>
+      </div>`;
+  return { headerTemplate, footerTemplate };
+}
+
+function inlineSwoosh(html) {
+  try {
+    const svg = readFileSync(join(__dirname, 'brand', 'dossier-swoosh.svg'), 'utf-8');
+    const data = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+    return html.replace(/src="brand\/dossier-swoosh\.svg"/g, `src="${data}"`);
+  } catch (err) {
+    console.warn(`[Renderer] Swoosh inline skipped: ${err.message}`);
+    return html;
+  }
+}
+
+// Cover pass + body pass. Body page 1 is an invisible offset so page numbers start at 2.
+async function mergeCoverAndBody(coverPdf, bodyPdf) {
+  const coverDoc = await PDFDocument.load(coverPdf);
+  const bodyDoc = await PDFDocument.load(bodyPdf);
+  const outDoc = await PDFDocument.create();
+  (await outDoc.copyPages(coverDoc, coverDoc.getPageIndices())).forEach((p) => outDoc.addPage(p));
+  const bodyIndices = bodyDoc.getPageIndices().slice(1);
+  if (bodyIndices.length) {
+    (await outDoc.copyPages(bodyDoc, bodyIndices)).forEach((p) => outDoc.addPage(p));
+  }
+  return Buffer.from(await outDoc.save());
+}
+
 // Pre-load templates
-const TEMPLATE_HTML = readFileSync(TEMPLATE_PATH, 'utf-8');
 const CERT_TEMPLATE_PATH = join(__dirname, 'certificate-template.html');
 const CERT_TEMPLATE_HTML = readFileSync(CERT_TEMPLATE_PATH, 'utf-8');
 const DOSSIER_TEMPLATE_PATH = join(__dirname, 'dossier-template.html');
@@ -123,8 +171,10 @@ app.post('/render', async (req, res) => {
 
     console.log(`[Renderer] Generating report for: ${reportData.organisation}`);
 
-    // Inject data into template
-    const renderedHtml = TEMPLATE_HTML.replace(
+    // Same document system as the dossier: full-bleed cover pass, then body pages with locked chrome.
+    let reportHtml = readFileSync(TEMPLATE_PATH, 'utf-8');
+    reportHtml = inlineSwoosh(reportHtml);
+    const renderedHtml = reportHtml.replace(
       '/*__REPORT_DATA__*/',
       `const REPORT_DATA = ${JSON.stringify(reportData)};`
     );
@@ -132,46 +182,68 @@ app.post('/render', async (req, res) => {
     const browser = await getBrowser();
     page = await browser.newPage();
 
-    // Set content and wait for fonts
     await page.setContent(renderedHtml, {
-      waitUntil: 'networkidle0',
-      timeout: 30000,
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
     });
-    await page.evaluateHandle('document.fonts.ready');
-
-    // Build header/footer templates
-    const orgName = reportData.organisation.replace(/"/g, '&quot;');
-    const dateStr = new Date(reportData.created_at || Date.now())
-      .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    const headerTemplate = `
-      <div style="width:100%;padding:0 18mm;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;height:28mm;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;border-bottom:1px solid #E4E7EC;">
-        <span style="color:#0A0E14;font-size:7pt;font-weight:500;text-transform:uppercase;letter-spacing:0.14em;">RegAnchor</span>
-        <span style="color:#6B7280;font-size:7pt;">AI Governance Diagnostic — ${orgName}</span>
-        <span style="color:#6B7280;font-size:7pt;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
-      </div>`;
-
-    const footerTemplate = `
-      <div style="width:100%;padding:0 18mm;display:flex;align-items:center;justify-content:space-between;height:18mm;box-sizing:border-box;border-top:1px solid #E4E7EC;font-family:'IBM Plex Sans',sans-serif;">
-        <span style="color:#6B7280;font-size:6pt;">Confidential — ${orgName} — ${dateStr}</span>
-        <span style="color:#6B7280;font-size:6pt;">${SITE_DOMAIN}</span>
-      </div>`;
-
-    // Generate PDF
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      margin: {
-        top: '28mm',
-        bottom: '18mm',
-        left: '18mm',
-        right: '18mm',
+    try {
+      await page.evaluateHandle('document.fonts.ready');
+    } catch (_) { /* fonts optional */ }
+    await page.waitForFunction(
+      () => {
+        const el = document.getElementById('report');
+        return el && el.children.length > 0;
       },
+      { timeout: 30000 },
+    );
+
+    const chrome = await page.evaluate(() => ({
+      ref: document.querySelector('.page-hdr span:last-child')?.textContent || '',
+      mark: document.querySelector('.page-ftr svg')?.outerHTML || '',
+    }));
+    const { headerTemplate, footerTemplate } = documentChrome(chrome.ref, chrome.mark);
+
+    await page.evaluate(() => {
+      document.body.classList.add('report-cover-only');
+      document.body.classList.remove('report-body-only');
+      document.getElementById('report-cover-page-style')?.remove();
+      const style = document.createElement('style');
+      style.id = 'report-cover-page-style';
+      style.textContent = '@page { size: A4; margin: 0 !important; }';
+      document.head.appendChild(style);
+    });
+    const coverPdf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      preferCSSPageSize: true,
+      displayHeaderFooter: false,
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
+      pageRanges: '1',
+    });
+
+    await page.evaluate(() => {
+      document.getElementById('report-cover-page-style')?.remove();
+      document.body.classList.remove('report-cover-only');
+      document.body.classList.add('report-body-only');
+      const root = document.getElementById('report');
+      if (!root || root.querySelector('.report-page-offset')) return;
+      const offset = document.createElement('section');
+      offset.className = 'section report-page-offset';
+      offset.setAttribute('aria-hidden', 'true');
+      offset.style.cssText = 'page-break-after:always;break-after:page;height:0;min-height:0;margin:0;padding:0;overflow:hidden;border:0;';
+      root.insertBefore(offset, root.firstChild);
+    });
+    const bodyPdf = await page.pdf({
+      format: 'A4',
       printBackground: true,
       preferCSSPageSize: false,
       displayHeaderFooter: true,
       headerTemplate,
       footerTemplate,
+      margin: { top: '22mm', right: '24mm', bottom: '18mm', left: '24mm' },
     });
+
+    const pdfBuffer = await mergeCoverAndBody(coverPdf, bodyPdf);
 
     const elapsed = Date.now() - startTime;
     console.log(`[Renderer] Complete: ${(pdfBuffer.length / 1024).toFixed(0)} KB in ${elapsed}ms`);
