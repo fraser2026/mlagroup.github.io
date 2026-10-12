@@ -3,254 +3,316 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Access Granted | RegAnchor</title>
+  <title>Create your account | RegAnchor</title>
+  <meta name="color-scheme" content="light">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/reganchor.css">
+  <link rel="stylesheet" href="css/reganchor.css?v=20261012b">
   <style>
     :root {
-      --bg:       var(--ra-bg, #FFFFFF);
-      --border:   var(--ra-border, #E6EBF1);
-      --hover:    var(--ra-hover, rgba(17,17,17,0.028));
-      --main:     var(--ra-text, #0A2540);
-      --sub:      var(--ra-text-2, #425466);
-      --muted:    var(--ra-text-3, #697386);
-      --accent:   var(--ra-blurple, #533AFD);
+      --ink:    var(--ra-ink, #061B31);
+      --text-2: var(--ra-text-2, #425466);
+      --text-3: var(--ra-text-3, #697386);
+      --line:   var(--ra-border, #E6EBF1);
+      --field:  #D5DBE3;
+      --mist:   var(--ra-mist, #F6F9FC);
+      --accent: var(--ra-blurple, #533AFD);
       --accent-h: var(--ra-blurple-hover, #4434E0);
-      --ok:       var(--ra-ok, #24B47E);
-      --err:      var(--ra-risk, #CD3D64);
-      --font-brand: var(--ra-font-brand, var(--ra-font), 'Inter', sans-serif);
-      --font-body:  var(--ra-font-product, var(--ra-font), 'Inter', sans-serif);
+      --ok:     #15A06A;
+      --risk:   #C8102E;
+      --radius: var(--ra-radius-control, 4px);
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { min-height: 100%; }
     body {
-      background: var(--bg); color: var(--sub);
-      font-family: var(--font-body);
-      min-height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 40px 20px;
+      background: var(--mist); color: var(--text-2);
+      font-family: 'Inter', var(--ra-font, system-ui), sans-serif;
+      font-size: 13px; line-height: 1.5;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
+      display: flex; flex-direction: column; min-height: 100vh;
     }
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      height: 60px; display: flex; align-items: center;
-      padding: 0 40px; border-bottom: 1px solid var(--border);
-      background: var(--bg);
+
+    /* Same frame as the workspace sign-in that follows this step */
+    .brand {
+      position: absolute; top: 22px; left: 28px;
+      display: inline-flex; line-height: 0;
     }
-    .nav-logo { font-family: var(--font-brand); font-size: 0.95rem; font-weight: 500; letter-spacing: -0.025em; color: var(--main); text-decoration: none; }
-    .nav-pill {
-      margin-left: auto; display: flex; align-items: center; gap: 6px;
-      border: 1px solid var(--ok);
-      border-radius: var(--ra-radius-control, 4px);
-      padding: 4px 12px 4px 8px;
-      font-family: var(--font-brand); font-size: 0.68rem; font-weight: 600; color: var(--ok);
-      letter-spacing: 0.06em; text-transform: uppercase;
+    .brand img { display: block; height: 26px; width: auto; }
+
+    .stage {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 88px 20px 40px;
     }
-    .nav-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ok); animation: blink 2s ease infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .wrapper { position: relative; z-index: 1; width: 100%; max-width: 480px; margin-top: 60px; }
+    .panel { width: 100%; max-width: 440px; }
+
     .card {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--ra-radius, 6px);
-      overflow: hidden;
-      animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
-      opacity: 0; transform: translateY(20px);
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 2px rgba(6, 27, 49, 0.04), 0 8px 24px -12px rgba(6, 27, 49, 0.08);
+      padding: 36px 36px 32px;
+      animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
-    @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
-    .card-shimmer { height: 2px; background: var(--accent); }
-    .card-body { padding: 44px 40px 40px; }
-    .success-ring { position: relative; width: 68px; height: 68px; margin: 0 auto 32px; }
-    .success-ring svg.ring { position: absolute; inset: 0; width: 68px; height: 68px; animation: ringIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
-    @keyframes ringIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
-    .success-ring svg.check { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 26px; height: 26px; }
-    .check-path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: drawCheck 0.4s ease 0.8s forwards; }
-    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
-    .eyebrow { font-family: var(--font-brand); font-size: 0.68rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 10px; opacity: 0; animation: fadeUp 0.5s ease 0.5s forwards; }
-    h1 { font-family: var(--font-brand); font-size: 1.7rem; font-weight: 500; line-height: 1.15; letter-spacing: -0.025em; color: var(--main); margin-bottom: 12px; opacity: 0; animation: fadeUp 0.5s ease 0.6s forwards; }
-    h1 em { font-style: normal; font-weight: 400; color: var(--muted); }
-    .subtext { font-size: 0.85rem; color: var(--sub); line-height: 1.7; opacity: 0; animation: fadeUp 0.5s ease 0.7s forwards; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; font-size: 0.7rem; color: var(--muted); }
-    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .form-section { opacity: 0; animation: fadeUp 0.5s ease 0.85s forwards; }
-    .field { margin-bottom: 12px; }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .field-label { display: block; font-family: var(--font-brand); font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
-    .field-input {
-      width: 100%; padding: 11px 14px;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--ra-radius-control, 4px);
-      color: var(--main);
-      font-family: var(--font-body); font-size: 0.86rem; font-weight: 400;
-      outline: none; transition: border-color 0.2s;
+    @keyframes rise { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+
+    .state { display: none }
+    .state.is-on { display: block }
+    .center { text-align: center }
+
+    /* Status mark: soft halo, solid disc with depth, crisp white glyph */
+    .mark { display: block; width: 64px; height: 64px; margin: 0 0 22px; }
+    .center .mark { margin-left: auto; margin-right: auto; }
+    .mark__halo { transform-origin: 32px 32px; animation: halo 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .mark__disc { transform-origin: 32px 32px; animation: disc 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) 0.08s both; }
+    .mark__glyph { stroke-dasharray: 24; stroke-dashoffset: 24; animation: draw 0.35s ease-out 0.42s forwards; }
+    @keyframes halo { from { transform: scale(0.6); opacity: 0 } to { transform: none; opacity: 1 } }
+    @keyframes disc { from { transform: scale(0.4); opacity: 0 } to { transform: none; opacity: 1 } }
+    @keyframes draw { to { stroke-dashoffset: 0 } }
+
+    h1 {
+      font-size: 22px; font-weight: 500; line-height: 1.25;
+      letter-spacing: -0.02em; color: var(--ink);
+    }
+    .lede { margin-top: 8px; font-size: 13.5px; line-height: 1.55; color: var(--text-2); }
+
+    /* Order line: what was bought, for whom, settled */
+    .order {
+      margin-top: 22px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 12px 14px;
+      background: var(--mist);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .order__name { font-size: 13px; font-weight: 500; color: var(--ink); }
+    .order__meta { margin-top: 1px; font-size: 12px; font-weight: 500; color: var(--text-2); }
+    .order__meta:empty { display: none; }
+    .order__status {
+      display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+      font-size: 12px; font-weight: 500; color: var(--ok);
+    }
+    .order__status svg { width: 14px; height: 14px; }
+
+    .form { margin-top: 24px; display: flex; flex-direction: column; gap: 14px; }
+    .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .field label { font-size: 12px; font-weight: 500; color: var(--text-2); }
+    .input-wrap { position: relative; }
+    .input {
+      width: 100%; height: 38px; padding: 0 12px;
+      border: 1px solid var(--field); border-radius: var(--radius);
+      background: #FFFFFF; color: var(--ink);
+      font: inherit; font-size: 13.5px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
       -webkit-appearance: none;
     }
-    .field-input::placeholder { color: var(--muted); }
-    .field-input:focus { border-color: var(--accent); }
-    .error-box { background: var(--bg); border: 1px solid var(--err); border-left: 3px solid var(--err); border-radius: var(--ra-radius-control, 4px); padding: 10px 14px; font-size: 0.78rem; color: var(--err); font-weight: 500; margin-top: 10px; display: none; line-height: 1.5; }
-    .btn-primary {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      width: 100%; padding: 12px 16px;
-      background: var(--accent) !important; color: #FFFFFF !important;
-      border: 1px solid transparent !important;
-      border-radius: var(--ra-radius-control, 4px) !important;
-      font-family: var(--font-body); font-size: 0.88rem; font-weight: 500;
-      letter-spacing: -0.01em;
-      cursor: pointer; text-decoration: none;
-      transition: background 0.15s ease;
-      box-shadow: none !important;
-      opacity: 0; animation: fadeUp 0.5s ease 0.9s forwards;
+    .input::placeholder { color: var(--text-3); }
+    .input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(83, 58, 253, 0.14); }
+    .input--pw { padding-right: 64px; }
+    .reveal {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      height: 26px; padding: 0 8px; border: 0; border-radius: var(--radius);
+      background: transparent; color: var(--text-2);
+      font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
     }
-    .btn-primary:hover { background: var(--accent-h) !important; opacity: 1; }
-    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn-ghost {
-      display: flex; align-items: center; justify-content: center;
-      width: 100%; padding: 12px 16px;
-      background: var(--bg); color: var(--main);
-      border: 1px solid var(--border);
-      border-radius: var(--ra-radius-control, 4px);
-      font-family: var(--font-body); font-size: 0.85rem; font-weight: 500;
-      cursor: pointer; text-decoration: none;
-      transition: border-color 0.12s ease, background 0.12s ease; margin-top: 10px;
-      box-shadow: none;
+    .reveal:hover, .reveal:focus-visible { color: var(--accent); background: rgba(6, 27, 49, 0.04); outline: none; }
+    .hint { font-size: 12px; color: var(--text-3); }
+    .hint.is-met { color: var(--ok); }
+
+    .error {
+      display: none;
+      font-size: 12.5px; font-weight: 500; line-height: 1.5; color: var(--risk);
     }
-    .btn-ghost:hover,
-    .btn-ghost:focus-visible {
-      border-color: var(--accent, var(--ra-blurple, #533AFD));
-      background: var(--ra-mist, var(--hover));
-      color: var(--accent, var(--ra-blurple, #533AFD));
-      outline: none;
+    .error.is-on { display: block; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; height: 40px; padding: 0 16px;
+      border: 1px solid transparent; border-radius: var(--radius);
+      font: inherit; font-size: 13.5px; font-weight: 500; letter-spacing: -0.005em;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
-    .footer-note { margin-top: 20px; text-align: center; font-size: 0.7rem; color: var(--muted); line-height: 1.65; opacity: 0; animation: fadeUp 0.5s ease 1s forwards; }
-    .footer-note a { color: var(--main); text-decoration: underline; text-underline-offset: 2px; }
-    .spin { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: rotate 0.8s linear infinite; margin: 0 auto 28px; }
-    @keyframes rotate { to { transform: rotate(360deg); } }
-    @media(max-width: 520px) { .card-body { padding: 36px 28px 32px; } .field-row { grid-template-columns: 1fr; } nav { padding: 0 20px; } h1 { font-size: 1.5rem; } }
+    .btn--primary { background: var(--accent); color: #FFFFFF; }
+    .btn--primary:hover, .btn--primary:focus-visible { background: var(--accent-h); outline: none; }
+    .btn--primary:disabled { opacity: 0.55; cursor: progress; }
+    .btn--ghost { background: #FFFFFF; color: var(--ink); border-color: var(--line); }
+    .btn--ghost:hover, .btn--ghost:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+    .btn svg { width: 14px; height: 14px; }
+    .form .btn { margin-top: 6px; }
+
+    .alt {
+      margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line);
+      font-size: 13px; color: var(--text-2); text-align: center;
+    }
+    .alt a, .legal a, .help a { color: var(--accent); font-weight: 500; text-decoration: none; }
+    .alt a:hover, .legal a:hover, .help a:hover { color: var(--accent-h); text-decoration: underline; text-underline-offset: 2px; }
+
+    .legal { margin-top: 12px; font-size: 12px; line-height: 1.55; color: var(--text-3); text-align: center; }
+    .help { margin-top: 18px; font-size: 12px; color: var(--text-3); text-align: center; }
+
+    /* Working states */
+    .spinner {
+      width: 28px; height: 28px; margin: 4px auto 22px;
+      border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg) } }
+    .progress {
+      max-width: 240px; height: 3px; margin: 24px auto 0;
+      background: var(--line); border-radius: 2px; overflow: hidden;
+    }
+    .progress__fill { height: 100%; width: 5%; background: var(--accent); border-radius: 2px; transition: width 0.6s ease; }
+    .progress-note { margin-top: 10px; font-size: 12px; color: var(--text-3); }
+    .stack { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card, .mark__halo, .mark__disc { animation: none; }
+      .mark__glyph { animation: none; stroke-dashoffset: 0; }
+    }
+    @media (max-width: 520px) {
+      .brand { left: 20px; top: 18px; }
+      .stage { padding: 72px 16px 32px; align-items: flex-start; }
+      .card { padding: 28px 22px 24px; }
+    }
+    @media (max-width: 359px) {
+      .row { grid-template-columns: minmax(0, 1fr); }
+    }
   </style>
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg" alt="" width="193" height="36" decoding="async"></a>
-  <div class="nav-pill" id="nav-status" style="display:none;">
-    <span class="nav-pill-dot"></span>Access Granted
-  </div>
-</nav>
+<a href="index.html" class="brand ra-wordmark" aria-label="RegAnchor"><img src="brand/wordmark-text.svg?v=a3" alt="" width="193" height="36" decoding="async"></a>
 
-<div class="wrapper">
-  <div class="card">
-    <div class="card-shimmer"></div>
-    <div class="card-body">
+<main class="stage">
+  <div class="panel">
+    <div class="card">
 
       <!-- LOADING -->
-      <div id="state-loading" style="text-align:center;padding:20px 0;">
-        <div class="spin"></div>
-        <div style="font-family:var(--font-brand);font-weight:500;letter-spacing:-0.02em;font-size:1.3rem;color:var(--main);margin-bottom:8px;">Confirming payment…</div>
-        <div style="font-size:0.82rem;color:var(--sub);">Activating your report access.</div>
+      <div class="state center is-on" id="state-loading" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <h1>Confirming payment</h1>
+        <p class="lede">Checking your purchase with our payment provider.</p>
       </div>
 
       <!-- ACTIVATING: polls until diagnostic linked to user in DB -->
-      <div id="state-activating" style="display:none;text-align:center;padding:20px 0;">
-        <div class="spin"></div>
-        <div style="font-family:var(--font-brand);font-weight:500;letter-spacing:-0.02em;font-size:1.3rem;color:var(--main);margin-bottom:8px;">Activating your access…</div>
-        <div style="font-size:0.82rem;color:var(--sub);margin-bottom:28px;">This usually takes a few seconds.</div>
-        <div style="background:var(--border);height:2px;overflow:hidden;max-width:280px;margin:0 auto 8px;">
-          <div id="progress-bar" style="height:100%;background:var(--accent);width:5%;transition:width 0.6s ease;"></div>
-        </div>
-        <div id="activating-sub" style="font-size:0.72rem;color:var(--muted);margin-top:10px;">Confirming with payment provider…</div>
+      <div class="state center" id="state-activating" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <h1>Preparing your workspace</h1>
+        <p class="lede">Linking your diagnostic to your account. This usually takes a few seconds.</p>
+        <div class="progress"><div class="progress__fill" id="progress-bar"></div></div>
+        <div class="progress-note" id="activating-sub">Confirming with payment provider</div>
       </div>
 
       <!-- SUCCESS -->
-      <div id="state-success" style="display:none;text-align:center;">
-        <div class="success-ring">
-          <svg class="ring" viewBox="0 0 68 68" fill="none">
-            <circle cx="34" cy="34" r="32" stroke="var(--border)" stroke-width="1.5"/>
-            <circle cx="34" cy="34" r="32" stroke="var(--ok)" stroke-width="1.5"
-              stroke-dasharray="201" stroke-dashoffset="201"
-              style="animation: ringDraw 1s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;"
-              transform="rotate(-90 34 34)"/>
-          </svg>
-          <svg class="check" viewBox="0 0 26 26" fill="none">
-            <path class="check-path" d="M7 13.5l4.5 4.5 7.5-9" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+      <div class="state center" id="state-success">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="okDiscA" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#2BC08A"/><stop offset="1" stop-color="#139562"/>
+            </linearGradient>
+          </defs>
+          <circle class="mark__halo" cx="32" cy="32" r="32" fill="#15A06A" fill-opacity="0.10"/>
+          <g class="mark__disc">
+            <circle cx="32" cy="32" r="21" fill="url(#okDiscA)"/>
+            <circle cx="32" cy="32" r="20.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.22"/>
+            <path class="mark__glyph" d="M23.5 32.5l5.5 5.5 11.5-12" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+        <h1>Your report is ready</h1>
+        <p class="lede">Your diagnostic is now in your RegAnchor workspace, with the full report available to download.</p>
+        <div class="stack">
+          <a href="https://app.reganchor.com/reports" class="btn btn--primary">
+            Open report
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"/></svg>
+          </a>
         </div>
-        <h1>You're in.</h1>
-        <p class="subtext">Your first assessment is ready in the workspace.</p>
-        <a href="https://app.reganchor.com/reports" class="btn-primary" style="margin-top:28px;">
-          Open report
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
-        </a>
-        <div class="footer-note">Questions or issues? <a href="mailto:info@reganchor.com">info@reganchor.com</a></div>
+        <p class="help">Questions? <a href="mailto:info@reganchor.com">info@reganchor.com</a></p>
       </div>
 
       <!-- SIGNUP -->
-      <div id="state-signup" style="display:none;">
-        <div class="success-ring">
-          <svg class="ring" viewBox="0 0 68 68" fill="none">
-            <circle cx="34" cy="34" r="32" stroke="var(--border)" stroke-width="1.5"/>
-            <circle cx="34" cy="34" r="32" stroke="var(--ok)" stroke-width="1.5"
-              stroke-dasharray="201" stroke-dashoffset="201"
-              style="animation: ringDraw 1s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;"
-              transform="rotate(-90 34 34)"/>
-          </svg>
-          <svg class="check" viewBox="0 0 26 26" fill="none">
-            <path class="check-path" d="M7 13.5l4.5 4.5 7.5-9" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+      <div class="state" id="state-signup">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="okDiscB" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#2BC08A"/><stop offset="1" stop-color="#139562"/>
+            </linearGradient>
+          </defs>
+          <circle class="mark__halo" cx="32" cy="32" r="32" fill="#15A06A" fill-opacity="0.10"/>
+          <g class="mark__disc">
+            <circle cx="32" cy="32" r="21" fill="url(#okDiscB)"/>
+            <circle cx="32" cy="32" r="20.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.22"/>
+            <path class="mark__glyph" d="M23.5 32.5l5.5 5.5 11.5-12" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+        <h1>Payment confirmed</h1>
+        <p class="lede">Create your account to open the full report in your workspace. We've carried your details over from the diagnostic.</p>
+
+        <div class="order">
+          <div>
+            <div class="order__name">Full diagnostic report</div>
+            <div class="order__meta" id="su-org"></div>
+          </div>
+          <span class="order__status">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.3l2.6 2.6L11 4.5"/></svg>
+            Paid
+          </span>
         </div>
-        <div class="eyebrow">Payment Confirmed</div>
-        <h1>Create your<br><em>account.</em></h1>
-        <p class="subtext">One step to access your report. Your details are carried over from your diagnostic.</p>
-        <div class="form-section">
-          <div class="divider">Your account</div>
-          <div class="field-row">
-            <div>
-              <label class="field-label">First name</label>
-              <input type="text" class="field-input" id="su-first" autocomplete="given-name">
+
+        <form class="form" id="su-form" novalidate onsubmit="event.preventDefault(); doSignup();">
+          <div class="row">
+            <div class="field">
+              <label for="su-first">First name</label>
+              <input type="text" class="input" id="su-first" autocomplete="given-name">
             </div>
-            <div>
-              <label class="field-label">Last name</label>
-              <input type="text" class="field-input" id="su-last" autocomplete="family-name">
+            <div class="field">
+              <label for="su-last">Last name</label>
+              <input type="text" class="input" id="su-last" autocomplete="family-name">
             </div>
           </div>
           <div class="field">
-            <label class="field-label">Email address</label>
-            <input type="email" class="field-input" id="su-email" autocomplete="email">
+            <label for="su-email">Work email</label>
+            <input type="email" class="input" id="su-email" autocomplete="email">
           </div>
           <div class="field">
-            <label class="field-label">Create a password</label>
-            <input type="password" class="field-input" id="su-password" placeholder="Min. 8 characters" autocomplete="new-password">
+            <label for="su-password">Password</label>
+            <div class="input-wrap">
+              <input type="password" class="input input--pw" id="su-password" autocomplete="new-password" aria-describedby="su-hint">
+              <button type="button" class="reveal" id="su-reveal" aria-controls="su-password">Show</button>
+            </div>
+            <span class="hint" id="su-hint">At least 8 characters</span>
           </div>
-          <div class="error-box" id="su-error"></div>
-        </div>
-        <button class="btn-primary" id="su-btn" onclick="doSignup()" style="margin-top:20px;">
-          Create account &amp; access report
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>
-        </button>
-        <div class="divider" style="margin-top:20px;">Already have an account?</div>
-        <a href="https://app.reganchor.com/login?next=%2Freports" class="btn-ghost">Sign in instead</a>
-        <div class="footer-note">By creating an account you agree to our terms.<br>Questions? <a href="mailto:info@reganchor.com">info@reganchor.com</a></div>
+          <div class="error" id="su-error" role="alert"></div>
+          <button type="submit" class="btn btn--primary" id="su-btn">Create account and open report</button>
+        </form>
+
+        <p class="legal">By creating an account you agree to the <a href="terms.html">terms</a> and <a href="privacy.html">privacy policy</a>.</p>
+        <div class="alt">Already have an account? <a href="https://app.reganchor.com/login?next=%2Freports">Sign in</a></div>
       </div>
 
       <!-- ERROR -->
-      <div id="state-error" style="display:none;text-align:center;">
-        <div style="font-size:2rem;margin-bottom:16px;">⚠</div>
-        <div style="font-family:var(--font-brand);font-weight:500;letter-spacing:-0.02em;font-size:1.35rem;color:var(--main);margin-bottom:10px;">Something went wrong</div>
-        <p style="font-size:0.83rem;color:var(--sub);margin-bottom:0;">We couldn't activate your access automatically. Contact us and we'll resolve it within the hour.</p>
-        <a href="mailto:info@reganchor.com?subject=Payment%20Issue" class="btn-primary" style="margin-top:24px;">Contact support</a>
-        <a href="https://app.reganchor.com/login?next=%2Freports" class="btn-ghost">Try the workspace anyway</a>
+      <div class="state center" id="state-error">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="mark__halo" cx="32" cy="32" r="32" fill="#C8102E" fill-opacity="0.08"/>
+          <g class="mark__disc">
+            <circle cx="32" cy="32" r="21" fill="#C8102E"/>
+            <path d="M32 22.5v12" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="32" cy="40.5" r="1.9" fill="#FFFFFF"/>
+          </g>
+        </svg>
+        <h1>We couldn't activate your access</h1>
+        <p class="lede">Your payment is safe. Contact us and we'll link your report within the hour.</p>
+        <div class="stack">
+          <a href="mailto:info@reganchor.com?subject=Payment%20issue" class="btn btn--primary">Contact support</a>
+          <a href="https://app.reganchor.com/login?next=%2Freports" class="btn btn--ghost">Go to the workspace</a>
+        </div>
       </div>
 
     </div>
   </div>
-</div>
-
-<style>
-  @keyframes ringDraw { to { stroke-dashoffset: 0; } }
-</style>
+</main>
 
 <script>
   const SUPABASE_URL = 'https://hueftewwenjaiagdoqmb.supabase.co';
@@ -264,13 +326,12 @@
   // ── Read result_id from localStorage (survives redirect, set by results.html) ──
   const STORED_RESULT_ID = localStorage.getItem('mla_result_id') || '';
 
+  const SIGNUP_LABEL = 'Create account and open report';
+
   function show(id) {
     ['state-loading','state-activating','state-success','state-signup','state-error'].forEach(s => {
-      document.getElementById(s).style.display = s === id ? 'block' : 'none';
+      document.getElementById(s).classList.toggle('is-on', s === id);
     });
-    if (id === 'state-success' || id === 'state-signup') {
-      document.getElementById('nav-status').style.display = 'flex';
-    }
   }
 
   // ── Call link-diagnostic edge function (the single source of truth) ──
@@ -320,10 +381,10 @@
     const bar = document.getElementById('progress-bar');
     const sub = document.getElementById('activating-sub');
     const messages = [
-      'Confirming with payment provider…',
-      'Linking your report…',
-      'Activating report access…',
-      'Almost there…',
+      'Confirming with payment provider',
+      'Linking your report',
+      'Activating report access',
+      'Almost there',
     ];
     let progress = 5;
     let attempts = 0;
@@ -346,7 +407,6 @@
             clearInterval(interval);
             bar.style.width = '100%';
             setTimeout(() => {
-              document.getElementById('nav-status').style.display = 'flex';
               show('state-success');
               resolve(true);
             }, 400);
@@ -357,7 +417,6 @@
         if (attempts >= maxAttempts) {
           clearInterval(interval);
           // Timeout: show success anyway — link-diagnostic already ran
-          document.getElementById('nav-status').style.display = 'flex';
           show('state-success');
           resolve(false);
         }
@@ -416,6 +475,7 @@
     if (first) document.getElementById('su-first').value = first;
     if (last) document.getElementById('su-last').value = last;
     if (email) document.getElementById('su-email').value = email;
+    if (diagData.organisation) document.getElementById('su-org').textContent = diagData.organisation;
   }
 
   async function populateProfile(userId, diagData, fullName) {
@@ -424,6 +484,12 @@
       full_name:    fullName || diagData.respondent_name || '',
       organisation: diagData.organisation || ''
     }, { onConflict: 'id' });
+  }
+
+  function focusFirstEmpty() {
+    const ids = ['su-first', 'su-last', 'su-email', 'su-password'];
+    const el = ids.map(id => document.getElementById(id)).find(i => !i.value);
+    if (el && window.matchMedia('(min-width: 521px)').matches) el.focus();
   }
 
   // ── Main flow on page load ──
@@ -438,12 +504,7 @@
           error: 'state-error', loading: 'state-loading'
         };
         const target = map[String(preview).toLowerCase()] || 'state-signup';
-        document.getElementById('su-first').value = 'Jane';
-        document.getElementById('su-last').value = 'Smith';
-        document.getElementById('su-email').value = 'jane@company.com';
-        if (target === 'state-success' || target === 'state-signup') {
-          document.getElementById('nav-status').style.display = 'flex';
-        }
+        prefillSignup({ respondent_name: 'Jane Smith', respondent_email: 'jane@company.com', organisation: 'Company Ltd' }, null);
         if (target === 'state-activating') {
           const bar = document.getElementById('progress-bar');
           if (bar) bar.style.width = '55%';
@@ -472,6 +533,7 @@
         const sessionInfo = hasSessionDiag ? null : await loadCheckoutSessionInfo();
         prefillSignup(diagData, sessionInfo);
         show('state-signup');
+        focusFirstEmpty();
       }
     } catch(e) {
       console.error(e); show('state-error');
@@ -485,13 +547,14 @@
     const password = document.getElementById('su-password').value;
     const errEl    = document.getElementById('su-error');
     const btn      = document.getElementById('su-btn');
+    const fail = (msg) => { errEl.textContent = msg; errEl.classList.add('is-on'); };
 
-    errEl.style.display = 'none';
-    if (!first || !email || !password) { errEl.textContent = 'Please fill in your first name, email, and password.'; errEl.style.display = 'block'; return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
-    if (password.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display = 'block'; return; }
+    errEl.classList.remove('is-on');
+    if (!first || !email || !password) return fail('Enter your first name, email and a password.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Enter a valid email address.');
+    if (password.length < 8) return fail('Your password needs at least 8 characters.');
 
-    btn.disabled = true; btn.textContent = 'Creating account…';
+    btn.disabled = true; btn.textContent = 'Creating account';
 
     try {
       const fullName = (first + ' ' + last).trim();
@@ -505,7 +568,7 @@
       if (!data.session?.access_token) {
         const { data: sessData } = await sb.auth.getSession();
         if (!sessData.session?.access_token) {
-          throw new Error('Sign in required to activate your report. Check your email if confirmation is needed, then use Sign in instead.');
+          throw new Error('Check your inbox to confirm your email, then sign in to open your report.');
         }
       }
 
@@ -522,16 +585,28 @@
     } catch(e) {
       console.error(e);
       btn.disabled = false;
-      btn.innerHTML = 'Create account &amp; access report <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h8M6.5 2.5l4 4-4 4"/></svg>';
-      let msg = e.message || 'Something went wrong.';
-      if (msg.toLowerCase().includes('already')) msg = 'An account with this email already exists — use "Sign in instead" below.';
-      errEl.textContent = msg; errEl.style.display = 'block';
+      btn.textContent = SIGNUP_LABEL;
+      let msg = e.message || 'Something went wrong. Please try again.';
+      if (msg.toLowerCase().includes('already')) msg = 'An account with this email already exists. Sign in below to open your report.';
+      fail(msg);
     }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     const pw = document.getElementById('su-password');
-    if (pw) pw.addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
+    const reveal = document.getElementById('su-reveal');
+    const hint = document.getElementById('su-hint');
+    if (reveal && pw) {
+      reveal.addEventListener('click', () => {
+        const hidden = pw.type === 'password';
+        pw.type = hidden ? 'text' : 'password';
+        reveal.textContent = hidden ? 'Hide' : 'Show';
+        pw.focus();
+      });
+    }
+    if (pw && hint) {
+      pw.addEventListener('input', () => hint.classList.toggle('is-met', pw.value.length >= 8));
+    }
   });
 </script>
 <script src="js/ra-chrome.js"></script>
