@@ -194,7 +194,25 @@ footer nav a:hover{color:var(--navy)}
         <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear next steps for every gap</li>
       </ul>
     </div>
-    <div class="reveal d1"><button class="shot" data-full="assets/images-page/assessment@2x.png" data-caption="Assessment"><img src="assets/images-page/assessment-1200.png" srcset="assets/images-page/assessment-1200.png 1x, assets/images-page/assessment@2x.png 2x" alt="RegAnchor risk assessment results" width="1200" height="800" loading="lazy"><span class="zoom">Closer look</span></button></div>
+    <div class="reveal d1">
+<div class="ra-assess-bars" role="img" aria-label="RegAnchor risk assessment results: seven control areas scored between 42% and 100%">
+<style>
+.ra-assess-bars{position:relative;display:block;width:100%;aspect-ratio:3/2;border-radius:12px;overflow:hidden;background:var(--pale,#F6F9FC)}
+.ra-assess-bars img{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none}
+.ra-assess-bars i{position:absolute;left:var(--x);top:var(--y);height:.5%;width:0;border-radius:999px;background:#533AFD;transition:width .9s cubic-bezier(.22,1,.36,1) var(--d)}
+.ra-assess-bars.is-on i{width:var(--w)}
+@media (prefers-reduced-motion:reduce){.ra-assess-bars i{width:var(--w);transition:none}}
+</style>
+<img src="assets/images-page/assess/assessment.jpg" srcset="assets/images-page/assess/assessment.jpg 1x, assets/images-page/assess/assessment@2x.jpg 2x" alt="" width="1200" height="800" decoding="async">
+<i style="--x:34.3333%;--y:44.7500%;--w:13.5833%;--d:0ms"></i><i style="--x:34.3333%;--y:49.0000%;--w:25.8333%;--d:80ms"></i><i style="--x:34.3333%;--y:53.2500%;--w:24.2500%;--d:160ms"></i><i style="--x:34.3333%;--y:57.5000%;--w:26.8333%;--d:240ms"></i><i style="--x:34.3333%;--y:61.7500%;--w:29.7500%;--d:320ms"></i><i style="--x:34.3333%;--y:66.0000%;--w:21.6667%;--d:400ms"></i><i style="--x:34.3333%;--y:70.2500%;--w:32.3333%;--d:480ms"></i>
+</div>
+<script>
+(function(){var el=document.querySelector('.ra-assess-bars');if(!el)return;var t0=performance.now();
+function go(){setTimeout(function(){el.classList.add('is-on')},performance.now()-t0<1200?700:250)}
+if(!('IntersectionObserver' in window)){go();return}
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.intersectionRatio>=.4){io.disconnect();go()}})},{threshold:[.4],rootMargin:'0px 0px -8% 0px'});io.observe(el);})();
+</script>
+</div>
   </div>
 </section>
 
@@ -241,13 +259,13 @@ footer nav a:hover{color:var(--navy)}
 .ra-sign-portrait .drawer .aud{opacity:0;animation:rasp-aud var(--T) infinite;border-radius:1.1cqw}
 .ra-sign-portrait .chk{clip-path:inset(51.2% 91.6% 47.2% 5.6%);opacity:0;animation:rasp-chk var(--T) infinite}
 .ra-sign-portrait .press{position:absolute;left:64.3%;right:5%;top:95.2%;bottom:1.8%;border-radius:.5cqw;background:#061B31;opacity:0;animation:rasp-press var(--T) infinite}
-.ra-sign-portrait .note{position:absolute;right:5.16cqw;bottom:5.16cqw;display:flex;gap:2.58cqw;align-items:center;background:#fff;border:1px solid #E6EBF1;border-radius:2.58cqw;padding:3.01cqw 4.3cqw 3.01cqw 3.01cqw;box-shadow:0 1.72cqw 5.16cqw rgba(6,27,49,.10),0 0.43cqw 1.29cqw rgba(6,27,49,.06);font-family:Inter,system-ui,-apple-system,sans-serif;opacity:0;transform:translateY(3.44cqw);animation:rasp-note var(--T) infinite}
+.ra-sign-portrait .note{position:absolute;z-index:5;right:5.16cqw;bottom:5.16cqw;display:flex;gap:2.58cqw;align-items:center;background:#fff;border:1px solid #E6EBF1;border-radius:2.58cqw;padding:3.01cqw 4.3cqw 3.01cqw 3.01cqw;box-shadow:0 1.72cqw 5.16cqw rgba(6,27,49,.10),0 0.43cqw 1.29cqw rgba(6,27,49,.06);font-family:Inter,system-ui,-apple-system,sans-serif;opacity:0;transform:translateY(3.44cqw);animation:rasp-note var(--T) infinite}
 .ra-sign-portrait .note .ic{flex:none;width:6.88cqw;height:6.88cqw;border-radius:50%;background:#12B76A;display:grid;place-items:center}
 .ra-sign-portrait .note .ic svg{width:56%}
 .ra-sign-portrait .note .tx{display:flex;flex-direction:column;gap:0.752cqw}
 .ra-sign-portrait .note b{font-weight:600;font-size:3.22cqw;color:#061B31;line-height:1.2}
 .ra-sign-portrait .note .tx span{font-size:2.79cqw;color:#425466;line-height:1.2}
-@keyframes rasp-note{0%,77.7%{opacity:0;transform:translateY(3.44cqw);animation-timing-function:cubic-bezier(.22,1,.36,1)}81%,94.6%{opacity:1;transform:none;animation-timing-function:cubic-bezier(.55,0,.75,.2)}98.5%,100%{opacity:0;transform:translateY(3.44cqw)}}
+@keyframes rasp-note{0%,46.2%{opacity:0;transform:translateY(3.44cqw);animation-timing-function:cubic-bezier(.22,1,.36,1)}49.5%,94.6%{opacity:1;transform:none;animation-timing-function:cubic-bezier(.55,0,.75,.2)}98.5%,100%{opacity:0;transform:translateY(3.44cqw)}}
 @keyframes rasp-scrim{0%,15.4%{opacity:0}20.8%,71.5%{opacity:.16}77%,100%{opacity:0}}
 @keyframes rasp-sign{0%,15.4%{transform:translateX(110%);animation-timing-function:var(--ease)}21.5%,71.5%{transform:translateX(0);animation-timing-function:cubic-bezier(.55,0,.75,.2)}77%,100%{transform:translateX(110%)}}
 @keyframes rasp-aud{0%,46.2%{opacity:0;transform:translateY(.6cqw)}50%,100%{opacity:1;transform:none}}
@@ -334,13 +352,13 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 .ra-sign-demo .drawer .aud{opacity:0;animation:rasd-aud var(--T) infinite;border-radius:1.1cqw}
 .ra-sign-demo .chk{clip-path:inset(51.2% 91.6% 47.2% 5.6%);opacity:0;animation:rasd-chk var(--T) infinite}
 .ra-sign-demo .press{position:absolute;left:64.3%;right:5%;top:95.2%;bottom:1.8%;border-radius:.5cqw;background:#061B31;opacity:0;animation:rasd-press var(--T) infinite}
-.ra-sign-demo .note{position:absolute;right:2.4cqw;bottom:2.4cqw;display:flex;gap:1.2cqw;align-items:center;background:#fff;border:1px solid #E6EBF1;border-radius:1.2cqw;padding:1.4cqw 2cqw 1.4cqw 1.4cqw;box-shadow:0 .8cqw 2.4cqw rgba(6,27,49,.10),0 .2cqw .6cqw rgba(6,27,49,.06);font-family:Inter,system-ui,-apple-system,sans-serif;opacity:0;transform:translateY(1.6cqw);animation:rasd-note var(--T) infinite}
+.ra-sign-demo .note{position:absolute;z-index:5;right:2.4cqw;bottom:2.4cqw;display:flex;gap:1.2cqw;align-items:center;background:#fff;border:1px solid #E6EBF1;border-radius:1.2cqw;padding:1.4cqw 2cqw 1.4cqw 1.4cqw;box-shadow:0 .8cqw 2.4cqw rgba(6,27,49,.10),0 .2cqw .6cqw rgba(6,27,49,.06);font-family:Inter,system-ui,-apple-system,sans-serif;opacity:0;transform:translateY(1.6cqw);animation:rasd-note var(--T) infinite}
 .ra-sign-demo .note .ic{flex:none;width:3.2cqw;height:3.2cqw;border-radius:50%;background:#12B76A;display:grid;place-items:center}
 .ra-sign-demo .note .ic svg{width:56%}
 .ra-sign-demo .note .tx{display:flex;flex-direction:column;gap:.35cqw}
 .ra-sign-demo .note b{font-weight:600;font-size:1.5cqw;color:#061B31;line-height:1.2}
 .ra-sign-demo .note .tx span{font-size:1.3cqw;color:#425466;line-height:1.2}
-@keyframes rasd-note{0%,77.7%{opacity:0;transform:translateY(1.6cqw);animation-timing-function:cubic-bezier(.22,1,.36,1)}81%,94.6%{opacity:1;transform:none;animation-timing-function:cubic-bezier(.55,0,.75,.2)}98.5%,100%{opacity:0;transform:translateY(1.6cqw)}}
+@keyframes rasd-note{0%,46.2%{opacity:0;transform:translateY(1.6cqw);animation-timing-function:cubic-bezier(.22,1,.36,1)}49.5%,94.6%{opacity:1;transform:none;animation-timing-function:cubic-bezier(.55,0,.75,.2)}98.5%,100%{opacity:0;transform:translateY(1.6cqw)}}
 @keyframes rasd-scrim{0%,15.4%{opacity:0}20.8%,71.5%{opacity:.16}77%,100%{opacity:0}}
 @keyframes rasd-sign{0%,15.4%{transform:translateX(110%);animation-timing-function:var(--ease)}21.5%,71.5%{transform:translateX(0);animation-timing-function:cubic-bezier(.55,0,.75,.2)}77%,100%{transform:translateX(110%)}}
 @keyframes rasd-aud{0%,46.2%{opacity:0;transform:translateY(.6cqw)}50%,100%{opacity:1;transform:none}}
