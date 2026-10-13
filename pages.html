@@ -231,15 +231,26 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
     </div>
     <div class="reveal d1"><div class="ra-mla-chat" role="img" aria-label="MLA, the RegAnchor policy assistant, drafting an AI governance policy for Acme">
 <style>
-@font-face{font-family:'RA Inter';src:url(assets/images-page/mla/inter-ra.woff2) format('woff2');font-weight:100 900;font-display:swap}
-.ra-mla-chat>img{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none}
-.ra-mla-chat{position:relative;display:block;width:100%;aspect-ratio:3/2;border-radius:12px;overflow:hidden;font-family:'RA Inter',Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
-.ra-mla-chat>img{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none}
-.ra-mla-chat .L{position:absolute;left:11.25%;top:19.875%;width:2360px;height:1498px;transform-origin:0 0;overflow:hidden;color:#000;font-size:28px;line-height:39.2px;font-variation-settings:'opsz' 32;font-optical-sizing:none}
+@font-face{font-family:'RA Inter';src:url(assets/images-page/mla/inter-ra.woff2) format('woff2');font-weight:100 900;font-display:block}
+.ra-mla-chat{position:relative;display:block;width:100%;aspect-ratio:1800/1350;border-radius:12px;overflow:hidden;font-family:'RA Inter',Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;contain:layout paint;isolation:isolate;background:#f3f1fb}
+.ra-mla-chat picture,.ra-mla-chat picture img{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none;margin:0}
+.ra-mla-chat .S{position:absolute;left:0;top:0;width:1800px;height:1350px;transform-origin:0 0;pointer-events:none}
+.ra-mla-chat .C{position:absolute;left:70px;top:100px;width:1730px;height:1250px;overflow:hidden;contain:strict}
+.ra-mla-chat .L{position:absolute;left:0;top:-228px;width:2360px;height:1498px;color:#000;font-size:28px;line-height:39.2px;font-variation-settings:'opsz' 32;font-optical-sizing:none;transition:opacity .45s}
+.ra-mla-chat .chat,.ra-mla-chat .doc{position:absolute;inset:0;contain:layout paint;isolation:isolate}
+@media (max-width:600px){
+.ra-mla-chat{aspect-ratio:1150/1582}
+.ra-mla-chat .S{width:1150px;height:1582px}
+.ra-mla-chat .C{left:36px;top:92px;width:1114px;height:1490px}
+.ra-mla-chat .L{top:2px}
+}
+.ra-mla-chat.rs .L{opacity:0}
+.ra-mla-chat .st:not(.on) *{animation:none!important}
+.ra-mla-chat .st:not(.on) .shim{background:none;color:#8792A2}
 .ra-mla-chat .L *{box-sizing:border-box}
 .ra-mla-chat .in{position:absolute;left:80px;top:1247.6px;width:640px;white-space:nowrap}
 .ra-mla-chat .ph{color:#697386}
-.ra-mla-chat .car{display:inline-block;width:2px;height:30px;background:#533AFD;vertical-align:-6px;margin-left:1px;animation:ramla-blink 1s steps(1) infinite}
+.ra-mla-chat .car{display:inline-block;will-change:opacity;width:2px;height:30px;background:#533AFD;vertical-align:-6px;margin-left:1px;animation:ramla-blink 1s steps(1) infinite}
 .ra-mla-chat .car.k{background:#000}
 @keyframes ramla-blink{50%{opacity:0}}
 .ra-mla-chat .ask{position:absolute;left:624px;top:1394px;width:144px;height:56px;border-radius:12px;background:#533AFD;color:#fff;font-weight:600;font-size:24px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s,transform .12s}
@@ -262,83 +273,99 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 .ra-mla-chat .doc .bul{position:absolute;left:908px;width:9px;height:9px;border-radius:50%;background:#000;opacity:0}
 .ra-mla-chat .doc .hl{background:rgb(243,227,215);border-radius:4px;padding:2px 2px 3px}
 .ra-mla-chat .doc div{position:absolute;font-variation-settings:'opsz' 31;left:901px;white-space:nowrap;line-height:1}
-.ra-mla-chat .fade{transition:opacity .5s}
-.ra-mla-chat.rs .L{opacity:0;transition:opacity .45s}
 </style>
-<img src="assets/images-page/mla/base.jpg" srcset="assets/images-page/mla/base.jpg 1x, assets/images-page/mla/base@2x.jpg 2x" alt="" width="1200" height="800" decoding="async">
-<div class="L">
- <div class="in"></div>
+<picture><source media="(max-width:600px)" srcset="assets/images-page/mla/m-base.jpg 1x, assets/images-page/mla/m-base@2x.jpg 2x"><img src="assets/images-page/mla/d-base.jpg" srcset="assets/images-page/mla/d-base.jpg 1x, assets/images-page/mla/d-base@2x.jpg 2x" alt="" width="900" height="675" decoding="async"></picture>
+<div class="S"><div class="C"><div class="L">
+ <div class="chat">
+ <div class="in"><span class="ph"></span><span class="qt"></span></div>
  <div class="ask">Ask MLA</div>
  <div class="ub">Draft an AI governance policy for Acme.</div>
  <div class="st"><span class="sp"></span><span class="t"></span></div>
  <div class="rc"><div class="rt"></div></div>
+ </div>
  <div class="doc"></div>
-</div>
-</div>
+</div></div></div>
 <script>
 (function(){
-var root=document.querySelector('.ra-mla-chat');if(!root)return;
-var L=root.querySelector('.L'),IN=L.querySelector('.in'),ASK=L.querySelector('.ask'),UB=L.querySelector('.ub'),ST=L.querySelector('.st'),SP=ST.querySelector('.sp'),STT=ST.querySelector('.t'),RC=L.querySelector('.rc'),RT=L.querySelector('.rt'),DOC=L.querySelector('.doc');
-var R=1282/1498;
-function fit(){L.style.transform='scale('+(R*root.clientWidth/2400)+')'}
+var root=document.currentScript?document.currentScript.parentNode:document.querySelector('.ra-mla-chat');if(!root||!root.classList.contains('ra-mla-chat'))root=document.querySelector('.ra-mla-chat');if(!root)return;
+function $(s){return root.querySelector(s)}
+var S=$('.S'),IN=$('.in'),PHE=$('.in .ph'),QT=$('.in .qt'),ASK=$('.ask'),UB=$('.ub'),ST=$('.st'),SP=$('.st .sp'),STT=$('.st .t'),RC=$('.rc'),RT=$('.rt'),DOC=$('.doc');
+var mq=matchMedia('(max-width:600px)');
+var lastW=0;function fit(){var w=root.clientWidth;if(!w||w===lastW)return;lastW=w;S.style.transform='scale('+(w/(mq.matches?1150:1800))+')'}
 fit();if('ResizeObserver' in window)new ResizeObserver(fit).observe(root);else addEventListener('resize',fit);
+if(mq.addEventListener)mq.addEventListener('change',function(){lastW=0;fit()});
 var Q='Draft an AI governance policy for Acme.';
 var A=["Done. I've drafted it around your 18 registered AI","systems, with tighter controls for the 8 high-risk","ones like the Credit Scoring Engine. I've also","mapped each section to the EU AI Act and ISO","42001. Want me to add an approval step for new","models before they go live?"];
 var PH='Tell MLA what you want to draft, revise or review...';
 var D=[[375, 33, 500, 0, [["AI Governance Policy", 400, 0]]], [454, 28, 400, 0, [["1. Purpose", 400, 0]]], [516, 28, 400, 0, [["This policy establishes Acme LLC's framework for the responsible development, deployment, and", 400, 0]], 0], [562, 28, 400, 0, [["oversight of artificial intelligence systems.", 400, 0]], 0.159], [640, 28, 400, 0, [["2. Scope", 400, 0]]], [704, 28, 400, 0, [["This policy applies to all AI and machine learning systems developed, procured, or deployed by", 400, 0]], 0], [748, 28, 400, 0, [["Acme LLC, including third-party AI services.", 400, 0]], 0], [826, 28, 400, 0, [["3. Principles", 400, 0]]], [889, 28, 400, 1, [["Accountability:", 600, 0], [" Every AI system has a named owner responsible for its governance.", 400, 0]], 0.058], [942, 28, 400, 1, [["Transparency:", 600, 0], [" AI-driven decisions are explainable and disclosed to affected parties.", 400, 0]], 0.042], [993, 28, 400, 1, [["Fairness:", 600, 0], [" AI systems are monitored for bias and discriminatory outcomes.", 400, 0]]], [1045, 28, 400, 1, [["Safety:", 600, 0], [" Systems are tested for robustness and have human oversight mechanisms.", 400, 0]]], [1097, 28, 400, 1, [["Privacy:", 600, 0], [" Data protection is embedded into AI system design and operation.", 400, 0]], -0.032], [1176, 28, 400, 0, [["4. Governance Structure", 400, 0]], -0.159], [1240, 28, 400, 1, [["AI Governance Lead:", 600, 0], [" ", 400, 0], ["Jessica Smith, Chief Risk Officer", 400, 1], [" with overall accountability.", 400, 0]], 0], [1292, 28, 400, 1, [["System Owners:", 600, 0], [" Named individuals responsible for each registered AI system.", 400, 0]], -0.032], [1343, 28, 400, 1, [["Review Cycle:", 600, 0], [" This policy is reviewed annually or upon significant regulatory change.", 400, 0]], 0.111], [1422, 28, 400, 0, [["5. Compliance", 400, 0]]]];
-D.forEach(function(d){d.L=d[4].map(function(r){return r[0]}).join('').length});
-DOC.innerHTML=D.map(function(d){return '<div style="top:'+(d[0]-0.137*d[1]).toFixed(1)+'px;font-size:'+d[1]+'px;font-weight:'+d[2]+(d[3]?';left:930px':'')+(d[5]?';letter-spacing:'+d[5]+'px':'')+'">'+'</div>'+(d[3]?'<i class="bul" style="top:'+(d[0]+9)+'px"></i>':'')}).join('');
-function runs(d,m){var h='',k=m;d[4].forEach(function(r){if(k<=0)return;var t=r[0].slice(0,k);k-=r[0].length;t=t.replace(/&/g,'&amp;');h+=r[2]?'<span class="hl">'+t+'</span>':(r[1]!=400?'<b style="font-weight:'+r[1]+'">'+t+'</b>':t)});return h}
-var DL=[].slice.call(DOC.querySelectorAll('div')),BL=[].slice.call(DOC.querySelectorAll('.bul'));
-// seeded rng
+
+function el(t,c){var e=document.createElement(t);if(c)e.className=c;return e}
+function tx(p){var n=document.createTextNode('');p.appendChild(n);return n}
+// carets: one per area, moved only when its host changes
+var cIn=el('span','car k'),cRe=el('span','car'),cDoc=el('span','car k');
+PHE.textContent=PH;var qT=tx(QT);
+// reply: one span+text node per line
+var RL=A.map(function(_,i){var s=el('span');if(i)RT.appendChild(el('br'));RT.appendChild(s);return {s:s,n:tx(s),v:''}});
+// doc lines: one div per line, one text node per run
+var DL=D.map(function(d){var div=el('div');div.style.top=(d[0]-0.137*d[1]).toFixed(1)+'px';div.style.fontSize=d[1]+'px';div.style.fontWeight=d[2];if(d[3])div.style.left='930px';if(d[5])div.style.letterSpacing=d[5]+'px';
+ var runs=d[4].map(function(r){var host=div;if(r[2]){host=el('span','hl');div.appendChild(host)}else if(r[1]!=400){host=el('b');host.style.fontWeight=r[1];div.appendChild(host)}var n=tx(host);return {t:r[0],n:n,host:host,v:0}});
+ DOC.appendChild(div);var b=null;if(d[3]){b=el('i','bul');b.style.top=(d[0]+9)+'px';DOC.appendChild(b)}
+ return {div:div,runs:runs,len:d[4].reduce(function(a,r){return a+r[0].length},0),b:b,m:-1,bo:-1}});
 var s=7;function rnd(){s=(s*16807)%2147483647;return s/2147483647}
-// typing schedule
 var tType=[],t=1000;for(var i=0;i<Q.length;i++){t+=45+rnd()*55+(Q[i]==' '?25:0);tType.push(t)}
 var tSend=t+300,tThink=tSend+420,steps=['Reviewing 18 registered AI systems','Mapping to EU AI Act and ISO 42001','Drafting policy'];
 var tSteps=[tThink+950,tThink+950+780,tThink+950+1560],tReply=tThink+950+2340;
-// reply tokens over lines
 var toks=[],tt=tReply+250;A.forEach(function(line,li){var w=line.split(' '),j=0;while(j<w.length){var n=1+Math.floor(rnd()*3);j=Math.min(w.length,j+n);tt+=25+rnd()*15;toks.push([tt,li,j])}});
 var tReplyEnd=tt;
-// doc typing chars
-var dTot=D.reduce(function(a,d){return a+d.L},0),tDoc=tReply+500,cps=3.4,tDocEnd=tDoc+dTot*cps+D.length*90;
+var dTot=DL.reduce(function(a,d){return a+d.len},0),tDoc=tReply+500,cps=3.4,tDocEnd=tDoc+dTot*cps+D.length*90;
 var TEND=Math.max(tReplyEnd,tDocEnd)+3000,TOTAL=TEND+700;
+// write-only-on-change helpers
+var C={};function cls(k,e,c,on){var key=k+c;if(C[key]===on)return;C[key]=on;e.classList.toggle(c,on)}
+function setv(k,v,f){if(C[k]===v)return;C[k]=v;f(v)}
+function place(car,host){if(!host){if(car.parentNode)car.parentNode.removeChild(car);return}if(car.parentNode!==host||host.lastChild!==car)host.appendChild(car)}
 function render(T,fin){
  if(fin)T=TEND-1;
- root.classList.toggle('rs',T>TEND);
+ cls('rs',root,'rs',T>TEND);
  // input
  var n=0;while(n<tType.length&&T>=tType[n])n++;
- if(T<1000+0||T>=tSend) IN.innerHTML='<span class="ph">'+PH+'</span>';
- else IN.innerHTML=Q.slice(0,n).replace(/&/g,'&amp;')+'<span class="car k"></span>';
- ASK.classList.toggle('on',n>0&&T<tSend+200);ASK.classList.toggle('pr',T>=tSend-120&&T<tSend+40);
- UB.classList.toggle('on',T>=tSend);
+ var typing=T>=1000&&T<tSend;
+ setv('ph',!typing,function(v){PHE.style.display=v?'':'none'});
+ setv('q',typing?n:-1,function(v){qT.data=v>0?Q.slice(0,v):'';place(cIn,v>=0?QT:null)});
+ cls('a',ASK,'on',n>0&&T<tSend+200);cls('p',ASK,'pr',T>=tSend-120&&T<tSend+40);
+ cls('u',UB,'on',T>=tSend);
  // status
- var showSt=T>=tThink&&T<tReply+150;ST.classList.toggle('on',showSt);
- var label,cls='sp',sw=false;
- if(T<tSteps[0]){label='<span class="shim">MLA is thinking…</span>';cls='sp dot'}
- else{var k=T<tSteps[1]?0:T<tSteps[2]?1:2;var ks=tSteps[k],ke=k<2?tSteps[k+1]:tReply;label=steps[k];cls=(T>ke-260)?'sp ok':'sp';sw=(T-ks<70)||(ke-T<70)}
- if(STT.innerHTML!==label)STT.innerHTML=label;SP.className=cls;STT.classList.toggle('sw',sw);
+ var showSt=T>=tThink&&T<tReply+150;cls('s',ST,'on',showSt);
+ var label='',sc='sp',sw=false;
+ if(showSt){if(T<tSteps[0]){label='@shim';sc='sp dot'}
+ else{var k=T<tSteps[1]?0:T<tSteps[2]?1:2,ks=tSteps[k],ke=k<2?tSteps[k+1]:tReply;label=steps[k];sc=(T>ke-260)?'sp ok':'sp';sw=(T-ks<70)||(ke-T<70)}}
+ setv('lab',label,function(v){if(v==='@shim'){STT.innerHTML='<span class="shim">MLA is thinking\u2026</span>'}else STT.textContent=v});
+ setv('sc',sc,function(v){SP.className=v});cls('sw',STT,'sw',sw);
  // reply
- RC.classList.toggle('on',T>=tReply);
+ cls('r',RC,'on',T>=tReply);
  var shown=-1;for(var q=0;q<toks.length;q++){if(T>=toks[q][0])shown=q;else break}
- var html='';if(T>=tReply){var lastLi=shown>=0?toks[shown][1]:0,lastJ=shown>=0?toks[shown][2]:0;
-  for(var li=0;li<=lastLi;li++){var w=A[li].split(' ');html+=(li?'<br>':'')+(li<lastLi?A[li]:w.slice(0,lastJ).join(' '))}
-  if(T<tReplyEnd+400)html+='<span class="car"></span>'}
- RT.innerHTML=html||(T>=tReply?'<span class="car"></span>':'');
+ var lastLi=-1,lastJ=0;if(shown>=0){lastLi=toks[shown][1];lastJ=toks[shown][2]}
+ for(var li=0;li<RL.length;li++){var v=li<lastLi?A[li]:li===lastLi?A[li].split(' ').slice(0,lastJ).join(' '):'';if(RL[li].v!==v){RL[li].v=v;RL[li].n.data=v}}
+ var caretOn=T>=tReply&&T<tReplyEnd+400;
+ setv('rc',caretOn?Math.max(lastLi,0):-1,function(v){place(cRe,v>=0?RL[v].s:null)});
  // doc
- var c=T<tDoc?0:Math.floor((T-tDoc)/cps),acc=0,bi=0;
- DL.forEach(function(el,i){var len=D[i].L,start=acc+i*90/cps;var m=Math.max(0,Math.min(len,Math.floor(c-start)));acc+=len;if(D[i][3]){BL[bi++].style.opacity=m>0?1:0}
-  var car=(T>=tDoc&&m>0&&m<len)||(T>=tDoc&&m===len&&i===DL.length-1&&T<tDocEnd+600);el.innerHTML=runs(D[i],m)+(car?'<span class="car k" style="height:'+(D[i][1]+2)+'px;vertical-align:-'+(D[i][1]*0.2).toFixed(0)+'px"></span>':'')});
+ var c=T<tDoc?0:Math.floor((T-tDoc)/cps),acc=0,host=null;
+ for(var i=0;i<DL.length;i++){var d=DL[i],start=acc+i*90/cps,m=Math.max(0,Math.min(d.len,Math.floor(c-start)));acc+=d.len;
+  if(d.m!==m){d.m=m;var k=m;d.runs.forEach(function(r){var w=Math.max(0,Math.min(r.t.length,k));k-=r.t.length;if(r.v!==w){r.v=w;r.n.data=r.t.slice(0,w);if(r.host.className==='hl')r.host.style.display=w?'':'none'}})}
+  if(d.b){var bo=m>0?1:0;if(d.bo!==bo){d.bo=bo;d.b.style.opacity=bo}}
+  if(T>=tDoc&&m>0&&(m<d.len||(i===DL.length-1&&T<tDocEnd+600))){var rr=d.runs[0],kk=m;for(var j=0;j<d.runs.length;j++){if(kk<=d.runs[j].t.length){rr=d.runs[j];break}kk-=d.runs[j].t.length}host=rr.host}
+ }
+ setv('dh',host,function(h){if(h){var sz=+h.closest('div').style.fontSize.replace('px','');cDoc.style.height=(sz+2)+'px';cDoc.style.verticalAlign='-'+Math.round(sz*.2)+'px'}place(cDoc,h)});
 }
 root.__render=render;root.__total=TOTAL;
-var q=new URLSearchParams(location.search);
+var qs=new URLSearchParams(location.search);
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(q.has('t')){render(+q.get('t'));return}
+if(qs.has('t')){render(+qs.get('t'));return}
 if(reduce){render(0,true);return}
 render(0);
 var start=null,run=false;
-function loop(now){if(start===null)start=now;var T=(now-start)%TOTAL;render(T);requestAnimationFrame(loop)}
+function loop(now){if(start===null)start=now;render((now-start)%TOTAL);requestAnimationFrame(loop)}
 function go(){if(run)return;run=true;setTimeout(function(){requestAnimationFrame(loop)},performance.now()<1200?700:250)}
-if(q.has('manual'))return;
+if(qs.has('manual'))return;
 if(!('IntersectionObserver' in window)){go();return}
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.intersectionRatio>=.4){io.disconnect();go()}})},{threshold:[.4],rootMargin:'0px 0px -8% 0px'});io.observe(root);
 })();
