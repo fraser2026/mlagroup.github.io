@@ -236,7 +236,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 .ra-mla-chat picture,.ra-mla-chat picture img{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none;margin:0}
 .ra-mla-chat .S{position:absolute;left:0;top:0;width:1800px;height:1350px;transform-origin:0 0;pointer-events:none}
 .ra-mla-chat .C{position:absolute;left:70px;top:100px;width:1730px;height:1250px;overflow:hidden;contain:strict}
-.ra-mla-chat .L{position:absolute;left:0;top:-228px;width:2360px;height:1498px;color:#000;font-size:28px;line-height:39.2px;font-variation-settings:'opsz' 32;font-optical-sizing:none;transition:opacity .45s}
+.ra-mla-chat .L{position:absolute;left:0;top:2px;width:2360px;height:1498px;color:#000;font-size:28px;line-height:39.2px;font-variation-settings:'opsz' 32;font-optical-sizing:none;transition:opacity .45s}
 .ra-mla-chat .chat,.ra-mla-chat .doc{position:absolute;inset:0;contain:layout paint;isolation:isolate}
 @media (max-width:600px){
 .ra-mla-chat{aspect-ratio:1150/1582}
@@ -273,6 +273,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 .ra-mla-chat .doc .bul{position:absolute;left:908px;width:9px;height:9px;border-radius:50%;background:#000;opacity:0}
 .ra-mla-chat .doc .hl{background:rgb(243,227,215);border-radius:4px;padding:2px 2px 3px}
 .ra-mla-chat .doc div{position:absolute;font-variation-settings:'opsz' 31;left:901px;white-space:nowrap;line-height:1}
+@media (min-width:601px){.ra-mla-chat .in{top:1017.6px}.ra-mla-chat .ask{top:1164px}.ra-mla-chat .doc .lo{visibility:hidden}.ra-mla-chat .doc .up{transform:translateY(-52px)}}
 </style>
 <picture><source media="(max-width:600px)" srcset="assets/images-page/mla/m-base.jpg 1x, assets/images-page/mla/m-base@2x.jpg 2x"><img src="assets/images-page/mla/d-base.jpg" srcset="assets/images-page/mla/d-base.jpg 1x, assets/images-page/mla/d-base@2x.jpg 2x" alt="" width="900" height="675" decoding="async"></picture>
 <div class="S"><div class="C"><div class="L">
@@ -307,18 +308,19 @@ PHE.textContent=PH;var qT=tx(QT);
 // reply: one span+text node per line
 var RL=A.map(function(_,i){var s=el('span');if(i)RT.appendChild(el('br'));RT.appendChild(s);return {s:s,n:tx(s),v:''}});
 // doc lines: one div per line, one text node per run
-var DL=D.map(function(d){var div=el('div');div.style.top=(d[0]-0.137*d[1]).toFixed(1)+'px';div.style.fontSize=d[1]+'px';div.style.fontWeight=d[2];if(d[3])div.style.left='930px';if(d[5])div.style.letterSpacing=d[5]+'px';
- var runs=d[4].map(function(r){var host=div;if(r[2]){host=el('span','hl');div.appendChild(host)}else if(r[1]!=400){host=el('b');host.style.fontWeight=r[1];div.appendChild(host)}var n=tx(host);return {t:r[0],n:n,host:host,v:0}});
- DOC.appendChild(div);var b=null;if(d[3]){b=el('i','bul');b.style.top=(d[0]+9)+'px';DOC.appendChild(b)}
- return {div:div,runs:runs,len:d[4].reduce(function(a,r){return a+r[0].length},0),b:b,m:-1,bo:-1}});
+var DESK=!mq.matches;
+var DL=D.map(function(d,ix){var cz=ix>=15||ix===10?'lo':ix>=11?'up':'';var div=el('div');div.style.top=(d[0]-0.137*d[1]).toFixed(1)+'px';div.style.fontSize=d[1]+'px';div.style.fontWeight=d[2];if(d[3])div.style.left='930px';if(d[5])div.style.letterSpacing=d[5]+'px';
+ var runs=d[4].map(function(r){var host=div;if(r[2]){host=el('span','hl');host.style.display='none';div.appendChild(host)}else if(r[1]!=400){host=el('b');host.style.fontWeight=r[1];div.appendChild(host)}var n=tx(host);return {t:r[0],n:n,host:host,v:0}});
+ if(cz)div.classList.add(cz);DOC.appendChild(div);var b=null;if(d[3]){b=el('i','bul');if(cz)b.classList.add(cz);b.style.top=(d[0]+9)+'px';DOC.appendChild(b)}
+ return {sk:DESK&&cz==='lo',div:div,runs:runs,len:d[4].reduce(function(a,r){return a+r[0].length},0),b:b,m:-1,bo:-1}});
 var s=7;function rnd(){s=(s*16807)%2147483647;return s/2147483647}
 var tType=[],t=1000;for(var i=0;i<Q.length;i++){t+=45+rnd()*55+(Q[i]==' '?25:0);tType.push(t)}
 var tSend=t+300,tThink=tSend+420,steps=['Reviewing 18 registered AI systems','Mapping to EU AI Act and ISO 42001','Drafting policy'];
 var tSteps=[tThink+950,tThink+950+780,tThink+950+1560],tReply=tThink+950+2340;
 var toks=[],tt=tReply+250;A.forEach(function(line,li){var w=line.split(' '),j=0;while(j<w.length){var n=1+Math.floor(rnd()*3);j=Math.min(w.length,j+n);tt+=25+rnd()*15;toks.push([tt,li,j])}});
 var tReplyEnd=tt;
-var dTot=DL.reduce(function(a,d){return a+d.len},0),tDoc=tReply+500,cps=3.4,tDocEnd=tDoc+dTot*cps+D.length*90;
-var TEND=Math.max(tReplyEnd,tDocEnd)+3000,TOTAL=TEND+700;
+var dTot=DL.reduce(function(a,d){return a+(d.sk?0:d.len)},0),nVis=DL.filter(function(d){return !d.sk}).length,tDoc=tReply+500,cps=3.4,tDocEnd=tDoc+dTot*cps+nVis*90;
+var TEND=Math.max(tReplyEnd,tDocEnd)+2200,TOTAL=TEND+700;
 // write-only-on-change helpers
 var C={};function cls(k,e,c,on){var key=k+c;if(C[key]===on)return;C[key]=on;e.classList.toggle(c,on)}
 function setv(k,v,f){if(C[k]===v)return;C[k]=v;f(v)}
@@ -348,8 +350,8 @@ function render(T,fin){
  var caretOn=T>=tReply&&T<tReplyEnd+400;
  setv('rc',caretOn?Math.max(lastLi,0):-1,function(v){place(cRe,v>=0?RL[v].s:null)});
  // doc
- var c=T<tDoc?0:Math.floor((T-tDoc)/cps),acc=0,host=null;
- for(var i=0;i<DL.length;i++){var d=DL[i],start=acc+i*90/cps,m=Math.max(0,Math.min(d.len,Math.floor(c-start)));acc+=d.len;
+ var c=T<tDoc?0:Math.floor((T-tDoc)/cps),acc=0,gi=0,host=null;
+ for(var i=0;i<DL.length;i++){var d=DL[i],start=acc+gi*90/cps,m=d.sk?0:Math.max(0,Math.min(d.len,Math.floor(c-start)));if(!d.sk){acc+=d.len;gi++}
   if(d.m!==m){d.m=m;var k=m;d.runs.forEach(function(r){var w=Math.max(0,Math.min(r.t.length,k));k-=r.t.length;if(r.v!==w){r.v=w;r.n.data=r.t.slice(0,w);if(r.host.className==='hl')r.host.style.display=w?'':'none'}})}
   if(d.b){var bo=m>0?1:0;if(d.bo!==bo){d.bo=bo;d.b.style.opacity=bo}}
   if(T>=tDoc&&m>0&&(m<d.len||(i===DL.length-1&&T<tDocEnd+600))){var rr=d.runs[0],kk=m;for(var j=0;j<d.runs.length;j++){if(kk<=d.runs[j].t.length){rr=d.runs[j];break}kk-=d.runs[j].t.length}host=rr.host}
