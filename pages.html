@@ -380,12 +380,12 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
   <div class="wrap">
     <div class="copy reveal">
       <p class="eyebrow">Board-ready dossiers</p>
-      <h2>Evidence your board can sign</h2>
-      <p>Turn your registry and assessments into a polished dossier, ready to review, sign and share with auditors.</p>
+      <h2>Your AI governance, on record.</h2>
+      <p>A consolidated dossier of your organisation's AI governance, bringing policies, controls and supporting evidence into a single record for board oversight, audit and procurement assurance.</p>
       <ul class="checks">
-        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Generated from live data</li>
-        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Sign-off built in</li>
-        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Verifiable by auditors</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>A consolidated view of your governance position</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Evidence for boards, auditors and procurement</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Formal sign-off and a traceable completion record</li>
       </ul>
     </div>
     <div class="reveal d1">
@@ -484,18 +484,32 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 .ra-dd-demo .g{height:24px;font-size:17.5px;font-weight:600;line-height:24px}
 .ra-dd-demo .fade{position:absolute;left:0;right:0;bottom:0;height:56px;z-index:3;background:linear-gradient(rgba(0,0,0,0),#000);pointer-events:none}
 .ra-dd-demo.done .fin{opacity:1}.ra-dd-demo.done .stage{display:none}
-@media (prefers-reduced-motion:reduce){.ra-dd-demo .fin{opacity:1}.ra-dd-demo .stage{display:none}}
+.ra-dd-demo .mb{display:none;position:relative;width:100%;aspect-ratio:1050/732;border-radius:12px;overflow:hidden;container-type:inline-size}
+.ra-dd-demo .ms{position:absolute;left:0;top:0;width:1050px;height:732px;transform-origin:0 0;transform:scale(calc(100cqw / 1050px))}
+.ra-dd-demo .ms>img{position:absolute;inset:0;width:1050px;height:732px;display:block}
+.ra-dd-demo .mc{position:absolute;left:85px;top:330px;width:500px;height:250px}
+.ra-dd-demo .mc i{position:absolute;top:0;height:250px;background:url(assets/images-page/dev-dark/dd-m3-bars-v1.webp) no-repeat;background-size:500px 250px;clip-path:inset(100% 0 0 0);transition:clip-path 560ms cubic-bezier(.32,.72,0,1)}
+.ra-dd-demo .mc.on i{clip-path:inset(0)}
+.ra-dd-demo .ms .t{height:50px;font-size:34.4px;font-weight:500;line-height:50px}.ra-dd-demo .ms .g{height:46px;font-size:33px;font-weight:600;line-height:46px}
+.ra-dd-demo .mb .fade{height:40px}
+@media (max-width:640px){.ra-dd-demo .card{display:none}.ra-dd-demo .mb{display:block}}
+@media (prefers-reduced-motion:reduce){.ra-dd-demo .fin{opacity:1}.ra-dd-demo .stage{display:none}.ra-dd-demo .mc i{clip-path:inset(0)}}
 </style>
 <div class="card"><div class="fr"><img src="assets/images-page/dev-dark/dd-base-v2.webp" alt="" width="1100" height="520"><img class="fin" src="assets/images-page/dev-dark/dd-final-v2.webp" alt="" width="1100" height="520"><div class="stage"><div class="chart"><i style="left:1.00px;background-position:-1.00px 0;transition-delay:0ms"></i><i style="left:10.12px;background-position:-10.12px 0;transition-delay:28ms"></i><i style="left:19.23px;background-position:-19.23px 0;transition-delay:56ms"></i><i style="left:28.35px;background-position:-28.35px 0;transition-delay:84ms"></i><i style="left:37.46px;background-position:-37.46px 0;transition-delay:112ms"></i><i style="left:46.58px;background-position:-46.58px 0;transition-delay:140ms"></i><i style="left:55.69px;background-position:-55.69px 0;transition-delay:168ms"></i><i style="left:64.80px;background-position:-64.80px 0;transition-delay:196ms"></i><i style="left:73.92px;background-position:-73.92px 0;transition-delay:224ms"></i><i style="left:83.03px;background-position:-83.03px 0;transition-delay:252ms"></i><i style="left:92.15px;background-position:-92.15px 0;transition-delay:280ms"></i><i style="left:101.26px;background-position:-101.26px 0;transition-delay:308ms"></i><i style="left:110.38px;background-position:-110.38px 0;transition-delay:336ms"></i><i style="left:119.50px;background-position:-119.50px 0;transition-delay:364ms"></i><i style="left:128.61px;background-position:-128.61px 0;transition-delay:392ms"></i><i style="left:137.73px;background-position:-137.73px 0;transition-delay:420ms"></i><i style="left:146.84px;background-position:-146.84px 0;transition-delay:448ms"></i><i style="left:155.96px;background-position:-155.96px 0;transition-delay:476ms"></i><i style="left:165.07px;background-position:-165.07px 0;transition-delay:504ms"></i><i style="left:174.18px;background-position:-174.18px 0;transition-delay:532ms"></i><i style="left:183.30px;background-position:-183.30px 0;transition-delay:560ms"></i><i style="left:192.41px;background-position:-192.41px 0;transition-delay:588ms"></i><i style="left:201.53px;background-position:-201.53px 0;transition-delay:616ms"></i><i style="left:210.64px;background-position:-210.64px 0;transition-delay:644ms"></i><i style="left:219.76px;background-position:-219.76px 0;transition-delay:672ms"></i><i style="left:228.88px;background-position:-228.88px 0;transition-delay:700ms"></i><i style="left:237.99px;background-position:-237.99px 0;transition-delay:728ms"></i><i style="left:247.11px;background-position:-247.11px 0;transition-delay:756ms"></i><i style="left:256.22px;background-position:-256.22px 0;transition-delay:784ms"></i><i style="left:265.34px;background-position:-265.34px 0;transition-delay:812ms"></i></div>
 <div class="n t" style="left:670px;top:304px;width:80px">1.10B</div><div class="n t" style="left:842px;top:304px;width:110px">$29,352</div><div class="n g" style="left:1056px;top:455px;width:60px">247M</div><div class="n g" style="left:1170px;top:455px;width:50px">58M</div><div class="n g" style="left:1285px;top:455px;width:80px">110,952</div></div></div><i class="fade"></i></div>
+<div class="mb"><div class="ms"><img src="assets/images-page/dev-dark/dd-m3-base-v2.webp" alt="" width="1050" height="732" loading="lazy"><div class="mc"><i style="left:7px;width:15px;background-position:-7px 0;transition-delay:13ms"></i><i style="left:23px;width:15px;background-position:-23px 0;transition-delay:39ms"></i><i style="left:72px;width:15px;background-position:-72px 0;transition-delay:120ms"></i><i style="left:88px;width:15px;background-position:-88px 0;transition-delay:146ms"></i><i style="left:104px;width:15px;background-position:-104px 0;transition-delay:173ms"></i><i style="left:120px;width:15px;background-position:-120px 0;transition-delay:199ms"></i><i style="left:152px;width:16px;background-position:-152px 0;transition-delay:252ms"></i><i style="left:185px;width:15px;background-position:-185px 0;transition-delay:306ms"></i><i style="left:201px;width:15px;background-position:-201px 0;transition-delay:333ms"></i><i style="left:217px;width:15px;background-position:-217px 0;transition-delay:359ms"></i><i style="left:233px;width:15px;background-position:-233px 0;transition-delay:386ms"></i><i style="left:266px;width:15px;background-position:-266px 0;transition-delay:440ms"></i><i style="left:282px;width:15px;background-position:-282px 0;transition-delay:466ms"></i><i style="left:314px;width:15px;background-position:-314px 0;transition-delay:519ms"></i><i style="left:330px;width:15px;background-position:-330px 0;transition-delay:546ms"></i><i style="left:362px;width:16px;background-position:-362px 0;transition-delay:598ms"></i><i style="left:379px;width:15px;background-position:-379px 0;transition-delay:627ms"></i><i style="left:395px;width:15px;background-position:-395px 0;transition-delay:653ms"></i><i style="left:427px;width:15px;background-position:-427px 0;transition-delay:706ms"></i><i style="left:443px;width:15px;background-position:-443px 0;transition-delay:732ms"></i><i style="left:476px;width:15px;background-position:-476px 0;transition-delay:787ms"></i></div>
+<div class="n t" style="left:90px;top:273px;width:150px">1.10B</div><div class="n t" style="left:401px;top:273px;width:200px">$29,352</div><div class="n g" style="left:793px;top:547px;width:120px">247M</div><div class="n g" style="left:999px;top:547px;width:60px">58M</div><div class="n g" style="left:1100px;top:547px;width:60px">110,952</div></div><i class="fade"></i></div>
 <script>
 (function(){var root=document.currentScript.parentNode,ch=root.querySelector('.chart'),N=root.querySelectorAll('.n'),L='en-GB';
 var F=[function(k){return (1.84*k).toFixed(2)+'B'},function(k){return '$'+Math.round(48920*k).toLocaleString(L)},function(k){return Math.round(412*k)+'M'},function(k){return Math.round(96*k)+'M'},function(k){return Math.round(184920*k).toLocaleString(L)}];
 function set(k){for(var i=0;i<5;i++)N[i].textContent=F[i](k)}
 function done(){root.classList.add('done')}
-if(matchMedia('(prefers-reduced-motion:reduce)').matches||!('IntersectionObserver' in window)){done();return}
+var MOB=matchMedia('(max-width:640px)').matches;if(MOB){N=root.querySelectorAll('.ms .n');ch=root.querySelector('.mc')}else{N=root.querySelectorAll('.stage .n')}
+if(matchMedia('(prefers-reduced-motion:reduce)').matches||!('IntersectionObserver' in window)){done();set(1);return}
+function cnt(D,cb){var t0=performance.now();(function f(t){var k=Math.min(1,(t-t0)/D);set(.6+.4*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f);else if(cb)cb()})(t0)}
+function mrun(){ch.classList.add('on');cnt(1300)}
 function run(){ch.classList.add('on');var t0=performance.now();(function f(t){var k=Math.min(1,(t-t0)/1300);set(.6+.4*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f);else setTimeout(done,600)})(t0)}
-var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.intersectionRatio>=.4){io.unobserve(root);io.disconnect();run()}})},{threshold:[.4]});io.observe(root);
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.intersectionRatio>=.4){io.unobserve(root);io.disconnect();MOB?mrun():run()}})},{threshold:[.4]});io.observe(root);
 })();
 </script>
 </div>
@@ -504,81 +518,6 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
       <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#2A2160"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#B4A9FE" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Usage and cost analytics</li>
       <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#2A2160"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#B4A9FE" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Gateway monitoring</li>
     </ul>
-  </div>
-</section>
-
-<!-- ============ COPY: CLOSING VISUAL ============ -->
-<section class="closing">
-  <div class="wrap">
-    <p class="eyebrow reveal">The finished article</p>
-    <h2 class="reveal d1">From first record to signed dossier</h2>
-    <p class="sub reveal d2">Everything you record in RegAnchor comes together in one document your board can stand behind.</p>
-    <div class="reveal d2">
-<div class="ra-sign-demo">
-<style>
-.ra-sign-demo{--T:14.3s;--ease:cubic-bezier(.22,1,.36,1)}
-.ra-sign-demo .card{position:relative;width:100%;max-width:1200px;aspect-ratio:3/2;}
-.ra-sign-demo .screen{position:absolute;left:8.3333%;top:12.875%;width:83.3333%;height:79.69%;overflow:hidden;container-type:inline-size}
-.ra-sign-demo .scrim{position:absolute;inset:0;background:rgb(6,27,49);opacity:0;animation:rasd-scrim var(--T) infinite}
-.ra-sign-demo .drawer{position:absolute;top:1.2cqw;right:1.2cqw;bottom:1.2cqw;aspect-ratio:960/1768;transform:translateX(110%);filter:drop-shadow(0 .5cqw 1.6cqw rgba(6,27,49,.12));will-change:transform}
-.ra-sign-demo .drawer img{position:absolute;inset:0;width:100%;height:100%;display:block}
-.ra-sign-demo .sign{animation:rasd-sign var(--T) infinite}
-.ra-sign-demo .drawer .ld{opacity:0;animation:rasd-ld var(--T) infinite;border-radius:1.1cqw}
-@keyframes rasd-ld{0%,41.96%{opacity:0}43.92%,100%{opacity:1}}
-.ra-sign-demo .drawer .aud{opacity:0;animation:rasd-aud var(--T) infinite;border-radius:1.1cqw}
-.ra-sign-demo .chk{clip-path:inset(51.2% 91.6% 47.2% 5.6%);opacity:0;animation:rasd-chk var(--T) infinite}
-.ra-sign-demo .press{position:absolute;left:64.3%;right:5%;top:95.2%;bottom:1.8%;border-radius:.5cqw;background:#061B31;opacity:0;animation:rasd-press var(--T) infinite}
-.ra-sign-demo .note{position:absolute;z-index:5;right:2.4cqw;bottom:2.4cqw;display:flex;gap:1.2cqw;align-items:center;background:#fff;border:1px solid #E6EBF1;border-radius:1.2cqw;padding:1.4cqw 2cqw 1.4cqw 1.4cqw;box-shadow:0 .8cqw 2.4cqw rgba(6,27,49,.10),0 .2cqw .6cqw rgba(6,27,49,.06);font-family:Inter,system-ui,-apple-system,sans-serif;opacity:0;transform:translateY(1.6cqw);animation:rasd-note var(--T) infinite}
-.ra-sign-demo .note .ic{flex:none;width:3.2cqw;height:3.2cqw;border-radius:50%;background:#12B76A;display:grid;place-items:center}
-.ra-sign-demo .note .ic svg{width:56%}
-.ra-sign-demo .note .tx{display:flex;flex-direction:column;gap:.35cqw}
-.ra-sign-demo .note b{font-weight:600;font-size:1.5cqw;color:#061B31;line-height:1.2}
-.ra-sign-demo .note .tx span{font-size:1.3cqw;color:#425466;line-height:1.2}
-@keyframes rasd-note{0%,42.00%{opacity:0;transform:translateY(1.6cqw);animation-timing-function:cubic-bezier(.22,1,.36,1)}45.00%,95.09%{opacity:1;transform:none;animation-timing-function:cubic-bezier(.55,0,.75,.2)}98.64%,100%{opacity:0;transform:translateY(1.6cqw)}}
-@keyframes rasd-scrim{0.00%,14.00%{opacity:0;animation-timing-function:cubic-bezier(.32,.72,0,1)}17.64%,74.09%{opacity:.16}79.09%,100.00%{opacity:0}}
-@keyframes rasd-sign{0.00%,14.00%{transform:translateX(110%);animation-timing-function:cubic-bezier(.32,.72,0,1)}17.64%,74.09%{transform:translateX(0);animation-timing-function:cubic-bezier(.55,0,.75,.2)}79.09%,100.00%{transform:translateX(110%)}}
-@keyframes rasd-aud{0%,50.00%{opacity:0;transform:translateY(.4cqw);animation-timing-function:cubic-bezier(.33,0,.2,1)}54.20%,100%{opacity:1;transform:none}}
-.ra-sign-demo .pen{position:absolute;left:5%;top:33.14%;width:89.9%;height:13.29%;overflow:visible}
-.ra-sign-demo .pen path{stroke-dasharray:1 1;stroke-dashoffset:1}
-.ra-sign-demo .u0{animation:rasd-u0 var(--T) infinite}
-@keyframes rasd-u0{0.00%,20.98%{stroke-dashoffset:1;animation-timing-function:cubic-bezier(.4,0,.6,1)}22.75%{stroke-dashoffset:.4;animation-timing-function:cubic-bezier(.3,.2,.5,1)}24.19%,100.00%{stroke-dashoffset:0}}
-.ra-sign-demo .u1{animation:rasd-u1 var(--T) infinite}
-@keyframes rasd-u1{0.00%,24.61%{stroke-dashoffset:1;animation-timing-function:cubic-bezier(.4,0,.6,1)}25.30%{stroke-dashoffset:.4;animation-timing-function:cubic-bezier(.3,.2,.5,1)}25.86%,100.00%{stroke-dashoffset:0}}
-.ra-sign-demo .u2{animation:rasd-u2 var(--T) infinite}
-@keyframes rasd-u2{0.00%,26.28%{stroke-dashoffset:1;animation-timing-function:cubic-bezier(.4,0,.6,1)}26.36%{stroke-dashoffset:.4;animation-timing-function:cubic-bezier(.3,.2,.5,1)}26.43%,100.00%{stroke-dashoffset:0}}
-.ra-sign-demo .u3{animation:rasd-u3 var(--T) infinite}
-@keyframes rasd-u3{0.00%,26.85%{stroke-dashoffset:1;animation-timing-function:cubic-bezier(.4,0,.6,1)}27.55%{stroke-dashoffset:.4;animation-timing-function:cubic-bezier(.3,.2,.5,1)}28.14%,100.00%{stroke-dashoffset:0}}
-.ra-sign-demo .u4{animation:rasd-u4 var(--T) infinite}
-@keyframes rasd-u4{0.00%,28.55%{stroke-dashoffset:1;animation-timing-function:cubic-bezier(.4,0,.6,1)}29.80%{stroke-dashoffset:.4;animation-timing-function:cubic-bezier(.3,.2,.5,1)}30.83%,100.00%{stroke-dashoffset:0}}
-.ra-sign-demo .u5{animation:rasd-u5 var(--T) infinite}
-@keyframes rasd-u5{0.00%,31.25%{stroke-dashoffset:1;animation-timing-function:cubic-bezier(.4,0,.6,1)}31.75%{stroke-dashoffset:.4;animation-timing-function:cubic-bezier(.3,.2,.5,1)}32.16%,100.00%{stroke-dashoffset:0}}
-@keyframes rasd-chk{0.00%,35.00%{opacity:0}36.00%,100.00%{opacity:1}}
-@keyframes rasd-press{0.00%,39.09%{opacity:0}40.00%{opacity:.22}41.82%,100.00%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.ra-sign-demo *{animation:none!important}
-.ra-sign-demo .pen path{stroke-dashoffset:0}
-.ra-sign-demo .note{opacity:1;transform:none}}
-.ra-sign-demo{display:block;max-width:1120px;margin:0 auto;border-radius:12px;overflow:hidden;text-align:left;line-height:normal}
-.ra-sign-demo *{box-sizing:border-box}
-.ra-sign-demo .card{max-width:none}
-.ra-sign-demo .base{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none}
-.ra-sign-demo:not(.is-on) *{animation-play-state:paused!important}
-
-</style>
-<div class="card" role="img" aria-label="RegAnchor AI Governance Dossier signed by Jessica Smith, Chief Risk Officer, with its audit trail">
- <img class="base" src="assets/images-page/sign/spread.jpg" srcset="assets/images-page/sign/spread.jpg 1x, assets/images-page/sign/spread@2x.jpg 2x" alt="" width="1200" height="800" decoding="async">
- <div class="screen">
-  <div class="scrim"></div>
-  <div class="drawer sign"><img src="assets/images-page/sign/drawer-empty.png" decoding="async" alt=""><svg class="pen" viewBox="0 0 863 235" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path class="u0" pathLength="1" d="M240.2 56.3 C238.8 57.0 235.1 58.3 231.6 60.8 C228.1 63.2 221.4 68.8 219.0 71.0 C216.6 73.1 217.8 71.0 217.3 73.5 C216.7 76.0 215.9 83.1 215.7 86.1 C215.5 89.0 215.5 89.9 216.1 91.4 C216.6 92.8 217.4 93.8 219.0 94.9 C220.6 96.0 220.6 97.6 225.6 98.0 C230.7 98.4 244.5 97.7 249.5 97.3 C254.4 96.9 248.6 98.1 255.4 95.6 C262.3 93.0 277.8 87.6 290.5 82.0 C303.2 76.3 319.7 67.3 331.5 61.7 C343.3 56.1 354.4 51.4 361.3 48.5 C368.3 45.5 367.2 46.0 373.2 44.1 C379.3 42.2 391.1 38.2 397.7 37.1 C404.4 35.9 409.8 36.9 413.0 37.1 C416.2 37.3 416.1 37.8 416.9 38.3 C417.8 38.7 418.0 37.6 418.1 39.7 C418.3 41.8 419.1 46.8 417.9 51.0 C416.6 55.1 414.6 61.3 410.7 64.7 C406.8 68.2 398.0 69.7 394.4 71.6 C390.8 73.6 395.4 72.5 389.1 76.5 C382.8 80.6 377.4 84.5 356.7 95.9 C336.0 107.2 296.3 128.6 264.7 144.8 C233.0 161.1 188.2 182.9 166.7 193.2 C145.2 203.4 143.0 203.5 135.6 206.1 C128.2 208.8 124.6 208.7 122.4 209.2"/><path class="u1" pathLength="1" d="M254.1 189.3 C253.8 189.0 252.8 188.0 252.6 187.5 C252.4 186.9 251.6 187.2 252.9 185.9 C254.2 184.5 252.9 185.7 260.7 179.4 C268.5 173.1 286.4 158.1 299.8 148.0 C313.1 137.9 326.5 128.7 340.8 118.9 C355.2 109.1 371.4 97.8 385.8 89.1 C400.3 80.4 420.1 71.2 427.5 66.6 C434.9 62.0 432.8 61.7 430.2 61.6 C427.5 61.4 414.7 64.9 411.6 65.5"/><path class="u2" pathLength="1" d="M248.8 191.3 C245.3 194.0 231.1 204.5 227.6 207.2"/><path class="u3" pathLength="1" d="M254.8 189.3 C260.8 185.3 281.1 171.1 291.2 165.0 C301.2 158.8 310.1 154.8 315.0 152.4 C319.9 149.9 321.1 147.8 320.8 150.3 C320.5 152.8 314.6 163.8 313.3 167.5 C312.0 171.1 312.7 171.0 313.1 172.1 C313.5 173.2 314.7 173.8 315.7 174.1 C316.6 174.4 316.2 174.6 319.0 174.1 C321.7 173.6 328.0 172.9 332.2 171.2 C336.4 169.4 341.6 165.1 344.1 163.6 C346.7 162.2 346.6 162.8 347.4 162.7 C348.2 162.6 348.7 162.9 349.0 163.1 C349.3 163.4 349.6 163.1 349.4 164.2 C349.3 165.2 347.0 169.5 348.1 169.5 C349.2 169.5 352.4 167.3 356.0 164.2 C359.7 161.1 366.3 154.2 369.9 150.9 C373.6 147.7 375.9 146.3 377.9 144.8 C379.9 143.4 380.4 142.9 381.9 142.2 C383.3 141.5 385.4 141.0 386.5 140.9 C387.5 140.7 387.7 141.0 388.1 141.3 C388.4 141.5 388.6 139.3 388.5 142.3 C388.3 145.3 387.2 155.9 387.1 159.1 C387.1 162.3 387.6 161.0 387.9 161.5 C388.3 162.1 386.6 162.2 389.1 162.4 C391.6 162.7 399.0 163.4 403.0 162.8 C407.1 162.3 411.3 159.8 413.6 159.1 C415.9 158.5 416.4 158.9 416.9 158.9"/><path class="u4" pathLength="1" d="M477.2 121.8 C476.4 121.7 477.5 120.2 472.5 121.1 C467.6 122.1 458.1 123.4 447.4 127.5 C436.7 131.6 417.5 141.2 408.3 145.8 C399.2 150.4 395.6 153.3 392.4 155.0 C389.2 156.8 390.3 155.3 389.1 156.1 C387.9 156.9 387.9 157.9 385.2 159.7 C382.4 161.4 377.9 163.3 372.6 166.6 C367.3 169.8 358.1 175.8 353.4 179.0 C348.7 182.2 346.0 184.5 344.3 186.0 C342.5 187.5 343.2 187.4 343.1 188.0 C343.0 188.6 343.0 189.3 343.6 189.6 C344.2 189.8 342.7 190.3 346.8 189.5 C350.8 188.6 357.0 188.4 368.0 184.3 C378.9 180.2 404.5 168.2 412.3 164.7 C420.1 161.2 413.8 164.1 415.0 163.1 C416.1 162.1 415.9 160.6 418.9 158.6 C421.9 156.7 425.2 155.8 432.8 151.5 C440.4 147.1 457.6 136.9 464.6 132.7 C471.5 128.4 472.3 127.8 474.5 126.0 C476.7 124.3 475.5 123.4 477.8 122.1 C480.2 120.7 486.2 119.1 488.4 118.0 C490.7 116.8 490.8 115.0 491.2 115.2 C491.7 115.4 490.6 118.1 491.1 119.0 C491.6 119.9 493.5 120.1 494.1 120.6 C494.7 121.1 494.7 120.1 494.8 121.8 C494.9 123.5 495.1 128.0 494.7 131.1 C494.2 134.2 494.3 135.9 491.9 140.3 C489.4 144.8 482.0 154.2 479.8 157.5 C477.7 160.9 479.1 159.5 479.0 160.2 C479.0 160.9 478.5 161.6 479.4 161.8 C480.3 161.9 481.9 161.8 484.5 161.1 C487.1 160.4 492.2 158.1 495.0 157.5 C497.9 157.0 500.3 157.4 501.7 157.7 C503.1 158.0 503.0 158.5 503.4 159.5 C503.8 160.6 503.5 162.7 503.9 164.2 C504.3 165.6 504.9 166.9 505.8 168.1 C506.6 169.4 507.3 170.7 509.0 171.6 C510.6 172.5 512.4 173.1 515.6 173.4 C518.8 173.7 525.6 173.5 528.1 173.4 C530.7 173.3 530.4 172.9 530.8 172.8"/><path class="u5" pathLength="1" d="M495.0 110.5 C495.4 110.2 494.1 110.6 497.0 108.3 C500.0 106.0 499.7 106.9 512.9 96.8 C526.2 86.7 562.0 59.1 576.5 47.8 C590.9 36.5 593.5 33.8 599.6 29.0 C605.8 24.2 608.5 21.9 613.5 18.9 C618.6 15.9 626.0 12.6 630.1 11.0 C634.2 9.4 636.7 9.6 638.0 9.3"/></g></svg><img class="chk" src="assets/images-page/sign/drawer-signed.png" decoding="async" alt=""><span class="press"></span><img class="ld" src="assets/images-page/sign/drawer-loading.png" decoding="async" alt=""><img class="aud" src="assets/images-page/sign/drawer-audit-v3.png" decoding="async" alt=""></div>
-  <div class="note"><span class="ic"><svg viewBox="0 0 12 12"><path d="M2.5 6.3l2.3 2.2 4.7-5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tx"><b>Dossier signed</b><span>Jessica Smith · Chief Risk Officer</span></span></div>
- </div>
-</div>
-</div>
-<script>
-(function(){var el=document.querySelector('.ra-sign-demo');if(!el)return;
-if(!('IntersectionObserver' in window)){el.classList.add('is-on');return}
-var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.disconnect();var im=[].slice.call(el.querySelectorAll('img'));Promise.all(im.map(function(i){return i.decode?i.decode().catch(function(){}):0})).then(function(){requestAnimationFrame(function(){el.classList.add('is-on')})})}})},{threshold:.35});io.observe(el);})();
-</script>
-</div>
   </div>
 </section>
 
