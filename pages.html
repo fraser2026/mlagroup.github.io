@@ -8,7 +8,8 @@
 <meta name="description" content="A closer look at RegAnchor: the AI registry, assessments, the MLA policy assistant and board-ready dossiers.">
 <link rel="canonical" href="https://reganchor.com/pages.html">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="js/ra-contact.js"></script>
 <style>
 :root{--navy:#0A0E14;--body:#374151;--muted:#6B7280;--purple:#533AFD;--purple-d:#4434E0;--border:#E4E7EC;--pale:#F6F9FC;--hover:rgba(17,17,17,.028);--max:1200px;--radius:4px;--ease:cubic-bezier(.2,.7,.2,1)}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -43,6 +44,9 @@ h2{font-size:36px;line-height:1.15;font-weight:600;letter-spacing:-.02em;color:v
 .hero{padding:112px 0 72px;text-align:center}
 .hero .eyebrow{margin-bottom:20px}
 .hero h1{max-width:760px;margin:0 auto 20px}
+.hero h1 span{display:inline-block}
+.btn:hover svg.dn{transform:translateY(2px)}
+#registry{scroll-margin-top:64px}
 .hero .sub{max-width:580px;margin:0 auto 36px}
 .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 /* features */
@@ -115,6 +119,28 @@ h2{font-size:36px;line-height:1.15;font-weight:600;letter-spacing:-.02em;color:v
 .lb figcaption{font-size:13px;color:#E3E8EE}
 .lb-close{position:absolute;top:18px;right:18px;width:40px;height:40px;border-radius:999px;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:22px;cursor:pointer}
 .lb-close:hover{background:rgba(255,255,255,.2)}
+/* demo modal: same as index.html */
+button.btn{font-family:inherit;cursor:pointer}
+.modal-root{position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(10,14,20,.22);-webkit-backdrop-filter:blur(7px) saturate(1.02);backdrop-filter:blur(7px) saturate(1.02)}
+.modal-root.is-open{display:flex}
+.modal{width:100%;max-width:420px;background:#fff;border:1px solid var(--border);border-radius:4px;box-shadow:0 1px 2px rgba(10,14,20,.04),0 12px 32px -10px rgba(10,14,20,.14);max-height:min(90vh,640px);overflow:auto}
+.modal__head{display:flex;justify-content:space-between;padding:20px 22px 0;gap:12px}
+.modal__head h3{font-family:'IBM Plex Sans',sans-serif;font-size:1.05rem;font-weight:500;line-height:1.6;color:var(--navy)}
+.modal__head p{font-size:.78rem;color:var(--muted);margin-top:4px}
+.modal__x{border:none;background:none;font-size:1.1rem;color:var(--muted);cursor:pointer}
+.modal__body{padding:18px 22px 22px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:.72rem;font-weight:500;color:var(--navy);margin-bottom:5px}
+.fg label .req{color:var(--purple)}
+.fg input,.fg select,.fg textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:.84rem;color:var(--navy);background:#fff}
+.fg textarea{min-height:72px;resize:vertical}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-err{display:none;font-size:.76rem;color:#B91C1C;margin-bottom:10px}
+.modal-err.is-on{display:block}
+.modal__foot{display:flex;justify-content:flex-end;gap:8px}
+.modal-success{text-align:center;padding:28px 8px 12px}
+.modal-success h4{font-family:'IBM Plex Sans',sans-serif;font-size:1.1rem;font-weight:500;color:var(--navy);margin-bottom:8px}
+.modal-success p{font-size:.84rem;color:var(--body);margin-bottom:20px}
 /* responsive */
 @media (max-width:960px){
   h1{font-size:44px}h2{font-size:30px}
@@ -127,6 +153,7 @@ h2{font-size:36px;line-height:1.15;font-weight:600;letter-spacing:-.02em;color:v
   .wrap{padding:0 20px}
   h1{font-size:38px}h2{font-size:26px}.sub{font-size:1rem}
   .hero{padding:72px 0 40px}
+  .hero h1{font-size:min(38px,calc((100vw - 40px) / 10.6))}
   .feature{padding:64px 0}
   .nav-signin{display:none}
   .ctas .btn{width:100%}
@@ -161,12 +188,12 @@ h2{font-size:36px;line-height:1.15;font-weight:600;letter-spacing:-.02em;color:v
 <!-- ============ COPY: HERO ============ -->
 <section class="hero">
   <div class="wrap">
-    <p class="eyebrow reveal">Product tour</p>
-    <h1 class="reveal d1">See RegAnchor up close</h1>
-    <p class="sub reveal d2">One place to record every AI system you use, assess its risk, get clear policy answers and hand your board a signed dossier.</p>
+    <p class="eyebrow reveal">AI Governance &amp; Assurance</p>
+    <h1 class="reveal d1"><span>Governance for AI.</span> <span>Evidenced end to end.</span></h1>
+    <p class="sub reveal d2">Register AI systems, map regulatory obligations, and build audit-ready evidence for your board and regulators.</p>
     <div class="ctas reveal d2">
-      <a href="diagnostic.html" class="btn btn-primary">Get started <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      <a href="contact.html" class="btn btn-secondary">Book a demo</a>
+      <a href="contact.html" class="btn btn-primary" data-open-demo>Book a demo <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a href="#registry" class="btn btn-secondary">Explore the platform <svg class="dn" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 3v8M3 7l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
   </div>
 </section>
@@ -176,12 +203,12 @@ h2{font-size:36px;line-height:1.15;font-weight:600;letter-spacing:-.02em;color:v
   <div class="wrap">
     <div class="copy reveal">
       <p class="eyebrow">Registry</p>
-      <h2>Every AI system, in one place</h2>
-      <p>Record each model, tool and vendor your organisation relies on, with an owner, a purpose and a risk level that stays up to date.</p>
+      <h2>You can't govern what you can't see.</h2>
+      <p>Build a central register of your organisation's AI assets. Assign ownership, assess risk, track lifecycle status, and maintain a clear view of the systems and agents operating across your organisation.</p>
       <ul class="checks">
-        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Owners and purposes for every asset</li>
-        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Risk levels at a glance</li>
-        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Search, filter and export in seconds</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Integrations with all major ADKs</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Automatic shadow AI detection</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Lifecycle management</li>
       </ul>
     </div>
     <div class="reveal d1"><div class="ra-reg-demo" role="img" aria-label="Registering a new AI asset in RegAnchor with Anthropic and Claude Sonnet 5, then assigning a business owner and moving it from planned to production in the registry.">
@@ -416,32 +443,102 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
   <div class="wrap">
     <div class="copy reveal">
       <p class="eyebrow">Assessments</p>
-      <h2>Risk assessments that explain themselves</h2>
-      <p>Answer guided questions and see where each system stands against the frameworks that apply to you, with the reasoning written out.</p>
+      <h2>Understand your AI risk. Identify what needs attention.</h2>
+      <p>Assess AI systems across key governance domains, identify areas that need attention, and map findings to relevant regulatory requirements and governance controls.</p>
       <ul class="checks">
-        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Guided, plain-English questions</li>
-        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Scores mapped to EU AI Act and ISO/IEC 42001</li>
-        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear next steps for every gap</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Risk profiling across key domains</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Regulatory and control mapping</li>
+        <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear priorities for governance action</li>
       </ul>
     </div>
     <div class="reveal d1">
-<div class="ra-assess-bars" role="img" aria-label="RegAnchor risk assessment results: seven control areas scored between 42% and 100%">
+<div class="ra-risk" role="img" aria-label="RegAnchor assessment for AML Transaction Monitoring: medium risk, controls issued, with seven governance domains scored from 25 to 83 percent.">
 <style>
-.ra-assess-bars{position:relative;display:block;width:100%;aspect-ratio:3/2;border-radius:12px;overflow:hidden;background:var(--pale,#F6F9FC)}
-.ra-assess-bars img{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none}
-.ra-assess-bars i{position:absolute;left:var(--x);top:var(--y);height:.5%;width:0;border-radius:999px;background:#533AFD;transition:width .9s cubic-bezier(.22,1,.36,1) var(--d)}
-.ra-assess-bars.is-on i{width:var(--w)}
-@media (prefers-reduced-motion:reduce){.ra-assess-bars i{width:var(--w);transition:none}}
+.ra-risk{position:relative;display:block;width:100%;--ink:#000;--t2:#425466;--t3:#697386;--line:#E6EBF1;--bp:#533AFD}
+.ra-risk .card{position:relative;width:100%;aspect-ratio:3/2;container-type:inline-size;border-radius:12px;overflow:hidden;isolation:isolate;background:radial-gradient(120% 95% at 0% 100%,#5636f7 0%,rgba(86,54,247,0) 62%),linear-gradient(95deg,#a9c5ff 0%,#9d8df2 48%,#eaa7ca 100%)}
+.ra-risk .win{position:absolute;left:11.2%;top:14.4%;right:-1px;bottom:-1px;background:#fff;border-radius:1.1cqw 0 0 0;overflow:hidden;box-shadow:0 1.2cqw 4cqw rgba(30,16,90,.22),0 .2cqw .6cqw rgba(30,16,90,.08)}
+.ra-risk .tb{position:absolute;left:0;right:0;top:0;height:3.7cqw;background:#F5F6F8;border-bottom:1px solid #E4E7EC}
+.ra-risk .tb i{position:absolute;top:50%;width:.95cqw;height:.95cqw;margin-top:-.475cqw;border-radius:50%}
+.ra-risk .tb i:nth-child(1){left:1.2cqw;background:#FF5F57}.ra-risk .tb i:nth-child(2){left:2.75cqw;background:#FEBC2E}.ra-risk .tb i:nth-child(3){left:4.3cqw;background:#28C840}
+.ra-risk .tb span{position:absolute;left:50%;top:50%;width:21.5cqw;height:1.9cqw;transform:translate(-50%,-50%);border-radius:.5cqw;background:#E9EBEF;color:#8792A2;font:400 .95cqw/1.9cqw Inter,system-ui,sans-serif;text-align:center}
+.ra-risk .screen{position:absolute;left:0;right:0;top:3.7cqw;bottom:0;overflow:hidden;background:#fff}
+.ra-risk .stage{position:absolute;left:0;top:0;transform-origin:0 0}
+.ra-risk .rk{position:absolute;inset:0;padding:22px 26px;background:#fff;color:var(--ink);font-family:'RA Inter',Inter,system-ui,-apple-system,sans-serif;font-weight:500;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+.ra-risk .num{font-variant-numeric:tabular-nums}
+.ra-risk .rk-hd{display:flex;align-items:center;justify-content:space-between;gap:24px;height:38px}
+.ra-risk .rk-st{display:flex;align-items:center;gap:10px;font-size:13px;line-height:18px;color:var(--t2)}
+.ra-risk .rk-chip{padding:0 8px;border-radius:4px;font-size:12px;line-height:22px;color:#b45309;background:#fff4e0}
+.ra-risk .rk-iss{text-align:right;font-size:13.5px;line-height:18px}
+.ra-risk .rk-iss span{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--t3)}
+.ra-risk .rk-rule{height:1px;background:var(--line);margin:14px 0 8px}
+.ra-risk .rk-row{display:grid;grid-template-columns:226px 1fr 40px 58px;align-items:center;column-gap:16px;height:30px}
+.ra-risk .rk-lab{font-size:14px;line-height:18px;white-space:nowrap}
+.ra-risk .rk-bar{position:relative;height:6px;border-radius:3px;background:#EEF0F4;overflow:hidden;transform:translateZ(0)}
+.ra-risk .rk-bar i{position:absolute;left:0;top:0;bottom:0;width:var(--w);border-radius:3px;background:var(--bp);transform:translateX(-101%);will-change:transform;transition:transform 1500ms cubic-bezier(.16,1,.3,1) var(--d)}
+.ra-risk .rk-n{font-size:13.5px;text-align:right}
+.ra-risk .rk-r{font-size:13.5px;text-align:right;white-space:nowrap}
+.ra-risk .rk-r.hi{color:#c8102e}.ra-risk .rk-r.md{color:#b45309}.ra-risk .rk-r.lo{color:#0f766e}
+.ra-risk .rk-n,.ra-risk .rk-r{opacity:0;transition:opacity 700ms ease 420ms}
+.ra-risk .rk-ft{display:grid;grid-template-columns:repeat(3,1fr);column-gap:16px;margin-top:8px;padding-top:14px;border-top:1px solid var(--line)}
+.ra-risk .rk-ft span{display:block;font-size:12px;line-height:16px;color:var(--t2)}
+.ra-risk .rk-ft b{display:block;margin-top:3px;font-weight:500;font-size:13.5px;line-height:18px}
+.ra-risk.go .rk-bar i{transform:none}
+.ra-risk.go .rk-n,.ra-risk.go .rk-r{opacity:1}
+.ra-risk.nt *{transition:none!important}
+@media (max-width:600px){
+.ra-risk .card{aspect-ratio:1150/1582}
+.ra-risk .win{left:5%;top:5.6%;border-radius:2.4cqw 0 0 0}
+.ra-risk .tb{height:7cqw}
+.ra-risk .tb i{width:2cqw;height:2cqw;margin-top:-1cqw}
+.ra-risk .tb i:nth-child(1){left:2.6cqw}.ra-risk .tb i:nth-child(2){left:5.8cqw}.ra-risk .tb i:nth-child(3){left:9cqw}
+.ra-risk .tb span{width:38cqw;height:3.8cqw;border-radius:1cqw;font-size:1.9cqw;line-height:3.8cqw}
+.ra-risk .screen{top:7cqw}
+.ra-risk .rk{padding:26px 24px}
+.ra-risk .rk-hd{height:40px}
+.ra-risk .rk-st{font-size:14px}.ra-risk .rk-chip{font-size:13px;line-height:24px}
+.ra-risk .rk-iss{font-size:14px}.ra-risk .rk-iss span{font-size:13px}
+.ra-risk .rk-rule{margin:16px 0 6px}
+.ra-risk .rk-row{grid-template-columns:1fr 46px 64px;grid-template-areas:"l n r" "b b b";row-gap:9px;height:auto;padding:10px 0 12px}
+.ra-risk .rk-lab{grid-area:l;font-size:15px}.ra-risk .rk-n{grid-area:n;font-size:15px}.ra-risk .rk-r{grid-area:r;font-size:14.5px}
+.ra-risk .rk-bar{grid-area:b;height:7px}
+.ra-risk .rk-ft{column-gap:12px;margin-top:6px;padding-top:16px}
+.ra-risk .rk-ft span{font-size:13px}.ra-risk .rk-ft b{font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){.ra-risk *{transition:none!important}}
 </style>
-<img src="assets/images-page/assess/assessment.jpg" srcset="assets/images-page/assess/assessment.jpg 1x, assets/images-page/assess/assessment@2x.jpg 2x" alt="" width="1200" height="800" decoding="async">
-<i style="--x:34.3333%;--y:44.7500%;--w:13.5833%;--d:0ms"></i><i style="--x:34.3333%;--y:49.0000%;--w:25.8333%;--d:80ms"></i><i style="--x:34.3333%;--y:53.2500%;--w:24.2500%;--d:160ms"></i><i style="--x:34.3333%;--y:57.5000%;--w:26.8333%;--d:240ms"></i><i style="--x:34.3333%;--y:61.7500%;--w:29.7500%;--d:320ms"></i><i style="--x:34.3333%;--y:66.0000%;--w:21.6667%;--d:400ms"></i><i style="--x:34.3333%;--y:70.2500%;--w:32.3333%;--d:480ms"></i>
+<div class="card"><div class="win"><div class="tb"><i></i><i></i><i></i><span>app.reganchor.com</span></div>
+<div class="screen"><div class="stage">
+<div class="rk">
+<div class="rk-hd">
+<div class="rk-st"><span class="rk-chip">Medium risk</span>Latest</div>
+<div class="rk-iss">Controls issued<span class="num">11 Aug 2026, 03:13</span></div>
 </div>
-<script>
-(function(){var el=document.querySelector('.ra-assess-bars');if(!el)return;var t0=performance.now();
-function go(){setTimeout(function(){el.classList.add('is-on')},performance.now()-t0<1200?700:250)}
-if(!('IntersectionObserver' in window)){go();return}
-var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.intersectionRatio>=.4){io.disconnect();go()}})},{threshold:[.4],rootMargin:'0px 0px -8% 0px'});io.observe(el);})();
-</script>
+<div class="rk-rule"></div>
+<div class="rk-rows">
+<div class="rk-row" style="--w:25%;--d:0ms"><span class="rk-lab">System purpose &amp; classification</span><span class="rk-bar"><i></i></span><span class="rk-n num">25%</span><span class="rk-r hi">High</span></div>
+<div class="rk-row" style="--w:73%;--d:60ms"><span class="rk-lab">Data governance</span><span class="rk-bar"><i></i></span><span class="rk-n num">73%</span><span class="rk-r lo">Low</span></div>
+<div class="rk-row" style="--w:83%;--d:120ms"><span class="rk-lab">Transparency &amp; explainability</span><span class="rk-bar"><i></i></span><span class="rk-n num">83%</span><span class="rk-r lo">Low</span></div>
+<div class="rk-row" style="--w:58%;--d:180ms"><span class="rk-lab">Human oversight</span><span class="rk-bar"><i></i></span><span class="rk-n num">58%</span><span class="rk-r md">Medium</span></div>
+<div class="rk-row" style="--w:67%;--d:240ms"><span class="rk-lab">Security &amp; robustness</span><span class="rk-bar"><i></i></span><span class="rk-n num">67%</span><span class="rk-r md">Medium</span></div>
+<div class="rk-row" style="--w:67%;--d:300ms"><span class="rk-lab">Accountability &amp; documentation</span><span class="rk-bar"><i></i></span><span class="rk-n num">67%</span><span class="rk-r md">Medium</span></div>
+<div class="rk-row" style="--w:67%;--d:360ms"><span class="rk-lab">Third-party &amp; supply chain</span><span class="rk-bar"><i></i></span><span class="rk-n num">67%</span><span class="rk-r md">Medium</span></div>
+</div>
+<div class="rk-ft"><div><span>Submitted by</span><b>Jessica Smith</b></div><div><span>Sector</span><b>Financial services</b></div><div><span>Review state</span><b>Controls issued</b></div></div>
+</div>
+</div></div></div></div>
+<script>(function(){
+var root=document.currentScript.parentNode,sc=root.querySelector('.screen'),st=root.querySelector('.stage');
+var mob=matchMedia('(max-width:600px)');
+function fit(){var w=mob.matches?480:640,h=mob.matches?621:385;st.style.width=w+'px';st.style.height=h+'px';st.style.transform='scale('+(sc.clientWidth/w)+')'}
+fit();addEventListener('resize',fit);
+function play(){root.classList.add('go')}
+function rest(){root.classList.add('nt');root.classList.remove('go');root.offsetWidth;root.classList.remove('nt')}
+var shown=false,tm=0;
+if(!('IntersectionObserver' in window)){play();return}
+new IntersectionObserver(function(es){es.forEach(function(e){
+ if(e.isIntersecting&&e.intersectionRatio>=.45&&!shown){shown=true;tm=setTimeout(play,250)}
+ else if(!e.isIntersecting&&shown){shown=false;clearTimeout(tm);rest()}})},{threshold:[0,.45]}).observe(root);
+})();</script>
 </div>
   </div>
 </section>
@@ -450,7 +547,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 <section class="feature wide" id="mla">
   <div class="wrap">
     <div class="copy reveal">
-      <p class="eyebrow">MLA Intelligence</p>
+      <p class="eyebrow">Intelligence</p>
       <h2>The intelligence layer behind RegAnchor.</h2>
       <p>MLA transforms governance requirements into structured, organisation-specific policies and documentation.</p>
       <ul class="checks">
@@ -694,7 +791,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 <section class="dark" id="dark">
   <div class="wrap">
     <div class="head reveal">
-      <p class="eyebrow">Infrastructure</p>
+      <p class="eyebrow">Monitoring</p>
       <h2>Your AI stack, in real time.</h2>
       <p>Bring AI runtime connections, provider telemetry and gateway activity into one view. Track usage, monitor spend and gain visibility into how your AI assets operate.</p>
     </div>
@@ -879,11 +976,11 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 <section class="cta">
   <div class="wrap">
     <div class="cta-box reveal">
-      <h2>Ready to see it with your own AI systems?</h2>
-      <p class="sub">Start with a free diagnostic, or talk to us for a guided walkthrough.</p>
+      <h2>Ship with confidence.</h2>
+      <p class="sub">Bring AI governance and assurance into one place.</p>
       <div class="ctas">
         <a href="diagnostic.html" class="btn btn-primary">Get started <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        <a href="contact.html" class="btn btn-secondary">Book a demo</a>
+        <a href="contact.html" class="btn btn-secondary" data-open-demo>Book a demo</a>
       </div>
     </div>
   </div>
@@ -934,6 +1031,48 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
   </div>
 </footer>
 
+<div class="modal-root" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="demoTitle" hidden>
+  <div class="modal">
+    <div class="modal__head">
+      <div>
+        <h3 id="demoTitle">Book a demo</h3>
+        <p>See the platform in action.</p>
+      </div>
+      <button type="button" class="modal__x" id="demoClose" aria-label="Close">×</button>
+    </div>
+    <div class="modal__body" id="demoBody">
+      <form id="demoForm" novalidate>
+        <div class="modal-err" id="demoErr"></div>
+        <div class="fg-row">
+          <div class="fg"><label for="d-first">First name <span class="req">*</span></label><input id="d-first" required></div>
+          <div class="fg"><label for="d-last">Last name <span class="req">*</span></label><input id="d-last" required></div>
+        </div>
+        <div class="fg"><label for="d-email">Work email <span class="req">*</span></label><input id="d-email" type="email" required></div>
+        <div class="fg"><label for="d-phone">Phone number</label><input id="d-phone" type="tel"></div>
+        <div class="fg"><label for="d-company">Company <span class="req">*</span></label><input id="d-company" required></div>
+        <div class="fg">
+          <label for="d-industry">Industry</label>
+          <select id="d-industry">
+            <option value="">Select…</option>
+            <option>Financial services</option>
+            <option>Insurance</option>
+            <option>Healthcare</option>
+            <option>Professional services</option>
+            <option>Technology</option>
+            <option>Public sector</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fg"><label for="d-note">What should we focus on?</label><textarea id="d-note"></textarea></div>
+        <div class="modal__foot">
+          <button type="button" class="btn btn-secondary" id="demoCancel" style="padding:10px 16px;font-size:0.84rem;">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="demoSubmit" style="padding:10px 18px;font-size:0.84rem;">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Closer look" hidden>
   <button class="lb-close" id="lbClose" aria-label="Close">&times;</button>
   <figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
@@ -952,6 +1091,76 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
   document.querySelectorAll('.shot').forEach(function(b){b.addEventListener('click',function(){open(b)})});
   lb.addEventListener('click',function(e){if(e.target!==img)close()});
   addEventListener('keydown',function(e){if(e.key==='Escape'&&!lb.hidden)close()});
+})();
+</script>
+<script>
+(function () {
+  var modal = document.getElementById('demoModal');
+  var demoBody = document.getElementById('demoBody');
+  if (!modal || !demoBody) return;
+  var formHtml = demoBody.innerHTML;
+
+  function openDemo(e) {
+    if (e) e.preventDefault();
+    if (!document.getElementById('demoForm')) demoBody.innerHTML = formHtml;
+    modal.hidden = false;
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    bindDemo();
+  }
+  function closeDemo() {
+    modal.classList.remove('is-open');
+    modal.hidden = true;
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('[data-open-demo]').forEach(function (el) {
+    el.addEventListener('click', openDemo);
+  });
+  document.getElementById('demoClose').addEventListener('click', closeDemo);
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeDemo(); });
+  addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) closeDemo(); });
+
+  function bindDemo() {
+    var form = document.getElementById('demoForm');
+    if (!form) return;
+    document.getElementById('demoCancel').onclick = closeDemo;
+    form.onsubmit = async function (e) {
+      e.preventDefault();
+      var err = document.getElementById('demoErr');
+      var first = document.getElementById('d-first').value.trim();
+      var last = document.getElementById('d-last').value.trim();
+      var email = document.getElementById('d-email').value.trim();
+      var phone = document.getElementById('d-phone').value.trim();
+      var company = document.getElementById('d-company').value.trim();
+      var industry = document.getElementById('d-industry').value.trim();
+      var message = document.getElementById('d-note').value.trim();
+      if (!first || !last || !email || !company) {
+        err.textContent = 'Please complete the required fields.';
+        err.classList.add('is-on');
+        return;
+      }
+      var C = window.RA_CONTACT || {};
+      try {
+        if (typeof C.sendMail === 'function') {
+          await C.sendMail('demo', {
+            first: first,
+            last: last,
+            email: email,
+            phone: phone || undefined,
+            company: company,
+            industry: industry || undefined,
+            message: message || undefined
+          });
+        }
+      } catch (x) { console.warn(x); }
+      demoBody.innerHTML =
+        '<div class="modal-success"><h4>Request received</h4>' +
+        '<p>Thank you, ' + first.replace(/[<>]/g, '') +
+        '. We will be in touch shortly.</p>' +
+        '<button type="button" class="btn btn-primary" id="demoDone" style="padding:10px 18px;font-size:0.84rem;">Back to platform</button></div>';
+      document.getElementById('demoDone').onclick = closeDemo;
+    };
+  }
 })();
 </script>
 </body>
