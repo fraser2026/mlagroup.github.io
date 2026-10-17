@@ -1,10 +1,5 @@
 .registryBody {
   min-width: 0;
-  max-width: 1100px;
-}
-
-.stats {
-  margin-bottom: 16px;
 }
 
 .toolbar {
@@ -533,17 +528,17 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: min(240px, 100%);
-}
-
-:global([data-rail-open='1']) .assetDesc {
-  max-width: min(180px, 100%);
+  max-width: min(440px, 100%);
 }
 
 /* Portal .kind-pill / .status-pill / .tier-pill */
 /* Portal .kind-pill / .status-pill / .tier-pill */
 .cellMeta {
   display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
   font-size: 12px;
   font-weight: var(--ra-fw-medium);
   letter-spacing: -0.01em;
@@ -561,6 +556,7 @@
 .providerEmpty {
   font-size: 12px;
   color: var(--ra-text-3);
+  white-space: nowrap;
 }
 
 .cellDate {

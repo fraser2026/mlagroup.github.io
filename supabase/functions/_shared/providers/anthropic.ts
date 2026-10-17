@@ -1,6 +1,7 @@
 import type {
   ProviderCapabilityProfile,
   ProviderGovernanceInsights,
+  ProviderInsightsDailyRow,
   ProviderInsightsModelRow,
   ProviderInsightsWorkspaceCost,
   ProviderRuntimeAttribution,
@@ -417,11 +418,19 @@ function cacheCreationTokens(result: UsageResult): number {
   return Number(cache.ephemeral_1h_input_tokens || 0) + Number(cache.ephemeral_5m_input_tokens || 0)
 }
 
+type DayUsage = {
+  uncached_input_tokens: number
+  cache_read_input_tokens: number
+  cache_creation_tokens: number
+  output_tokens: number
+}
+
 function usageTotalsFromBody(body: Record<string, unknown> | undefined) {
   const buckets = Array.isArray((body as { data?: unknown[] })?.data)
-    ? (body as { data: Array<{ results?: UsageResult[] }> }).data
+    ? (body as { data: Array<{ starting_at?: string; results?: UsageResult[] }> }).data
     : []
   const byModel = new Map<string, ProviderInsightsModelRow>()
+  const byDay = new Map<string, DayUsage>()
   let uncached_input_tokens = 0
   let cache_read_input_tokens = 0
   let cache_creation_tokens = 0
@@ -429,6 +438,7 @@ function usageTotalsFromBody(body: Record<string, unknown> | undefined) {
   let usage_result_rows = 0
 
   for (const bucket of buckets) {
+    const day = typeof bucket.starting_at === 'string' ? bucket.starting_at.slice(0, 10) : ''
     for (const result of bucket.results || []) {
       usage_result_rows++
       const uncached = Number(
@@ -437,6 +447,19 @@ function usageTotalsFromBody(body: Record<string, unknown> | undefined) {
       const cacheRead = Number(result.cache_read_input_tokens || 0)
       const cacheCreate = cacheCreationTokens(result)
       const output = Number(result.output_tokens || 0)
+      if (day) {
+        const d = byDay.get(day) || {
+          uncached_input_tokens: 0,
+          cache_read_input_tokens: 0,
+          cache_creation_tokens: 0,
+          output_tokens: 0,
+        }
+        d.uncached_input_tokens += uncached
+        d.cache_read_input_tokens += cacheRead
+        d.cache_creation_tokens += cacheCreate
+        d.output_tokens += output
+        byDay.set(day, d)
+      }
       uncached_input_tokens += uncached
       cache_read_input_tokens += cacheRead
       cache_creation_tokens += cacheCreate
@@ -469,9 +492,35 @@ function usageTotalsFromBody(body: Record<string, unknown> | undefined) {
     cache_creation_tokens,
     output_tokens,
     by_model,
+    by_day: byDay,
     usage_buckets: buckets.length,
     usage_result_rows,
   }
+}
+
+/** One row per UTC day from starting_at up to (not including) ending_at. */
+function dailySeries(
+  startingAt: string,
+  endingAt: string,
+  byDay: Map<string, DayUsage>,
+  withEstimate: boolean,
+): ProviderInsightsDailyRow[] {
+  const rows: ProviderInsightsDailyRow[] = []
+  const end = new Date(endingAt).getTime()
+  for (let t = new Date(startingAt).getTime(); t < end && rows.length < 92; t += 86_400_000) {
+    const date = new Date(t).toISOString().slice(0, 10)
+    const d = byDay.get(date)
+    const input = d ? d.uncached_input_tokens + d.cache_read_input_tokens + d.cache_creation_tokens : 0
+    const output = d ? d.output_tokens : 0
+    rows.push({
+      date,
+      input_tokens: input,
+      output_tokens: output,
+      total_tokens: input + output,
+      ...(withEstimate ? { estimated_usd: d ? estimateAssetUsd(d) : '0.000000' } : {}),
+    })
+  }
+  return rows
 }
 
 function costTotalsFromBody(body: Record<string, unknown> | undefined) {
@@ -642,6 +691,13 @@ export async function fetchAnthropicGovernanceInsights(
     .filter((u) => u && u.by_model.length)
     .sort((a, b) => (b!.total_tokens) - (a!.total_tokens))[0]
 
+  const dailySource = [usageFromTotal, usageFromModels]
+    .filter(Boolean)
+    .sort((a, b) => b!.total_tokens - a!.total_tokens)[0]
+  const daily = dailySource
+    ? dailySeries(starting_at, ending_at, dailySource.by_day, !!apiKeyId)
+    : undefined
+
   const usage = usagePrimary
     ? {
       total_tokens: usagePrimary.total_tokens,
@@ -650,6 +706,7 @@ export async function fetchAnthropicGovernanceInsights(
       cache_creation_tokens: usagePrimary.cache_creation_tokens,
       output_tokens: usagePrimary.output_tokens,
       by_model: bestByModel?.by_model || usagePrimary.by_model,
+      ...(daily ? { daily } : {}),
     }
     : {
       total_tokens: 0,

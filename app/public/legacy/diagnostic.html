@@ -8,8 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/ra-contact.js"></script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/reganchor.css">
-  <link rel="stylesheet" href="css/reganchor-flow.css">
+  <link rel="stylesheet" href="css/reganchor.css?v=20261012c">
+  <link rel="stylesheet" href="css/reganchor-flow.css?v=20261012d">
   <style>
   /* Prescreen labels — match .section-desc; placeholders match contact.html lightness */
   #screen-prescreen .form-label {
@@ -70,30 +70,45 @@
   <div class="wrapper">
 
     <aside class="q-rail" id="qRail">
-      <div class="q-rail-eyebrow">Assessment Domains</div>
-      <div class="q-rail-item" data-screen="screen-s1"><span class="q-rail-num">01</span><span>AI Inventory &amp; Classification</span></div>
-      <div class="q-rail-item" data-screen="screen-s2"><span class="q-rail-num">02</span><span>Governance &amp; Accountability</span></div>
-      <div class="q-rail-item" data-screen="screen-s3"><span class="q-rail-num">03</span><span>Data Quality &amp; Lineage</span></div>
-      <div class="q-rail-item" data-screen="screen-s4"><span class="q-rail-num">04</span><span>Human Oversight &amp; Controls</span></div>
-      <div class="q-rail-item" data-screen="screen-s5"><span class="q-rail-num">05</span><span>Explainability &amp; Transparency</span></div>
-      <div class="q-rail-item" data-screen="screen-s6"><span class="q-rail-num">06</span><span>Compliance &amp; Legal Alignment</span></div>
-      <div class="q-rail-item" data-screen="screen-s7"><span class="q-rail-num">07</span><span>Operational Controls &amp; Resilience</span></div>
+      <div class="q-rail-eyebrow">Control areas</div>
+      <div class="q-rail-item" data-screen="screen-s1"><span class="q-rail-num">01</span><span>AI inventory and classification</span></div>
+      <div class="q-rail-item" data-screen="screen-s2"><span class="q-rail-num">02</span><span>Governance and accountability</span></div>
+      <div class="q-rail-item" data-screen="screen-s3"><span class="q-rail-num">03</span><span>Data quality and lineage</span></div>
+      <div class="q-rail-item" data-screen="screen-s4"><span class="q-rail-num">04</span><span>Human oversight and controls</span></div>
+      <div class="q-rail-item" data-screen="screen-s5"><span class="q-rail-num">05</span><span>Explainability and transparency</span></div>
+      <div class="q-rail-item" data-screen="screen-s6"><span class="q-rail-num">06</span><span>Compliance and legal alignment</span></div>
+      <div class="q-rail-item" data-screen="screen-s7"><span class="q-rail-num">07</span><span>Operational controls and resilience</span></div>
     </aside>
 
     <!-- LANDING -->
     <div class="screen active" id="screen-landing">
-      <div class="flow-landing">
-        <h1>Measure your AI risk <em>exposure.</em></h1>
-        <p class="lead">A free assessment of governance maturity across seven control areas, aligned to UK and EU regulatory expectations.</p>
-        <div class="landing-meta">
-          <span>Under 20 minutes</span>
-          <span>7 control areas</span>
-          <span>Confidential</span>
+      <div class="card brief">
+        <div class="brief__main">
+          <p class="brief__kicker">AI governance diagnostic</p>
+          <h1 class="brief__title">Measure your AI risk exposure</h1>
+          <p class="brief__lede">A structured assessment of governance maturity across seven control areas, aligned to UK and EU regulatory expectations.</p>
+          <dl class="brief__facts">
+            <div><dt>Time</dt><dd>Under 20 minutes</dd></div>
+            <div><dt>Result</dt><dd>Free score summary</dd></div>
+            <div><dt>Handling</dt><dd>Confidential</dd></div>
+          </dl>
+          <div class="brief__actions">
+            <button type="button" class="btn-primary" onclick="goTo('screen-prescreen')">Start the diagnostic</button>
+          </div>
+          <p class="brief__note">The full report, with findings and a remediation plan, is available for £295.</p>
         </div>
-        <div class="landing-actions">
-          <button type="button" class="btn-primary" onclick="goTo('screen-prescreen')">Start the diagnostic</button>
-        </div>
-        <p class="landing-note">Free results summary. Full report available for £295.</p>
+        <aside class="brief__areas" aria-label="Control areas assessed">
+          <p class="brief__areas-title">What we assess</p>
+          <ol>
+            <li><span class="brief__num">01</span>AI inventory and classification</li>
+            <li><span class="brief__num">02</span>Governance and accountability</li>
+            <li><span class="brief__num">03</span>Data quality and lineage</li>
+            <li><span class="brief__num">04</span>Human oversight and controls</li>
+            <li><span class="brief__num">05</span>Explainability and transparency</li>
+            <li><span class="brief__num">06</span>Compliance and legal alignment</li>
+            <li><span class="brief__num">07</span>Operational controls and resilience</li>
+          </ol>
+        </aside>
       </div>
     </div>
 

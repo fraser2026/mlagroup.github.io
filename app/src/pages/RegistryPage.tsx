@@ -12,7 +12,6 @@ import {
   Drawer,
   EmptyState,
   Icon,
-  MetricStrip,
   PageFrame,
   PageHeader,
   StatusLabel,
@@ -47,8 +46,13 @@ import {
   connectionSortRank,
   riskTone,
   validateAssetForm,
+  evalBreakdown,
+  evalStatus,
+  evalTotal,
   type AssetFormValues,
   type DeletePreview,
+  type EvalRun,
+  type EvalStatus,
   type ProviderCatalogRow,
   type RegistryAsset,
 } from '../lib/registry'
@@ -67,6 +71,41 @@ type OwnerMember = {
   job_title?: string | null
 }
 
+type EvalKey = EvalStatus | 'none'
+
+const EVAL_KEYS: EvalKey[] = ['passed', 'failed', 'errored', 'none']
+const EVAL_LABEL: Record<EvalKey, string> = {
+  passed: 'Passed',
+  failed: 'Failed',
+  errored: 'Errored',
+  none: 'Untested',
+}
+const EVAL_TONE: Record<EvalKey, 'ok' | 'risk' | 'warn' | 'info'> = {
+  passed: 'ok',
+  failed: 'risk',
+  errored: 'warn',
+  none: 'info',
+}
+const EVAL_RANK: Record<EvalKey, number> = { failed: 0, errored: 1, passed: 2, none: 3 }
+
+function evalKey(run?: EvalRun | null): EvalKey {
+  return run ? evalStatus(run) : 'none'
+}
+
+function evalSortRank(run?: EvalRun | null) {
+  return EVAL_RANK[evalKey(run)]
+}
+
+function evalWhen(iso: string) {
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  return days === 1 ? 'yesterday' : `${days}d ago`
+}
+
 function ownerInitials(label: string) {
   const parts = label.trim().split(/\s+/).filter(Boolean)
   if (parts.length >= 2) return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase()
@@ -81,6 +120,7 @@ export function RegistryPage() {
   const [lifecycleFilter, setLifecycleFilter] = useQueryState('lifecycle', parseAsString.withDefault('all'))
   const [riskFilter, setRiskFilter] = useQueryState('risk', parseAsString.withDefault('all'))
   const [connectionFilter, setConnectionFilter] = useQueryState('connection', parseAsString.withDefault('all'))
+  const [evalsFilter, setEvalsFilter] = useQueryState('evals', parseAsString.withDefault('all'))
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [selectMode, setSelectMode] = useState(false)
   const [error, setError] = useState('')
@@ -259,7 +299,7 @@ export function RegistryPage() {
     }
     setLoading(true)
     setError('')
-    const [{ data, error: err }, { data: conns }] = await Promise.all([
+    const [{ data, error: err }, { data: conns }, { data: evalRows }] = await Promise.all([
       sb
         .from('ai_systems')
         .select(
@@ -269,6 +309,13 @@ export function RegistryPage() {
         .is('deleted_at', null)
         .order('updated_at', { ascending: false }),
       sb.from('provider_connections').select('asset_id,status').eq('org_id', orgId).neq('status', 'revoked'),
+      sb
+        .from('asset_eval_runs')
+        .select('asset_id,passed,failed,errored,skipped,categories,completed_at')
+        .eq('org_id', orgId)
+        .not('completed_at', 'is', null)
+        .order('completed_at', { ascending: false })
+        .limit(1000),
     ])
     if (err) {
       setError(err.message)
@@ -279,6 +326,10 @@ export function RegistryPage() {
     for (const c of conns || []) {
       if (c.asset_id && !byAsset.has(c.asset_id)) byAsset.set(c.asset_id, c.status || 'pending')
       if (c.status === 'connected') byAsset.set(c.asset_id as string, 'connected')
+    }
+    const evalByAsset = new Map<string, EvalRun>()
+    for (const r of (evalRows as (EvalRun & { asset_id: string })[]) || []) {
+      if (!evalByAsset.has(r.asset_id)) evalByAsset.set(r.asset_id, r)
     }
     const rows = (data as RegistryAsset[]) || []
     const ownerIds = [
@@ -312,6 +363,7 @@ export function RegistryPage() {
         compliance_owner_name: nameOf(a.compliance_owner_id),
         technical_owner_name: nameOf(a.technical_owner_id),
         connection_status: byAsset.get(a.id) || null,
+        eval_run: evalByAsset.get(a.id) || null,
       })),
     )
     setLoading(false)
@@ -464,10 +516,11 @@ export function RegistryPage() {
       }
       if (connectionFilter === 'connected' && a.connection_status !== 'connected') return false
       if (connectionFilter === 'not_connected' && a.connection_status === 'connected') return false
+      if (evalsFilter !== 'all' && evalKey(a.eval_run) !== evalsFilter) return false
       if (!q) return true
       return assetHaystack(a).includes(q)
     })
-  }, [assets, search, lifecycleFilter, riskFilter, connectionFilter])
+  }, [assets, search, lifecycleFilter, riskFilter, connectionFilter, evalsFilter])
 
   const selectedRows = useMemo(() => filtered.filter((a) => selected[a.id]), [filtered, selected])
   const selectedCount = selectedRows.length
@@ -679,13 +732,6 @@ export function RegistryPage() {
     pushToast('Asset registered.')
     await load()
   }
-
-  const highRisk = assets.filter((a) => {
-    const t = (a.risk_tier || '').toLowerCase()
-    return t === 'high' || t === 'unacceptable'
-  }).length
-  const inProd = assets.filter((a) => a.lifecycle === 'production').length
-  const connected = assets.filter((a) => a.connection_status === 'connected').length
 
   function renderActionMenu(opts: {
     panel: BulkPanel
@@ -919,12 +965,12 @@ export function RegistryPage() {
           className={`${styles.flyout} ${styles.flyoutWide}`}
           style={{ top: flyoutTop }}
           role="menu"
-          aria-label="Mark decommissioned"
+          aria-label="Mark retired"
         >
           <div className={styles.confirmCopy}>
             {n === 1
-              ? `Decommission ${targets[0]?.name}? This sets lifecycle to Decommissioned.`
-              : `Decommission ${n} assets? This sets lifecycle to Decommissioned.`}
+              ? `Retire ${targets[0]?.name}? This sets lifecycle to Retired.`
+              : `Retire ${n} assets? This sets lifecycle to Retired.`}
           </div>
           <button
             type="button"
@@ -934,11 +980,11 @@ export function RegistryPage() {
               void patchSelected(
                 targets.filter((t) => t.lifecycle !== 'decommissioned'),
                 { lifecycle: 'decommissioned' },
-                'Marked as decommissioned.',
+                'Marked as retired.',
               )
             }
           >
-            <span className={styles.bulkItemLabel}>Decommission</span>
+            <span className={styles.bulkItemLabel}>Retire</span>
           </button>
           <button type="button" className={styles.bulkItem} onClick={() => setPanel('root')}>
             <span className={styles.bulkItemLabel}>Cancel</span>
@@ -1003,7 +1049,7 @@ export function RegistryPage() {
             aria-expanded={panel === 'retire'}
             onClick={() => setPanel(panel === 'retire' ? 'root' : 'retire')}
           >
-            <span className={styles.bulkItemLabel}>Mark decommissioned</span>
+            <span className={styles.bulkItemLabel}>Mark retired</span>
             <Icon icon={ChevronRight} size="sm" className={styles.bulkItemChevron} />
           </button>
           {isRow && canDelete ? (
@@ -1076,7 +1122,7 @@ export function RegistryPage() {
       }),
       col.accessor('connection_status', {
         header: 'Connection',
-        size: 128,
+        size: 120,
         sortingFn: (a, b) => connectionSortRank(a.original.connection_status) - connectionSortRank(b.original.connection_status),
         meta: {
           filter: {
@@ -1119,7 +1165,7 @@ export function RegistryPage() {
       }),
       col.accessor('risk_tier', {
         header: 'Risk',
-        size: 104,
+        size: 120,
         sortingFn: (a, b) => riskSortRank(a.original.risk_tier) - riskSortRank(b.original.risk_tier),
         meta: {
           filter: {
@@ -1175,9 +1221,57 @@ export function RegistryPage() {
           </StatusLabel>
         ),
       }),
+      col.accessor('eval_run', {
+        header: 'Evals',
+        size: 120,
+        sortingFn: (a, b) => evalSortRank(a.original.eval_run) - evalSortRank(b.original.eval_run),
+        meta: {
+          filter: {
+            label: 'Filter by Evals',
+            value: evalsFilter,
+            options: [
+              { value: 'all', label: 'All' },
+              ...EVAL_KEYS.map((k) => ({
+                value: k,
+                label: EVAL_LABEL[k],
+                badge: (
+                  <StatusLabel badge tone={EVAL_TONE[k]}>
+                    {EVAL_LABEL[k]}
+                  </StatusLabel>
+                ),
+              })),
+            ],
+            onChange: (v) => {
+              void setEvalsFilter(v)
+            },
+          },
+        },
+        cell: (info) => {
+          const run = info.getValue()
+          const key = evalKey(run)
+          const chip = (
+            <StatusLabel badge tone={EVAL_TONE[key]}>
+              {EVAL_LABEL[key]}
+            </StatusLabel>
+          )
+          if (!run) return chip
+          const tip = [
+            `${run.passed}/${evalTotal(run)} passed`,
+            evalBreakdown(run),
+            `Last run ${evalWhen(run.completed_at)}`,
+          ]
+            .filter(Boolean)
+            .join(' · ')
+          return (
+            <DelayTip text={tip} mode="always">
+              {chip}
+            </DelayTip>
+          )
+        },
+      }),
       col.accessor('lifecycle', {
         header: 'Lifecycle',
-        size: 112,
+        size: 100,
         meta: {
           filter: {
             label: 'Filter by Lifecycle',
@@ -1195,7 +1289,7 @@ export function RegistryPage() {
       }),
       col.accessor('provider_slug', {
         header: 'Provider',
-        size: 100,
+        size: 88,
         cell: (info) => {
           const slug = (info.getValue() || '').trim()
           if (!slug) return <span className={styles.providerEmpty}>-</span>
@@ -1209,7 +1303,7 @@ export function RegistryPage() {
       }),
       col.accessor('updated_at', {
         header: 'Updated',
-        size: 120,
+        size: 104,
         meta: {
           sortLabels: {
             asc: 'Oldest first',
@@ -1234,6 +1328,7 @@ export function RegistryPage() {
       col.display({
         id: 'actions',
         size: 44,
+        meta: { fixed: true },
         header: () => null,
         cell: ({ row }) => {
           const id = row.original.id
@@ -1282,6 +1377,7 @@ export function RegistryPage() {
       deleteError,
       riskFilter,
       connectionFilter,
+      evalsFilter,
       lifecycleFilter,
     ],
   )
@@ -1316,19 +1412,6 @@ export function RegistryPage() {
       />
 
       <div className={styles.registryBody} id="inventory">
-        {!loading ? (
-          <div className={styles.stats}>
-            <MetricStrip
-              items={[
-                { id: 'total', label: 'Total', value: assets.length },
-                { id: 'high', label: 'High risk', value: highRisk, tone: highRisk ? 'risk' : 'ok' },
-                { id: 'prod', label: 'In production', value: inProd },
-                { id: 'connected', label: 'Connected', value: connected },
-              ]}
-            />
-          </div>
-        ) : null}
-
         <div className={styles.toolbar}>
           <div className={styles.chipsRail}>
             {chipOverflow.left ? (
@@ -1450,6 +1533,7 @@ export function RegistryPage() {
             <DataTable
               data={filtered}
               columns={visibleColumns}
+              fluid={{ from: 996, rate: 0.8 }}
               getRowId={(row) => row.id}
               initialSorting={[{ id: 'updated_at', desc: true }]}
               onRowClick={(row) => {
@@ -1462,12 +1546,20 @@ export function RegistryPage() {
               empty={
                 <EmptyState
                   title={
-                    search || lifecycleFilter !== 'all' || riskFilter !== 'all' || connectionFilter !== 'all'
+                    search ||
+                    lifecycleFilter !== 'all' ||
+                    riskFilter !== 'all' ||
+                    connectionFilter !== 'all' ||
+                    evalsFilter !== 'all'
                       ? 'No matches'
                       : 'No assets yet'
                   }
                   body={
-                    search || lifecycleFilter !== 'all' || riskFilter !== 'all' || connectionFilter !== 'all'
+                    search ||
+                    lifecycleFilter !== 'all' ||
+                    riskFilter !== 'all' ||
+                    connectionFilter !== 'all' ||
+                    evalsFilter !== 'all'
                       ? 'Try a different search or filter.'
                       : 'Register your first AI asset to begin governance inventory.'
                   }

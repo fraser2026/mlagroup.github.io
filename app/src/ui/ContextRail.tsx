@@ -1,6 +1,29 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ChevronDown, Moon } from 'lucide-react'
+import {
+  Activity,
+  Bell,
+  Boxes,
+  Building2,
+  ChevronDown,
+  ClipboardList,
+  CreditCard,
+  Database,
+  File,
+  FileText,
+  Fingerprint,
+  History,
+  KeyRound,
+  ListTodo,
+  Moon,
+  Plug,
+  ScrollText,
+  Settings,
+  Shield,
+  ShieldCheck,
+  Users,
+  type LucideIcon,
+} from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { useShellChrome } from './shellChrome'
 import { Icon } from './Icon'
@@ -46,6 +69,33 @@ function writeRecent(list: RecentPage[]) {
   } catch {
     /* storage full or disabled */
   }
+}
+
+/** Mirrors the sidebar icons so a visited page reads the same in both places. */
+const SECTION_ICONS: Record<string, LucideIcon> = {
+  registry: Boxes,
+  integrations: Plug,
+  reports: FileText,
+  controls: ClipboardList,
+  policies: ScrollText,
+  frameworks: Shield,
+  organisation: Building2,
+  'api-keys': KeyRound,
+  authentication: Fingerprint,
+  'data-backends': Database,
+  users: Users,
+  'auditor-access': ShieldCheck,
+  billing: CreditCard,
+  plans: CreditCard,
+  alerts: Bell,
+  monitoring: Activity,
+  settings: Settings,
+  'my-work': ListTodo,
+}
+
+function iconForPath(path: string): LucideIcon {
+  const section = path.split(/[?#]/)[0].split('/').filter(Boolean)[0] || ''
+  return SECTION_ICONS[section] || File
 }
 
 function relativeWhen(at: number, now: number) {
@@ -192,12 +242,16 @@ export function ContextRail({ items = [], scrollRootRef }: Props) {
             ) : null}
 
             <div className={styles.block}>
-              <div className={styles.blockHeading}>Recent activity</div>
+              <div className={styles.blockHeading}>
+                <Icon icon={History} size="sm" className={styles.blockIcon} />
+                <span>Recently viewed</span>
+              </div>
               {recentOthers.length ? (
                 <ul className={styles.recentList}>
                   {recentOthers.map((r) => (
                     <li key={r.path}>
                       <Link className={styles.recentRow} to={r.path} title={r.label}>
+                        <Icon icon={iconForPath(r.path)} size="sm" className={styles.recentIcon} />
                         <span className={styles.recentLabel}>{r.label}</span>
                         <span className={styles.recentWhen}>{relativeWhen(r.at, now)}</span>
                       </Link>

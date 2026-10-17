@@ -1,9 +1,8 @@
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 18px 40px;
   align-items: start;
-  max-width: 720px;
 }
 
 .inlineLink {
@@ -33,6 +32,10 @@
   grid-column: 1 / -1;
   /* Extra breath after the lead field so Description does not collide with Asset ID */
   margin-bottom: 10px;
+}
+
+.fieldWide .value {
+  max-width: 68ch;
 }
 
 /*
@@ -104,42 +107,239 @@
   background: var(--ra-surface);
   display: grid;
   gap: 14px;
-  max-width: 720px;
 }
 
-/* Connection tab — flush stack, same rhythm as Controls */
-.connStack {
+/* Connection tab — three cards (identity, provider usage, gateway); stacks by container width */
+.connWrap {
+  container-type: inline-size;
+}
+
+.connGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+@container (min-width: 640px) {
+  .connGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .connGrid > .connCard:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (min-width: 900px) {
+  .connGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .connGrid > .connCard:last-child {
+    grid-column: auto;
+  }
+}
+
+/* Card anatomy: head (title + status/actions) · body · foot (quiet meta, pinned) */
+.connCard {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  max-width: 720px;
+  min-width: 0;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-panel);
+  background: var(--ra-surface);
 }
 
-.connIdentity {
-  display: grid;
-  gap: 6px;
-}
-
-.connIdentityMain {
+.cardHead {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.cardHeadMain {
+  display: flex;
+  align-items: center;
   gap: 8px;
   min-width: 0;
 }
 
-.connProviderName {
-  font-size: 15px;
+.cardTitle {
+  font-size: 14px;
   font-weight: var(--ra-fw-medium);
   letter-spacing: -0.015em;
   color: var(--ra-ink);
+  white-space: nowrap;
 }
 
-.connModel {
+.cardBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  padding: 16px;
+}
+
+.cardFoot {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--ra-border);
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.cardSection {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--ra-border);
+}
+
+.sectionLabel {
   font-size: 13px;
   font-weight: var(--ra-fw-medium);
   letter-spacing: -0.01em;
   color: var(--ra-ink);
+}
+
+.cardLink {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-blurple-fg);
+}
+
+.cardLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 10px 12px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+}
+
+.kv dt {
+  color: var(--ra-text-2);
+}
+
+.kv dd {
+  margin: 0;
+  min-width: 0;
+  color: var(--ra-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kvNum {
+  font-family: var(--ra-font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.kv .kvSplit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.usageStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tokenList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.tokenRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0 8px;
+}
+
+.tokenRow + .tokenRow {
+  padding-top: 8px;
+  border-top: 1px solid var(--ra-border);
+}
+
+.tokenMain {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tokenLabel {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gwTiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.gwTile {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+}
+
+.gwValue {
+  font-family: var(--ra-font-num);
+  font-size: 18px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.02em;
+  color: var(--ra-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gwCalls {
+  margin-top: 4px;
+}
+
+.gwCalls li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+}
+
+.gwModel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .connDate {
@@ -196,7 +396,6 @@
   display: flex;
   flex-direction: column;
   gap: 28px;
-  max-width: 960px;
 }
 
 .homeIntro {
@@ -410,7 +609,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 760px;
 }
 
 .catalogSection {
@@ -474,7 +672,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 760px;
 }
 
 .stepCard {
@@ -625,16 +822,18 @@
 
 .inlineCode {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: var(--ra-fw-medium);
   color: var(--ra-ink);
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--ra-mist);
 }
 
 .endpointRow {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .endpointRow .endpoint {
@@ -704,10 +903,14 @@
 
 .endpoint {
   display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   font-weight: var(--ra-fw-medium);
-  word-break: break-all;
-  padding: 8px 10px;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 4px 10px;
   background: var(--ra-mist);
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-control);
@@ -792,7 +995,29 @@
 .assessList {
   display: grid;
   gap: 20px;
-  max-width: 800px;
+  container-type: inline-size;
+}
+
+.assessItem {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+.assessItem .assessFoot {
+  margin-top: 0;
+}
+
+.assessFoot .assessActions {
+  padding-top: 0;
+  border-top: 0;
+}
+
+@container (min-width: 960px) {
+  .assessItem {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 24px;
+  }
 }
 
 .assessCard {
@@ -886,7 +1111,7 @@
   font-size: 12px;
   font-weight: var(--ra-fw-medium);
   letter-spacing: -0.01em;
-  color: var(--ra-text-3);
+  color: var(--ra-ink);
   width: 200px;
   text-align: right;
   flex-shrink: 0;
@@ -907,6 +1132,23 @@
   height: 100%;
   background: var(--ra-blurple);
   border-radius: 999px;
+  animation: domGrow 1500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 120ms);
+}
+
+@keyframes domGrow {
+  from {
+    transform: translateX(-101%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes domFade {
+  from {
+    opacity: 0;
+  }
 }
 
 .domPct {
@@ -928,6 +1170,19 @@
   width: 72px;
   text-align: right;
   flex-shrink: 0;
+}
+
+.domPct,
+.domRisk {
+  animation: domFade 700ms ease-out 320ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .domFill,
+  .domPct,
+  .domRisk {
+    animation: none;
+  }
 }
 
 .assessMeta {
@@ -975,7 +1230,6 @@
   margin: 0;
   /* Mirrors ledger row bottom pad inside groups so bar→header matches row→header. */
   padding: 0 0 12px;
-  max-width: 520px;
 }
 
 .ctrlSummaryRow {
@@ -1056,7 +1310,7 @@
 }
 
 .select {
-  height: 32px;
+  height: 28px;
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-control);
   padding: 0 8px;
@@ -1084,8 +1338,16 @@
   font-family: var(--ra-font-num);
   font-size: 20px;
   font-weight: 500;
+  letter-spacing: -0.02em;
   color: var(--ra-ink);
   font-variant-numeric: tabular-nums;
+}
+
+.insightNum {
+  font-family: var(--ra-font-num);
+  font-variant-numeric: tabular-nums;
+  color: var(--ra-ink);
+  white-space: nowrap;
 }
 
 .insightList {
@@ -1104,6 +1366,11 @@
   font-weight: var(--ra-fw-medium);
   color: var(--ra-text-2);
   padding: 6px 0;
+  border-top: 1px solid var(--ra-border);
+}
+
+.insightList li:first-child {
+  border-top: 0;
 }
 
 .deletePanel {

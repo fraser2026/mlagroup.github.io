@@ -15,7 +15,7 @@ export const LIFECYCLE_LABELS: Record<string, string> = {
   development: 'Development',
   pilot: 'Pilot',
   production: 'Production',
-  decommissioned: 'Decommissioned',
+  decommissioned: 'Retired',
 }
 
 /** @deprecated Use LIFECYCLE_LABELS */
@@ -165,6 +165,43 @@ export type RegistryAsset = {
   connection_status?: string | null
   /** Latest assessment overall_score (0-100), or null if not assessed */
   maturity_score?: number | null
+  /** Latest completed eval run (not a DB column on ai_systems). */
+  eval_run?: EvalRun | null
+}
+
+export type EvalCategory = 'quality' | 'safety' | 'performance' | 'cost' | 'compliance'
+
+export type EvalRun = {
+  passed: number
+  failed: number
+  errored: number
+  skipped: number
+  categories: Partial<Record<EvalCategory, { passed: number; total: number }>>
+  completed_at: string
+}
+
+export type EvalStatus = 'passed' | 'failed' | 'errored'
+
+const EVAL_CATEGORY_ORDER: EvalCategory[] = ['quality', 'safety', 'performance', 'cost', 'compliance']
+
+/** Worst result wins, like a CI check rollup. */
+export function evalStatus(run: EvalRun): EvalStatus {
+  if (run.failed > 0) return 'failed'
+  if (run.errored > 0) return 'errored'
+  return 'passed'
+}
+
+export function evalTotal(run: EvalRun) {
+  return run.passed + run.failed + run.errored
+}
+
+export function evalBreakdown(run: EvalRun) {
+  return EVAL_CATEGORY_ORDER.filter((c) => run.categories[c])
+    .map((c) => {
+      const v = run.categories[c]!
+      return `${c[0].toUpperCase()}${c.slice(1)} ${v.passed}/${v.total}`
+    })
+    .join(' · ')
 }
 
 export type AssetFormValues = {
@@ -856,7 +893,7 @@ function formatSystemUpdatedPlain(c: Record<string, unknown>) {
   const parts: string[] = []
   const status = (c.lifecycle || c.deployment_status) as { old?: unknown; new?: unknown } | undefined
   if (status && typeof status === 'object' && ('new' in status || 'old' in status)) {
-    if (status.new === 'decommissioned') parts.push('Marked as decommissioned')
+    if (status.new === 'decommissioned') parts.push('Marked as retired')
     else if (status.old) {
       parts.push(
         `Changed lifecycle from ${labelLifecycle(String(status.old))} to ${labelLifecycle(String(status.new))}`,
@@ -888,6 +925,7 @@ function formatSystemUpdatedPlain(c: Record<string, unknown>) {
 
 export function fmtProviderTokens(n: number | null | undefined) {
   const v = Number(n) || 0
+  if (v >= 1_000_000_000) return `${(v / 1_000_000_000).toFixed(2).replace(/\.?0+$/, '')}B`
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
   if (v >= 1000) return `${(v / 1000).toFixed(1).replace(/\.0$/, '')}k`
   return v.toLocaleString('en-GB')
@@ -912,7 +950,24 @@ export type ProviderInsights = {
     cache_creation_tokens?: number
     output_tokens?: number
     by_model?: { model?: string; total_tokens?: number }[]
+    daily?: ProviderInsightsDay[]
   }
+  organization_usage?: { total_tokens?: number } | null
+}
+
+export type ProviderInsightsDay = {
+  date: string
+  input_tokens: number
+  output_tokens: number
+  total_tokens: number
+  estimated_usd?: string
+}
+
+export type GatewayDay = {
+  day: string
+  input_tokens: number
+  output_tokens: number
+  events: number
 }
 
 export function insightsUsageFetchFailed(insights?: ProviderInsights | null) {

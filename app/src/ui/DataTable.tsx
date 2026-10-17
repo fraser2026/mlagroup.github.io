@@ -35,6 +35,8 @@ declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData, TValue> {
     flex?: boolean
+    /** Keeps its pixel width when the table is fluid (row actions, checkboxes). */
+    fixed?: boolean
     selectOnly?: boolean
     sortLabels?: ColumnSortLabels
     filter?: ColumnFilterConfig
@@ -49,6 +51,18 @@ type Props<T> = {
   getRowId?: (row: T) => string
   /** Applied on first mount and after full remount (e.g. refresh). */
   initialSorting?: SortingState
+  /**
+   * Columns keep their size up to `from` px of table width, then grow with it.
+   * `rate` is the share of growth sized columns take (0-1); the flex column takes the rest.
+   */
+  fluid?: { from: number; rate: number }
+}
+
+function columnWidth(size: number, fluid?: Props<unknown>['fluid']): CSSProperties['width'] {
+  if (!fluid) return size
+  const base = +(size * (1 - fluid.rate)).toFixed(2)
+  const grow = +((size * fluid.rate * 100) / fluid.from).toFixed(4)
+  return `max(${size}px, calc(${base}px + ${grow}cqw))`
 }
 
 type MenuView = 'root' | 'filter'
@@ -92,7 +106,7 @@ function SortGlyph() {
   )
 }
 
-export function DataTable<T>({ data, columns, onRowClick, empty, getRowId, initialSorting }: Props<T>) {
+export function DataTable<T>({ data, columns, onRowClick, empty, getRowId, initialSorting, fluid }: Props<T>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting ?? [])
   const [menuColId, setMenuColId] = useState<string | null>(null)
   const [menuView, setMenuView] = useState<MenuView>('root')
@@ -271,7 +285,7 @@ export function DataTable<T>({ data, columns, onRowClick, empty, getRowId, initi
       : null
 
   return (
-    <div className={styles.wrap}>
+    <div className={clsx(styles.wrap, fluid && styles.fluid)}>
       <table className={styles.table}>
         <thead>
           {table.getHeaderGroups().map((hg) => (
@@ -279,16 +293,18 @@ export function DataTable<T>({ data, columns, onRowClick, empty, getRowId, initi
               {hg.headers.map((header) => {
                 const canSort = header.column.getCanSort()
                 const open = menuColId === header.column.id
+                const meta = header.column.columnDef.meta
+                const pinned = meta?.fixed || meta?.selectOnly
                 return (
                   <th
                     key={header.id}
                     className={styles.th}
                     style={
-                      header.column.columnDef.meta?.flex
+                      meta?.flex
                         ? { width: 'auto' }
                         : header.getSize() === 150
                           ? undefined
-                          : { width: header.getSize() }
+                          : { width: columnWidth(header.getSize(), pinned ? undefined : fluid) }
                     }
                   >
                     {header.isPlaceholder ? null : canSort ? (

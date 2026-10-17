@@ -57,6 +57,16 @@ export type ProviderInsightsModelRow = {
   total_tokens: number
 }
 
+export type ProviderInsightsDailyRow = {
+  /** UTC day, YYYY-MM-DD. */
+  date: string
+  input_tokens: number
+  output_tokens: number
+  total_tokens: number
+  /** List-price estimate for asset-scoped windows only. */
+  estimated_usd?: string
+}
+
 export type ProviderInsightsWorkspaceCost = {
   workspace_id: string | null
   amount_usd: string
@@ -85,6 +95,8 @@ export type ProviderGovernanceInsights = {
     cache_creation_tokens: number
     output_tokens: number
     by_model: ProviderInsightsModelRow[]
+    /** One row per UTC day across the window, zero-filled. */
+    daily?: ProviderInsightsDailyRow[]
   }
   /** Org-wide usage when scope is asset, for context when Console/other keys differ. */
   organization_usage?: {

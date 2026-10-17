@@ -4,7 +4,6 @@
   display: flex;
   flex-direction: column;
   gap: 40px;
-  max-width: 720px;
 }
 
 .block {
@@ -28,10 +27,9 @@
 /* Overview — lock with RegistryDetailPage */
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 18px 40px;
   align-items: start;
-  max-width: 720px;
 }
 
 .field,
@@ -71,7 +69,6 @@
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-control);
   background: var(--ra-surface);
-  max-width: 720px;
 }
 
 .workHead {
@@ -205,7 +202,6 @@
   display: grid;
   gap: 12px;
   padding-bottom: 4px;
-  max-width: 520px;
 }
 
 .progressRow {

@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { clsx } from 'clsx'
 import {
   BrandLoader,
   Button,
+  CountUp,
   Drawer,
   EmptyState,
   Ledger,
   LedgerRow,
-  MetricStrip,
   Notice,
   PageFrame,
   PageHeader,
@@ -17,8 +18,9 @@ import {
   Tabs,
   Timeline,
   ToastStack,
+  UsageBars,
 } from '../ui'
-import type { ToastItem } from '../ui'
+import type { ToastItem, UsageBar } from '../ui'
 import { BrandIcon } from '../icons/BrandIcon'
 import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
@@ -59,6 +61,7 @@ import {
   type AssetFormValues,
   type DeletePreview,
   type OrgMemberOption,
+  type GatewayDay,
   type ProviderCatalogRow,
   type ProviderInsights,
   type RegistryAsset,
@@ -160,6 +163,63 @@ const BAND_LABELS: Record<string, string> = {
   low: 'Low Risk',
 }
 
+function fmtUsdWhole(n: number) {
+  const v = Number.isFinite(n) ? n : 0
+  const digits = v >= 100 ? 0 : 2
+  return `$${v.toLocaleString('en-GB', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`
+}
+
+function fmtCount(n: number) {
+  return Math.round(n).toLocaleString('en-GB')
+}
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function fmtDateTime(iso: string) {
+  return new Date(iso).toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+/** Zero-height bars so the chart frame holds its shape before daily data exists. */
+function emptyBars(days: number): UsageBar[] {
+  const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())
+  return Array.from({ length: days }, (_, i) => ({
+    date: new Date(today - (days - 1 - i) * 86_400_000).toISOString().slice(0, 10),
+    value: 0,
+  }))
+}
+
+/** Catalogue label when known, otherwise "claude-opus-5-5" reads as "Claude Opus 5.5". */
+function prettyModel(provider: string, id?: string | null) {
+  if (!id) return 'Model'
+  const known = modelDisplayName(provider, id)
+  if (known && known !== id) return known
+  const parts = id.replace(/-\d{8}$/, '').split('-')
+  const words: string[] = []
+  const nums: string[] = []
+  for (const p of parts) (/^\d+$/.test(p) ? nums : words).push(p)
+  const name = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  return nums.length ? `${name} ${nums.join('.')}` : name
+}
+
+function relativeAgo(iso: string) {
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.round(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.round(hours / 24)
+  if (days < 30) return `${days}d ago`
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 function parseDetailTab(sp: URLSearchParams): string {
   const tabParam = (sp.get('tab') || '').toLowerCase()
   if (DETAIL_TABS.some((t) => t.id === tabParam)) return tabParam
@@ -180,6 +240,8 @@ export function RegistryDetailPage() {
   const [orgCred, setOrgCred] = useState<OrgCred | null>(null)
   const [tokens, setTokens] = useState<GatewayToken[]>([])
   const [usage, setUsage] = useState<UsageEvent[]>([])
+  const [snapshots, setSnapshots] = useState<Record<number, ProviderInsights>>({})
+  const [gatewayDays, setGatewayDays] = useState<GatewayDay[]>([])
   const [assessments, setAssessments] = useState<Assessment[]>([])
   const [controls, setControls] = useState<ControlAssign[]>([])
   const [assigneeNames, setAssigneeNames] = useState<Record<string, string>>({})
@@ -278,7 +340,15 @@ export function RegistryDetailPage() {
     setAsset(sys)
 
     const connectorSlug = sys.provider_slug || ''
-    const [{ data: assessmentsRows }, { data: auditRows }, connRes, orgCredRes, { data: usageRows }] =
+    const [
+      { data: assessmentsRows },
+      { data: auditRows },
+      connRes,
+      orgCredRes,
+      { data: usageRows },
+      { data: snapshotRows },
+      { data: gatewayRows },
+    ] =
       await Promise.all([
         sb
           .from('registry_assessments')
@@ -311,7 +381,15 @@ export function RegistryDetailPage() {
           .select('id,model,input_tokens,output_tokens,created_at')
           .eq('asset_id', id)
           .order('created_at', { ascending: false })
-          .limit(20),
+          .limit(5),
+        connectorSlug
+          ? sb
+              .from('asset_usage_snapshots')
+              .select('window_days,payload')
+              .eq('asset_id', id)
+              .eq('provider_slug', connectorSlug)
+          : Promise.resolve({ data: null }),
+        sb.rpc('asset_usage_daily', { p_asset_id: id, p_days: 90 }),
       ])
 
     setAssessments((assessmentsRows as Assessment[]) || [])
@@ -319,6 +397,12 @@ export function RegistryDetailPage() {
     setConn((connRes.data as Conn) || null)
     setOrgCred((orgCredRes.data as OrgCred) || null)
     setUsage((usageRows as UsageEvent[]) || [])
+    const snaps: Record<number, ProviderInsights> = {}
+    for (const row of (snapshotRows as { window_days: number; payload: ProviderInsights }[] | null) || []) {
+      if (row.payload) snaps[row.window_days] = row.payload
+    }
+    setSnapshots(snaps)
+    setGatewayDays((gatewayRows as GatewayDay[] | null) || [])
 
     const userIds = [
       ...((auditRows || []).map((e: AuditEntry) => e.user_id).filter(Boolean) as string[]),
@@ -450,9 +534,28 @@ export function RegistryDetailPage() {
   const hasOrgAdmin = !!orgCred?.admin_credential_secret_id
   const hasLegacyAdmin = !!conn?.admin_credential_secret_id
   const hasAdmin = hasOrgAdmin || hasLegacyAdmin
-  const insights = conn?.metadata?.insights
-  const inputTotal = usage.reduce((n, u) => n + (u.input_tokens || 0), 0)
-  const outputTotal = usage.reduce((n, u) => n + (u.output_tokens || 0), 0)
+  const latestInsights = conn?.metadata?.insights
+  const insights =
+    snapshots[insightsWindow] ||
+    (latestInsights?.window_days === insightsWindow ? latestInsights : undefined)
+  const providerBars = useMemo<UsageBar[]>(
+    () =>
+      (insights?.usage?.daily || []).map((d) => ({
+        date: d.date,
+        value: d.total_tokens,
+        detail: (
+          <>
+            {fmtProviderTokens(d.input_tokens)} in · {fmtProviderTokens(d.output_tokens)} out
+            {d.estimated_usd != null ? <div>{fmtProviderUsd(d.estimated_usd)} est.</div> : null}
+          </>
+        ),
+      })),
+    [insights],
+  )
+  const gatewayWindow = gatewayDays.slice(-insightsWindow)
+  const inputTotal = gatewayWindow.reduce((n, d) => n + Number(d.input_tokens || 0), 0)
+  const outputTotal = gatewayWindow.reduce((n, d) => n + Number(d.output_tokens || 0), 0)
+  const eventTotal = gatewayWindow.reduce((n, d) => n + Number(d.events || 0), 0)
   const ctrlDone = controls.filter((c) => c.status === 'implemented' || c.status === 'verified').length
   const ctrlPct = controls.length ? Math.round((ctrlDone / controls.length) * 100) : 0
   const controlsOrdered = useMemo(() => {
@@ -914,75 +1017,93 @@ export function RegistryDetailPage() {
             />
           ) : (
             <div className={styles.assessList}>
-              <div className={styles.actions}>
-                {id ? (
-                  <a href={assessmentUrl(id)}>
-                    <Button variant="ghost">Request / run assessment</Button>
-                  </a>
-                ) : null}
-              </div>
               {assessments.map((a, i) => {
                 const band = a.risk_band || 'medium'
                 const ss = a.section_scores || {}
                 return (
-                  <div key={a.id} className={styles.assessCard}>
-                    <div className={styles.assessHead}>
-                      <div className={styles.assessReading}>
-                        <StatusLabel badge tone={bandTone(band)}>
-                          {BAND_LABELS[band] || band}
-                        </StatusLabel>
-                        {i === 0 ? <span className={styles.latestMark}>Latest</span> : null}
+                  <div key={a.id} className={styles.assessItem}>
+                    <div className={styles.assessCard}>
+                      <div className={styles.assessHead}>
+                        <div className={styles.assessReading}>
+                          <StatusLabel badge tone={bandTone(band)}>
+                            {BAND_LABELS[band] || band}
+                          </StatusLabel>
+                          {i === 0 ? <span className={styles.latestMark}>Latest</span> : null}
+                        </div>
+                        <div className={styles.assessStatus}>
+                          <span className={styles.statusWord}>{labelAssessStatus(a.status)}</span>
+                          <span className={styles.assessDate}>
+                            {a.requested_at
+                              ? new Date(a.requested_at).toLocaleString('en-GB', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })
+                              : '—'}
+                          </span>
+                        </div>
                       </div>
-                      <div className={styles.assessStatus}>
-                        <span className={styles.statusWord}>{labelAssessStatus(a.status)}</span>
-                        <span className={styles.assessDate}>
-                          {a.requested_at
-                            ? new Date(a.requested_at).toLocaleString('en-GB', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })
-                            : '—'}
-                        </span>
-                      </div>
-                    </div>
-                    {Object.keys(ss).length ? (
-                      <div className={styles.domList}>
-                        {Object.entries(ss).map(([k, v]) => {
-                          const pct = Math.max(0, Math.min(100, Number(v.score) || 0))
-                          const risk = domainRisk(pct)
-                          return (
-                            <div key={k} className={styles.domRow}>
-                              <span className={styles.domLabel}>{v.title || k}</span>
-                              <div className={styles.domTrack}>
-                                <span className={styles.domFill} style={{ width: `${pct}%` }} />
+                      {Object.keys(ss).length ? (
+                        <div className={styles.domList}>
+                          {Object.entries(ss).map(([k, v], j) => {
+                            const pct = Math.max(0, Math.min(100, Number(v.score) || 0))
+                            const risk = domainRisk(pct)
+                            return (
+                              <div key={k} className={styles.domRow}>
+                                <span className={styles.domLabel}>{v.title || k}</span>
+                                <div className={styles.domTrack}>
+                                  <span
+                                    className={styles.domFill}
+                                    style={{ width: `${pct}%`, '--i': j } as CSSProperties}
+                                  />
+                                </div>
+                                <span className={styles.domPct}>{Math.round(pct)}%</span>
+                                <span className={`${styles.domRisk} ${risk.cls}`}>{risk.lbl}</span>
                               </div>
-                              <span className={styles.domPct}>{Math.round(pct)}%</span>
-                              <span className={`${styles.domRisk} ${risk.cls}`}>{risk.lbl}</span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : null}
-                    <div className={styles.assessMeta}>
-                      <div className={styles.assessMetaCell}>
-                        <span className={styles.label}>Submitted by</span>
-                        <span className={styles.value}>
-                          {(a.requested_by && auditNames[a.requested_by]) || 'Unknown'}
-                        </span>
-                      </div>
-                      <div className={styles.assessMetaCell}>
-                        <span className={styles.label}>Sector</span>
-                        <span className={styles.value}>{a.sector || 'Not set'}</span>
-                      </div>
-                      <div className={styles.assessMetaCell}>
-                        <span className={styles.label}>Review state</span>
-                        <span className={styles.value}>{labelAssessStatus(a.status)}</span>
+                            )
+                          })}
+                        </div>
+                      ) : null}
+                      <div className={styles.assessMeta}>
+                        <div className={styles.assessMetaCell}>
+                          <span className={styles.label}>Submitted by</span>
+                          <span className={styles.value}>
+                            {(a.requested_by && auditNames[a.requested_by]) || 'Unknown'}
+                          </span>
+                        </div>
+                        <div className={styles.assessMetaCell}>
+                          <span className={styles.label}>Sector</span>
+                          <span className={styles.value}>{a.sector || 'Not set'}</span>
+                        </div>
+                        <div className={styles.assessMetaCell}>
+                          <span className={styles.label}>Review state</span>
+                          <span className={styles.value}>{labelAssessStatus(a.status)}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className={styles.assessFoot}>
+                    <aside className={styles.assessFoot}>
+                      <div className={styles.assessActions}>
+                        {isPaidTier ? (
+                          <a href={systemReportUrl(a.id)} target="_blank" rel="noreferrer">
+                            <Button size="sm">View report</Button>
+                          </a>
+                        ) : (
+                          <Link to="/plans">
+                            <Button variant="ghost" size="sm">
+                              Upgrade to view report
+                            </Button>
+                          </Link>
+                        )}
+                        {i === 0 && id ? (
+                          <a href={assessmentUrl(id)}>
+                            <Button variant="ghost" size="sm">
+                              New assessment
+                            </Button>
+                          </a>
+                        ) : null}
+                      </div>
                       {a.tier_validation?.mismatch ? (
                         <Notice tone="warn">
                           {a.tier_validation.message ||
@@ -1004,20 +1125,7 @@ export function RegistryDetailPage() {
                           tailored compliance controls. You will be notified when results are ready.
                         </Notice>
                       ) : null}
-                      <div className={styles.assessActions}>
-                        {isPaidTier ? (
-                          <a href={systemReportUrl(a.id)} target="_blank" rel="noreferrer">
-                            <Button size="sm">View report</Button>
-                          </a>
-                        ) : (
-                          <Link to="/plans">
-                            <Button variant="ghost" size="sm">
-                              Upgrade to view report
-                            </Button>
-                          </Link>
-                        )}
-                      </div>
-                    </div>
+                    </aside>
                   </div>
                 )
               })}
@@ -1120,111 +1228,97 @@ export function RegistryDetailPage() {
               body={`${labelProvider(provider, providerRow?.name)} is recorded on this asset. Live key connect is not available for this provider yet. Use Connect for org-level setup docs and keys when a full connector is not shipped.`}
             />
           ) : (
-            <div className={styles.connStack}>
-              <div className={styles.connIdentity}>
-                <div className={styles.connIdentityMain}>
-                  <BrandIcon slug={provider} size={18} title={labelProvider(provider)} />
-                  <span className={styles.connProviderName}>{labelProvider(provider)}</span>
-                  <StatusLabel
-                    badge
-                    tone={
-                      connected ? 'ok' : conn?.status === 'error' ? 'risk' : 'warn'
-                    }
-                  >
-                    {connectionLabel(conn?.status)}
-                  </StatusLabel>
-                </div>
-                {modelDisplayName(provider, asset?.model_name) ? (
-                  <div className={styles.connModel}>{modelDisplayName(provider, asset?.model_name)}</div>
-                ) : null}
-                {conn?.last_verified_at ? (
-                  <div className={styles.connDate}>
-                    Verified{' '}
-                    {new Date(conn.last_verified_at).toLocaleString('en-GB', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </div>
-                ) : null}
-              </div>
-
-              {conn?.last_error ? <Notice tone="risk">{conn.last_error}</Notice> : null}
-
-              <div className={styles.connBlock}>
-                <div className={styles.connBlockTitle}>Runtime key</div>
-                <p className={styles.connHint}>
-                  This asset&apos;s calls authenticate with this key. Stored in Vault. Never shown again.
-                </p>
-                {canDeleteRegistry ? (
-                  <>
-                    <input
-                      className={styles.secret}
-                      type="text"
-                      autoComplete="off"
-                      spellCheck={false}
-                      aria-label="Runtime API key"
-                      placeholder={connected ? 'Paste a new key to replace' : 'Paste runtime API key'}
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                    />
-                    <div className={styles.actions}>
-                      <Button size="sm" onClick={() => void connectRuntime()} pending={busy === 'connect'}>
-                        {connected ? 'Replace key' : 'Connect key'}
-                      </Button>
-                      {connected || conn?.status === 'error' || conn?.status === 'pending' ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => void testConnection()}
-                          pending={busy === 'test'}
-                        >
-                          Live check
-                        </Button>
-                      ) : null}
-                      {connected ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => void revokeRuntime()}
-                          pending={busy === 'revoke'}
-                        >
-                          Revoke
-                        </Button>
-                      ) : null}
+            <div className={styles.connWrap}>
+              <div className={styles.connGrid}>
+                <section className={styles.connCard} id="connection">
+                  <header className={styles.cardHead}>
+                    <div className={styles.cardHeadMain}>
+                      <BrandIcon slug={provider} size={16} title={labelProvider(provider)} />
+                      <span className={styles.cardTitle}>{labelProvider(provider)}</span>
                     </div>
-                  </>
-                ) : (
-                  <Notice>Only Workspace admins and admins can manage runtime keys.</Notice>
-                )}
-              </div>
-
-              {isAnthropic ? (
-                <div className={styles.connBlock}>
-                  <div className={styles.connBlockHead}>
-                    <div className={styles.connBlockTitle}>Organisation admin</div>
-                    <StatusLabel badge tone={hasAdmin ? 'ok' : 'warn'}>
-                      {hasOrgAdmin ? 'Connected' : hasLegacyAdmin ? 'Legacy on asset' : 'Not connected'}
+                    <StatusLabel badge tone={connected ? 'ok' : conn?.status === 'error' ? 'risk' : 'warn'}>
+                      {connectionLabel(conn?.status)}
                     </StatusLabel>
-                  </div>
-                  <p className={styles.connHint}>
-                    One Admin key for the org unlocks usage and cost for every Anthropic asset.
-                  </p>
-                  <Link to="/organisation">
-                    <Button variant="ghost" size="sm">
-                      {hasAdmin ? 'Manage in Organisation' : 'Connect in Organisation'}
-                    </Button>
-                  </Link>
-                </div>
-              ) : null}
+                  </header>
+                  <div className={styles.cardBody}>
+                    <dl className={styles.kv}>
+                      <dt>Model</dt>
+                      <dd>{modelDisplayName(provider, asset?.model_name) || 'Not set'}</dd>
+                      <dt>Verified</dt>
+                      <dd className={styles.kvNum}>
+                        {conn?.last_verified_at ? fmtDateTime(conn.last_verified_at) : 'Not yet'}
+                      </dd>
+                      {isAnthropic ? (
+                        <>
+                          <dt>Admin key</dt>
+                          <dd className={styles.kvSplit}>
+                            <StatusLabel tone={hasAdmin ? 'ok' : 'warn'}>
+                              {hasOrgAdmin ? 'Connected' : hasLegacyAdmin ? 'On asset' : 'Not connected'}
+                            </StatusLabel>
+                            <Link to="/organisation" className={styles.cardLink}>
+                              {hasAdmin ? 'Manage' : 'Connect'}
+                            </Link>
+                          </dd>
+                        </>
+                      ) : null}
+                    </dl>
 
-              {hasAdmin && isAnthropic ? (
-                <div className={styles.connBlock}>
-                  <div className={styles.connBlockHead}>
-                    <div className={styles.connBlockTitle}>Provider usage</div>
-                    {canDeleteRegistry ? (
+                    {conn?.last_error ? <Notice tone="risk">{conn.last_error}</Notice> : null}
+
+                    <div className={styles.cardSection}>
+                      <div className={styles.sectionLabel}>Runtime key</div>
+                      <p className={styles.connHint}>
+                        Calls from this asset authenticate with this key. Stored in Vault and never shown again.
+                      </p>
+                      {canDeleteRegistry ? (
+                        <>
+                          <input
+                            className={styles.secret}
+                            type="text"
+                            autoComplete="off"
+                            spellCheck={false}
+                            aria-label="Runtime API key"
+                            placeholder={connected ? 'Paste a new key to replace' : 'Paste runtime API key'}
+                            value={apiKey}
+                            onChange={(e) => setApiKey(e.target.value)}
+                          />
+                          <div className={styles.actions}>
+                            <Button size="sm" onClick={() => void connectRuntime()} pending={busy === 'connect'}>
+                              {connected ? 'Replace key' : 'Connect key'}
+                            </Button>
+                            {connected || conn?.status === 'error' || conn?.status === 'pending' ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => void testConnection()}
+                                pending={busy === 'test'}
+                              >
+                                Live check
+                              </Button>
+                            ) : null}
+                            {connected ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => void revokeRuntime()}
+                                pending={busy === 'revoke'}
+                              >
+                                Revoke
+                              </Button>
+                            ) : null}
+                          </div>
+                        </>
+                      ) : (
+                        <p className={styles.connHint}>Only Workspace admins and admins can manage runtime keys.</p>
+                      )}
+                    </div>
+                  </div>
+                </section>
+
+                <section className={styles.connCard} id="usage">
+                  <header className={styles.cardHead}>
+                    <span className={styles.cardTitle}>Provider usage</span>
+                    {isAnthropic && hasAdmin ? (
                       <div className={styles.insightsActions}>
                         <select
                           className={styles.select}
@@ -1238,183 +1332,225 @@ export function RegistryDetailPage() {
                             </option>
                           ))}
                         </select>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          pending={busy === 'insights'}
-                          onClick={() => void refreshInsights()}
-                        >
-                          Refresh
-                        </Button>
-                      </div>
-                    ) : null}
-                  </div>
-                  <p className={styles.connHint}>
-                    Anthropic Admin data for this asset&apos;s runtime key. Can lag the provider console.
-                  </p>
-                  {!insights ? (
-                    <p className={styles.connHint}>No snapshot yet. Connect the runtime key, generate traffic, then refresh.</p>
-                  ) : insights.scope !== 'asset' ? (
-                    <p className={styles.connHint}>
-                      Runtime key not matched yet. Run a live check, send a call, wait a few minutes, then refresh.
-                    </p>
-                  ) : insightsUsageFetchFailed(insights) &&
-                    !(insights.usage && (insights.usage.total_tokens || 0) > 0) ? (
-                    <p className={styles.connHint}>Admin usage is temporarily unavailable. Try refresh shortly.</p>
-                  ) : (
-                    <>
-                      <div className={styles.insightsGrid}>
-                        <div>
-                          <div className={styles.connMetaLabel}>Tokens</div>
-                          <div className={styles.insightValue}>
-                            {fmtProviderTokens(insights.usage?.total_tokens)}
-                          </div>
-                        </div>
-                        {insights.estimated_asset_usd != null && insights.estimated_asset_usd !== '' ? (
-                          <div>
-                            <div className={styles.connMetaLabel}>Est. spend</div>
-                            <div className={styles.insightValue}>
-                              {fmtProviderUsd(insights.estimated_asset_usd)}
-                            </div>
-                          </div>
+                        {canDeleteRegistry ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            pending={busy === 'insights'}
+                            onClick={() => void refreshInsights()}
+                          >
+                            Refresh
+                          </Button>
                         ) : null}
                       </div>
-                      <p className={styles.connHint}>List-price estimate only. Not a bill.</p>
-                      {insights.usage?.by_model?.length ? (
-                        <ul className={styles.insightList}>
-                          {insights.usage.by_model.slice(0, 5).map((row) => (
-                            <li key={row.model}>
-                              <span>{row.model}</span>
-                              <span>{fmtProviderTokens(row.total_tokens)}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </>
-                  )}
-                </div>
-              ) : null}
-
-              <div className={styles.connBlock} id="gateway">
-                <div className={styles.connBlockTitle}>Gateway</div>
-                {!isAnthropic ? (
-                  <p className={styles.connHint}>
-                    Governed Messages routing is available when this asset uses Anthropic.
-                  </p>
-                ) : (
-                  <>
-                    <p className={styles.connHint}>
-                      Route Messages through RegAnchor with an <code className={styles.inlineCode}>ra_gw_</code> token.
-                      Prompt bodies are not stored.
-                    </p>
-                    <div className={styles.endpointRow}>
-                      <code className={styles.endpoint}>{GATEWAY_MESSAGES_URL}</code>
-                      <Button variant="ghost" size="sm" onClick={() => void copyText(GATEWAY_MESSAGES_URL)}>
-                        Copy
-                      </Button>
-                    </div>
-                    {!connected ? (
-                      <p className={styles.connHint}>Connect and verify the runtime key before minting a token.</p>
-                    ) : canDeleteRegistry ? (
-                      <div className={styles.mintRow}>
-                        <input
-                          className={styles.input}
-                          value={tokenLabel}
-                          onChange={(e) => setTokenLabel(e.target.value)}
-                          placeholder="Token label (for example, Production)"
-                          maxLength={80}
-                          aria-label="Gateway token label"
-                        />
-                        <Button size="sm" onClick={() => void mintToken()} pending={busy === 'mint'}>
-                          Mint token
-                        </Button>
-                      </div>
                     ) : null}
-                    {onceToken ? (
-                      <div className={styles.once}>
-                        <div className={styles.onceLabel}>Copy now. This token will not be shown again.</div>
-                        <code className={styles.onceCode}>{onceToken}</code>
-                        <Button variant="ghost" size="sm" onClick={() => void copyText(onceToken)}>
-                          Copy token
-                        </Button>
-                      </div>
-                    ) : null}
-                    {activeTokens.length === 0 ? (
-                      <p className={styles.connHint}>No active tokens. Mint one to send governed traffic for this asset.</p>
+                  </header>
+                  <div className={styles.cardBody}>
+                    {!isAnthropic ? (
+                      <p className={styles.connHint}>Provider usage and spend are available for Anthropic assets today.</p>
+                    ) : !hasAdmin ? (
+                      <p className={styles.connHint}>
+                        Connect an organisation Admin key to see token usage and estimated spend for this asset.
+                      </p>
+                    ) : !insights ? (
+                      <p className={styles.connHint}>
+                        No {insightsWindow}-day snapshot yet.{' '}
+                        {canDeleteRegistry ? 'Refresh to pull usage from Anthropic.' : 'An admin can refresh it.'}
+                      </p>
+                    ) : insights.scope !== 'asset' ? (
+                      <p className={styles.connHint}>
+                        Runtime key not matched yet. Run a live check, send a call, wait a few minutes, then refresh.
+                      </p>
+                    ) : insightsUsageFetchFailed(insights) &&
+                      !(insights.usage && (insights.usage.total_tokens || 0) > 0) ? (
+                      <p className={styles.connHint}>Admin usage is temporarily unavailable. Try refresh shortly.</p>
                     ) : (
-                      <Ledger flush>
-                        {activeTokens.map((t) => (
-                          <LedgerRow
-                            key={t.id}
-                            title={t.label || 'Gateway token'}
-                            description={
-                              t.created_at
-                                ? `Created ${new Date(t.created_at).toLocaleDateString('en-GB', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    year: 'numeric',
-                                  })}`
-                                : undefined
-                            }
-                            meta={
-                              <StatusLabel badge tone="ok">
-                                Active
-                              </StatusLabel>
-                            }
-                            trailing={
-                              canDeleteRegistry ? (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  pending={busy === `revoke-${t.id}`}
-                                  onClick={() => void revokeToken(t.id)}
-                                >
-                                  Revoke
-                                </Button>
-                              ) : null
-                            }
-                          />
-                        ))}
-                      </Ledger>
+                      <>
+                        <div className={styles.usageStats}>
+                          <div>
+                            <div className={styles.connMetaLabel}>Tokens</div>
+                            <div className={styles.insightValue}>
+                              <CountUp value={Number(insights.usage?.total_tokens || 0)} format={fmtProviderTokens} />
+                            </div>
+                          </div>
+                          {insights.estimated_asset_usd != null && insights.estimated_asset_usd !== '' ? (
+                            <div>
+                              <div className={styles.connMetaLabel}>Est. spend</div>
+                              <div className={styles.insightValue}>
+                                <CountUp value={Number(insights.estimated_asset_usd) || 0} format={fmtUsdWhole} />
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                        <UsageBars
+                          bars={providerBars.length ? providerBars : emptyBars(insightsWindow)}
+                          formatValue={fmtProviderTokens}
+                          label={`Daily tokens over the last ${insightsWindow} days`}
+                          emptyLabel={
+                            providerBars.length
+                              ? 'No usage in this window'
+                              : canDeleteRegistry
+                                ? 'Refresh to load daily usage'
+                                : 'Daily usage appears after the next refresh'
+                          }
+                        />
+                        {insights.usage?.by_model?.length ? (
+                          <div className={styles.cardSection}>
+                            <div className={styles.sectionLabel}>Models</div>
+                            <ul className={styles.insightList}>
+                              {insights.usage.by_model.slice(0, 3).map((row) => (
+                                <li key={row.model}>
+                                  <span className={styles.gwModel}>{prettyModel(provider, row.model)}</span>
+                                  <span className={styles.insightNum}>{fmtProviderTokens(row.total_tokens)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </>
                     )}
-                  </>
-                )}
-              </div>
+                  </div>
+                  {insights?.refreshed_at ? (
+                    <footer className={styles.cardFoot}>
+                      <span>List-price estimate</span>
+                      <span>Updated {relativeAgo(insights.refreshed_at)}</span>
+                    </footer>
+                  ) : null}
+                </section>
 
-              <div className={styles.connBlock} id="usage">
-                <div className={styles.connBlockTitle}>Gateway usage</div>
-                <p className={styles.connHint}>Metering for Messages traffic that used an ra_gw_ token on this asset.</p>
-                <MetricStrip
-                  items={[
-                    { id: 'in', label: 'Input tokens', value: inputTotal.toLocaleString() },
-                    { id: 'out', label: 'Output tokens', value: outputTotal.toLocaleString() },
-                    { id: 'calls', label: 'Events', value: usage.length },
-                  ]}
-                />
-                {usage.length === 0 ? (
-                  <p className={styles.connHint}>No gateway events yet.</p>
-                ) : (
-                  <Ledger flush>
-                    {usage.map((u) => (
-                      <LedgerRow
-                        key={u.id}
-                        title={u.model || 'Model'}
-                        description={`${(u.input_tokens || 0).toLocaleString()} in · ${(u.output_tokens || 0).toLocaleString()} out`}
-                        meta={
-                          <span className={styles.connDate}>
-                            {u.created_at
-                              ? new Date(u.created_at).toLocaleDateString('en-GB', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric',
-                                })
-                              : '—'}
-                          </span>
-                        }
-                      />
-                    ))}
-                  </Ledger>
-                )}
+                <section className={styles.connCard} id="gateway">
+                  <header className={styles.cardHead}>
+                    <span className={styles.cardTitle}>Gateway</span>
+                    {isAnthropic ? (
+                      <StatusLabel tone={activeTokens.length ? 'ok' : 'neutral'}>
+                        {activeTokens.length
+                          ? `${activeTokens.length} active ${activeTokens.length === 1 ? 'token' : 'tokens'}`
+                          : 'No tokens'}
+                      </StatusLabel>
+                    ) : null}
+                  </header>
+                  <div className={styles.cardBody}>
+                    {!isAnthropic ? (
+                      <p className={styles.connHint}>
+                        Governed Messages routing is available when this asset uses Anthropic.
+                      </p>
+                    ) : (
+                      <>
+                        <p className={styles.connHint}>
+                          Route Messages through RegAnchor with an <code className={styles.inlineCode}>ra_gw_</code>{' '}
+                          token. Prompts are never stored.
+                        </p>
+                        <div className={styles.endpointRow}>
+                          <code className={styles.endpoint} title={GATEWAY_MESSAGES_URL}>
+                            {GATEWAY_MESSAGES_URL.replace(/^https:\/\//, '')}
+                          </code>
+                          <Button variant="ghost" size="sm" onClick={() => void copyText(GATEWAY_MESSAGES_URL)}>
+                            Copy
+                          </Button>
+                        </div>
+
+                        <div className={styles.cardSection}>
+                          <div className={styles.sectionLabel}>Tokens</div>
+                          {activeTokens.length ? (
+                            <ul className={styles.tokenList}>
+                              {activeTokens.map((t) => (
+                                <li key={t.id} className={styles.tokenRow}>
+                                  <div className={styles.tokenMain}>
+                                    <span className={styles.tokenLabel}>{t.label || 'Gateway token'}</span>
+                                    {t.created_at ? (
+                                      <span className={styles.connDate}>Created {fmtDate(t.created_at)}</span>
+                                    ) : null}
+                                  </div>
+                                  {canDeleteRegistry ? (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      pending={busy === `revoke-${t.id}`}
+                                      onClick={() => void revokeToken(t.id)}
+                                    >
+                                      Revoke
+                                    </Button>
+                                  ) : null}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className={styles.connHint}>No active tokens yet.</p>
+                          )}
+                          {!connected ? (
+                            <p className={styles.connHint}>Connect and verify the runtime key before minting a token.</p>
+                          ) : canDeleteRegistry ? (
+                            <div className={styles.mintRow}>
+                              <input
+                                className={styles.input}
+                                value={tokenLabel}
+                                onChange={(e) => setTokenLabel(e.target.value)}
+                                placeholder="Label, for example Production"
+                                maxLength={80}
+                                aria-label="Gateway token label"
+                              />
+                              <Button size="sm" onClick={() => void mintToken()} pending={busy === 'mint'}>
+                                Mint token
+                              </Button>
+                            </div>
+                          ) : null}
+                          {onceToken ? (
+                            <div className={styles.once}>
+                              <div className={styles.onceLabel}>Copy now. This token will not be shown again.</div>
+                              <code className={styles.onceCode}>{onceToken}</code>
+                              <Button variant="ghost" size="sm" onClick={() => void copyText(onceToken)}>
+                                Copy token
+                              </Button>
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className={styles.cardSection}>
+                          <div className={styles.sectionLabel}>Traffic</div>
+                          <div className={styles.gwTiles}>
+                            <div className={styles.gwTile}>
+                              <div className={styles.connMetaLabel}>Input</div>
+                              <div className={styles.gwValue}>
+                                <CountUp value={inputTotal} format={fmtProviderTokens} />
+                              </div>
+                            </div>
+                            <div className={styles.gwTile}>
+                              <div className={styles.connMetaLabel}>Output</div>
+                              <div className={styles.gwValue}>
+                                <CountUp value={outputTotal} format={fmtProviderTokens} />
+                              </div>
+                            </div>
+                            <div className={styles.gwTile}>
+                              <div className={styles.connMetaLabel}>Calls</div>
+                              <div className={styles.gwValue}>
+                                <CountUp value={eventTotal} format={fmtCount} />
+                              </div>
+                            </div>
+                          </div>
+                          {usage.length ? (
+                            <ul className={clsx(styles.insightList, styles.gwCalls)}>
+                              {usage.map((u) => (
+                                <li key={u.id}>
+                                  <span className={styles.gwModel}>{prettyModel(provider, u.model)}</span>
+                                  <span className={styles.insightNum}>
+                                    {fmtProviderTokens(u.input_tokens)} / {fmtProviderTokens(u.output_tokens)}
+                                  </span>
+                                  <span className={styles.connDate}>{u.created_at ? relativeAgo(u.created_at) : ''}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {isAnthropic ? (
+                    <footer className={styles.cardFoot}>
+                      <span>Last {insightsWindow} days</span>
+                      <span>Metered by RegAnchor</span>
+                    </footer>
+                  ) : null}
+                </section>
               </div>
             </div>
           )}

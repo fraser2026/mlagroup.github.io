@@ -6,6 +6,11 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Fluid column widths are measured in cqw against this box */
+.fluid {
+  container-type: inline-size;
+}
+
 .table {
   width: 100%;
   min-width: 920px;
@@ -37,7 +42,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  max-width: 100%;
+  /* Negative margins put the hover padding inside the cell padding, so it doesn't eat label width */
+  max-width: calc(100% + 12px);
   font: inherit;
   color: inherit;
   border-radius: var(--ra-radius-control);

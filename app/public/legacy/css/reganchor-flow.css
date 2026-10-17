@@ -133,7 +133,7 @@ body:not(.results-page) > nav {
 }
 .logo img, .nav-logo img {
   display: block;
-  height: 36px;
+  height: 30px;
   width: auto;
 }
 .logo em, .nav-logo em {
@@ -356,7 +356,7 @@ h3 { font-size: 20px; font-weight: 400; color: var(--main); margin-bottom: 8px }
 .results-page #resultsContent.is-ready .domain-item:nth-child(7) { animation-delay: 0.28s }
 .results-page .domain-track__fill {
   transform-origin: left center;
-  transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: width 1.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @media (prefers-reduced-motion: reduce) {
   .results-page #resultsContent.is-ready .score-card,
@@ -451,42 +451,53 @@ h3 { font-size: 20px; font-weight: 400; color: var(--main); margin-bottom: 8px }
 .diag-tier strong { color: var(--sub); font-weight: 600 }
 .diag-cbar-wrap { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border) }
 .diag-cbar-wrap .label { margin-bottom: 16px }
+.diag-cbar-wrap .eyebrow-label { display: block; margin-bottom: 12px }
+
+/* Same compliance bar as the homepage maturity strip (index.html): fixed
+   120px stack, 5px rungs, current rung overhangs by 5px either side.
+   The bar never stretches with the card, on any width. */
 .diag-maturity-row {
-  display: flex; align-items: stretch; gap: 32px;
+  display: flex; align-items: flex-end; gap: 28px;
 }
-.diag-maturity-row .ra-cbar { flex-shrink: 0; width: 156px }
-/* Match the portal dashboard's compliance bar: every row is the accent
-   colour, and the achieved/pending opacity steps carry the gradient. This
-   keeps the diagnostic result and the portal dashboard visually consistent. */
-.diag-maturity-row .ra-cbar__row { height: 6px; background: var(--ra-blurple) }
+.diag-maturity-row .ra-cbar {
+  flex-shrink: 0; width: 120px; margin-left: 5px; margin-bottom: 7px;
+}
+.diag-maturity-row .ra-cbar__row { height: 5px; background: var(--accent) }
 .diag-maturity-row .ra-cbar__row--current {
-  height: 7px; width: 169px; margin-left: -6.5px;
-  background: var(--ra-blurple);
+  height: 6px; width: 130px; margin-left: -5px;
+  background: var(--accent);
 }
-/* Grow-on-paint animation, mirroring the portal (portal.css). Staggered from
-   the bottom rung upward via the --ra-cbar-i index set in raComplianceBar. */
 @keyframes ra-cbar-grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
 .diag-maturity-row .ra-cbar--animate .ra-cbar__row {
   transform-origin: left center;
-  animation: ra-cbar-grow 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--ra-cbar-i, 0) * 95ms);
+  animation: ra-cbar-grow 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ra-cbar-i, 0) * 220ms);
 }
 @media (prefers-reduced-motion: reduce) {
   .diag-maturity-row .ra-cbar--animate .ra-cbar__row { animation: none }
 }
+
+/* Level names: one weight, hierarchy by colour. Levels above the reading
+   are tertiary, levels already reached are secondary, the reading is ink
+   with the blurple marker (DOM order is L7 first, so reached levels are
+   the siblings that follow the current one). */
 .diag-maturity-row .ra-ladder {
-  flex: 1; min-width: 0; font-size: 12px; gap: 4px;
-  letter-spacing: 0; text-transform: none;
+  flex: 1; min-width: 0; gap: 0;
+  font-size: 13px; font-weight: 500; line-height: 20px;
+  letter-spacing: -0.005em; color: var(--muted);
+  font-feature-settings: 'tnum';
 }
+.diag-maturity-row .ra-ladder__step { white-space: nowrap }
+.diag-maturity-row .ra-ladder__step--now ~ .ra-ladder__step { color: var(--sub) }
 .diag-maturity-row .ra-ladder__step--now {
-  position: relative; padding-left: 13px; color: var(--main);
+  position: relative; color: var(--main); font-weight: 500;
 }
 .diag-maturity-row .ra-ladder__step--now::before {
-  content: ''; position: absolute; left: 0; top: 50%;
-  transform: translateY(-50%);
-  width: 5px; height: 5px; border-radius: 50%;
-  background: currentColor;
+  content: ''; position: absolute; left: -12px; top: 50%;
+  width: 6px; height: 6px; margin-top: -3px; border-radius: 50%;
+  background: var(--accent);
 }
+.diag-maturity-row .ra-ladder { padding-left: 12px }
 /* This headline — not the score number — is the one thing on the
    card that has to land as an actual statement, so it gets a real
    heading size instead of sitting at body-text scale like everything
@@ -887,6 +898,7 @@ footer {
   display: flex; justify-content: space-between; align-items: baseline; gap: 20px;
   font-size: 11px; font-weight: 500; letter-spacing: 0.04em; color: var(--muted);
 }
+.ft-row--center { justify-content: center; text-align: center; letter-spacing: 0 }
 .ft-links { display: flex; gap: 20px }
 .ft-links a { font-size: 11px; color: var(--muted); text-decoration: none }
 .ft-links a:hover { color: var(--main) }
@@ -895,6 +907,18 @@ footer {
 .no-data[hidden], #resultsContent[hidden], #buyContent[hidden], .flags-locked[hidden] { display: none !important }
 /* .nav-cta sets display: inline-flex in reganchor.css, which beats bare [hidden] */
 .nav-cta[hidden] { display: none !important }
+
+/* Results header matches index.html: full wordmark that settles to 26px
+   on scroll, and the homepage nav button size. */
+.results-page .logo img { transition: height 0.22s ease }
+.results-page .site-chrome.is-scrolled .logo img { height: 26px }
+.results-page .nav-cta,
+.results-page a.nav-signin {
+  padding: 9px 18px; font-size: 0.85rem; white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .results-page .logo img { transition: none }
+}
 .no-data-inner { text-align: center; padding: 60px 24px; max-width: 420px }
 .no-data-inner a:not(.btn-primary):not(.btn-ghost) { color: var(--accent); text-decoration: none }
 .no-data-inner a:not(.btn-primary):not(.btn-ghost):hover { text-decoration: underline }
@@ -960,8 +984,7 @@ footer {
   }
 }
 .q-rail-eyebrow {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+  font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 14px;
 }
 .q-rail-item {
   position: relative;
@@ -1181,6 +1204,63 @@ footer {
   margin: 20px auto 0; max-width: 34em; line-height: 1.5;
 }
 
+/* Diagnostic start: a briefing card in the same frame as the steps that
+   follow, sized to the question layout (rail plus card) on desktop. */
+.wrapper:has(> #screen-landing.active) { max-width: 980px }
+.brief {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 48px;
+}
+.brief__kicker { font-size: 13px; font-weight: 500; color: var(--accent); margin: 0 0 12px }
+.brief__title {
+  font-size: 32px; font-weight: 500; line-height: 1.15;
+  letter-spacing: -0.025em; color: var(--main); margin: 0;
+}
+.brief__lede {
+  margin: 14px 0 0; font-size: 15.5px; line-height: 1.6; color: var(--sub); max-width: 32em;
+}
+.brief__facts {
+  margin: 28px 0 0; padding: 16px 0 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;
+  border-top: 1px solid var(--border);
+}
+.brief__facts dt { font-size: 12px; font-weight: 500; color: var(--muted) }
+.brief__facts dd { margin: 3px 0 0; font-size: 13.5px; font-weight: 500; color: var(--main) }
+.brief__actions { margin-top: 28px }
+.brief__note { margin: 14px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted) }
+
+.brief__areas { padding-left: 40px; border-left: 1px solid var(--border) }
+.brief__areas-title { font-size: 12px; font-weight: 500; color: var(--muted); margin: 0 0 10px }
+.brief__areas ol { list-style: none; margin: 0; padding: 0 }
+.brief__areas li {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+  font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--sub);
+}
+.brief__areas li:first-child { border-top: 1px solid var(--border) }
+.brief__num {
+  flex-shrink: 0; width: 18px;
+  font-size: 12px; font-weight: 500; color: var(--main);
+  font-feature-settings: 'tnum';
+}
+
+@media (max-width: 860px) {
+  .brief { grid-template-columns: minmax(0, 1fr); gap: 32px }
+  .brief__areas { padding-left: 0; border-left: 0 }
+}
+@media (max-width: 520px) {
+  .brief__title { font-size: 27px }
+  .brief__lede { font-size: 15px }
+  .brief__facts { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 0 }
+  .brief__facts > div {
+    display: flex; justify-content: space-between; gap: 16px;
+    padding: 11px 0; border-bottom: 1px solid var(--border);
+  }
+  .brief__facts dd { margin: 0; text-align: right }
+  .brief__actions .btn-primary { width: 100% }
+}
+
 /* Legacy landing classes kept for any leftover markup */
 .landing-hero { text-align: left; padding: 24px 0 36px }
 .landing-hero h1 {
@@ -1255,9 +1335,8 @@ footer {
   .wrapper { padding: 28px 18px 64px }
   .diag-score__num { font-size: 64px }
   .score-card { padding: 24px 22px }
-  .diag-maturity-row { flex-direction: column; gap: 18px }
-  .diag-maturity-row .ra-cbar { width: 100% }
-  .diag-maturity-row .ra-cbar__row--current { width: calc(100% + 13px) }
+  .results-page .nav-signin { display: none }
+  .diag-maturity-row { gap: 24px }
   .progress-wrap, .progress-strip { padding-left: 20px; padding-right: 20px }
   .ft-row { flex-direction: column; text-align: center; gap: 12px }
   .results-page .domain-list { padding: 4px 18px }
