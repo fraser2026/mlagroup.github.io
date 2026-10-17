@@ -1,60 +1,85 @@
 .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px dashed var(--ra-border);
+  border-radius: var(--ra-radius-panel);
+  padding: 32px 24px;
+  text-align: center;
+}
+
+:global([data-theme='dark']) .empty {
+  border-color: var(--ra-border-hover);
+}
+
+.glyph {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 12px;
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-control);
-  padding: 28px 20px;
-  text-align: center;
-  background: var(--ra-mist);
+  background: var(--ra-surface);
+  color: var(--ra-text-2);
 }
 
 .title {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--ra-fw-medium, 500);
   color: var(--ra-text);
 }
 
 .body {
-  margin-top: 6px;
+  margin-top: 4px;
+  max-width: 440px;
   font-size: 13px;
-  color: var(--ra-text-3);
-  max-width: 420px;
-  margin-left: auto;
-  margin-right: auto;
+  line-height: 1.55;
+  color: var(--ra-text-2);
 }
 
 .action {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .notice {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 10px;
+  align-items: start;
   border: 1px solid var(--ra-border);
   border-radius: var(--ra-radius-control);
   padding: 12px 14px;
   margin-bottom: 14px;
-  background: var(--ra-mist);
+  background: var(--ra-surface);
 }
 
-.quiet {
-  border-color: var(--ra-border);
+.noticeIcon {
+  margin-top: 2px;
+  color: var(--ra-text-2);
 }
 
-.warn {
-  border-color: color-mix(in srgb, var(--ra-warn) 35%, var(--ra-border));
-  background: color-mix(in srgb, var(--ra-warn) 6%, var(--ra-surface));
+.warn .noticeIcon {
+  color: var(--ra-warn);
 }
 
-.risk {
-  border-color: color-mix(in srgb, var(--ra-risk) 35%, var(--ra-border));
-  background: color-mix(in srgb, var(--ra-risk) 6%, var(--ra-surface));
+.risk .noticeIcon {
+  color: var(--ra-risk);
 }
 
 .noticeTitle {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium, 500);
+  line-height: 20px;
   color: var(--ra-text);
-  margin-bottom: 4px;
 }
 
 .noticeBody {
   font-size: 13px;
+  line-height: 20px;
   color: var(--ra-text-2);
+}
+
+.noticeTitle + .noticeBody {
+  margin-top: 2px;
 }

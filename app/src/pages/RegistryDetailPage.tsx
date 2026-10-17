@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { clsx } from 'clsx'
+import { Clock, Plug } from 'lucide-react'
 import {
   BrandLoader,
   Button,
@@ -1120,7 +1121,7 @@ export function RegistryDetailPage() {
                         </Notice>
                       ) : null}
                       {a.status === 'submitted' ? (
-                        <Notice>
+                        <Notice icon={Clock}>
                           Your assessment has been submitted. RegAnchor will review this AI system and provide
                           tailored compliance controls. You will be notified when results are ready.
                         </Notice>
@@ -1224,8 +1225,9 @@ export function RegistryDetailPage() {
             />
           ) : !connectorReady ? (
             <EmptyState
+              icon={Plug}
               title="No connector yet"
-              body={`${labelProvider(provider, providerRow?.name)} is recorded on this asset. Live key connect is not available for this provider yet. Use Connect for org-level setup docs and keys when a full connector is not shipped.`}
+              body={`${labelProvider(provider, providerRow?.name)} is recorded on this asset. A live key connection isn't available for this provider yet, so set it up from Connect at organisation level.`}
             />
           ) : (
             <div className={styles.connWrap}>

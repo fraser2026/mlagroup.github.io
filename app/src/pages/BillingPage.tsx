@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Receipt } from 'lucide-react'
 import {
   BrandLoader,
   Button,
@@ -320,6 +321,7 @@ export function BillingPage() {
               getRowId={(row) => row.id || row.date || row.description || 'inv'}
               empty={
                 <EmptyState
+                  icon={Receipt}
                   title="No invoices yet"
                   body="Full history is available in Stripe billing settings."
                 />
