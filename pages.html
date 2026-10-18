@@ -270,7 +270,9 @@ button.btn{font-family:inherit;cursor:pointer}
 .ra-reg-demo .f.pre{transform:scale(.97) translateY(-3px)}
 .ra-reg-demo .f.out{transition:opacity 110ms ease}
 .ra-reg-demo .cp-p{clip-path:path('M8 412H248V768H8Z');transform-origin:128px 470px}
-.ra-reg-demo .cp-m{clip-path:path('M232 412H472V748H232Z');transform-origin:352px 470px}
+/* model frames: a plain overflow box rather than clip-path (iOS Safari flickered the clipped model list while it animated) */
+.ra-reg-demo .cp-m{position:absolute;left:232px;top:412px;width:240px;height:336px;overflow:hidden;transform-origin:120px 58px}
+.ra-reg-demo .cp-m img{left:-232px;top:-412px;width:480px;height:884px}
 .ra-reg-demo .cp-s{clip-path:path('M8 412H472V480H8Z')}
 .ra-reg-demo .cp-b{clip-path:path('M444 8H496V50H444Z')}
 .ra-reg-demo .mz{position:absolute;left:908px;top:243px;width:496px;height:486px}
@@ -396,8 +398,8 @@ button.btn{font-family:inherit;cursor:pointer}
 <img class="f cp-s" data-k="s3" src="assets/images-page/registry-demo/s3.webp?v=2" alt="">
 <img class="f cp-p" data-k="p0" src="assets/images-page/registry-demo/p0.webp?v=2" alt="">
 <img class="f cp-p" data-k="p2" src="assets/images-page/registry-demo/p2.webp?v=2" alt="">
-<img class="f cp-m" data-k="m0" src="assets/images-page/registry-demo/m0.webp?v=2" alt="">
-<img class="f cp-m" data-k="m3" src="assets/images-page/registry-demo/m3.webp?v=3" alt="">
+<div class="f cp-m" data-k="m0"><img src="assets/images-page/registry-demo/m0.webp?v=2" alt=""></div>
+<div class="f cp-m" data-k="m3"><img src="assets/images-page/registry-demo/m3.webp?v=3" alt=""></div>
 <div class="fx n1" data-t="Credit Risk Scoring Model"><i class="pa"></i><i class="fl"></i><span class="ph">e.g. Customer support agent</span><span class="v"></span><i class="rg"></i></div>
 <div class="fx n2" data-t="Scores retail credit applications for default risk using bureau and account data."><i class="pa"></i><i class="fl"></i><span class="ph">What does this asset do?</span><span class="v"></span><i class="rg"></i></div>
 <div class="gv"><span class="gd" style="top:841.85px">Identify the people accountable for this AI asset.</span><span class="gl" style="top:873.35px">Business owner<em>*</em></span><div class="gs o1" style="top:896.5px"><span class="ph">Select person</span><span class="v"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><span class="gl" style="top:951.35px">Compliance / risk owner</span><div class="gs o2" style="top:974.5px"><span class="ph">Select person</span><span class="v"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><span class="gl" style="top:1029.35px">Technical / model owner</span><div class="gs o3" style="top:1052.5px"><span class="ph">Select person</span><span class="v"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><span class="gl" style="top:1107.85px">Department</span><span class="gl" style="top:1187.15px">Notes</span><div class="gt" style="top:1210px"><span>Any additional context</span><svg viewBox="0 0 8 8"><path d="M7 1 1 7M7 4.5 4.5 7"/></svg></div></div>
@@ -470,7 +472,8 @@ function run(){T.forEach(clearTimeout);T=[];reset();cam('list',true);
  t=type(1,t+140,5);
  at(t+60,function(){FX[1].classList.remove('fo');cam('dmid',false,700)});
  t+=640;at(t,function(){D('p0','in')});at(t+210,function(){D('p2')});at(t+380,function(){S('s2');D(null,'out')});
- t+=480;at(t,function(){D('m0','in')});at(t+210,function(){D('m3')});at(t+380,function(){S('s3');D(null,'out')});
+ // phones: open the model list only once the provider list has finished fading out (no overlapping layer animations)
+ t+=480;var k=t+(mob.matches?40:0);at(k,function(){D('m0','in')});at(k+210,function(){D('m3')});at(k+380,function(){S('s3');D(null,'out')});
  // one smooth scroll past the classification fields to Governance owners -> Register asset
  t+=440;at(t,function(){DSC.classList.add('dn');cam('dlow',false,950)});
  t+=950;pick(0,1,t);
