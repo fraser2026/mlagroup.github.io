@@ -361,6 +361,8 @@ button.btn{font-family:inherit;cursor:pointer}
 .ra-reg-demo .tb i:nth-child(1){left:2.6cqw}.ra-reg-demo .tb i:nth-child(2){left:5.8cqw}.ra-reg-demo .tb i:nth-child(3){left:9cqw}
 .ra-reg-demo .tb span{width:38cqw;height:3.8cqw;border-radius:1cqw;font-size:1.9cqw;line-height:3.8cqw}
 .ra-reg-demo .screen{top:7cqw}
+/* iOS Safari: keep the drawer on its own layer. When its slide-in ends (transform -> none) WebKit drops the layer and repaints it into the scaled stage, which left the drawer blank on phones until the next repaint. */
+.ra-reg-demo .dr{will-change:transform}
 .ra-reg-demo .mn{height:1300px}
 .ra-reg-demo .note{right:4.6cqw;bottom:4.6cqw;gap:2.4cqw;border-radius:2.6cqw;padding:2.8cqw 4.3cqw 2.8cqw 2.8cqw}
 .ra-reg-demo .note .ic{width:6.6cqw;height:6.6cqw}
@@ -558,7 +560,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 .ra-reg-dk .m2 img{clip-path:path('M786 190H884V234H786Z')}
 /* backdrop + drawer */
 .ra-reg-dk .bd{left:0;top:0;width:1440px;height:900px;opacity:0;transition:opacity 480ms var(--ez)}
-.ra-reg-dk .dr{position:absolute;left:946px;top:8px;width:480px;height:884px;border-radius:6px;overflow:hidden;box-shadow:-12px 0 40px rgba(15,10,45,.12);transform:translateX(110%);transition:transform 520ms var(--ez)}
+.ra-reg-dk .dr{will-change:transform;position:absolute;left:946px;top:8px;width:480px;height:884px;border-radius:6px;overflow:hidden;box-shadow:-12px 0 40px rgba(15,10,45,.12);transform:translateX(110%);transition:transform 520ms var(--ez)}
 .ra-reg-dk.open .bd{opacity:1}.ra-reg-dk.open .dr{transform:none}
 .ra-reg-dk .dr>img{left:0;top:0;width:480px;height:884px}
 /* captured menu frames: clipped to the region that changes; open with a short fade + settle, hover swaps in one paint */
