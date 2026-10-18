@@ -205,6 +205,10 @@ button.btn{font-family:inherit;cursor:pointer}
 /* desktop headline: same visual size as fractile.ai's (80px, line-height 1.06 = 84.8px; tracking set so word runs match Catalogue's +0.02em) */
 @media (min-width:821px){
   .hero h1{font-size:clamp(60px,7.8vw,80px);line-height:1.06;letter-spacing:.01em;text-wrap:pretty}
+  /* short laptop screens: the 264px top padding (180px under the header) pushed the 4-line headline and button below the fold; scale it with viewport height (264px at 900px tall, 184px floor = 100px under the header) */
+  .hero .intro{padding-top:clamp(184px,29.33vh,264px)}
+  /* very short screens (e.g. 1366x768 at 125% scaling, ~1093x490 inner): also scale the headline by height so all 4 lines + button fit; stays 80px from ~625px tall up */
+  .hero h1{font-size:clamp(56px,min(7.8vw,12.8vh),80px)}
   .hero h1 .nw{white-space:nowrap} /* never leave 'arrives' alone on the last line */
   /* Start assessment: fractile-level clarity (40px, 0 16px, 14px/500, no negative tracking, pure white text, firmer chevron pushed right) */
   .hero .btn-ink{gap:32px;color:#fff;letter-spacing:0;text-rendering:optimizeLegibility}
