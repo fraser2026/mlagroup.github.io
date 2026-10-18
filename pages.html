@@ -353,6 +353,13 @@ button.btn{font-family:inherit;cursor:pointer}
 .ra-reg-demo .note b{font-weight:600;font-size:1.5cqw;color:#061B31;line-height:1.2;white-space:nowrap}
 .ra-reg-demo .note .tx span{font-size:1.3cqw;color:#425466;line-height:1.2;white-space:nowrap}
 @keyframes rarg-blink{0%{opacity:1}50%{opacity:0}}
+/* desktop: a demo toast that reads at a glance, on a par with the page's Auditor access 'Copied' toast (about 15.5px title, 33px tick at 1440) */
+@media (min-width:601px){
+.ra-reg-demo .note{right:4cqw;bottom:4cqw;gap:2cqw;border-radius:2cqw;padding:2.3cqw 3.3cqw 2.3cqw 2.3cqw;box-shadow:0 1.32cqw 3.95cqw rgba(6,27,49,.10),0 .33cqw .99cqw rgba(6,27,49,.06)}
+.ra-reg-demo .note .ic{width:5.3cqw;height:5.3cqw}
+.ra-reg-demo .note .tx{gap:.58cqw}
+.ra-reg-demo .note b{font-size:2.5cqw}.ra-reg-demo .note .tx span{font-size:2.15cqw}
+}
 @media (max-width:600px){
 .ra-reg-demo .card{aspect-ratio:1150/1582}
 .ra-reg-demo .win{left:5%;top:5.6%;border-radius:2.4cqw 0 0 0}
@@ -418,8 +425,8 @@ var CAM={d:{list:[0,0,760],add:[680,0,760],dtop:[900,0,540],dmid:[850,400,590],d
          m:{list:[262,0,620],add:[880,0,560],dtop:[946,0,480],dmid:[946,200,480],dlow:[946,276,480],ev:[258,0,760],wk:[870,150,550],end:[258,0,870]}};
 var shot='list';
 // phones show a taller slice of the page (the table continues below the 900px desktop fold)
-function cam(n,instant,ms){shot=n;var r=CAM[mob.matches?'m':'d'][n],W=sc.clientWidth,H=sc.clientHeight,s=W/r[2],y=Math.max(0,Math.min(r[1],(mob.matches?1361:900)-H/s));
- st.style.transition=instant?'none':ms?'transform '+ms+'ms var(--cam)':'';
+function cam(n,instant,ms,ez){shot=n;var r=CAM[mob.matches?'m':'d'][n],W=sc.clientWidth,H=sc.clientHeight,s=W/r[2],y=Math.max(0,Math.min(r[1],(mob.matches?1361:900)-H/s));
+ st.style.transition=instant?'none':ms?'transform '+ms+'ms '+(ez||'var(--cam)'):'';
  st.style.transform='scale('+s+') translate('+(-r[0])+'px,'+(-y)+'px)';
  if(instant){st.offsetWidth;st.style.transition=''}}
 addEventListener('resize',function(){cam(shot,true)});
@@ -444,12 +451,12 @@ function type(i,t0,step){var el=FX[i],s=el.getAttribute('data-t'),v=el.querySele
 // one toast at a time, bottom-right of the card (the key row sits at the top of every shot)
 function note(t,sub,life){var n=NT.cloneNode(true);n.querySelector('b').textContent=t;n.querySelector('.tx span').textContent=sub;NT.parentNode.appendChild(n);
  n.offsetWidth;n.classList.add('on');at(life,function(){n.classList.add('off');n.classList.remove('on');at(260,function(){n.remove()})})}
-// owner select: open listbox, hover the person, pick (same rhythm as the provider/model picks)
+// owner select: open listbox, rest on the person a moment, pick (a touch slower than provider/model: a person is being chosen)
 function pick(i,k,t0){var r=OD[i].querySelectorAll('i')[k];
  at(t0,function(){OS[i].classList.add('fo');OD[i].classList.add('on')});
- at(t0+210,function(){r.classList.add('h')});
- at(t0+380,function(){OD[i].classList.remove('on');OS[i].classList.remove('fo');OS[i].classList.add('has');OS[i].querySelector('.v').textContent=r.querySelector('span').firstChild.nodeValue});
- at(t0+520,function(){r.classList.remove('h')})}
+ at(t0+220,function(){r.classList.add('h')});
+ at(t0+600,function(){OD[i].classList.remove('on');OS[i].classList.remove('fo');OS[i].classList.add('has');OS[i].querySelector('.v').textContent=r.querySelector('span').firstChild.nodeValue});
+ at(t0+740,function(){r.classList.remove('h')})}
 function menu(on){if(on){ZB('b','cut');RM.classList.add('on')}else{RM.classList.remove('on');FY.classList.remove('on');ZB(null,'cut')}}
 function reset(){root.classList.remove('open','ins');D.clear();S.clear();ZB.clear();
  [RM,FY,M2].forEach(function(e){snap(e,function(){e.classList.remove('on')})});
@@ -473,17 +480,19 @@ function run(){T.forEach(clearTimeout);T=[];reset();cam('list',true);
  t+=480;at(t,function(){D('m0','in')});at(t+210,function(){D('m3')});at(t+380,function(){S('s3');D(null,'out')});
  // one smooth scroll past the classification fields to Governance owners -> Register asset
  t+=440;at(t,function(){DSC.classList.add('dn');cam('dlow',false,950)});
- t+=950;pick(0,1,t);
- t+=480;pick(1,0,t);
- t+=480;pick(2,3,t);
- t=type(2,t+480,20);
+ // a beat after the scroll lands, then each pick settles before the next field
+ t+=950+280;pick(0,1,t);
+ t+=880;pick(1,0,t);
+ t+=880;pick(2,3,t);
+ t=type(2,t+880,20);
  t+=100;at(t,function(){FX[2].classList.remove('fo')});btn(BG,t);
  // 2. drawer closes, row lands Untested
  at(t+340,function(){BG.classList.remove('hv');root.classList.remove('open');cam('ev',false,900)});
  at(t+1080,function(){root.classList.add('ins')});
- at(t+1300,function(){note('Asset registered','Credit Risk Scoring Model',1200)});
+ // the camera holds still while the toast is up (2.3s); the zoom starts as it begins to leave
+ at(t+1300,function(){note('Asset registered','Credit Risk Scoring Model',2300)});
  // 3. one zoom onto the row; everything below happens in this single static frame
- t+=1700;at(t,function(){cam('wk',false,850)});
+ t+=1300+2300;at(t,function(){cam('wk',false,850)});
  // Run evaluation -> Running -> Passed
  t+=800;at(t,function(){menu(true)});
  at(t+330,function(){IRE.classList.add('h')});
@@ -498,10 +507,11 @@ function run(){T.forEach(clearTimeout);T=[];reset();cam('list',true);
  at(t+880,function(){menu(false);M2.classList.add('on')});
  at(t+980,function(){ISL.classList.remove('h');IPD.classList.remove('h');FY.firstChild.classList.add('h')});
  at(t+1080,function(){note('Moved to Production','Credit Risk Scoring Model',1550)});
- // 5. hold, then one pull back to the opening frame while the row slides out
- t+=2850;at(t,function(){cam('list',false,1100)});
+ // 5. hold, then one gentle pull back to the opening frame while the row slides out; rest there before the next loop
+ t+=2850;at(t,function(){cam('list',false,1600,'cubic-bezier(.3,0,.1,1)')});
  at(t+200,function(){root.classList.remove('ins');M2.classList.remove('on')});
- at(t+1150,run)}
+ // lands at +1600, then ~1.5s of stillness on the opening frame (run() makes its first move 150ms in)
+ at(t+1600+1350,run)}
 function still(){reset();cam('end',true);root.classList.add('ins');PL.classList.add('ok');M2.classList.add('on')}
 function go(){var im=[].slice.call(root.querySelectorAll('img'));Promise.all(im.map(function(i){return i.decode?i.decode().catch(function(){}):0})).then(function(){return document.fonts?Promise.all([document.fonts.load('400 13px "RA Inter"'),document.fonts.load('500 13px "RA Inter"'),document.fonts.load('600 11px "RA Inter"')]).catch(function(){}):0}).then(function(){requestAnimationFrame(reduce?still:run)})}
 cam('list',true);
