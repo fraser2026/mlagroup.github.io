@@ -237,7 +237,8 @@ button.btn{font-family:inherit;cursor:pointer}
 @media (min-width:821px) and (max-width:1180px){.f-brand{grid-column:1/9}.f-cols{grid-column:9/21}}
 @media (min-width:821px){.f-col a{white-space:nowrap}}
 @media (max-width:820px){
-  .site-footer .f-dots{right:-560px;top:-60px;opacity:.045}
+  /* mobile: smaller field with the mask core on screen (the -560px offset left only the faded tail visible), and a phone-OLED-safe opacity */
+  .site-footer .f-dots{right:-220px;top:-40px;width:820px;height:440px;opacity:.075}
   .site-footer .fwrap{position:relative;z-index:1;padding-top:96px}
   .footer-top{display:block}
   .f-brand p{font-size:22px}
