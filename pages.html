@@ -211,9 +211,10 @@ button.btn{font-family:inherit;cursor:pointer}
         <li><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#EEEBFF"/><path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#533AFD" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Lifecycle management</li>
       </ul>
     </div>
-    <div class="reveal d1"><div class="ra-reg-demo" role="img" aria-label="Registering a new AI asset in RegAnchor with Anthropic and Claude Sonnet 5, then assigning a business owner and moving it from planned to production in the registry.">
+    <div class="reveal d1"><div class="ra-reg-demo" role="img" aria-label="Registering Credit Risk Scoring Model in RegAnchor. The new asset lands in the registry as Untested, an evaluation is run and passes, and only then is its lifecycle moved from Planned to Production.">
 <style>
-.ra-reg-demo{--ez:cubic-bezier(.32,.72,0,1);--cam:cubic-bezier(.65,0,.35,1);position:relative;display:block;width:100%}
+@font-face{font-family:'RA Inter';src:url(assets/images-page/mla/inter-ra.woff2) format('woff2');font-weight:100 900;font-display:block}
+.ra-reg-demo{--ez:cubic-bezier(.32,.72,0,1);--cam:cubic-bezier(.65,0,.35,1);--eo:cubic-bezier(.2,.8,.2,1);position:relative;display:block;width:100%}
 .ra-reg-demo .card{position:relative;width:100%;aspect-ratio:3/2;container-type:inline-size;border-radius:12px;overflow:hidden;isolation:isolate;background:radial-gradient(120% 95% at 0% 100%,#5636f7 0%,rgba(86,54,247,0) 62%),linear-gradient(95deg,#a9c5ff 0%,#9d8df2 48%,#eaa7ca 100%)}
 .ra-reg-demo .win{position:absolute;left:11.2%;top:14.4%;right:-1px;bottom:-1px;background:#fff;border-radius:1.1cqw 0 0 0;overflow:hidden;box-shadow:0 1.2cqw 4cqw rgba(30,16,90,.22),0 .2cqw .6cqw rgba(30,16,90,.08)}
 .ra-reg-demo .tb{position:absolute;left:0;right:0;top:0;height:3.7cqw;background:#F5F6F8;border-bottom:1px solid #E4E7EC}
@@ -221,11 +222,11 @@ button.btn{font-family:inherit;cursor:pointer}
 .ra-reg-demo .tb i:nth-child(1){left:1.2cqw;background:#FF5F57}.ra-reg-demo .tb i:nth-child(2){left:2.75cqw;background:#FEBC2E}.ra-reg-demo .tb i:nth-child(3){left:4.3cqw;background:#28C840}
 .ra-reg-demo .tb span{position:absolute;left:50%;top:50%;width:21.5cqw;height:1.9cqw;transform:translate(-50%,-50%);border-radius:.5cqw;background:#E9EBEF;color:#8792A2;font:400 .95cqw/1.9cqw Inter,system-ui,sans-serif;text-align:center}
 .ra-reg-demo .screen{position:absolute;left:0;right:0;top:3.7cqw;bottom:0;overflow:hidden;background:#F5F9FC}
-.ra-reg-demo .stage{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transition:transform 1000ms var(--cam);will-change:transform}
+.ra-reg-demo .stage{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transition:transform 900ms var(--cam);will-change:transform;font-family:'RA Inter',Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
 .ra-reg-demo .stage img{position:absolute;display:block;max-width:none}
 .ra-reg-demo .shell{left:0;top:0;width:1440px;height:900px}
 .ra-reg-demo .mn{position:absolute;left:249px;top:61px;width:1176px;height:830px;overflow:hidden;background:#fff}
-.ra-reg-demo .sc{position:absolute;left:0;top:0;width:1176px;height:1531px;transition:transform 4200ms cubic-bezier(.45,.05,.25,1)}
+.ra-reg-demo .sc{position:absolute;left:0;top:0;width:1176px;height:1531px}
 .ra-reg-demo .sc>div{position:absolute;left:0;width:1176px;overflow:hidden}
 .ra-reg-demo .sc img{left:0;width:1176px;height:1728px}
 .ra-reg-demo .t0,.ra-reg-demo .t1{top:0;height:178.5px}
@@ -233,51 +234,124 @@ button.btn{font-family:inherit;cursor:pointer}
 .ra-reg-demo .t1{opacity:0;transition:opacity 320ms ease}
 .ra-reg-demo .nr{top:178.5px;height:64.75px;opacity:0;transition:opacity 420ms ease 160ms}
 .ra-reg-demo .nr img{top:-178.5px}
-.ra-reg-demo .nr i{position:absolute;inset:0;background:rgba(83,58,253,.07);opacity:0;transition:opacity 1600ms ease}
 .ra-reg-demo .rs{top:243.25px;height:1287.75px;transform:translateY(-64.75px);transition:transform 620ms cubic-bezier(.22,1,.36,1)}
 .ra-reg-demo .rs img{top:-243.25px}
 .ra-reg-demo.ins .t1,.ra-reg-demo.ins .nr{opacity:1}
 .ra-reg-demo.ins .rs{transform:none}
-.ra-reg-demo.hl .nr i{opacity:1;transition-duration:300ms}
+/* new row: asset name + description set in the app's own type (RegistryPage .assetName / .assetDesc) */
+.ra-reg-demo .nm{position:absolute;left:30px;top:8px;width:360px;height:49px;background:#fff}
+.ra-reg-demo .nm b,.ra-reg-demo .nm span{position:absolute;left:7px;white-space:nowrap;line-height:1.35}
+.ra-reg-demo .nm b{top:7px;font-size:13px;font-weight:500;letter-spacing:-.01em;color:#000}
+.ra-reg-demo .nm span{top:26px;width:334px;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500;letter-spacing:-.012em;color:#697386}
+/* Evals cell: Untested (capture) -> Running (StatusLabel badge, neutral) -> Passed (cut from the row below in the same capture) */
+.ra-reg-demo .pl{position:absolute;left:660px;top:17.5px;width:96px;height:30px;background:#fff}
+.ra-reg-demo .pl>div{position:absolute;left:0;top:0;width:74px;height:30px;overflow:hidden;transition:opacity 200ms cubic-bezier(.2,.8,.2,1)}
+.ra-reg-demo .pl img{left:-660px;width:1176px;height:1728px}
+.ra-reg-demo .pl .pu img{top:-196px}
+.ra-reg-demo .pl .pp img{top:-260.75px}
+.ra-reg-demo .pl .pp,.ra-reg-demo .pl .rn{opacity:0}
+.ra-reg-demo .pl .rn{position:absolute;left:4px;top:4px;display:inline-flex;align-items:center;gap:5px;box-sizing:border-box;height:22px;padding:3px 8px;border:1px solid #cfd7e3;border-radius:4px;background:#f6f9fc;color:#425466;font-size:11px;font-weight:600;letter-spacing:-.01em;line-height:1.25;white-space:nowrap;transition:opacity 200ms cubic-bezier(.2,.8,.2,1)}
+.ra-reg-demo .pl .rn svg{width:9px;height:9px;flex:none;animation:rarg-spin 1s linear infinite}
+.ra-reg-demo .pl.run .pu{opacity:0}.ra-reg-demo .pl.run .rn{opacity:1;transition-delay:60ms}
+.ra-reg-demo .pl.ok .pu,.ra-reg-demo .pl.ok .rn{opacity:0}.ra-reg-demo .pl.ok .pp{opacity:1;transition-delay:60ms}
+@keyframes rarg-spin{to{transform:rotate(360deg)}}
+.ra-reg-demo .m2{opacity:0;transition:opacity 200ms ease}
+.ra-reg-demo .m2.on{opacity:1}
+.ra-reg-demo .m2 img{clip-path:path('M786 190H884V234H786Z')}
+/* backdrop + drawer */
 .ra-reg-demo .bd{left:0;top:0;width:1440px;height:900px;opacity:0;transition:opacity 480ms var(--ez)}
 .ra-reg-demo .dr{position:absolute;left:946px;top:8px;width:480px;height:884px;border-radius:6px;overflow:hidden;box-shadow:-12px 0 40px rgba(15,10,45,.12);transform:translateX(110%);transition:transform 520ms var(--ez)}
 .ra-reg-demo.open .bd{opacity:1}.ra-reg-demo.open .dr{transform:none}
 .ra-reg-demo .dr>img{left:0;top:0;width:480px;height:884px}
-.ra-reg-demo .f,.ra-reg-demo .b1{opacity:0}
-.ra-reg-demo .f.on,.ra-reg-demo .b1.on{opacity:1}
-.ra-reg-demo .cp-p{clip-path:path('M8 412H248V768H8Z')}
-.ra-reg-demo .cp-m{clip-path:path('M232 412H472V748H232Z')}
+/* captured menu frames: clipped to the region that changes; open with a short fade + settle, hover swaps in one paint */
+.ra-reg-demo .f{opacity:0;transition:none}
+.ra-reg-demo .f.on{opacity:1}
+.ra-reg-demo .f.in{transition:opacity 140ms var(--eo),transform 160ms var(--eo)}
+.ra-reg-demo .f.pre{transform:scale(.97) translateY(-3px)}
+.ra-reg-demo .f.out{transition:opacity 110ms ease}
+.ra-reg-demo .cp-p{clip-path:path('M8 412H248V768H8Z');transform-origin:128px 470px}
+.ra-reg-demo .cp-m{clip-path:path('M232 412H472V748H232Z');transform-origin:352px 470px}
 .ra-reg-demo .cp-s{clip-path:path('M8 412H472V480H8Z')}
-.ra-reg-demo .cp-r{clip-path:path('M444 8H496V50H444Z M264 36H496V286H264Z')}
-.ra-reg-demo .cp-o{clip-path:path('M444 8H496V50H444Z M264 36H496V286H264Z M4 145H290V472H4Z')}
-.ra-reg-demo .cp-l{clip-path:path('M444 8H496V50H444Z M264 36H496V286H264Z M22 109H290V288H22Z')}
-.ra-reg-demo .m2 img{clip-path:path('M786 190H884V234H786Z')}
-.ra-reg-demo .sb{position:absolute;z-index:50;left:0;top:81.78px;width:480px;height:745.22px;overflow:hidden;opacity:0}
-.ra-reg-demo .sb.on{opacity:1}
-.ra-reg-demo .sb img{left:0;top:-81.78px;width:480px;height:1784px;transition:transform 1150ms cubic-bezier(.62,0,.3,1)}
-.ra-reg-demo .m2{opacity:0}
-.ra-reg-demo .m2.on{opacity:1}
+.ra-reg-demo .cp-b{clip-path:path('M444 8H496V50H444Z')}
 .ra-reg-demo .mz{position:absolute;left:908px;top:243px;width:496px;height:486px}
 .ra-reg-demo .mz img{left:0;top:0;width:496px;height:486px}
-.ra-reg-demo .ty{position:absolute;z-index:60;overflow:hidden;background:#fff;opacity:0;border-radius:3px}
-.ra-reg-demo .ty img{width:480px;height:884px;clip-path:inset(0 100% 0 0)}
-.ra-reg-demo .ty.on{opacity:1}
-.ra-reg-demo .ty b{position:absolute;width:1.5px;background:#0A0E14;opacity:0}
-.ra-reg-demo .ty.typing b{animation:rarg-blink .9s steps(1) infinite}
-.ra-reg-demo .fr{position:absolute;z-index:60;border-radius:4px;box-shadow:inset 0 0 0 1px #533AFD,0 0 0 3px rgba(83,58,253,.14);opacity:0;transition:opacity 160ms ease}
-.ra-reg-demo .fr.on{opacity:1}
-.ra-reg-demo .pr{position:absolute;z-index:70;border-radius:4px;background:rgba(10,14,20,.22);opacity:0;transition:opacity 90ms ease}
-.ra-reg-demo .pr.lt{background:rgba(10,14,20,.1)}
-.ra-reg-demo .pr.hv{opacity:.45;transition-duration:160ms}
-.ra-reg-demo .pr.on{opacity:1}
-.ra-reg-demo .veil{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 500ms ease}
-.ra-reg-demo .veil.on{opacity:1}
-.ra-reg-demo .note{position:absolute;z-index:5;right:2.4cqw;bottom:2.4cqw;display:flex;gap:1.2cqw;align-items:center;background:#fff;border:1px solid #E6EBF1;border-radius:1.2cqw;padding:1.4cqw 2cqw 1.4cqw 1.4cqw;box-shadow:0 .8cqw 2.4cqw rgba(6,27,49,.10),0 .2cqw .6cqw rgba(6,27,49,.06);font-family:Inter,system-ui,-apple-system,sans-serif;opacity:0;--k:0;--g:1.1cqw;transform:translateY(calc(var(--k) * (-100% - var(--g)) + 1.6cqw));transition:opacity 430ms cubic-bezier(.22,1,.36,1),transform 520ms cubic-bezier(.22,1,.36,1)}
-.ra-reg-demo .note.on{opacity:1;transform:translateY(calc(var(--k) * (-100% - var(--g))))}
-.ra-reg-demo .note.off{opacity:0;transform:translateY(calc(var(--k) * (-100% - var(--g))));transition:opacity 360ms cubic-bezier(.55,0,.75,.2)}
-.ra-reg-demo .note .ic{flex:none;width:3.6cqw;height:3.6cqw;border-radius:50%;background:#12B76A;display:grid;place-items:center}
+/* row menu + Set lifecycle flyout, rebuilt in the app's menu styles (RegistryPage .bulkMenu/.bulkItem, .flyout/.ownerOption) */
+.ra-reg-demo .rm,.ra-reg-demo .fy{position:absolute;box-sizing:border-box;border:1px solid #cfd7e3;border-radius:4px;background:#fff;box-shadow:0 8px 24px rgba(10,14,20,.1);padding:4px;line-height:1.5;opacity:0;transform:translateY(-2px);transition:opacity 120ms ease-out,transform 120ms ease-out}
+.ra-reg-demo .rm{left:280px;top:45px;width:200px;transform-origin:100% 0}
+.ra-reg-demo .fy{left:36px;top:156.5px;width:240px;transform-origin:100% 0}
+.ra-reg-demo .rm.on,.ra-reg-demo .fy.on{opacity:1;transform:none;transition:opacity 180ms cubic-bezier(.2,.8,.2,1),transform 180ms cubic-bezier(.2,.8,.2,1)}
+.ra-reg-demo .rm>i,.ra-reg-demo .fy>i{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:4px;font-style:normal;font-size:13px;font-weight:500;letter-spacing:-.01em;color:#425466;white-space:nowrap}
+.ra-reg-demo .fy>i{justify-content:flex-start}
+.ra-reg-demo .rm svg,.ra-reg-demo .fy svg{flex-shrink:0;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ra-reg-demo .rm svg{color:#697386}
+.ra-reg-demo .rm>i.h,.ra-reg-demo .fy>i.h{background:rgba(10,14,20,.04);color:#000}
+.ra-reg-demo .rm>i.h svg{color:#000}
+.ra-reg-demo .rm>i.dg{color:#c8102e}
+/* Add asset form fields, rebuilt in the app's input styles (RegistryForm .input/.textarea) */
+.ra-reg-demo .fx{position:absolute;z-index:5;left:23px;width:434px;border-radius:4px}
+.ra-reg-demo .fx .pa{position:absolute;left:1px;right:1px;top:1px;background:#fff;border-radius:3px}
+.ra-reg-demo .fx .fl{position:absolute;inset:1px;border-radius:3px;background:rgba(83,58,253,.04);opacity:0;transition:opacity 120ms}
+.ra-reg-demo .fx .rg{position:absolute;inset:0;border-radius:4px;box-shadow:inset 0 0 0 1px #533afd,0 0 0 3px rgba(83,58,253,.12);opacity:0;transition:opacity 120ms}
+.ra-reg-demo .fx.fo .fl,.ra-reg-demo .fx.fo .rg{opacity:1}
+.ra-reg-demo .fx .v,.ra-reg-demo .fx .ph{position:absolute;left:13px;font-size:13px;font-weight:400;letter-spacing:-.01em;color:#000}
+.ra-reg-demo .fx .ph{color:#697386;opacity:.85}
+.ra-reg-demo .fx.has .ph{display:none}
+.ra-reg-demo .fx.n1{top:161px;height:40px}.ra-reg-demo .fx.n1 .pa{height:38px}
+.ra-reg-demo .fx.n1 .v,.ra-reg-demo .fx.n1 .ph{top:11.5px;line-height:1.35;white-space:nowrap}
+.ra-reg-demo .fx.n2{top:241px;height:80px}.ra-reg-demo .fx.n2 .pa{height:60px}
+.ra-reg-demo .fx.n2 .v,.ra-reg-demo .fx.n2 .ph{top:10.5px;width:408px;line-height:1.4;white-space:normal}
+.ra-reg-demo .fx u{display:inline-block;width:1px;height:15px;margin:0 -1px 0 .5px;vertical-align:-2.5px;background:#000;text-decoration:none;opacity:0}
+.ra-reg-demo .fx.fo u{opacity:1;animation:rarg-blink 1s steps(1) infinite}
+.ra-reg-demo .fx.typing u{animation:none}
+
+/* drawer body scrolls under a fixed header (0-82) and footer (830-884), as RegistryForm's drawer does */
+.ra-reg-demo .dbd{position:absolute;left:1px;top:82px;width:478px;height:748px;overflow:hidden;background:#fff}
+.ra-reg-demo .dsc{position:absolute;left:-1px;top:-82px;width:480px;height:1400px;transition:transform 950ms var(--cam)}
+.ra-reg-demo .dsc.dn{transform:translateY(-510px)}
+.ra-reg-demo .dsc>img{left:0;top:0;width:480px;height:884px}
+.ra-reg-demo .dsc>.sb{left:0;top:0;width:480px;height:884px;clip-path:inset(0 0 52px 0)}
+/* Governance owners, rebuilt in the app's form styles (labels 12/500 muted, selects 38px, inputs 40px) */
+.ra-reg-demo .gv{position:absolute;left:0;top:832px;width:480px;height:520px;background:#fff}
+.ra-reg-demo .gv>*{position:absolute}
+.ra-reg-demo .gv .gl,.ra-reg-demo .gv .gd{left:22.8px;margin-top:-832px;font-size:12px;line-height:16px;font-weight:500;letter-spacing:-.005em;color:#697386;white-space:nowrap}
+.ra-reg-demo .gv .gd{font-weight:400;letter-spacing:-.013em;color:#425466}
+.ra-reg-demo .gv .gl em{font-style:normal;color:#c8102e;margin-left:2px}
+.ra-reg-demo .gs{left:23px;width:434px;height:38px;margin-top:-832px;box-sizing:border-box;border:1px solid #bbc2cd;border-radius:4px;background:#fff;transition:border-color 120ms var(--eo),background 120ms var(--eo),box-shadow 120ms var(--eo)}
+.ra-reg-demo .gs span{position:absolute;left:13px;top:0;line-height:36px;font-size:13px;font-weight:400;letter-spacing:-.01em;color:#000;white-space:nowrap;transition:color 120ms var(--eo)}
+.ra-reg-demo .gs.has .ph{display:none}
+.ra-reg-demo .gs svg{position:absolute;right:12px;top:10px;width:16px;height:16px;fill:none;stroke:#697386;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.ra-reg-demo .gs.fo{border-color:#533fd6;background:#f1eeff;box-shadow:0 0 0 3px rgba(83,58,253,.12)}
+.ra-reg-demo .gs.fo span{color:#4f3fc4}
+.ra-reg-demo .gv .gt{left:23px;width:434px;height:80px;margin-top:-832px;box-sizing:border-box;border:1px solid #bbc2cd;border-radius:4px;background:#fff}
+.ra-reg-demo .gv .gt span{position:absolute;left:12px;top:10px;font-size:13px;line-height:1.4;letter-spacing:-.01em;color:#697386;opacity:.85}
+.ra-reg-demo .gv .gt svg{position:absolute;right:2px;bottom:2px;width:8px;height:8px;fill:none;stroke:#8792a2;stroke-width:1}
+.ra-reg-demo .fx.n3{top:1130.5px;height:40px;box-shadow:inset 0 0 0 1px #bbc2cd}.ra-reg-demo .fx.n3 .pa{height:38px}
+.ra-reg-demo .fx.n3 .v,.ra-reg-demo .fx.n3 .ph{top:11.5px;line-height:1.35;white-space:nowrap}
+/* team member listbox (same pattern as the app's owner picker): search, initials avatar, name + email */
+.ra-reg-demo .gp{position:absolute;z-index:30;left:23px;width:434px;box-sizing:border-box;padding:4px;border:1px solid #d1d8e0;border-radius:4px;background:#fff;box-shadow:0 8px 24px rgba(10,14,20,.1);opacity:0;transform:translateY(-2px);transition:opacity 120ms ease-out,transform 120ms ease-out}
+.ra-reg-demo .gp.up{transform:translateY(2px)}
+.ra-reg-demo .gp.on{opacity:1;transform:none;transition:opacity 180ms cubic-bezier(.2,.8,.2,1),transform 180ms cubic-bezier(.2,.8,.2,1)}
+.ra-reg-demo .gp .gq{position:relative;box-sizing:border-box;height:32px;margin:4.5px 4.5px 6px;padding-left:33px;border:1px solid #cfd6df;border-radius:4px;font-size:13px;line-height:30px;letter-spacing:-.01em;color:#697386}
+.ra-reg-demo .gp .gq svg{position:absolute;left:9px;top:7px;width:16px;height:16px;fill:none;stroke:#697386;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.ra-reg-demo .gp>i{display:flex;align-items:center;gap:8px;height:48px;padding:0 10.5px;border-radius:4px;font-style:normal}
+.ra-reg-demo .gp>i>b{flex:none;width:22px;height:22px;border-radius:50%;background:#dadbfd;color:#5446b8;font-size:9px;font-weight:600;letter-spacing:.02em;line-height:22px;text-align:center}
+.ra-reg-demo .gp>i>span{display:flex;flex-direction:column;gap:3px;font-size:13px;font-weight:500;letter-spacing:-.01em;line-height:16px;color:#425466;white-space:nowrap}
+.ra-reg-demo .gp small{font-size:11px;font-weight:400;line-height:14px;letter-spacing:0;color:#697386}
+.ra-reg-demo .gp>i.h{background:#f6f6f6}.ra-reg-demo .gp>i.h>span{color:#5340cc}
+/* primary buttons (Button .primary): hover/active #4434e0, active nudges .5px */
+.ra-reg-demo .bt{position:absolute;z-index:8;height:27px;border-radius:4px;background:#533afd;color:#fff;font-size:12px;font-weight:500;letter-spacing:-.01em;line-height:1;opacity:0;transition:opacity 120ms var(--eo),background 120ms var(--eo),transform 120ms var(--eo)}
+.ra-reg-demo .bt b{position:absolute;top:var(--ty);left:var(--tx);font-weight:500;white-space:nowrap}
+.ra-reg-demo .bt.hv{opacity:1;background:#4434e0}
+.ra-reg-demo .bt.ac{transform:translateY(.5px)}
+/* off-app toast (same card as the page's other demos) */
+.ra-reg-demo .note{position:absolute;z-index:5;right:2.4cqw;bottom:2.4cqw;display:flex;gap:1.2cqw;align-items:center;background:#fff;border:1px solid #E6EBF1;border-radius:1.2cqw;padding:1.3cqw 2.2cqw 1.3cqw 1.4cqw;box-shadow:0 .8cqw 2.4cqw rgba(6,27,49,.10),0 .2cqw .6cqw rgba(6,27,49,.06);font-family:'RA Inter',Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;opacity:0;transform:translateY(1cqw);transition:opacity 220ms cubic-bezier(.2,.8,.2,1),transform 220ms cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.ra-reg-demo .note.on{opacity:1;transform:none}
+.ra-reg-demo .note.off{opacity:0;transform:none;transition:opacity 180ms ease-out}
+.ra-reg-demo .note .ic{flex:none;width:3.2cqw;height:3.2cqw;border-radius:50%;background:#12B76A;display:grid;place-items:center}
 .ra-reg-demo .note .ic svg{width:56%}
-.ra-reg-demo .note b{font-weight:600;font-size:1.7cqw;color:#061B31;line-height:1.2}
+.ra-reg-demo .note .tx{display:flex;flex-direction:column;gap:.35cqw}
+.ra-reg-demo .note b{font-weight:600;font-size:1.5cqw;color:#061B31;line-height:1.2;white-space:nowrap}
+.ra-reg-demo .note .tx span{font-size:1.3cqw;color:#425466;line-height:1.2;white-space:nowrap}
 @keyframes rarg-blink{0%{opacity:1}50%{opacity:0}}
 @media (max-width:600px){
 .ra-reg-demo .card{aspect-ratio:1150/1582}
@@ -287,9 +361,11 @@ button.btn{font-family:inherit;cursor:pointer}
 .ra-reg-demo .tb i:nth-child(1){left:2.6cqw}.ra-reg-demo .tb i:nth-child(2){left:5.8cqw}.ra-reg-demo .tb i:nth-child(3){left:9cqw}
 .ra-reg-demo .tb span{width:38cqw;height:3.8cqw;border-radius:1cqw;font-size:1.9cqw;line-height:3.8cqw}
 .ra-reg-demo .screen{top:7cqw}
-.ra-reg-demo .note{right:5cqw;bottom:5cqw;gap:2.6cqw;border-radius:3cqw;padding:3.2cqw 4.6cqw 3.2cqw 3.2cqw}
-.ra-reg-demo .note .ic{width:7.4cqw;height:7.4cqw}.ra-reg-demo .note b{font-size:3.9cqw}
-.ra-reg-demo .note{--g:2.4cqw}
+.ra-reg-demo .mn{height:1300px}
+.ra-reg-demo .note{right:4.6cqw;bottom:4.6cqw;gap:2.4cqw;border-radius:2.6cqw;padding:2.8cqw 4.3cqw 2.8cqw 2.8cqw}
+.ra-reg-demo .note .ic{width:6.6cqw;height:6.6cqw}
+.ra-reg-demo .note .tx{gap:.75cqw}
+.ra-reg-demo .note b{font-size:3.3cqw}.ra-reg-demo .note .tx span{font-size:2.85cqw}
 }
 @media (prefers-reduced-motion:reduce){.ra-reg-demo *{transition:none!important;animation:none!important}}
 </style>
@@ -299,139 +375,422 @@ button.btn{font-family:inherit;cursor:pointer}
 <div class="mn"><div class="sc">
 <div class="t0"><img src="assets/images-page/registry-demo/shell.webp?v=2" alt=""></div>
 <div class="t1"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""></div>
-<div class="nr"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""><i></i></div>
+<div class="nr"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""><div class="nm"><b>Credit Risk Scoring Model</b><span>Scores retail credit applications for default risk using bureau and account data.</span></div><div class="pl"><div class="pu"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""></div><span class="rn"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4.1" fill="none" stroke="#6E62E6" stroke-opacity=".22" stroke-width="1.5"/><path d="M5 .9A4.1 4.1 0 0 1 9.1 5" fill="none" stroke="#6E62E6" stroke-width="1.5" stroke-linecap="round"/></svg>Running</span><div class="pp"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""></div></div></div>
 <div class="rs"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""></div>
 <div class="m2" style="top:0;height:1531px"><img src="assets/images-page/registry-demo/main2.webp?v=2" alt=""></div>
 </div></div>
 <div class="mz">
-<img class="f cp-r" data-k="r0" src="assets/images-page/registry-demo/r0.webp?v=2" alt="">
-<img class="f cp-r" data-k="r4" src="assets/images-page/registry-demo/r4.webp?v=2" alt="">
-<img class="f cp-o" data-k="o0" src="assets/images-page/registry-demo/o0.webp?v=2" alt="">
-<img class="f cp-o" data-k="o2" src="assets/images-page/registry-demo/o2.webp?v=2" alt="">
-<img class="f cp-o" data-k="o3" src="assets/images-page/registry-demo/o3.webp?v=2" alt="">
-<img class="f cp-o" data-k="o4" src="assets/images-page/registry-demo/o4.webp?v=2" alt="">
-<img class="f cp-l" data-k="l0" src="assets/images-page/registry-demo/l0.webp?v=2" alt="">
-<img class="f cp-l" data-k="l3" src="assets/images-page/registry-demo/l3.webp?v=2" alt="">
+<img class="f cp-b" data-k="b" src="assets/images-page/registry-demo/r0.webp?v=2" alt="">
+<div class="rm"><i>Export CSV</i><i>Request assessment</i><i class="re">Run evaluation</i><i class="sl">Set lifecycle<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></i><i>Mark retired<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></i><i class="dg">Delete asset</i></div>
+<div class="fy"><i class="h">Planned<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></i><i>Development</i><i>Pilot</i><i class="pd">Production</i></div>
 </div>
-<i class="pr pa" style="left:1322.75px;top:85px;width:78.25px;height:28px"></i>
-<i class="pr lt pd" style="left:1364px;top:259.8px;width:24px;height:24px"></i>
-<i class="pr lt pt" style="left:929px;top:538px;width:250px;height:53px"></i>
-<i class="pr lt pl" style="left:949px;top:475.5px;width:230px;height:35.5px"></i>
-<i class="pr lt pw" style="left:1193px;top:399.5px;width:190px;height:35.5px"></i>
-<i class="pr lt pc" style="left:1193px;top:364px;width:190px;height:35.5px"></i>
+<div class="bt ba" style="left:1323px;top:85.5px;width:78px;--tx:11px;--ty:7px"><b>Add asset</b></div>
 <img class="bd" src="assets/images-page/registry-demo/backdrop.webp?v=2" alt="">
 <div class="dr">
 <img src="assets/images-page/registry-demo/s0.webp?v=2" alt="">
-<img class="b1" src="assets/images-page/registry-demo/s1.webp?v=2" alt="">
-<img class="f st cp-s" data-k="s2" src="assets/images-page/registry-demo/s2.webp?v=2" alt="">
-<img class="f st cp-s" data-k="s3" src="assets/images-page/registry-demo/s3.webp?v=2" alt="">
+<div class="dbd"><div class="dsc">
+<img class="sb" src="assets/images-page/registry-demo/s0.webp?v=2" alt="">
+<img class="f cp-s" data-k="s2" src="assets/images-page/registry-demo/s2.webp?v=2" alt="">
+<img class="f cp-s" data-k="s3" src="assets/images-page/registry-demo/s3.webp?v=2" alt="">
 <img class="f cp-p" data-k="p0" src="assets/images-page/registry-demo/p0.webp?v=2" alt="">
 <img class="f cp-p" data-k="p2" src="assets/images-page/registry-demo/p2.webp?v=2" alt="">
 <img class="f cp-m" data-k="m0" src="assets/images-page/registry-demo/m0.webp?v=2" alt="">
-<img class="f cp-m" data-k="m3" src="assets/images-page/registry-demo/m3.webp?v=2" alt="">
-<div class="sb"><img src="assets/images-page/registry-demo/tall.webp?v=2" alt=""></div>
-<i class="pr lt pp" style="left:23px;top:429.3px;width:210px;height:38px"></i>
-<i class="pr lt po" style="left:30px;top:515.5px;width:196px;height:35.5px"></i>
-<i class="pr lt pm" style="left:247px;top:429.3px;width:210px;height:38px"></i>
-<i class="pr lt pn" style="left:254px;top:586.5px;width:196px;height:35.5px"></i>
-<i class="fr" style="left:23px;top:161.3px;width:434px;height:39.5px"></i>
-<i class="fr" style="left:23px;top:240.8px;width:434px;height:80px"></i>
-<div class="ty" data-t="Adviser Meeting Assistant" data-k="0.982" style="left:24.5px;top:162.8px;width:431px;height:36.5px"><img src="assets/images-page/registry-demo/s1.webp?v=2" alt="" style="left:-24.5px;top:-162.8px"><b style="top:10px;height:17px"></b></div>
-<div class="ty" data-t="Drafts client meeting summaries and follow-up actions." data-k="0.976" style="left:24.5px;top:242.3px;width:420px;height:40px"><img src="assets/images-page/registry-demo/s1.webp?v=2" alt="" style="left:-24.5px;top:-242.3px"><b style="top:10px;height:17px"></b></div>
-<i class="pr pg" style="left:355.4px;top:841px;width:101.6px;height:28px"></i>
+<img class="f cp-m" data-k="m3" src="assets/images-page/registry-demo/m3.webp?v=3" alt="">
+<div class="fx n1" data-t="Credit Risk Scoring Model"><i class="pa"></i><i class="fl"></i><span class="ph">e.g. Customer support agent</span><span class="v"></span><i class="rg"></i></div>
+<div class="fx n2" data-t="Scores retail credit applications for default risk using bureau and account data."><i class="pa"></i><i class="fl"></i><span class="ph">What does this asset do?</span><span class="v"></span><i class="rg"></i></div>
+<div class="gv"><span class="gd" style="top:841.85px">Identify the people accountable for this AI asset.</span><span class="gl" style="top:873.35px">Business owner<em>*</em></span><div class="gs o1" style="top:896.5px"><span class="ph">Select person</span><span class="v"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><span class="gl" style="top:951.35px">Compliance / risk owner</span><div class="gs o2" style="top:974.5px"><span class="ph">Select person</span><span class="v"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><span class="gl" style="top:1029.35px">Technical / model owner</span><div class="gs o3" style="top:1052.5px"><span class="ph">Select person</span><span class="v"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><span class="gl" style="top:1107.85px">Department</span><span class="gl" style="top:1187.15px">Notes</span><div class="gt" style="top:1210px"><span>Any additional context</span><svg viewBox="0 0 8 8"><path d="M7 1 1 7M7 4.5 4.5 7"/></svg></div></div>
+<div class="fx n3" data-t="Credit Risk"><i class="pa"></i><i class="fl"></i><span class="ph">Asset department, e.g. Operations, Risk</span><span class="v"></span><i class="rg"></i></div>
+</div></div>
+<div class="gp d1" style="top:430.5px"><div class="gq"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Find member...</div><i><b>PS</b><span>Priya Shah<small>priya.shah@acme-advisory.com</small></span></i><i><b>TW</b><span>Tom Whitaker<small>tom.whitaker@acme-advisory.com</small></span></i><i><b>HO</b><span>Hannah Okafor<small>hannah.okafor@acme-advisory.com</small></span></i><i><b>DR</b><span>Daniel Reeves<small>daniel.reeves@acme-advisory.com</small></span></i></div><div class="gp d2" style="top:508.5px"><div class="gq"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Find member...</div><i><b>PS</b><span>Priya Shah<small>priya.shah@acme-advisory.com</small></span></i><i><b>TW</b><span>Tom Whitaker<small>tom.whitaker@acme-advisory.com</small></span></i><i><b>HO</b><span>Hannah Okafor<small>hannah.okafor@acme-advisory.com</small></span></i><i><b>DR</b><span>Daniel Reeves<small>daniel.reeves@acme-advisory.com</small></span></i></div><div class="gp d3" style="top:586.5px"><div class="gq"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Find member...</div><i><b>PS</b><span>Priya Shah<small>priya.shah@acme-advisory.com</small></span></i><i><b>TW</b><span>Tom Whitaker<small>tom.whitaker@acme-advisory.com</small></span></i><i><b>HO</b><span>Hannah Okafor<small>hannah.okafor@acme-advisory.com</small></span></i><i><b>DR</b><span>Daniel Reeves<small>daniel.reeves@acme-advisory.com</small></span></i></div>
+<div class="bt bg" style="left:355.5px;top:841.5px;width:101px;--tx:11px;--ty:7.5px"><b>Register asset</b></div>
 </div>
-</div><div class="veil"></div></div></div>
-<div class="note" aria-hidden="true"><span class="ic"><svg viewBox="0 0 12 12"><path d="M2.5 6.3l2.3 2.2 4.7-5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>Asset registered</b></div></div>
+</div></div></div><div class="note" aria-hidden="true"><span class="ic"><svg viewBox="0 0 12 12"><path d="M2.5 6.3l2.3 2.2 4.7-5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tx"><b></b><span></span></span></div></div>
 <script>(function(){
-var root=document.currentScript.parentNode,st=root.querySelector('.stage'),sc=root.querySelector('.screen'),SC=root.querySelector('.sc'),VE=root.querySelector('.veil'),NT=root.querySelector('.note');
-var TY=[].slice.call(root.querySelectorAll('.ty')),FR=[].slice.call(root.querySelectorAll('.fr')),SB=root.querySelector('.sb'),SBI=SB.querySelector('img'),M2=root.querySelector('.m2');
-var P={};['pa','pd','pt','pl','pw','pc','pp','po','pm','pn','pg'].forEach(function(k){P[k]=root.querySelector('.'+k)});
+var root=document.currentScript.parentNode,st=root.querySelector('.stage'),sc=root.querySelector('.screen'),NT=root.querySelector('.note');
+var M2=root.querySelector('.m2'),PL=root.querySelector('.pl'),FX=[].slice.call(root.querySelectorAll('.fx')),BA=root.querySelector('.ba'),BG=root.querySelector('.bg');
+var DSC=root.querySelector('.dsc'),OS=[].slice.call(root.querySelectorAll('.gs')),OD=[].slice.call(root.querySelectorAll('.gp'));
+var RM=root.querySelector('.rm'),FY=root.querySelector('.fy'),IRE=RM.querySelector('.re'),ISL=RM.querySelector('.sl'),IPD=FY.querySelector('.pd');
 var mob=matchMedia('(max-width:600px)'),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-// camera rects [x, y, width] in 1440x900 app px
-var CAM={d:{list:[0,0,760],add:[680,0,760],dtop:[900,0,540],dmid:[850,410,590],dlow:[850,545,590],tab:[262,0,950],zm:[660,235,780],end:[262,120,950]},
-         m:{list:[262,0,620],add:[880,0,560],dtop:[946,0,480],dmid:[946,200,480],dlow:[946,279,480],tab:[262,0,724],zm:[908,174,496],end:[262,0,724]}};
+// camera rects [x, y, width] in 1440x900 app px. ev/work/end keep the asset name in frame.
+var CAM={d:{list:[0,0,760],add:[680,0,760],dtop:[900,0,540],dmid:[850,400,590],dlow:[566,360,874],ev:[258,150,980],wk:[740,198,700],end:[258,150,920]},
+         m:{list:[262,0,620],add:[880,0,560],dtop:[946,0,480],dmid:[946,200,480],dlow:[946,276,480],ev:[258,0,760],wk:[870,150,550],end:[258,0,870]}};
 var shot='list';
-function cam(n,instant,slow){shot=n;var r=CAM[mob.matches?'m':'d'][n],W=sc.clientWidth,H=sc.clientHeight,s=W/r[2],y=Math.max(0,Math.min(r[1],900-H/s));
- st.style.transition=instant?'none':slow===true?'transform 4200ms cubic-bezier(.45,.05,.25,1)':slow?'transform '+slow+'ms cubic-bezier(.62,0,.3,1)':'';
+// phones show a taller slice of the page (the table continues below the 900px desktop fold)
+function cam(n,instant,ms){shot=n;var r=CAM[mob.matches?'m':'d'][n],W=sc.clientWidth,H=sc.clientHeight,s=W/r[2],y=Math.max(0,Math.min(r[1],(mob.matches?1361:900)-H/s));
+ st.style.transition=instant?'none':ms?'transform '+ms+'ms var(--cam)':'';
  st.style.transform='scale('+s+') translate('+(-r[0])+'px,'+(-y)+'px)';
  if(instant){st.offsetWidth;st.style.transition=''}}
 addEventListener('resize',function(){cam(shot,true)});
-var cv=document.createElement('canvas').getContext('2d');
-function stops(t,k){cv.font='400 13px "RA Inter", Inter, system-ui, sans-serif';var o=[];for(var i=1;i<=t.length;i++)o.push(11.5+cv.measureText(t.slice(0,i)).width*k);return o}
-function clip(el,px){var im=el.querySelector('img');im.style.clipPath='inset(0 calc(100% - '+(px-parseFloat(im.style.left))+'px) 0 0)';el.querySelector('b').style.left=(px+1)+'px'}
 function snap(el,fn){el.style.transition='none';fn();el.offsetWidth;el.style.transition=''}
-// frame decks: each state is a captured frame clipped to the region that changes, swapped in one paint
-// (no cross-fade: lossy frames differ by a few levels, so fading or full-frame swaps make static text shimmer)
+// frame decks (drawer selects): hover swaps in one paint; opening fades + settles; closing fades out
 function deck(box,sel,z0){var F={},cur=null;
  [].slice.call(box.querySelectorAll(sel)).forEach(function(i){F[i.getAttribute('data-k')]=i;i.style.zIndex=z0});
- function show(k){var n=k?F[k]:null,p=cur;cur=n;if(n)n.classList.add('on');if(p&&p!==n)p.classList.remove('on')}
- show.clear=function(){for(var k in F)F[k].classList.remove('on');cur=null};return show}
-var dr=root.querySelector('.dr'),B1=dr.querySelector('.b1'),D=deck(dr,'.f:not(.st)',20),S=deck(dr,'.f.st',10),Z=deck(root.querySelector('.mz'),'.f',2);
+ function show(k,mode){var n=k?F[k]:null,p=cur;cur=n;
+  if(n){n.classList.remove('out');if(mode==='in'){n.classList.remove('in');n.classList.add('pre');n.offsetWidth;n.classList.add('in','on');n.classList.remove('pre')}else{n.classList.remove('in');n.classList.add('on')}}
+  if(p&&p!==n){p.classList.remove('in');if(mode==='out'||(!n&&mode!=='cut')){p.classList.add('out')}p.classList.remove('on')}}
+ show.clear=function(){for(var k in F){F[k].classList.remove('on','in','out','pre')}cur=null};return show}
+var dr=root.querySelector('.dr'),mz=root.querySelector('.mz');
+var D=deck(dr,'.cp-p,.cp-m',20),S=deck(dr,'.cp-s',10),ZB=deck(mz,'.cp-b',3);
 var T=[];function at(ms,fn){T.push(setTimeout(fn,ms))}
-function press(k,t0,pre){if(pre)at(t0-pre,function(){P[k].classList.add('hv')});at(t0,function(){P[k].classList.add('on')});at(t0+200,function(){P[k].classList.remove('on','hv')})}
-function hv(t0,k){at(t0,function(){D(k)})}
-function pick(t0,k){at(t0,function(){D(null);S(k)})}
-function mz(t0,k){at(t0,function(){Z(k)})}
-// toast stack: oldest holds the bottom slot, newer ones stack above; when one leaves, the rest settle down
-var live=[];
-function slots(){live.forEach(function(o,i){o.style.setProperty('--k',i)})}
-function note(t){var n=NT.cloneNode(true);n.querySelector('b').textContent=t;n.style.setProperty('--k',live.length);NT.parentNode.appendChild(n);
- live.push(n);n.offsetWidth;n.classList.add('on');return n}
-function noteOff(n){var i=live.indexOf(n);if(i<0)return;live.splice(i,1);n.classList.add('off');n.classList.remove('on');at(380,slots);at(600,function(){n.remove()})}
-function type(i,t0,step){var el=TY[i],s=el.getAttribute('data-t'),p=[];
- at(t0,function(){p=stops(s,+el.getAttribute('data-k'));FR[i].classList.add('on');el.classList.add('on','typing');clip(el,11)});
- for(var j=0;j<s.length;j++)(function(j){at(t0+260+j*step+(j%6==4?20:0),function(){clip(el,p[j])})})(j);
- var end=t0+260+s.length*step+120;at(end,function(){el.classList.remove('typing');clip(el,el.offsetWidth)});return end}
-function reset(){root.classList.remove('open','ins','hl');D.clear();S.clear();Z.clear();B1.classList.remove('on');
- snap(SB,function(){SB.classList.remove('on')});snap(SBI,function(){SBI.style.transform=''});snap(M2,function(){M2.classList.remove('on')});
- TY.forEach(function(e){e.classList.remove('on','typing');clip(e,0)});FR.forEach(function(f){f.classList.remove('on')});
- for(var k in P)P[k].classList.remove('on','hv');
- [].slice.call(root.querySelectorAll('.note')).forEach(function(n){if(n!==NT)n.remove()});live=[];
- snap(SC,function(){SC.style.transform=''})}
-function run(){T.forEach(clearTimeout);T=[];reset();cam('list',true);VE.classList.remove('on');
- at(1200,function(){cam('add')});
- press('pa',2300,350);
- at(2520,function(){root.classList.add('open');cam('dtop')});
- var t=type(0,3400,52);
- at(t+200,function(){FR[0].classList.remove('on')});
- t=type(1,t+260,30);
- at(t+240,function(){FR[1].classList.remove('on');B1.classList.add('on');TY.forEach(function(e){e.classList.remove('on')});cam('dmid')});
- // provider: open, cursor goes straight to Anthropic, click
- t+=1100;press('pp',t,260);hv(t+120,'p0');hv(t+540,'p2');press('po',t+840);pick(t+1040,'s2');
- // model: open, straight to the model, click
- t+=1550;press('pm',t,260);hv(t+120,'m0');hv(t+560,'m3');press('pn',t+860);pick(t+1060,'s3');
- // fast scroll through the rest of the form to Register
- t+=1550;at(t,function(){SB.classList.add('on');SBI.style.transform='translateY(-508px)';cam('dlow',false,1150)});
- t+=1600;press('pg',t,420);
- at(t+280,function(){root.classList.remove('open');cam('tab')});
- at(t+1100,function(){root.classList.add('ins','hl')});
- var n1,n2,n3;
- at(t+1350,function(){n1=note('Asset registered')});
- at(t+3500,function(){noteOff(n1);root.classList.remove('hl')});
- t+=3800;at(t,function(){cam('zm')});
- // one menu session, cursor goes straight to each target: owner, then lifecycle
- t+=1200;press('pd',t,300);mz(t+180,'r0');
- mz(t+600,'r4');press('pw',t+880);mz(t+1060,'o0');
- mz(t+1480,'o2');press('pt',t+1780);mz(t+1960,'o3');at(t+2060,function(){n2=note('Business owner assigned')});
- mz(t+2480,'o4');press('pc',t+2760);mz(t+2940,'l0');
- mz(t+3360,'l3');press('pl',t+3660);
- at(t+3860,function(){Z(null);M2.classList.add('on')});
- at(t+4080,function(){n3=note('Lifecycle set to Production')});
- at(t+5100,function(){noteOff(n2)});
- t+=4700;at(t,function(){cam('tab')});
- // scroll so the table's last row ends just above the bottom of the view
- at(t+1500,function(){var r=CAM[mob.matches?'m':'d'].end,vh=sc.clientHeight*r[2]/sc.clientWidth,y=Math.max(0,Math.min(r[1],900-vh));
-  SC.style.transform='translateY('+Math.min(0,Math.min(y+vh,891)-61-1306)+'px)';cam('end',false,true)});
- at(t+2600,function(){noteOff(n3)});
- at(t+7000,function(){VE.classList.add('on')});
- at(t+7600,run)}
-function still(){reset();cam('tab',true);root.classList.add('ins')}
-function go(){var im=[].slice.call(root.querySelectorAll('img'));Promise.all(im.map(function(i){return i.decode?i.decode().catch(function(){}):0})).then(function(){return document.fonts?document.fonts.load('400 13px "RA Inter"').catch(function(){}):0}).then(function(){requestAnimationFrame(reduce?still:run)})}
+function btn(el,t0){at(t0,function(){el.classList.add('hv')});at(t0+200,function(){el.classList.add('ac')});at(t0+330,function(){el.classList.remove('ac')});}
+function type(i,t0,step){var el=FX[i],s=el.getAttribute('data-t'),v=el.querySelector('.v');
+ at(t0,function(){el.classList.add('fo')});
+ for(var j=0;j<=s.length;j++)(function(j){at(t0+220+j*step+Math.floor(j/7)*18,function(){
+  if(j===0){el.classList.add('typing')}
+  if(j>0)el.classList.add('has');v.textContent=s.slice(0,j);v.appendChild(document.createElement('u'))})})(j);
+ var end=t0+220+s.length*step+Math.floor(s.length/7)*18+60;at(end,function(){el.classList.remove('typing')});return end}
+// one toast at a time, bottom-right of the card (the key row sits at the top of every shot)
+function note(t,sub,life){var n=NT.cloneNode(true);n.querySelector('b').textContent=t;n.querySelector('.tx span').textContent=sub;NT.parentNode.appendChild(n);
+ n.offsetWidth;n.classList.add('on');at(life,function(){n.classList.add('off');n.classList.remove('on');at(260,function(){n.remove()})})}
+// owner select: open listbox, hover the person, pick (same rhythm as the provider/model picks)
+function pick(i,k,t0){var r=OD[i].querySelectorAll('i')[k];
+ at(t0,function(){OS[i].classList.add('fo');OD[i].classList.add('on')});
+ at(t0+210,function(){r.classList.add('h')});
+ at(t0+380,function(){OD[i].classList.remove('on');OS[i].classList.remove('fo');OS[i].classList.add('has');OS[i].querySelector('.v').textContent=r.querySelector('span').firstChild.nodeValue});
+ at(t0+520,function(){r.classList.remove('h')})}
+function menu(on){if(on){ZB('b','cut');RM.classList.add('on')}else{RM.classList.remove('on');FY.classList.remove('on');ZB(null,'cut')}}
+function reset(){root.classList.remove('open','ins');D.clear();S.clear();ZB.clear();
+ [RM,FY,M2].forEach(function(e){snap(e,function(){e.classList.remove('on')})});
+ [].slice.call(root.querySelectorAll('.rm>i,.fy>i')).forEach(function(i){i.classList.remove('h')});FY.firstChild.classList.add('h');
+ [].slice.call(PL.children).forEach(function(e){snap(e,function(){PL.classList.remove('run','ok')})});
+ FX.forEach(function(e){e.classList.remove('fo','has','typing');e.querySelector('.v').textContent=''});
+ snap(DSC,function(){DSC.classList.remove('dn')});OS.forEach(function(e){snap(e,function(){e.classList.remove('fo','has')});e.querySelector('.v').textContent=''});
+ OD.forEach(function(e){snap(e,function(){e.classList.remove('on')});[].slice.call(e.querySelectorAll('i')).forEach(function(i){i.classList.remove('h')})});
+ [BA,BG].forEach(function(b){snap(b,function(){b.classList.remove('hv','ac')})});
+ [].slice.call(root.querySelectorAll('.note')).forEach(function(n){if(n!==NT)n.remove()})}
+function run(){T.forEach(clearTimeout);T=[];reset();cam('list',true);
+ // 1. register: Add asset -> type name + description -> provider -> model -> Register asset
+ at(150,function(){cam('add',false,750)});
+ btn(BA,760);
+ at(1100,function(){BA.classList.remove('hv');root.classList.add('open');cam('dtop',false,800)});
+ var t=type(0,1400,20);
+ at(t+120,function(){FX[0].classList.remove('fo')});
+ t=type(1,t+140,5);
+ at(t+60,function(){FX[1].classList.remove('fo');cam('dmid',false,700)});
+ t+=640;at(t,function(){D('p0','in')});at(t+210,function(){D('p2')});at(t+380,function(){S('s2');D(null,'out')});
+ t+=480;at(t,function(){D('m0','in')});at(t+210,function(){D('m3')});at(t+380,function(){S('s3');D(null,'out')});
+ // one smooth scroll past the classification fields to Governance owners -> Register asset
+ t+=440;at(t,function(){DSC.classList.add('dn');cam('dlow',false,950)});
+ t+=950;pick(0,1,t);
+ t+=480;pick(1,0,t);
+ t+=480;pick(2,3,t);
+ t=type(2,t+480,20);
+ t+=100;at(t,function(){FX[2].classList.remove('fo')});btn(BG,t);
+ // 2. drawer closes, row lands Untested
+ at(t+340,function(){BG.classList.remove('hv');root.classList.remove('open');cam('ev',false,900)});
+ at(t+1080,function(){root.classList.add('ins')});
+ at(t+1300,function(){note('Asset registered','Credit Risk Scoring Model',1200)});
+ // 3. one zoom onto the row; everything below happens in this single static frame
+ t+=1700;at(t,function(){cam('wk',false,850)});
+ // Run evaluation -> Running -> Passed
+ t+=800;at(t,function(){menu(true)});
+ at(t+330,function(){IRE.classList.add('h')});
+ at(t+560,function(){menu(false)});
+ at(t+660,function(){IRE.classList.remove('h');PL.classList.add('run')});
+ t+=660+1200;at(t,function(){PL.classList.add('ok')});
+ at(t+200,function(){note('Evaluation passed','12 of 12 checks passed',1250)});
+ // 4. only then: Set lifecycle -> Production
+ t+=1550;at(t,function(){menu(true)});
+ at(t+330,function(){ISL.classList.add('h');FY.classList.add('on')});
+ at(t+640,function(){FY.firstChild.classList.remove('h');IPD.classList.add('h')});
+ at(t+880,function(){menu(false);M2.classList.add('on')});
+ at(t+980,function(){ISL.classList.remove('h');IPD.classList.remove('h');FY.firstChild.classList.add('h')});
+ at(t+1080,function(){note('Moved to Production','Credit Risk Scoring Model',1550)});
+ // 5. hold, then one pull back to the opening frame while the row slides out
+ t+=2850;at(t,function(){cam('list',false,1100)});
+ at(t+200,function(){root.classList.remove('ins');M2.classList.remove('on')});
+ at(t+1150,run)}
+function still(){reset();cam('end',true);root.classList.add('ins');PL.classList.add('ok');M2.classList.add('on')}
+function go(){var im=[].slice.call(root.querySelectorAll('img'));Promise.all(im.map(function(i){return i.decode?i.decode().catch(function(){}):0})).then(function(){return document.fonts?Promise.all([document.fonts.load('400 13px "RA Inter"'),document.fonts.load('500 13px "RA Inter"'),document.fonts.load('600 11px "RA Inter"')]).catch(function(){}):0}).then(function(){requestAnimationFrame(reduce?still:run)})}
 cam('list',true);
 if(!('IntersectionObserver' in window)){go();return}
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.intersectionRatio>=.4){io.disconnect();go()}})},{threshold:[.4],rootMargin:'0px 0px -8% 0px'});io.observe(root);
 })();</script>
 </div></div>
+<!-- TEMP: mobile desktop-framing comparison (phones only). Same demo, desktop camera cuts scaled to the phone frame.
+     Self-contained: delete from here to "END TEMP" to remove. -->
+<div class="reveal d1 ra-reg-cmp"><div class="ra-reg-dk" role="img" aria-label="Desktop view: Registering Credit Risk Scoring Model in RegAnchor. The new asset lands in the registry as Untested, an evaluation is run and passes, and only then is its lifecycle moved from Planned to Production.">
+<style>
+.ra-reg-cmp{display:none}
+@media (max-width:600px){.ra-reg-cmp{display:block}}
+.ra-reg-dk{--ez:cubic-bezier(.32,.72,0,1);--cam:cubic-bezier(.65,0,.35,1);--eo:cubic-bezier(.2,.8,.2,1);position:relative;display:block;width:100%}
+.ra-reg-dk .card{position:relative;width:100%;aspect-ratio:3/2;container-type:inline-size;border-radius:12px;overflow:hidden;isolation:isolate;background:radial-gradient(120% 95% at 0% 100%,#5636f7 0%,rgba(86,54,247,0) 62%),linear-gradient(95deg,#a9c5ff 0%,#9d8df2 48%,#eaa7ca 100%)}
+.ra-reg-dk .win{position:absolute;left:11.2%;top:14.4%;right:-1px;bottom:-1px;background:#fff;border-radius:1.1cqw 0 0 0;overflow:hidden;box-shadow:0 1.2cqw 4cqw rgba(30,16,90,.22),0 .2cqw .6cqw rgba(30,16,90,.08)}
+.ra-reg-dk .tb{position:absolute;left:0;right:0;top:0;height:3.7cqw;background:#F5F6F8;border-bottom:1px solid #E4E7EC}
+.ra-reg-dk .tb i{position:absolute;top:50%;width:.95cqw;height:.95cqw;margin-top:-.475cqw;border-radius:50%}
+.ra-reg-dk .tb i:nth-child(1){left:1.2cqw;background:#FF5F57}.ra-reg-dk .tb i:nth-child(2){left:2.75cqw;background:#FEBC2E}.ra-reg-dk .tb i:nth-child(3){left:4.3cqw;background:#28C840}
+.ra-reg-dk .tb span{position:absolute;left:50%;top:50%;width:21.5cqw;height:1.9cqw;transform:translate(-50%,-50%);border-radius:.5cqw;background:#E9EBEF;color:#8792A2;font:400 .95cqw/1.9cqw Inter,system-ui,sans-serif;text-align:center}
+.ra-reg-dk .screen{position:absolute;left:0;right:0;top:3.7cqw;bottom:0;overflow:hidden;background:#F5F9FC}
+.ra-reg-dk .stage{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transition:transform 900ms var(--cam);will-change:transform;font-family:'RA Inter',Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.ra-reg-dk .stage img{position:absolute;display:block;max-width:none}
+.ra-reg-dk .shell{left:0;top:0;width:1440px;height:900px}
+.ra-reg-dk .mn{position:absolute;left:249px;top:61px;width:1176px;height:830px;overflow:hidden;background:#fff}
+.ra-reg-dk .sc{position:absolute;left:0;top:0;width:1176px;height:1531px}
+.ra-reg-dk .sc>div{position:absolute;left:0;width:1176px;overflow:hidden}
+.ra-reg-dk .sc img{left:0;width:1176px;height:1728px}
+.ra-reg-dk .t0,.ra-reg-dk .t1{top:0;height:178.5px}
+.ra-reg-dk .t0 img{left:-249px;top:-61px;width:1440px;height:900px}
+.ra-reg-dk .t1{opacity:0;transition:opacity 320ms ease}
+.ra-reg-dk .nr{top:178.5px;height:64.75px;opacity:0;transition:opacity 420ms ease 160ms}
+.ra-reg-dk .nr img{top:-178.5px}
+.ra-reg-dk .rs{top:243.25px;height:1287.75px;transform:translateY(-64.75px);transition:transform 620ms cubic-bezier(.22,1,.36,1)}
+.ra-reg-dk .rs img{top:-243.25px}
+.ra-reg-dk.ins .t1,.ra-reg-dk.ins .nr{opacity:1}
+.ra-reg-dk.ins .rs{transform:none}
+/* new row: asset name + description set in the app's own type (RegistryPage .assetName / .assetDesc) */
+.ra-reg-dk .nm{position:absolute;left:30px;top:8px;width:360px;height:49px;background:#fff}
+.ra-reg-dk .nm b,.ra-reg-dk .nm span{position:absolute;left:7px;white-space:nowrap;line-height:1.35}
+.ra-reg-dk .nm b{top:7px;font-size:13px;font-weight:500;letter-spacing:-.01em;color:#000}
+.ra-reg-dk .nm span{top:26px;width:334px;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500;letter-spacing:-.012em;color:#697386}
+/* Evals cell: Untested (capture) -> Running (StatusLabel badge, neutral) -> Passed (cut from the row below in the same capture) */
+.ra-reg-dk .pl{position:absolute;left:660px;top:17.5px;width:96px;height:30px;background:#fff}
+.ra-reg-dk .pl>div{position:absolute;left:0;top:0;width:74px;height:30px;overflow:hidden;transition:opacity 200ms cubic-bezier(.2,.8,.2,1)}
+.ra-reg-dk .pl img{left:-660px;width:1176px;height:1728px}
+.ra-reg-dk .pl .pu img{top:-196px}
+.ra-reg-dk .pl .pp img{top:-260.75px}
+.ra-reg-dk .pl .pp,.ra-reg-dk .pl .rn{opacity:0}
+.ra-reg-dk .pl .rn{position:absolute;left:4px;top:4px;display:inline-flex;align-items:center;gap:5px;box-sizing:border-box;height:22px;padding:3px 8px;border:1px solid #cfd7e3;border-radius:4px;background:#f6f9fc;color:#425466;font-size:11px;font-weight:600;letter-spacing:-.01em;line-height:1.25;white-space:nowrap;transition:opacity 200ms cubic-bezier(.2,.8,.2,1)}
+.ra-reg-dk .pl .rn svg{width:9px;height:9px;flex:none;animation:rarg-spin 1s linear infinite}
+.ra-reg-dk .pl.run .pu{opacity:0}.ra-reg-dk .pl.run .rn{opacity:1;transition-delay:60ms}
+.ra-reg-dk .pl.ok .pu,.ra-reg-dk .pl.ok .rn{opacity:0}.ra-reg-dk .pl.ok .pp{opacity:1;transition-delay:60ms}
+.ra-reg-dk .m2{opacity:0;transition:opacity 200ms ease}
+.ra-reg-dk .m2.on{opacity:1}
+.ra-reg-dk .m2 img{clip-path:path('M786 190H884V234H786Z')}
+/* backdrop + drawer */
+.ra-reg-dk .bd{left:0;top:0;width:1440px;height:900px;opacity:0;transition:opacity 480ms var(--ez)}
+.ra-reg-dk .dr{position:absolute;left:946px;top:8px;width:480px;height:884px;border-radius:6px;overflow:hidden;box-shadow:-12px 0 40px rgba(15,10,45,.12);transform:translateX(110%);transition:transform 520ms var(--ez)}
+.ra-reg-dk.open .bd{opacity:1}.ra-reg-dk.open .dr{transform:none}
+.ra-reg-dk .dr>img{left:0;top:0;width:480px;height:884px}
+/* captured menu frames: clipped to the region that changes; open with a short fade + settle, hover swaps in one paint */
+.ra-reg-dk .f{opacity:0;transition:none}
+.ra-reg-dk .f.on{opacity:1}
+.ra-reg-dk .f.in{transition:opacity 140ms var(--eo),transform 160ms var(--eo)}
+.ra-reg-dk .f.pre{transform:scale(.97) translateY(-3px)}
+.ra-reg-dk .f.out{transition:opacity 110ms ease}
+.ra-reg-dk .cp-p{clip-path:path('M8 412H248V768H8Z');transform-origin:128px 470px}
+.ra-reg-dk .cp-m{clip-path:path('M232 412H472V748H232Z');transform-origin:352px 470px}
+.ra-reg-dk .cp-s{clip-path:path('M8 412H472V480H8Z')}
+.ra-reg-dk .cp-b{clip-path:path('M444 8H496V50H444Z')}
+.ra-reg-dk .mz{position:absolute;left:908px;top:243px;width:496px;height:486px}
+.ra-reg-dk .mz img{left:0;top:0;width:496px;height:486px}
+/* row menu + Set lifecycle flyout, rebuilt in the app's menu styles (RegistryPage .bulkMenu/.bulkItem, .flyout/.ownerOption) */
+.ra-reg-dk .rm,.ra-reg-dk .fy{position:absolute;box-sizing:border-box;border:1px solid #cfd7e3;border-radius:4px;background:#fff;box-shadow:0 8px 24px rgba(10,14,20,.1);padding:4px;line-height:1.5;opacity:0;transform:translateY(-2px);transition:opacity 120ms ease-out,transform 120ms ease-out}
+.ra-reg-dk .rm{left:280px;top:45px;width:200px;transform-origin:100% 0}
+.ra-reg-dk .fy{left:36px;top:156.5px;width:240px;transform-origin:100% 0}
+.ra-reg-dk .rm.on,.ra-reg-dk .fy.on{opacity:1;transform:none;transition:opacity 180ms cubic-bezier(.2,.8,.2,1),transform 180ms cubic-bezier(.2,.8,.2,1)}
+.ra-reg-dk .rm>i,.ra-reg-dk .fy>i{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:4px;font-style:normal;font-size:13px;font-weight:500;letter-spacing:-.01em;color:#425466;white-space:nowrap}
+.ra-reg-dk .fy>i{justify-content:flex-start}
+.ra-reg-dk .rm svg,.ra-reg-dk .fy svg{flex-shrink:0;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ra-reg-dk .rm svg{color:#697386}
+.ra-reg-dk .rm>i.h,.ra-reg-dk .fy>i.h{background:rgba(10,14,20,.04);color:#000}
+.ra-reg-dk .rm>i.h svg{color:#000}
+.ra-reg-dk .rm>i.dg{color:#c8102e}
+/* Add asset form fields, rebuilt in the app's input styles (RegistryForm .input/.textarea) */
+.ra-reg-dk .fx{position:absolute;z-index:5;left:23px;width:434px;border-radius:4px}
+.ra-reg-dk .fx .pa{position:absolute;left:1px;right:1px;top:1px;background:#fff;border-radius:3px}
+.ra-reg-dk .fx .fl{position:absolute;inset:1px;border-radius:3px;background:rgba(83,58,253,.04);opacity:0;transition:opacity 120ms}
+.ra-reg-dk .fx .rg{position:absolute;inset:0;border-radius:4px;box-shadow:inset 0 0 0 1px #533afd,0 0 0 3px rgba(83,58,253,.12);opacity:0;transition:opacity 120ms}
+.ra-reg-dk .fx.fo .fl,.ra-reg-dk .fx.fo .rg{opacity:1}
+.ra-reg-dk .fx .v,.ra-reg-dk .fx .ph{position:absolute;left:13px;font-size:13px;font-weight:400;letter-spacing:-.01em;color:#000}
+.ra-reg-dk .fx .ph{color:#697386;opacity:.85}
+.ra-reg-dk .fx.has .ph{display:none}
+.ra-reg-dk .fx.n1{top:161px;height:40px}.ra-reg-dk .fx.n1 .pa{height:38px}
+.ra-reg-dk .fx.n1 .v,.ra-reg-dk .fx.n1 .ph{top:11.5px;line-height:1.35;white-space:nowrap}
+.ra-reg-dk .fx.n2{top:241px;height:80px}.ra-reg-dk .fx.n2 .pa{height:60px}
+.ra-reg-dk .fx.n2 .v,.ra-reg-dk .fx.n2 .ph{top:10.5px;width:408px;line-height:1.4;white-space:normal}
+.ra-reg-dk .fx u{display:inline-block;width:1px;height:15px;margin:0 -1px 0 .5px;vertical-align:-2.5px;background:#000;text-decoration:none;opacity:0}
+.ra-reg-dk .fx.fo u{opacity:1;animation:rarg-blink 1s steps(1) infinite}
+.ra-reg-dk .fx.typing u{animation:none}
+
+/* drawer body scrolls under a fixed header (0-82) and footer (830-884), as RegistryForm's drawer does */
+.ra-reg-dk .dbd{position:absolute;left:1px;top:82px;width:478px;height:748px;overflow:hidden;background:#fff}
+.ra-reg-dk .dsc{position:absolute;left:-1px;top:-82px;width:480px;height:1400px;transition:transform 950ms var(--cam)}
+.ra-reg-dk .dsc.dn{transform:translateY(-510px)}
+.ra-reg-dk .dsc>img{left:0;top:0;width:480px;height:884px}
+.ra-reg-dk .dsc>.sb{left:0;top:0;width:480px;height:884px;clip-path:inset(0 0 52px 0)}
+/* Governance owners, rebuilt in the app's form styles (labels 12/500 muted, selects 38px, inputs 40px) */
+.ra-reg-dk .gv{position:absolute;left:0;top:832px;width:480px;height:520px;background:#fff}
+.ra-reg-dk .gv>*{position:absolute}
+.ra-reg-dk .gv .gl,.ra-reg-dk .gv .gd{left:22.8px;margin-top:-832px;font-size:12px;line-height:16px;font-weight:500;letter-spacing:-.005em;color:#697386;white-space:nowrap}
+.ra-reg-dk .gv .gd{font-weight:400;letter-spacing:-.013em;color:#425466}
+.ra-reg-dk .gv .gl em{font-style:normal;color:#c8102e;margin-left:2px}
+.ra-reg-dk .gs{left:23px;width:434px;height:38px;margin-top:-832px;box-sizing:border-box;border:1px solid #bbc2cd;border-radius:4px;background:#fff;transition:border-color 120ms var(--eo),background 120ms var(--eo),box-shadow 120ms var(--eo)}
+.ra-reg-dk .gs span{position:absolute;left:13px;top:0;line-height:36px;font-size:13px;font-weight:400;letter-spacing:-.01em;color:#000;white-space:nowrap;transition:color 120ms var(--eo)}
+.ra-reg-dk .gs.has .ph{display:none}
+.ra-reg-dk .gs svg{position:absolute;right:12px;top:10px;width:16px;height:16px;fill:none;stroke:#697386;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.ra-reg-dk .gs.fo{border-color:#533fd6;background:#f1eeff;box-shadow:0 0 0 3px rgba(83,58,253,.12)}
+.ra-reg-dk .gs.fo span{color:#4f3fc4}
+.ra-reg-dk .gv .gt{left:23px;width:434px;height:80px;margin-top:-832px;box-sizing:border-box;border:1px solid #bbc2cd;border-radius:4px;background:#fff}
+.ra-reg-dk .gv .gt span{position:absolute;left:12px;top:10px;font-size:13px;line-height:1.4;letter-spacing:-.01em;color:#697386;opacity:.85}
+.ra-reg-dk .gv .gt svg{position:absolute;right:2px;bottom:2px;width:8px;height:8px;fill:none;stroke:#8792a2;stroke-width:1}
+.ra-reg-dk .fx.n3{top:1130.5px;height:40px;box-shadow:inset 0 0 0 1px #bbc2cd}.ra-reg-dk .fx.n3 .pa{height:38px}
+.ra-reg-dk .fx.n3 .v,.ra-reg-dk .fx.n3 .ph{top:11.5px;line-height:1.35;white-space:nowrap}
+/* team member listbox (same pattern as the app's owner picker): search, initials avatar, name + email */
+.ra-reg-dk .gp{position:absolute;z-index:30;left:23px;width:434px;box-sizing:border-box;padding:4px;border:1px solid #d1d8e0;border-radius:4px;background:#fff;box-shadow:0 8px 24px rgba(10,14,20,.1);opacity:0;transform:translateY(-2px);transition:opacity 120ms ease-out,transform 120ms ease-out}
+.ra-reg-dk .gp.up{transform:translateY(2px)}
+.ra-reg-dk .gp.on{opacity:1;transform:none;transition:opacity 180ms cubic-bezier(.2,.8,.2,1),transform 180ms cubic-bezier(.2,.8,.2,1)}
+.ra-reg-dk .gp .gq{position:relative;box-sizing:border-box;height:32px;margin:4.5px 4.5px 6px;padding-left:33px;border:1px solid #cfd6df;border-radius:4px;font-size:13px;line-height:30px;letter-spacing:-.01em;color:#697386}
+.ra-reg-dk .gp .gq svg{position:absolute;left:9px;top:7px;width:16px;height:16px;fill:none;stroke:#697386;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.ra-reg-dk .gp>i{display:flex;align-items:center;gap:8px;height:48px;padding:0 10.5px;border-radius:4px;font-style:normal}
+.ra-reg-dk .gp>i>b{flex:none;width:22px;height:22px;border-radius:50%;background:#dadbfd;color:#5446b8;font-size:9px;font-weight:600;letter-spacing:.02em;line-height:22px;text-align:center}
+.ra-reg-dk .gp>i>span{display:flex;flex-direction:column;gap:3px;font-size:13px;font-weight:500;letter-spacing:-.01em;line-height:16px;color:#425466;white-space:nowrap}
+.ra-reg-dk .gp small{font-size:11px;font-weight:400;line-height:14px;letter-spacing:0;color:#697386}
+.ra-reg-dk .gp>i.h{background:#f6f6f6}.ra-reg-dk .gp>i.h>span{color:#5340cc}
+/* primary buttons (Button .primary): hover/active #4434e0, active nudges .5px */
+.ra-reg-dk .bt{position:absolute;z-index:8;height:27px;border-radius:4px;background:#533afd;color:#fff;font-size:12px;font-weight:500;letter-spacing:-.01em;line-height:1;opacity:0;transition:opacity 120ms var(--eo),background 120ms var(--eo),transform 120ms var(--eo)}
+.ra-reg-dk .bt b{position:absolute;top:var(--ty);left:var(--tx);font-weight:500;white-space:nowrap}
+.ra-reg-dk .bt.hv{opacity:1;background:#4434e0}
+.ra-reg-dk .bt.ac{transform:translateY(.5px)}
+/* off-app toast (same card as the page's other demos) */
+.ra-reg-dk .note{position:absolute;z-index:5;right:2.4cqw;bottom:2.4cqw;display:flex;gap:1.2cqw;align-items:center;background:#fff;border:1px solid #E6EBF1;border-radius:1.2cqw;padding:1.3cqw 2.2cqw 1.3cqw 1.4cqw;box-shadow:0 .8cqw 2.4cqw rgba(6,27,49,.10),0 .2cqw .6cqw rgba(6,27,49,.06);font-family:'RA Inter',Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;opacity:0;transform:translateY(1cqw);transition:opacity 220ms cubic-bezier(.2,.8,.2,1),transform 220ms cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.ra-reg-dk .note.on{opacity:1;transform:none}
+.ra-reg-dk .note.off{opacity:0;transform:none;transition:opacity 180ms ease-out}
+.ra-reg-dk .note .ic{flex:none;width:3.2cqw;height:3.2cqw;border-radius:50%;background:#12B76A;display:grid;place-items:center}
+.ra-reg-dk .note .ic svg{width:56%}
+.ra-reg-dk .note .tx{display:flex;flex-direction:column;gap:.35cqw}
+.ra-reg-dk .note b{font-weight:600;font-size:1.5cqw;color:#061B31;line-height:1.2;white-space:nowrap}
+.ra-reg-dk .note .tx span{font-size:1.3cqw;color:#425466;line-height:1.2;white-space:nowrap}
+@media (prefers-reduced-motion:reduce){.ra-reg-dk *{transition:none!important;animation:none!important}}
+</style>
+<div class="card"><div class="win"><div class="tb"><i></i><i></i><i></i><span>app.reganchor.com</span></div>
+<div class="screen"><div class="stage">
+<img class="shell" src="assets/images-page/registry-demo/shell.webp?v=2" alt="">
+<div class="mn"><div class="sc">
+<div class="t0"><img src="assets/images-page/registry-demo/shell.webp?v=2" alt=""></div>
+<div class="t1"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""></div>
+<div class="nr"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""><div class="nm"><b>Credit Risk Scoring Model</b><span>Scores retail credit applications for default risk using bureau and account data.</span></div><div class="pl"><div class="pu"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""></div><span class="rn"><svg viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4.1" fill="none" stroke="#6E62E6" stroke-opacity=".22" stroke-width="1.5"/><path d="M5 .9A4.1 4.1 0 0 1 9.1 5" fill="none" stroke="#6E62E6" stroke-width="1.5" stroke-linecap="round"/></svg>Running</span><div class="pp"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""></div></div></div>
+<div class="rs"><img src="assets/images-page/registry-demo/main1.webp?v=2" alt=""></div>
+<div class="m2" style="top:0;height:1531px"><img src="assets/images-page/registry-demo/main2.webp?v=2" alt=""></div>
+</div></div>
+<div class="mz">
+<img class="f cp-b" data-k="b" src="assets/images-page/registry-demo/r0.webp?v=2" alt="">
+<div class="rm"><i>Export CSV</i><i>Request assessment</i><i class="re">Run evaluation</i><i class="sl">Set lifecycle<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></i><i>Mark retired<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></i><i class="dg">Delete asset</i></div>
+<div class="fy"><i class="h">Planned<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></i><i>Development</i><i>Pilot</i><i class="pd">Production</i></div>
+</div>
+<div class="bt ba" style="left:1323px;top:85.5px;width:78px;--tx:11px;--ty:7px"><b>Add asset</b></div>
+<img class="bd" src="assets/images-page/registry-demo/backdrop.webp?v=2" alt="">
+<div class="dr">
+<img src="assets/images-page/registry-demo/s0.webp?v=2" alt="">
+<div class="dbd"><div class="dsc">
+<img class="sb" src="assets/images-page/registry-demo/s0.webp?v=2" alt="">
+<img class="f cp-s" data-k="s2" src="assets/images-page/registry-demo/s2.webp?v=2" alt="">
+<img class="f cp-s" data-k="s3" src="assets/images-page/registry-demo/s3.webp?v=2" alt="">
+<img class="f cp-p" data-k="p0" src="assets/images-page/registry-demo/p0.webp?v=2" alt="">
+<img class="f cp-p" data-k="p2" src="assets/images-page/registry-demo/p2.webp?v=2" alt="">
+<img class="f cp-m" data-k="m0" src="assets/images-page/registry-demo/m0.webp?v=2" alt="">
+<img class="f cp-m" data-k="m3" src="assets/images-page/registry-demo/m3.webp?v=3" alt="">
+<div class="fx n1" data-t="Credit Risk Scoring Model"><i class="pa"></i><i class="fl"></i><span class="ph">e.g. Customer support agent</span><span class="v"></span><i class="rg"></i></div>
+<div class="fx n2" data-t="Scores retail credit applications for default risk using bureau and account data."><i class="pa"></i><i class="fl"></i><span class="ph">What does this asset do?</span><span class="v"></span><i class="rg"></i></div>
+<div class="gv"><span class="gd" style="top:841.85px">Identify the people accountable for this AI asset.</span><span class="gl" style="top:873.35px">Business owner<em>*</em></span><div class="gs o1" style="top:896.5px"><span class="ph">Select person</span><span class="v"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><span class="gl" style="top:951.35px">Compliance / risk owner</span><div class="gs o2" style="top:974.5px"><span class="ph">Select person</span><span class="v"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><span class="gl" style="top:1029.35px">Technical / model owner</span><div class="gs o3" style="top:1052.5px"><span class="ph">Select person</span><span class="v"></span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div><span class="gl" style="top:1107.85px">Department</span><span class="gl" style="top:1187.15px">Notes</span><div class="gt" style="top:1210px"><span>Any additional context</span><svg viewBox="0 0 8 8"><path d="M7 1 1 7M7 4.5 4.5 7"/></svg></div></div>
+<div class="fx n3" data-t="Credit Risk"><i class="pa"></i><i class="fl"></i><span class="ph">Asset department, e.g. Operations, Risk</span><span class="v"></span><i class="rg"></i></div>
+</div></div>
+<div class="gp d1" style="top:430.5px"><div class="gq"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Find member...</div><i><b>PS</b><span>Priya Shah<small>priya.shah@acme-advisory.com</small></span></i><i><b>TW</b><span>Tom Whitaker<small>tom.whitaker@acme-advisory.com</small></span></i><i><b>HO</b><span>Hannah Okafor<small>hannah.okafor@acme-advisory.com</small></span></i><i><b>DR</b><span>Daniel Reeves<small>daniel.reeves@acme-advisory.com</small></span></i></div><div class="gp d2" style="top:508.5px"><div class="gq"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Find member...</div><i><b>PS</b><span>Priya Shah<small>priya.shah@acme-advisory.com</small></span></i><i><b>TW</b><span>Tom Whitaker<small>tom.whitaker@acme-advisory.com</small></span></i><i><b>HO</b><span>Hannah Okafor<small>hannah.okafor@acme-advisory.com</small></span></i><i><b>DR</b><span>Daniel Reeves<small>daniel.reeves@acme-advisory.com</small></span></i></div><div class="gp d3" style="top:586.5px"><div class="gq"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Find member...</div><i><b>PS</b><span>Priya Shah<small>priya.shah@acme-advisory.com</small></span></i><i><b>TW</b><span>Tom Whitaker<small>tom.whitaker@acme-advisory.com</small></span></i><i><b>HO</b><span>Hannah Okafor<small>hannah.okafor@acme-advisory.com</small></span></i><i><b>DR</b><span>Daniel Reeves<small>daniel.reeves@acme-advisory.com</small></span></i></div>
+<div class="bt bg" style="left:355.5px;top:841.5px;width:101px;--tx:11px;--ty:7.5px"><b>Register asset</b></div>
+</div>
+</div></div></div><div class="note" aria-hidden="true"><span class="ic"><svg viewBox="0 0 12 12"><path d="M2.5 6.3l2.3 2.2 4.7-5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tx"><b></b><span></span></span></div></div>
+<script>(function(){
+var root=document.currentScript.parentNode,st=root.querySelector('.stage'),sc=root.querySelector('.screen'),NT=root.querySelector('.note');
+var M2=root.querySelector('.m2'),PL=root.querySelector('.pl'),FX=[].slice.call(root.querySelectorAll('.fx')),BA=root.querySelector('.ba'),BG=root.querySelector('.bg');
+var DSC=root.querySelector('.dsc'),OS=[].slice.call(root.querySelectorAll('.gs')),OD=[].slice.call(root.querySelectorAll('.gp'));
+var RM=root.querySelector('.rm'),FY=root.querySelector('.fy'),IRE=RM.querySelector('.re'),ISL=RM.querySelector('.sl'),IPD=FY.querySelector('.pd');
+var mob={matches:false},reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// camera rects [x, y, width] in 1440x900 app px. ev/work/end keep the asset name in frame.
+var CAM={d:{list:[0,0,760],add:[680,0,760],dtop:[900,0,540],dmid:[850,400,590],dlow:[566,360,874],ev:[258,150,980],wk:[740,198,700],end:[258,150,920]},
+         m:{list:[262,0,620],add:[880,0,560],dtop:[946,0,480],dmid:[946,200,480],dlow:[946,276,480],ev:[258,0,760],wk:[870,150,550],end:[258,0,870]}};
+var shot='list';
+// phones show a taller slice of the page (the table continues below the 900px desktop fold)
+function cam(n,instant,ms){shot=n;var r=CAM[mob.matches?'m':'d'][n],W=sc.clientWidth,H=sc.clientHeight,s=W/r[2],y=Math.max(0,Math.min(r[1],(mob.matches?1361:900)-H/s));
+ st.style.transition=instant?'none':ms?'transform '+ms+'ms var(--cam)':'';
+ st.style.transform='scale('+s+') translate('+(-r[0])+'px,'+(-y)+'px)';
+ if(instant){st.offsetWidth;st.style.transition=''}}
+addEventListener('resize',function(){cam(shot,true)});
+function snap(el,fn){el.style.transition='none';fn();el.offsetWidth;el.style.transition=''}
+// frame decks (drawer selects): hover swaps in one paint; opening fades + settles; closing fades out
+function deck(box,sel,z0){var F={},cur=null;
+ [].slice.call(box.querySelectorAll(sel)).forEach(function(i){F[i.getAttribute('data-k')]=i;i.style.zIndex=z0});
+ function show(k,mode){var n=k?F[k]:null,p=cur;cur=n;
+  if(n){n.classList.remove('out');if(mode==='in'){n.classList.remove('in');n.classList.add('pre');n.offsetWidth;n.classList.add('in','on');n.classList.remove('pre')}else{n.classList.remove('in');n.classList.add('on')}}
+  if(p&&p!==n){p.classList.remove('in');if(mode==='out'||(!n&&mode!=='cut')){p.classList.add('out')}p.classList.remove('on')}}
+ show.clear=function(){for(var k in F){F[k].classList.remove('on','in','out','pre')}cur=null};return show}
+var dr=root.querySelector('.dr'),mz=root.querySelector('.mz');
+var D=deck(dr,'.cp-p,.cp-m',20),S=deck(dr,'.cp-s',10),ZB=deck(mz,'.cp-b',3);
+var T=[];function at(ms,fn){T.push(setTimeout(fn,ms))}
+function btn(el,t0){at(t0,function(){el.classList.add('hv')});at(t0+200,function(){el.classList.add('ac')});at(t0+330,function(){el.classList.remove('ac')});}
+function type(i,t0,step){var el=FX[i],s=el.getAttribute('data-t'),v=el.querySelector('.v');
+ at(t0,function(){el.classList.add('fo')});
+ for(var j=0;j<=s.length;j++)(function(j){at(t0+220+j*step+Math.floor(j/7)*18,function(){
+  if(j===0){el.classList.add('typing')}
+  if(j>0)el.classList.add('has');v.textContent=s.slice(0,j);v.appendChild(document.createElement('u'))})})(j);
+ var end=t0+220+s.length*step+Math.floor(s.length/7)*18+60;at(end,function(){el.classList.remove('typing')});return end}
+// one toast at a time, bottom-right of the card (the key row sits at the top of every shot)
+function note(t,sub,life){var n=NT.cloneNode(true);n.querySelector('b').textContent=t;n.querySelector('.tx span').textContent=sub;NT.parentNode.appendChild(n);
+ n.offsetWidth;n.classList.add('on');at(life,function(){n.classList.add('off');n.classList.remove('on');at(260,function(){n.remove()})})}
+// owner select: open listbox, hover the person, pick (same rhythm as the provider/model picks)
+function pick(i,k,t0){var r=OD[i].querySelectorAll('i')[k];
+ at(t0,function(){OS[i].classList.add('fo');OD[i].classList.add('on')});
+ at(t0+210,function(){r.classList.add('h')});
+ at(t0+380,function(){OD[i].classList.remove('on');OS[i].classList.remove('fo');OS[i].classList.add('has');OS[i].querySelector('.v').textContent=r.querySelector('span').firstChild.nodeValue});
+ at(t0+520,function(){r.classList.remove('h')})}
+function menu(on){if(on){ZB('b','cut');RM.classList.add('on')}else{RM.classList.remove('on');FY.classList.remove('on');ZB(null,'cut')}}
+function reset(){root.classList.remove('open','ins');D.clear();S.clear();ZB.clear();
+ [RM,FY,M2].forEach(function(e){snap(e,function(){e.classList.remove('on')})});
+ [].slice.call(root.querySelectorAll('.rm>i,.fy>i')).forEach(function(i){i.classList.remove('h')});FY.firstChild.classList.add('h');
+ [].slice.call(PL.children).forEach(function(e){snap(e,function(){PL.classList.remove('run','ok')})});
+ FX.forEach(function(e){e.classList.remove('fo','has','typing');e.querySelector('.v').textContent=''});
+ snap(DSC,function(){DSC.classList.remove('dn')});OS.forEach(function(e){snap(e,function(){e.classList.remove('fo','has')});e.querySelector('.v').textContent=''});
+ OD.forEach(function(e){snap(e,function(){e.classList.remove('on')});[].slice.call(e.querySelectorAll('i')).forEach(function(i){i.classList.remove('h')})});
+ [BA,BG].forEach(function(b){snap(b,function(){b.classList.remove('hv','ac')})});
+ [].slice.call(root.querySelectorAll('.note')).forEach(function(n){if(n!==NT)n.remove()})}
+function run(){T.forEach(clearTimeout);T=[];reset();cam('list',true);
+ // 1. register: Add asset -> type name + description -> provider -> model -> Register asset
+ at(150,function(){cam('add',false,750)});
+ btn(BA,760);
+ at(1100,function(){BA.classList.remove('hv');root.classList.add('open');cam('dtop',false,800)});
+ var t=type(0,1400,20);
+ at(t+120,function(){FX[0].classList.remove('fo')});
+ t=type(1,t+140,5);
+ at(t+60,function(){FX[1].classList.remove('fo');cam('dmid',false,700)});
+ t+=640;at(t,function(){D('p0','in')});at(t+210,function(){D('p2')});at(t+380,function(){S('s2');D(null,'out')});
+ t+=480;at(t,function(){D('m0','in')});at(t+210,function(){D('m3')});at(t+380,function(){S('s3');D(null,'out')});
+ // one smooth scroll past the classification fields to Governance owners -> Register asset
+ t+=440;at(t,function(){DSC.classList.add('dn');cam('dlow',false,950)});
+ t+=950;pick(0,1,t);
+ t+=480;pick(1,0,t);
+ t+=480;pick(2,3,t);
+ t=type(2,t+480,20);
+ t+=100;at(t,function(){FX[2].classList.remove('fo')});btn(BG,t);
+ // 2. drawer closes, row lands Untested
+ at(t+340,function(){BG.classList.remove('hv');root.classList.remove('open');cam('ev',false,900)});
+ at(t+1080,function(){root.classList.add('ins')});
+ at(t+1300,function(){note('Asset registered','Credit Risk Scoring Model',1200)});
+ // 3. one zoom onto the row; everything below happens in this single static frame
+ t+=1700;at(t,function(){cam('wk',false,850)});
+ // Run evaluation -> Running -> Passed
+ t+=800;at(t,function(){menu(true)});
+ at(t+330,function(){IRE.classList.add('h')});
+ at(t+560,function(){menu(false)});
+ at(t+660,function(){IRE.classList.remove('h');PL.classList.add('run')});
+ t+=660+1200;at(t,function(){PL.classList.add('ok')});
+ at(t+200,function(){note('Evaluation passed','12 of 12 checks passed',1250)});
+ // 4. only then: Set lifecycle -> Production
+ t+=1550;at(t,function(){menu(true)});
+ at(t+330,function(){ISL.classList.add('h');FY.classList.add('on')});
+ at(t+640,function(){FY.firstChild.classList.remove('h');IPD.classList.add('h')});
+ at(t+880,function(){menu(false);M2.classList.add('on')});
+ at(t+980,function(){ISL.classList.remove('h');IPD.classList.remove('h');FY.firstChild.classList.add('h')});
+ at(t+1080,function(){note('Moved to Production','Credit Risk Scoring Model',1550)});
+ // 5. hold, then one pull back to the opening frame while the row slides out
+ t+=2850;at(t,function(){cam('list',false,1100)});
+ at(t+200,function(){root.classList.remove('ins');M2.classList.remove('on')});
+ at(t+1150,run)}
+function still(){reset();cam('end',true);root.classList.add('ins');PL.classList.add('ok');M2.classList.add('on')}
+function go(){var im=[].slice.call(root.querySelectorAll('img'));Promise.all(im.map(function(i){return i.decode?i.decode().catch(function(){}):0})).then(function(){return document.fonts?Promise.all([document.fonts.load('400 13px "RA Inter"'),document.fonts.load('500 13px "RA Inter"'),document.fonts.load('600 11px "RA Inter"')]).catch(function(){}):0}).then(function(){requestAnimationFrame(reduce?still:run)})}
+cam('list',true);
+if(!('IntersectionObserver' in window)){go();return}
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&e.intersectionRatio>=.4){io.disconnect();go()}})},{threshold:[.4],rootMargin:'0px 0px -8% 0px'});io.observe(root);
+})();</script>
+</div></div>
+<!-- END TEMP: mobile desktop-framing comparison -->
   </div>
 </section>
 
