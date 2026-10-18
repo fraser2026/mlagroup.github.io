@@ -8,7 +8,7 @@
 <meta name="description" content="A closer look at RegAnchor: the AI registry, assessments, the MLA policy assistant and board-ready dossiers.">
 <link rel="canonical" href="https://reganchor.com/pages.html">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500&family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="js/ra-contact.js"></script>
 <style>
 :root{--navy:#0A0E14;--body:#374151;--muted:#6B7280;--purple:#533AFD;--purple-d:#4434E0;--border:#E4E7EC;--pale:#F6F9FC;--hover:rgba(17,17,17,.028);--max:1200px;--radius:4px;--ease:cubic-bezier(.2,.7,.2,1)}
@@ -19,13 +19,6 @@ a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%;height:auto}
 .wrap{max-width:var(--max);margin:0 auto;padding:0 32px}
 /* nav */
-.nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.82);backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid transparent;transition:border-color .2s}
-.nav.scrolled{border-bottom-color:var(--border)}
-.nav .wrap{height:64px;display:flex;align-items:center;justify-content:space-between}
-.nav .logo img{height:30px;width:auto}
-.nav-right{display:flex;align-items:center;gap:8px}
-.nav-signin{display:inline-flex;align-items:center;justify-content:center;padding:9px 18px;font-size:.85rem;font-weight:500;line-height:1;color:var(--navy);background:#fff;border:1px solid var(--border);border-radius:var(--radius);transition:border-color .18s,background .18s,color .18s}
-.nav-signin:hover,.nav-signin:focus-visible{border-color:var(--purple);background:var(--hover);color:var(--purple);outline:none}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;padding:14px 26px;border:1px solid transparent;border-radius:var(--radius);font-size:.9rem;font-weight:500;line-height:1;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
 .btn svg{transition:transform .18s var(--ease)}
 .btn:hover svg{transform:translateX(3px)}
@@ -41,13 +34,8 @@ h2{font-size:36px;line-height:1.15;font-weight:600;letter-spacing:-.02em;color:v
 .sub{font-size:1.1rem;line-height:1.7;color:var(--body)}
 .caption{font-size:13px;color:var(--muted)}
 /* hero */
-.hero{padding:112px 0 72px;text-align:center}
-.hero .eyebrow{margin-bottom:20px}
-.hero h1{max-width:760px;margin:0 auto 20px}
-.hero h1 span{display:inline-block}
 .btn:hover svg.dn{transform:translateY(2px)}
 #registry{scroll-margin-top:64px}
-.hero .sub{max-width:580px;margin:0 auto 36px}
 .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 /* features */
 .feature{padding:88px 0}
@@ -152,8 +140,6 @@ button.btn{font-family:inherit;cursor:pointer}
 @media (max-width:600px){
   .wrap{padding:0 20px}
   h1{font-size:38px}h2{font-size:26px}.sub{font-size:1rem}
-  .hero{padding:72px 0 40px}
-  .hero h1{font-size:min(38px,calc((100vw - 40px) / 10.6))}
   .feature{padding:64px 0}
   .nav-signin{display:none}
   .ctas .btn{width:100%}
@@ -171,11 +157,88 @@ button.btn{font-family:inherit;cursor:pointer}
   .lb{padding:12px}.shot .zoom{display:none}
 }
 </style>
+<style>
+/* ===== New style (fractile-style system): floating header, hero (+ registry lead-in) ===== */
+:root{--paper:#F7F6F4;--pill:#EEEEF1;--glass-rest:rgba(238,238,241,.94);--glass:rgba(246,246,248,.64);--ink:#0A0E14;--ink-2:#3D4350;--ink-3:#6A6F7A;--on-dark:#F7F6F4;--on-dark-2:rgba(247,246,243,.72);--display:"Inter Tight",Inter,system-ui,sans-serif;--x-max:1136px;--x-gutter:32px;--h-max:1328px;--h-gutter:56px;--x-ease:cubic-bezier(.23,1,.32,1)}
+/* floating header */
+.nav{position:fixed;inset:32px 0 auto;z-index:20;pointer-events:none}
+.nav .bar{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;width:min(100% - 2*var(--h-gutter),var(--h-max));margin:0 auto;padding:6px;border-radius:8px;background:var(--glass-rest);border:1px solid rgba(10,14,20,.04);-webkit-backdrop-filter:saturate(1.8) blur(20px);backdrop-filter:saturate(1.8) blur(20px);transition:background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
+.nav.scrolled .bar{background:var(--glass);border-color:rgba(10,14,20,.07);box-shadow:0 1px 2px rgba(10,14,20,.04),0 12px 32px -14px rgba(10,14,20,.20)}
+.nav .logo{display:flex;align-items:center;padding-left:12px}
+.nav .logo img{height:18px;width:auto}
+.nav-right{display:flex;align-items:center;gap:4px}
+.nav-signin{display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:6px;font:500 14px/1 Inter,system-ui,sans-serif;color:var(--ink);transition:background-color .2s}
+.nav-signin:hover,.nav-signin:focus-visible{background:rgba(10,14,20,.05);outline:none}
+.nav .btn{height:40px;padding:0 16px;border-radius:6px;font-size:14px;letter-spacing:-.005em}
+/* hero: matches the mock (mock/index.html v2) sizing, spacing and proportions */
+.hero{position:relative;overflow:hidden;background:var(--paper)}
+.hwrap{width:min(100% - 2*var(--h-gutter),var(--h-max));margin:0 auto}
+.hero .dots{position:absolute;right:-180px;top:-140px;width:1150px;height:460px;transform:rotate(-15deg);transform-origin:top right;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect x='3' y='3' width='14' height='14' rx='3' fill='%23C9C9C5'/%3E%3C/svg%3E");
+  background-size:22px 22px;opacity:.095;
+  -webkit-mask-image:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%);mask-image:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%)}
+.hero .intro{position:relative;z-index:1;display:grid;grid-template-columns:repeat(20,1fr);column-gap:16px;align-items:end;padding:264px 0 144px}
+.hero h1{grid-column:1/14;font:300 80px/1.04 var(--display);letter-spacing:-.022em;color:var(--ink)}
+.hero-side{grid-column:15/20;display:flex;flex-direction:column;gap:24px;max-width:272px}
+.hero .lede{max-width:272px;font:400 16px/1.4 Inter,system-ui,sans-serif;letter-spacing:-.005em;color:var(--ink)}
+.hero .btn-ink{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 16px;border:0;border-radius:6px;background:var(--ink);color:var(--on-dark);font:500 14px/1 Inter,system-ui,sans-serif;letter-spacing:-.005em;transition:opacity .8s var(--ease),transform .8s var(--ease),background-color .2s}
+.hero .btn-ink svg{width:12px;height:12px}
+.hero .btn-ink:hover,.hero .btn-ink:focus-visible{background:#1B2130}
+/* registry: the live demo leads straight out of the hero (on the same paper), its copy moves below it */
+#registry{background:var(--paper);padding:0 0 120px}
+#registry .wrap{display:flex;flex-direction:column;align-items:stretch}
+#registry .wrap>.reveal.d1{transition-delay:0s}
+#registry .copy{display:grid;grid-template-columns:repeat(20,1fr);column-gap:16px;margin-top:64px}
+#registry .copy .eyebrow{grid-column:1/10;grid-row:1}
+#registry .copy h2{grid-column:1/10;grid-row:2;margin:0}
+#registry .copy>p:not(.eyebrow){grid-column:12/21;grid-row:1/3;max-width:none;margin:0 0 28px}
+#registry .copy .checks{grid-column:12/21;grid-row:3}
+#registry .wrap>div:not(.copy){order:-1;margin:0}
+@media (max-width:820px){
+  :root{--h-gutter:16px}
+  .nav{inset:16px 0 auto;padding:0 16px}
+  .nav-signin{display:none}
+  .nav .bar{width:100%}
+  .nav .logo img{height:17px}
+  .hero .dots{right:-560px;top:-60px}
+  .hero .intro{display:flex;flex-direction:column;align-items:flex-start;gap:32px;padding:152px 0 96px}
+  .hero h1{font-size:48px;line-height:1.04;letter-spacing:-.02em}
+  .hero-side{max-width:290px;gap:24px}
+  .hero .lede{font-size:15px}
+  #registry{padding-bottom:80px}
+  #registry .wrap{width:min(100% - 2*var(--h-gutter),var(--h-max));max-width:none;padding:0}
+  #registry .copy{display:block;margin-top:40px}
+  #registry .copy .eyebrow{margin-bottom:14px}
+  #registry .copy h2{margin-bottom:16px}
+}
+@media (max-width:600px){:root{--x-gutter:20px}}
+/* header over the dark footer: switch to a dark glass so it never reads as muddy grey */
+.nav.on-dark .bar{background:rgba(26,30,40,.58);border-color:rgba(247,246,244,.10);box-shadow:0 12px 32px -14px rgba(0,0,0,.5)}
+.nav .logo img{transition:filter .3s var(--x-ease)}
+.nav.on-dark .logo img{filter:invert(1) grayscale(1) brightness(.97)}
+.nav.on-dark .nav-signin{color:var(--on-dark)}
+.nav.on-dark .nav-signin:hover,.nav.on-dark .nav-signin:focus-visible{background:rgba(247,246,244,.08)}
+/* desktop header: narrower, centred bar with fractile.ai's proportions (539x52 at top:32, 6px inset, 40px items, 16px item padding) */
+@media (min-width:821px){
+  .nav .bar{width:540px;max-width:calc(100% - 2*var(--h-gutter));height:52px;padding:5px}
+  .nav .logo{padding-left:16px}
+  .nav-signin{padding:0 16px}
+}
+/* desktop headline: same visual size as fractile.ai's (80px, line-height 1.06 = 84.8px; tracking set so word runs match Catalogue's +0.02em) */
+@media (min-width:821px){
+  .hero h1{font-size:clamp(60px,7.8vw,80px);line-height:1.06;letter-spacing:.01em;text-wrap:pretty}
+  .hero h1 .nw{white-space:nowrap} /* never leave 'arrives' alone on the last line */
+  /* Start assessment: fractile-level clarity (40px, 0 16px, 14px/500, no negative tracking, pure white text, firmer chevron pushed right) */
+  .hero .btn-ink{gap:32px;color:#fff;letter-spacing:0;text-rendering:optimizeLegibility}
+  .hero .btn-ink svg{width:13px;height:13px}
+  .hero .btn-ink svg path{stroke-width:1.9}
+}
+</style>
 </head>
 <body>
 
 <header class="nav" id="nav">
-  <div class="wrap">
+  <div class="bar">
     <a href="index.html" class="logo" aria-label="RegAnchor home"><img src="brand/wordmark-text.svg?v=a3" alt="RegAnchor" width="193" height="36"></a>
     <div class="nav-right">
       <a href="https://app.reganchor.com/login" class="nav-signin">Sign in</a>
@@ -187,13 +250,12 @@ button.btn{font-family:inherit;cursor:pointer}
 <main>
 <!-- ============ COPY: HERO ============ -->
 <section class="hero">
-  <div class="wrap">
-    <p class="eyebrow reveal">AI Governance &amp; Assurance</p>
-    <h1 class="reveal d1"><span>Governance for AI.</span> <span>Evidenced end to end.</span></h1>
-    <p class="sub reveal d2">Register AI systems, map regulatory obligations, and build audit-ready evidence for your board and regulators.</p>
-    <div class="ctas reveal d2">
-      <a href="contact.html" class="btn btn-primary" data-open-demo>Book a demo <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      <a href="#registry" class="btn btn-secondary">Explore the platform <svg class="dn" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 3v8M3 7l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <div class="dots" aria-hidden="true"></div>
+  <div class="hwrap intro">
+    <h1 class="reveal">Evidence your AI governance before <span class="nw">scrutiny arrives</span></h1>
+    <div class="hero-side">
+      <p class="lede reveal d1">Build audit-ready evidence for your board, procurement and regulators.</p>
+      <a href="diagnostic.html" class="btn-ink reveal d2">Start assessment <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
     </div>
   </div>
 </section>
@@ -1250,6 +1312,12 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
     };
   }
 })();
+</script>
+<script>
+/* header: dark glass while it floats over the footer */
+(function(){var n=document.getElementById('nav'),f=document.querySelector('.site-footer');if(!n||!f)return;var t=0;
+function u(){t=0;var b=n.querySelector('.bar').getBoundingClientRect();n.classList.toggle('on-dark',f.getBoundingClientRect().top<b.top+b.height/2)}
+addEventListener('scroll',function(){if(!t)t=requestAnimationFrame(u)},{passive:true});addEventListener('resize',u);u()})();
 </script>
 </body>
 </html>
