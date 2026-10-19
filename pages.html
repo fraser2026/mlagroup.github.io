@@ -392,15 +392,18 @@ var phase=0,lastT=0,vis=false,raf=0,target=0;
 function flow(dt){phase+=dt*.012; // 12px per second on every path
  M.steps.forEach(function(S){S.lines.forEach(function(p){p.setAttribute('stroke-dashoffset',(p._b-phase%p._P).toFixed(3))})})}
 function measure(){var vh=innerHeight,r=dg.getBoundingClientRect();
- if(M.H){ // desktop: finish lighting while the whole diagram is on screen; once lit it stays lit until the diagram drops back below the start point
-  var t0=vh*.95,t1=Math.max(vh-24-r.height,vh*.55-r.height/2);if(t1>t0-160)t1=t0-160; // end = bottom fully in view or centre at 55%, whichever comes first
-  var raw=Math.max(0,Math.min(1,(t0-r.top)/(t0-t1)));target=r.top>=t0?raw:Math.max(target,raw)}
+ if(M.H){ // desktop: progress is a pure function of scroll (reversible). The usable space is from the floating header's bottom edge to the bottom of the window;
+  // the whole left-to-right sequence runs in a short window (30% of vh, 160-320px) that starts with ~80% of the diagram on screen and ends with all of it inside that space
+  var nb=document.querySelector('#nav .bar'),hb=nb?nb.getBoundingClientRect().bottom:84,dh=r.height,W=Math.max(160,Math.min(320,vh*.3)),tS,tE;
+  if(vh-hb-8>=dh){tS=vh-dh*.8;tE=Math.max(hb+8,tS-W);if(tS-tE<120)tS=tE+120} // fully lit while its top is still below the header and its bottom is on screen
+  else{tE=hb;tS=tE+W} // space shorter than the diagram: end as its top reaches the header's bottom edge
+  target=Math.max(0,Math.min(1,(tS-r.top)/(tS-tE)))}
  else target=(vh*.62-r.top)/M.sc; // mobile: steps light as they cross a reading line at 62% of the viewport
  if(words.length){var sr=st.getBoundingClientRect(),a=vh*.92,b=vh*.36,ws=Math.max(0,Math.min(1,(a-sr.top)/(a-b))),n=words.length;
    words.forEach(function(w,i){var l=Math.max(0,Math.min(1,(ws*(n+3)-i)/3)),o=+(.24+.76*l*l*(3-2*l)).toFixed(3);if(o!==w._o){w._o=o;w.style.opacity=o}})}}
 function ksFor(v){return M.steps.map(function(S,i){return M.H?(v*7.6-i):(v-S.y0)/Math.max(1,S.y1-S.y0)})} // desktop: seven steps in sequence; mobile: by position
 function tick(t){raf=0;var dt=lastT?Math.min(64,t-lastT):16;lastT=t;
- if(M.cur==null)M.cur=target;M.cur+=(target-M.cur)*(1-Math.exp(-dt/160));if(Math.abs(target-M.cur)<(M.H?.0005:.3))M.cur=target; // eased, reversible follow
+ if(M.cur==null)M.cur=target;M.cur+=(target-M.cur)*(1-Math.exp(-dt/(M.H?70:160))); /* desktop: light 70ms smoothing so it feels attached to the scroll */if(Math.abs(target-M.cur)<(M.H?.0005:.3))M.cur=target; // eased, reversible follow
  paint(ksFor(M.cur));flow(dt);
  if(vis)raf=requestAnimationFrame(tick);else lastT=0}
 function kick(){if(reduce||!M)return;measure();if(!raf&&vis)raf=requestAnimationFrame(tick)}
