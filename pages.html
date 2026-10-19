@@ -8,7 +8,7 @@
 <meta name="description" content="A closer look at RegAnchor: the AI registry, assessments, the MLA policy assistant and board-ready dossiers.">
 <link rel="canonical" href="https://reganchor.com/pages.html">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500&family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500&family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="js/ra-contact.js"></script>
 <style>
 :root{--navy:#0A0E14;--body:#374151;--muted:#6B7280;--purple:#533AFD;--purple-d:#4434E0;--border:#E4E7EC;--pale:#F6F9FC;--hover:rgba(17,17,17,.028);--max:1200px;--radius:4px;--ease:cubic-bezier(.2,.7,.2,1)}
@@ -285,6 +285,133 @@ button.btn{font-family:inherit;cursor:pointer}
     </div>
   </div>
 </section>
+
+<!-- ============ COPY: MISSION + SYSTEM MODEL (black band; cards brighten as you scroll; dashed lines stream continuously) ============ -->
+<style>
+#mission{--ms-fg:#F7F6F4;--ms-fg3:rgba(247,246,244,.42);--ms-card:#0B0B0C;--ms-head:#121214;--ms-rule:rgba(247,246,244,.07);--ms-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  position:relative;overflow:hidden;background:#000;color:var(--ms-fg)}
+#mission .ms-dots{position:absolute;right:-180px;top:-140px;width:1150px;height:460px;transform:rotate(-15deg);transform-origin:top right;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect x='3' y='3' width='14' height='14' rx='3' fill='%23FFFFFF'/%3E%3C/svg%3E");background-size:22px 22px;opacity:.05;
+  -webkit-mask-image:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%);mask-image:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%)}
+#mission .ms-wrap{position:relative;z-index:1;width:min(100% - 2*var(--h-gutter,56px),var(--h-max,1328px));margin:0 auto;padding:168px 0 160px}
+#mission .ms-statement{margin:0;font:300 64px/1.06 var(--display,"Inter Tight",Inter,sans-serif);letter-spacing:.005em;color:var(--ms-fg);max-width:1180px;text-wrap:balance}
+#mission .ms-statement .w{will-change:opacity}
+#mission .ms-dg{position:relative;margin-top:136px;height:426px}
+#mission .ms-dg svg{position:absolute;left:0;top:0;overflow:visible}
+#mission .ms-card{position:absolute;background:var(--ms-card);border:1px solid rgba(247,246,244,.055);border-radius:8px;overflow:hidden}
+#mission .ms-card .ring{position:absolute;inset:-1px;border:1px solid rgba(247,246,244,.105);border-radius:8px;pointer-events:none;z-index:2}
+#mission .ms-card .in{position:relative;z-index:1}
+#mission .ms-card .hd{position:relative;display:flex;align-items:center;gap:12px;height:52px;padding:0 20px;background:#0E0E10;border-bottom:1px solid var(--ms-rule)}
+#mission .ms-card .hd:before{content:"";position:absolute;inset:0;background:var(--ms-head);opacity:var(--k,1)}
+#mission .ms-card .hd i,#mission .ms-card .hd b{position:relative}
+#mission .ms-card .hd i{font:400 13px/1 var(--ms-mono);font-style:normal;color:var(--ms-fg3);font-variant-numeric:tabular-nums}
+#mission .ms-card .hd b{font:500 16px/1 Inter,sans-serif;letter-spacing:-.006em;color:var(--ms-fg)}
+#mission .ms-card .r{display:flex;align-items:center;height:44px;padding:0 20px;font:400 16px/1 Inter,sans-serif;letter-spacing:-.004em;color:rgba(247,246,244,.70)}
+#mission .ms-card .r+.r{border-top:1px solid var(--ms-rule)}
+#mission .ms-cap{margin:64px 0 0;text-align:center;text-wrap:balance;font:400 15px/1.5 Inter,sans-serif;color:var(--ms-fg3)}
+#mission~#registry{padding-top:120px} /* the registry demo used to lead straight out of the hero on paper; give it air after the band */
+@media (max-width:820px){
+  #mission .ms-wrap{padding:112px 0 104px}
+  #mission .ms-dots{right:-220px;top:-40px;width:820px;height:440px;opacity:.07}
+  #mission .ms-statement{font-size:32px;line-height:1.1;letter-spacing:0}
+  #mission .ms-dg{margin-top:72px;height:824px}
+  #mission .ms-cap{margin-top:40px}
+  #mission .ms-card .hd{height:48px;padding:0 16px}#mission .ms-card .hd b{font-size:15px}
+  #mission .ms-card .r{height:40px;padding:0 16px;font-size:15px}
+  #mission~#registry{padding-top:80px}
+}
+</style>
+<section class="ms" id="mission" data-nav-dark aria-labelledby="ms-statement">
+  <div class="ms-dots" aria-hidden="true"></div>
+  <div class="ms-wrap">
+    <h2 class="ms-statement" id="ms-statement">We provide the infrastructure for enterprises under regulatory scrutiny to radically accelerate responsible&nbsp;AI.</h2>
+    <div class="ms-dg" id="ms-dg" role="img" aria-label="Registry and Risk feed Governance, which feeds Assurance and Monitoring, which feed Outputs."></div>
+    <p class="ms-cap">Between the enterprise and the frontier models it runs on.</p>
+  </div>
+</section>
+<script>
+(function(){
+var sec=document.getElementById('mission'),dg=document.getElementById('ms-dg');if(!sec||!dg)return;
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,NS='http://www.w3.org/2000/svg';
+var C=[
+ {n:'01',t:'Registry',rows:['Systems','Agents','Owners']},
+ {n:'02',t:'Risk',rows:['Initial','Residual','Classification']},
+ {n:'03',t:'Governance',rows:['Controls','Policies','Evidence']},
+ {n:'04',t:'Assurance',rows:['Testing','Validation','Evals']},
+ {n:'05',t:'Monitoring',rows:['Gateway','Usage','Connectors']},
+ {n:'06',t:'Outputs',rows:['Dossier','Audit links','API']}];
+/* mission words: faint -> solid, scroll-linked */
+var st=document.getElementById('ms-statement'),words=[];
+if(!reduce){st.innerHTML=st.innerHTML.split(' ').map(function(w){return '<span class="w">'+w+'</span>'}).join(' ');words=[].slice.call(st.querySelectorAll('.w'));words.forEach(function(w){w.style.opacity=.24;w._o=.24})}
+var M=null; // 7 steps in flow order: pair, merge, Governance, split, pair, merge, Outputs
+function build(){
+ dg.innerHTML='';var H=innerWidth>820,DW=dg.clientWidth,W=H?Math.max(DW,1328):DW,sc=H?DW/W:1; // desktop geometry is fixed at 1328 and scales uniformly on narrower laptops
+ var HD=H?52:48,ROW=H?44:40,hOf=function(c){return HD+ROW*c.rows.length+2};
+ var cv=document.createElement('div');dg.appendChild(cv);
+ var svg=document.createElementNS(NS,'svg');cv.appendChild(svg);
+ var steps=[];for(var i=0;i<7;i++)steps.push({cards:[],lines:[],y0:0,y1:0,k:-1});
+ function card(c,x,y,w,s){var d=document.createElement('div');d.className='ms-card';
+   d.innerHTML='<div class="ring"></div><div class="in"><div class="hd"><i>'+c.n+'</i><b>'+c.t+'</b></div>'+c.rows.map(function(r){return '<div class="r">'+r+'</div>'}).join('')+'</div>';
+   d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+hOf(c)+'px';cv.appendChild(d);
+   var S=steps[s];S.cards.push({el:d,ring:d.firstChild,inn:d.lastChild});if(!S.y1){S.y0=y;S.y1=y+Math.min(hOf(c),96)}}
+ /* each connection is ONE vector path, card to card: straights joined by r8 arcs, one dash pattern, one dashoffset, so dashes bend round corners.
+    Merging/splitting branches are mirrored full paths that share the trunk exactly (same length, same phase); strokes are opaque greys, so the shared trunk never doubles up.
+    The 12px dash period is stretched per path (<3%) to fit a whole number of periods. */
+ function rp(pts,r){var d='M'+pts[0][0]+' '+pts[0][1];for(var i=1;i<pts.length-1;i++){var a=pts[i-1],b=pts[i],c=pts[i+1],ux=Math.sign(b[0]-a[0]),uy=Math.sign(b[1]-a[1]),vx=Math.sign(c[0]-b[0]),vy=Math.sign(c[1]-b[1]);
+   d+='L'+(b[0]-ux*r)+' '+(b[1]-uy*r)+'A'+r+' '+r+' 0 0 '+(ux*vy-uy*vx>0?1:0)+' '+(b[0]+vx*r)+' '+(b[1]+vy*r)}var e=pts[pts.length-1];return d+'L'+e[0]+' '+e[1]}
+ function line(pts,s,y0,y1){var p=document.createElementNS(NS,'path');p.setAttribute('d',rp(pts,8));p.setAttribute('fill','none');p.setAttribute('stroke-width','1.5');p.setAttribute('stroke-linecap','round');p.setAttribute('shape-rendering','geometricPrecision');svg.appendChild(p);
+   var len=p.getTotalLength(),n=Math.max(1,Math.round(len/12)),P=len/n,da=P*5/12;p._P=P;p._b=da+(P-da)/2;p.setAttribute('stroke-dasharray',da.toFixed(4)+' '+(P-da).toFixed(4));p.setAttribute('stroke-dashoffset',p._b.toFixed(3));
+   steps[s].lines.push(p);if(y0!=null){steps[s].y0=y0;steps[s].y1=y1}}
+ var total,w,g,h;
+ if(H){
+  w=260;g=96;h=hOf(C[0]);var sep=54,off=sep/2+h/2,ax=h+sep/2,hg=g/2,col=function(i){return i*(w+g)}; // 1328 = 4*260 + 3*96; off 120 and hg 48 are whole dash periods
+  card(C[0],col(0),0,w,0);card(C[1],col(0),h+sep,w,0);card(C[2],col(1),ax-h/2,w,2);card(C[3],col(2),0,w,4);card(C[4],col(2),h+sep,w,4);card(C[5],col(3),ax-h/2,w,6);
+  var merge=function(x,s){[-1,1].forEach(function(m){line([[x,ax+m*off],[x+hg,ax+m*off],[x+hg,ax],[x+g,ax]],s)})};
+  var split=function(x,s){[-1,1].forEach(function(m){line([[x,ax],[x+hg,ax],[x+hg,ax+m*off],[x+g,ax+m*off]],s)})};
+  merge(col(0)+w,1);split(col(1)+w,3);merge(col(2)+w,5);total=2*h+sep;
+ }else{
+  w=166;g=26;h=hOf(C[0]);var cx=W/2,dx=(w+g)/2,y=0; // pairs side by side (166+26+166 = 358), centres 96 = 8 periods off the centre line
+  var pair=function(i,s){card(C[i],cx-dx-w/2,y,w,s);card(C[i+1],cx+dx-w/2,y,w,s);y+=h};
+  var single=function(i,s){card(C[i],cx-W/2,y,W,s);y+=h};
+  var mergeV=function(s){[-1,1].forEach(function(m,j){line([[cx+m*dx,y],[cx+m*dx,y+24],[cx,y+24],[cx,y+48]],s,j?null:y,y+48)});y+=48};
+  var splitV=function(s){[-1,1].forEach(function(m,j){line([[cx,y],[cx,y+24],[cx+m*dx,y+24],[cx+m*dx,y+48]],s,j?null:y,y+48)});y+=48};
+  pair(0,0);mergeV(1);single(2,2);splitV(3);pair(3,4);mergeV(5);single(5,6);total=y;
+ }
+ svg.setAttribute('width',W);svg.setAttribute('height',total);
+ cv.style.cssText='position:relative;width:'+W+'px;height:'+total+'px'+(sc<1?';transform:scale('+sc+');transform-origin:0 0':'');dg.style.height=Math.round(total*sc)+'px';
+ M={H:H,steps:steps,sc:sc,cur:null};
+}
+function ease(x){return x<=0?0:x>=1?1:x*x*(3-2*x)}
+/* cards brighten (ring, header, text) and lines brighten as their step is reached */
+function paint(ks){M.steps.forEach(function(S,i){var k=+ease(ks[i]).toFixed(3);if(k===S.k)return;S.k=k;
+  S.cards.forEach(function(c){c.ring.style.opacity=k;c.inn.style.opacity=(.48+.52*k).toFixed(3);c.el.style.setProperty('--k',k)});
+  var v=Math.round(51+173*k),col='rgb('+v+','+v+','+v+')';S.lines.forEach(function(p){p.setAttribute('stroke',col)})})} // opaque #333 (unlit) to #E0E0E0 (lit) on the black band
+/* every line streams continuously towards Outputs while the section is on screen (lit or not);
+   one shared phase and whole-period segment lengths keep the stream seamless through corners and joins */
+var phase=0,lastT=0,vis=false,raf=0,target=0;
+function flow(dt){phase+=dt*.012; // 12px per second on every path
+ M.steps.forEach(function(S){S.lines.forEach(function(p){p.setAttribute('stroke-dashoffset',(p._b-phase%p._P).toFixed(3))})})}
+function measure(){var vh=innerHeight,r=dg.getBoundingClientRect();
+ if(M.H){var c=r.top+r.height/2,s0=vh*.82,span=Math.max(vh*.44,300);target=Math.max(0,Math.min(1,(s0-c)/span))}
+ else target=(vh*.62-r.top)/M.sc; // mobile: steps light as they cross a reading line at 62% of the viewport
+ if(words.length){var sr=st.getBoundingClientRect(),a=vh*.92,b=vh*.36,ws=Math.max(0,Math.min(1,(a-sr.top)/(a-b))),n=words.length;
+   words.forEach(function(w,i){var l=Math.max(0,Math.min(1,(ws*(n+3)-i)/3)),o=+(.24+.76*l*l*(3-2*l)).toFixed(3);if(o!==w._o){w._o=o;w.style.opacity=o}})}}
+function ksFor(v){return M.steps.map(function(S,i){return M.H?(v*7.6-i):(v-S.y0)/Math.max(1,S.y1-S.y0)})} // desktop: seven steps in sequence; mobile: by position
+function tick(t){raf=0;var dt=lastT?Math.min(64,t-lastT):16;lastT=t;
+ if(M.cur==null)M.cur=target;M.cur+=(target-M.cur)*(1-Math.exp(-dt/160));if(Math.abs(target-M.cur)<(M.H?.0005:.3))M.cur=target; // eased, reversible follow
+ paint(ksFor(M.cur));flow(dt);
+ if(vis)raf=requestAnimationFrame(tick);else lastT=0}
+function kick(){if(reduce||!M)return;measure();if(!raf&&vis)raf=requestAnimationFrame(tick)}
+function init(){build();
+ if(reduce){words.forEach(function(w){w.style.opacity=1});paint([1,1,1,1,1,1,1]);return}
+ measure();M.cur=target;paint(ksFor(M.cur));kick()}
+if('IntersectionObserver' in window){new IntersectionObserver(function(e){vis=e[0].isIntersecting;if(vis)kick()},{rootMargin:'80px 0px'}).observe(sec)}else vis=true;
+addEventListener('scroll',kick,{passive:true});
+var rw=innerWidth;addEventListener('resize',function(){if(!M)return;if(innerWidth!==rw){rw=innerWidth;init()}else kick()});
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(init);
+})();
+</script>
+
 
 <!-- ============ COPY: REGISTRY ============ -->
 <section class="feature" id="registry">
@@ -1360,8 +1487,9 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 </script>
 <script>
 /* header: dark glass while it floats over the footer */
-(function(){var n=document.getElementById('nav'),f=document.querySelector('.site-footer');if(!n||!f)return;var t=0;
-function u(){t=0;var b=n.querySelector('.bar').getBoundingClientRect();n.classList.toggle('on-dark',f.getBoundingClientRect().top<b.top+b.height/2)}
+/* also while it floats over a black band marked data-nav-dark (the mission section) */
+(function(){var n=document.getElementById('nav'),f=document.querySelector('.site-footer');if(!n||!f)return;var t=0,d=[].slice.call(document.querySelectorAll('[data-nav-dark]'));
+function u(){t=0;var b=n.querySelector('.bar').getBoundingClientRect(),m=b.top+b.height/2;n.classList.toggle('on-dark',f.getBoundingClientRect().top<m||d.some(function(e){var r=e.getBoundingClientRect();return r.top<m&&r.bottom>m}))}
 addEventListener('scroll',function(){if(!t)t=requestAnimationFrame(u)},{passive:true});addEventListener('resize',u);u()})();
 </script>
 </body>
