@@ -326,7 +326,7 @@ button.btn{font-family:inherit;cursor:pointer}
   <div class="ms-wrap">
     <h2 class="ms-statement" id="ms-statement">We provide the infrastructure for enterprises under regulatory scrutiny to radically accelerate responsible&nbsp;AI.</h2>
     <div class="ms-dg" id="ms-dg" role="img" aria-label="Registry and Risk feed Governance, which feeds Assurance and Monitoring, which feed Outputs."></div>
-    <p class="ms-cap">Between the enterprise and the frontier models it runs on.</p>
+    <p class="ms-cap">Everything between intake and audit.</p>
   </div>
 </section>
 <script>
@@ -353,7 +353,8 @@ function build(){
  function card(c,x,y,w,s){var d=document.createElement('div');d.className='ms-card';
    d.innerHTML='<div class="ring"></div><div class="in"><div class="hd"><i>'+c.n+'</i><b>'+c.t+'</b></div>'+c.rows.map(function(r){return '<div class="r">'+r+'</div>'}).join('')+'</div>';
    d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+hOf(c)+'px';cv.appendChild(d);
-   var S=steps[s];S.cards.push({el:d,ring:d.firstChild,inn:d.lastChild});if(!S.y1){S.y0=y;S.y1=y+Math.min(hOf(c),96)}}
+   var S=steps[s];S.cards.push({el:d,ring:d.firstChild,inn:d.lastChild});if(!S.y1){S.y0=y;S.y1=y+Math.min(hOf(c),96)}
+   if(!H)mc.push({el:d,ring:d.firstChild,hd:d.querySelector('.hd'),rows:[].slice.call(d.querySelectorAll('.r')),top:y,h:hOf(c),st:(w<W&&x>W/2)?40:0,k:[]})} // mobile: every card (and every row in it) lights by its own position; the right card of a pair trails the left by 40px
  /* each connection is ONE vector path, card to card: straights joined by r8 arcs, one dash pattern, one dashoffset, so dashes bend round corners.
     Merging/splitting branches are mirrored full paths that share the trunk exactly (same length, same phase); strokes are opaque greys, so the shared trunk never doubles up.
     The 12px dash period is stretched per path (<3%) to fit a whole number of periods. */
@@ -362,7 +363,7 @@ function build(){
  function line(pts,s,y0,y1){var p=document.createElementNS(NS,'path');p.setAttribute('d',rp(pts,8));p.setAttribute('fill','none');p.setAttribute('stroke-width','1.5');p.setAttribute('stroke-linecap','round');p.setAttribute('shape-rendering','geometricPrecision');svg.appendChild(p);
    var len=p.getTotalLength(),n=Math.max(1,Math.round(len/12)),P=len/n,da=P*5/12;p._P=P;p._b=da+(P-da)/2;p.setAttribute('stroke-dasharray',da.toFixed(4)+' '+(P-da).toFixed(4));p.setAttribute('stroke-dashoffset',p._b.toFixed(3));
    steps[s].lines.push(p);if(y0!=null){steps[s].y0=y0;steps[s].y1=y1}}
- var total,w,g,h;
+ var total,w,g,h,mc=[];
  if(H){
   w=260;g=96;h=hOf(C[0]);var sep=54,off=sep/2+h/2,ax=h+sep/2,hg=g/2,col=function(i){return i*(w+g)}; // 1328 = 4*260 + 3*96; off 120 and hg 48 are whole dash periods
   card(C[0],col(0),0,w,0);card(C[1],col(0),h+sep,w,0);card(C[2],col(1),ax-h/2,w,2);card(C[3],col(2),0,w,4);card(C[4],col(2),h+sep,w,4);card(C[5],col(3),ax-h/2,w,6);
@@ -379,13 +380,24 @@ function build(){
  }
  svg.setAttribute('width',W);svg.setAttribute('height',total);
  cv.style.cssText='position:relative;width:'+W+'px;height:'+total+'px'+(sc<1?';transform:scale('+sc+');transform-origin:0 0':'');dg.style.height=Math.round(total*sc)+'px';
- M={H:H,steps:steps,sc:sc,cur:null};
+ var lg=null;if(!H){ // mobile: one vertical gradient across all dash paths, its lit/unlit edge rides the trigger line, so dashes light along their length as they enter
+   var df=document.createElementNS(NS,'defs');lg=document.createElementNS(NS,'linearGradient');lg.setAttribute('id','ms-lg');lg.setAttribute('gradientUnits','userSpaceOnUse');lg.setAttribute('x1',0);lg.setAttribute('y1',0);lg.setAttribute('x2',0);lg.setAttribute('y2',total);
+   ['#E0E0E0','#E0E0E0','#333333','#333333'].forEach(function(c,i){var st=document.createElementNS(NS,'stop');st.setAttribute('offset',i>1?1:0);st.setAttribute('stop-color',c);lg.appendChild(st)});
+   df.appendChild(lg);svg.insertBefore(df,svg.firstChild);steps.forEach(function(S){S.lines.forEach(function(p){p.setAttribute('stroke','url(#ms-lg)')})})}
+ M={H:H,steps:steps,sc:sc,cur:null,mc:mc,lg:lg,total:total,HD:HD,ROW:ROW};
 }
 function ease(x){return x<=0?0:x>=1?1:x*x*(3-2*x)}
 /* cards brighten (ring, header, text) and lines brighten as their step is reached */
 function paint(ks){M.steps.forEach(function(S,i){var k=+ease(ks[i]).toFixed(3);if(k===S.k)return;S.k=k;
   S.cards.forEach(function(c){c.ring.style.opacity=k;c.inn.style.opacity=(.48+.52*k).toFixed(3);c.el.style.setProperty('--k',k)});
   var v=Math.round(51+173*k),col='rgb('+v+','+v+','+v+')';S.lines.forEach(function(p){p.setAttribute('stroke',col)})})} // opaque #333 (unlit) to #E0E0E0 (lit) on the black band
+/* mobile: progressive by position (v = trigger line in diagram px); reversible */
+function paintM(v){var T=M.total,s=M.lg.childNodes,a=Math.max(0,Math.min(1,(v-16)/T)),b=Math.max(0,Math.min(1,(v+16)/T));s[1].setAttribute('offset',a.toFixed(4));s[2].setAttribute('offset',b.toFixed(4));
+ M.mc.forEach(function(c){var y=v-c.top-c.st,rk=+ease(y/c.h).toFixed(3),hk=+ease(y/M.HD).toFixed(3);
+  if(rk!==c.k[0]){c.k[0]=rk;c.ring.style.opacity=rk}
+  if(hk!==c.k[1]){c.k[1]=hk;c.hd.style.setProperty('--k',hk);var o=(.48+.52*hk).toFixed(3);c.hd.children[0].style.opacity=o;c.hd.children[1].style.opacity=o}
+  c.rows.forEach(function(r,i){var k=+ease((y-M.HD-1-M.ROW*i)/M.ROW).toFixed(3);if(k!==c.k[i+2]){c.k[i+2]=k;r.style.opacity=(.48+.52*k).toFixed(3)}})})}
+function draw(v){if(M.H)paint(ksFor(v));else paintM(v)}
 /* every line streams continuously towards Outputs while the section is on screen (lit or not);
    one shared phase and whole-period segment lengths keep the stream seamless through corners and joins */
 var phase=0,lastT=0,vis=false,raf=0,target=0;
@@ -403,13 +415,13 @@ function measure(){var vh=innerHeight,r=dg.getBoundingClientRect();
    words.forEach(function(w,i){var l=Math.max(0,Math.min(1,(ws*(n+3)-i)/3)),o=+(.24+.76*l*l*(3-2*l)).toFixed(3);if(o!==w._o){w._o=o;w.style.opacity=o}})}}
 function ksFor(v){return M.steps.map(function(S,i){return M.H?(v*7.6-i):(v-S.y0)/Math.max(1,S.y1-S.y0)})} // desktop: seven steps in sequence; mobile: by position
 function tick(t){raf=0;var dt=lastT?Math.min(64,t-lastT):16;lastT=t;
- if(M.cur==null)M.cur=target;M.cur+=(target-M.cur)*(1-Math.exp(-dt/(M.H?70:160))); /* desktop: light 70ms smoothing so it feels attached to the scroll */if(Math.abs(target-M.cur)<(M.H?.0005:.3))M.cur=target; // eased, reversible follow
- paint(ksFor(M.cur));flow(dt);
+ if(M.cur==null)M.cur=target;M.cur+=(target-M.cur)*(1-Math.exp(-dt/70)); /* light 70ms smoothing so the lighting feels attached to the scroll (desktop and mobile) */if(Math.abs(target-M.cur)<(M.H?.0005:.3))M.cur=target; // eased, reversible follow
+ draw(M.cur);flow(dt);
  if(vis)raf=requestAnimationFrame(tick);else lastT=0}
 function kick(){if(reduce||!M)return;measure();if(!raf&&vis)raf=requestAnimationFrame(tick)}
 function init(){build();
- if(reduce){words.forEach(function(w){w.style.opacity=1});paint([1,1,1,1,1,1,1]);return}
- measure();M.cur=target;paint(ksFor(M.cur));kick()}
+ if(reduce){words.forEach(function(w){w.style.opacity=1});if(M.H)paint([1,1,1,1,1,1,1]);else paintM(1e6);return}
+ measure();M.cur=target;draw(M.cur);kick()}
 if('IntersectionObserver' in window){new IntersectionObserver(function(e){vis=e[0].isIntersecting;if(vis)kick()},{rootMargin:'80px 0px'}).observe(sec)}else vis=true;
 addEventListener('scroll',kick,{passive:true});
 var rw=innerWidth;addEventListener('resize',function(){if(!M)return;if(innerWidth!==rw){rw=innerWidth;init()}else kick()});
