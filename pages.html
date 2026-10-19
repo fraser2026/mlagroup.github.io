@@ -289,7 +289,10 @@ button.btn{font-family:inherit;cursor:pointer}
 <!-- ============ COPY: MISSION + SYSTEM MODEL (black band; cards brighten as you scroll; dashed lines stream continuously) ============ -->
 <style>
 #mission{--ms-fg:#F7F6F4;--ms-fg3:rgba(247,246,244,.42);--ms-card:#0B0B0C;--ms-head:#121214;--ms-rule:rgba(247,246,244,.07);--ms-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  position:relative;overflow:hidden;background:#000;color:var(--ms-fg)}
+  position:relative;overflow:hidden;background:var(--paper,#F7F6F4);color:var(--ms-fg)}
+/* black band = clipped background layer: starts as a rounded inset panel and grows edge-to-edge on scroll (content never moves) */
+#mission .ms-bg{position:absolute;inset:0;z-index:0;background:#000;pointer-events:none;-webkit-clip-path:inset(0 var(--ms-m,0px) round var(--ms-r,0px));clip-path:inset(0 var(--ms-m,0px) round var(--ms-r,0px))}
+#mission .ms-bg.ms-full{-webkit-clip-path:none;clip-path:none}
 #mission .ms-dots{position:absolute;right:-180px;top:-140px;width:1150px;height:460px;transform:rotate(-15deg);transform-origin:top right;pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect x='3' y='3' width='14' height='14' rx='3' fill='%23FFFFFF'/%3E%3C/svg%3E");background-size:22px 22px;opacity:.05;
   -webkit-mask-image:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%);mask-image:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%)}
@@ -322,6 +325,7 @@ button.btn{font-family:inherit;cursor:pointer}
 }
 </style>
 <section class="ms" id="mission" data-nav-dark aria-labelledby="ms-statement">
+  <div class="ms-bg" aria-hidden="true"></div>
   <div class="ms-dots" aria-hidden="true"></div>
   <div class="ms-wrap">
     <h2 class="ms-statement" id="ms-statement">We provide the infrastructure for enterprises under regulatory scrutiny to radically accelerate responsible&nbsp;AI.</h2>
@@ -427,6 +431,19 @@ addEventListener('scroll',kick,{passive:true});
 var rw=innerWidth;addEventListener('resize',function(){if(!M)return;if(innerWidth!==rw){rw=innerWidth;init()}else kick()});
 (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(init);
 })();
+</script>
+<script>
+/* black band grows from an inset panel (24px margins / 24px radius desktop, 12px / 16px mobile) to full bleed as its top rises into the upper part of the viewport;
+   entry only, scroll-linked, reversible, ~70ms smoothing; reduced motion = full bleed */
+(function(){var sec=document.getElementById('mission');if(!sec)return;var bg=sec.querySelector('.ms-bg');if(!bg)return;
+if(matchMedia('(prefers-reduced-motion: reduce)').matches){bg.classList.add('ms-full');return}
+var cur=null,tgt=0,raf=0,last=0;
+function ease(x){return x<=0?0:x>=1?1:x*x*(3-2*x)}
+function measure(){var vh=innerHeight,r=sec.getBoundingClientRect(),d=innerWidth>820,end=d?.15:.2,span=vh*(1-end);tgt=1-ease((vh-r.top)/span)} // 1 = inset, 0 = full bleed
+function set(v){var d=innerWidth>820,M=d?24:12,Rr=d?24:16;if(v<.001)v=0;bg.classList.toggle('ms-full',v===0);bg.style.setProperty('--ms-m',(M*v).toFixed(2)+'px');bg.style.setProperty('--ms-r',(Rr*v).toFixed(2)+'px')}
+function tick(t){raf=0;var dt=last?Math.min(64,t-last):16;last=t;if(cur==null)cur=tgt;cur+=(tgt-cur)*(1-Math.exp(-dt/70));if(Math.abs(tgt-cur)<.001)cur=tgt;set(cur);if(cur!==tgt)raf=requestAnimationFrame(tick);else last=0}
+function kick(){measure();if(!raf)raf=requestAnimationFrame(tick)}
+addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);measure();cur=tgt;set(cur)})();
 </script>
 
 
