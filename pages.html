@@ -392,7 +392,9 @@ var phase=0,lastT=0,vis=false,raf=0,target=0;
 function flow(dt){phase+=dt*.012; // 12px per second on every path
  M.steps.forEach(function(S){S.lines.forEach(function(p){p.setAttribute('stroke-dashoffset',(p._b-phase%p._P).toFixed(3))})})}
 function measure(){var vh=innerHeight,r=dg.getBoundingClientRect();
- if(M.H){var c=r.top+r.height/2,s0=vh*.82,span=Math.max(vh*.44,300);target=Math.max(0,Math.min(1,(s0-c)/span))}
+ if(M.H){ // desktop: finish lighting while the whole diagram is on screen; once lit it stays lit until the diagram drops back below the start point
+  var t0=vh*.95,t1=Math.max(vh-24-r.height,vh*.55-r.height/2);if(t1>t0-160)t1=t0-160; // end = bottom fully in view or centre at 55%, whichever comes first
+  var raw=Math.max(0,Math.min(1,(t0-r.top)/(t0-t1)));target=r.top>=t0?raw:Math.max(target,raw)}
  else target=(vh*.62-r.top)/M.sc; // mobile: steps light as they cross a reading line at 62% of the viewport
  if(words.length){var sr=st.getBoundingClientRect(),a=vh*.92,b=vh*.36,ws=Math.max(0,Math.min(1,(a-sr.top)/(a-b))),n=words.length;
    words.forEach(function(w,i){var l=Math.max(0,Math.min(1,(ws*(n+3)-i)/3)),o=+(.24+.76*l*l*(3-2*l)).toFixed(3);if(o!==w._o){w._o=o;w.style.opacity=o}})}}
