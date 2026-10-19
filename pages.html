@@ -504,23 +504,52 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 
 
 <style>
-/* band flows straight into the closing CTA on paper: same 136/72 rhythm as inside the band */
-#mission~.cta{background:var(--paper,#F7F6F4);padding:136px 0}
-@media (max-width:820px){#mission~.cta{padding:72px 0}}
+/* ===== closing CTA: shared button system (same family as the header/hero buttons: Inter 500, 6px radius; one size up for the closing action) ===== */
+#cx{position:relative;background:var(--paper,#F7F6F4);color:var(--ink,#0A0E14);overflow:hidden}
+#cx .cx-wrap{position:relative;z-index:1;width:min(100% - 2*var(--h-gutter,56px),var(--h-max,1328px));margin:0 auto}
+#cx .cx-h{margin:0;font:300 64px/1.06 var(--display,"Inter Tight",Inter,sans-serif);letter-spacing:.005em;color:var(--ink,#0A0E14);text-wrap:balance}
+#cx .cx-h .w{will-change:opacity}
+#cx .cx-btns{display:flex;gap:8px}
+#cx .cx-b{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:24px;height:40px;padding:0 16px;border-radius:6px;border:0;font:500 14px/1 Inter,system-ui,sans-serif;letter-spacing:0;white-space:nowrap;cursor:pointer;
+  transition:background-color .2s var(--x-ease,ease),transform .12s var(--x-ease,ease);-webkit-tap-highlight-color:transparent}
+#cx .cx-ar{width:13px;height:13px;transition:transform .2s var(--x-ease,ease)}
+#cx .cx-b:hover .cx-ar,#cx .cx-b:focus-visible .cx-ar{transform:translateX(3px)}
+#cx .cx-b:active{transform:translateY(1px)}
+#cx .cx-b:focus-visible{outline:2px solid #533AFD;outline-offset:3px}
+/* philosophy-v1 buttons: blurple primary, pale pill secondary */
+#cx .cx-p{background:#533AFD;color:#fff}
+#cx .cx-p:hover{background:#4434E0}#cx .cx-p:active{background:#3A2BC4}
+#cx .cx-s{background:var(--pill,#EEEEF1);color:var(--ink,#0A0E14)}
+#cx .cx-s:hover{background:#E4E4E9}#cx .cx-s:active{background:#DADAE0}
+@media (max-width:820px){
+  #cx .cx-h{font-size:32px;line-height:1.1;letter-spacing:0}
+  #cx .cx-btns{gap:8px}
+}
+@media (prefers-reduced-motion:reduce){#cx .cx-b,#cx .cx-ar{transition:none}}
+
+#cx.cx-A .cx-wrap{display:grid;grid-template-columns:repeat(20,1fr);column-gap:16px;align-items:end;padding:136px 0}
+#cx.cx-A .cx-h{grid-column:1/14}
+#cx.cx-A .cx-btns{grid-column:15/21;padding-bottom:8px}
+@media (max-width:820px){#cx.cx-A .cx-wrap{display:block;padding:72px 0}#cx.cx-A .cx-btns{margin-top:32px;padding:0}}
 </style>
-<!-- ============ COPY: CTA ============ -->
-<section class="cta">
-  <div class="wrap">
-    <div class="cta-box reveal">
-      <h2>Deploy AI with confidence.</h2>
-      <p class="sub">Bring AI governance and assurance into one place.</p>
-      <div class="ctas">
-        <a href="diagnostic.html" class="btn btn-primary">Get started <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        <a href="contact.html" class="btn btn-secondary" data-open-demo>Book a demo</a>
+<!-- ============ COPY: CTA (variant A) ============ -->
+<section class="cx cx-A" id="cx" aria-labelledby="cx-h">
+  <div class="cx-wrap">
+    <h2 class="cx-h" id="cx-h" data-light>Deploy AI with confidence.</h2>
+    <div class="cx-btns">
+        <a href="diagnostic.html" class="cx-b cx-p">Get started <svg class="cx-ar" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
+        <a href="contact.html" class="cx-b cx-s" data-open-demo>Book a demo</a>
       </div>
-    </div>
   </div>
 </section>
+<script>
+/* CTA headline: word-by-word light exactly like the band statements (.24 -> 1 between vh*.92 and vh*.36, 3-word soft edge); reduced motion = lit */
+(function(){var el=document.querySelector('#cx [data-light]');if(!el||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+el.innerHTML=el.innerHTML.split(' ').map(function(w){return '<span class="w">'+w+'</span>'}).join(' ');var ws=[].slice.call(el.querySelectorAll('.w'));ws.forEach(function(w){w.style.opacity=.24;w._o=.24});
+var raf=0;function m(){raf=0;var vh=innerHeight,r=el.getBoundingClientRect(),a=vh*.92,b=vh*.36,p=Math.max(0,Math.min(1,(a-r.top)/(a-b))),n=ws.length;
+ ws.forEach(function(w,i){var l=Math.max(0,Math.min(1,(p*(n+3)-i)/3)),o=+(.24+.76*l*l*(3-2*l)).toFixed(3);if(o!==w._o){w._o=o;w.style.opacity=o}})}
+addEventListener('scroll',function(){if(!raf)raf=requestAnimationFrame(m)},{passive:true});addEventListener('resize',m);(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(m);m()})();
+</script>
 </main>
 
 <footer class="site-footer">
