@@ -139,7 +139,7 @@ button.btn{font-family:inherit;cursor:pointer}
 </style>
 <style>
 /* ===== New style (fractile-style system): floating header, hero (+ registry lead-in) ===== */
-:root{--paper:#F7F6F4;--pill:#EEEEF1;--glass-rest:rgba(238,238,241,.94);--glass:rgba(246,246,248,.64);--ink:#0A0E14;--ink-2:#3D4350;--ink-3:#6A6F7A;--on-dark:#F7F6F4;--on-dark-2:rgba(247,246,243,.72);--display:"Inter Tight",Inter,system-ui,sans-serif;--x-max:1136px;--x-gutter:32px;--h-max:1328px;--h-gutter:56px;--x-ease:cubic-bezier(.23,1,.32,1);--icon-arrow:16px;--icon-gap:4px;--icon-nudge:2px;--load-ease:cubic-bezier(.16,1,.3,1);--load-dur:1050ms;--load-rise:18px;--load-step:160ms;--load-blur:6px;--fs-14:14px}
+:root{--paper:#F7F6F4;--pill:#EEEEF1;--glass-rest:rgba(238,238,241,.94);--glass:rgba(246,246,248,.64);--ink:#0A0E14;--ink-2:#3D4350;--ink-3:#6A6F7A;--on-dark:#F7F6F4;--on-dark-2:rgba(247,246,243,.72);--display:"Inter Tight",Inter,system-ui,sans-serif;--x-max:1136px;--x-gutter:32px;--h-max:1328px;--h-gutter:56px;--x-ease:cubic-bezier(.23,1,.32,1);--icon-arrow:16px;--icon-gap:4px;--icon-nudge:2px;--load-ease:cubic-bezier(.16,1,.3,1);--load-dur:1050ms;--load-rise:18px;--load-step:160ms;--load-blur:6px;--fs-14:14px;--font-body:Inter,system-ui,-apple-system,sans-serif;--fs-12:12px;--fs-13:13px;--fs-15:15px;--fs-16:16px;--fs-18:18px;--fs-32:32px;--fs-64:64px;--r-6:6px;--ph-0:#07042A;--ph-1:#0A0640;--ph-2:#120A66;--ph-3:#1C1090;--on-ph:#F7F6F4;--on-ph-2:rgba(247,246,244,.80);--on-ph-3:rgba(255,255,255,.58);--ph-nav:rgba(18,11,78,.70);--ph-nav-rule:rgba(247,246,244,.12);--ph-btn2:rgba(255,255,255,.10);--ph-btn2-hover:rgba(255,255,255,.16);--ph-btn2-rule:rgba(255,255,255,.14);--ph-btn1-hover:#FFFFFF}
 /* floating header */
 .nav{position:fixed;inset:32px 0 auto;z-index:20;pointer-events:none}
 .nav .bar{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;width:min(100% - 2*var(--h-gutter),var(--h-max));margin:0 auto;padding:6px;border-radius:8px;background:var(--glass-rest);border:1px solid rgba(10,14,20,.04);-webkit-backdrop-filter:saturate(1.8) blur(20px);backdrop-filter:saturate(1.8) blur(20px);transition:background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
@@ -411,7 +411,7 @@ button.btn{font-family:inherit;cursor:pointer}
           <div class="ns-p"><div><ul>
             <li><a href="trust.html">Trust</a></li>
             <li><a href="methodology.html">Methodology</a></li>
-            <li><a href="verify.html">Verify a certificate</a></li>
+            <li><a href="/partner">Partner with us</a></li>
             <li><a href="docs.html">Docs</a></li>
             <li><a href="support.html">Get support</a></li>
             <li><a href="changelog.html">Changelog</a></li>
@@ -463,7 +463,7 @@ button.btn{font-family:inherit;cursor:pointer}
           <div>
             <a class="pr" href="trust.html"><span class="pt">Trust</span><span class="pd">Security, data processing and supplier documents.</span></a>
             <a class="pr" href="methodology.html"><span class="pt">Methodology</span><span class="pd">How we score risk and cite regulation.</span></a>
-            <a class="pr" href="verify.html"><span class="pt">Verify a certificate</span><span class="pd">Confirm a RegAnchor certificate is genuine.</span></a>
+            <a class="pr" href="/partner"><span class="pt">Partner with us</span><span class="pd">Build, resell or integrate with RegAnchor.</span></a>
             <a class="pr" href="docs.html"><span class="pt">Docs</span><span class="pd">Guides, API reference and integrations.</span></a>
             <a class="pr" href="support.html"><span class="pt">Get support</span><span class="pd">Help with your workspace and account.</span></a>
             <a class="pr" href="changelog.html"><span class="pt">Changelog</span><span class="pd">New features, improvements and fixes.</span></a>
@@ -708,52 +708,150 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 </script>
 
 
+<!-- ============ COPY: PHILOSOPHY + CTA (v5: continuous blue field, faint grid, static half-sun, providers row) ============ 
+-->
 <style>
-/* ===== closing CTA: shared button system (same family as the header/hero buttons: Inter 500, 6px radius; one size up for the closing action) ===== */
-#cx{position:relative;background:var(--paper,#F7F6F4);color:var(--ink,#0A0E14);overflow:hidden}
-#cx .cx-wrap{position:relative;z-index:1;width:min(100% - 2*var(--h-gutter,56px),var(--h-max,1328px));margin:0 auto}
-#cx .cx-h{margin:0;font:300 64px/1.06 var(--display,"Inter Tight",Inter,sans-serif);letter-spacing:.005em;color:var(--ink,#0A0E14);text-wrap:balance}
-#cx .cx-h .w{will-change:opacity}
-#cx .cx-btns{display:flex;gap:8px}
-#cx .cx-b{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:32px;height:40px;padding:0 16px;border-radius:6px;border:0;font:500 14px/1 Inter,system-ui,sans-serif;letter-spacing:0;white-space:nowrap;cursor:pointer;
-  transition:background-color .2s var(--x-ease,ease),transform .12s var(--x-ease,ease);-webkit-tap-highlight-color:transparent}
-#cx .cx-ar{flex:none;width:var(--icon-arrow);height:var(--icon-arrow);transition:transform .2s var(--x-ease,ease)}
-#cx .cx-b:hover .cx-ar,#cx .cx-b:focus-visible .cx-ar{transform:translateX(var(--icon-nudge))}
-#cx .cx-b:active{transform:translateY(1px)}
-#cx .cx-b:focus-visible{outline:2px solid #533AFD;outline-offset:3px}
-/* philosophy-v1 buttons: blurple primary, pale pill secondary */
-#cx .cx-p{background:#533AFD;color:#fff}
-#cx .cx-p:hover{background:#4434E0}#cx .cx-p:active{background:#3A2BC4}
-#cx .cx-s{background:var(--pill,#EEEEF1);color:var(--ink,#0A0E14)}
-#cx .cx-s:hover{background:#E4E4E9}#cx .cx-s:active{background:#DADAE0}
+#ph{position:relative;background-color:var(--ph-3);color:var(--on-ph);overflow:clip}
+#ph .ph-bg{position:absolute;inset:0;z-index:0;pointer-events:none;background-color:var(--ph-0)}
+#ph .ph-stick{position:-webkit-sticky;position:sticky;top:0;height:100vh;height:100lvh;overflow:hidden;background-image:radial-gradient(140% 55% at 50% 115%,rgba(83,58,253,.42) 0%,rgba(83,58,253,.16) 45%,rgba(83,58,253,0) 75%),linear-gradient(180deg,var(--ph-1) 0%,var(--ph-2) 50%,var(--ph-3) 100%)}
+/* static Cloudflare-style grid: 32px (24px mobile), lines 3%, dots 6%, faded toward the top and edges */
+#ph .ph-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px),radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.4px);background-size:32px 32px,32px 32px,32px 32px;background-position:-1px -1px,-1px -1px,-16.5px -16.5px;-webkit-mask-image:radial-gradient(120% 85% at 50% 100%,#000 0%,rgba(0,0,0,.55) 45%,transparent 80%);mask-image:radial-gradient(120% 85% at 50% 100%,#000 0%,rgba(0,0,0,.55) 45%,transparent 80%)}
+#ph .ph-scrim{position:absolute;inset:0;background-image:linear-gradient(90deg,rgba(14,8,72,.34) 0%,rgba(14,8,72,.16) 40%,rgba(14,8,72,0) 72%)}
+#ph .ph-grain,#ph .ph-sun:after{position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");background-size:160px 160px}
+/* entry: the band's black continues and the colour rises out of it */
+#ph .ph-dawn{position:absolute;left:0;right:0;top:0;height:max(72vh,560px);background-image:linear-gradient(180deg,#000 0%,#000 8%,rgba(0,0,0,.97) 16%,rgba(0,0,0,.90) 25%,rgba(0,0,0,.78) 35%,rgba(0,0,0,.62) 46%,rgba(0,0,0,.44) 57%,rgba(0,0,0,.27) 68%,rgba(0,0,0,.13) 79%,rgba(0,0,0,.04) 90%,rgba(0,0,0,0) 100%)}
+/* half-sun: one static elliptical horizon behind the CTA */
+#ph .ph-sun{position:absolute;left:-20%;right:-20%;bottom:0;height:720px;background-image:radial-gradient(55% 100% at 50% 100%,rgba(236,233,255,.44) 0%,rgba(190,178,255,.38) 16%,rgba(132,112,255,.34) 34%,rgba(83,58,253,.30) 52%,rgba(83,58,253,.12) 74%,rgba(83,58,253,0) 100%)}
+#ph .ph-sun:after{content:"";opacity:.06}
+#ph .ph-wrap{position:relative;z-index:1;width:min(100% - 2*var(--h-gutter,56px),var(--h-max,1328px));margin:0 auto;padding:200px 0 260px}
+#ph .ph-ch{display:grid;grid-template-columns:repeat(20,1fr);column-gap:16px}
+#ph .ph-ch+.ph-ch{margin-top:184px}
+#ph .ph-st{grid-column:1/-1;margin:0;font-family:var(--display);font-weight:300;font-size:var(--fs-64);line-height:1.06;letter-spacing:.005em;color:var(--on-ph);max-width:1180px;text-wrap:balance}
+#ph .ph-st .w{will-change:opacity}
+#ph .ph-body{grid-column:11/19;margin-top:48px}
+#ph .ph-body p{margin:0;font-family:var(--font-body);font-weight:400;font-size:var(--fs-18);line-height:1.55;letter-spacing:-.008em;color:var(--on-ph-2);text-wrap:pretty}
+.nav.on-colour .bar{background-color:var(--ph-nav);border-color:var(--ph-nav-rule)}
+/* providers row: sized to the "Mapped to" seals (168px cell, 48px mark, 15px label) */
+#cl .cl-int{padding-top:160px}
+#cl .cl-il{margin:0 0 24px;text-align:center;font-family:var(--font-body);font-weight:400;font-size:var(--fs-15);line-height:1.5;letter-spacing:-.004em;color:var(--on-ph-3)}
+#cl .cl-is{display:grid;grid-template-columns:repeat(7,1fr);gap:16px;margin:0;padding:0;list-style:none}
+#cl .cl-i{position:relative;height:168px}
+#cl .cl-i img,#cl .cl-i svg{position:absolute;left:50%;top:68px;width:48px;height:48px;transform:translate(-50%,-50%)}
+#cl .cl-i img{filter:brightness(0) invert(1);opacity:.58}
+#cl .cl-i svg{color:var(--on-ph-3)}
+#cl .cl-i span{position:absolute;left:0;right:0;bottom:30px;text-align:center;font-family:var(--font-body);font-weight:400;font-size:var(--fs-15);line-height:1;letter-spacing:-.004em;color:var(--on-ph-3);white-space:nowrap}
+/* closing CTA: statement 1/14, actions 15/21 */
+#cl .cl-wrap{display:grid;grid-template-columns:repeat(20,1fr);column-gap:16px;align-items:end;padding:120px 0 40px}
+#cl .cl-st{grid-column:1/14;margin:0;font-family:var(--display);font-weight:300;font-size:var(--fs-64);line-height:1.06;letter-spacing:.005em;color:var(--on-ph)}
+#cl .cl-side{grid-column:15/21;display:flex;gap:8px;flex-wrap:wrap;padding-bottom:6px}
+#cl .cl-b{display:inline-flex;align-items:center;gap:30px;height:40px;padding:0 16px;border-radius:var(--r-6);font-family:var(--font-body);font-weight:500;font-size:var(--fs-14);line-height:1;letter-spacing:0;white-space:nowrap;transition:background-color .2s var(--x-ease,ease)}
+#cl .cl-ar{flex:none;width:var(--icon-arrow);height:var(--icon-arrow);transition:transform .2s var(--x-ease,ease)}
+#cl .cl-b:hover .cl-ar,#cl .cl-b:focus-visible .cl-ar{transform:translateX(var(--icon-nudge))}
+#cl .cl-p{background-color:var(--paper);color:var(--ink)}#cl .cl-p:hover,#cl .cl-p:focus-visible{background-color:var(--ph-btn1-hover)}
+#cl .cl-s{background-color:var(--ph-btn2);color:var(--on-ph);box-shadow:inset 0 0 0 1px var(--ph-btn2-rule)}#cl .cl-s:hover,#cl .cl-s:focus-visible{background-color:var(--ph-btn2-hover)}
+@media (min-width:821px) and (max-width:1180px){#ph .ph-body{grid-column:9/19}}
 @media (max-width:820px){
-  #cx .cx-h{font-size:32px;line-height:1.1;letter-spacing:0}
-  #cx .cx-btns{gap:8px}
+  #ph .ph-grid{background-size:24px 24px,24px 24px,24px 24px;background-position:-1px -1px,-1px -1px,-12.5px -12.5px;opacity:.8}
+  #ph .ph-scrim{background-image:linear-gradient(rgba(14,8,72,.22),rgba(14,8,72,.22))}
+  #ph .ph-dawn{height:max(56vh,420px)}
+  #ph .ph-sun{left:-60%;right:-60%;height:420px}
+  #ph .ph-wrap{padding:128px 0 200px}
+  #ph .ph-ch{display:block}
+  #ph .ph-ch+.ph-ch{margin-top:104px}
+  #ph .ph-st,#cl .cl-st{font-size:var(--fs-32);line-height:1.1;letter-spacing:0}
+  #ph .ph-body{margin-top:24px}
+  #ph .ph-body p{font-size:var(--fs-16);line-height:1.5}
+  #cl .cl-int{padding-top:96px}
+  #cl .cl-il{margin-bottom:16px}
+  #cl .cl-is{grid-template-columns:repeat(3,1fr);gap:0 8px}
+  #cl .cl-i{height:120px}
+  #cl .cl-more{grid-column:1/-1;height:104px}
+  #cl .cl-i img,#cl .cl-i svg{top:48px;width:32px;height:32px}
+  #cl .cl-i span{font-size:var(--fs-12);line-height:1.25;white-space:normal;padding:0 2px;bottom:14px}
+  #cl .cl-wrap{display:block;padding:64px 0 24px}
+  #cl .cl-side{margin-top:32px;padding:0}
 }
-@media (prefers-reduced-motion:reduce){#cx .cx-b,#cx .cx-ar{transition:none}}
+@media (prefers-reduced-motion:reduce){#cl .cl-b,#cl .cl-ar{transition:none}}
 
-#cx.cx-A .cx-wrap{display:grid;grid-template-columns:repeat(20,1fr);column-gap:16px;align-items:end;padding:136px 0}
-#cx.cx-A .cx-h{grid-column:1/14}
-#cx.cx-A .cx-btns{grid-column:15/21;padding-bottom:8px}
-@media (max-width:820px){#cx.cx-A .cx-wrap{display:block;padding:72px 0}#cx.cx-A .cx-btns{margin-top:32px;padding:0}}
 </style>
-<!-- ============ COPY: CTA (variant A) ============ -->
-<section class="cx cx-A" id="cx" aria-labelledby="cx-h">
-  <div class="cx-wrap">
-    <h2 class="cx-h" id="cx-h" data-light>Deploy AI with confidence.</h2>
-    <div class="cx-btns">
-        <a href="diagnostic.html" class="cx-b cx-p">Get started <svg class="i-chev cx-ar" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
-        <a href="contact.html" class="cx-b cx-s" data-open-demo>Book a demo</a>
-      </div>
+<section class="ph" id="ph" data-nav-dark aria-label="Our philosophy">
+  <div class="ph-bg" aria-hidden="true">
+    <div class="ph-stick"><div class="ph-scrim"></div><div class="ph-grid"></div><div class="ph-grain"></div></div>
+    <div class="ph-dawn"></div><div class="ph-sun"></div>
+  </div>
+  <div class="ph-wrap">
+    <article class="ph-ch">
+      <h2 class="ph-st" data-light>Make more possible with&nbsp;AI.</h2>
+      <div class="ph-body"><p>The next decade of enterprise capability will be built on AI. In regulated industries, every new system raises the same questions: who owns it, what could go wrong, and how do you prove it’s under control? Slowing down isn’t the answer. Better infrastructure is.</p></div>
+    </article>
+    <article class="ph-ch">
+      <h2 class="ph-st" data-light>From AI initiative to production, with accountability built&nbsp;in.</h2>
+      <div class="ph-body"><p>Discovery, risk assessment, controls, policy, evidence, monitoring and reporting in one connected system. Know what you run, what it means and how it should be governed, and show the work behind every decision.</p></div>
+    </article>
+    <article class="ph-ch">
+      <h2 class="ph-st" data-light>Governance is an operational capability, not an administrative&nbsp;exercise.</h2>
+      <div class="ph-body"><p>Scattered documents and evidence gathered the week before an audit don’t scale. Governance has to live where AI is introduced, assessed, deployed and maintained.</p></div>
+    </article>
+    <article class="ph-ch">
+      <h2 class="ph-st" data-light>Built for the next generation of enterprise&nbsp;AI.</h2>
+      <div class="ph-body"><p>As models grow more capable, the gap between what’s possible and what’s safely deployable widens. We’re building the foundation that closes it, so regulated enterprises can move from pilots to production at scale.</p></div>
+    </article>
+  
+    <div class="cl" id="cl" aria-labelledby="cl-st">
+  <div class="cl-int" aria-label="AI providers RegAnchor works with"><p class="cl-il">Works with the AI providers you already use</p><ul class="cl-is"><li class="cl-i"><img src="assets/providers/anthropic-color.svg" alt="" width="32" height="32" decoding="async"><span>Anthropic</span></li><li class="cl-i"><img src="assets/providers/openai-color.svg" alt="" width="32" height="32" decoding="async"><span>OpenAI</span></li><li class="cl-i"><img src="assets/providers/gemini-color.svg" alt="" width="32" height="32" decoding="async"><span>Google Gemini</span></li><li class="cl-i"><img src="assets/providers/azureai-color.svg" alt="" width="32" height="32" decoding="async"><span>Azure OpenAI</span></li><li class="cl-i"><img src="assets/providers/bedrock-color.svg" alt="" width="32" height="32" decoding="async"><span>Amazon Bedrock</span></li><li class="cl-i"><img src="assets/providers/meta-color.svg" alt="" width="32" height="32" decoding="async"><span>Meta Llama</span></li><li class="cl-i cl-more"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 12v24M12 24h24" stroke="currentColor" stroke-width="1.5" fill="none"/></svg><span>Your own models</span></li></ul></div>
+  <div class="cl-wrap">
+    <h2 class="cl-st" id="cl-st">Deploy AI with confidence.</h2>
+    <div class="cl-side">
+      <a href="contact.html" class="cl-b cl-p" data-open-demo>Book a demo <svg class="i-chev cl-ar" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
+      <a href="/partner" class="cl-b cl-s">Partner with us <svg class="i-chev cl-ar" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
+    </div>
+  </div>
+</div>
   </div>
 </section>
 <script>
-/* CTA headline: word-by-word light exactly like the band statements (.24 -> 1 between vh*.92 and vh*.36, 3-word soft edge); reduced motion = lit */
-(function(){var el=document.querySelector('#cx [data-light]');if(!el||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-el.innerHTML=el.innerHTML.split(' ').map(function(w){return '<span class="w">'+w+'</span>'}).join(' ');var ws=[].slice.call(el.querySelectorAll('.w'));ws.forEach(function(w){w.style.opacity=.24;w._o=.24});
-var raf=0;function m(){raf=0;var vh=innerHeight,r=el.getBoundingClientRect(),a=vh*.92,b=vh*.36,p=Math.max(0,Math.min(1,(a-r.top)/(a-b))),n=ws.length;
- ws.forEach(function(w,i){var l=Math.max(0,Math.min(1,(p*(n+3)-i)/3)),o=+(.24+.76*l*l*(3-2*l)).toFixed(3);if(o!==w._o){w._o=o;w.style.opacity=o}})}
-addEventListener('scroll',function(){if(!raf)raf=requestAnimationFrame(m)},{passive:true});addEventListener('resize',m);(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(m);m()})();
+/* philosophy colour field.
+   - field: five soft blobs on a deep indigo ground; each chapter has its own composition and the field interpolates between them with scroll (smoothstep, 70ms smoothing, reversible);
+     on top, a slow Lissajous drift (3:2 / 2:3 periods of 48s and 72s, phases 2pi/5 apart) so it is never static. The founder's note is the calmest composition.
+   - exit: the full-bleed layer settles into the band's inset rounded panel as its bottom edge rises (mirror of the band's entry).
+   - statements light word by word exactly like the band (.24 -> 1 between vh*.92 and vh*.36, 3-word soft edge).
+   - reduced motion: no drift, no scroll recomposition, words lit, full bleed. IntersectionObserver gates the loop. */
+(function(){var sec=document.getElementById('ph');if(!sec)return;
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,bg=sec.querySelector('.ph-bg'),stick=sec.querySelector('.ph-stick'),B=[];
+// [x, y, size, opacity] per blob (blurple, deep blurple, lilac, blue, pink); x,y as fractions of the field, size as a fraction of its longer side
+var S=[
+ [[.70,.56,1.10,1],[.10,.90,1.00,.95],[.44,.08,.78,.62],[.98,.20,.70,.62],[.90,1.00,.66,.52]],
+ [[.56,.44,1.15,1],[.06,.28,.90,.95],[.30,1.00,.78,.62],[.88,.86,.74,.62],[1.02,.36,.62,.52]],
+ [[.40,.62,1.05,1],[.90,.14,.98,.95],[1.00,.70,.76,.62],[.18,.06,.62,.50],[.72,.98,.70,.52]],
+ [[.66,.32,1.22,1],[.16,.76,.96,.95],[.06,.06,.66,.50],[.98,.80,.76,.62],[.54,1.06,.72,.56]],
+ [[.76,.58,1.25,.92],[.22,.40,1.05,.95],[.52,.96,.74,.40],[1.02,1.0,.60,.32],[.94,.04,.52,.22]]];
+function ease(x){return x<=0?0:x>=1?1:x*x*(3-2*x)}
+var words=[];[].slice.call(document.querySelectorAll('#ph [data-light],#cl [data-light]')).forEach(function(el){if(reduce)return;el.innerHTML=el.innerHTML.split(' ').map(function(w){return '<span class="w">'+w+'</span>'}).join(' ');var ws=[].slice.call(el.querySelectorAll('.w'));ws.forEach(function(w){w.style.opacity=.24;w._o=.24});words.push([el,ws])});
+var chs=[].slice.call(sec.querySelectorAll('.ph-ch'));
+var W=0,H=0,cur=null,tgt=0,mCur=null,mTgt=0,t0=0,lastT=0,raf=0,vis=false,T=0;
+function size(){W=stick.clientWidth;H=stick.clientHeight}
+function measure(){var vh=innerHeight,r=sec.getBoundingClientRect(),d=innerWidth>820;
+ // composition index: which chapter sits at the reading line (55% of the viewport), as a float
+ var line=vh*.55,k=0;for(var i=0;i<chs.length;i++){var c=chs[i].getBoundingClientRect();if(c.top<line)k=i+Math.min(1,Math.max(0,(line-c.top)/Math.max(1,(i+1<chs.length?chs[i+1].getBoundingClientRect().top:r.bottom)-c.top)))}
+ tgt=Math.max(0,Math.min(S.length-1,k-.5));
+ // exit panel: 0 = full bleed (bottom at or below the viewport bottom), 1 = inset panel (bottom near the top)
+ var end=d?.15:.2;mTgt=ease((vh-r.bottom)/(vh*(1-end)));
+ words.forEach(function(g){var el=g[0],ws=g[1],sr=el.getBoundingClientRect(),a=vh*.92,b=vh*.36,p=Math.max(0,Math.min(1,(a-sr.top)/(a-b))),n=ws.length;
+  ws.forEach(function(w,i){var l=Math.max(0,Math.min(1,(p*(n+3)-i)/3)),o=+(.24+.76*l*l*(3-2*l)).toFixed(3);if(o!==w._o){w._o=o;w.style.opacity=o}})})}
+function paint(){}
+function setM(v){v=0;var d=innerWidth>820,M=d?24:12,R=d?24:16;if(v<.001)v=0;bg.classList.toggle('ph-full',v===0);bg.style.setProperty('--ph-m',(M*v).toFixed(2)+'px');bg.style.setProperty('--ph-r',(R*v).toFixed(2)+'px')}
+function tick(t){raf=0;var dt=lastT?Math.min(64,t-lastT):16;lastT=t;T+=dt;var a=1-Math.exp(-dt/70);
+ if(cur==null)cur=tgt;cur+=(tgt-cur)*a;if(Math.abs(tgt-cur)<.0005)cur=tgt;
+ if(mCur==null)mCur=mTgt;mCur+=(mTgt-mCur)*a;if(Math.abs(mTgt-mCur)<.001)mCur=mTgt;
+ paint(cur,T);setM(mCur);if(vis)raf=requestAnimationFrame(tick);else lastT=0}
+function kick(){measure();if(!raf&&vis)raf=requestAnimationFrame(tick)}
+function init(){size();if(reduce){bg.classList.add('ph-full');paint(1,0);return}measure();cur=tgt;mCur=mTgt;paint(cur,T);setM(mCur);kick()}
+if(reduce){(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(init);init();addEventListener('resize',function(){size();paint(1,0)});return}
+new IntersectionObserver(function(e){vis=e[0].isIntersecting;if(vis)kick()},{rootMargin:'80px 0px'}).observe(sec);
+var cl=document.getElementById('cl');if(cl)new IntersectionObserver(function(e){if(e[0].isIntersecting){measure()}},{}).observe(cl);
+var nav=document.getElementById('nav'),nb=nav&&nav.querySelector('.bar');function navc(){if(!nb)return;var b=nb.getBoundingClientRect(),m=b.top+b.height/2,r=sec.getBoundingClientRect();nav.classList.toggle('on-colour',r.top+Math.min(innerHeight*.5,420)<m&&r.bottom>m)}
+addEventListener('scroll',function(){kick();navc();if(!vis)measure()},{passive:true});navc();addEventListener('resize',function(){size();kick()});
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(init);init()})();
 </script>
 </main>
 
