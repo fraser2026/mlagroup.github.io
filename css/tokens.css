@@ -51,3 +51,11 @@
   --dots-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect x='3' y='3' width='14' height='14' rx='3' fill='%23C9C9C5'/%3E%3C/svg%3E");
   --dots-mask:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%);
 }
+:root{
+  /* page entrance (load-in): soft fade + rise on open/refresh */
+  --load-ease:cubic-bezier(.16,1,.3,1);
+  --load-dur:1050ms;
+  --load-rise:18px;
+  --load-step:160ms;
+  --load-blur:6px;
+}

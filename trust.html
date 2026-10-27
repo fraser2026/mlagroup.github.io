@@ -8,15 +8,18 @@
 <meta name="description" content="Security, privacy and assurance at RegAnchor: data residency, encryption, access control, sub-processors and documents.">
 <link rel="canonical" href="https://reganchor.com/trust.html">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
+<script>(function(d){var h=d.documentElement,f=d.fonts;if(!f)return;h.classList.add('fonts-pending');var go=function(){h.classList.remove('fonts-pending')};setTimeout(go,1200);Promise.all([f.load('400 1em Inter'),f.load('400 1em "Inter Tight"')]).then(function(){return f.ready}).then(go,go)})(document)</script>
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/trust.css">
 <script src="js/ra-contact.js"></script>
+<link rel="stylesheet" href="css/load-in.css">
 </head>
 <body>
-<header class="nav" id="nav">
+<header class="nav li li--fade" id="nav" style="--i:0">
   <div class="nav-scrim" aria-hidden="true"></div>
   <div class="bar">
     <a href="index.html" class="logo" aria-label="RegAnchor home"><img src="brand/wordmark-text.svg?v=a3" alt="RegAnchor" width="193" height="36"></a>
@@ -28,7 +31,7 @@
     <div class="nav-right">
       <a href="https://app.reganchor.com/login" class="nav-signin">Sign in</a>
       <a href="contact.html" class="btn btn-primary btn-sm nav-cta" data-open-demo>Book a demo</a>
-      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><i></i><i></i></button>
+      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><span class="nb-open" aria-hidden="true">Menu</span><span class="nb-x" aria-hidden="true">Close</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path class="nb-lines" d="M2 4h12M2 8h12M2 12h12"/><path class="nb-x" d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg></button>
     </div>
     <div class="nav-sheet" id="navSheet" inert>
       <div class="ns-in"><div class="ns-scroll">
@@ -135,16 +138,16 @@
   <div class="dots" aria-hidden="true"></div>
   <div class="wrap">
     <div class="tc-intro">
-      <h1>Built on Trust.</h1>
+      <h1 class="li li--text" style="--i:2">Built on Trust.</h1>
       <div class="side">
-        <p>Everything you need to evaluate our security, privacy, and architecture.</p>
-        <div class="btns">
+        <p class="li li--text" style="--i:3">Everything you need to evaluate our security, privacy, and architecture.</p>
+        <div class="btns li" style="--i:1">
           <a class="b b-ink" href="mailto:security@reganchor.com?subject=Data%20processing%20agreement%20request">Request the DPA <svg class="i-ext" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11.6 10.4 5.2M4 5.2h6.4v6.4"/></svg></a>
           <a class="b b-ghost" href="#documents">Supplier documents <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
         </div>
       </div>
     </div>
-    <div class="cards">
+    <div class="cards li" style="--i:4">
       <article class="card t1">
         <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7.25"/><path d="M2.75 10h14.5M10 2.75c2 2.2 3 4.6 3 7.25s-1 5.05-3 7.25c-2-2.2-3-4.6-3-7.25s1-5.05 3-7.25Z"/></svg></span>
         <p class="k">Data location</p><p class="v">EU (Ireland)</p>

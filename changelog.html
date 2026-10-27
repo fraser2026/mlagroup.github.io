@@ -8,15 +8,18 @@
 <meta name="description" content="New capabilities, improvements, fixes and security updates to RegAnchor, published as they ship.">
 <link rel="canonical" href="https://reganchor.com/changelog.html">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
+<script>(function(d){var h=d.documentElement,f=d.fonts;if(!f)return;h.classList.add('fonts-pending');var go=function(){h.classList.remove('fonts-pending')};setTimeout(go,1200);Promise.all([f.load('400 1em Inter'),f.load('400 1em "Inter Tight"')]).then(function(){return f.ready}).then(go,go)})(document)</script>
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/changelog.css">
 <script src="js/ra-contact.js"></script>
+<link rel="stylesheet" href="css/load-in.css">
 </head>
 <body>
-<header class="nav" id="nav">
+<header class="nav li li--fade" id="nav" style="--i:0">
   <div class="nav-scrim" aria-hidden="true"></div>
   <div class="bar">
     <a href="index.html" class="logo" aria-label="RegAnchor home"><img src="brand/wordmark-text.svg?v=a3" alt="RegAnchor" width="193" height="36"></a>
@@ -28,7 +31,7 @@
     <div class="nav-right">
       <a href="https://app.reganchor.com/login" class="nav-signin">Sign in</a>
       <a href="contact.html" class="btn btn-primary btn-sm nav-cta" data-open-demo>Book a demo</a>
-      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><i></i><i></i></button>
+      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><span class="nb-open" aria-hidden="true">Menu</span><span class="nb-x" aria-hidden="true">Close</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path class="nb-lines" d="M2 4h12M2 8h12M2 12h12"/><path class="nb-x" d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg></button>
     </div>
     <div class="nav-sheet" id="navSheet" inert>
       <div class="ns-in"><div class="ns-scroll">
@@ -134,10 +137,10 @@
 <section class="cl-hero">
   <div class="dots" aria-hidden="true"></div>
   <div class="wrap">
-    <h1>Changelog.</h1>
+    <h1 class="li li--text" style="--i:2">Changelog.</h1>
     <div class="side">
-      <p>New capabilities, improvements and fixes to RegAnchor, published as they ship.</p>
-      <div class="btns">
+      <p class="li li--text" style="--i:3">New capabilities, improvements and fixes to RegAnchor, published as they ship.</p>
+      <div class="btns li" style="--i:1">
         <a class="b b-ink" href="support.html">Get updates by email <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
         <a class="b b-ghost" href="docs.html">Read the docs <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
       </div>
@@ -146,7 +149,7 @@
 </section>
 
 <div class="wrap cl-body">
-  <div class="cl-bar">
+  <div class="cl-bar li" style="--i:4">
     <div class="seg" role="group" aria-label="Filter updates">
       <button type="button" data-f="all" aria-pressed="true">All</button>
       <button type="button" data-f="new" aria-pressed="false">New</button>

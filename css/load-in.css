@@ -1,0 +1,15 @@
+/* Page entrance ("load-in"). Layered: nav (0) → buttons (1) → headline (2) → intro (3) → cards/rest (4).
+   Tag elements with .li and a layer via style="--i:N". .li--fade = opacity only (nav); .li--text adds a soft blur.
+   Opacity/transform/filter only (no layout shift). Reduced motion: nothing animates.
+   Tokens: --load-* in css/tokens.css (pages.html inlines them). */
+@media (prefers-reduced-motion:no-preference){
+  .li{animation:ra-load-in var(--load-dur,1050ms) var(--load-ease,cubic-bezier(.16,1,.3,1)) backwards;animation-delay:calc(var(--i,0) * var(--load-step,160ms))}
+  .li--fade{animation-name:ra-load-fade}
+  .li--text{animation-name:ra-load-text}
+}
+@keyframes ra-load-in{from{opacity:0;transform:translate3d(0,var(--load-rise,18px),0)}to{opacity:1;transform:none}}
+@keyframes ra-load-fade{from{opacity:0}to{opacity:1}}
+@keyframes ra-load-text{from{opacity:0;transform:translate3d(0,var(--load-rise,18px),0);filter:blur(var(--load-blur,6px))}to{opacity:1;transform:none;filter:none}}
+/* Hold the entrance until web fonts are ready (.fonts-pending set by inline <head> script; removed on
+   document.fonts.ready or 1.2s fallback). Without JS nothing is hidden. */
+.fonts-pending .li{opacity:0;animation:none!important}

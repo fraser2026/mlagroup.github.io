@@ -7,8 +7,10 @@
 <title>RegAnchor | Catalyse Frontier Models Safely At Scale</title>
 <meta name="description" content="A closer look at RegAnchor: the AI registry, assessments, the MLA policy assistant and board-ready dossiers.">
 <link rel="canonical" href="https://reganchor.com/pages.html">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500&family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
+<script>(function(d){var h=d.documentElement,f=d.fonts;if(!f)return;h.classList.add('fonts-pending');var go=function(){h.classList.remove('fonts-pending')};setTimeout(go,1200);Promise.all([f.load('400 1em Inter'),f.load('400 1em "Inter Tight"')]).then(function(){return f.ready}).then(go,go)})(document)</script>
 <script src="js/ra-contact.js"></script>
 <style>
 :root{--navy:#0A0E14;--body:#374151;--muted:#6B7280;--purple:#533AFD;--purple-d:#4434E0;--border:#E4E7EC;--pale:#F6F9FC;--hover:rgba(17,17,17,.028);--max:1200px;--radius:4px;--ease:cubic-bezier(.2,.7,.2,1)}
@@ -137,7 +139,7 @@ button.btn{font-family:inherit;cursor:pointer}
 </style>
 <style>
 /* ===== New style (fractile-style system): floating header, hero (+ registry lead-in) ===== */
-:root{--paper:#F7F6F4;--pill:#EEEEF1;--glass-rest:rgba(238,238,241,.94);--glass:rgba(246,246,248,.64);--ink:#0A0E14;--ink-2:#3D4350;--ink-3:#6A6F7A;--on-dark:#F7F6F4;--on-dark-2:rgba(247,246,243,.72);--display:"Inter Tight",Inter,system-ui,sans-serif;--x-max:1136px;--x-gutter:32px;--h-max:1328px;--h-gutter:56px;--x-ease:cubic-bezier(.23,1,.32,1);--icon-arrow:16px;--icon-gap:4px;--icon-nudge:2px}
+:root{--paper:#F7F6F4;--pill:#EEEEF1;--glass-rest:rgba(238,238,241,.94);--glass:rgba(246,246,248,.64);--ink:#0A0E14;--ink-2:#3D4350;--ink-3:#6A6F7A;--on-dark:#F7F6F4;--on-dark-2:rgba(247,246,243,.72);--display:"Inter Tight",Inter,system-ui,sans-serif;--x-max:1136px;--x-gutter:32px;--h-max:1328px;--h-gutter:56px;--x-ease:cubic-bezier(.23,1,.32,1);--icon-arrow:16px;--icon-gap:4px;--icon-nudge:2px;--load-ease:cubic-bezier(.16,1,.3,1);--load-dur:1050ms;--load-rise:18px;--load-step:160ms;--load-blur:6px;--fs-14:14px}
 /* floating header */
 .nav{position:fixed;inset:32px 0 auto;z-index:20;pointer-events:none}
 .nav .bar{pointer-events:auto;display:flex;align-items:center;justify-content:space-between;width:min(100% - 2*var(--h-gutter),var(--h-max));margin:0 auto;padding:6px;border-radius:8px;background:var(--glass-rest);border:1px solid rgba(10,14,20,.04);-webkit-backdrop-filter:saturate(1.8) blur(20px);backdrop-filter:saturate(1.8) blur(20px);transition:background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
@@ -317,19 +319,16 @@ button.btn{font-family:inherit;cursor:pointer}
   .nav .bar{display:grid;grid-template-columns:1fr auto;grid-template-rows:40px minmax(0,1fr);height:54px;overflow:hidden;transition:height .55s var(--x-ease),background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
   .nav.menu-open .bar{height:calc(100vh - 32px);height:calc(100dvh - 32px)}
   .nav .logo{align-self:center}
-  .nav-burger{display:inline-flex;position:relative;width:40px;height:40px;border:0;border-radius:6px;background:none;color:var(--ink);cursor:pointer;transition:color .3s var(--x-ease)}
-  .nav-burger i{position:absolute;left:12px;width:16px;height:1.5px;border-radius:0;background:currentColor;transition:transform .45s var(--x-ease),top .45s var(--x-ease)}
-  .nav-burger i:nth-child(1){top:16px}
-  .nav-burger i:nth-child(2){top:22.5px}
-  .nav.menu-open .nav-burger i{top:19.25px}
-  .nav.menu-open .nav-burger i:nth-child(1){transform:rotate(45deg)}
-  .nav.menu-open .nav-burger i:nth-child(2){transform:rotate(-45deg)}
-  .nav.on-dark .nav-burger{color:var(--on-dark)}
+  .nav-burger{display:inline-flex;align-items:center;gap:12px;height:40px;padding:0 12px 0 16px;border:0;border-radius:6px;background:var(--accent,#533AFD);color:var(--on-accent,#fff);font-family:inherit;font-weight:500;font-size:var(--fs-14);line-height:1;letter-spacing:-.005em;cursor:pointer;transition:background-color .2s}
+  .nav-burger:hover,.nav-burger:focus-visible{background:var(--accent-hover,#4330E0);outline:none}
+  .nav-burger:focus-visible{box-shadow:0 0 0 2px var(--on-accent,white),0 0 0 4px var(--accent,#533AFD)}
+  .nav-burger svg{width:var(--icon-arrow,16px);height:var(--icon-arrow,16px);flex:none}
+  .nav-burger .nb-x,.nav.menu-open .nav-burger .nb-open,.nav.menu-open .nav-burger .nb-lines{display:none}
+  .nav.menu-open .nav-burger .nb-x{display:inline}
   .nav-scrim{display:block;position:fixed;inset:0;z-index:-1;background:rgba(10,14,20,.28);opacity:0;pointer-events:none;transition:opacity .45s var(--x-ease)}
   .nav.menu-open .nav-scrim{opacity:1;pointer-events:auto}
   .nav.menu-open .bar{background:rgba(247,247,249,.97);border-color:rgba(10,14,20,.07);box-shadow:0 1px 2px rgba(10,14,20,.04),0 24px 48px -20px rgba(10,14,20,.30)}
   .nav.menu-open .logo img{filter:none}
-  .nav.menu-open .nav-burger{color:var(--ink)}
   .nav-sheet{display:flex;grid-column:1/-1;align-self:stretch;min-height:0;overflow:hidden}
   .ns-in{display:flex;flex-direction:column;flex:1;min-height:0}
   .ns-scroll{flex:1;min-height:0;overflow:hidden;overscroll-behavior:contain;scrollbar-width:none;padding:6px 4px 16px;-webkit-mask-image:linear-gradient(#000 calc(100% - 20px),transparent);mask-image:linear-gradient(#000 calc(100% - 20px),transparent)}
@@ -360,12 +359,13 @@ button.btn{font-family:inherit;cursor:pointer}
   .ns-cta{background:var(--purple);color:#fff}
   .ns-cta:hover,.ns-cta:active{background:var(--purple-d)}
 }
-@media (prefers-reduced-motion:reduce){.nav-pop,.pp,.nav-t svg,.nav-sheet,.ns-p,.ns-g,.ns-foot,.ns-t svg,.nav-burger i,.nav-scrim{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.nav-pop,.pp,.nav-t svg,.nav-sheet,.ns-p,.ns-g,.ns-foot,.ns-t svg,.nav-scrim{transition:none!important}}
 </style>
+<link rel="stylesheet" href="css/load-in.css">
 </head>
 <body>
 
-<header class="nav" id="nav">
+<header class="nav li li--fade" id="nav" style="--i:0">
   <div class="nav-scrim" aria-hidden="true"></div>
   <div class="bar">
     <a href="index.html" class="logo" aria-label="RegAnchor home"><img src="brand/wordmark-text.svg?v=a3" alt="RegAnchor" width="193" height="36"></a>
@@ -377,7 +377,7 @@ button.btn{font-family:inherit;cursor:pointer}
     <div class="nav-right">
       <a href="https://app.reganchor.com/login" class="nav-signin">Sign in</a>
       <a href="contact.html" class="btn btn-primary btn-sm nav-cta" data-open-demo>Book a demo</a>
-      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><i></i><i></i></button>
+      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><span class="nb-open" aria-hidden="true">Menu</span><span class="nb-x" aria-hidden="true">Close</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path class="nb-lines" d="M2 4h12M2 8h12M2 12h12"/><path class="nb-x" d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg></button>
     </div>
     <div class="nav-sheet" id="navSheet" inert>
       <div class="ns-in"><div class="ns-scroll">
@@ -483,10 +483,10 @@ button.btn{font-family:inherit;cursor:pointer}
 <section class="hero">
   <div class="dots" aria-hidden="true"></div>
   <div class="hwrap intro">
-    <h1 class="reveal">Catalyse<br>Frontier Models<br>Safely<br>At Scale</h1>
+    <h1 class="li li--text" style="--i:2">Catalyse<br>Frontier Models<br>Safely<br>At Scale</h1>
     <div class="hero-side">
-      <p class="lede reveal d1">Build audit-ready evidence for your board, procurement and regulators.</p>
-      <a href="diagnostic.html" class="btn-ink reveal d2">Start assessment <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
+      <p class="lede li li--text" style="--i:3">Build audit-ready evidence for your board, procurement and regulators.</p>
+      <a href="diagnostic.html" class="btn-ink li" style="--i:1">Start assessment <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
     </div>
   </div>
 </section>
