@@ -1,0 +1,33 @@
+/* Support. Tokens only: see css/tokens.css. */
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body)}
+.wrap{width:min(100% - 2*var(--h-gutter), var(--h-max));margin-inline:auto}
+.sp-hero{position:relative;overflow:hidden;padding-top:calc(var(--s-136) + var(--s-32));padding-bottom:var(--s-136)}
+.sp-hero .wrap{position:relative}
+.sp-hero .dots{position:absolute;right:-180px;top:-140px;width:1150px;height:460px;transform:rotate(-15deg);transform-origin:top right;pointer-events:none;background-image:var(--dots-img);background-size:22px 22px;opacity:.095;-webkit-mask-image:var(--dots-mask);mask-image:var(--dots-mask)}
+.sp-hero h1{font-family:var(--font-display);font-weight:var(--fw-light);font-size:var(--fs-80);line-height:var(--lh-tight);letter-spacing:var(--ls-display);margin:0;color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-16);margin-top:var(--s-72)}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-8);padding:var(--s-32) var(--s-32) var(--s-28, var(--s-24));display:flex;flex-direction:column;min-height:220px;box-shadow:var(--shadow-1);text-decoration:none;color:inherit;transition:border-color .3s var(--ease)}
+.card:hover,.card:focus-visible{border-color:var(--rule-strong);outline:none}
+.card .ic{width:var(--s-40);height:var(--s-40);border-radius:var(--r-8);display:grid;place-items:center}
+.card .ic svg{width:20px;height:20px}
+.card.t1 .ic{background:var(--t1-chip);color:var(--t1-ic)}
+.card.t2 .ic{background:var(--t2-chip);color:var(--t2-ic)}
+.card.t3 .ic{background:var(--t3-chip);color:var(--t3-ic)}
+.card h2{font-family:var(--font-display);font-weight:var(--fw-regular);font-size:var(--fs-23);line-height:var(--lh-snug);letter-spacing:var(--ls-display);color:var(--ink);margin:0}
+.card p{font-size:var(--fs-14);line-height:var(--lh-body);color:var(--ink-2);margin:var(--s-12) 0 var(--s-32);max-width:360px}
+.card .em{color:var(--accent);font-weight:var(--fw-medium)}
+.card .go{margin-top:auto;font-size:var(--fs-14);font-weight:var(--fw-medium);color:var(--accent);display:inline-flex;gap:var(--s-4);align-items:center}
+.card .go svg{width:var(--icon-arrow);height:var(--icon-arrow);transition:transform .3s var(--ease)}
+.card:hover .go{color:var(--accent-hover)}
+.card:hover .go svg{transform:translateX(3px)}
+.card.ext:hover .go svg{transform:translate(2px,-2px)}
+.more{margin:var(--s-40) 0 0;font-size:var(--fs-14);line-height:var(--lh-body);color:var(--ink-2)}
+.more a{color:var(--accent);text-decoration:none;font-weight:var(--fw-medium)}
+.more a:hover{color:var(--accent-hover)}
+@media (max-width:820px){
+  .sp-hero{padding-top:var(--s-136);padding-bottom:var(--s-96)}
+  .sp-hero h1{font-size:var(--fs-48)}
+  .sp-hero .dots{right:-560px;top:-60px}
+  .cards{grid-template-columns:1fr;margin-top:var(--s-48);gap:var(--s-12)}
+  .card{min-height:0;padding:var(--s-20)}
+}
