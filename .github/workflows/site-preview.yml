@@ -1,0 +1,45 @@
+name: Site preview
+
+on:
+  push:
+    branches: [site-preview]
+  workflow_dispatch:
+
+concurrency:
+  group: site-preview
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble public site files
+        run: |
+          mkdir -p out
+          for p in pages trust changelog support methodology product-tour index contact cookies pricing privacy security terms 404; do
+            [ -f "$p.html" ] && cp "$p.html" out/
+          done
+          cp favicon.svg wordmark.svg out/
+          cp -r assets css js brand out/
+          printf 'User-agent: *\nDisallow: /\n' > out/robots.txt
+          printf '/*\n  X-Robots-Tag: noindex, nofollow\n' > out/_headers
+          cat > out/_redirects <<'EOF'
+          / /pages 302
+          /diagnostic.html https://reganchor.com/diagnostic.html 302
+          /diagnostic https://reganchor.com/diagnostic.html 302
+          /verify.html https://reganchor.com/verify.html 302
+          /verify https://reganchor.com/verify.html 302
+          EOF
+          sed -i 's/^ *//' out/_redirects
+
+      - name: Deploy to reganchor-preview.pages.dev
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy out --project-name reganchor-preview --branch main --commit-dirty=true

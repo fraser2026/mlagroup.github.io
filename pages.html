@@ -260,15 +260,222 @@ button.btn{font-family:inherit;cursor:pointer}
   .f-contact__email:hover,.f-contact__email:focus-visible{text-decoration-color:currentColor}
 }
 </style>
+<style>
+/* ===== Header menus: desktop triggers inside the floating capsule share one glass panel that morphs between menus; mobile grows the capsule down into a sheet ===== */
+.nav-links,.nav-burger,.nav-sheet,.nav-scrim{display:none}
+.nav-t{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 10px 0 12px;border:0;border-radius:6px;background:none;font:500 14px/1 Inter,system-ui,sans-serif;letter-spacing:-.005em;color:var(--ink);cursor:pointer;transition:background-color .2s,color .3s var(--x-ease)}
+.nav-t svg{width:10px;height:10px;color:var(--ink-3);transition:transform .38s var(--x-ease),color .2s}
+.nav-t:hover,.nav-t:focus-visible,.nav-t[aria-expanded="true"]{background:rgba(10,14,20,.05);outline:none}
+.nav-t[aria-expanded="true"] svg{transform:rotate(180deg);color:var(--ink)}
+.nav.on-dark .nav-t{color:var(--on-dark)}
+.nav.on-dark .nav-t svg{color:rgba(247,246,243,.6)}
+.nav.on-dark .nav-t:hover,.nav.on-dark .nav-t:focus-visible,.nav.on-dark .nav-t[aria-expanded="true"]{background:rgba(247,246,244,.08)}
+.nav.on-dark .nav-t[aria-expanded="true"] svg{color:var(--on-dark)}
+@media (min-width:821px){
+  .nav .bar{width:fit-content}
+  .nav-links{display:flex;align-items:center;gap:2px;margin:0 28px 0 36px}}
+/* the shared panel: x, width and height glide between menus; content slides in the direction of travel */
+.nav-pop{position:absolute;top:60px;left:0;width:0;height:0;--px:0px;--py:-6px;--ps:.985;transform:translate3d(var(--px),var(--py),0) scale(var(--ps));transform-origin:50% 0;opacity:0;visibility:hidden;pointer-events:none;border-radius:8px;background:rgba(249,249,250,.86);border:1px solid rgba(10,14,20,.06);box-shadow:0 1px 2px rgba(10,14,20,.04),0 24px 48px -20px rgba(10,14,20,.26);-webkit-backdrop-filter:saturate(1.8) blur(24px);backdrop-filter:saturate(1.8) blur(24px);
+  transition:opacity .2s ease,transform .4s var(--x-ease),width .4s var(--x-ease),height .4s var(--x-ease),visibility 0s linear .4s,background-color .4s var(--x-ease),border-color .4s var(--x-ease)}
+.nav-pop.open{opacity:1;visibility:visible;pointer-events:auto;--py:0px;--ps:1;transition:opacity .24s ease,transform .4s var(--x-ease),width .4s var(--x-ease),height .4s var(--x-ease),visibility 0s,background-color .4s var(--x-ease),border-color .4s var(--x-ease)}
+.nav-pop::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
+.pop-clip{position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit}
+.pp{position:absolute;top:0;left:0;padding:8px;--dx:0px;transform:translateX(var(--dx));opacity:0;visibility:hidden;transition:opacity .16s ease,transform .4s var(--x-ease),visibility 0s linear .4s}
+.pp.on{opacity:1;visibility:visible;transition:opacity .26s ease .06s,transform .4s var(--x-ease),visibility 0s}
+.pp-product{width:576px}.pp-solutions{width:576px}.pp-resources{width:544px}
+.pp .pn{font:400 11px/18px "JetBrains Mono",ui-monospace,monospace;color:var(--ink-3)}
+.pp .pt{display:block;font:500 14px/18px Inter,system-ui,sans-serif;letter-spacing:-.005em;color:var(--ink)}
+.pp .pd{display:block;font:400 13px/1.45 Inter,system-ui,sans-serif;color:var(--ink-3)}
+.pp .pl{display:block;font:500 12px/1 Inter,system-ui,sans-serif;color:var(--ink-3)}
+.pr,.pf,.pcard{transition:background-color .18s,color .18s}
+.pr:hover,.pr:focus-visible,.pf:hover,.pf:focus-visible{background:rgba(10,14,20,.045);outline:none}
+.pp-foot{display:flex;justify-content:space-between;align-items:center;margin:6px 4px 0;padding-top:6px;border-top:1px solid rgba(10,14,20,.07)}
+.pf{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 8px;border-radius:6px;font:500 13px/1 Inter,system-ui,sans-serif;color:var(--ink)}
+.pf svg,.pgo svg{width:10px;height:10px;transition:transform .3s var(--x-ease)}
+.pf:hover svg,.pcard:hover .pgo svg{transform:translateX(2px)}
+.pp-split{display:grid;grid-template-columns:1fr 212px;gap:8px}
+.pp-product>.pl,.pp-solutions>.pl{padding:10px 12px 8px}
+.pr{display:flex;flex-direction:column;gap:3px;padding:10px 12px 11px;border-radius:6px}
+.pp-ind{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.pp-ind .pr{padding:11px 12px 12px}
+.pp-resources .pr{padding:9px 12px 10px}
+.pcard{display:flex;flex-direction:column;justify-content:space-between;gap:24px;padding:16px;border-radius:6px;background:rgba(10,14,20,.04)}
+.pcard:hover,.pcard:focus-visible{background:rgba(10,14,20,.065);outline:none}
+.pcard .pl{margin-bottom:12px}
+.pcard .pt{font-size:15px}
+.pcard .pd{margin-top:6px}
+.pgo{display:inline-flex;align-items:center;gap:8px;font:500 13px/1 Inter,system-ui,sans-serif;color:var(--purple)}
+/* panel over the black bands and footer */
+.nav.on-dark .nav-pop{background:rgba(22,25,33,.84);border-color:rgba(247,246,244,.10);box-shadow:0 24px 48px -20px rgba(0,0,0,.6)}
+.nav.on-dark .pp .pt,.nav.on-dark .pf,.nav.on-dark .pgo{color:var(--on-dark)}
+.nav.on-dark .pp .pd,.nav.on-dark .pp .pn,.nav.on-dark .pp .pl{color:rgba(247,246,243,.56)}
+.nav.on-dark .pr:hover,.nav.on-dark .pr:focus-visible,.nav.on-dark .pf:hover,.nav.on-dark .pf:focus-visible{background:rgba(247,246,244,.07)}
+.nav.on-dark .pp-foot{border-top-color:rgba(247,246,244,.10)}
+.nav.on-dark .pcard{background:rgba(247,246,244,.06)}
+.nav.on-dark .pcard:hover,.nav.on-dark .pcard:focus-visible{background:rgba(247,246,244,.09)}
+/* mobile: logo + menu button; the capsule itself grows into the menu */
+@media (max-width:820px){
+  .nav-links,.nav-pop,.nav .nav-cta{display:none}
+  .nav .bar{display:grid;grid-template-columns:1fr auto;grid-template-rows:40px minmax(0,1fr);height:54px;overflow:hidden;transition:height .55s var(--x-ease),background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
+  .nav.menu-open .bar{height:calc(100vh - 32px);height:calc(100dvh - 32px)}
+  .nav .logo{align-self:center}
+  .nav-burger{display:inline-flex;position:relative;width:40px;height:40px;border:0;border-radius:6px;background:none;color:var(--ink);cursor:pointer;transition:color .3s var(--x-ease)}
+  .nav-burger i{position:absolute;left:12px;width:16px;height:1.5px;border-radius:1px;background:currentColor;transition:transform .45s var(--x-ease),top .45s var(--x-ease)}
+  .nav-burger i:nth-child(1){top:16px}
+  .nav-burger i:nth-child(2){top:22.5px}
+  .nav.menu-open .nav-burger i{top:19.25px}
+  .nav.menu-open .nav-burger i:nth-child(1){transform:rotate(45deg)}
+  .nav.menu-open .nav-burger i:nth-child(2){transform:rotate(-45deg)}
+  .nav.on-dark .nav-burger{color:var(--on-dark)}
+  .nav-scrim{display:block;position:fixed;inset:0;z-index:-1;background:rgba(10,14,20,.28);opacity:0;pointer-events:none;transition:opacity .45s var(--x-ease)}
+  .nav.menu-open .nav-scrim{opacity:1;pointer-events:auto}
+  .nav.menu-open .bar{background:rgba(247,247,249,.97);border-color:rgba(10,14,20,.07);box-shadow:0 1px 2px rgba(10,14,20,.04),0 24px 48px -20px rgba(10,14,20,.30)}
+  .nav.menu-open .logo img{filter:none}
+  .nav.menu-open .nav-burger{color:var(--ink)}
+  .nav-sheet{display:flex;grid-column:1/-1;align-self:stretch;min-height:0;overflow:hidden}
+  .ns-in{display:flex;flex-direction:column;flex:1;min-height:0}
+  .ns-scroll{flex:1;min-height:0;overflow:hidden;overscroll-behavior:contain;scrollbar-width:none;padding:6px 4px 16px;-webkit-mask-image:linear-gradient(#000 calc(100% - 20px),transparent);mask-image:linear-gradient(#000 calc(100% - 20px),transparent)}
+  .ns-scroll::-webkit-scrollbar{display:none}
+  .nav.menu-open .ns-scroll{overflow-y:auto}
+  .ns-g{border-top:1px solid rgba(10,14,20,.07)}
+  .ns-g:last-child{border-bottom:1px solid rgba(10,14,20,.07)}
+  .ns-g,.ns-foot{opacity:0;transform:translateY(-6px);transition:opacity .2s ease,transform .45s var(--x-ease)}
+  .nav.menu-open .ns-g,.nav.menu-open .ns-foot{opacity:1;transform:none;transition:opacity .35s ease,transform .5s var(--x-ease)}
+  .nav.menu-open .ns-g:nth-child(1){transition-delay:.06s}
+  .nav.menu-open .ns-g:nth-child(2){transition-delay:.1s}
+  .nav.menu-open .ns-g:nth-child(3){transition-delay:.14s}
+  .nav.menu-open .ns-g:nth-child(4){transition-delay:.18s}
+  .nav.menu-open .ns-foot{transition-delay:.24s}
+  .ns-t{display:flex;width:100%;align-items:center;justify-content:space-between;height:56px;padding:0 10px;border:0;background:none;font:400 21px/1 var(--display);letter-spacing:-.012em;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .ns-t svg{width:12px;height:12px;color:var(--ink-3);transition:transform .45s var(--x-ease),color .2s}
+  .ns-t[aria-expanded="true"] svg{transform:rotate(180deg);color:var(--ink)}
+  .ns-p{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--x-ease)}
+  .ns-g.open .ns-p{grid-template-rows:1fr}
+  .ns-p>div{min-height:0;overflow:hidden}
+  .ns-p ul{list-style:none;padding:0 0 12px}
+  .ns-p a{display:flex;align-items:baseline;gap:14px;padding:10px;border-radius:6px;font:400 16px/1.25 Inter,system-ui,sans-serif;color:var(--ink-2);-webkit-tap-highlight-color:transparent;transition:background-color .18s,color .18s}
+  .ns-p a:hover,.ns-p a:active,.ns-p a:focus-visible{background:rgba(10,14,20,.045);color:var(--ink);outline:none}
+  .ns-foot{flex:none;display:grid;gap:8px;padding:4px 4px 4px}
+  .ns-signin,.ns-cta{display:flex;align-items:center;justify-content:center;height:48px;border-radius:6px;font:500 15px/1 Inter,system-ui,sans-serif;letter-spacing:-.005em;-webkit-tap-highlight-color:transparent;transition:background-color .2s}
+  .ns-signin{background:rgba(10,14,20,.05);color:var(--ink)}
+  .ns-signin:hover,.ns-signin:active{background:rgba(10,14,20,.08)}
+  .ns-cta{background:var(--purple);color:#fff}
+  .ns-cta:hover,.ns-cta:active{background:var(--purple-d)}
+}
+@media (prefers-reduced-motion:reduce){.nav-pop,.pp,.nav-t svg,.nav-sheet,.ns-p,.ns-g,.ns-foot,.ns-t svg,.nav-burger i,.nav-scrim{transition:none!important}}
+</style>
 </head>
 <body>
 
 <header class="nav" id="nav">
+  <div class="nav-scrim" aria-hidden="true"></div>
   <div class="bar">
     <a href="index.html" class="logo" aria-label="RegAnchor home"><img src="brand/wordmark-text.svg?v=a3" alt="RegAnchor" width="193" height="36"></a>
+    <nav class="nav-links" aria-label="Main">
+      <button type="button" class="nav-t" data-menu="product" aria-expanded="false" aria-controls="pp-product">Product <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.75 5 6.75 8 3.75"/></svg></button>
+      <button type="button" class="nav-t" data-menu="solutions" aria-expanded="false" aria-controls="pp-solutions">Solutions <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.75 5 6.75 8 3.75"/></svg></button>
+      <button type="button" class="nav-t" data-menu="resources" aria-expanded="false" aria-controls="pp-resources">Resources <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.75 5 6.75 8 3.75"/></svg></button>
+    </nav>
     <div class="nav-right">
       <a href="https://app.reganchor.com/login" class="nav-signin">Sign in</a>
-      <a href="diagnostic.html" class="btn btn-primary btn-sm">Get started</a>
+      <a href="contact.html" class="btn btn-primary btn-sm nav-cta" data-open-demo>Book a demo</a>
+      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><i></i><i></i></button>
+    </div>
+    <div class="nav-sheet" id="navSheet" inert>
+      <div class="ns-in"><div class="ns-scroll">
+        <div class="ns-g">
+          <button type="button" class="ns-t" aria-expanded="false">Product <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.75 5 6.75 8 3.75"/></svg></button>
+          <div class="ns-p"><div><ul>
+            <li><a href="product-tour.html#registry">Discovery</a></li>
+            <li><a href="product-tour.html#assessments">Risk</a></li>
+            <li><a href="product-tour.html#mla">Governance</a></li>
+            <li><a href="product-tour.html#assessments">Assurance</a></li>
+            <li><a href="product-tour.html#dark">Monitoring</a></li>
+            <li><a href="product-tour.html#dossiers">Disclosure</a></li>
+            <li><a href="product-tour.html">Product tour</a></li>
+          </ul></div></div>
+        </div>
+        <div class="ns-g">
+          <button type="button" class="ns-t" aria-expanded="false">Solutions <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.75 5 6.75 8 3.75"/></svg></button>
+          <div class="ns-p"><div><ul>
+            <li><a href="financial-services.html">Financial services</a></li>
+            <li><a href="legal-professional-services.html">Legal &amp; professional services</a></li>
+            <li><a href="healthcare.html">Healthcare</a></li>
+            <li><a href="public-sector.html">Public sector</a></li>
+            <li><a href="manufacturing-logistics.html">Manufacturing &amp; logistics</a></li>
+            <li><a href="ai-digital.html">AI &amp; digital</a></li>
+            <li><a href="frameworks.html">Frameworks</a></li>
+            <li><a href="startups.html">Startups</a></li>
+          </ul></div></div>
+        </div>
+        <div class="ns-g">
+          <button type="button" class="ns-t" aria-expanded="false">Resources <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.75 5 6.75 8 3.75"/></svg></button>
+          <div class="ns-p"><div><ul>
+            <li><a href="trust.html">Trust</a></li>
+            <li><a href="methodology.html">Methodology</a></li>
+            <li><a href="verify.html">Verify a certificate</a></li>
+            <li><a href="docs.html">Docs</a></li>
+            <li><a href="support.html">Get support</a></li>
+            <li><a href="changelog.html">Changelog</a></li>
+            <li><a href="diagnostic.html">Risk diagnostic</a></li>
+          </ul></div></div>
+        </div>
+        <div class="ns-g ns-solo"><a class="ns-t" href="pricing.html">Pricing</a></div>
+      </div>
+      <div class="ns-foot">
+        <a href="https://app.reganchor.com/login" class="ns-signin">Sign in</a>
+        <a href="contact.html" class="ns-cta" data-open-demo>Book a demo</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="nav-pop" id="navPop">
+    <div class="pop-clip">
+      <div class="pp pp-product" id="pp-product">
+        <span class="pl">From intake to audit</span>
+        <div class="pp-ind">
+          <a class="pr" href="product-tour.html#registry"><span class="pt">Discovery</span><span class="pd">Find and register every AI system, agent and model.</span></a>
+          <a class="pr" href="product-tour.html#assessments"><span class="pt">Risk</span><span class="pd">Score initial and residual risk across key domains.</span></a>
+          <a class="pr" href="product-tour.html#mla"><span class="pt">Governance</span><span class="pd">Link controls and policies to the evidence behind them.</span></a>
+          <a class="pr" href="product-tour.html#assessments"><span class="pt">Assurance</span><span class="pd">Test, validate and evaluate AI before and after launch.</span></a>
+          <a class="pr" href="product-tour.html#dark"><span class="pt">Monitoring</span><span class="pd">Track usage, cost and providers through one gateway.</span></a>
+          <a class="pr" href="product-tour.html#dossiers"><span class="pt">Disclosure</span><span class="pd">Share evidence securely with auditors, procurement and reviewers.</span></a>
+        </div>
+        <div class="pp-foot">
+          <a class="pf" href="product-tour.html">Take the product tour <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
+          <a class="pf" href="pricing.html">Pricing <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
+        </div>
+      </div>
+      <div class="pp pp-solutions" id="pp-solutions">
+        <span class="pl">Who we serve</span>
+        <div class="pp-ind">
+          <a class="pr" href="financial-services.html"><span class="pt">Financial services</span><span class="pd">Model risk, SM&amp;CR accountability and Consumer Duty.</span></a>
+          <a class="pr" href="legal-professional-services.html"><span class="pt">Legal &amp; professional services</span><span class="pd">Client confidentiality and professional standards.</span></a>
+          <a class="pr" href="healthcare.html"><span class="pt">Healthcare</span><span class="pd">Clinical safety, DTAC and patient data.</span></a>
+          <a class="pr" href="public-sector.html"><span class="pt">Public sector</span><span class="pd">Transparency, procurement and public accountability.</span></a>
+          <a class="pr" href="manufacturing-logistics.html"><span class="pt">Manufacturing &amp; logistics</span><span class="pd">Operational AI across sites, fleets and supply chains.</span></a>
+          <a class="pr" href="ai-digital.html"><span class="pt">AI &amp; digital</span><span class="pd">Ship AI products with governance built in.</span></a>
+        </div>
+        <div class="pp-foot">
+          <a class="pf" href="frameworks.html">Explore frameworks <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
+          <a class="pf" href="startups.html">Startups <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
+        </div>
+      </div>
+      <div class="pp pp-resources" id="pp-resources">
+        <div class="pp-split">
+          <div>
+            <a class="pr" href="trust.html"><span class="pt">Trust</span><span class="pd">Security, data processing and supplier documents.</span></a>
+            <a class="pr" href="methodology.html"><span class="pt">Methodology</span><span class="pd">How we score risk and cite regulation.</span></a>
+            <a class="pr" href="verify.html"><span class="pt">Verify a certificate</span><span class="pd">Confirm a RegAnchor certificate is genuine.</span></a>
+            <a class="pr" href="docs.html"><span class="pt">Docs</span><span class="pd">Guides, API reference and integrations.</span></a>
+            <a class="pr" href="support.html"><span class="pt">Get support</span><span class="pd">Help with your workspace and account.</span></a>
+            <a class="pr" href="changelog.html"><span class="pt">Changelog</span><span class="pd">New features, improvements and fixes.</span></a>
+          </div>
+          <a class="pcard" href="diagnostic.html">
+            <span><span class="pl">Free</span><span class="pt">Risk diagnostic</span><span class="pd">Score your AI governance against regulation in under 20 minutes.</span></span>
+            <span class="pgo">Start diagnostic <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -751,8 +958,57 @@ addEventListener('scroll',function(){if(!raf)raf=requestAnimationFrame(m)},{pass
 /* header: dark glass while it floats over the footer */
 /* also while it floats over a black band marked data-nav-dark (the mission section) */
 (function(){var n=document.getElementById('nav'),f=document.querySelector('.site-footer');if(!n||!f)return;var t=0,d=[].slice.call(document.querySelectorAll('[data-nav-dark]'));
-function u(){t=0;var b=n.querySelector('.bar').getBoundingClientRect(),m=b.top+b.height/2;n.classList.toggle('on-dark',f.getBoundingClientRect().top<m||d.some(function(e){var r=e.getBoundingClientRect();return r.top<m&&r.bottom>m}))}
+function u(){t=0;var b=n.querySelector('.bar').getBoundingClientRect(),m=b.top+Math.min(b.height,52)/2;n.classList.toggle('on-dark',f.getBoundingClientRect().top<m||d.some(function(e){var r=e.getBoundingClientRect();return r.top<m&&r.bottom>m}))}
 addEventListener('scroll',function(){if(!t)t=requestAnimationFrame(u)},{passive:true});addEventListener('resize',u);u()})();
+</script>
+<script>
+/* header menus: desktop hover/click panel that morphs between menus; mobile sheet with one-open accordions */
+(function(){
+var nav=document.getElementById('nav'),pop=document.getElementById('navPop');if(!nav||!pop)return;
+var trig=[].slice.call(nav.querySelectorAll('.nav-t')),order=trig.map(function(t){return t.dataset.menu}),panes={};
+order.forEach(function(k){panes[k]=document.getElementById('pp-'+k)});
+var desk=matchMedia('(min-width:821px)'),cur=null,openT=0,closeT=0,hoverAt=0;
+function trigOf(k){return nav.querySelector('.nav-t[data-menu="'+k+'"]')}
+function place(k){var p=panes[k],w=p.offsetWidth,h=p.offsetHeight,r=trigOf(k).getBoundingClientRect(),x=r.left+r.width/2-w/2;
+  x=Math.max(16,Math.min(x,document.documentElement.clientWidth-16-w));pop.style.width=w+'px';pop.style.height=h+'px';pop.style.setProperty('--px',Math.round(x)+'px')}
+function show(k){clearTimeout(openT);clearTimeout(closeT);if(k===cur)return;var p=panes[k];
+  if(!cur){order.forEach(function(o){panes[o].classList.remove('on');panes[o].style.removeProperty('--dx')});
+    pop.style.transition='none';p.style.transition='none';place(k);p.classList.add('on');pop.offsetWidth;pop.style.transition='';p.style.transition='';pop.classList.add('open')}
+  else{var dir=order.indexOf(k)>order.indexOf(cur)?1:-1,o=panes[cur];o.style.setProperty('--dx',(-dir*24)+'px');o.classList.remove('on');
+    p.style.transition='none';p.style.setProperty('--dx',(dir*24)+'px');p.offsetWidth;p.style.transition='';p.style.removeProperty('--dx');p.classList.add('on');place(k)}
+  trig.forEach(function(t){t.setAttribute('aria-expanded',String(t.dataset.menu===k))});cur=k}
+function hide(focusBack){clearTimeout(openT);clearTimeout(closeT);if(!cur)return;var t=trigOf(cur);cur=null;pop.classList.remove('open');
+  trig.forEach(function(t){t.setAttribute('aria-expanded','false')});if(focusBack)t.focus()}
+function later(){clearTimeout(openT);clearTimeout(closeT);closeT=setTimeout(hide,180)}
+trig.forEach(function(t,i){var k=t.dataset.menu;
+  t.addEventListener('pointerenter',function(e){if(e.pointerType!=='mouse'||!desk.matches)return;clearTimeout(closeT);clearTimeout(openT);
+    if(cur){show(k);hoverAt=Date.now()}else openT=setTimeout(function(){show(k);hoverAt=Date.now()},70)});
+  t.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')later()});
+  t.addEventListener('click',function(){if(cur===k){if(Date.now()-hoverAt>400)hide()}else{show(k);hoverAt=0}});
+  t.addEventListener('keydown',function(e){if(e.key==='ArrowDown'||(e.key==='Tab'&&!e.shiftKey&&cur===k)){e.preventDefault();show(k);var a=panes[k].querySelector('a');if(a)a.focus()}});
+});
+pop.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')clearTimeout(closeT)});
+pop.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')later()});
+pop.addEventListener('keydown',function(e){if(!cur)return;var links=[].slice.call(panes[cur].querySelectorAll('a')),i=links.indexOf(document.activeElement),ti=order.indexOf(cur);
+  if(e.key==='Tab'&&!e.shiftKey&&i===links.length-1){e.preventDefault();var next=trig[ti+1]||nav.querySelector('.nav-signin');hide();next.focus()}
+  else if(e.key==='Tab'&&e.shiftKey&&i===0){e.preventDefault();trigOf(cur).focus()}
+  else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();var n=links[(i+(e.key==='ArrowDown'?1:-1)+links.length)%links.length];if(n)n.focus()}});
+pop.addEventListener('click',function(e){if(e.target.closest('a'))hide()});
+nav.addEventListener('focusout',function(e){if(cur&&e.relatedTarget&&!nav.contains(e.relatedTarget))hide()});
+document.addEventListener('pointerdown',function(e){if(cur&&!nav.contains(e.target))hide()});
+addEventListener('resize',function(){if(cur)place(cur)});
+
+var burger=nav.querySelector('.nav-burger'),sheet=document.getElementById('navSheet'),groups=[].slice.call(nav.querySelectorAll('.ns-g:not(.ns-solo)')),resetT=0;
+function setGroup(g,o){g.classList.toggle('open',o);g.querySelector('.ns-t').setAttribute('aria-expanded',String(o))}
+function setMenu(o){clearTimeout(resetT);nav.classList.toggle('menu-open',o);burger.setAttribute('aria-expanded',String(o));burger.setAttribute('aria-label',o?'Close menu':'Open menu');
+  sheet.inert=!o;document.documentElement.style.overflow=o?'hidden':'';if(!o)resetT=setTimeout(function(){groups.forEach(function(g){setGroup(g,false)})},500)}
+burger.addEventListener('click',function(){setMenu(!nav.classList.contains('menu-open'))});
+nav.querySelector('.nav-scrim').addEventListener('click',function(){setMenu(false)});
+groups.forEach(function(g){g.querySelector('.ns-t').addEventListener('click',function(){var o=!g.classList.contains('open');groups.forEach(function(x){setGroup(x,x===g&&o)})})});
+sheet.addEventListener('click',function(e){if(e.target.closest('a'))setMenu(false)});
+addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(cur)hide(nav.contains(document.activeElement));if(nav.classList.contains('menu-open')){setMenu(false);burger.focus()}});
+desk.addEventListener('change',function(){hide();setMenu(false)});
+})();
 </script>
 </body>
 </html>
