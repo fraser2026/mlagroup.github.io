@@ -9,51 +9,13 @@
 <link rel="canonical" href="https://reganchor.com/changelog.html">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500&family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/changelog.css">
 <script src="js/ra-contact.js"></script>
-<style>
-.cl-filter{display:inline-flex;flex-wrap:wrap;align-self:flex-start;gap:2px;padding:3px;border-radius:8px;background:rgba(10,14,20,.045)}
-.cl-filter button{height:32px;padding:0 12px;border:0;border-radius:6px;background:none;font:500 13px/1 Inter,system-ui,sans-serif;color:var(--ink-2);cursor:pointer;transition:color .2s,background-color .2s,box-shadow .2s}
-.cl-filter button:hover{color:var(--ink)}
-.cl-filter button:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
-.cl-filter button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(10,14,20,.08),0 0 0 1px rgba(10,14,20,.05)}
-.cl{padding:72px 0 136px}
-.cl-e:first-child{border-top:0;padding-top:24px}
-.cl-e{display:grid;grid-template-columns:repeat(20,1fr);column-gap:16px;padding:48px 0 56px;border-top:1px solid rgba(10,14,20,.10)}
-.cl-e[hidden]{display:none}
-.cl-e time{grid-column:1/6;align-self:start;position:sticky;top:112px;padding-top:2px;font:500 13px/1.4 Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink-3)}
-.cl-b{grid-column:7/21;max-width:720px}
-.cl-tags{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:14px}
-.tag{display:inline-flex;align-items:center;gap:7px;font:500 13px/1 Inter,system-ui,sans-serif}
-.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
-.tag-new{color:var(--purple)}
-.tag-improved{color:#0F7B54}
-.tag-fixed{color:#A35A00}
-.tag-security{color:#B42318}
-.tag-changed{color:#5B6472}
-.cl-b h2{font:300 32px/1.15 var(--display);letter-spacing:.005em;color:var(--ink)}
-.cl-b p{margin-top:14px;font:400 16px/1.65 Inter,system-ui,sans-serif;color:var(--ink-2)}
-.cl-b ul{list-style:none;display:grid;gap:8px;margin-top:18px}
-.cl-b li{position:relative;padding-left:18px;font:400 15px/1.6 Inter,system-ui,sans-serif;color:var(--ink-2)}
-.cl-b li::before{content:"";position:absolute;left:2px;top:.8em;width:6px;height:1px;background:var(--ink-3)}
-.cl-b a,.cl-end a{color:var(--ink);text-decoration:underline;text-decoration-color:rgba(10,14,20,.28);text-underline-offset:3px;transition:text-decoration-color .2s}
-.cl-b a:hover,.cl-end a:hover{text-decoration-color:currentColor}
-.cl-end{padding-top:40px;border-top:1px solid rgba(10,14,20,.10);font:400 15px/1.6 Inter,system-ui,sans-serif;color:var(--ink-2)}
-@media (max-width:820px){
-  .cl-filter{flex-wrap:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}
-  .cl-filter::-webkit-scrollbar{display:none}
-  .cl-filter button{flex:none}
-  .cl{padding:56px 0 96px}
-  .cl-e{display:block;padding:32px 0 40px}
-  .cl-e time{position:static;display:block;margin-bottom:14px}
-  .cl-b h2{font-size:26px}
-  .cl-b p{font-size:15px}
-}
-</style>
 </head>
 <body>
-
 <header class="nav" id="nav">
   <div class="nav-scrim" aria-hidden="true"></div>
   <div class="bar">
@@ -167,226 +129,226 @@
   </div>
 </header>
 
+
 <main>
-<section class="t-hero">
+<section class="cl-hero">
   <div class="dots" aria-hidden="true"></div>
-  <div class="hwrap t-intro">
+  <div class="wrap">
     <h1>Changelog.</h1>
-    <div class="t-side">
+    <div class="side">
       <p>New capabilities, improvements and fixes to RegAnchor, published as they ship.</p>
-      <div class="cl-filter" role="group" aria-label="Filter updates">
-        <button type="button" data-f="all" aria-pressed="true">All</button>
-        <button type="button" data-f="new" aria-pressed="false">New</button>
-        <button type="button" data-f="improved" aria-pressed="false">Improved</button>
-        <button type="button" data-f="fixed" aria-pressed="false">Fixed</button>
-        <button type="button" data-f="security" aria-pressed="false">Security</button>
-        <button type="button" data-f="changed" aria-pressed="false">Changed</button>
+      <div class="btns">
+        <a class="b b-ink" href="support.html">Get updates by email <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
+        <a class="b b-ghost" href="docs.html">Read the docs <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
       </div>
     </div>
   </div>
 </section>
 
-<div class="hwrap cl">
-
-  <article class="cl-e" data-tags="new improved">
+<div class="wrap cl-body">
+  <div class="cl-bar">
+    <div class="seg" role="group" aria-label="Filter updates">
+      <button type="button" data-f="all" aria-pressed="true">All</button>
+      <button type="button" data-f="new" aria-pressed="false">New</button>
+      <button type="button" data-f="improved" aria-pressed="false">Improved</button>
+      <button type="button" data-f="fixed" aria-pressed="false">Fixed</button>
+      <button type="button" data-f="security" aria-pressed="false">Security</button>
+      <button type="button" data-f="changed" aria-pressed="false">Changed</button>
+    </div>
+    <p class="count" aria-live="polite">18 updates</p>
+  </div>
+  <article class="e" data-tags="new improved">
     <time datetime="2026-10-17">17 October 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span><span class="tag tag-improved">Improved</span></div>
-      <h2>Asset usage history and evaluation runs</h2>
-      <p>Each AI asset's Connection tab now brings provider usage and gateway activity together, backed by daily usage history. Evaluation runs appear as a column in the registry, so testing status sits alongside every asset.</p>
-      <ul>
-        <li>Daily usage history for each AI asset</li>
-        <li>Usage and gateway cards on the Connection tab</li>
-        <li>Evals column in the registry</li>
-        <li>Clearer empty states and notices in light and dark mode</li>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span><span class="tag tag-improved">Improved</span></div>
+      <h2>Asset usage history and evaluation runs</h2> 
+      <p>Each AI asset's Connection tab now brings provider usage and gateway activity together, backed by daily usage history. Evaluation runs appear as a column in the registry, so testing status sits alongside every asset.</p> 
+      <ul> 
+      <li>Daily usage history for each AI asset</li> 
+      <li>Usage and gateway cards on the Connection tab</li> 
+      <li>Evals column in the registry</li> 
+      <li>Clearer empty states and notices in light and dark mode</li> 
       </ul>
+      <figure class="media media-img"><img src="assets/images-page/dev-dark/dd-final-v2.webp" alt="An AI asset&#39;s Connection tab in RegAnchor, showing the Anthropic connection, provider usage with daily token history and estimated spend, and gateway activity." width="1100" height="520" loading="lazy"></figure>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-10-12">12 October 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>Custom framework controls</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>Custom framework controls</h2> 
       <p>Build your own controls inside custom frameworks. A full control editor, owner assignments and separation from the standard catalogue let you govern internal policy alongside regulation, in one place.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="improved fixed">
+  <article class="e" data-tags="improved fixed">
     <time datetime="2026-10-12">12 October 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-improved">Improved</span><span class="tag tag-fixed">Fixed</span></div>
-      <h2>Risk diagnostic report</h2>
-      <p>The risk diagnostic PDF has a new design, and the diagnostic itself is more reliable.</p>
-      <ul>
-        <li>Redesigned diagnostic PDF report</li>
-        <li>Fixed an issue where the diagnostic could stop responding at step two when a required question was missed</li>
+    <div class="card">
+      <div class="tags"><span class="tag tag-improved">Improved</span><span class="tag tag-fixed">Fixed</span></div>
+      <h2>Risk diagnostic report</h2> 
+      <p>The risk diagnostic PDF has a new design, and the diagnostic itself is more reliable.</p> 
+      <ul> 
+      <li>Redesigned diagnostic PDF report</li> 
+      <li>Fixed an issue where the diagnostic could stop responding at step two when a required question was missed</li> 
       </ul>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="improved">
+  <article class="e" data-tags="improved">
     <time datetime="2026-10-12">12 October 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-improved">Improved</span></div>
-      <h2>Navigation and mobile</h2>
-      <p>RegAnchor is easier to move around, on a desk or on a phone.</p>
-      <ul>
-        <li>Off-canvas navigation on phones, with rows that wrap instead of overflowing</li>
-        <li>One-line breadcrumbs and a wrapping registry toolbar on small screens</li>
-        <li>Recently visited pages in the sidebar</li>
-        <li>Sidebar groups open by default</li>
-        <li>UK date formats and sentence case throughout</li>
+    <div class="card">
+      <div class="tags"><span class="tag tag-improved">Improved</span></div>
+      <h2>Navigation and mobile</h2> 
+      <p>RegAnchor is easier to move around, on a desk or on a phone.</p> 
+      <ul> 
+      <li>Off-canvas navigation on phones, with rows that wrap instead of overflowing</li> 
+      <li>One-line breadcrumbs and a wrapping registry toolbar on small screens</li> 
+      <li>Recently visited pages in the sidebar</li> 
+      <li>Sidebar groups open by default</li> 
+      <li>UK date formats and sentence case throughout</li> 
       </ul>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-10-11">11 October 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>Help and support in the app</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>Help and support in the app</h2> 
       <p>A Help button now sits on every page of RegAnchor. Choose a topic, describe the issue and attach files up to 10&nbsp;MB. The page you were on is included automatically, and you receive an email acknowledgement. See <a href="support.html">Get support</a>.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-10-11">11 October 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>Expert evidence review</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>Expert evidence review</h2> 
       <p>Evidence you upload can be reviewed by the RegAnchor team. Each item is marked accepted or changes requested, with a note explaining why, and a governance alert tells you when a review needs your attention.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new changed">
+  <article class="e" data-tags="new changed">
     <time datetime="2026-10-04">4 October 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span><span class="tag tag-changed">Changed</span></div>
-      <h2>My work and control assignments</h2>
-      <p>My work lists the controls assigned to you, and assignees receive an email when a control is assigned. Renewals coming due are surfaced in the controls catalogue.</p>
-      <ul>
-        <li>Control assignments now save when you select Save, rather than automatically</li>
-        <li>Viewers can no longer be assigned controls, as they cannot change records</li>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span><span class="tag tag-changed">Changed</span></div>
+      <h2>My work and control assignments</h2> 
+      <p>My work lists the controls assigned to you, and assignees receive an email when a control is assigned. Renewals coming due are surfaced in the controls catalogue.</p> 
+      <ul> 
+      <li>Control assignments now save when you select Save, rather than automatically</li> 
+      <li>Viewers can no longer be assigned controls, as they cannot change records</li> 
       </ul>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="improved fixed">
+  <article class="e" data-tags="improved fixed">
     <time datetime="2026-10-04">4 October 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-improved">Improved</span><span class="tag tag-fixed">Fixed</span></div>
-      <h2>Invitations and onboarding</h2>
-      <p>Inviting your team is faster and more dependable.</p>
-      <ul>
-        <li>Invitation emails are delivered through our transactional email service</li>
-        <li>Invitees without a password are guided through account setup, with password confirmation</li>
-        <li>Members are shown by first and last name throughout</li>
-        <li>Fixed an issue where resending a revoked invitation did not always send the email</li>
+    <div class="card">
+      <div class="tags"><span class="tag tag-improved">Improved</span><span class="tag tag-fixed">Fixed</span></div>
+      <h2>Invitations and onboarding</h2> 
+      <p>Inviting your team is faster and more dependable.</p> 
+      <ul> 
+      <li>Invitation emails are delivered through our transactional email service</li> 
+      <li>Invitees without a password are guided through account setup, with password confirmation</li> 
+      <li>Members are shown by first and last name throughout</li> 
+      <li>Fixed an issue where resending a revoked invitation did not always send the email</li> 
       </ul>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-10-03">3 October 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>AI policy drafting, in beta</h2>
-      <p>Draft AI policies with MLA, RegAnchor's drafting assistant. The conversation sits on one side and an editable document on the other. Drafts stream in with tables, support undo and redo, and publish with title and version checks so policy lineage stays intact.</p>
-      <ul>
-        <li>Drafting uses AI credits, included with paid plans</li>
-        <li>Each conversation is scoped to the policy you're drafting</li>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>AI policy drafting, in beta</h2> 
+      <p>Draft AI policies with MLA, RegAnchor's drafting assistant. The conversation sits on one side and an editable document on the other. Drafts stream in with tables, support undo and redo, and publish with title and version checks so policy lineage stays intact.</p> 
+      <ul> 
+      <li>Drafting uses AI credits, included with paid plans</li> 
+      <li>Each conversation is scoped to the policy you're drafting</li> 
       </ul>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-09-24">24 September 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>Dossier review and e-signature</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>Dossier review and e-signature</h2> 
       <p>Governance dossiers can be reviewed and signed inside RegAnchor. Signatures are embedded in the exported PDF, every review and signing step is written to an audit trail, and signed dossiers are listed in Reports.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-09-23">23 September 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>Auditor access</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>Auditor access</h2> 
       <p>Give external auditors a time-limited engagement with a scope you control, without adding them to your workspace. Access can be revoked at any time. Available on Professional and above.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-09-18">18 September 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>Governance owners</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>Governance owners</h2> 
       <p>Every AI asset now has three named owners: business, compliance and technical. Accountability is clear for each system, and contact details stay in the app rather than in dossier exports.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-09-16">16 September 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>AI governance dossier and methodology versions</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>AI governance dossier and methodology versions</h2> 
       <p>Export an AI governance dossier as a PDF, covering your AI assets, risk and controls, with every high-risk asset listed in the observations. Our methodology is now published as versioned snapshots, so a dossier can cite the exact version it was assessed against.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new security">
+  <article class="e" data-tags="new security">
     <time datetime="2026-09-12">12 September 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span><span class="tag tag-security">Security</span></div>
-      <h2>Connect, API keys and two-factor authentication</h2>
-      <p>Connect brings provider connections together at organisation level, alongside API keys and the foundation for data backends.</p>
-      <ul>
-        <li>Two-factor authentication with an authenticator app, with recovery codes</li>
-        <li>Keys and environment variables stored in an encrypted vault, with no direct access from the browser</li>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span><span class="tag tag-security">Security</span></div>
+      <h2>Connect, API keys and two-factor authentication</h2> 
+      <p>Connect brings provider connections together at organisation level, alongside API keys and the foundation for data backends.</p> 
+      <ul> 
+      <li>Two-factor authentication with an authenticator app, with recovery codes</li> 
+      <li>Keys and environment variables stored in an encrypted vault, with no direct access from the browser</li> 
       </ul>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-09-07">7 September 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>MCP server</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>MCP server</h2> 
       <p>Connect MCP-compatible AI assistants to RegAnchor. Sign-in uses OAuth with a consent screen, so assistants act with your permissions and you stay in control of what they can reach.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-09-04">4 September 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>Governed Anthropic gateway</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>Governed Anthropic gateway</h2> 
       <p>Route Anthropic requests through the RegAnchor gateway with a key for each AI asset, so usage and cost are attributed to the right system automatically.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="new">
+  <article class="e" data-tags="new">
     <time datetime="2026-09-03">3 September 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-new">New</span></div>
-      <h2>AI asset registry</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-new">New</span></div>
+      <h2>AI asset registry</h2> 
       <p>Register every AI system, agent and model, with model, platform and lifecycle details. Connect Anthropic to bring usage insights into each asset.</p>
     </div>
   </article>
-
-  <article class="cl-e" data-tags="security">
+  <article class="e" data-tags="security">
     <time datetime="2026-08-31">31 August 2026</time>
-    <div class="cl-b">
-      <div class="cl-tags"><span class="tag tag-security">Security</span></div>
-      <h2>Email and account protections</h2>
+    <div class="card">
+      <div class="tags"><span class="tag tag-security">Security</span></div>
+      <h2>Email and account protections</h2> 
       <p>Strengthened protections against sender spoofing in our email service, and tightened the checks used when linking accounts.</p>
     </div>
   </article>
-
   <p class="cl-end">Questions about a change? <a href="support.html">Get support</a> or read the <a href="docs.html">docs</a>.</p>
 </div>
+
+<section class="cl-cta">
+  <div class="wrap">
+    <div><h2>Stay up to date.</h2><p>Major releases, sent to your inbox.</p></div>
+    <div class="btns">
+      <a class="b b-ink" href="support.html">Get updates by email <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
+      <a class="b b-ghost" href="contact.html" data-open-demo>Book a demo</a>
+    </div>
+  </div>
+</section>
 </main>
 
 <footer class="site-footer">
@@ -394,7 +356,7 @@
   <div class="fwrap">
     <div class="footer-top">
       <div class="f-brand">
-        <p>AI governance risk advisory for regulated industries. Defensible frameworks, audit-ready reporting, and sector-specific regulatory alignment.</p>
+        <p>Infrastructure for responsible AI in regulated enterprises.</p>
       </div>
       <div class="f-cols">
         <div class="f-col">
@@ -429,7 +391,7 @@
         </div>
         <div class="f-contact">
           <h4>Get in touch</h4>
-          <a class="f-contact__email" href="mailto:hello@reganchor.com">hello@reganchor.com</a>
+          <a class="f-contact__email" href="mailto:security@reganchor.com">security@reganchor.com</a>
         </div>
       </div>
     </div>
@@ -486,8 +448,8 @@
         </div>
         <div class="fg"><label for="d-note">What should we focus on?</label><textarea id="d-note"></textarea></div>
         <div class="modal__foot">
-          <button type="button" class="btn btn-secondary" id="demoCancel" style="padding:10px 16px;font-size:0.84rem;">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="demoSubmit" style="padding:10px 18px;font-size:0.84rem;">Submit</button>
+          <button type="button" class="btn btn-secondary" id="demoCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="demoSubmit">Submit</button>
         </div>
       </form>
     </div>
@@ -496,11 +458,12 @@
 
 <script src="js/site.js"></script>
 <script>
-/* changelog: filter entries by tag */
-(function(){var bs=[].slice.call(document.querySelectorAll('.cl-filter button')),es=[].slice.call(document.querySelectorAll('.cl-e'));
-bs.forEach(function(b){b.addEventListener('click',function(){var f=b.getAttribute('data-f');
+/* changelog: filter entries by tag. Get updates links to support until email updates exist. */
+(function(){var bs=[].slice.call(document.querySelectorAll('.seg button')),es=[].slice.call(document.querySelectorAll('.e')),c=document.querySelector('.cl-bar .count');
+bs.forEach(function(b){b.addEventListener('click',function(){var f=b.getAttribute('data-f'),n=0;
 bs.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
-es.forEach(function(e){e.hidden=f!=='all'&&(' '+e.getAttribute('data-tags')+' ').indexOf(' '+f+' ')<0})})})})();
+es.forEach(function(e){var h=f!=='all'&&(' '+e.getAttribute('data-tags')+' ').indexOf(' '+f+' ')<0;e.hidden=h;if(!h)n++});
+c.textContent=n+(n===1?' update':' updates')})})})();
 </script>
 </body>
 </html>
