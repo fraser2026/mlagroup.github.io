@@ -747,7 +747,13 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 #cl .cl-i{position:relative;height:168px}
 /* tones and sizes copied from "Mapped to": heading .42, marks .62, labels .70; square mark 56px desktop / 38px mobile */
 #cl .cl-i img,#cl .cl-i svg{position:absolute;left:50%;top:68px;width:56px;height:56px;transform:translate(-50%,-50%)}
-#cl .cl-i img{filter:brightness(0) invert(.97);opacity:.62}
+/* index.html's treatment (grayscale, shading kept), lifted for the blue: each mark's lightest tone brought to ~#F7F7F7, then .62 like the "Mapped to" marks. Single-colour black marks (Anthropic, OpenAI) are simply inverted. */
+#cl .cl-i img{filter:grayscale(1) brightness(1.3);opacity:.62}
+#cl .cl-i img[src*="anthropic"],#cl .cl-i img[src*="openai"]{filter:grayscale(1) invert(.97)}
+#cl .cl-i img[src*="gemini"]{filter:grayscale(1) brightness(1.36)}
+#cl .cl-i img[src*="azureai"]{filter:grayscale(1) brightness(2.04)}
+#cl .cl-i img[src*="bedrock"]{filter:grayscale(1) brightness(1.2)}
+#cl .cl-i img[src*="meta"]{filter:grayscale(1) brightness(2.2)}
 #cl .cl-i svg{color:var(--on-ph-mk)}
 #cl .cl-i span{position:absolute;left:0;right:0;bottom:30px;text-align:center;font-family:var(--font-body);font-weight:400;font-size:var(--fs-15);line-height:1;letter-spacing:-.004em;color:var(--on-ph-lb);white-space:nowrap}
 /* closing CTA: statement 1/14, actions 15/21 */
