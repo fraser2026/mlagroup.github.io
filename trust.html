@@ -5,19 +5,17 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trust | RegAnchor</title>
-<meta name="description" content="How RegAnchor secures and processes your data: security architecture, data processing, operational resilience, product assurance and supplier documentation.">
+<meta name="description" content="Security, privacy and assurance at RegAnchor: data residency, encryption, access control, sub-processors and documents.">
 <link rel="canonical" href="https://reganchor.com/trust.html">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500&family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/trust.css">
 <script src="js/ra-contact.js"></script>
-<style>
-.t-table td:nth-child(3){white-space:nowrap}
-</style>
 </head>
 <body>
-
 <header class="nav" id="nav">
   <div class="nav-scrim" aria-hidden="true"></div>
   <div class="bar">
@@ -131,139 +129,230 @@
   </div>
 </header>
 
+
 <main>
-<section class="t-hero">
+<section class="tc-hero">
   <div class="dots" aria-hidden="true"></div>
-  <div class="hwrap t-intro">
-    <h1>Built on Trust.</h1>
-    <div class="t-side">
-      <p>Everything you need to evaluate our security, privacy, and architecture.</p>
-      <div class="t-btns">
-        <a class="btn-ink" href="mailto:info@reganchor.com?subject=Data%20processing%20agreement%20request">Request the DPA <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 9 3M4.5 3H9v4.5"/></svg></a>
-        <a class="btn-ghost" href="#supplier">Supplier documents <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
+  <div class="wrap">
+    <div class="tc-intro">
+      <h1>Built on Trust.</h1>
+      <div class="side">
+        <p>Everything you need to evaluate our security, privacy, and architecture.</p>
+        <div class="btns">
+          <a class="b b-ink" href="mailto:security@reganchor.com?subject=Data%20processing%20agreement%20request">Request the DPA <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 9 3M4.5 3H9v4.5"/></svg></a>
+          <a class="b b-ghost" href="#documents">Supplier documents <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="hwrap">
-    <dl class="t-glance">
-      <div><dt>Data location</dt><dd>EU (Ireland)</dd><dd class="g-sub">Stored exclusively in Supabase's EU region on AWS.</dd></div>
-      <div><dt>Encryption</dt><dd>TLS 1.2+ &amp; <span class="nw">AES-256</span></dd><dd class="g-sub">Encrypted in transit and at rest; API keys vaulted.</dd></div>
-      <div><dt>Tenant isolation</dt><dd>Row-level isolation</dd><dd class="g-sub">Database-enforced isolation via Postgres RLS.</dd></div>
-      <div><dt>Availability</dt><dd>99.9% uptime</dd><dd class="g-sub">Target SLA backed by edge deployment.</dd></div>
-      <div><dt>Backups</dt><dd>Automated &amp; redundant</dd><dd class="g-sub">Encrypted, with enterprise frequency and retention on demand.</dd></div>
-      <div><dt>Legal &amp; compliance</dt><dd>UK legal entity</dd><dd class="g-sub">ICO registered (ZB826186) · UK and EU GDPR</dd></div>
-    </dl>
+    <div class="cards">
+      <article class="card t1">
+        <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7.25"/><path d="M2.75 10h14.5M10 2.75c2 2.2 3 4.6 3 7.25s-1 5.05-3 7.25c-2-2.2-3-4.6-3-7.25s1-5.05 3-7.25Z"/></svg></span>
+        <p class="k">Data location</p><p class="v">EU (Ireland)</p>
+        <p class="d">Stored exclusively in Supabase's EU region on AWS.</p>
+        <a class="go" href="#data">View <span aria-hidden="true">→</span></a>
+      </article>
+      <article class="card t2">
+        <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="12" height="8.25" rx="1.5"/><path d="M6.75 9V6.5a3.25 3.25 0 0 1 6.5 0V9"/></svg></span>
+        <p class="k">Encryption</p><p class="v">TLS 1.2+ &amp; <span class="nw">AES-256</span></p>
+        <p class="d">Encrypted in transit and at rest; API keys vaulted.</p>
+        <a class="go" href="#security">View <span aria-hidden="true">→</span></a>
+      </article>
+      <article class="card t3">
+        <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 17 6.75 10 10.5 3 6.75Z"/><path d="M3 10.25 10 14l7-3.75M3 13.75 10 17.5l7-3.75"/></svg></span>
+        <p class="k">Tenant isolation</p><p class="v">Row-level isolation</p>
+        <p class="d">Database-enforced isolation via Postgres RLS.</p>
+        <a class="go" href="#access">View <span aria-hidden="true">→</span></a>
+      </article>
+      <article class="card t4">
+        <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.75 10.5h3l2-5 4.5 9 2-4h3"/></svg></span>
+        <p class="k">Availability</p><p class="v">99.9% uptime</p>
+        <p class="d">Target SLA backed by edge deployment.</p>
+        <a class="go" href="#resilience">View <span aria-hidden="true">→</span></a>
+      </article>
+      <article class="card t5">
+        <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="10" cy="5.5" rx="6" ry="2.5"/><path d="M4 5.5v9c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-9M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"/></svg></span>
+        <p class="k">Backups</p><p class="v">Automated &amp; redundant</p>
+        <p class="d">Encrypted, with enterprise frequency and retention on demand.</p>
+        <a class="go" href="#resilience">View <span aria-hidden="true">→</span></a>
+      </article>
+      <article class="card t6">
+        <span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v14M5.5 17h9M4 6.5h12M4 6.5 2 11c0 1.1.9 2 2 2s2-.9 2-2L4 6.5ZM16 6.5 14 11c0 1.1.9 2 2 2s2-.9 2-2l-2-4.5Z"/></svg></span>
+        <p class="k">Legal &amp; compliance</p><p class="v">UK legal entity</p>
+        <p class="d">ICO registered (ZB826186) · UK and EU GDPR</p>
+        <a class="go" href="#company">View <span aria-hidden="true">→</span></a>
+      </article>
+    </div>
   </div>
 </section>
 
-<div class="hwrap t-body">
-  <aside class="t-rail">
+<div class="wrap tc-body">
+  <aside class="rail">
     <nav aria-label="On this page">
       <p>On this page</p>
       <ol>
-        <li><a href="#security">Security overview</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#access">Access control</a></li>
         <li><a href="#data">Data processing</a></li>
-        <li><a href="#resilience">Operational resilience</a></li>
+        <li><a href="#subprocessors">Sub-processors</a></li>
+        <li><a href="#resilience">Resilience</a></li>
         <li><a href="#assurance">Product assurance</a></li>
-        <li><a href="#supplier">Supplier information</a></li>
+        <li><a href="#documents">Documents</a></li>
+        <li><a href="#company">Company</a></li>
       </ol>
     </nav>
   </aside>
-  <div class="t-main">
-
-    <section class="t-sec" id="security" aria-labelledby="h-security">
-      <h2 id="h-security">Security overview</h2>
-      <p>Architecture, hosting boundaries and access controls for customer data.</p>
-      <div class="t-rows">
-        <div class="t-row"><h3>Architecture</h3><div><p>RegAnchor is a modern web application served globally through Cloudflare's edge network and backed by a managed Postgres database on Supabase in the EU. Privileged database operations run only in server-side functions; browsers hold a publishable key, never a privileged service credential.</p></div></div>
-        <div class="t-row"><h3>Hosting and data residency</h3><div><p>All customer data and governance records are stored in the European Union (Ireland). Cloudflare provides global application delivery and DDoS mitigation, and PDF documents are generated on Render in the EU (Frankfurt). Our marketing website is hosted separately and holds no customer data.</p></div></div>
-        <div class="t-row"><h3>Encryption</h3><div><p><b>In transit.</b> All traffic is forced over HTTPS and encrypted with TLS 1.2 or higher.</p><p><b>At rest.</b> Databases, file storage and backups are encrypted with AES-256.</p><p><b>Secrets.</b> AI provider keys you connect are held in an isolated, encrypted secrets vault. They are decrypted only inside short-lived server-side functions and never reach the browser.</p></div></div>
-        <div class="t-row"><h3>Authentication and access</h3><div><p>Users sign in with a work email and password, or with Google Workspace single sign-on. Two-factor authentication with an authenticator app is available, with recovery codes. Sessions use short-lived, cryptographically signed tokens.</p><p>Workspace invitations are single-use links, stored hashed, that expire after 14 days and only work for the invited email address. SAML single sign-on is available on Enterprise.</p></div></div>
-        <div class="t-row"><h3>Tenant isolation</h3><div><p>Every table in the database enforces Postgres row-level security. Queries for AI assets, assessments, members and audit records are scoped to workspace membership, so one customer cannot read another's data.</p></div></div>
-        <div class="t-row"><h3>Role-based access control</h3><div><p>Workspace roles (Workspace admin, Admin, Editor and Viewer) are enforced in the database rather than the browser, so a user cannot raise their own access. Critical governance actions are written to an append-only audit log.</p></div></div>
+  <div class="main">
+    <section class="sec" id="security">
+      <h2>Security</h2>
+      <p class="intro">RegAnchor runs on Cloudflare's edge network with a managed Postgres database (Supabase, EU). Privileged operations run only in server-side functions.</p>
+      <div class="groups">
+        <div class="grp"><h3>Infrastructure</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Customer data and governance records stored in the EU (Supabase, eu-west-1, Ireland)</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Global delivery, firewall and DDoS mitigation by Cloudflare</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>PDF reports generated in the EU (Render, Frankfurt)</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Marketing website hosted separately, with no customer data</span></li>
+        </ul></div>
+        <div class="grp"><h3>Encryption</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>HTTPS enforced; TLS 1.2 or higher in transit</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>AES-256 at rest for databases, file storage and backups</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Connected AI provider keys held in an encrypted secrets vault<small>Decrypted only in short-lived server-side functions; never sent to the browser.</small></span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Browsers hold a publishable key only, never a privileged credential</span></li>
+        </ul></div>
       </div>
     </section>
 
-    <section class="t-sec" id="data" aria-labelledby="h-data">
-      <h2 id="h-data">Data processing</h2>
-      <p>Data flows, subprocessors, retention and deletion.</p>
-      <div class="t-rows">
-        <div class="t-row"><h3>Data scope</h3><div><p>We process essential account details (names and work email addresses) and the governance records created in RegAnchor: AI assets, assessments, controls, policies, evidence and dossiers.</p></div></div>
-        <div class="t-row"><h3>AI and gateway data flows</h3><div><p>When you connect an AI provider, RegAnchor reads usage and billing information with your organisation's own API key. Requests routed through the RegAnchor gateway are forwarded to the provider you choose, under your own agreement with that provider.</p></div></div>
-        <div class="t-row"><h3>Approved subprocessors</h3><div>
-          <div class="t-tw"><table class="t-table">
-            <thead><tr><th scope="col">Provider</th><th scope="col">Purpose</th><th scope="col">Location</th><th scope="col">Safeguards</th></tr></thead>
-            <tbody>
-              <tr><td>Supabase</td><td>Managed database, authentication, storage and server functions</td><td>EU (Ireland)</td><td>EU data residency</td></tr>
-              <tr><td>Cloudflare</td><td>Edge network, firewall and application delivery</td><td>Global network</td><td>Standard contractual clauses</td></tr>
-              <tr><td>Render</td><td>PDF generation for reports, certificates and dossiers</td><td>EU (Frankfurt)</td><td>EU data residency</td></tr>
-              <tr><td>Stripe</td><td>Payments, billing and subscriptions</td><td>United States</td><td>Standard contractual clauses</td></tr>
-              <tr><td>Resend</td><td>Transactional and workspace email</td><td>United States</td><td>Standard contractual clauses</td></tr>
-              <tr><td>Anthropic</td><td>AI drafting and policy assistance</td><td>United States</td><td>Standard contractual clauses</td></tr>
-              <tr><td>Google</td><td>Optional Google Workspace sign-in</td><td>United States</td><td>Standard contractual clauses</td></tr>
-            </tbody>
-          </table></div>
-          <p>AI providers you connect with your own key act under your own agreement with them.</p>
-        </div></div>
-        <div class="t-row"><h3>Retention and deletion</h3><div><p><b>Account data.</b> Kept for the life of the account plus two years.</p><p><b>Governance records.</b> Assessment responses, policy snapshots and dossiers are kept for the life of the account plus three years, for regulatory continuity.</p><p><b>Deletion.</b> At the end of each retention period, or on a verified request to <a href="mailto:info@reganchor.com">info@reganchor.com</a>, customer data is permanently deleted or anonymised. Full details are in our <a href="privacy.html">privacy notice</a>.</p></div></div>
-        <div class="t-row"><h3>Backups</h3><div><p>The production database is backed up automatically. Backups are encrypted at rest and held on redundant storage in the same EU region as the live data, protecting against data loss.</p><p>Enterprise contracts can add higher-frequency backups, point-in-time recovery, extended retention for audit and dedicated storage on AWS.</p></div></div>
+    <section class="sec" id="access">
+      <h2>Access control</h2>
+      <p class="intro">Who can sign in, what they can see, and how changes are recorded.</p>
+      <div class="groups">
+        <div class="grp"><h3>Authentication</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Work email and password, or Google Workspace SSO</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Authenticator-app two-factor authentication with recovery codes</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Short-lived, cryptographically signed session tokens</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Single-use invitations, stored hashed, valid 14 days for the invited address only</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>SAML SSO available on Enterprise plans</span></li>
+        </ul></div>
+        <div class="grp"><h3>Isolation and roles</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Postgres row-level security on customer data tables, scoped to workspace membership</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Roles (Workspace admin, Admin, Editor, Viewer) enforced in the database, not the browser</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Users cannot raise their own access</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Critical governance actions written to an append-only audit log</span></li>
+        </ul></div>
       </div>
     </section>
 
-    <section class="t-sec" id="resilience" aria-labelledby="h-resilience">
-      <h2 id="h-resilience">Operational resilience</h2>
-      <p>System availability, disaster recovery and incident response.</p>
-      <div class="t-rows">
-        <div class="t-row"><h3>Incident response</h3><div><p>We maintain an incident response process covering detection, containment and remediation. If a security event affects your organisation's personal data, we notify your workspace admins without undue delay, and report to the Information Commissioner's Office (ICO) where the law requires.</p></div></div>
-        <div class="t-row"><h3>Availability commitment</h3><div><p>RegAnchor targets 99.9% monthly uptime. The application runs on Cloudflare's edge network and the database on managed infrastructure, with no single self-operated server to fail.</p></div></div>
-        <div class="t-row"><h3>Disaster recovery</h3><div><p>Encrypted backups allow the database to be restored quickly, and point-in-time recovery is available on enterprise contracts. Application code and database schema are fully version-controlled, so the infrastructure can be redeployed reproducibly, including in another region if required.</p></div></div>
-        <div class="t-row"><h3>Support</h3><div><p>Security and technical support is available Monday to Friday during UK business hours at <a href="mailto:support@reganchor.com">support@reganchor.com</a>. More on <a href="support.html">Get support</a>.</p></div></div>
+    <section class="sec" id="data">
+      <h2>Data processing</h2>
+      <p class="intro">What we process, where it goes, and how long we keep it.</p>
+      <div class="groups">
+        <div class="grp"><h3>Scope and flows</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Account details: names and work email addresses</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Governance records: AI assets, assessments, controls, policies, evidence and dossiers</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Connected AI providers are read with your own API key, under your own agreement</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Gateway requests are forwarded to the provider you choose</span></li>
+        </ul></div>
+        <div class="grp"><h3>Retention and deletion</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Account data: life of the account plus two years</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Governance records: life of the account plus three years, for regulatory continuity</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Deleted or anonymised at the end of retention, or on verified request</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Requests to <a class="inl" href="mailto:security@reganchor.com">security@reganchor.com</a>; details in our <a class="inl" href="privacy.html">privacy notice</a></span></li>
+        </ul></div>
+      </div>
+      <p class="note"><strong>International transfers.</strong> Some sub-processors, including our AI model provider, may process limited data outside the UK and EU. These transfers are covered by Standard Contractual Clauses and the UK International Data Transfer Addendum.</p>
+    </section>
+
+    <section class="sec" id="subprocessors">
+      <h2>Sub-processors</h2>
+      <p class="intro">Third parties that process customer data on our behalf.</p>
+      <table class="tbl">
+        <thead><tr><th>Provider</th><th>Purpose</th><th>Location</th><th>Safeguard</th></tr></thead>
+        <tbody>
+          <tr><td>Supabase</td><td>Database, authentication, storage and server functions</td><td>EU (Ireland)</td><td>EU data residency</td></tr>
+          <tr><td>Amazon Web Services</td><td>Underlying infrastructure for Supabase</td><td>EU (Ireland)</td><td>EU data residency</td></tr>
+          <tr><td>Cloudflare</td><td>Edge network, firewall and application delivery</td><td>Global</td><td>SCCs and UK Addendum</td></tr>
+          <tr><td>Render</td><td>PDF generation for reports, certificates and dossiers</td><td>EU (Frankfurt)</td><td>EU data residency</td></tr>
+          <tr><td>Stripe</td><td>Payments, billing and subscriptions</td><td>United States</td><td>SCCs and UK Addendum</td></tr>
+          <tr><td>Resend</td><td>Transactional and workspace email</td><td>United States</td><td>SCCs and UK Addendum</td></tr>
+          <tr><td>Anthropic</td><td>AI-assisted drafting and policy assistance</td><td>United States</td><td>SCCs and UK Addendum</td></tr>
+          <tr><td>Google</td><td>Optional Google Workspace sign-in</td><td>United States</td><td>SCCs and UK Addendum</td></tr>
+        </tbody>
+      </table>
+      <p class="cap">Last updated October 2026. AI providers you connect with your own key act under your own agreement with them.</p>
+    </section>
+
+    <section class="sec" id="resilience">
+      <h2>Resilience</h2>
+      <p class="intro">Availability, backups, incident response and support.</p>
+      <div class="groups">
+        <div class="grp"><h3>Availability and recovery</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Historical uptime of 99.9%+</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Application served from Cloudflare's edge on managed infrastructure</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Automated, encrypted backups in the same EU region as live data</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Code and schema version-controlled for reproducible redeployment</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Enterprise plans: higher-frequency backups, point-in-time recovery, extended retention</span></li>
+        </ul></div>
+        <div class="grp"><h3>Incidents and support</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Documented process for detection, containment and remediation</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Workspace admins notified without undue delay if their personal data is affected</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Reports to the ICO where the law requires</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Support Monday to Friday, UK business hours, via <a class="inl" href="support.html">Get support</a></span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Report a vulnerability to <a class="inl" href="mailto:security@reganchor.com">security@reganchor.com</a></span></li>
+        </ul></div>
       </div>
     </section>
 
-    <section class="t-sec" id="assurance" aria-labelledby="h-assurance">
-      <h2 id="h-assurance">Product and audit assurance</h2>
-      <p>How findings, compliance scores and governance reports are derived.</p>
-      <div class="t-rows">
-        <div class="t-row"><h3>Methodology and citations</h3><div><p>Assessment logic follows published legislation and recognised risk frameworks. Findings carry explicit citations, such as EU AI Act articles and ISO/IEC 42001 clauses. The full approach is published in our <a href="methodology.html">methodology</a>.</p></div></div>
-        <div class="t-row"><h3>Framework mapping</h3><div><p>Evidence and controls map across the EU AI Act, ISO/IEC 42001, NIST AI RMF, FCA DP5/22 and ICO guidance, so one piece of evidence supports several obligations without duplicate collection.</p></div></div>
-        <div class="t-row"><h3>Append-only audit logs</h3><div><p>Governance lifecycle events, such as creating an asset, scoring risk and signing off an assessment, are written to an append-only log that records the user, the time and the change made. Entries cannot be edited from the application.</p></div></div>
-        <div class="t-row"><h3>Scope and limitations</h3><div><p>RegAnchor provides governance software and automated assessment tools. It is not legal advice, and it is not accredited certification or audit. Scores and findings depend on the information your organisation provides. See our <a href="terms.html">service terms</a>.</p></div></div>
+    <section class="sec" id="assurance">
+      <h2>Product assurance</h2>
+      <p class="intro">How findings, scores and governance reports are derived.</p>
+      <div class="groups">
+        <div class="grp"><h3>Method</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Assessment logic follows published legislation and recognised frameworks</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Findings cite sources, such as EU AI Act articles and ISO/IEC 42001 clauses</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Approach published in our <a class="inl" href="methodology.html">methodology</a></span></li>
+        </ul></div>
+        <div class="grp"><h3>Mapping and records</h3><ul>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Controls and evidence mapped to the EU AI Act, ISO/IEC 42001, NIST AI RMF, FCA DP5/22 and ICO guidance</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Append-only log of lifecycle events: user, time and change</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg><span>Log entries cannot be edited from the application</span></li>
+        </ul></div>
       </div>
+      <p class="note"><strong>Scope.</strong> RegAnchor is governance software. It is not legal advice, and it is not an accredited certification or audit. Results depend on the information your organisation provides. See our <a class="inl" href="terms.html">service terms</a>.</p>
     </section>
 
-    <section class="t-sec" id="supplier" aria-labelledby="h-supplier">
-      <h2 id="h-supplier">Supplier and legal information</h2>
-      <p>Corporate details for legal and procurement onboarding.</p>
-      <div class="t-rows">
-        <div class="t-row"><h3>Legal entity</h3><div><p>MLA Group Ltd, trading as RegAnchor.</p></div></div>
-        <div class="t-row"><h3>Company registration</h3><div><p>Registered in England and Wales, company number 16117562.</p></div></div>
-        <div class="t-row"><h3>Registered address</h3><div><p>45 Fitzroy Street, 4th Floor, London W1T 6EB, United Kingdom.</p></div></div>
-        <div class="t-row"><h3>Data protection</h3><div><p>Registered with the UK Information Commissioner's Office (ZB826186). We act as a data processor for the records your organisation creates in RegAnchor, on your instructions, and as a data controller for account and billing data.</p></div></div>
-        <div class="t-row"><h3>Contact</h3><div><p>Security and procurement: <a href="mailto:info@reganchor.com">info@reganchor.com</a> or +44 (0)151 558 0162.</p></div></div>
-        <div class="t-row"><h3>Security questionnaires</h3><div><p>ISO/IEC 27001 and SOC 2 certification are on our roadmap. In the meantime we respond directly to enterprise vendor risk questionnaires, including CAIQ, VSAQ and SIG Lite. Send yours to <a href="mailto:info@reganchor.com?subject=Security%20questionnaire">info@reganchor.com</a>.</p></div></div>
-        <div class="t-row"><h3>Documents</h3><div>
-          <div class="t-docs">
-            <a class="t-doc" href="privacy.html"><span><b>Privacy notice</b><span>How we handle personal data</span></span><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
-            <a class="t-doc" href="terms.html"><span><b>Service terms</b><span>Terms of use for RegAnchor</span></span><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
-            <a class="t-doc" href="mailto:info@reganchor.com?subject=Data%20processing%20agreement%20request"><span><b>Data processing agreement</b><span>Available on request</span></span><svg class="i-ext" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 9 3M4.5 3H9v4.5"/></svg></a>
-            <a class="t-doc" href="cookies.html"><span><b>Cookie policy</b><span>Strictly necessary storage only</span></span><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 1.5 8.5 6 4 10.5"/></svg></a>
-          </div>
-        </div></div>
+    <section class="sec" id="documents">
+      <h2>Documents</h2>
+      <p class="intro">Public policies are linked. Others are shared on request, usually within two working days.</p>
+      <div class="docs">
+        <a class="doc" href="mailto:security@reganchor.com?subject=DPA%20request"><span class="t"><b>Data processing agreement</b><span>UK GDPR and EU GDPR terms</span></span><span class="pill req">Request</span></a>
+        <a class="doc" href="#subprocessors"><span class="t"><b>Sub-processor list</b><span>Current providers and locations</span></span><span class="pill">View</span></a>
+        <a class="doc" href="mailto:security@reganchor.com?subject=Security%20questionnaire"><span class="t"><b>Security questionnaire</b><span>CAIQ, SIG Lite or VSAQ</span></span><span class="pill req">Request</span></a>
+        <a class="doc" href="privacy.html"><span class="t"><b>Privacy notice</b><span>How we handle personal data</span></span><span class="pill">Public</span></a>
+        <a class="doc" href="terms.html"><span class="t"><b>Service terms</b><span>Terms of use for RegAnchor</span></span><span class="pill">Public</span></a>
+        <a class="doc" href="cookies.html"><span class="t"><b>Cookie policy</b><span>Strictly necessary storage only</span></span><span class="pill">Public</span></a>
       </div>
+      <div class="note" id="questionnaires"><h3>Security questionnaires</h3><p>ISO/IEC 27001 and SOC 2 certification are on our roadmap. In the meantime we respond directly to enterprise vendor risk questionnaires, including CAIQ, VSAQ and SIG Lite. Send yours to <a class="inl" href="mailto:security@reganchor.com?subject=Security%20questionnaire">security@reganchor.com</a>.</p></div>
     </section>
 
+    <section class="sec" id="company">
+      <h2>Company</h2>
+      <p class="intro">Details for legal and procurement onboarding.</p>
+      <dl class="facts">
+        <div><dt>Legal entity</dt><dd>MLA Group Ltd, trading as RegAnchor</dd></div>
+        <div><dt>Registration</dt><dd>England and Wales, company number 16117562</dd></div>
+        <div><dt>Registered address</dt><dd>45 Fitzroy Street, 4th Floor, London W1T 6EB, United Kingdom</dd></div>
+        <div><dt>Data protection</dt><dd>Registered with the ICO (ZB826186). Processor for records your organisation creates; controller for account and billing data.</dd></div>
+        <div><dt>Security and procurement</dt><dd><a class="inl" href="mailto:security@reganchor.com">security@reganchor.com</a></dd></div>
+      </dl>
+    </section>
   </div>
 </div>
 
-<section class="t-cta" aria-labelledby="t-cta-h">
-  <div class="hwrap">
-    <h2 id="t-cta-h">Have a security questionnaire?</h2>
-    <div class="t-side">
-      <div class="t-btns">
-        <a class="btn-ink" href="mailto:info@reganchor.com?subject=Security%20questionnaire">Email the team <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 9 3M4.5 3H9v4.5"/></svg></a>
-        <a class="btn-ghost" href="contact.html" data-open-demo>Book a demo</a>
-      </div>
+<section class="tc-cta">
+  <div class="wrap">
+    <h2>Have a security questionnaire?</h2>
+    <div class="btns">
+      <a class="b b-ink" href="mailto:security@reganchor.com?subject=Security%20questionnaire">Email the team <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 9 3M4.5 3H9v4.5"/></svg></a>
+      <a class="b b-ghost" href="contact.html" data-open-demo>Book a demo</a>
     </div>
   </div>
 </section>
@@ -274,7 +363,7 @@
   <div class="fwrap">
     <div class="footer-top">
       <div class="f-brand">
-        <p>AI governance risk advisory for regulated industries. Defensible frameworks, audit-ready reporting, and sector-specific regulatory alignment.</p>
+        <p>Infrastructure for responsible AI in regulated enterprises.</p>
       </div>
       <div class="f-cols">
         <div class="f-col">
@@ -309,7 +398,7 @@
         </div>
         <div class="f-contact">
           <h4>Get in touch</h4>
-          <a class="f-contact__email" href="mailto:hello@reganchor.com">hello@reganchor.com</a>
+          <a class="f-contact__email" href="mailto:security@reganchor.com">security@reganchor.com</a>
         </div>
       </div>
     </div>
@@ -366,8 +455,8 @@
         </div>
         <div class="fg"><label for="d-note">What should we focus on?</label><textarea id="d-note"></textarea></div>
         <div class="modal__foot">
-          <button type="button" class="btn btn-secondary" id="demoCancel" style="padding:10px 16px;font-size:0.84rem;">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="demoSubmit" style="padding:10px 18px;font-size:0.84rem;">Submit</button>
+          <button type="button" class="btn btn-secondary" id="demoCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="demoSubmit">Submit</button>
         </div>
       </form>
     </div>
@@ -375,5 +464,6 @@
 </div>
 
 <script src="js/site.js"></script>
+<script src="js/trust-rail.js"></script>
 </body>
 </html>

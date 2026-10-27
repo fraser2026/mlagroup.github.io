@@ -1,0 +1,53 @@
+/* RegAnchor design tokens. The ONLY place raw values may appear.
+   Source: DESIGN-GUIDE.md (pages.html @ 9f481bd). Add a token here before using a new value. */
+:root{
+  /* Families: two only */
+  --font-display:"Inter Tight", Inter, system-ui, sans-serif;
+  --font-body:Inter, system-ui, -apple-system, sans-serif;
+
+  /* Type scale: fixed. Nothing else. */
+  --fs-13:13px; --fs-14:14px; /* UI buttons only */ --fs-16:16px; --fs-19:19px; --fs-23:23px;
+  --fs-32:32px; --fs-48:48px; --fs-64:64px; --fs-80:80px;
+  --lh-tight:1.06; --lh-snug:1.2; --lh-body:1.55;
+  --ls-display:.005em; --ls-ui:-.006em;
+
+  /* Weights */
+  --fw-light:300; --fw-regular:400; --fw-medium:500; --fw-semibold:600;
+
+  /* Colour */
+  --paper:#F7F6F4; --surface:#FFFFFF;
+  --ink:#0A0E14; --ink-hover:#1B2130; --ink-2:#3D4350; --ink-3:#6A6F7A;
+  --pill:#EEEEF1; --pill-hover:#E4E4E9;
+  --accent:#533AFD; --accent-hover:#4330E0; --accent-tint:#EEEBFF;
+  --on-accent:#FFFFFF;
+  --rule:rgba(10,14,20,.08); --rule-strong:rgba(10,14,20,.14);
+  --ok:#1F7A4D;
+
+  /* Radii */
+  --r-6:6px; --r-8:8px; --r-12:12px; --r-full:999px;
+
+  /* Spacing (4px base) */
+  --s-4:4px; --s-8:8px; --s-12:12px; --s-16:16px; --s-20:20px; --s-24:24px;
+  --s-32:32px; --s-40:40px; --s-48:48px; --s-56:56px; --s-72:72px; --s-96:96px; --s-136:136px;
+
+  /* Layout */
+  --h-max:1328px; --h-gutter:56px; --section:136px;
+  --btn-h:40px; --row-h:44px; --head-h:52px;
+  --shadow-1:0 1px 2px rgba(10,14,20,.04);
+  --ease:cubic-bezier(.23,1,.32,1);
+}
+@media (max-width:820px){ :root{ --h-gutter:16px; --section:72px; } }
+:root{
+  --ink-wash:rgba(10,14,20,.05);
+  /* Card tints: faint surface + chip/icon pair, one hue each */
+  --t1-bg:#F6F5FF; --t1-chip:#E9E5FF; --t1-ic:#533AFD;
+  --t2-bg:#F3F8FE; --t2-chip:#DFEDFD; --t2-ic:#1D6FD1;
+  --t3-bg:#F3FAF6; --t3-chip:#DDF1E5; --t3-ic:#1F7A4D;
+  --t4-bg:#FEF6F4; --t4-chip:#FDE3DD; --t4-ic:#C8452E;
+  --t5-bg:#FEF8F1; --t5-chip:#FCE8D3; --t5-ic:#B25E12;
+  --t6-bg:#F4F6F9; --t6-chip:#E3E8EF; --t6-ic:#3D4350;
+}
+:root{
+  --dots-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect x='3' y='3' width='14' height='14' rx='3' fill='%23C9C9C5'/%3E%3C/svg%3E");
+  --dots-mask:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%);
+}

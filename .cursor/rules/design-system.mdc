@@ -1,0 +1,26 @@
+---
+description: RegAnchor design system. Tokens only, no invented fonts, sizes or colours.
+alwaysApply: true
+---
+# Design system (strict)
+
+Source of truth: `css/tokens.css`. If a value isn't there, you may NOT use it.
+
+**Never** write in any CSS, `<style>` or `style=""`:
+- a raw `font-family`. Use `var(--font-display)` (Inter Tight, headlines) or `var(--font-body)` (Inter).
+- a raw `font-size` (px, rem, em, %, clamp). Use `var(--fs-13|14|16|19|23|32|48|64|80)` only. `--fs-14` is for buttons only.
+- the `font:` shorthand.
+- a hex, rgb(), hsl() or named colour. Use `var(--ink|ink-2|ink-3|paper|surface|pill|accent|rule|…)`.
+- a `border-radius` other than `var(--r-6|8|12|full)` or 0.
+- a new Google Font, icon font or `@font-face`.
+
+**Always:**
+- Weights: `var(--fw-light|regular|medium|semibold)` only. Display text is Inter Tight 300.
+- Spacing: `var(--s-*)`. Page width `var(--h-max)` with `var(--h-gutter)`, sections `var(--section)` (136px desktop / 72px mobile).
+- Buttons: the `.b .b-primary` / `.b .b-secondary` classes (40px tall, 6px radius). Don't create new button styles.
+- Background is `var(--paper)`. White (`var(--surface)`) only inside cards.
+- Sentence case. No UPPERCASE labels, gradients, glows or fade-in animations.
+
+**Need a new value?** Stop and ask. Add it to `tokens.css` in a separate, reviewed change, never inline.
+
+Before finishing any UI change, run `node scripts/check-design.mjs <changed files>` and fix every violation.
