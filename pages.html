@@ -512,6 +512,9 @@ button.btn{font-family:inherit;cursor:pointer}
 #mission .ms-dg .ms-card{overflow:visible}
 #mission .ms-dg .ms-card .in{border-radius:var(--r-7);overflow:hidden}
 #mission .ms-dg .ms-card .ring{border:0;box-shadow:inset 0 0 0 1.5px var(--ms-lit)}
+#mission .ms-dg .ms-card .ring.is-trace{box-shadow:none;opacity:1}
+#mission .ms-card .ring .tr{position:absolute;left:0;top:0;overflow:visible}
+#mission .ms-card .ring .tr path{fill:none;stroke:var(--ms-lit);stroke-width:1.5;stroke-dasharray:1 1;stroke-dashoffset:var(--t,1)}
 #mission .ms-card .in{position:relative;z-index:1}
 #mission .ms-card .hd{position:relative;display:flex;align-items:center;gap:12px;height:52px;padding:0 20px;background:#0E0E10;border-bottom:1px solid var(--ms-rule)}
 #mission .ms-card .hd:before{content:"";position:absolute;inset:0;background:var(--ms-head);opacity:var(--k,1)}
@@ -595,6 +598,7 @@ function build(){
  function card(c,x,y,w,s){var d=document.createElement('div');d.className='ms-card';
    d.innerHTML='<div class="ring"></div><div class="in"><div class="hd"><i>'+c.n+'</i><b>'+c.t+'</b></div>'+c.rows.map(function(r){return '<div class="r">'+r+'</div>'}).join('')+'</div>';
    d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+hOf(c)+'px';cv.appendChild(d);
+   trace(d.firstChild);
    var S=steps[s];S.cards.push({el:d,ring:d.firstChild,inn:d.lastChild});if(!S.y1){S.y0=y;S.y1=y+Math.min(hOf(c),96)}
    if(!H)mc.push({el:d,ring:d.firstChild,hd:d.querySelector('.hd'),rows:[].slice.call(d.querySelectorAll('.r')),top:y,h:hOf(c),st:(w<W&&x>W/2)?40:0,k:[]})} // mobile: every card (and every row in it) lights by its own position; the right card of a pair trails the left by 40px
  /* each connection is ONE vector path, card to card: straights joined by r8 arcs, one dash pattern, one dashoffset, so dashes bend round corners.
@@ -629,15 +633,24 @@ function build(){
    df.appendChild(lg);svg.insertBefore(df,svg.firstChild);steps.forEach(function(S){S.lines.forEach(function(p){p.setAttribute('stroke','url(#ms-lg)')})})}
  M={H:H,steps:steps,sc:sc,cur:null,mc:mc,lg:lg,total:total,HD:HD,ROW:ROW};
 }
+/* lit border draws in: two half-perimeters start where the incoming connector meets the card (top centre) and meet at the bottom centre.
+   pathLength=1, so dashoffset 1 -> 0 is the progress; driven by the same scroll-linked value as before (reversible, persists once drawn). Reduced motion keeps the fade. */
+function trace(ring){if(reduce)return;var W2=ring.offsetWidth,H2=ring.offsetHeight,i=.75,R=8-i,x0=i,y0=i,x1=W2-i,y1=H2-i,cx=W2/2;
+ var sv=document.createElementNS(NS,'svg');sv.setAttribute('class','tr');sv.setAttribute('width',W2);sv.setAttribute('height',H2);sv.setAttribute('aria-hidden','true');
+ [1,-1].forEach(function(m){var xe=m>0?x1:x0,sw=m>0?1:0;
+  var d='M'+cx+' '+y0+'H'+(xe-m*R)+'A'+R+' '+R+' 0 0 '+sw+' '+xe+' '+(y0+R)+'V'+(y1-R)+'A'+R+' '+R+' 0 0 '+sw+' '+(xe-m*R)+' '+y1+'H'+cx;
+  var pth=document.createElementNS(NS,'path');pth.setAttribute('d',d);pth.setAttribute('pathLength','1');sv.appendChild(pth)});
+ ring.appendChild(sv);ring.classList.add('is-trace')}
+function lit(ring,k){if(ring.classList.contains('is-trace'))ring.style.setProperty('--t',(1-k).toFixed(4));else ring.style.opacity=k}
 function ease(x){return x<=0?0:x>=1?1:x*x*(3-2*x)}
 /* cards brighten (ring, header, text) and lines brighten as their step is reached */
 function paint(ks){M.steps.forEach(function(S,i){var k=+ease(ks[i]).toFixed(3);if(k===S.k)return;S.k=k;
-  S.cards.forEach(function(c){c.ring.style.opacity=k;c.inn.style.opacity=(.48+.52*k).toFixed(3);c.el.style.setProperty('--k',k)});
+  S.cards.forEach(function(c){lit(c.ring,k);c.inn.style.opacity=(.48+.52*k).toFixed(3);c.el.style.setProperty('--k',k)});
   var v=Math.round(51+173*k),col='rgb('+v+','+v+','+v+')';S.lines.forEach(function(p){p.setAttribute('stroke',col)})})} // opaque #333 (unlit) to #E0E0E0 (lit) on the black band
 /* mobile: progressive by position (v = trigger line in diagram px); reversible */
 function paintM(v){var T=M.total,s=M.lg.childNodes,a=Math.max(0,Math.min(1,(v-16)/T)),b=Math.max(0,Math.min(1,(v+16)/T));s[1].setAttribute('offset',a.toFixed(4));s[2].setAttribute('offset',b.toFixed(4));
  M.mc.forEach(function(c){var y=v-c.top-c.st,rk=+ease(y/c.h).toFixed(3),hk=+ease(y/M.HD).toFixed(3);
-  if(rk!==c.k[0]){c.k[0]=rk;c.ring.style.opacity=rk}
+  var tk=+ease((v-c.top)/c.h).toFixed(3);if(tk!==c.k[0]){c.k[0]=tk;lit(c.ring,tk)}
   if(hk!==c.k[1]){c.k[1]=hk;c.hd.style.setProperty('--k',hk);var o=(.48+.52*hk).toFixed(3);c.hd.children[0].style.opacity=o;c.hd.children[1].style.opacity=o}
   c.rows.forEach(function(r,i){var k=+ease((y-M.HD-1-M.ROW*i)/M.ROW).toFixed(3);if(k!==c.k[i+2]){c.k[i+2]=k;r.style.opacity=(.48+.52*k).toFixed(3)}})})}
 function draw(v){if(M.H)paint(ksFor(v));else paintM(v)}
