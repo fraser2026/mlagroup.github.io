@@ -712,6 +712,9 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 -->
 <style>
 #ph{position:relative;background-color:var(--ph-3);color:var(--on-ph);overflow:clip}
+/* seam with the black band above: the field starts 1px up (over the band's edge) and its own first pixels are band black, so a sub-pixel gap can never show the blue base colour as a hairline */
+#ph{margin-top:-1px;background-image:linear-gradient(180deg,#000 0,#000 64px,transparent 64px)}
+#ph .ph-bg{top:-1px}
 #ph .ph-bg{position:absolute;inset:0;z-index:0;pointer-events:none;background-color:var(--ph-1)}
 /* the field's top edge melts into the navy above over a long soft ramp (no seam where the sticky field ends) */
 #ph .ph-stick:before{content:"";position:absolute;left:0;right:0;top:0;height:48%;z-index:1;background-image:linear-gradient(180deg,var(--ph-1) 0%,rgba(18,10,102,.75) 12%,rgba(18,10,102,.4) 28%,rgba(18,10,102,0) 100%)}
