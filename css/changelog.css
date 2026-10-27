@@ -85,3 +85,7 @@ button{font:inherit}
 /* Media: image that already carries its own window frame */
 .media-img{padding:0;background:transparent;border:0;overflow:hidden}
 .media-img img{display:block;width:100%;height:auto;border-radius:var(--r-12)}
+/* v1.1: sticky bar flush under the site nav; off-white spans the full content width */
+.cl-bar{top:0;padding-top:96px;margin-top:-88px}
+.cl-bar::before{content:"";position:absolute;top:0;bottom:0;right:0;left:-40%;background:var(--paper);z-index:-1}
+@media (max-width:820px){ .cl-bar{top:0;padding-top:80px;margin-top:-72px} .cl-bar::before{left:calc(-1 * var(--h-gutter));right:calc(-1 * var(--h-gutter))} }
