@@ -712,7 +712,9 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 -->
 <style>
 #ph{position:relative;background-color:var(--ph-3);color:var(--on-ph);overflow:clip}
-#ph .ph-bg{position:absolute;inset:0;z-index:0;pointer-events:none;background-color:var(--ph-0)}
+#ph .ph-bg{position:absolute;inset:0;z-index:0;pointer-events:none;background-color:var(--ph-1)}
+/* the field's top edge melts into the navy above over a long soft ramp (no seam where the sticky field ends) */
+#ph .ph-stick{-webkit-mask-image:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.25) 12%,rgba(0,0,0,.6) 28%,#000 48%);mask-image:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.25) 12%,rgba(0,0,0,.6) 28%,#000 48%)}
 #ph .ph-stick{position:-webkit-sticky;position:sticky;top:0;height:100vh;height:100lvh;overflow:hidden;background-image:radial-gradient(140% 55% at 50% 115%,rgba(83,58,253,.42) 0%,rgba(83,58,253,.16) 45%,rgba(83,58,253,0) 75%),linear-gradient(180deg,var(--ph-1) 0%,var(--ph-2) 50%,var(--ph-3) 100%)}
 /* static Cloudflare-style grid: 32px (24px mobile), lines 3%, dots 6%, faded toward the top and edges */
 #ph .ph-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px),radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.4px);background-size:32px 32px,32px 32px,32px 32px;background-position:-1px -1px,-1px -1px,-16.5px -16.5px;-webkit-mask-image:radial-gradient(120% 85% at 50% 100%,#000 0%,rgba(0,0,0,.55) 45%,transparent 80%);mask-image:radial-gradient(120% 85% at 50% 100%,#000 0%,rgba(0,0,0,.55) 45%,transparent 80%)}
