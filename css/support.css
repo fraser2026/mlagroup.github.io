@@ -16,11 +16,11 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-body)}
 .card h2{font-family:var(--font-display);font-weight:var(--fw-regular);font-size:var(--fs-23);line-height:var(--lh-snug);letter-spacing:var(--ls-display);color:var(--ink);margin:0}
 .card p{font-size:var(--fs-14);line-height:var(--lh-body);color:var(--ink-2);margin:var(--s-12) 0 var(--s-32);max-width:360px}
 .card .em{color:var(--accent);font-weight:var(--fw-medium)}
-.card .go{margin-top:auto;font-size:var(--fs-14);font-weight:var(--fw-medium);color:var(--accent);display:inline-flex;gap:var(--icon-gap);align-items:center}
+.card .go{margin-top:auto;line-height:1;font-size:var(--fs-14);font-weight:var(--fw-medium);color:var(--accent);display:inline-flex;gap:var(--icon-gap);align-items:center}
 .card .go svg{flex:none;width:var(--icon-arrow);height:var(--icon-arrow);transition:transform .3s var(--ease)}
 .card:hover .go{color:var(--accent-hover)}
-.card:hover .go svg{transform:translateX(3px)}
-.card.ext:hover .go svg{transform:translate(2px,-2px)}
+.card:hover .go svg{transform:translateX(var(--icon-nudge))}
+.card.ext:hover .go svg{transform:translate(var(--icon-nudge),calc(-1 * var(--icon-nudge)))}
 .more{margin:var(--s-40) 0 0;font-size:var(--fs-14);line-height:var(--lh-body);color:var(--ink-2)}
 .more a{color:var(--accent);text-decoration:none;font-weight:var(--fw-medium)}
 .more a:hover{color:var(--accent-hover)}
