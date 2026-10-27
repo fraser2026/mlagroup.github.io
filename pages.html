@@ -741,7 +741,9 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 /* providers row: sized to the "Mapped to" seals (168px cell, 48px mark, 15px label) */
 #cl .cl-int{padding-top:160px}
 #cl .cl-il{margin:0 0 24px;text-align:center;font-family:var(--font-body);font-weight:400;font-size:var(--fs-15);line-height:1.5;letter-spacing:normal;color:var(--on-ph-3)}
-#cl .cl-is{display:grid;grid-template-columns:repeat(7,1fr);gap:16px;margin:0;padding:0;list-style:none}
+#cl .cl-sv.is-static .cl-i[data-dup]{display:none}
+#cl .cl-row{display:grid;grid-template-columns:calc(6*(100% - 96px)/7 + 80px) 1fr;column-gap:16px}
+#cl .cl-is{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin:0;padding:0;list-style:none}
 #cl .cl-i{position:relative;height:168px}
 #cl .cl-i img,#cl .cl-i svg{position:absolute;left:50%;top:68px;width:48px;height:48px;transform:translate(-50%,-50%)}
 #cl .cl-i img{filter:brightness(0) invert(1);opacity:.58}
@@ -770,11 +772,17 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
   #ph .ph-body p{font-size:var(--fs-16);line-height:1.5}
   #cl .cl-int{padding-top:96px}
   #cl .cl-il{margin-bottom:16px}
-  #cl .cl-is{grid-template-columns:repeat(3,1fr);gap:0 8px}
-  #cl .cl-i{height:120px}
-  #cl .cl-more{grid-column:1/-1;height:104px}
+  /* mobile: providers drift in one row exactly like the "Mapped to" row (136px tiles, 8px gap, 16px/s, 48px edge fades); the + tile sits centred below */
+  #cl .cl-row{display:block}
+  #cl .cl-sv{position:relative;margin:0 calc(-1*var(--h-gutter,16px));overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent)}
+  #cl .cl-is{display:flex;gap:8px;width:max-content;will-change:transform}
+  #cl .cl-i{flex:0 0 136px;height:120px}
+  #cl .cl-sv.is-static{margin:0;-webkit-mask-image:none;mask-image:none}
+  #cl .cl-sv.is-static .cl-is{flex-wrap:wrap;justify-content:center;width:auto}
+  #cl .cl-sv.is-static .cl-i{flex:0 0 calc((100% - 16px)/3)}
+  #cl .cl-more{height:120px;width:136px;margin:0 auto}
   #cl .cl-i img,#cl .cl-i svg{top:48px;width:32px;height:32px}
-  #cl .cl-i span{font-size:var(--fs-12);line-height:1.25;white-space:normal;padding:0 2px;bottom:14px}
+  #cl .cl-i span{font-size:var(--fs-13);bottom:22px}
   #cl .cl-wrap{display:block;padding:64px 0 24px}
   #cl .cl-side{margin-top:32px;padding:0}
 }
@@ -805,7 +813,7 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
     </article>
   
     <div class="cl" id="cl" aria-labelledby="cl-st">
-  <div class="cl-int" aria-label="AI providers RegAnchor works with"><p class="cl-il">Works with</p><ul class="cl-is"><li class="cl-i"><img src="assets/providers/anthropic-color.svg" alt="" width="32" height="32" decoding="async"><span>Anthropic</span></li><li class="cl-i"><img src="assets/providers/openai-color.svg" alt="" width="32" height="32" decoding="async"><span>OpenAI</span></li><li class="cl-i"><img src="assets/providers/gemini-color.svg" alt="" width="32" height="32" decoding="async"><span>Google Gemini</span></li><li class="cl-i"><img src="assets/providers/azureai-color.svg" alt="" width="32" height="32" decoding="async"><span>Azure OpenAI</span></li><li class="cl-i"><img src="assets/providers/bedrock-color.svg" alt="" width="32" height="32" decoding="async"><span>Amazon Bedrock</span></li><li class="cl-i"><img src="assets/providers/meta-color.svg" alt="" width="32" height="32" decoding="async"><span>Meta Llama</span></li><li class="cl-i cl-more"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 12v24M12 24h24" stroke="currentColor" stroke-width="1.5" fill="none"/></svg><span>Your own models</span></li></ul></div>
+  <div class="cl-int" aria-label="AI providers RegAnchor works with"><p class="cl-il">Works with</p><div class="cl-row"><div class="cl-sv"><ul class="cl-is"><li class="cl-i"><img src="assets/providers/anthropic-color.svg" alt="" width="32" height="32" decoding="async"><span>Anthropic</span></li><li class="cl-i"><img src="assets/providers/openai-color.svg" alt="" width="32" height="32" decoding="async"><span>OpenAI</span></li><li class="cl-i"><img src="assets/providers/gemini-color.svg" alt="" width="32" height="32" decoding="async"><span>Google Gemini</span></li><li class="cl-i"><img src="assets/providers/azureai-color.svg" alt="" width="32" height="32" decoding="async"><span>Azure OpenAI</span></li><li class="cl-i"><img src="assets/providers/bedrock-color.svg" alt="" width="32" height="32" decoding="async"><span>Amazon Bedrock</span></li><li class="cl-i"><img src="assets/providers/meta-color.svg" alt="" width="32" height="32" decoding="async"><span>Meta Llama</span></li></ul></div><div class="cl-i cl-more"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 12v24M12 24h24" stroke="currentColor" stroke-width="1.5" fill="none"/></svg><span>Your own models</span></div></div></div>
   <div class="cl-wrap">
     <h2 class="cl-st" id="cl-st">Deploy AI with confidence.</h2>
     <div class="cl-side">
@@ -859,6 +867,16 @@ var cl=document.getElementById('cl');if(cl)new IntersectionObserver(function(e){
 var nav=document.getElementById('nav'),nb=nav&&nav.querySelector('.bar');function navc(){if(!nb)return;var b=nb.getBoundingClientRect(),m=b.top+b.height/2,r=sec.getBoundingClientRect();nav.classList.toggle('on-colour',r.top+Math.min(innerHeight*.5,420)<m&&r.bottom>m)}
 addEventListener('scroll',function(){kick();navc();if(!vis)measure()},{passive:true});navc();addEventListener('resize',function(){size();kick()});
 (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(init);init()})();
+</script>
+<script>
+/* providers row (mobile): same seamless drift as the "Mapped to" row: 16px/s, rAF + transform, only while on screen; desktop and reduced motion = static */
+(function(){var sv=document.querySelector('#cl .cl-sv');if(!sv)return;var st=sv.querySelector('.cl-is'),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,mob=function(){return innerWidth<=820};
+[].slice.call(st.children).forEach(function(t){var c=t.cloneNode(true);c.setAttribute('data-dup','');c.setAttribute('aria-hidden','true');st.appendChild(c)});
+var x=0,W=0,lastT=0,raf=0,vis=false;
+function tick(t){raf=0;var dt=lastT?Math.min(64,t-lastT):16;lastT=t;if(!mob()||reduce){lastT=0;return}if(!W)W=st.scrollWidth/2+4;x=(x+dt*.016)%W;st.style.transform='translate3d('+(-x).toFixed(2)+'px,0,0)';if(vis)raf=requestAnimationFrame(tick);else lastT=0}
+function layout(){W=0;sv.classList.toggle('is-static',reduce||!mob());if(!mob()||reduce)st.style.transform='';if(vis&&!raf)raf=requestAnimationFrame(tick)}
+new IntersectionObserver(function(e){vis=e[0].isIntersecting;if(vis&&!raf)raf=requestAnimationFrame(tick)},{rootMargin:'80px 0px'}).observe(sv);
+addEventListener('resize',layout);(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(layout);layout()})();
 </script>
 </main>
 
