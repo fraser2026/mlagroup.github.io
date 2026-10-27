@@ -89,3 +89,7 @@ button{font:inherit}
 .cl-bar{top:0;padding-top:96px;margin-top:-88px}
 .cl-bar::before{content:"";position:absolute;top:0;bottom:0;right:0;left:-40%;background:var(--paper);z-index:-1}
 @media (max-width:820px){ .cl-bar{top:0;padding-top:80px;margin-top:-72px} .cl-bar::before{left:calc(-1 * var(--h-gutter));right:calc(-1 * var(--h-gutter))} }
+/* v1.2: no negative margin on the sticky bar (it painted over the hero buttons on mobile); hero bottom padding absorbs the bar's top padding instead */
+.cl-bar{margin-top:0}
+.cl-hero{padding-bottom:var(--s-8)}
+@media (max-width:820px){ .cl-bar{margin-top:0} .cl-hero{padding-bottom:0} }
