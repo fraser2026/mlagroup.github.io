@@ -264,7 +264,7 @@ button.btn{font-family:inherit;cursor:pointer}
 /* ===== Header menus: desktop triggers inside the floating capsule share one glass panel that morphs between menus; mobile grows the capsule down into a sheet ===== */
 .nav-links,.nav-burger,.nav-sheet,.nav-scrim{display:none}
 .nav-t{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 10px 0 12px;border:0;border-radius:6px;background:none;font:500 14px/1 Inter,system-ui,sans-serif;letter-spacing:-.005em;color:var(--ink);cursor:pointer;transition:background-color .2s,color .3s var(--x-ease)}
-.nav-t svg{flex:none;width:var(--icon-arrow);height:var(--icon-arrow);color:var(--ink-3);transition:transform .38s var(--x-ease),color .2s}
+.nav-t svg{flex:none;width:.7em;height:.7em;stroke-width:2.2;color:var(--ink-3);transition:transform .38s var(--x-ease),color .2s}
 .nav-t:hover,.nav-t:focus-visible,.nav-t[aria-expanded="true"]{background:rgba(10,14,20,.05);outline:none}
 .nav-t[aria-expanded="true"] svg{transform:rotate(180deg);color:var(--ink)}
 .nav.on-dark .nav-t{color:var(--on-dark)}
@@ -322,9 +322,18 @@ button.btn{font-family:inherit;cursor:pointer}
   .nav-burger{display:inline-flex;align-items:center;gap:12px;height:40px;padding:0 12px 0 16px;border:0;border-radius:6px;background:var(--accent,#533AFD);color:var(--on-accent,#fff);font-family:inherit;font-weight:500;font-size:var(--fs-14);line-height:1;letter-spacing:-.005em;cursor:pointer;transition:background-color .2s}
   .nav-burger:hover,.nav-burger:focus-visible{background:var(--accent-hover,#4330E0);outline:none}
   .nav-burger:focus-visible{box-shadow:0 0 0 2px var(--on-accent,white),0 0 0 4px var(--accent,#533AFD)}
-  .nav-burger svg{width:var(--icon-arrow,16px);height:var(--icon-arrow,16px);flex:none}
-  .nav-burger .nb-x,.nav.menu-open .nav-burger .nb-open,.nav.menu-open .nav-burger .nb-lines{display:none}
-  .nav.menu-open .nav-burger .nb-x{display:inline}
+  /* hamburger -> X: reganchor.com index spring (cubic-bezier(.34,1.45,.64,1), .42s), label swaps with a short crossfade */
+  .nav-burger .nb-ic{position:relative;display:flex;flex-direction:column;justify-content:center;gap:4px;width:14px;height:16px;flex:none}
+  .nav-burger .nb-ic i{display:block;height:1.5px;background:currentColor;transform-origin:center;transition:transform .42s cubic-bezier(.34,1.45,.64,1),opacity .22s ease}
+  .nav.menu-open .nav-burger .nb-ic i:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
+  .nav.menu-open .nav-burger .nb-ic i:nth-child(2){opacity:0;transform:scaleX(0)}
+  .nav.menu-open .nav-burger .nb-ic i:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+  .nav-burger .nb-open,.nav-burger .nb-x{display:inline-block;transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.45,.64,1)}
+  .nav-burger .nb-lbl{display:inline-grid}.nav-burger .nb-lbl>*{grid-area:1/1;text-align:right}
+  .nav-burger .nb-x,.nav.menu-open .nav-burger .nb-open{opacity:0;transform:translateY(4px)}
+  .nav.menu-open .nav-burger .nb-x{opacity:1;transform:none}
+  .nav.menu-open .bar{transition:height .62s cubic-bezier(.34,1.12,.64,1),background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
+  @media (prefers-reduced-motion:reduce){.nav-burger .nb-ic i,.nav-burger .nb-open,.nav-burger .nb-x,.nav.menu-open .bar{transition:none!important}}
   .nav-scrim{display:block;position:fixed;inset:0;z-index:-1;background:rgba(10,14,20,.28);opacity:0;pointer-events:none;transition:opacity .45s var(--x-ease)}
   .nav.menu-open .nav-scrim{opacity:1;pointer-events:auto}
   .nav.menu-open .bar{background:rgba(247,247,249,.97);border-color:rgba(10,14,20,.07);box-shadow:0 1px 2px rgba(10,14,20,.04),0 24px 48px -20px rgba(10,14,20,.30)}
@@ -377,7 +386,7 @@ button.btn{font-family:inherit;cursor:pointer}
     <div class="nav-right">
       <a href="https://app.reganchor.com/login" class="nav-signin">Sign in</a>
       <a href="contact.html" class="btn btn-primary btn-sm nav-cta" data-open-demo>Book a demo</a>
-      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><span class="nb-open" aria-hidden="true">Menu</span><span class="nb-x" aria-hidden="true">Close</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path class="nb-lines" d="M2 4h12M2 8h12M2 12h12"/><path class="nb-x" d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg></button>
+      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><span class="nb-lbl" aria-hidden="true"><span class="nb-open">Menu</span><span class="nb-x">Close</span></span><span class="nb-ic" aria-hidden="true"><i></i><i></i><i></i></span></button>
     </div>
     <div class="nav-sheet" id="navSheet" inert>
       <div class="ns-in"><div class="ns-scroll">
@@ -493,7 +502,7 @@ button.btn{font-family:inherit;cursor:pointer}
 
 <!-- ============ COPY: MISSION + SYSTEM MODEL (black band; cards brighten as you scroll; dashed lines stream continuously) ============ -->
 <style>
-#mission{--ms-fg:#F7F6F4;--ms-fg3:rgba(247,246,244,.42);--ms-card:#0B0B0C;--ms-head:#121214;--ms-rule:rgba(247,246,244,.07);--ms-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+#mission{--ms-fg:#F7F6F4;--ms-fg3:rgba(247,246,244,.42);--ms-card:#161619;--ms-head:#1E1E22;--ms-rule:rgba(247,246,244,.07);--ms-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   position:relative;overflow:hidden;background:var(--paper,#F7F6F4);color:var(--ms-fg)}
 /* black band = clipped background layer: starts as a rounded inset panel and grows edge-to-edge on scroll (content never moves) */
 #mission .ms-bg{position:absolute;inset:0;z-index:0;background:#000;pointer-events:none;-webkit-clip-path:inset(0 var(--ms-m,0px) round var(--ms-r,0px));clip-path:inset(0 var(--ms-m,0px) round var(--ms-r,0px))}
@@ -501,7 +510,7 @@ button.btn{font-family:inherit;cursor:pointer}
 #mission .ms-dots{position:absolute;right:-180px;top:-140px;width:1150px;height:460px;transform:rotate(-15deg);transform-origin:top right;pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect x='3' y='3' width='14' height='14' rx='3' fill='%23FFFFFF'/%3E%3C/svg%3E");background-size:22px 22px;opacity:.05;
   -webkit-mask-image:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%);mask-image:radial-gradient(ellipse 62% 50% at 72% 50%,#000 30%,transparent 100%)}
-#mission .ms-wrap{position:relative;z-index:1;width:min(100% - 2*var(--h-gutter,56px),var(--h-max,1328px));margin:0 auto;padding:168px 0 160px}
+#mission .ms-wrap{position:relative;z-index:1;width:min(100% - 2*var(--h-gutter,56px),var(--h-max,1328px));margin:0 auto;padding:168px 0 112px}
 #mission .ms-statement{margin:0;font:300 64px/1.06 var(--display,"Inter Tight",Inter,sans-serif);letter-spacing:.005em;color:var(--ms-fg);max-width:1180px;text-wrap:balance}
 #mission .ms-statement .w{will-change:opacity}
 #mission .ms-dg{position:relative;margin-top:136px;height:426px}
@@ -512,6 +521,9 @@ button.btn{font-family:inherit;cursor:pointer}
 #mission .ms-dg .ms-card{overflow:visible}
 #mission .ms-dg .ms-card .in{border-radius:var(--r-7);overflow:hidden}
 #mission .ms-dg .ms-card .ring{border:0;box-shadow:inset 0 0 0 1.5px var(--ms-lit)}
+/* option A (lifted surface): no white border light-up; cards sit on a lifted fill with a slightly brighter resting outline */
+#mission .ms-dg .ms-card .ring{display:none}
+#mission .ms-card{border-color:rgba(247,246,244,.12)}
 #mission .ms-card .in{position:relative;z-index:1}
 #mission .ms-card .hd{position:relative;display:flex;align-items:center;gap:12px;height:52px;padding:0 20px;background:#0E0E10;border-bottom:1px solid var(--ms-rule)}
 #mission .ms-card .hd:before{content:"";position:absolute;inset:0;background:var(--ms-head);opacity:var(--k,1)}
@@ -733,7 +745,7 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 /* half-sun: one static elliptical horizon behind the CTA */
 #ph .ph-sun{position:absolute;left:-20%;right:-20%;bottom:0;height:720px;background-image:radial-gradient(55% 100% at 50% 100%,rgba(236,233,255,.44) 0%,rgba(190,178,255,.38) 16%,rgba(132,112,255,.34) 34%,rgba(83,58,253,.30) 52%,rgba(83,58,253,.12) 74%,rgba(83,58,253,0) 100%)}
 /* no grain box on the half-sun: Safari composites its mix-blend overlay as a visible rectangle, which drew the line under the providers row (its top edge sits 420px above the section end on mobile, 720px on desktop). The field's own grain layer already dithers this area. */
-#ph .ph-wrap{position:relative;z-index:1;width:min(100% - 2*var(--h-gutter,56px),var(--h-max,1328px));margin:0 auto;padding:200px 0 260px}
+#ph .ph-wrap{position:relative;z-index:1;width:min(100% - 2*var(--h-gutter,56px),var(--h-max,1328px));margin:0 auto;padding:152px 0 260px}
 #ph .ph-ch{display:grid;grid-template-columns:repeat(20,1fr);column-gap:16px}
 #ph .ph-ch+.ph-ch{margin-top:184px}
 #ph .ph-st{grid-column:1/-1;margin:0;font-family:var(--display);font-weight:300;font-size:var(--fs-64);line-height:1.06;letter-spacing:.005em;color:var(--on-ph);max-width:1180px;text-wrap:balance}
@@ -774,9 +786,10 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 @media (max-width:820px){
   #ph .ph-grid{background-size:24px 24px,24px 24px,24px 24px;background-position:-1px -1px,-1px -1px,-12.5px -12.5px;opacity:.8}
   #ph .ph-scrim{background-image:linear-gradient(rgba(14,8,72,.22),rgba(14,8,72,.22))}
-  #ph .ph-dawn{height:max(56vh,420px)}
+  #ph .ph-dawn{height:max(30vh,240px)} /* was max(56vh,420px): black turns to blue higher, so the heading sits inside the blue */
+  #ph{background-image:linear-gradient(180deg,#000 0,#000 24px,transparent 24px)}
   #ph .ph-sun{left:-60%;right:-60%;height:420px}
-  #ph .ph-wrap{padding:72px 0 200px} /* was 128px top */
+  #ph .ph-wrap{padding:120px 0 200px} /* was 72px: breathing room inside the blue */
   #ph .ph-ch{display:block}
   #ph .ph-ch+.ph-ch{margin-top:104px}
   #ph .ph-st,#cl .cl-st{font-size:var(--fs-32);line-height:1.1;letter-spacing:0}
@@ -937,7 +950,7 @@ addEventListener('resize',layout);(document.fonts&&document.fonts.ready?document
       </div>
     </div>
     <div class="footer-bottom">
-      <span class="footer-bottom__legal">RegAnchor is a trading name of MLA Group Ltd, registered in England &amp; Wales (No. 16117562). &copy; All rights reserved.</span>
+      <span class="footer-bottom__legal">&copy; 2026 RegAnchor. All rights reserved.</span>
     </div>
     <a href="index.html" class="footer-mark" aria-label="RegAnchor home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 389 72.75" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
   <g fill="currentColor">

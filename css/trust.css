@@ -117,12 +117,11 @@ button,input,select,textarea,table{font:inherit}
 /* six cards, 3x2 */
 .cards{grid-template-columns:repeat(3,1fr)}
 .card{border-color:transparent}
-.card.t1{background:var(--t1-bg)} .card.t1 .ic{background:var(--t1-chip);color:var(--t1-ic)}
-.card.t2{background:var(--t2-bg)} .card.t2 .ic{background:var(--t2-chip);color:var(--t2-ic)}
-.card.t3{background:var(--t3-bg)} .card.t3 .ic{background:var(--t3-chip);color:var(--t3-ic)}
-.card.t4{background:var(--t4-bg)} .card.t4 .ic{background:var(--t4-chip);color:var(--t4-ic)}
-.card.t5{background:var(--t5-bg)} .card.t5 .ic{background:var(--t5-chip);color:var(--t5-ic)}
-.card.t6{background:var(--t6-bg)} .card.t6 .ic{background:var(--t6-chip);color:var(--t6-ic)}
+/* Trust A: one neutral card surface, single-colour ink line icons (1.5px stroke, 24px), no chip */
+.cards{--tc-card:#F4F4F6}
+.card{background:var(--tc-card)}
+.card .ic{width:auto;height:auto;border-radius:0;background:none;color:var(--ink);place-items:start}
+.card .ic svg{width:24px;height:24px}
 .nw{white-space:nowrap}
 .note h3{font-size:var(--fs-16);font-weight:var(--fw-medium);color:var(--ink);margin:0 0 var(--s-8)}
 .note p{margin:0}
