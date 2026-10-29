@@ -799,7 +799,14 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
   #ph{background-image:linear-gradient(180deg,#000 0,#000 24px,transparent 24px)}
   #ph .ph-sun{left:-60%;right:-60%;height:420px}
   /* iOS Safari 26 paints its top/bottom bars solid when a sticky or fixed layer touches the screen edge; on mobile the field scrolls with the section instead of sticking, so the bars stay clear glass */
-  #ph .ph-stick{position:absolute;top:0;left:0;right:0;will-change:transform} /* not sticky (iOS Safari 26 tints its bars from sticky/fixed layers at the edges): one screen tall, moved by script to follow the viewport within the section */
+  /* mobile field: a normal scrolling layer (no sticky, no fixed, no script, so iOS Safari 26 keeps clear glass bars and nothing lags).
+     The first screen is the original composition (ph-1 -> ph-2 -> ph-3, the bottom glow); after it the base breathes ph-3 <-> ph-2 every screen and a soft glow sits in each screen, so no screen reads as one flat colour */
+  #ph .ph-stick{position:absolute;inset:0;height:auto;z-index:0;background-image:
+    radial-gradient(140% 55% at 50% 115%,rgba(83,58,253,.42) 0%,rgba(83,58,253,.16) 45%,rgba(83,58,253,0) 75%),
+    radial-gradient(120% 42% at 50% 62%,rgba(83,58,253,.30) 0%,rgba(83,58,253,.11) 45%,rgba(83,58,253,0) 75%),
+    linear-gradient(180deg,var(--ph-1) 0,var(--ph-2) 50svh,var(--ph-3) 100svh,var(--ph-2) 150svh,var(--ph-3) 200svh,var(--ph-2) 250svh,var(--ph-3) 300svh,var(--ph-2) 350svh,var(--ph-3) 400svh,var(--ph-2) 450svh,var(--ph-3) 500svh);
+    background-size:100% 100svh,100% 100svh,100% 100%;background-position:0 0,0 100svh,0 0;background-repeat:no-repeat,repeat-y,no-repeat}
+  #ph .ph-stick:before{height:48svh} /* z-index:0 above keeps this scrim inside the panel (sticky made its own stacking context), so the black-to-blue dawn paints over it */
   #ph .ph-wrap{padding:120px 0 200px} /* was 72px: breathing room inside the blue */
   #ph .ph-ch{display:block}
   #ph .ph-ch+.ph-ch{margin-top:104px}
@@ -925,12 +932,6 @@ function fit(){if(innerWidth>820){h.style.fontSize='';return}h.style.fontSize=''
  var W=function(f){h.style.fontSize=f+'px';r.selectNodeContents(h);return r.getBoundingClientRect().width},fs=parseFloat(getComputedStyle(h).fontSize),tw=W(fs);if(!tw)return;
  var lo=fs*T/tw*.96,hi=fs*T/tw*1.04;for(var i=0;i<14;i++){var m=(lo+hi)/2;if(W(m)<=T)lo=m;else hi=m}h.style.fontSize=lo.toFixed(3)+'px'}} // largest size whose rendered width still fits
 addEventListener('resize',fit);(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(fit);fit()})();
-</script>
-<script>
-/* mobile: the philosophy field panel behaves like position:sticky (one screen tall, pinned while the section passes) but is an absolute layer moved with a transform, so Safari 26 never sees a sticky/fixed layer at the screen edge */
-(function(){var sec=document.getElementById('ph'),st=sec&&sec.querySelector('.ph-stick');if(!st)return;var raf=0;
-function upd(){raf=0;if(innerWidth>820){st.style.transform='';return}var r=sec.getBoundingClientRect(),h=st.offsetHeight,y=Math.max(0,Math.min(r.height-h,-r.top));st.style.transform='translate3d(0,'+y.toFixed(1)+'px,0)'}
-function q(){if(!raf)raf=requestAnimationFrame(upd)}addEventListener('scroll',q,{passive:true});addEventListener('resize',q);upd()})();
 </script>
 </main>
 
