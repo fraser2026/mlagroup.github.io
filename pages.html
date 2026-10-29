@@ -799,7 +799,7 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
   #ph{background-image:linear-gradient(180deg,#000 0,#000 24px,transparent 24px)}
   #ph .ph-sun{left:-60%;right:-60%;height:420px}
   /* iOS Safari 26 paints its top/bottom bars solid when a sticky or fixed layer touches the screen edge; on mobile the field scrolls with the section instead of sticking, so the bars stay clear glass */
-  #ph .ph-stick{position:absolute;inset:0;height:auto}
+  #ph .ph-stick{position:absolute;top:0;left:0;right:0;will-change:transform} /* not sticky (iOS Safari 26 tints its bars from sticky/fixed layers at the edges): one screen tall, moved by script to follow the viewport within the section */
   #ph .ph-wrap{padding:120px 0 200px} /* was 72px: breathing room inside the blue */
   #ph .ph-ch{display:block}
   #ph .ph-ch+.ph-ch{margin-top:104px}
@@ -925,6 +925,12 @@ function fit(){if(innerWidth>820){h.style.fontSize='';return}h.style.fontSize=''
  var W=function(f){h.style.fontSize=f+'px';r.selectNodeContents(h);return r.getBoundingClientRect().width},fs=parseFloat(getComputedStyle(h).fontSize),tw=W(fs);if(!tw)return;
  var lo=fs*T/tw*.96,hi=fs*T/tw*1.04;for(var i=0;i<14;i++){var m=(lo+hi)/2;if(W(m)<=T)lo=m;else hi=m}h.style.fontSize=lo.toFixed(3)+'px'}} // largest size whose rendered width still fits
 addEventListener('resize',fit);(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(fit);fit()})();
+</script>
+<script>
+/* mobile: the philosophy field panel behaves like position:sticky (one screen tall, pinned while the section passes) but is an absolute layer moved with a transform, so Safari 26 never sees a sticky/fixed layer at the screen edge */
+(function(){var sec=document.getElementById('ph'),st=sec&&sec.querySelector('.ph-stick');if(!st)return;var raf=0;
+function upd(){raf=0;if(innerWidth>820){st.style.transform='';return}var r=sec.getBoundingClientRect(),h=st.offsetHeight,y=Math.max(0,Math.min(r.height-h,-r.top));st.style.transform='translate3d(0,'+y.toFixed(1)+'px,0)'}
+function q(){if(!raf)raf=requestAnimationFrame(upd)}addEventListener('scroll',q,{passive:true});addEventListener('resize',q);upd()})();
 </script>
 </main>
 
