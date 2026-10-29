@@ -89,7 +89,9 @@ h2{font-size:36px;line-height:1.15;font-weight:600;letter-spacing:-.02em;color:v
 @media (max-width:960px){.feature.portrait .wrap,.feature.wide .wrap{grid-template-columns:1fr;gap:40px}.feature.portrait .shot{margin:0 auto;max-width:400px}}
 /* lightbox */
 .lb{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:48px;background:rgba(6,27,49,.72);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .25s}
-.lb.open{opacity:1;pointer-events:auto}
+.lb.open{opacity:1;pointer-events:auto;visibility:visible;transition-delay:0s}
+/* closed lightbox and menu scrim are taken out of rendering (visibility:hidden after the fade), so iOS Safari 26 never samples a full-viewport fixed dark layer for its bottom toolbar tint */
+.lb:not(.open){visibility:hidden;transition:opacity .25s,visibility 0s linear .25s}
 .lb figure{max-width:min(1600px,100%);max-height:100%;display:flex;flex-direction:column;gap:14px;align-items:center;transform:scale(.97);transition:transform .3s var(--ease)}
 .lb.open figure{transform:none}
 .lb img{max-height:calc(100vh - 140px);width:auto;border-radius:12px}
@@ -335,7 +337,8 @@ button.btn{font-family:inherit;cursor:pointer}
   .nav.menu-open .bar{transition:height .62s cubic-bezier(.34,1.12,.64,1),background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
   @media (prefers-reduced-motion:reduce){.nav-burger .nb-ic i,.nav-burger .nb-open,.nav-burger .nb-x,.nav.menu-open .bar{transition:none!important}}
   .nav-scrim{display:block;position:fixed;inset:0;z-index:-1;background:rgba(10,14,20,.28);opacity:0;pointer-events:none;transition:opacity .45s var(--x-ease)}
-  .nav.menu-open .nav-scrim{opacity:1;pointer-events:auto}
+  .nav-scrim{visibility:hidden;transition:opacity .45s var(--x-ease),visibility 0s linear .45s}
+  .nav.menu-open .nav-scrim{opacity:1;pointer-events:auto;visibility:visible;transition:opacity .45s var(--x-ease),visibility 0s}
   .nav.menu-open .bar{background:rgba(247,247,249,.97);border-color:rgba(10,14,20,.07);box-shadow:0 1px 2px rgba(10,14,20,.04),0 24px 48px -20px rgba(10,14,20,.30)}
   .nav.menu-open .logo img{filter:none}
   .nav-sheet{display:flex;grid-column:1/-1;align-self:stretch;min-height:0;overflow:hidden}
