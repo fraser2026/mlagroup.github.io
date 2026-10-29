@@ -90,6 +90,9 @@ h2{font-size:36px;line-height:1.15;font-weight:600;letter-spacing:-.02em;color:v
 /* lightbox */
 .lb{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:48px;background:rgba(6,27,49,.72);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .25s}
 .lb.open{opacity:1;pointer-events:auto}
+/* closed lightbox is not rendered at all (no full-viewport fixed layer for iOS Safari to sample); it fades in from opacity 0 when opened */
+.lb:not(.open){display:none}
+@starting-style{.lb.open{opacity:0}}
 .lb figure{max-width:min(1600px,100%);max-height:100%;display:flex;flex-direction:column;gap:14px;align-items:center;transform:scale(.97);transition:transform .3s var(--ease)}
 .lb.open figure{transform:none}
 .lb img{max-height:calc(100vh - 140px);width:auto;border-radius:12px}
@@ -335,7 +338,9 @@ button.btn{font-family:inherit;cursor:pointer}
   .nav.menu-open .bar{transition:height .62s cubic-bezier(.34,1.12,.64,1),background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
   @media (prefers-reduced-motion:reduce){.nav-burger .nb-ic i,.nav-burger .nb-open,.nav-burger .nb-x,.nav.menu-open .bar{transition:none!important}}
   .nav-scrim{display:block;position:fixed;inset:0;z-index:-1;background:rgba(10,14,20,.28);opacity:0;pointer-events:none;transition:opacity .45s var(--x-ease)}
+  .nav:not(.menu-open) .nav-scrim{display:none} /* not rendered while the menu is closed */
   .nav.menu-open .nav-scrim{opacity:1;pointer-events:auto}
+  @starting-style{.nav.menu-open .nav-scrim{opacity:0}}
   .nav.menu-open .bar{background:rgba(247,247,249,.97);border-color:rgba(10,14,20,.07);box-shadow:0 1px 2px rgba(10,14,20,.04),0 24px 48px -20px rgba(10,14,20,.30)}
   .nav.menu-open .logo img{filter:none}
   .nav-sheet{display:flex;grid-column:1/-1;align-self:stretch;min-height:0;overflow:hidden}
@@ -796,16 +801,16 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
   #ph .ph-grid{background-size:24px 24px,24px 24px,24px 24px;background-position:-1px -1px,-1px -1px,-12.5px -12.5px;opacity:.8}
   #ph .ph-scrim{background-image:linear-gradient(rgba(14,8,72,.22),rgba(14,8,72,.22))}
   #ph .ph-dawn{height:max(30vh,240px)} /* was max(56vh,420px): black turns to blue higher, so the heading sits inside the blue */
-  #ph{background-image:linear-gradient(180deg,#000 0,#000 24px,transparent 24px)}
   #ph .ph-sun{left:-60%;right:-60%;height:420px}
   /* iOS Safari 26 paints its top/bottom bars solid when a sticky or fixed layer touches the screen edge; on mobile the field scrolls with the section instead of sticking, so the bars stay clear glass */
   /* mobile field: a normal scrolling layer (no sticky, no fixed, no script, so iOS Safari 26 keeps clear glass bars and nothing lags).
      The first screen is the original composition (ph-1 -> ph-2 -> ph-3, the bottom glow); after it the base breathes ph-3 <-> ph-2 every screen and a soft glow sits in each screen, so no screen reads as one flat colour */
-  #ph .ph-stick{position:absolute;inset:0;height:auto;z-index:0;background-image:
-    radial-gradient(140% 55% at 50% 115%,rgba(83,58,253,.42) 0%,rgba(83,58,253,.16) 45%,rgba(83,58,253,0) 75%),
+  #ph{background-color:var(--ph-1);background-image:linear-gradient(180deg,#000 0,#000 24px,transparent 24px),radial-gradient(140% 55% at 50% 115%,rgba(83,58,253,.42) 0%,rgba(83,58,253,.16) 45%,rgba(83,58,253,0) 75%),
     radial-gradient(120% 42% at 50% 62%,rgba(83,58,253,.30) 0%,rgba(83,58,253,.11) 45%,rgba(83,58,253,0) 75%),
     linear-gradient(180deg,var(--ph-1) 0,var(--ph-2) 50svh,var(--ph-3) 100svh,var(--ph-2) 150svh,var(--ph-3) 200svh,var(--ph-2) 250svh,var(--ph-3) 300svh,var(--ph-2) 350svh,var(--ph-3) 400svh,var(--ph-2) 450svh,var(--ph-3) 500svh);
-    background-size:100% 100svh,100% 100svh,100% 100%;background-position:0 0,0 100svh,0 0;background-repeat:no-repeat,repeat-y,no-repeat}
+    background-size:100% 100%,100% 100svh,100% 100svh,100% 100%;background-position:0 0,0 0,0 100svh,0 0;background-repeat:no-repeat,no-repeat,repeat-y,no-repeat}
+  #ph .ph-bg{background-color:transparent}
+  #ph .ph-stick{position:absolute;inset:0;height:auto;z-index:0;background-image:none}
   #ph .ph-stick:before{height:48svh} /* z-index:0 above keeps this scrim inside the panel (sticky made its own stacking context), so the black-to-blue dawn paints over it */
   #ph .ph-wrap{padding:120px 0 200px} /* was 72px: breathing room inside the blue */
   #ph .ph-ch{display:block}
