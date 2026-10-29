@@ -15,8 +15,8 @@
 <style>
 :root{--navy:#0A0E14;--body:#374151;--muted:#6B7280;--purple:#533AFD;--purple-d:#4434E0;--border:#E4E7EC;--pale:#F6F9FC;--hover:rgba(17,17,17,.028);--max:1200px;--radius:4px;--ease:cubic-bezier(.2,.7,.2,1)}
 *{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-body{font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--body);background:#fff;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;background-color:#000;background-image:linear-gradient(#F7F6F4 50%,#000 50%)} /* page canvas: footer black at the bottom edge (Safari's bottom-bar fallback and overscroll), hero paper at the top; every section paints its own colour */
+body{font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--body);background:transparent;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
 a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%;height:auto}
 .wrap{max-width:var(--max);margin:0 auto;padding:0 32px}
@@ -805,10 +805,10 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
   /* iOS Safari 26 paints its top/bottom bars solid when a sticky or fixed layer touches the screen edge; on mobile the field scrolls with the section instead of sticking, so the bars stay clear glass */
   /* mobile field: a normal scrolling layer (no sticky, no fixed, no script, so iOS Safari 26 keeps clear glass bars and nothing lags).
      The first screen is the original composition (ph-1 -> ph-2 -> ph-3, the bottom glow); after it the base breathes ph-3 <-> ph-2 every screen and a soft glow sits in each screen, so no screen reads as one flat colour */
-  #ph{background-color:var(--ph-1);background-image:linear-gradient(180deg,#000 0,#000 24px,transparent 24px),radial-gradient(140% 55% at 50% 115%,rgba(83,58,253,.42) 0%,rgba(83,58,253,.16) 45%,rgba(83,58,253,0) 75%),
+  #ph{background-color:var(--ph-1);background-image:linear-gradient(180deg,#000 0,#000 24px,transparent 24px),radial-gradient(140% 34.375% at 50% 71.875%,rgba(83,58,253,.42) 0%,rgba(83,58,253,.16) 45%,rgba(83,58,253,0) 75%),
     radial-gradient(120% 42% at 50% 62%,rgba(83,58,253,.30) 0%,rgba(83,58,253,.11) 45%,rgba(83,58,253,0) 75%),
     linear-gradient(180deg,var(--ph-1) 0,var(--ph-2) 50svh,var(--ph-3) 100svh,var(--ph-2) 150svh,var(--ph-3) 200svh,var(--ph-2) 250svh,var(--ph-3) 300svh,var(--ph-2) 350svh,var(--ph-3) 400svh,var(--ph-2) 450svh,var(--ph-3) 500svh);
-    background-size:100% 100%,100% 100svh,100% 100svh,100% 100%;background-position:0 0,0 0,0 100svh,0 0;background-repeat:no-repeat,no-repeat,repeat-y,no-repeat}
+    background-size:100% 100%,100% 160svh,100% 100svh,100% 100%; /* first-screen glow tile is 160svh tall so its ellipse fades out inside the tile (at 100svh it was cut off: the visible seam) */background-position:0 0,0 0,0 100svh,0 0;background-repeat:no-repeat,no-repeat,repeat-y,no-repeat}
   #ph .ph-bg{background-color:transparent}
   #ph .ph-stick{position:absolute;inset:0;height:auto;z-index:0;background-image:none}
   #ph .ph-stick:before{height:48svh} /* z-index:0 above keeps this scrim inside the panel (sticky made its own stacking context), so the black-to-blue dawn paints over it */
