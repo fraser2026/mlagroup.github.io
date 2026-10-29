@@ -820,7 +820,8 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
   #cl .cl-wrap{display:block;padding:64px 0 24px}
   /* CTA headline: one line, left-aligned, sized to span the content width exactly (text width = 11.75em at letter-spacing 0; content = 100vw - 2*16px) */
   #cl .cl-st{white-space:nowrap;font-size:calc((100vw - 32px)/11.75);line-height:1.06}
-  #cl .cl-side{margin-top:32px;padding:0}
+  #cl .cl-side{margin-top:32px;padding:0;flex-wrap:nowrap}
+  #cl .cl-b{flex:1 1 0;min-width:0;justify-content:space-between} /* the two buttons share the content width equally: left margin to right margin, like the fitted headline */
 }
 @media (prefers-reduced-motion:reduce){#cl .cl-b,#cl .cl-ar{transition:none}}
 
@@ -914,6 +915,14 @@ function tick(t){raf=0;var dt=lastT?Math.min(64,t-lastT):16;lastT=t;if(!mob()||r
 function layout(){W=0;sv.classList.toggle('is-static',reduce||!mob());if(!mob()||reduce)st.style.transform='';if(vis&&!raf)raf=requestAnimationFrame(tick)}
 new IntersectionObserver(function(e){vis=e[0].isIntersecting;if(vis&&!raf)raf=requestAnimationFrame(tick)},{rootMargin:'80px 0px'}).observe(sv);
 addEventListener('resize',layout);(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(layout);layout()})();
+</script>
+<script>
+/* mobile CTA headline: fit to the content width exactly (CSS calc is the fallback); re-runs on font load and resize */
+(function(){var h=document.querySelector('#cl .cl-st'),w=document.querySelector('#cl .cl-wrap');if(!h||!w)return;
+function fit(){if(innerWidth>820){h.style.fontSize='';return}h.style.fontSize='';var cs=getComputedStyle(w),T=w.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-.5,r=document.createRange();
+ var W=function(f){h.style.fontSize=f+'px';r.selectNodeContents(h);return r.getBoundingClientRect().width},fs=parseFloat(getComputedStyle(h).fontSize),tw=W(fs);if(!tw)return;
+ var lo=fs*T/tw*.96,hi=fs*T/tw*1.04;for(var i=0;i<14;i++){var m=(lo+hi)/2;if(W(m)<=T)lo=m;else hi=m}h.style.fontSize=lo.toFixed(3)+'px'}} // largest size whose rendered width still fits
+addEventListener('resize',fit);(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(fit);fit()})();
 </script>
 </main>
 
