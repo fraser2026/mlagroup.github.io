@@ -502,7 +502,7 @@ button.btn{font-family:inherit;cursor:pointer}
 
 <!-- ============ COPY: MISSION + SYSTEM MODEL (black band; cards brighten as you scroll; dashed lines stream continuously) ============ -->
 <style>
-#mission{--ms-fg:#F7F6F4;--ms-fg3:rgba(247,246,244,.42);--ms-card:#161619;--ms-head:#1E1E22;--ms-rule:rgba(247,246,244,.07);--ms-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+#mission{--ms-fg:#F7F6F4;--ms-fg3:rgba(247,246,244,.42);--ms-card:#0B0B0C;--ms-head:#121214;--ms-rule:rgba(247,246,244,.07);--ms-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   position:relative;overflow:hidden;background:var(--paper,#F7F6F4);color:var(--ms-fg)}
 /* black band = clipped background layer: starts as a rounded inset panel and grows edge-to-edge on scroll (content never moves) */
 #mission .ms-bg{position:absolute;inset:0;z-index:0;background:#000;pointer-events:none;-webkit-clip-path:inset(0 var(--ms-m,0px) round var(--ms-r,0px));clip-path:inset(0 var(--ms-m,0px) round var(--ms-r,0px))}
@@ -521,9 +521,8 @@ button.btn{font-family:inherit;cursor:pointer}
 #mission .ms-dg .ms-card{overflow:visible}
 #mission .ms-dg .ms-card .in{border-radius:var(--r-7);overflow:hidden}
 #mission .ms-dg .ms-card .ring{border:0;box-shadow:inset 0 0 0 1.5px var(--ms-lit)}
-/* option A (lifted surface): no white border light-up; cards sit on a lifted fill with a slightly brighter resting outline */
+/* no white border light-up (card fill and outline stay at the original dark values) */
 #mission .ms-dg .ms-card .ring{display:none}
-#mission .ms-card{border-color:rgba(247,246,244,.12)}
 #mission .ms-card .in{position:relative;z-index:1}
 #mission .ms-card .hd{position:relative;display:flex;align-items:center;gap:12px;height:52px;padding:0 20px;background:#0E0E10;border-bottom:1px solid var(--ms-rule)}
 #mission .ms-card .hd:before{content:"";position:absolute;inset:0;background:var(--ms-head);opacity:var(--k,1)}
@@ -783,6 +782,12 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 #cl .cl-p{background-color:var(--paper);color:var(--ink)}#cl .cl-p:hover,#cl .cl-p:focus-visible{background-color:var(--ph-btn1-hover)}
 #cl .cl-s{background-color:var(--ph-btn2);color:var(--on-ph);box-shadow:inset 0 0 0 1px var(--ph-btn2-rule)}#cl .cl-s:hover,#cl .cl-s:focus-visible{background-color:var(--ph-btn2-hover)}
 @media (min-width:821px) and (max-width:1180px){#ph .ph-body{grid-column:9/19}}
+/* closing CTA, desktop: centred, larger headline, buttons sitting low on the glow (Cloudflare composition) */
+@media (min-width:821px){
+  #cl .cl-wrap{display:flex;flex-direction:column;align-items:center;text-align:center;padding:240px 0 120px}
+  #cl .cl-st{align-self:center;font-size:80px;text-align:center}
+  #cl .cl-side{align-self:center;justify-content:center;margin-top:48px;padding:0}
+}
 @media (max-width:820px){
   #ph .ph-grid{background-size:24px 24px,24px 24px,24px 24px;background-position:-1px -1px,-1px -1px,-12.5px -12.5px;opacity:.8}
   #ph .ph-scrim{background-image:linear-gradient(rgba(14,8,72,.22),rgba(14,8,72,.22))}
@@ -809,6 +814,8 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
   #cl .cl-i img,#cl .cl-i svg{top:48px;width:38px;height:38px}
   #cl .cl-i span{font-size:var(--fs-13);bottom:22px}
   #cl .cl-wrap{display:block;padding:64px 0 24px}
+  /* CTA headline: one line, left-aligned, sized to span the content width exactly (text width = 11.75em at letter-spacing 0; content = 100vw - 2*16px) */
+  #cl .cl-st{white-space:nowrap;font-size:calc((100vw - 32px)/11.75);line-height:1.06}
   #cl .cl-side{margin-top:32px;padding:0}
 }
 @media (prefers-reduced-motion:reduce){#cl .cl-b,#cl .cl-ar{transition:none}}
