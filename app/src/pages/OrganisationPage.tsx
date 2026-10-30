@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { CircleCheck } from 'lucide-react'
 import {
   BrandLoader,
   Button,
@@ -83,6 +84,7 @@ export function OrganisationPage() {
   const [adminKey, setAdminKey] = useState('')
   const [providerBusy, setProviderBusy] = useState('')
   const [providerError, setProviderError] = useState('')
+  const [providerNotice, setProviderNotice] = useState('')
   const [loading, setLoading] = useState(true)
 
   usePageChrome({
@@ -150,6 +152,7 @@ export function OrganisationPage() {
       return
     }
     setProviderError('')
+    setProviderNotice('')
     setProviderBusy('connect')
     try {
       await invokeEdge(
@@ -159,6 +162,7 @@ export function OrganisationPage() {
       )
       setAdminKey('')
       await load()
+      setProviderNotice('Admin key connected and verified with the provider.')
     } catch (e) {
       setProviderError(e instanceof Error ? e.message : 'Could not connect Admin key.')
     } finally {
@@ -169,6 +173,7 @@ export function OrganisationPage() {
   async function testProvider(slug: string) {
     if (!org?.id || !session?.access_token) return
     setProviderError('')
+    setProviderNotice('')
     setProviderBusy('test')
     try {
       await invokeEdge(
@@ -177,6 +182,7 @@ export function OrganisationPage() {
         session.access_token,
       )
       await load()
+      setProviderNotice('Admin key verified with the provider.')
     } catch (e) {
       setProviderError(e instanceof Error ? e.message : 'Verification failed.')
     } finally {
@@ -194,6 +200,7 @@ export function OrganisationPage() {
       return
     }
     setProviderError('')
+    setProviderNotice('')
     setProviderBusy('revoke')
     try {
       await invokeEdge(
@@ -429,6 +436,8 @@ export function OrganisationPage() {
                 <Notice tone="risk" title="Could not update provider">
                   {providerError}
                 </Notice>
+              ) : providerNotice ? (
+                <Notice icon={CircleCheck}>{providerNotice}</Notice>
               ) : null}
             </div>
           )}
