@@ -25,7 +25,7 @@ jobs:
             [ -f "$p.html" ] && cp "$p.html" out/
           done
           cp favicon.svg wordmark.svg out/
-          cp -r assets css js brand out/
+          cp -r assets css js brand fonts out/
           printf 'User-agent: *\nDisallow: /\n' > out/robots.txt
           printf '/*\n  X-Robots-Tag: noindex, nofollow\n' > out/_headers
           cat > out/_redirects <<'EOF'
