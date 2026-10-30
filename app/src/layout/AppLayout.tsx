@@ -14,6 +14,7 @@ import {
   ClipboardList,
   CreditCard,
   FileText,
+  Gauge,
   KeyRound,
   ListTodo,
   Plug,
@@ -28,6 +29,7 @@ import {
 
 const topItems: NavItem[] = [
   { to: '/registry', label: 'Registry', icon: Boxes },
+  { to: '/gateway', label: 'Monitoring', icon: Gauge },
   { to: '/integrations', label: 'Connect', icon: Plug },
   { to: '/reports', label: 'Reports', icon: FileText },
 ]

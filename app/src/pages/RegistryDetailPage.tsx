@@ -43,7 +43,6 @@ import {
   emptyAssetForm,
   fetchDeletePreview,
   fmtProviderTokens,
-  fmtProviderUsd,
   formFromAsset,
   formatAuditPlain,
   insightsUsageFetchFailed,
@@ -62,12 +61,20 @@ import {
   type AssetFormValues,
   type DeletePreview,
   type OrgMemberOption,
-  type GatewayDay,
   type ProviderCatalogRow,
   type ProviderInsights,
   type RegistryAsset,
 } from '../lib/registry'
+import {
+  fmtUsdExact,
+  fmtUsdFull,
+  loadGatewaySettings,
+  prettyModel,
+  type GatewaySettings,
+  type GatewaySummary,
+} from '../lib/gateway'
 import { AssetFormFields } from './AssetFormFields'
+import { GatewayActivity } from './GatewayActivity'
 import styles from './RegistryDetailPage.module.css'
 
 type Conn = {
@@ -102,14 +109,7 @@ type GatewayToken = {
   label?: string | null
   revoked_at?: string | null
   created_at?: string | null
-}
-
-type UsageEvent = {
-  id: number
-  model?: string | null
-  input_tokens?: number | null
-  output_tokens?: number | null
-  created_at?: string | null
+  last_used_at?: string | null
 }
 
 type Assessment = {
@@ -164,20 +164,6 @@ const BAND_LABELS: Record<string, string> = {
   low: 'Low Risk',
 }
 
-function fmtUsdWhole(n: number) {
-  const v = Number.isFinite(n) ? n : 0
-  const digits = v >= 100 ? 0 : 2
-  return `$${v.toLocaleString('en-GB', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`
-}
-
-function fmtCount(n: number) {
-  return Math.round(n).toLocaleString('en-GB')
-}
-
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
 function fmtDateTime(iso: string) {
   return new Date(iso).toLocaleString('en-GB', {
     day: 'numeric',
@@ -198,18 +184,6 @@ function emptyBars(days: number): UsageBar[] {
 }
 
 /** Catalogue label when known, otherwise "claude-opus-5-5" reads as "Claude Opus 5.5". */
-function prettyModel(provider: string, id?: string | null) {
-  if (!id) return 'Model'
-  const known = modelDisplayName(provider, id)
-  if (known && known !== id) return known
-  const parts = id.replace(/-\d{8}$/, '').split('-')
-  const words: string[] = []
-  const nums: string[] = []
-  for (const p of parts) (/^\d+$/.test(p) ? nums : words).push(p)
-  const name = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-  return nums.length ? `${name} ${nums.join('.')}` : name
-}
-
 function relativeAgo(iso: string) {
   const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
   if (mins < 1) return 'just now'
@@ -240,9 +214,11 @@ export function RegistryDetailPage() {
   const [conn, setConn] = useState<Conn | null>(null)
   const [orgCred, setOrgCred] = useState<OrgCred | null>(null)
   const [tokens, setTokens] = useState<GatewayToken[]>([])
-  const [usage, setUsage] = useState<UsageEvent[]>([])
   const [snapshots, setSnapshots] = useState<Record<number, ProviderInsights>>({})
-  const [gatewayDays, setGatewayDays] = useState<GatewayDay[]>([])
+  const [gatewaySettings, setGatewaySettings] = useState<GatewaySettings | null>(null)
+  const [gatewaySummary, setGatewaySummary] = useState<GatewaySummary | null>(null)
+  const [renameId, setRenameId] = useState('')
+  const [renameValue, setRenameValue] = useState('')
   const [assessments, setAssessments] = useState<Assessment[]>([])
   const [controls, setControls] = useState<ControlAssign[]>([])
   const [assigneeNames, setAssigneeNames] = useState<Record<string, string>>({})
@@ -346,9 +322,8 @@ export function RegistryDetailPage() {
       { data: auditRows },
       connRes,
       orgCredRes,
-      { data: usageRows },
       { data: snapshotRows },
-      { data: gatewayRows },
+      settingsRow,
     ] =
       await Promise.all([
         sb
@@ -377,12 +352,6 @@ export function RegistryDetailPage() {
               .neq('status', 'revoked')
               .maybeSingle()
           : Promise.resolve({ data: null }),
-        sb
-          .from('asset_usage_events')
-          .select('id,model,input_tokens,output_tokens,created_at')
-          .eq('asset_id', id)
-          .order('created_at', { ascending: false })
-          .limit(5),
         connectorSlug
           ? sb
               .from('asset_usage_snapshots')
@@ -390,20 +359,19 @@ export function RegistryDetailPage() {
               .eq('asset_id', id)
               .eq('provider_slug', connectorSlug)
           : Promise.resolve({ data: null }),
-        sb.rpc('asset_usage_daily', { p_asset_id: id, p_days: 90 }),
+        loadGatewaySettings(org.id),
       ])
 
     setAssessments((assessmentsRows as Assessment[]) || [])
     setAudit((auditRows as AuditEntry[]) || [])
     setConn((connRes.data as Conn) || null)
     setOrgCred((orgCredRes.data as OrgCred) || null)
-    setUsage((usageRows as UsageEvent[]) || [])
+    setGatewaySettings(settingsRow)
     const snaps: Record<number, ProviderInsights> = {}
     for (const row of (snapshotRows as { window_days: number; payload: ProviderInsights }[] | null) || []) {
       if (row.payload) snaps[row.window_days] = row.payload
     }
     setSnapshots(snaps)
-    setGatewayDays((gatewayRows as GatewayDay[] | null) || [])
 
     const userIds = [
       ...((auditRows || []).map((e: AuditEntry) => e.user_id).filter(Boolean) as string[]),
@@ -547,16 +515,26 @@ export function RegistryDetailPage() {
         detail: (
           <>
             {fmtProviderTokens(d.input_tokens)} in · {fmtProviderTokens(d.output_tokens)} out
-            {d.estimated_usd != null ? <div>{fmtProviderUsd(d.estimated_usd)} est.</div> : null}
+            {d.estimated_usd != null ? <div>{fmtUsdExact(d.estimated_usd)} est.</div> : null}
           </>
         ),
       })),
     [insights],
   )
-  const gatewayWindow = gatewayDays.slice(-insightsWindow)
-  const inputTotal = gatewayWindow.reduce((n, d) => n + Number(d.input_tokens || 0), 0)
-  const outputTotal = gatewayWindow.reduce((n, d) => n + Number(d.output_tokens || 0), 0)
-  const eventTotal = gatewayWindow.reduce((n, d) => n + Number(d.events || 0), 0)
+  const tokenNames = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const t of tokens) map[t.id] = t.label || 'Gateway token'
+    return map
+  }, [tokens])
+  const tokenRequests = useMemo(() => {
+    const map: Record<string, number> = {}
+    for (const t of gatewaySummary?.tokens || []) map[t.token_id] = Number(t.requests) || 0
+    return map
+  }, [gatewaySummary])
+  const summaryDays = gatewaySummary?.since
+    ? Math.round((Date.now() - new Date(gatewaySummary.since).getTime()) / 86_400_000)
+    : 30
+  const summaryWindowLabel = summaryDays <= 1 ? 'in 24 hours' : `in ${summaryDays} days`
   const ctrlDone = controls.filter((c) => c.status === 'implemented' || c.status === 'verified').length
   const ctrlPct = controls.length ? Math.round((ctrlDone / controls.length) * 100) : 0
   const controlsOrdered = useMemo(() => {
@@ -795,6 +773,31 @@ export function RegistryDetailPage() {
     }
   }
 
+  async function renameToken(tokenId: string) {
+    if (!id || !session?.access_token) return
+    const label = renameValue.trim()
+    if (!label) return
+    setBusy(`rename-${tokenId}`)
+    setError('')
+    try {
+      const data = await invokeEdge<{ token_record?: GatewayToken }>(
+        'asset-gateway-token',
+        { action: 'rename', asset_id: id, token_id: tokenId, label },
+        session.access_token,
+      )
+      if (data.token_record) {
+        setTokens((prev) => prev.map((t) => (t.id === tokenId ? { ...t, ...data.token_record } : t)))
+      }
+      setRenameId('')
+      setRenameValue('')
+      pushToast('Token renamed.')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Rename failed.')
+    } finally {
+      setBusy('')
+    }
+  }
+
   async function copyText(value: string) {
     try {
       await navigator.clipboard.writeText(value)
@@ -820,8 +823,9 @@ export function RegistryDetailPage() {
     tab === 'connection'
       ? [
           { id: 'connection', label: 'Connection' },
-          { id: 'gateway', label: 'Gateway' },
           { id: 'usage', label: 'Usage' },
+          { id: 'gateway', label: 'Gateway' },
+          ...(isAnthropic ? [{ id: 'gateway-activity', label: 'Activity' }] : []),
         ]
       : [
           {
@@ -1379,7 +1383,7 @@ export function RegistryDetailPage() {
                             <div>
                               <div className={styles.connMetaLabel}>Est. spend</div>
                               <div className={styles.insightValue}>
-                                <CountUp value={Number(insights.estimated_asset_usd) || 0} format={fmtUsdWhole} />
+                                <CountUp value={Number(insights.estimated_asset_usd) || 0} format={fmtUsdExact} />
                               </div>
                             </div>
                           ) : null}
@@ -1440,7 +1444,10 @@ export function RegistryDetailPage() {
                       <>
                         <p className={styles.connHint}>
                           Route Messages through RegAnchor with an <code className={styles.inlineCode}>ra_gw_</code>{' '}
-                          token. Prompts are never stored.
+                          token.{' '}
+                          {gatewaySettings?.capture_content
+                            ? `Prompts and responses are captured for this organisation and kept ${gatewaySettings.content_retention_days} days.`
+                            : 'Only metadata is recorded. Prompts and responses are not stored.'}
                         </p>
                         <div className={styles.endpointRow}>
                           <code className={styles.endpoint} title={GATEWAY_MESSAGES_URL}>
@@ -1455,26 +1462,76 @@ export function RegistryDetailPage() {
                           <div className={styles.sectionLabel}>Tokens</div>
                           {activeTokens.length ? (
                             <ul className={styles.tokenList}>
-                              {activeTokens.map((t) => (
-                                <li key={t.id} className={styles.tokenRow}>
-                                  <div className={styles.tokenMain}>
-                                    <span className={styles.tokenLabel}>{t.label || 'Gateway token'}</span>
-                                    {t.created_at ? (
-                                      <span className={styles.connDate}>Created {fmtDate(t.created_at)}</span>
+                              {activeTokens.map((t) =>
+                                renameId === t.id ? (
+                                  <li key={t.id} className={styles.tokenRow}>
+                                    <input
+                                      className={clsx(styles.input, styles.tokenRename)}
+                                      value={renameValue}
+                                      onChange={(e) => setRenameValue(e.target.value)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') void renameToken(t.id)
+                                        if (e.key === 'Escape') setRenameId('')
+                                      }}
+                                      maxLength={80}
+                                      aria-label="Token name"
+                                      autoFocus
+                                    />
+                                    <div className={styles.tokenActions}>
+                                      <Button
+                                        size="sm"
+                                        pending={busy === `rename-${t.id}`}
+                                        disabled={!renameValue.trim()}
+                                        onClick={() => void renameToken(t.id)}
+                                      >
+                                        Save
+                                      </Button>
+                                      <Button variant="ghost" size="sm" onClick={() => setRenameId('')}>
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </li>
+                                ) : (
+                                  <li key={t.id} className={styles.tokenRow}>
+                                    <div className={styles.tokenMain}>
+                                      <span className={styles.tokenLabel}>{t.label || 'Gateway token'}</span>
+                                      {t.created_at ? (
+                                        <span className={styles.connDate}>Created {fmtDateTime(t.created_at)}</span>
+                                      ) : null}
+                                      <span className={styles.connDate}>
+                                        {t.last_used_at
+                                          ? `Last used ${relativeAgo(t.last_used_at)}`
+                                          : 'Not used yet'}
+                                        {tokenRequests[t.id]
+                                          ? ` · ${tokenRequests[t.id].toLocaleString('en-GB')} ${tokenRequests[t.id] === 1 ? 'request' : 'requests'} ${summaryWindowLabel}`
+                                          : ''}
+                                      </span>
+                                    </div>
+                                    {canDeleteRegistry ? (
+                                      <div className={styles.tokenActions}>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => {
+                                            setRenameId(t.id)
+                                            setRenameValue(t.label || '')
+                                          }}
+                                        >
+                                          Rename
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          pending={busy === `revoke-${t.id}`}
+                                          onClick={() => void revokeToken(t.id)}
+                                        >
+                                          Revoke
+                                        </Button>
+                                      </div>
                                     ) : null}
-                                  </div>
-                                  {canDeleteRegistry ? (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      pending={busy === `revoke-${t.id}`}
-                                      onClick={() => void revokeToken(t.id)}
-                                    >
-                                      Revoke
-                                    </Button>
-                                  ) : null}
-                                </li>
-                              ))}
+                                  </li>
+                                ),
+                              )}
                             </ul>
                           ) : (
                             <p className={styles.connHint}>No active tokens yet.</p>
@@ -1487,9 +1544,9 @@ export function RegistryDetailPage() {
                                 className={styles.input}
                                 value={tokenLabel}
                                 onChange={(e) => setTokenLabel(e.target.value)}
-                                placeholder="Label, for example Production"
+                                placeholder="Name, for example Production or Staging"
                                 maxLength={80}
-                                aria-label="Gateway token label"
+                                aria-label="Gateway token name"
                               />
                               <Button size="sm" onClick={() => void mintToken()} pending={busy === 'mint'}>
                                 Mint token
@@ -1508,52 +1565,77 @@ export function RegistryDetailPage() {
                         </div>
 
                         <div className={styles.cardSection}>
-                          <div className={styles.sectionLabel}>Traffic</div>
+                          <div className={styles.connBlockHead}>
+                            <span className={styles.sectionLabel}>Traffic</span>
+                            <a href="#gateway-activity" className={styles.cardLink}>
+                              View activity
+                            </a>
+                          </div>
                           <div className={styles.gwTiles}>
                             <div className={styles.gwTile}>
-                              <div className={styles.connMetaLabel}>Input</div>
+                              <div className={styles.connMetaLabel}>Requests</div>
                               <div className={styles.gwValue}>
-                                <CountUp value={inputTotal} format={fmtProviderTokens} />
+                                <CountUp
+                                  value={Number(gatewaySummary?.totals.requests) || 0}
+                                  format={(n) => Math.round(n).toLocaleString('en-GB')}
+                                />
                               </div>
                             </div>
                             <div className={styles.gwTile}>
-                              <div className={styles.connMetaLabel}>Output</div>
-                              <div className={styles.gwValue}>
-                                <CountUp value={outputTotal} format={fmtProviderTokens} />
+                              <div className={styles.connMetaLabel}>Spend</div>
+                              <div
+                                className={styles.gwValue}
+                                title={fmtUsdFull(gatewaySummary?.totals.cost_usd)}
+                              >
+                                {fmtUsdExact(gatewaySummary?.totals.cost_usd)}
                               </div>
                             </div>
                             <div className={styles.gwTile}>
-                              <div className={styles.connMetaLabel}>Calls</div>
+                              <div className={styles.connMetaLabel}>DLP findings</div>
                               <div className={styles.gwValue}>
-                                <CountUp value={eventTotal} format={fmtCount} />
+                                <CountUp
+                                  value={
+                                    (Number(gatewaySummary?.totals.flagged) || 0) +
+                                    (Number(gatewaySummary?.totals.blocked) || 0)
+                                  }
+                                  format={(n) => Math.round(n).toLocaleString('en-GB')}
+                                />
                               </div>
                             </div>
                           </div>
-                          {usage.length ? (
-                            <ul className={clsx(styles.insightList, styles.gwCalls)}>
-                              {usage.map((u) => (
-                                <li key={u.id}>
-                                  <span className={styles.gwModel}>{prettyModel(provider, u.model)}</span>
-                                  <span className={styles.insightNum}>
-                                    {fmtProviderTokens(u.input_tokens)} / {fmtProviderTokens(u.output_tokens)}
-                                  </span>
-                                  <span className={styles.connDate}>{u.created_at ? relativeAgo(u.created_at) : ''}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : null}
                         </div>
                       </>
                     )}
                   </div>
                   {isAnthropic ? (
                     <footer className={styles.cardFoot}>
-                      <span>Last {insightsWindow} days</span>
+                      <span>{summaryDays <= 1 ? 'Last 24 hours' : `Last ${summaryDays} days`}</span>
                       <span>Metered by RegAnchor</span>
                     </footer>
                   ) : null}
                 </section>
               </div>
+
+              {isAnthropic && org?.id && id ? (
+                <section className={styles.activity} id="gateway-activity">
+                  <header className={styles.activityHead}>
+                    <h3 className={styles.activityTitle}>Gateway activity</h3>
+                    <p className={styles.connHint}>
+                      Every request through this asset&apos;s gateway tokens, with exact cost, DLP result and outcome.
+                    </p>
+                  </header>
+                  <GatewayActivity
+                    orgId={org.id}
+                    assetId={id}
+                    provider={provider}
+                    tokenNames={tokenNames}
+                    settings={gatewaySettings}
+                    canViewContent={canDeleteRegistry}
+                    accessToken={session?.access_token}
+                    onSummary={setGatewaySummary}
+                  />
+                </section>
+              ) : null}
             </div>
           )}
         </Section>

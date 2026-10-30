@@ -18,6 +18,7 @@ import { FrameworksPage } from './pages/FrameworksPage'
 import { FrameworkDetailPage } from './pages/FrameworkDetailPage'
 import { BuiltinFrameworkPage } from './pages/BuiltinFrameworkPage'
 import { MonitoringPage } from './pages/MonitoringPage'
+import { GatewayPage } from './pages/GatewayPage'
 import { OrganisationPage } from './pages/OrganisationPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { OAuthConsentPage } from './pages/OAuthConsentPage'
@@ -103,6 +104,7 @@ export default function App() {
               <Route path="policies/:id" element={<PoliciesDetailPage />} />
               <Route path="integrations" element={<IntegrationsPage />} />
               <Route path="monitoring" element={<MonitoringPage />} />
+              <Route path="gateway" element={<GatewayPage />} />
               <Route path="organisation" element={<OrganisationPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="users" element={<UsersPage />} />

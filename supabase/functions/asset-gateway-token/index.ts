@@ -29,7 +29,20 @@ function publicToken(row: Record<string, unknown>) {
     label: row.label,
     created_at: row.created_at,
     revoked_at: row.revoked_at,
+    last_used_at: row.last_used_at ?? null,
   }
+}
+
+const TOKEN_COLUMNS = 'id,label,created_at,revoked_at,last_used_at'
+
+function parseLabel(value: unknown, fallback?: string): string {
+  const label = String(value ?? fallback ?? '').trim()
+  if (!label || label.length > 80) {
+    throw new Response(JSON.stringify({ ok: false, error: 'Token name must be between 1 and 80 characters.' }), {
+      status: 400,
+    })
+  }
+  return label
 }
 
 Deno.serve(async (req) => {
@@ -51,7 +64,7 @@ Deno.serve(async (req) => {
     if (action === 'list') {
       const { data, error } = await supabase
         .from('asset_gateway_tokens')
-        .select('id,label,created_at,revoked_at')
+        .select(TOKEN_COLUMNS)
         .eq('asset_id', asset.id)
         .order('created_at', { ascending: false })
       if (error) return json({ ok: false, error: error.message }, 500)
@@ -79,10 +92,7 @@ Deno.serve(async (req) => {
         return json({ ok: false, error: 'Revoke an existing token before minting another.' }, 400)
       }
 
-      const label = String(body.label || 'Gateway token').trim()
-      if (!label || label.length > 80) {
-        return json({ ok: false, error: 'Token label must be between 1 and 80 characters.' }, 400)
-      }
+      const label = parseLabel(String(body.label ?? '').trim() || undefined, 'Gateway token')
       const random = new Uint8Array(32)
       crypto.getRandomValues(random)
       const token = `ra_gw_${base64Url(random)}`
@@ -96,7 +106,7 @@ Deno.serve(async (req) => {
           label,
           created_by: user.id,
         })
-        .select('id,label,created_at,revoked_at')
+        .select(TOKEN_COLUMNS)
         .single()
       if (error || !data) return json({ ok: false, error: error?.message || 'Could not mint gateway token.' }, 500)
 
@@ -119,7 +129,7 @@ Deno.serve(async (req) => {
         .eq('id', tokenId)
         .eq('asset_id', asset.id)
         .is('revoked_at', null)
-        .select('id,label,created_at,revoked_at')
+        .select(TOKEN_COLUMNS)
         .maybeSingle()
       if (error) return json({ ok: false, error: error.message }, 500)
       if (!data) return json({ ok: false, error: 'Active gateway token not found.' }, 404)
@@ -134,7 +144,39 @@ Deno.serve(async (req) => {
       return json({ ok: true, token_record: publicToken(data) })
     }
 
-    return json({ ok: false, error: 'Action must be list, mint, or revoke.' }, 400)
+    if (action === 'rename') {
+      const tokenId = parseUuid(body.token_id, 'Token')
+      const label = parseLabel(body.label)
+      const { data: before } = await supabase
+        .from('asset_gateway_tokens')
+        .select('label')
+        .eq('id', tokenId)
+        .eq('asset_id', asset.id)
+        .is('revoked_at', null)
+        .maybeSingle()
+      if (!before) return json({ ok: false, error: 'Active gateway token not found.' }, 404)
+      const { data, error } = await supabase
+        .from('asset_gateway_tokens')
+        .update({ label })
+        .eq('id', tokenId)
+        .eq('asset_id', asset.id)
+        .is('revoked_at', null)
+        .select(TOKEN_COLUMNS)
+        .maybeSingle()
+      if (error) return json({ ok: false, error: error.message }, 500)
+      if (!data) return json({ ok: false, error: 'Active gateway token not found.' }, 404)
+
+      await writeAudit(supabase, {
+        org_id: asset.org_id,
+        user_id: user.id,
+        action: 'asset_gateway_token_renamed',
+        entity_id: asset.id,
+        changes: { _system_name: asset.name, token_id: data.id, label: { from: before.label, to: label } },
+      })
+      return json({ ok: true, token_record: publicToken(data) })
+    }
+
+    return json({ ok: false, error: 'Action must be list, mint, rename, or revoke.' }, 400)
   } catch (error) {
     if (error instanceof Response) {
       const payload = await error.json().catch(() => ({ ok: false, error: 'Request failed.' }))

@@ -301,6 +301,39 @@
   white-space: nowrap;
 }
 
+.tokenActions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.tokenRow .tokenRename {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  font-size: 12px;
+}
+
+.activity {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+  scroll-margin-top: 80px;
+}
+
+.activityHead {
+  display: grid;
+  gap: 4px;
+}
+
+.activityTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.015em;
+  color: var(--ra-ink);
+}
+
 .gwTiles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

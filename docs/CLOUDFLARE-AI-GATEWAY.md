@@ -66,9 +66,16 @@ Reconciliation (Phase 2): compare daily totals per Anthropic API key with the Ad
 
 ### Phase 2 — monitoring in the app
 
-- Asset → Connection: activity table (time, model, outcome, DLP, tokens, cost, latency) and request detail drawer (content shown only when captured).
-- Organisation monitoring summary: requests, blocked, DLP findings, cost against budget, latency, error rate, spend by agent, cost over time.
-- CSV export of the audit trail; PDF export through the Render service later.
+Built 2026-10-30:
+
+- Asset → Connection → Gateway activity: summary (requests, exact spend, DLP findings, issues, median and p95 latency, tokens), daily spend chart, activity table (time, model, outcome, DLP, tokens, cost, latency) with All / DLP findings / Issues filters, and a request drawer (cost line items and rates, cost status, usage, DLP findings by detection, route, Anthropic and Cloudflare IDs).
+- Organisation → Monitoring (`/gateway`): enforcement posture (routing, fail mode, capture, retention), the same summary across all agents, spend by agent and by model.
+- `gateway_usage_summary(org, asset, since)` runs as the caller, so event RLS applies; anon cannot execute it.
+- Tokens: name at mint, rename (audited), created time, last used (`asset_gateway_tokens.last_used_at`, written by the gateway at most once a minute per token) and request count for the window.
+- Captured content: `gateway-content` returns it to organisation owners and admins only, refuses content past the retention period, and writes `gateway_content_viewed` to the asset audit log on every read.
+- Costs below one cent keep three significant digits (for example $0.0000321); full eight-decimal values show on hover and in the drawer.
+
+Still to do: daily rollups once volume needs them, cost against budget, CSV export, reconciliation view.
 
 ### Phase 3 — controls
 

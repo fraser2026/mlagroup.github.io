@@ -422,6 +422,14 @@ async function recordEvent(supabase: Supabase, ctx: EventContext, result: EventR
   })
   if (error) console.error('gateway event insert failed', error.message)
 
+  const usedAt = new Date()
+  const { error: tokenError } = await supabase
+    .from('asset_gateway_tokens')
+    .update({ last_used_at: usedAt.toISOString() })
+    .eq('id', ctx.tokenId)
+    .or(`last_used_at.is.null,last_used_at.lt.${new Date(usedAt.getTime() - 60_000).toISOString()}`)
+  if (tokenError) console.error('gateway token last use update failed', tokenError.message)
+
   if (result.outcome === 'success' && usage.model) {
     const { error: usageError } = await supabase.from('asset_usage_events').insert({
       asset_id: ctx.assetId,

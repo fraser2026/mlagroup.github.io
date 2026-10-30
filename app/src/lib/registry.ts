@@ -883,6 +883,20 @@ export function formatAuditPlain(
     case 'mla_review_updated':
       text = `RegAnchor updated assessment status to ${c.status || 'updated'}`
       break
+    case 'asset_gateway_token_minted':
+      text = `Minted gateway token${c.label ? ` "${c.label}"` : ''} for ${systemName}`
+      break
+    case 'asset_gateway_token_revoked':
+      text = `Revoked gateway token${c.label ? ` "${c.label}"` : ''} for ${systemName}`
+      break
+    case 'asset_gateway_token_renamed': {
+      const label = (c.label || {}) as { from?: string; to?: string }
+      text = `Renamed gateway token "${label.from || 'Gateway token'}" to "${label.to || ''}"`
+      break
+    }
+    case 'gateway_content_viewed':
+      text = `Viewed captured prompt and response for a gateway request on ${systemName}`
+      break
     default:
       break
   }
