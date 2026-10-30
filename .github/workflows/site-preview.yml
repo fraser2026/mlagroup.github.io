@@ -21,7 +21,7 @@ jobs:
       - name: Assemble public site files
         run: |
           mkdir -p out
-          for p in pages trust changelog support methodology product-tour index contact cookies pricing privacy security terms 404; do
+          for p in pages financial-services trust changelog support methodology product-tour index contact cookies pricing privacy security terms 404; do
             [ -f "$p.html" ] && cp "$p.html" out/
           done
           cp favicon.svg wordmark.svg out/
