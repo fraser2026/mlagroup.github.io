@@ -127,6 +127,32 @@ Enforcement (2026-10-31):
 
 Still to do: daily rollups once volume needs them, CSV export, per-event cross-check with AI Gateway logged cost, multi-provider pricing agreements.
 
+### Bedrock route (plan, 2026-10-31)
+
+Why: suppliers to financial services firms often run Anthropic models on AWS Bedrock, frequently in the client's own AWS account. This is the Enforced level of `docs/SUPPLIER-AI-STANDARD.md` for Bedrock. Model provider stays Anthropic; infrastructure becomes AWS Bedrock (separate dimensions, per product principles).
+
+Confirmed in Cloudflare documentation (Bedrock provider page, updated 2026-09-10):
+
+- AI Gateway has an `aws-bedrock` provider, including Bedrock's Anthropic-native Messages API on the `bedrock-mantle` endpoint: `https://gateway.ai.cloudflare.com/v1/<ACCOUNT_ID>/<GATEWAY_ID>/aws-bedrock/bedrock-mantle/<AWS_REGION>/anthropic`, with `/v1/messages` appended. Requests, responses and server-sent events pass through without translation, so suppliers keep sending Anthropic Messages format and our usage parser should apply unchanged.
+- Model IDs carry the `anthropic.` prefix (for example `anthropic.claude-opus-5`). Stored credentials need the IAM action `bedrock-mantle:CreateInference`. Not every region supports `bedrock-mantle`.
+- Authentication to Bedrock is either AWS credentials (Signature Version 4) or an Amazon Bedrock API key.
+
+Design:
+
+1. **Per-organisation AWS credentials, never a shared gateway key.** AI Gateway's stored provider keys are gateway-wide, which would put every client's Bedrock traffic on one AWS account (the same reason as verified correction 1). `gateway-anthropic` supplies credentials per request instead.
+2. **Preferred: cross-account role.** The client creates an IAM role in its AWS account that trusts RegAnchor's AWS principal, with an external ID unique to the organisation, allowing only `bedrock-mantle:CreateInference` on the approved models (plus the read-only permissions of the Observed level if wanted). RegAnchor assumes it with AWS STS, caches the temporary credentials until shortly before expiry, and signs each request. Billing, data location and Bedrock logs stay in the client's account. Needs a RegAnchor AWS principal whose only permission is `sts:AssumeRole`, held as an Edge Function secret.
+3. **Fallback: Bedrock API key** stored per asset in Vault, like the Anthropic key today. Simpler to set up; AWS recommends short-term keys, so treat as a pilot option.
+4. **Connection model.** An asset's connection gains infrastructure (`anthropic_api` or `aws_bedrock`), AWS region, and role ARN or key reference. Tokens, budgets, enforcement, DLP and content capture work unchanged; events record `infrastructure` and region.
+5. **Pricing.** Add Bedrock rows to `model_prices` only from AWS's published Bedrock pricing, per region and inference type, with source URL and verification date. Never assume Anthropic list price. Until a model is priced it records as unpriced, and blocking budgets refuse it (existing behaviour).
+6. **Reconciliation.** Anthropic's Admin API does not cover Bedrock. Use AWS Cost Explorer (`ce:GetCostAndUsage`, daily, filtered to Bedrock and grouped by usage type) through the same role. Later phase.
+7. **Fail mode.** Open sends direct to Bedrock, signed the same way, and records `direct_fallback`; closed refuses with 503.
+
+Spike before building (Fraser's own AWS account):
+
+- Prerequisites: an AWS account with Anthropic model access on Bedrock in a region that supports `bedrock-mantle` (prefer EU; confirm which), and a test IAM role.
+- Send one streamed and one non-streamed request through `reganchor-governance` via `bedrock-mantle`. Confirm: usage fields including cache tokens, `cf-aig-log-id`, DLP applies on the Bedrock path, error shapes, added latency, and whether client-side signing or a Bedrock API key passes through cleanly.
+- Then build in order: connection schema and role setup flow, gateway route, verified price rows, Connection tab UI, Cost Explorer reconciliation.
+
 ### Phase 3 — controls
 
 - DLP (Financial Information, national identifiers) on request and response. Two gateways, `reganchor-flag` and `reganchor-block`, so each organisation's DLP mode is a routing choice rather than a per-org rule.
