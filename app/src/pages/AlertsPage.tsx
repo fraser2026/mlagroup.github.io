@@ -50,6 +50,8 @@ const TYPE_LABELS: Record<string, string> = {
   budget_warning: 'Budget warning',
   budget_over: 'Over budget',
   budget_projected: 'Projected over budget',
+  gateway_new_model: 'New model',
+  gateway_new_tool: 'New tool',
 }
 
 async function governanceEmailOptIn(userId: string, orgId: string): Promise<boolean> {
@@ -302,7 +304,7 @@ export function AlertsPage() {
       <PageFrame>
         <PageHeader
           title="Alerts"
-          description="AI spend against budgets, score drops, overdue controls, and assessments due."
+          description="AI spend against budgets, new models and tools, score drops, overdue controls, and assessments due."
         />
         <BrandLoader fill label="Loading alerts" />
       </PageFrame>
@@ -313,7 +315,7 @@ export function AlertsPage() {
     <PageFrame railItems={[{ id: 'active', label: 'Active alerts' }]}>
       <PageHeader
         title="Alerts"
-        description="AI spend against budgets, score drops, overdue controls, and assessments due."
+        description="AI spend against budgets, new models and tools, score drops, overdue controls, and assessments due."
         actions={
           <Button variant="ghost" pending={checking} onClick={() => void checkNow()}>
             Check now
@@ -345,7 +347,8 @@ export function AlertsPage() {
               const sev = a.severity || 'info'
               const hasLink =
                 (a.ref_type === 'control_assignment' && Boolean(a.ref_id)) ||
-                a.ref_type === 'gateway_budget'
+                a.ref_type === 'gateway_budget' ||
+                a.ref_type === 'gateway_inventory'
               return (
                 <article key={a.id} className={`${styles.card} ${styles[`sev_${sev}`] || ''}`}>
                   <div className={styles.head}>
@@ -365,8 +368,11 @@ export function AlertsPage() {
                         View control
                       </Button>
                     ) : null}
-                    {a.ref_type === 'gateway_budget' ? (
-                      <Button size="sm" onClick={() => navigate('/gateway#budgets')}>
+                    {a.ref_type === 'gateway_budget' || a.ref_type === 'gateway_inventory' ? (
+                      <Button
+                        size="sm"
+                        onClick={() => navigate(a.ref_type === 'gateway_inventory' ? '/gateway#inventory' : '/gateway#budgets')}
+                      >
                         Open Monitoring
                       </Button>
                     ) : null}
@@ -387,7 +393,7 @@ export function AlertsPage() {
           </div>
         )}
         <Notice title="Email alerts">
-          Alerts always show here. To also get them by email, turn on budget or governance alert
+          Alerts always show here. To also get them by email, turn on monitoring or governance alert
           emails in <Link to="/settings#notifications">Settings</Link>.
         </Notice>
       </Section>

@@ -35,6 +35,7 @@ import {
   outcomeLabel,
   outcomeTone,
   prettyModel,
+  toolLabel,
   routeLabel,
   type EventFilter,
   type GatewayEvent,
@@ -548,6 +549,12 @@ function RequestDrawer({
   const lines = e?.cost_breakdown?.lines || {}
   const shownLines = COST_LINES.filter((l) => num(lines[l.key]) > 0)
   const detections = dlpDetections(e?.dlp)
+  const called = e?.tools_called || []
+  const tools = [...new Set([...called, ...(e?.tools_offered || [])])].map((raw) => ({
+    raw,
+    ...toolLabel(raw),
+    called: called.includes(raw),
+  }))
   const model = e ? prettyModel(provider, e.model || e.request_model) : ''
   const requestedOther = e?.request_model && e.model && e.request_model !== e.model
 
@@ -698,6 +705,28 @@ function RequestDrawer({
                   .join(', ')}
               </p>
             ) : null}
+          </section>
+
+          <section className={styles.block}>
+            <span className={styles.blockTitle}>Tools</span>
+            {tools.length ? (
+              <ul className={styles.lines}>
+                {tools.map((t) => (
+                  <li key={t.raw}>
+                    <span title={t.raw}>
+                      {t.name}
+                      {t.via ? <span className={styles.quiet}> {t.via}</span> : null}
+                    </span>
+                    <span className={t.called ? undefined : styles.quiet}>{t.called ? 'Called' : 'Offered'}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <p className={styles.hint}>
+              {tools.length
+                ? 'Offered tools were available to the model. Called tools are the ones the model asked to use. Inputs and results are not recorded.'
+                : 'No tools recorded for this request.'}
+            </p>
           </section>
 
           <section className={styles.block}>

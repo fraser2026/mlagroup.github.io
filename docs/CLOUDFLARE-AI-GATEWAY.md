@@ -125,6 +125,14 @@ Enforcement (2026-10-31):
 - An owner or admin can lift a block for the rest of the UTC month with a written reason (10 to 500 characters), and reinstate it. Both are audited; a lift never carries into the next month.
 - Verified in a local Postgres: contract pricing at the UTC midnight boundary, model precedence and dated snapshots, overlap rejection, counters equal to budget status after insert, re-price and delete, agent and organisation blocks, unpriced refusal, lift and reinstate, privileges and RLS.
 
+Models and tools (2026-10-31):
+
+- Each event records `tools_offered` (request `tools` by name, server tools by name or type, `mcp_servers` as `mcp:<server>`) and `tools_called` (response `tool_use` and `server_tool_use` by name, `mcp_tool_use` as `mcp:<server>/<tool>`), from both streamed and non-streamed responses. Names only, at most 128 each; tool descriptions, schemas, inputs and results are never stored.
+- `gateway_inventory` keeps one row per agent and model or tool: first and last seen, first and last called. Kept by an AFTER INSERT trigger that can never fail the request record. Last seen is refreshed at most hourly. Models are only added from requests the provider answered.
+- `gateway_inventory_agents` holds when RegAnchor started learning each agent: its first request, or the migration time for agents that existed before tools were recorded. For 7 days nothing is raised. After that a new model raises `gateway_new_model` and new tools in one request raise a single `gateway_new_tool` alert (up to 20 names listed, alphabetical), both warning severity with `ref_type = 'gateway_inventory'`, emailed through the monitoring alert preference (`email_budget_alerts`).
+- The Monitoring page has a Models and tools section (filter by agent and type; New, Offered not called, In use) and the request drawer lists each request's tools.
+- Verified in a local Postgres: backfill without alerts, learning period, single and aggregated tool alerts, MCP names, hourly refresh, unanswered requests ignored, cap enforced, insert survives an inventory failure, privileges and RLS.
+
 Still to do: daily rollups once volume needs them, CSV export, per-event cross-check with AI Gateway logged cost, multi-provider pricing agreements.
 
 ### Bedrock route (plan, 2026-10-31)

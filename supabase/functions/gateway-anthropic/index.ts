@@ -64,6 +64,7 @@ type UsageDetail = {
   service_tier: string | null
   inference_geo: string | null
   speed: string | null
+  tools_called: string[]
 }
 
 type EventContext = {
@@ -79,6 +80,7 @@ type EventContext = {
   latencyMs: number | null
   captureContent: boolean
   rawRequest: string
+  toolsOffered: string[]
 }
 
 type EventResult = {
@@ -286,6 +288,49 @@ function emptyUsage(model: string): UsageDetail {
     service_tier: null,
     inference_geo: null,
     speed: null,
+    tools_called: [],
+  }
+}
+
+const MAX_TOOL_NAMES = 128
+
+function addToolName(list: string[], value: unknown) {
+  if (typeof value !== 'string') return
+  const name = value.trim().slice(0, 200)
+  if (name && !list.includes(name) && list.length < MAX_TOOL_NAMES) list.push(name)
+}
+
+/** Tools the request makes available: custom tools by name, server tools by name or type, MCP servers as mcp:<name>. */
+function offeredTools(body: Record<string, unknown>): string[] {
+  const names: string[] = []
+  if (Array.isArray(body.tools)) {
+    for (const tool of body.tools) {
+      if (!tool || typeof tool !== 'object') continue
+      const t = tool as Record<string, unknown>
+      addToolName(names, stringValue(t.name) || stringValue(t.type))
+    }
+  }
+  if (Array.isArray(body.mcp_servers)) {
+    for (const server of body.mcp_servers) {
+      if (!server || typeof server !== 'object') continue
+      const name = stringValue((server as Record<string, unknown>).name)
+      if (name) addToolName(names, `mcp:${name.trim()}`)
+    }
+  }
+  return names
+}
+
+/** Record a tool call from a response content block (tool_use, server_tool_use, mcp_tool_use). */
+function observeToolBlock(usage: UsageDetail, block: unknown) {
+  if (!block || typeof block !== 'object') return
+  const b = block as Record<string, unknown>
+  const name = stringValue(b.name)
+  if (!name) return
+  if (b.type === 'tool_use' || b.type === 'server_tool_use') {
+    addToolName(usage.tools_called, name)
+  } else if (b.type === 'mcp_tool_use') {
+    const server = stringValue(b.server_name)
+    addToolName(usage.tools_called, server ? `mcp:${server.trim()}/${name.trim()}` : `mcp:${name.trim()}`)
   }
 }
 
@@ -460,6 +505,8 @@ async function recordEvent(supabase: Supabase, ctx: EventContext, result: EventR
     dlp: result.dlp || null,
     content_captured: contentPath !== null,
     content_path: contentPath,
+    tools_offered: ctx.toolsOffered,
+    tools_called: usage.tools_called,
   })
   if (error) console.error('gateway event insert failed', error.message)
 
@@ -495,10 +542,12 @@ function observeStreamEvent(raw: string, usage: UsageDetail, state: { errorType:
       message?: { model?: string; usage?: unknown }
       usage?: unknown
       error?: { type?: string }
+      content_block?: unknown
     }
     if (event.message?.model) usage.model = event.message.model
     if (event.message?.usage) mergeUsage(usage, event.message.usage)
     if (event.usage) mergeUsage(usage, event.usage)
+    if (event.type === 'content_block_start') observeToolBlock(usage, event.content_block)
     if (event.type === 'error') state.errorType = stringValue(event.error?.type) || 'stream_error'
   } catch {
     // keep stream intact
@@ -663,6 +712,7 @@ Deno.serve(async (req) => {
       latencyMs: null,
       captureContent: settings.capture_content,
       rawRequest: rawBody,
+      toolsOffered: offeredTools(body),
     }
     const failClosed = settings.route_via_ai_gateway && settings.fail_mode === 'closed'
 
@@ -811,9 +861,10 @@ Deno.serve(async (req) => {
     const responseBody = await upstream.text()
     const usage = emptyUsage(model)
     try {
-      const parsed = JSON.parse(responseBody) as { model?: string; usage?: unknown }
+      const parsed = JSON.parse(responseBody) as { model?: string; usage?: unknown; content?: unknown }
       if (parsed.model) usage.model = parsed.model
       mergeUsage(usage, parsed.usage)
+      if (Array.isArray(parsed.content)) for (const block of parsed.content) observeToolBlock(usage, block)
     } catch {
       // usage unavailable; recorded with zero tokens and flagged by pricing
     }

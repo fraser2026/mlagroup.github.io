@@ -104,10 +104,12 @@ export type GatewayEvent = {
   dlp_action?: 'FLAG' | 'BLOCK' | null
   dlp?: { action?: string; findings?: DlpFinding[] } | null
   content_captured?: boolean | null
+  tools_offered?: string[] | null
+  tools_called?: string[] | null
 }
 
 export const GATEWAY_EVENT_COLUMNS =
-  'id,created_at,org_id,asset_id,token_id,provider,environment,route,outcome,http_status,error_type,error_code,streamed,latency_ms,duration_ms,request_model,model,input_tokens,output_tokens,cache_write_5m_tokens,cache_write_1h_tokens,cache_read_tokens,thinking_tokens,web_search_requests,web_fetch_requests,code_execution_requests,service_tier,inference_geo,speed,cost_usd,contract_cost_usd,price_agreement_id,cost_status,cost_breakdown,provider_request_id,aig_log_id,dlp_action,dlp,content_captured'
+  'id,created_at,org_id,asset_id,token_id,provider,environment,route,outcome,http_status,error_type,error_code,streamed,latency_ms,duration_ms,request_model,model,input_tokens,output_tokens,cache_write_5m_tokens,cache_write_1h_tokens,cache_read_tokens,thinking_tokens,web_search_requests,web_fetch_requests,code_execution_requests,service_tier,inference_geo,speed,cost_usd,contract_cost_usd,price_agreement_id,cost_status,cost_breakdown,provider_request_id,aig_log_id,dlp_action,dlp,content_captured,tools_offered,tools_called'
 
 export type GatewaySummary = {
   since: string
@@ -333,6 +335,51 @@ export function agreementState(a: Pick<PriceAgreement, 'effective_from' | 'effec
   if (a.effective_from > today) return 'scheduled' as const
   if (a.effective_to && a.effective_to <= today) return 'ended' as const
   return 'active' as const
+}
+
+export type InventoryItem = {
+  asset_id: string
+  kind: 'model' | 'tool'
+  name: string
+  first_seen_at: string
+  last_seen_at: string
+  first_called_at: string | null
+  last_called_at: string | null
+}
+
+export type InventoryAgent = { asset_id: string; learning_started_at: string }
+
+export const LEARNING_DAYS = 7
+
+export async function loadInventory(orgId: string) {
+  const [items, agents] = await Promise.all([
+    sb
+      .from('gateway_inventory')
+      .select('asset_id,kind,name,first_seen_at,last_seen_at,first_called_at,last_called_at')
+      .eq('org_id', orgId)
+      .order('first_seen_at', { ascending: false })
+      .limit(1000),
+    sb.from('gateway_inventory_agents').select('asset_id,learning_started_at').eq('org_id', orgId),
+  ])
+  if (items.error) throw new Error(items.error.message)
+  if (agents.error) throw new Error(agents.error.message)
+  const list = (items.data || []) as InventoryItem[]
+  const ids = [...new Set(list.map((i) => i.asset_id))]
+  const names: Record<string, string> = {}
+  if (ids.length) {
+    const { data } = await sb.from('ai_systems').select('id,name').eq('org_id', orgId).in('id', ids)
+    for (const a of (data || []) as { id: string; name: string | null }[]) if (a.name) names[a.id] = a.name
+  }
+  return { items: list, agents: (agents.data || []) as InventoryAgent[], names }
+}
+
+/** Display name for a recorded tool: MCP tools are stored as mcp:<server>/<tool>. */
+export function toolLabel(name: string) {
+  if (!name.startsWith('mcp:')) return { name, via: null as string | null }
+  const rest = name.slice(4)
+  const slash = rest.indexOf('/')
+  if (slash < 0) return { name: rest, via: 'MCP server' }
+  return { name: rest.slice(slash + 1), via: `MCP · ${rest.slice(0, slash)}` }
 }
 
 /** Spend a request counts towards: the contracted amount when recorded, otherwise list. */

@@ -1,0 +1,21 @@
+---
+description: Add a sales note whenever a client-facing feature ships
+alwaysApply: true
+---
+
+# Sales notes on every ship
+
+When a client-facing feature reaches production (migration applied, function or app deployed), add an entry to `docs/SALES-NOTES.md` and include it in the same commit.
+
+- Put it under today's date heading (`## 31 Oct 2026`), newest first; create the heading if missing.
+- One bullet per feature: **bold headline**, then one or two plain sentences on what the client gets.
+- Add a `Limits:` sub-bullet whenever the claim needs a qualifier to stay true (provider coverage, what is not recorded, what must be switched on).
+- Only shipped work. Planned items go under "Coming, do not market yet"; move them up when they ship.
+- Skip internal-only changes (refactors, fixes clients would not notice, admin tooling).
+- Sentence case, no em dashes, no hype words ("revolutionary", "seamless", "cutting-edge").
+
+Example:
+
+```markdown
+- **Hard budget limits for AI spend.** Set a monthly budget per agent or for the whole organisation to block new requests once it is reached, not just warn.
+```

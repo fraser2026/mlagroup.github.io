@@ -22,8 +22,9 @@ type EmailPrefs = Record<EmailPrefKey, boolean>
 const EMAIL_PREF_ITEMS: Array<{ key: EmailPrefKey; label: string; description: string }> = [
   {
     key: 'email_budget_alerts',
-    label: 'Email me budget alerts',
-    description: 'When AI spend reaches a warning level, goes over budget, or is projected to.',
+    label: 'Email me monitoring alerts',
+    description:
+      'When AI spend reaches a warning level, goes over budget, or is projected to, and when an agent starts using a model or tool it has not used before.',
   },
   {
     key: 'email_governance_alerts',

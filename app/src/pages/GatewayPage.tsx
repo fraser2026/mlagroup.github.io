@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { loadGatewaySettings, type GatewaySettings } from '../lib/gateway'
 import { GatewayActivity } from './GatewayActivity'
 import { GatewayBudgets } from './GatewayBudgets'
+import { GatewayInventory } from './GatewayInventory'
 import { GatewayPricing } from './GatewayPricing'
 import { GatewayReconciliation } from './GatewayReconciliation'
 import styles from './GatewayPage.module.css'
@@ -30,7 +31,8 @@ export function GatewayPage() {
     }
   }, [org?.id])
 
-  const description = 'Requests from your AI agents through the RegAnchor gateway: spend, data loss prevention and outcomes.'
+  const description =
+    'Requests from your AI agents through the RegAnchor gateway: spend, models and tools, data loss prevention and outcomes.'
 
   if (!org?.id || !ready) {
     return (
@@ -89,6 +91,10 @@ export function GatewayPage() {
 
       <Section id="reconciliation" title="Reconciliation">
         <GatewayReconciliation orgId={org.id} canRun={canDeleteRegistry} accessToken={session?.access_token} />
+      </Section>
+
+      <Section id="inventory" title="Models and tools">
+        <GatewayInventory orgId={org.id} />
       </Section>
 
       <Section id="activity" title="Activity">

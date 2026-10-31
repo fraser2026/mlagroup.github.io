@@ -8,8 +8,8 @@
  *   - ops / ack / portal / admin-reply: RegAnchor <info@reganchor.com>
  *   - org-invite: RegAnchor <no-reply@reganchor.com> (reply-To info@)
  *   - control-assignment: RegAnchor <no-reply@reganchor.com> (reply-To info@)
- *   - budget-alert: database-initiated (x-cron-secret checked against Vault); To = every org member
- *     who opted in to budget alert emails; one message per recipient; the alert is claimed first
+ *   - budget-alert: database-initiated (x-cron-secret checked against Vault); budget and new model / tool
+ *     alerts; To = every org member who opted in to monitoring alert emails; one message per recipient; the alert is claimed first
  *     so retries never send twice
  *   - help-request: RegAnchor <info@reganchor.com> (ops kind); To info@; reply-To requester;
  *     requires JWT; request must belong to caller (support_requests.requested_by)
@@ -514,11 +514,14 @@ function buildPortalAlert(to: string, body: Record<string, unknown>) {
 }
 
 const BUDGET_ALERT_TYPES = ['budget_warning', 'budget_over', 'budget_projected']
+const INVENTORY_ALERT_TYPES = ['gateway_new_model', 'gateway_new_tool']
+const MONITORING_ALERT_TYPES = [...BUDGET_ALERT_TYPES, ...INVENTORY_ALERT_TYPES]
 
-function buildBudgetAlert(to: string, name: string, title: string, message: string) {
-  const heading = title || 'Budget alert'
-  const openUrl = `${APP_ORIGIN}/gateway#budgets`
-  const footer = 'You receive this because you turned on budget alert emails in RegAnchor Settings.'
+function buildBudgetAlert(to: string, name: string, title: string, message: string, alertType: string) {
+  const inventory = INVENTORY_ALERT_TYPES.includes(alertType)
+  const heading = title || (inventory ? 'Monitoring alert' : 'Budget alert')
+  const openUrl = `${APP_ORIGIN}/gateway#${inventory ? 'inventory' : 'budgets'}`
+  const footer = 'You receive this because you turned on monitoring alert emails in RegAnchor Settings.'
   const inner = [
     h1(heading),
     para(`Hello ${name || 'there'},`),
@@ -550,7 +553,7 @@ async function sendBudgetAlert(req: Request, body: Record<string, unknown>, apiK
     .select('id,org_id,alert_type,title,body,email_sent')
     .eq('id', alertId)
     .maybeSingle()
-  if (!alert || !BUDGET_ALERT_TYPES.includes(alert.alert_type)) return json({ error: 'Alert not found' }, 404)
+  if (!alert || !MONITORING_ALERT_TYPES.includes(alert.alert_type)) return json({ error: 'Alert not found' }, 404)
 
   const { data: claimed } = await supabase
     .from('governance_alerts')
@@ -585,6 +588,7 @@ async function sendBudgetAlert(req: Request, body: Record<string, unknown>, apiK
       clip(person.full_name, 120).split(/\s+/)[0] || '',
       clip(alert.title, 200),
       clip(alert.body, 4000),
+      alert.alert_type,
     )
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
