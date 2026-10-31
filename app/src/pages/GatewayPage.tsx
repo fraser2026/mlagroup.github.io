@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { loadGatewaySettings, type GatewaySettings } from '../lib/gateway'
 import { GatewayActivity } from './GatewayActivity'
 import { GatewayBudgets } from './GatewayBudgets'
+import { GatewayPricing } from './GatewayPricing'
 import { GatewayReconciliation } from './GatewayReconciliation'
 import styles from './GatewayPage.module.css'
 
@@ -80,6 +81,10 @@ export function GatewayPage() {
 
       <Section id="budgets" title="Budgets">
         <GatewayBudgets orgId={org.id} canManage={canDeleteRegistry} accessToken={session?.access_token} />
+      </Section>
+
+      <Section id="pricing" title="Pricing">
+        <GatewayPricing orgId={org.id} canManage={canDeleteRegistry} accessToken={session?.access_token} />
       </Section>
 
       <Section id="reconciliation" title="Reconciliation">

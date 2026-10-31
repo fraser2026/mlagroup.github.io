@@ -900,15 +900,55 @@ export function formatAuditPlain(
       const scope = c.scope === 'agent' ? systemName : 'the organisation'
       const amount = c.amount_usd as string | { from?: string; to?: string } | undefined
       const usd = (v?: string) => `$${Number(v || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      const mode = (v?: unknown) => (v === 'block' ? 'block new requests at 100%' : 'monitor only')
       if (entry.action === 'gateway_budget_removed') {
         text = `Removed the ${usd(String(amount || ''))} monthly budget for ${scope}`
-      } else if (amount && typeof amount === 'object' && Number(amount.from) === Number(amount.to)) {
-        const warn = (c.warn_at_pct || {}) as { from?: number; to?: number }
-        text = `Changed the budget warning level for ${scope} from ${warn.from ?? 80}% to ${warn.to ?? 80}%`
       } else if (amount && typeof amount === 'object') {
-        text = `Changed the monthly budget for ${scope} from ${usd(amount.from)} to ${usd(amount.to)}`
+        const warn = (c.warn_at_pct || {}) as { from?: number; to?: number }
+        const enforcement = (c.enforcement || {}) as { from?: string; to?: string }
+        const parts: string[] = []
+        if (Number(amount.from) !== Number(amount.to)) parts.push(`the amount from ${usd(amount.from)} to ${usd(amount.to)}`)
+        if (warn.from !== warn.to) parts.push(`the warning level from ${warn.from ?? 80}% to ${warn.to ?? 80}%`)
+        if (enforcement.from && enforcement.from !== enforcement.to) parts.push(`it to ${mode(enforcement.to)}`)
+        text = parts.length
+          ? `Changed the monthly budget for ${scope}: ${parts.join(', ')}`
+          : `Saved the monthly budget for ${scope} without changes`
       } else {
-        text = `Set a ${usd(String(amount || ''))} monthly budget for ${scope}`
+        text = `Set a ${usd(String(amount || ''))} monthly budget for ${scope}${c.enforcement === 'block' ? ' that blocks new requests at 100%' : ''}`
+      }
+      break
+    }
+    case 'gateway_budget_block_lifted':
+    case 'gateway_budget_block_reinstated': {
+      const scope = c.scope === 'agent' ? systemName : 'the organisation'
+      const month = c.period_start
+        ? new Date(`${String(c.period_start)}T00:00:00Z`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+        : 'this month'
+      text = entry.action === 'gateway_budget_block_lifted'
+        ? `Lifted the budget block for ${scope} for ${month}: ${String(c.reason || '')}`
+        : `Reinstated the budget block for ${scope} for ${month}`
+      break
+    }
+    case 'gateway_price_agreement_set':
+    case 'gateway_price_agreement_updated':
+    case 'gateway_price_agreement_removed': {
+      const val = (v: unknown) => (v && typeof v === 'object' && 'to' in (v as object) ? (v as { to?: unknown }).to : v)
+      const prev = (v: unknown) => (v && typeof v === 'object' && 'from' in (v as object) ? (v as { from?: unknown }).from : undefined)
+      const models = val(c.model_id) ? modelDisplayName('anthropic', String(val(c.model_id))) : 'all Anthropic models'
+      const pct = (v: unknown) => `${Number(v || 0).toLocaleString('en-GB', { maximumFractionDigits: 3 })}%`
+      const from = String(val(c.effective_from) || '')
+      if (entry.action === 'gateway_price_agreement_removed') {
+        text = `Removed the ${pct(c.discount_pct)} contracted discount on ${models} from ${from}`
+      } else if (entry.action === 'gateway_price_agreement_updated') {
+        const before = prev(c.discount_pct)
+        text = before != null && Number(before) !== Number(val(c.discount_pct))
+          ? `Changed the contracted discount on ${models} from ${pct(before)} to ${pct(val(c.discount_pct))}`
+          : `Updated the contracted discount agreement on ${models}`
+      } else {
+        text = `Recorded a ${pct(val(c.discount_pct))} contracted discount on ${models} from ${from}`
+      }
+      if (typeof c.repriced_requests === 'number' && c.repriced_requests > 0) {
+        text += `; ${c.repriced_requests.toLocaleString('en-GB')} requests re-priced`
       }
       break
     }

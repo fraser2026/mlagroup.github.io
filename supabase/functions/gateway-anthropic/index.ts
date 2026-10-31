@@ -36,6 +36,8 @@ type Outcome =
   | 'success'
   | 'blocked_dlp_request'
   | 'blocked_dlp_response'
+  | 'blocked_budget'
+  | 'blocked_unpriced_model'
   | 'rate_limited'
   | 'provider_error'
   | 'gateway_error'
@@ -92,6 +94,12 @@ type EventResult = {
 }
 
 type DlpHeader = { action?: string; findings?: unknown[] }
+
+type Enforcement = {
+  allowed: boolean
+  reason?: 'budget_reached' | 'unpriced_model'
+  scope?: 'agent' | 'organisation'
+}
 
 const DEFAULT_SETTINGS: GatewaySettings = {
   route_via_ai_gateway: false,
@@ -172,6 +180,37 @@ async function loadSettings(supabase: Supabase, orgId: string): Promise<GatewayS
     fail_mode: data.fail_mode === 'closed' ? 'closed' : 'open',
     capture_content: data.capture_content === true,
   }
+}
+
+/** Null when the check could not run; the organisation's fail mode then decides. */
+async function checkEnforcement(
+  supabase: Supabase,
+  orgId: string,
+  assetId: string,
+  model: string,
+): Promise<Enforcement | null> {
+  const { data, error } = await supabase.rpc('gateway_enforcement_check', {
+    p_org_id: orgId,
+    p_asset_id: assetId,
+    p_model: model,
+  })
+  if (error || !data || typeof data !== 'object' || typeof (data as Enforcement).allowed !== 'boolean') {
+    console.error('gateway enforcement check failed', error?.message || 'no result')
+    return null
+  }
+  return data as Enforcement
+}
+
+function enforcementMessage(enforcement: Enforcement, model: string): string {
+  if (enforcement.reason === 'unpriced_model') {
+    return `RegAnchor has no verified price for ${model.slice(0, 100)}, so its spend cannot be measured against a ` +
+      'blocking budget. Use a priced model, or ask an owner or admin to set the budget to monitor only.'
+  }
+  const who = enforcement.scope === 'organisation'
+    ? 'Your organisation has reached its monthly AI budget'
+    : 'This agent has reached its monthly budget'
+  return `${who} in RegAnchor. New requests are refused until an owner or admin raises the budget or lifts the ` +
+    'block, or the month ends (UTC).'
 }
 
 function ensurePartitions(supabase: Supabase) {
@@ -597,9 +636,10 @@ Deno.serve(async (req) => {
     if (!connection?.credential_secret_id) {
       return anthropicError('permission_error', 'Anthropic runtime connection is unavailable', 403)
     }
-    const [apiKey, settings] = await Promise.all([
+    const [apiKey, settings, enforcement] = await Promise.all([
       readApiSecret(supabase, connection.id),
       loadSettings(supabase, asset.org_id),
+      checkEnforcement(supabase, asset.org_id, asset.id, model),
     ])
     if (!apiKey) {
       return anthropicError('permission_error', 'Anthropic runtime connection is unavailable', 403)
@@ -627,6 +667,29 @@ Deno.serve(async (req) => {
     const failClosed = settings.route_via_ai_gateway && settings.fail_mode === 'closed'
 
     const record = (result: EventResult) => recordEvent(supabase, ctx, result)
+
+    if (!enforcement && settings.fail_mode === 'closed') {
+      ctx.route = 'none'
+      await record({
+        outcome: 'gateway_error',
+        httpStatus: 503,
+        errorType: 'enforcement_unavailable',
+        usage: emptyUsage(model),
+      })
+      return anthropicError('api_error', 'Budget checks are temporarily unavailable, so this request was not sent.', 503, ctx.id)
+    }
+    if (enforcement && !enforcement.allowed) {
+      ctx.route = 'none'
+      const unpriced = enforcement.reason === 'unpriced_model'
+      await record({
+        outcome: unpriced ? 'blocked_unpriced_model' : 'blocked_budget',
+        httpStatus: 403,
+        errorType: unpriced ? 'unpriced_model' : 'budget_reached',
+        errorCode: unpriced ? null : enforcement.scope || null,
+        usage: emptyUsage(model),
+      })
+      return anthropicError('permission_error', enforcementMessage(enforcement, model), 403, ctx.id)
+    }
 
     let upstream: Response | null = null
     if (useAiGateway) {

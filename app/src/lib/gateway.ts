@@ -47,6 +47,8 @@ export type GatewayOutcome =
   | 'gateway_error'
   | 'client_aborted'
   | 'stream_error'
+  | 'blocked_budget'
+  | 'blocked_unpriced_model'
 
 export type DlpFinding = {
   check?: 'REQUEST' | 'RESPONSE' | string
@@ -85,6 +87,8 @@ export type GatewayEvent = {
   inference_geo?: string | null
   speed?: string | null
   cost_usd?: string | number | null
+  contract_cost_usd?: string | number | null
+  price_agreement_id?: string | null
   cost_status?: string | null
   cost_breakdown?: {
     lines?: Record<string, number>
@@ -93,6 +97,7 @@ export type GatewayEvent = {
     input_per_mtok?: number
     output_per_mtok?: number
     region_multiplier?: number
+    agreement?: { id: string; discount_pct: number; contract_usd: number }
   } | null
   provider_request_id?: string | null
   aig_log_id?: string | null
@@ -102,7 +107,7 @@ export type GatewayEvent = {
 }
 
 export const GATEWAY_EVENT_COLUMNS =
-  'id,created_at,org_id,asset_id,token_id,provider,environment,route,outcome,http_status,error_type,error_code,streamed,latency_ms,duration_ms,request_model,model,input_tokens,output_tokens,cache_write_5m_tokens,cache_write_1h_tokens,cache_read_tokens,thinking_tokens,web_search_requests,web_fetch_requests,code_execution_requests,service_tier,inference_geo,speed,cost_usd,cost_status,cost_breakdown,provider_request_id,aig_log_id,dlp_action,dlp,content_captured'
+  'id,created_at,org_id,asset_id,token_id,provider,environment,route,outcome,http_status,error_type,error_code,streamed,latency_ms,duration_ms,request_model,model,input_tokens,output_tokens,cache_write_5m_tokens,cache_write_1h_tokens,cache_read_tokens,thinking_tokens,web_search_requests,web_fetch_requests,code_execution_requests,service_tier,inference_geo,speed,cost_usd,contract_cost_usd,price_agreement_id,cost_status,cost_breakdown,provider_request_id,aig_log_id,dlp_action,dlp,content_captured'
 
 export type GatewaySummary = {
   since: string
@@ -111,11 +116,14 @@ export type GatewaySummary = {
     success: number
     flagged: number
     blocked: number
+    policy_blocked: number
     rate_limited: number
     errors: number
     aborted: number
     fallback: number
+    /** Contracted spend: list price less any agreed discount. */
     cost_usd: number
+    list_cost_usd: number
     cost_open: number
     input_tokens: number
     output_tokens: number
@@ -226,6 +234,9 @@ export type BudgetRow = {
   remaining_usd: number
   projected_usd: number | null
   state: BudgetState
+  lift: { id: string; reason: string; created_at: string; created_by_name: string | null } | null
+  /** Set to block, not lifted, and at or over the budget: new requests are being refused. */
+  blocking: boolean
 }
 
 export type BudgetStatus = {
@@ -239,6 +250,7 @@ export type BudgetStatus = {
     exact_usd: number
     estimated_usd: number
     spend_usd: number
+    list_usd: number
     unpriced_requests: number
     projected_usd: number | null
   }
@@ -276,6 +288,56 @@ export function fmtPct(value: number | string | null | undefined) {
   const n = Number(value ?? 0)
   if (!Number.isFinite(n)) return '0%'
   return `${n.toLocaleString('en-GB', { maximumFractionDigits: n > 0 && n < 1 ? 2 : 1 })}%`
+}
+
+export type PriceAgreement = {
+  id: string
+  provider: string
+  model_id: string | null
+  discount_pct: string
+  effective_from: string
+  effective_to: string | null
+  reference: string | null
+  updated_at: string
+}
+
+export type PriceSuggestion = {
+  days: number
+  from: string | null
+  to: string | null
+  list_usd: number
+  billed_usd: number
+  discount_pct: number | null
+}
+
+export async function loadPricing(orgId: string) {
+  const [agreements, suggestion, models] = await Promise.all([
+    sb
+      .from('gateway_price_agreements')
+      .select('id,provider,model_id,discount_pct,effective_from,effective_to,reference,updated_at')
+      .eq('org_id', orgId)
+      .order('effective_from', { ascending: false }),
+    sb.rpc('gateway_price_agreement_suggestion', { p_org_id: orgId, p_days: 30 }),
+    sb.from('model_prices').select('model_id').eq('provider', 'anthropic').order('model_id'),
+  ])
+  if (agreements.error) throw new Error(agreements.error.message)
+  return {
+    agreements: (agreements.data || []) as PriceAgreement[],
+    suggestion: (suggestion.data as PriceSuggestion | null) || null,
+    models: [...new Set(((models.data || []) as { model_id: string }[]).map((m) => m.model_id))],
+  }
+}
+
+/** Agreement status on a UTC date: end dates are exclusive. */
+export function agreementState(a: Pick<PriceAgreement, 'effective_from' | 'effective_to'>, today = new Date().toISOString().slice(0, 10)) {
+  if (a.effective_from > today) return 'scheduled' as const
+  if (a.effective_to && a.effective_to <= today) return 'ended' as const
+  return 'active' as const
+}
+
+/** Spend a request counts towards: the contracted amount when recorded, otherwise list. */
+export function eventSpend(e: Pick<GatewayEvent, 'cost_usd' | 'contract_cost_usd'>) {
+  return e.contract_cost_usd ?? e.cost_usd ?? null
 }
 
 export type ReconStatus = 'matched' | 'provider_higher' | 'recorded_higher' | 'cost_difference' | 'provider_pending'
@@ -432,6 +494,8 @@ const OUTCOME: Record<string, { label: string; tone: StatusTone }> = {
   gateway_error: { label: 'Gateway error', tone: 'risk' },
   client_aborted: { label: 'Cancelled by client', tone: 'neutral' },
   stream_error: { label: 'Stream error', tone: 'risk' },
+  blocked_budget: { label: 'Blocked, budget', tone: 'risk' },
+  blocked_unpriced_model: { label: 'Blocked, unpriced model', tone: 'risk' },
 }
 
 export function outcomeLabel(outcome?: string | null) {

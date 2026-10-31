@@ -24,9 +24,36 @@ type Props = {
 
 type Agent = { id: string; name: string }
 
-type Draft = { budgetId: string | null; scope: string; amount: string; warnAt: string }
+type Enforcement = 'monitor' | 'block'
+
+type Draft = { budgetId: string | null; scope: string; amount: string; warnAt: string; enforcement: Enforcement }
+
+type LiftDraft = { row: BudgetRow; reason: string }
 
 const ORG_SCOPE = 'org'
+
+const ENFORCEMENT_OPTIONS = [
+  { value: 'monitor', label: 'Keep monitoring' },
+  { value: 'block', label: 'Block new requests' },
+]
+
+function rowStatus(row: BudgetRow) {
+  if (row.blocking) return { label: 'Blocking', tone: 'risk' as const }
+  if (row.lift && row.state === 'over') return { label: 'Block lifted', tone: 'warn' as const }
+  return { label: budgetStateLabel(row.state), tone: budgetStateTone(row.state) }
+}
+
+function BudgetMode({ row }: { row: BudgetRow }) {
+  if (row.enforcement !== 'block') return null
+  if (row.lift) {
+    return (
+      <span className={styles.mode} title={row.lift.reason}>
+        Lifted by {row.lift.created_by_name || 'an admin'}: {row.lift.reason}
+      </span>
+    )
+  }
+  return <span className={styles.mode}>{row.blocking ? 'Refusing new requests' : 'Blocks at 100%'}</span>
+}
 
 function fmtPeriod(status: BudgetStatus) {
   const start = new Date(status.period_start)
@@ -61,6 +88,8 @@ export function GatewayBudgets({ orgId, canManage, accessToken }: Props) {
   const [draft, setDraft] = useState<Draft | null>(null)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+  const [lift, setLift] = useState<LiftDraft | null>(null)
+  const [actionError, setActionError] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
@@ -110,7 +139,13 @@ export function GatewayBudgets({ orgId, canManage, accessToken }: Props) {
 
   function openNew() {
     setFormError('')
-    setDraft({ budgetId: null, scope: orgBudget ? agents.find((a) => !agentBudgets.some((b) => b.asset_id === a.id))?.id || '' : ORG_SCOPE, amount: '', warnAt: '80' })
+    setDraft({
+      budgetId: null,
+      scope: orgBudget ? agents.find((a) => !agentBudgets.some((b) => b.asset_id === a.id))?.id || '' : ORG_SCOPE,
+      amount: '',
+      warnAt: '80',
+      enforcement: 'monitor',
+    })
   }
 
   function openEdit(row: BudgetRow) {
@@ -120,7 +155,62 @@ export function GatewayBudgets({ orgId, canManage, accessToken }: Props) {
       scope: row.asset_id || ORG_SCOPE,
       amount: Number(row.amount_usd).toFixed(2),
       warnAt: String(row.warn_at_pct),
+      enforcement: row.enforcement === 'block' ? 'block' : 'monitor',
     })
+  }
+
+  function openLift(row: BudgetRow) {
+    setFormError('')
+    setLift({ row, reason: '' })
+  }
+
+  async function saveLift() {
+    if (!lift || !accessToken) return
+    const reason = lift.reason.trim()
+    if (reason.length < 10 || reason.length > 500) {
+      setFormError('Give a reason of 10 to 500 characters. It is kept in the audit log.')
+      return
+    }
+    setSaving(true)
+    setFormError('')
+    try {
+      await invokeEdge('gateway-budget', { action: 'lift', org_id: orgId, budget_id: lift.row.id, reason }, accessToken)
+      setLift(null)
+      setReloadKey((k) => k + 1)
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : 'Could not lift the block.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function reinstate(row: BudgetRow) {
+    if (!accessToken) return
+    if (!confirm('Reinstate the block? If spend is at or over the budget, new requests are refused straight away.')) return
+    setActionError('')
+    try {
+      await invokeEdge('gateway-budget', { action: 'reinstate', org_id: orgId, budget_id: row.id }, accessToken)
+      setReloadKey((k) => k + 1)
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Could not reinstate the block.')
+    }
+  }
+
+  function blockAction(row: BudgetRow) {
+    if (!canManage || row.enforcement !== 'block') return null
+    if (row.lift) {
+      return (
+        <button type="button" className={styles.edit} onClick={() => void reinstate(row)}>
+          Reinstate block
+        </button>
+      )
+    }
+    if (!row.blocking) return null
+    return (
+      <button type="button" className={styles.edit} onClick={() => openLift(row)}>
+        Lift block
+      </button>
+    )
   }
 
   async function save() {
@@ -150,6 +240,7 @@ export function GatewayBudgets({ orgId, canManage, accessToken }: Props) {
           asset_id: draft.scope === ORG_SCOPE ? null : draft.scope,
           amount_usd: amount,
           warn_at_pct: warn,
+          enforcement: draft.enforcement,
         },
         accessToken,
       )
@@ -204,11 +295,15 @@ export function GatewayBudgets({ orgId, canManage, accessToken }: Props) {
               {fmtUsdExact(spend.spend_usd)}
             </span>
             {orgBudget ? <span className={styles.of}>of {fmtUsdBudget(orgBudget.amount_usd)}</span> : null}
-            {orgBudget ? (
-              <StatusLabel tone={budgetStateTone(orgBudget.state)}>{budgetStateLabel(orgBudget.state)}</StatusLabel>
-            ) : null}
+            {orgBudget ? <StatusLabel tone={rowStatus(orgBudget).tone}>{rowStatus(orgBudget).label}</StatusLabel> : null}
           </div>
           {orgBudget ? <BudgetBar row={orgBudget} /> : null}
+          {orgBudget?.enforcement === 'block' ? (
+            <div className={styles.modeLine}>
+              <BudgetMode row={orgBudget} />
+              {blockAction(orgBudget)}
+            </div>
+          ) : null}
         </div>
         <dl className={styles.facts}>
           {orgBudget ? (
@@ -294,8 +389,10 @@ export function GatewayBudgets({ orgId, canManage, accessToken }: Props) {
               <span role="cell" className={`${styles.num} ${styles.right}`}>
                 {b.projected_usd != null ? fmtUsdExact(b.projected_usd) : 'From day 4'}
               </span>
-              <span role="cell">
-                <StatusLabel tone={budgetStateTone(b.state)}>{budgetStateLabel(b.state)}</StatusLabel>
+              <span role="cell" className={styles.status}>
+                <StatusLabel tone={rowStatus(b).tone}>{rowStatus(b).label}</StatusLabel>
+                <BudgetMode row={b} />
+                {blockAction(b)}
               </span>
             </div>
           ))}
@@ -310,10 +407,12 @@ export function GatewayBudgets({ orgId, canManage, accessToken }: Props) {
         </div>
       ) : null}
 
+      {actionError ? <Notice tone="risk">{actionError}</Notice> : null}
+
       <p className={styles.note}>
-        Spend is priced per request from the usage the provider reports, at the provider&apos;s published list price, and
-        includes both exact and awaiting-reconciliation amounts. Months run in UTC, matching provider billing. Budgets
-        monitor spend and do not block requests.
+        Spend is priced per request from the usage the provider reports, at the provider&apos;s published list price less
+        any contracted discount under Pricing, and includes both exact and awaiting-reconciliation amounts. Months run in
+        UTC, matching provider billing. Budgets set to block refuse new requests once spend reaches 100%.
       </p>
 
       <Drawer
@@ -388,6 +487,69 @@ export function GatewayBudgets({ orgId, canManage, accessToken }: Props) {
               of the month have passed, it also shows Projected over when the average daily spend so far would pass the
               budget by month end. Changes are recorded in the audit log.
             </p>
+            <label className={styles.field}>
+              <span>When the budget is reached</span>
+              <SelectMenu
+                value={draft.enforcement}
+                options={ENFORCEMENT_OPTIONS}
+                aria-label="When the budget is reached"
+                onChange={(v) => setDraft({ ...draft, enforcement: v === 'block' ? 'block' : 'monitor' })}
+              />
+            </label>
+            {draft.enforcement === 'block' ? (
+              <p className={styles.note}>
+                Once spend reaches the budget, new requests are refused with a clear error naming the budget. Requests
+                already running finish, so spend can end slightly above the limit. Models without a verified price are
+                also refused, because their spend cannot be counted. An owner or admin can lift the block for the rest
+                of the month, with a reason.
+              </p>
+            ) : null}
+            {formError ? <Notice tone="risk">{formError}</Notice> : null}
+          </div>
+        ) : null}
+      </Drawer>
+
+      <Drawer
+        open={!!lift}
+        onClose={() => setLift(null)}
+        title="Lift block"
+        description="Requests continue for the rest of this month (UTC). The block applies again from the 1st, or sooner if you reinstate it."
+        footer={
+          <div className={styles.footer}>
+            <span />
+            <div className={styles.footerEnd}>
+              <Button variant="ghost" size="sm" onClick={() => setLift(null)}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={() => void saveLift()} pending={saving}>
+                Lift block
+              </Button>
+            </div>
+          </div>
+        }
+      >
+        {lift ? (
+          <div className={styles.form}>
+            <div className={styles.field}>
+              <span>Budget</span>
+              <span className={styles.fixed}>
+                {lift.row.asset_id ? lift.row.asset_name || 'Agent' : 'Whole organisation'},{' '}
+                <span className={styles.num}>{fmtUsdBudget(lift.row.amount_usd)}</span> a month, spent{' '}
+                <span className={styles.num}>{fmtUsdExact(lift.row.spend_usd)}</span>
+              </span>
+            </div>
+            <label className={styles.field}>
+              <span>Reason</span>
+              <textarea
+                className={styles.textarea}
+                rows={4}
+                maxLength={500}
+                placeholder="For example: quarter-end reporting run approved by the head of finance"
+                value={lift.reason}
+                onChange={(e) => setLift({ ...lift, reason: e.target.value })}
+              />
+            </label>
+            <p className={styles.note}>Your name, the reason and the time are recorded in the audit log.</p>
             {formError ? <Notice tone="risk">{formError}</Notice> : null}
           </div>
         ) : null}

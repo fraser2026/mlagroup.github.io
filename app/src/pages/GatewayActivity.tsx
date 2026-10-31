@@ -23,7 +23,9 @@ import {
   dlpDetections,
   dlpLabel,
   dlpProfileName,
+  eventSpend,
   fmtMs,
+  fmtPct,
   fmtTimeExact,
   fmtTimeShort,
   fmtUsdExact,
@@ -185,7 +187,11 @@ export function GatewayActivity({
           id: 'spend',
           label: 'Spend',
           value: <span title={fmtUsdFull(t.cost_usd)}>{fmtUsdExact(t.cost_usd)}</span>,
-          hint: num(t.cost_open) ? `${num(t.cost_open)} awaiting reconciliation` : 'Exact, list rates',
+          hint: num(t.cost_open)
+            ? `${num(t.cost_open)} awaiting reconciliation`
+            : num(t.list_cost_usd) > num(t.cost_usd)
+              ? `Contracted, ${fmtUsdExact(t.list_cost_usd)} at list`
+              : 'Exact, list rates',
         },
         {
           id: 'dlp',
@@ -197,7 +203,11 @@ export function GatewayActivity({
           id: 'issues',
           label: 'Issues',
           value: (num(t.errors) + num(t.rate_limited)).toLocaleString('en-GB'),
-          hint: num(t.fallback) ? `${num(t.fallback)} sent direct` : undefined,
+          hint: num(t.policy_blocked)
+            ? `${num(t.policy_blocked)} refused by budget`
+            : num(t.fallback)
+              ? `${num(t.fallback)} sent direct`
+              : undefined,
         },
         {
           id: 'latency',
@@ -304,14 +314,14 @@ export function GatewayActivity({
       {
         id: 'cost',
         header: 'Cost',
-        accessorFn: (e) => num(e.cost_usd),
+        accessorFn: (e) => num(eventSpend(e)),
         size: 110,
         cell: ({ row }) => {
           const e = row.original
           if (e.cost_status === 'unpriced') return <span className={styles.quiet}>Unpriced</span>
           return (
-            <span className={styles.num} title={`${fmtUsdFull(e.cost_usd)} · ${costStatusLabel(e.cost_status)}`}>
-              {fmtUsdExact(e.cost_usd)}
+            <span className={styles.num} title={`${fmtUsdFull(eventSpend(e))} · ${costStatusLabel(e.cost_status)}`}>
+              {fmtUsdExact(eventSpend(e))}
               {e.cost_status === 'needs_reconciliation' || e.cost_status === 'partial' ? (
                 <span className={styles.quiet}> est.</span>
               ) : null}
@@ -622,11 +632,17 @@ function RequestDrawer({
             </div>
             <div className={styles.costTotal}>
               <span className={styles.costValue}>
-                {e.cost_status === 'unpriced' ? 'Unpriced' : fmtUsdExact(e.cost_usd)}
+                {e.cost_status === 'unpriced' ? 'Unpriced' : fmtUsdExact(eventSpend(e))}
               </span>
-              {e.cost_status !== 'unpriced' ? <span className={styles.quiet}>{fmtUsdFull(e.cost_usd)}</span> : null}
+              {e.cost_status !== 'unpriced' ? <span className={styles.quiet}>{fmtUsdFull(eventSpend(e))}</span> : null}
             </div>
             {costStatusHint(e.cost_status) ? <p className={styles.hint}>{costStatusHint(e.cost_status)}</p> : null}
+            {e.cost_breakdown?.agreement ? (
+              <p className={styles.hint}>
+                Contracted price: {fmtPct(e.cost_breakdown.agreement.discount_pct)} off list price of{' '}
+                <span className={styles.num}>{fmtUsdFull(e.cost_usd)}</span>. The lines below are at list price.
+              </p>
+            ) : null}
             {shownLines.length ? (
               <ul className={styles.lines}>
                 {shownLines.map((l) => (

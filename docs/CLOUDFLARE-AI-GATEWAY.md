@@ -86,7 +86,7 @@ Built 2026-10-30:
 
 Budgets (2026-10-30):
 
-- `gateway_budgets`: one monthly budget per organisation and one per agent, in USD to the cent, with a warning level (default 80%). Members can read; writes go through `gateway-budget` (owners and admins), and every set, change and removal is written to the audit log with from and to values. `enforcement` is `monitor` only; budgets do not block requests.
+- `gateway_budgets`: one monthly budget per organisation and one per agent, in USD to the cent, with a warning level (default 80%). Members can read; writes go through `gateway-budget` (owners and admins), and every set, change and removal is written to the audit log with from and to values. `enforcement` is `monitor` or `block` (see Enforcement below).
 - `gateway_budget_status(org, at)` measures spend for the calendar month in UTC (the boundary providers bill on), using half-open bounds so a request at 00:00:00.000 on the 1st belongs to the new month.
 - Spend = exact (`priced`) + awaiting reconciliation (`needs_reconciliation`, `partial`). Requests with no price are counted separately and shown as a warning, because spend is incomplete while any exist; they are never estimated.
 - States: Over budget at 100%, Warning level reached at the warning level, Projected over when spend divided by the elapsed share of the month passes the budget. Projections start after three full days, so an early spike cannot produce a misleading forecast.
@@ -109,7 +109,23 @@ Budget alerts (2026-10-31):
 - Governance alerts from Check now no longer email automatically; they follow the same opt-in.
 - Verified in a local Postgres: wording and amounts, each level once per month, re-arm on change, new month, organisation scoping, email no-op when nobody opted in, privileges and preference RLS.
 
-Still to do: enforcement (block or downgrade at 100%), organisation rate overrides for negotiated pricing (the billed versus list gap now shows the discount), daily rollups once volume needs them, CSV export, per-event cross-check with AI Gateway logged cost.
+Contracted pricing (2026-10-31):
+
+- `gateway_price_agreements`: a discount off Anthropic list price per organisation, for all models or one model, with a UTC start date (inclusive) and optional end date (exclusive). A model-specific agreement takes precedence over an all-models one. Agreements for the same models cannot overlap (trigger, advisory lock, `23P01`). Members read; writes go through `gateway-pricing` (owners and admins), audited with from and to values.
+- Each event keeps `cost_usd` at list price and adds `contract_cost_usd` (list less the discount in effect on the day, equal to list when there is no agreement) plus `price_agreement_id`. Spend, budgets, alerts and the usage summary all use contracted spend; reconciliation still compares list price and token counts with Anthropic, so a discount cannot hide a usage difference.
+- Saving or removing an agreement re-prices the organisation's requests from the earliest affected day, then re-runs budget alerts.
+- The Pricing section suggests the discount Anthropic actually billed (`gateway_price_agreement_suggestion`, last 30 days of settled reconciliation) once there are at least seven days and $1 of list spend, and flags a recorded discount that differs from billing by half a point or more.
+
+Enforcement (2026-10-31):
+
+- A budget set to block refuses new requests once contracted spend reaches 100%. Agent budgets are checked before the organisation budget. The gateway returns Anthropic-shaped `permission_error` 403 (not retried by SDKs) naming the budget, and records the request as `blocked_budget`, not billable. Requests already in flight finish, so spend can end slightly above the limit.
+- While any blocking budget applies, a model with no verified price is refused (`blocked_unpriced_model`), because its spend cannot be counted. Monitor-only budgets never block.
+- Spend is read from `gateway_spend_counters` (organisation, agent, UTC month), kept by a row trigger on every insert, re-price and delete, and rebuilt nightly at 00:20 UTC for the current and previous month as a consistency check.
+- If the check itself fails, the organisation's fail mode applies: open sends the request, closed refuses it with 503 and records a gateway error.
+- An owner or admin can lift a block for the rest of the UTC month with a written reason (10 to 500 characters), and reinstate it. Both are audited; a lift never carries into the next month.
+- Verified in a local Postgres: contract pricing at the UTC midnight boundary, model precedence and dated snapshots, overlap rejection, counters equal to budget status after insert, re-price and delete, agent and organisation blocks, unpriced refusal, lift and reinstate, privileges and RLS.
+
+Still to do: daily rollups once volume needs them, CSV export, per-event cross-check with AI Gateway logged cost, multi-provider pricing agreements.
 
 ### Phase 3 — controls
 
