@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   BrandLoader,
   Button,
@@ -47,6 +47,19 @@ const TYPE_LABELS: Record<string, string> = {
   compliance_rule_fired: 'Automation',
   support_response: 'Support',
   evidence_review: 'Evidence review',
+  budget_warning: 'Budget warning',
+  budget_over: 'Over budget',
+  budget_projected: 'Projected over budget',
+}
+
+async function governanceEmailOptIn(userId: string, orgId: string): Promise<boolean> {
+  const { data } = await sb
+    .from('notification_preferences')
+    .select('email_governance_alerts')
+    .eq('user_id', userId)
+    .eq('org_id', orgId)
+    .maybeSingle()
+  return Boolean(data?.email_governance_alerts)
 }
 
 function sevTone(sev?: string | null): StatusTone {
@@ -241,8 +254,9 @@ export function AlertsPage() {
     setChecking(true)
     setError('')
     try {
+      const wantsEmail = user?.id ? await governanceEmailOptIn(user.id, org.id) : false
       const mail: AlertMailCtx | null =
-        session?.access_token && user?.email
+        wantsEmail && session?.access_token && user?.email
           ? {
               accessToken: session.access_token,
               email: user.email,
@@ -288,7 +302,7 @@ export function AlertsPage() {
       <PageFrame>
         <PageHeader
           title="Alerts"
-          description="Governance monitoring for score drops, overdue controls, and assessments due."
+          description="AI spend against budgets, score drops, overdue controls, and assessments due."
         />
         <BrandLoader fill label="Loading alerts" />
       </PageFrame>
@@ -299,7 +313,7 @@ export function AlertsPage() {
     <PageFrame railItems={[{ id: 'active', label: 'Active alerts' }]}>
       <PageHeader
         title="Alerts"
-        description="Governance monitoring for score drops, overdue controls, and assessments due."
+        description="AI spend against budgets, score drops, overdue controls, and assessments due."
         actions={
           <Button variant="ghost" pending={checking} onClick={() => void checkNow()}>
             Check now
@@ -323,12 +337,15 @@ export function AlertsPage() {
         {active.length === 0 ? (
           <EmptyState
             title="No active alerts"
-            body="Your governance platform is monitoring for score drops, overdue controls, and assessments due for review."
+            body="RegAnchor checks AI spend against your budgets every 10 minutes. Check now looks for score drops, overdue controls, and assessments due."
           />
         ) : (
           <div className={styles.list}>
             {active.map((a) => {
               const sev = a.severity || 'info'
+              const hasLink =
+                (a.ref_type === 'control_assignment' && Boolean(a.ref_id)) ||
+                a.ref_type === 'gateway_budget'
               return (
                 <article key={a.id} className={`${styles.card} ${styles[`sev_${sev}`] || ''}`}>
                   <div className={styles.head}>
@@ -348,9 +365,14 @@ export function AlertsPage() {
                         View control
                       </Button>
                     ) : null}
+                    {a.ref_type === 'gateway_budget' ? (
+                      <Button size="sm" onClick={() => navigate('/gateway#budgets')}>
+                        Open Monitoring
+                      </Button>
+                    ) : null}
                     <Button
                       size="sm"
-                      variant={a.ref_type === 'control_assignment' && a.ref_id ? 'ghost' : 'primary'}
+                      variant={hasLink ? 'ghost' : 'primary'}
                       onClick={() => void resolveAlert(a.id)}
                     >
                       Mark resolved
@@ -365,9 +387,8 @@ export function AlertsPage() {
           </div>
         )}
         <Notice title="Email alerts">
-          Check now runs score-drop, overdue-control, and assessment-due evaluation (portal parity).
-          New alerts also email your signed-in address via Resend. The full compliance_rules
-          auto-advance engine still runs from the legacy portal boot path.
+          Alerts always show here. To also get them by email, turn on budget or governance alert
+          emails in <Link to="/settings#notifications">Settings</Link>.
         </Notice>
       </Section>
     </PageFrame>

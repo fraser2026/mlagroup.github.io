@@ -8,6 +8,9 @@
  *   - ops / ack / portal / admin-reply: RegAnchor <info@reganchor.com>
  *   - org-invite: RegAnchor <no-reply@reganchor.com> (reply-To info@)
  *   - control-assignment: RegAnchor <no-reply@reganchor.com> (reply-To info@)
+ *   - budget-alert: database-initiated (x-cron-secret checked against Vault); To = every org member
+ *     who opted in to budget alert emails; one message per recipient; the alert is claimed first
+ *     so retries never send twice
  *   - help-request: RegAnchor <info@reganchor.com> (ops kind); To info@; reply-To requester;
  *     requires JWT; request must belong to caller (support_requests.requested_by)
  *   - help-request-ack (sent inside help-request, after ops send; best-effort):
@@ -62,9 +65,11 @@ type Kind =
   | 'org-invite'
   | 'control-assignment'
   | 'help-request'
+  | 'budget-alert'
 
 const KINDS: Kind[] = [
   'help-request',
+  'budget-alert',
   'contact',
   'diagnostic-ack',
   'diagnostic-lead',
@@ -508,6 +513,102 @@ function buildPortalAlert(to: string, body: Record<string, unknown>) {
   }
 }
 
+const BUDGET_ALERT_TYPES = ['budget_warning', 'budget_over', 'budget_projected']
+
+function buildBudgetAlert(to: string, name: string, title: string, message: string) {
+  const heading = title || 'Budget alert'
+  const openUrl = `${APP_ORIGIN}/gateway#budgets`
+  const footer = 'You receive this because you turned on budget alert emails in RegAnchor Settings.'
+  const inner = [
+    h1(heading),
+    para(`Hello ${name || 'there'},`),
+    para(message),
+    cta(openUrl, 'Open Monitoring'),
+    `<p style="margin-top:16px;margin-bottom:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#6B7280;">${esc(footer)}</p>`,
+  ].join('')
+  return {
+    from: FROM_NOREPLY,
+    to,
+    replyTo: OPS,
+    subject: heading,
+    text: `Hello ${name || 'there'},\n\n${message}\n\nOpen Monitoring: ${openUrl}\n\n${footer}\n\nRegAnchor`,
+    html: shell(heading, inner, { preheader: message.slice(0, 140) }),
+  }
+}
+
+async function sendBudgetAlert(req: Request, body: Record<string, unknown>, apiKey: string) {
+  const supabase = serviceClient()
+  const secret = req.headers.get('x-cron-secret') || ''
+  if (secret.length < 32) return json({ error: 'Not allowed' }, 401)
+  const { data: allowed } = await supabase.rpc('alert_mail_secret_ok', { p_secret: secret })
+  if (allowed !== true) return json({ error: 'Not allowed' }, 401)
+
+  const alertId = clip(body.alert_id, 36)
+  if (!UUID_RE.test(alertId)) return json({ error: 'Valid alert_id is required' }, 400)
+  const { data: alert } = await supabase
+    .from('governance_alerts')
+    .select('id,org_id,alert_type,title,body,email_sent')
+    .eq('id', alertId)
+    .maybeSingle()
+  if (!alert || !BUDGET_ALERT_TYPES.includes(alert.alert_type)) return json({ error: 'Alert not found' }, 404)
+
+  const { data: claimed } = await supabase
+    .from('governance_alerts')
+    .update({ email_sent: true, email_sent_at: new Date().toISOString() })
+    .eq('id', alertId)
+    .eq('email_sent', false)
+    .select('id')
+  if (!claimed?.length) return json({ ok: true, sent: 0, already_sent: true })
+
+  const { data: prefs } = await supabase
+    .from('notification_preferences')
+    .select('user_id')
+    .eq('org_id', alert.org_id)
+    .eq('email_budget_alerts', true)
+  const optedIn = (prefs || []).map((p) => p.user_id as string)
+  const { data: members } = optedIn.length
+    ? await supabase.from('org_members').select('user_id').eq('org_id', alert.org_id).in('user_id', optedIn)
+    : { data: [] as Array<{ user_id: string }> }
+  const memberIds = (members || []).map((m) => m.user_id as string)
+  const { data: people } = memberIds.length
+    ? await supabase.from('profiles').select('id,email,full_name').in('id', memberIds)
+    : { data: [] as Array<{ id: string; email?: string; full_name?: string }> }
+
+  let sent = 0
+  let attempted = 0
+  for (const person of people || []) {
+    const to = clip(person.email, 254).toLowerCase()
+    if (!emailOk(to)) continue
+    attempted++
+    const mail = buildBudgetAlert(
+      to,
+      clip(person.full_name, 120).split(/\s+/)[0] || '',
+      clip(alert.title, 200),
+      clip(alert.body, 4000),
+    )
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: mail.from,
+        to: [mail.to],
+        reply_to: mail.replyTo,
+        subject: mail.subject,
+        text: mail.text,
+        html: mail.html,
+      }),
+    })
+    if (res.ok) sent++
+    else console.error('[send-mail] budget-alert send failed', await res.json().catch(() => ({})))
+  }
+
+  if (attempted > 0 && sent === 0) {
+    await supabase.from('governance_alerts').update({ email_sent: false, email_sent_at: null }).eq('id', alertId)
+    return json({ error: 'Send failed' }, 502)
+  }
+  return json({ ok: true, sent })
+}
+
 function buildAdminReply(to: string, body: Record<string, unknown>) {
   const name = clip(body.to_name || body.name, 120)
   const title = clip(body.alert_title || body.subject, 200)
@@ -672,6 +773,7 @@ serve(async (req) => {
     const body = (await req.json()) as Record<string, unknown>
     const kind = clip(body.kind, 40) as Kind
     if (!KINDS.includes(kind)) return json({ error: 'Unknown kind' }, 400)
+    if (kind === 'budget-alert') return await sendBudgetAlert(req, body, apiKey)
 
     let helpAck: { to: string; replyTo: string; subject: string; text: string; html: string } | null = null
     let mail: {

@@ -16,6 +16,22 @@ import { sb } from '../lib/supabase'
 import { MEMBER_ROLE_LABELS } from '../lib/stripe'
 import styles from './SettingsPage.module.css'
 
+type EmailPrefKey = 'email_budget_alerts' | 'email_governance_alerts'
+type EmailPrefs = Record<EmailPrefKey, boolean>
+
+const EMAIL_PREF_ITEMS: Array<{ key: EmailPrefKey; label: string; description: string }> = [
+  {
+    key: 'email_budget_alerts',
+    label: 'Email me budget alerts',
+    description: 'When AI spend reaches a warning level, goes over budget, or is projected to.',
+  },
+  {
+    key: 'email_governance_alerts',
+    label: 'Email me governance alerts',
+    description: 'Score drops, overdue controls, and assessments due found by Check now.',
+  },
+]
+
 export function SettingsPage() {
   const { user, profile, org, role, refreshOrg, signOut } = useAuth()
   const navigate = useNavigate()
@@ -33,6 +49,13 @@ export function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [pwBusy, setPwBusy] = useState(false)
   const [signOutBusy, setSignOutBusy] = useState(false)
+  const [emailPrefs, setEmailPrefs] = useState<EmailPrefs>({
+    email_budget_alerts: false,
+    email_governance_alerts: false,
+  })
+  const [prefsReady, setPrefsReady] = useState(false)
+  const [prefBusy, setPrefBusy] = useState<EmailPrefKey | null>(null)
+  const [prefError, setPrefError] = useState('')
 
   function pushToast(text: string) {
     if (!text.trim()) return
@@ -70,6 +93,52 @@ export function SettingsPage() {
     setDepartment(String(profile?.department || '').trim())
     setWorkPhone(String(profile?.work_phone || '').trim())
   }, [profile])
+
+  useEffect(() => {
+    if (!user?.id || !org?.id) return
+    let cancelled = false
+    void (async () => {
+      const { data, error } = await sb
+        .from('notification_preferences')
+        .select('email_budget_alerts,email_governance_alerts')
+        .eq('user_id', user.id)
+        .eq('org_id', org.id)
+        .maybeSingle()
+      if (cancelled) return
+      if (error) {
+        setPrefError('Notification preferences are unavailable right now.')
+      } else {
+        setEmailPrefs({
+          email_budget_alerts: Boolean(data?.email_budget_alerts),
+          email_governance_alerts: Boolean(data?.email_governance_alerts),
+        })
+      }
+      setPrefsReady(true)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id, org?.id])
+
+  async function toggleEmailPref(key: EmailPrefKey) {
+    if (!user?.id || !org?.id) return
+    const next = { ...emailPrefs, [key]: !emailPrefs[key] }
+    setPrefBusy(key)
+    setPrefError('')
+    try {
+      const { error } = await sb.from('notification_preferences').upsert(
+        { user_id: user.id, org_id: org.id, ...next, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id,org_id' },
+      )
+      if (error) throw error
+      setEmailPrefs(next)
+      pushToast(next[key] ? 'Email alerts turned on.' : 'Email alerts turned off.')
+    } catch (e) {
+      setPrefError(e instanceof Error ? e.message : 'Could not save notification preferences.')
+    } finally {
+      setPrefBusy(null)
+    }
+  }
 
   async function saveProfile() {
     if (!user?.id) return
@@ -146,6 +215,7 @@ export function SettingsPage() {
       railItems={[
         { id: 'profile', label: 'Profile' },
         { id: 'access', label: 'Access' },
+        { id: 'notifications', label: 'Notifications' },
         { id: 'appearance', label: 'Appearance' },
         { id: 'password', label: 'Password' },
         { id: 'session', label: 'Session' },
@@ -272,6 +342,41 @@ export function SettingsPage() {
               </Link>
             </div>
           ) : null}
+        </div>
+      </section>
+
+      <section
+        id="notifications"
+        className={styles.block}
+        aria-labelledby="settings-notifications-title"
+      >
+        <div className={styles.blockCopy}>
+          <h2 id="settings-notifications-title" className={styles.blockTitle}>
+            Notifications
+          </h2>
+          <p className={styles.blockDesc}>
+            Alerts always appear in Notifications for {workspaceName}. Email is optional and only
+            goes to you.
+          </p>
+        </div>
+        <div className={styles.blockBody}>
+          <div className={styles.prefList}>
+            {EMAIL_PREF_ITEMS.map((item) => (
+              <label key={item.key} className={styles.prefCheck}>
+                <input
+                  type="checkbox"
+                  checked={emailPrefs[item.key]}
+                  disabled={!prefsReady || prefBusy !== null}
+                  onChange={() => void toggleEmailPref(item.key)}
+                />
+                <span>
+                  <span className={styles.prefLabel}>{item.label}</span>
+                  <span className={styles.prefDesc}>{item.description}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          {prefError ? <p className={styles.errMsg}>{prefError}</p> : null}
         </div>
       </section>
 

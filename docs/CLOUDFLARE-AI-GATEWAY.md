@@ -33,6 +33,15 @@ Checked against `supabase/functions/gateway-anthropic/index.ts`, `docs/GATEWAY.m
 - **Cloudflare never stores content.** `cf-aig-collect-log-payload: false` on every request. When an organisation opts in, content is written to RegAnchor's EU storage only.
 - **Design for scale from the start:** partitioned event table, content in object storage rather than table rows, retention by plan, upgrade paths on Supabase and Cloudflare.
 
+## Product principles for later builds (Fraser, 2026-10-31)
+
+- **Many providers, one view.** Anthropic first, but clients will run OpenAI, Google and others, often through AWS Bedrock or Microsoft Foundry, across many models. Keep provider, infrastructure and interface as separate dimensions in data and UI. Monitoring must scale to many providers, keys and agents without becoming crowded: filter by provider, roll up by default, drill down on demand.
+- **Simple for the user, rigorous underneath.** Governance and monitoring should feel simple even when the backend is complex.
+- **Frictionless setup.** Not every client is comfortable with API keys. Connecting a provider and turning on monitoring should take as few steps as possible, with clear guidance and checks that confirm each step worked. Write the setup guide once the build reaches its target shape, not before.
+- **Owner oversight.** RegAnchor (MLA Group) will need an operator view to manage every client's monitoring health. Not now; keep data shaped so it is possible.
+- **Notifications before email.** Budget and control alerts appear in the app first; email is an opt-in per user.
+- **Industry standards and security** are part of every build, not a later pass.
+
 ## Build plan
 
 ### Phase 0 — setup (Fraser)
@@ -93,13 +102,20 @@ Reconciliation (2026-10-31):
 - Final once Anthropic stops revising (about seven days after month end); provisional until then. Runs daily at 06:30 UTC via `pg_cron` (trailing eight days, plus the previous month during days 1 to 8) and on demand from Monitoring (owners and admins, audited).
 - Verified in a local Postgres and against the shared comparison module: midnight boundary, key rotation, revoked connections, priority tier, cancelled streams, exact tolerance edge, settlement dates, privileges and RLS.
 
-Still to do: budget alerts by email, enforcement (block or downgrade at 100%), organisation rate overrides for negotiated pricing (the billed versus list gap now shows the discount), daily rollups once volume needs them, CSV export, per-event cross-check with AI Gateway logged cost.
+Budget alerts (2026-10-31):
+
+- `gateway_budget_alerts_sync()` runs every 10 minutes via `pg_cron`, and straight after a budget is saved. It raises one in-app alert per budget, month, level (warning, over, projected over) and budget amount, so changing a budget re-arms its alerts. Alerts appear on Notifications with a link to Monitoring.
+- Email is opt-in per user and per organisation in Settings (`notification_preferences`, off by default, each user reads and edits only their own). When someone opted in, the database hands the alert to `send-mail` through `pg_net`, authenticated by a Vault secret generated in the database. `send-mail` claims the alert once, sends only to current members who opted in, and releases the claim if every send fails.
+- Governance alerts from Check now no longer email automatically; they follow the same opt-in.
+- Verified in a local Postgres: wording and amounts, each level once per month, re-arm on change, new month, organisation scoping, email no-op when nobody opted in, privileges and preference RLS.
+
+Still to do: enforcement (block or downgrade at 100%), organisation rate overrides for negotiated pricing (the billed versus list gap now shows the discount), daily rollups once volume needs them, CSV export, per-event cross-check with AI Gateway logged cost.
 
 ### Phase 3 — controls
 
 - DLP (Financial Information, national identifiers) on request and response. Two gateways, `reganchor-flag` and `reganchor-block`, so each organisation's DLP mode is a routing choice rather than a per-org rule.
 - Organisation and asset budgets and rate limits enforced in `gateway-anthropic`; one Cloudflare spend limit split by `org_id` as a backstop.
-- Alerts by email (Resend) for DLP matches and budget thresholds.
+- Alerts for DLP matches, in-app first with opt-in email, the same way as budget alerts.
 
 ### Phase 4 — enterprise
 

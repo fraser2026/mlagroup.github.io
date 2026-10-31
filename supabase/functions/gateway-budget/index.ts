@@ -101,6 +101,8 @@ Deno.serve(async (req) => {
           warn_at_pct: existing ? { from: existing.warn_at_pct, to: warnAt } : warnAt,
         },
       })
+      const { error: alertError } = await supabase.rpc('gateway_budget_alerts_sync', { p_org_id: orgId })
+      if (alertError) console.error('budget alert check failed', alertError.message)
       return json({ ok: true, budget: data })
     }
 

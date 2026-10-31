@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { useLocation } from 'react-router-dom'
 import { ContextRail, type ContextRailItem } from './ContextRail'
 import { useShellChrome } from './shellChrome'
 import styles from './PageFrame.module.css'
@@ -24,12 +25,34 @@ export function PageFrame({
   denseWorkspace = false,
 }: Props) {
   const { setRailAvailable, railOpen } = useShellChrome()
+  const { hash } = useLocation()
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setRailAvailable(showRail)
     return () => setRailAvailable(false)
   }, [showRail, setRailAvailable])
+
+  useEffect(() => {
+    const id = decodeURIComponent(hash.replace(/^#/, ''))
+    if (!id) return
+    let tries = 0
+    let timer = 0
+    const seek = () => {
+      const scroller = scrollRef.current
+      const el = document.getElementById(id)
+      if (scroller && el && scroller.contains(el)) {
+        const top =
+          el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - 12
+        scroller.scrollTo({ top: Math.max(0, top) })
+        return
+      }
+      // Sections often mount after data loads, so keep looking briefly.
+      if (++tries < 30) timer = window.setTimeout(seek, 100)
+    }
+    seek()
+    return () => window.clearTimeout(timer)
+  }, [hash])
 
   const mainClass = denseWorkspace
     ? styles.mainDense
