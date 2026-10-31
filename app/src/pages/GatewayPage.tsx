@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { loadGatewaySettings, type GatewaySettings } from '../lib/gateway'
 import { GatewayActivity } from './GatewayActivity'
 import { GatewayBudgets } from './GatewayBudgets'
+import { GatewayReconciliation } from './GatewayReconciliation'
 import styles from './GatewayPage.module.css'
 
 export function GatewayPage() {
@@ -79,6 +80,10 @@ export function GatewayPage() {
 
       <Section id="budgets" title="Budgets">
         <GatewayBudgets orgId={org.id} canManage={canDeleteRegistry} accessToken={session?.access_token} />
+      </Section>
+
+      <Section id="reconciliation" title="Reconciliation">
+        <GatewayReconciliation orgId={org.id} canRun={canDeleteRegistry} accessToken={session?.access_token} />
       </Section>
 
       <Section id="activity" title="Activity">

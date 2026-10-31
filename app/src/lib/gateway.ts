@@ -278,6 +278,151 @@ export function fmtPct(value: number | string | null | undefined) {
   return `${n.toLocaleString('en-GB', { maximumFractionDigits: n > 0 && n < 1 ? 2 : 1 })}%`
 }
 
+export type ReconStatus = 'matched' | 'provider_higher' | 'recorded_higher' | 'cost_difference' | 'provider_pending'
+
+export type ReconUsage = {
+  requests: number
+  uncached_input: number
+  cache_write_5m: number
+  cache_write_1h: number
+  cache_read: number
+  output: number
+  web_search: number
+}
+
+export type ReconDay = {
+  api_key_id: string
+  day: string
+  asset_ids: string[]
+  status: ReconStatus
+  final: boolean
+  provider_usage: ReconUsage
+  recorded_usage: ReconUsage & { events: number; unpriced: number; open_cost: number; incomplete: number; priority: number }
+  provider_list_usd: string
+  provider_billed_usd: string
+  provider_other_list_usd: string
+  provider_other_billed_usd: string
+  recorded_usd: string
+  recorded_priority_usd: string
+  variance_usd: string
+  tolerance_usd: string
+  models: Array<{
+    model: string
+    provider_usage: ReconUsage
+    recorded_usage: ReconUsage
+    provider_list_usd: string
+    provider_billed_usd: string
+    recorded_usd: string
+  }>
+  notes: string[]
+  data_refreshed_at: string | null
+  checked_at: string
+}
+
+export type ReconRun = {
+  id: string
+  trigger: 'scheduled' | 'manual'
+  status: 'running' | 'completed' | 'failed' | 'skipped'
+  range_start: string
+  range_end: string
+  data_refreshed_at: string | null
+  error: string | null
+  started_at: string
+  finished_at: string | null
+}
+
+export const RECON_USAGE_FIELDS: Array<{ key: keyof ReconUsage; label: string }> = [
+  { key: 'uncached_input', label: 'Input tokens' },
+  { key: 'cache_write_5m', label: 'Cache writes, 5 minutes' },
+  { key: 'cache_write_1h', label: 'Cache writes, 1 hour' },
+  { key: 'cache_read', label: 'Cache reads' },
+  { key: 'output', label: 'Output tokens' },
+  { key: 'web_search', label: 'Web searches' },
+]
+
+export async function loadReconciliation(orgId: string, days: number) {
+  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10)
+  const [daysRes, runsRes] = await Promise.all([
+    sb
+      .from('gateway_reconciliation_days')
+      .select(
+        'api_key_id,day,asset_ids,status,final,provider_usage,recorded_usage,provider_list_usd,provider_billed_usd,provider_other_list_usd,provider_other_billed_usd,recorded_usd,recorded_priority_usd,variance_usd,tolerance_usd,models,notes,data_refreshed_at,checked_at',
+      )
+      .eq('org_id', orgId)
+      .gte('day', since)
+      .order('day', { ascending: false })
+      .order('api_key_id')
+      .limit(1000),
+    sb
+      .from('gateway_reconciliation_runs')
+      .select('id,trigger,status,range_start,range_end,data_refreshed_at,error,started_at,finished_at')
+      .eq('org_id', orgId)
+      .order('started_at', { ascending: false })
+      .limit(10),
+  ])
+  if (daysRes.error) throw new Error(daysRes.error.message)
+  if (runsRes.error) throw new Error(runsRes.error.message)
+  return { days: (daysRes.data || []) as ReconDay[], runs: (runsRes.data || []) as ReconRun[] }
+}
+
+const RECON_STATUS: Record<ReconStatus, { label: string; tone: StatusTone; hint: string }> = {
+  matched: {
+    label: 'Matched',
+    tone: 'ok',
+    hint: 'Token counts are identical and recorded cost equals Anthropic list price within rounding.',
+  },
+  provider_higher: {
+    label: 'Anthropic reports more',
+    tone: 'warn',
+    hint: 'Anthropic reports more usage on this key than passed through the gateway.',
+  },
+  recorded_higher: {
+    label: 'Gateway recorded more',
+    tone: 'risk',
+    hint: 'The gateway recorded more usage than Anthropic reports for this key.',
+  },
+  cost_difference: {
+    label: 'Price difference',
+    tone: 'warn',
+    hint: 'Token counts match but recorded cost differs from Anthropic list price.',
+  },
+  provider_pending: {
+    label: 'Awaiting Anthropic',
+    tone: 'neutral',
+    hint: 'Anthropic has not finished reporting this day yet.',
+  },
+}
+
+export function reconStatusLabel(status: ReconStatus) {
+  return RECON_STATUS[status]?.label || status
+}
+
+export function reconStatusTone(status: ReconStatus): StatusTone {
+  return RECON_STATUS[status]?.tone || 'neutral'
+}
+
+export function reconStatusHint(status: ReconStatus) {
+  return RECON_STATUS[status]?.hint || ''
+}
+
+/** Exact sum of 8-decimal USD strings, so totals never pick up floating point error. */
+export function sumUsd(values: Array<string | null | undefined>): string {
+  let units = 0n
+  for (const raw of values) {
+    const m = /^(-)?(\d+)(?:\.(\d{1,8}))?$/.exec(String(raw ?? '').trim())
+    if (!m) continue
+    const v = BigInt(m[2]) * 100_000_000n + BigInt((m[3] || '').padEnd(8, '0'))
+    units += m[1] ? -v : v
+  }
+  const neg = units < 0n
+  const abs = neg ? -units : units
+  return `${neg ? '-' : ''}${abs / 100_000_000n}.${(abs % 100_000_000n).toString().padStart(8, '0')}`
+}
+
+export function fmtCount(n: number | null | undefined) {
+  return Number(n || 0).toLocaleString('en-GB')
+}
+
 const OUTCOME: Record<string, { label: string; tone: StatusTone }> = {
   success: { label: 'Completed', tone: 'ok' },
   blocked_dlp_request: { label: 'Blocked, prompt', tone: 'risk' },

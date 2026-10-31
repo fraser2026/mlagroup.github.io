@@ -103,6 +103,10 @@ verify_jwt = true
 # Signed-in organisation owner/admin; authorization is checked in-function and every read is audited.
 verify_jwt = true
 
+[functions.gateway-reconcile]
+# Manual runs: signed-in owner/admin checked in-function and audited. Scheduled runs: Vault-held cron secret.
+verify_jwt = false
+
 [functions.draft-policy]
 # Platform AI policy drafting. User JWT required; uses RegAnchor-owned provider secrets.
 verify_jwt = true

@@ -69,6 +69,7 @@ type EventContext = {
   orgId: string
   assetId: string
   tokenId: string
+  providerApiKeyId: string | null
   requestModel: string
   streamed: boolean
   route: Route
@@ -414,6 +415,7 @@ async function recordEvent(supabase: Supabase, ctx: EventContext, result: EventR
     inference_geo: usage.inference_geo,
     speed: usage.speed,
     provider_request_id: result.providerRequestId || null,
+    provider_api_key_id: ctx.providerApiKeyId,
     aig_log_id: result.aigLogId || null,
     dlp_action: dlpAction,
     dlp: result.dlp || null,
@@ -587,7 +589,7 @@ Deno.serve(async (req) => {
 
     const { data: connection } = await supabase
       .from('provider_connections')
-      .select('id,credential_secret_id,status')
+      .select('id,credential_secret_id,status,runtime_api_key_id')
       .eq('asset_id', asset.id)
       .eq('provider_slug', 'anthropic')
       .eq('status', 'connected')
@@ -613,6 +615,7 @@ Deno.serve(async (req) => {
       orgId: asset.org_id,
       assetId: asset.id,
       tokenId: tokenRow.id,
+      providerApiKeyId: connection.runtime_api_key_id || null,
       requestModel: model,
       streamed: body.stream === true,
       route: useAiGateway ? 'ai_gateway' : 'direct',

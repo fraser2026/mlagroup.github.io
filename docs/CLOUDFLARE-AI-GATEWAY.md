@@ -83,7 +83,17 @@ Budgets (2026-10-30):
 - States: Over budget at 100%, Warning level reached at the warning level, Projected over when spend divided by the elapsed share of the month passes the budget. Projections start after three full days, so an early spike cannot produce a misleading forecast.
 - Verified in a local Postgres against month-edge timestamps, every state, projection cut-off and RLS (non-members see nothing, anon cannot execute).
 
-Still to do: budget alerts by email, enforcement (block or downgrade at 100%), organisation rate overrides for negotiated pricing, daily rollups once volume needs them, CSV export, reconciliation view.
+Reconciliation (2026-10-31):
+
+- Source: Anthropic Usage and Cost Analytics API (beta `analytics-usage-cost-2026-08-24`), read with the organisation Admin key. Usage is grouped by API key and model per UTC day; cost is also split by `cost_type`. Amounts arrive as cents with six decimals and are held as integer units of $0.00000001, so nothing is rounded.
+- One row per organisation, provider API key and UTC day in `gateway_reconciliation_days`, with Anthropic's token counts, list cost and billed cost (after discounts, before credits) beside what the gateway recorded. Members can read; only the `gateway-reconcile` function writes.
+- Every event now carries `provider_api_key_id`, so reconciliation stays exact after a key rotation. Older events were backfilled from the asset's current key.
+- Status: Matched (every token type identical and recorded cost within $0.000001 plus $0.00000001 per request of list price), Anthropic reports more (usage on the key outside the gateway, or tokens generated after a cancelled stream), Gateway recorded more, Price difference (tokens match, list price differs: the price table needs updating), Awaiting Anthropic (day ends after `data_refreshed_at`).
+- Known, labelled differences: priority tier list price is excluded because Anthropic reports no token cost for commitment traffic; code execution hours and session charges are billed outside requests and shown, not compared; request counts are for reference only.
+- Final once Anthropic stops revising (about seven days after month end); provisional until then. Runs daily at 06:30 UTC via `pg_cron` (trailing eight days, plus the previous month during days 1 to 8) and on demand from Monitoring (owners and admins, audited).
+- Verified in a local Postgres and against the shared comparison module: midnight boundary, key rotation, revoked connections, priority tier, cancelled streams, exact tolerance edge, settlement dates, privileges and RLS.
+
+Still to do: budget alerts by email, enforcement (block or downgrade at 100%), organisation rate overrides for negotiated pricing (the billed versus list gap now shows the discount), daily rollups once volume needs them, CSV export, per-event cross-check with AI Gateway logged cost.
 
 ### Phase 3 — controls
 

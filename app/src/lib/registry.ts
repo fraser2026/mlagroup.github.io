@@ -915,6 +915,15 @@ export function formatAuditPlain(
     case 'gateway_content_viewed':
       text = `Viewed captured prompt and response for a gateway request on ${systemName}`
       break
+    case 'gateway_reconciliation_run': {
+      const range = (c.range || {}) as { start?: string; end?: string }
+      const summary = (c.summary || {}) as { days?: number; matched?: number }
+      const lastDay = range.end ? new Date(Date.parse(`${range.end}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10) : ''
+      text = c.status === 'completed'
+        ? `Checked gateway records against Anthropic from ${range.start || ''} to ${lastDay}, UTC: ${summary.matched ?? 0} of ${summary.days ?? 0} agent days matched`
+        : `Ran a reconciliation check against Anthropic (${String(c.status || 'not completed')})`
+      break
+    }
     default:
       break
   }
