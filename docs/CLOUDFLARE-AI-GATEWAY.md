@@ -75,7 +75,15 @@ Built 2026-10-30:
 - Captured content: `gateway-content` returns it to organisation owners and admins only, refuses content past the retention period, and writes `gateway_content_viewed` to the asset audit log on every read.
 - Costs below one cent keep three significant digits (for example $0.0000321); full eight-decimal values show on hover and in the drawer.
 
-Still to do: daily rollups once volume needs them, cost against budget, CSV export, reconciliation view.
+Budgets (2026-10-30):
+
+- `gateway_budgets`: one monthly budget per organisation and one per agent, in USD to the cent, with a warning level (default 80%). Members can read; writes go through `gateway-budget` (owners and admins), and every set, change and removal is written to the audit log with from and to values. `enforcement` is `monitor` only; budgets do not block requests.
+- `gateway_budget_status(org, at)` measures spend for the calendar month in UTC (the boundary providers bill on), using half-open bounds so a request at 00:00:00.000 on the 1st belongs to the new month.
+- Spend = exact (`priced`) + awaiting reconciliation (`needs_reconciliation`, `partial`). Requests with no price are counted separately and shown as a warning, because spend is incomplete while any exist; they are never estimated.
+- States: Over budget at 100%, Warning level reached at the warning level, Projected over when spend divided by the elapsed share of the month passes the budget. Projections start after three full days, so an early spike cannot produce a misleading forecast.
+- Verified in a local Postgres against month-edge timestamps, every state, projection cut-off and RLS (non-members see nothing, anon cannot execute).
+
+Still to do: budget alerts by email, enforcement (block or downgrade at 100%), organisation rate overrides for negotiated pricing, daily rollups once volume needs them, CSV export, reconciliation view.
 
 ### Phase 3 — controls
 

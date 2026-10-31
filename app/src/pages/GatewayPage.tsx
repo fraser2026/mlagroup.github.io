@@ -5,6 +5,7 @@ import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { loadGatewaySettings, type GatewaySettings } from '../lib/gateway'
 import { GatewayActivity } from './GatewayActivity'
+import { GatewayBudgets } from './GatewayBudgets'
 import styles from './GatewayPage.module.css'
 
 export function GatewayPage() {
@@ -76,7 +77,11 @@ export function GatewayPage() {
         </Notice>
       ) : null}
 
-      <Section id="activity">
+      <Section id="budgets" title="Budgets">
+        <GatewayBudgets orgId={org.id} canManage={canDeleteRegistry} accessToken={session?.access_token} />
+      </Section>
+
+      <Section id="activity" title="Activity">
         <GatewayActivity
           orgId={org.id}
           settings={settings}

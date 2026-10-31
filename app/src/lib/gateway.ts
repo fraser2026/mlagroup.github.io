@@ -207,6 +207,77 @@ export async function loadGatewaySettings(orgId: string): Promise<GatewaySetting
   return (data as GatewaySettings | null) || null
 }
 
+export type BudgetState = 'ok' | 'projected_over' | 'warn' | 'over'
+
+export type BudgetRow = {
+  id: string
+  asset_id: string | null
+  asset_name: string | null
+  amount_usd: number
+  warn_at_pct: number
+  enforcement: string
+  updated_at: string
+  requests: number
+  exact_usd: number
+  estimated_usd: number
+  spend_usd: number
+  unpriced_requests: number
+  used_pct: number
+  remaining_usd: number
+  projected_usd: number | null
+  state: BudgetState
+}
+
+export type BudgetStatus = {
+  as_of: string
+  period_start: string
+  period_end: string
+  elapsed_fraction: number
+  currency: 'USD'
+  org_spend: {
+    requests: number
+    exact_usd: number
+    estimated_usd: number
+    spend_usd: number
+    unpriced_requests: number
+    projected_usd: number | null
+  }
+  budgets: BudgetRow[]
+}
+
+export async function loadBudgetStatus(orgId: string) {
+  const { data, error } = await sb.rpc('gateway_budget_status', { p_org_id: orgId })
+  if (error) throw new Error(error.message)
+  return data as BudgetStatus
+}
+
+const BUDGET_STATE: Record<BudgetState, { label: string; tone: StatusTone }> = {
+  ok: { label: 'On track', tone: 'ok' },
+  projected_over: { label: 'Projected over', tone: 'warn' },
+  warn: { label: 'Warning level reached', tone: 'warn' },
+  over: { label: 'Over budget', tone: 'risk' },
+}
+
+export function budgetStateLabel(state: BudgetState) {
+  return BUDGET_STATE[state]?.label || 'On track'
+}
+
+export function budgetStateTone(state: BudgetState): StatusTone {
+  return BUDGET_STATE[state]?.tone || 'neutral'
+}
+
+/** Budget amounts are whole cents. */
+export function fmtUsdBudget(value: number | string | null | undefined) {
+  const n = typeof value === 'string' ? parseFloat(value) : Number(value ?? 0)
+  return `$${(Number.isFinite(n) ? n : 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+export function fmtPct(value: number | string | null | undefined) {
+  const n = Number(value ?? 0)
+  if (!Number.isFinite(n)) return '0%'
+  return `${n.toLocaleString('en-GB', { maximumFractionDigits: n > 0 && n < 1 ? 2 : 1 })}%`
+}
+
 const OUTCOME: Record<string, { label: string; tone: StatusTone }> = {
   success: { label: 'Completed', tone: 'ok' },
   blocked_dlp_request: { label: 'Blocked, prompt', tone: 'risk' },

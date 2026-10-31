@@ -894,6 +894,24 @@ export function formatAuditPlain(
       text = `Renamed gateway token "${label.from || 'Gateway token'}" to "${label.to || ''}"`
       break
     }
+    case 'gateway_budget_set':
+    case 'gateway_budget_updated':
+    case 'gateway_budget_removed': {
+      const scope = c.scope === 'agent' ? systemName : 'the organisation'
+      const amount = c.amount_usd as string | { from?: string; to?: string } | undefined
+      const usd = (v?: string) => `$${Number(v || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      if (entry.action === 'gateway_budget_removed') {
+        text = `Removed the ${usd(String(amount || ''))} monthly budget for ${scope}`
+      } else if (amount && typeof amount === 'object' && Number(amount.from) === Number(amount.to)) {
+        const warn = (c.warn_at_pct || {}) as { from?: number; to?: number }
+        text = `Changed the budget warning level for ${scope} from ${warn.from ?? 80}% to ${warn.to ?? 80}%`
+      } else if (amount && typeof amount === 'object') {
+        text = `Changed the monthly budget for ${scope} from ${usd(amount.from)} to ${usd(amount.to)}`
+      } else {
+        text = `Set a ${usd(String(amount || ''))} monthly budget for ${scope}`
+      }
+      break
+    }
     case 'gateway_content_viewed':
       text = `Viewed captured prompt and response for a gateway request on ${systemName}`
       break

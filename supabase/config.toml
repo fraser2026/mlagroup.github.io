@@ -95,6 +95,10 @@ verify_jwt = false
 # Authenticates a RegAnchor asset gateway capability, not a Supabase JWT.
 verify_jwt = false
 
+[functions.gateway-budget]
+# Signed-in organisation owner/admin; authorization is checked in-function and every change is audited.
+verify_jwt = true
+
 [functions.gateway-content]
 # Signed-in organisation owner/admin; authorization is checked in-function and every read is audited.
 verify_jwt = true
