@@ -717,10 +717,11 @@ h2{font-size:var(--fs-p5)}
 @media (max-width:599px){.fs .fband-wrap{width:calc(100% - 32px);padding:88px 0}
 .fs .fband-st{font-size:var(--fs-p17);line-height:1.3;letter-spacing:-.015em;max-width:none}}
 .fs .fband-st .fb-t,.fs .fband-st .fb-s{display:block}
-.fs .fband-flow{display:block;width:100%;height:auto;aspect-ratio:2/1;margin-top:40px;overflow:visible}
-.fs .fbf-dot{transition:opacity .4s ease}
+.fs .fband-viz{position:relative;margin-top:40px;width:100%;max-width:560px}
+.fs .fband-cv{display:block;width:100%;aspect-ratio:600/280}
 @media (min-width:1024px){.fs .fband-wrap{display:grid;grid-template-columns:minmax(0,760px) minmax(280px,1fr);column-gap:64px;align-items:center}
-.fs .fband-flow{margin:0}}
+.fs .fband-viz{margin:0;max-width:none}}
+@media (max-width:599px){.fs .fband-viz{max-width:none}}
 @media (max-width:820px){.fs .w{width:calc(100% - 32px)}
 .fs h1{font-size:var(--fs-p18);line-height:1.06}
 .fs h2{font-size:var(--fs-p19);line-height:1.1}
@@ -876,28 +877,59 @@ h2{font-size:var(--fs-p5)}
 <section class="fband" id="s-stmt" data-nav-dark aria-label="Who RegAnchor is for">
  <div class="fband-bg" aria-hidden="true"></div>
  <div class="fband-dots fband-d1" aria-hidden="true"></div>
- <div class="fband-wrap"><p class="fband-st" id="fband-st" data-tw="5">AI adoption demands stronger governance. Financial institutions are adopting AI across lending, payments, fraud prevention, customer operations and decision-making. RegAnchor provides the infrastructure to understand, assess, govern and monitor those systems, with regulatory expectations built into the process.</p><svg class="fband-flow" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><linearGradient id="fbf-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="600" y2="0"><stop offset="0" stop-color="#533AFD" stop-opacity=".15"/><stop offset=".45" stop-color="#7A66FF"/><stop offset="1" stop-color="#FFFFFF"/></linearGradient><filter id="fbf-glow" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="5"/></filter></defs><g fill="none" stroke-linecap="round"><path class="fbf-p fbf-halo" d="M8,262 C96,258 138,214 196,222 C258,231 280,268 338,236 C398,203 420,128 476,104 C526,82 560,58 592,30" stroke="#7A66FF" stroke-width="6" opacity=".45" filter="url(#fbf-glow)" vector-effect="non-scaling-stroke"/><path class="fbf-p" d="M8,262 C96,258 138,214 196,222 C258,231 280,268 338,236 C398,203 420,128 476,104 C526,82 560,58 592,30" stroke="url(#fbf-g)" stroke-width="2" vector-effect="non-scaling-stroke"/><path class="fbf-dot" d="M592,30 l0,0.01" stroke="#FFFFFF" stroke-width="7" vector-effect="non-scaling-stroke"/><path class="fbf-dot fbf-halo" d="M592,30 l0,0.01" stroke="#7A66FF" stroke-width="18" opacity=".55" filter="url(#fbf-glow)" vector-effect="non-scaling-stroke"/></g></svg></div>
+ <div class="fband-wrap"><p class="fband-st" id="fband-st" data-tw="5">Governed AI is an advantage. Control spend, catch drift and enforce limits, with proof.</p><div class="fband-viz" aria-hidden="true"><canvas class="fband-cv"></canvas></div></div>
 </section>
 <script>
-(function(){var sec=document.getElementById('s-stmt');if(!sec)return;var bg=sec.querySelector('.fband-bg'),st=document.getElementById('fband-st');
-if(matchMedia('(prefers-reduced-motion: reduce)').matches){bg.classList.add('full');return}
-var tw=+st.getAttribute('data-tw')||0,wd=st.textContent.trim().split(/\s+/),L=function(a){return a.map(function(w){return '<span class="lw">'+w+'</span>'}).join(' ')};st.innerHTML=tw?'<span class="fb-t">'+L(wd.slice(0,tw))+'</span> <span class="fb-s">'+L(wd.slice(tw))+'</span>':L(wd);var ws=[].slice.call(st.querySelectorAll('.lw'));ws.forEach(function(w){w.style.color='#5A606B';w._o=0;w._e=w.closest('.fb-s')?[209,213,219]:[255,255,255]});var fp=[].slice.call(sec.querySelectorAll('.fbf-p')),fd=[].slice.call(sec.querySelectorAll('.fbf-dot'));function slen(q){var m=q.getScreenCTM(),t=q.getTotalLength(),s=0,o=null;if(!m)return 0;for(var i=0;i<=64;i++){var k=q.getPointAtLength(t*i/64),x=m.a*k.x+m.c*k.y,y=m.b*k.x+m.d*k.y;if(o)s+=Math.hypot(x-o[0],y-o[1]);o=[x,y]}return Math.ceil(s)+2}fp.forEach(function(q){q.style.strokeDasharray='9999';q.style.strokeDashoffset='9999'});fd.forEach(function(q){q.style.opacity='0'});var fdone=0;function bez(x){var a=.4,b=.2,t=x;for(var i=0;i<8;i++){var cx=3*a*t*(1-t)*(1-t)+3*b*t*t*(1-t)+t*t*t-x,d=3*a*(1-t)*(1-t)+6*(b-a)*t*(1-t)+3*(1-b)*t*t;if(Math.abs(d)<1e-6)break;t-=cx/d;t=Math.max(0,Math.min(1,t))}return 3*0*t*(1-t)*(1-t)+3*1*t*t*(1-t)+t*t*t}
-var fm=fp[fp.length-1],ft=fm?fm.getTotalLength():0;function fdot(k){var pt=fm.getPointAtLength(ft*k);fd.forEach(function(q){q.setAttribute('transform','translate('+(pt.x-592).toFixed(2)+' '+(pt.y-30).toFixed(2)+')')})}
-function fdraw(){if(fdone||!fm)return;fdone=1;var Ls=fp.map(slen),t0=0,D=2200;fd.forEach(function(q){q.style.transition='none';q.style.opacity='1'});function fr(t){if(!t0)t0=t;var x=Math.min(1,(t-t0)/D),k=bez(x);fp.forEach(function(q,i){q.style.strokeDasharray=Ls[i]+' '+Ls[i];q.style.strokeDashoffset=(Ls[i]*(1-k)).toFixed(2)});fdot(k);if(x<1)requestAnimationFrame(fr)}requestAnimationFrame(fr)}
-if('IntersectionObserver' in window){var fio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){fdraw();fio.disconnect()}})},{threshold:.4});fio.observe(sec.querySelector('.fband-flow')||sec)}else fdraw();
+(function(){var sec=document.getElementById('s-stmt');if(!sec)return;var bg=sec.querySelector('.fband-bg'),st=document.getElementById('fband-st'),viz=sec.querySelector('.fband-viz'),RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var tw=+st.getAttribute('data-tw')||0,wd=st.textContent.trim().split(/\s+/),L=function(a){return a.map(function(w){return '<span class="lw">'+w+'</span>'}).join(' ')};st.innerHTML=tw?'<span class="fb-t">'+L(wd.slice(0,tw))+'</span> <span class="fb-s">'+L(wd.slice(tw))+'</span>':L(wd);var ws=[].slice.call(st.querySelectorAll('.lw'));ws.forEach(function(w){w._o=-1;w._e=w.closest('.fb-s')?[138,143,152]:[255,255,255];w.style.color=RM?'rgb('+w._e+')':'#5A606B'});
+if(RM){bg.classList.add('full');return}
 var cur=null,tgt=0,raf=0,last=0;function ease(x){return x<=0?0:x>=1?1:x*x*(3-2*x)}
 function measure(){var vh=innerHeight,r=sec.getBoundingClientRect(),d=innerWidth>820,end=d?.15:.2,span=vh*(1-end);
- var a=1-ease((vh-r.top)/span),b=1-ease(r.bottom/span);tgt=Math.max(a,b); // 1 = inset card, 0 = full bleed; grows on entry, shrinks back on exit
- var sr=st.getBoundingClientRect(),A=vh*.92,B=vh*.36,p=Math.max(0,Math.min(1,(A-sr.top)/(A-B))),n=ws.length;
+ var a=1-ease((vh-r.top)/span),b=1-ease(r.bottom/span);tgt=Math.max(a,b);
+ var sr=st.getBoundingClientRect(),A=vh*.92,B=vh*.5,p=Math.max(0,Math.min(1,(A-sr.top)/(A-B))),n=ws.length;
  ws.forEach(function(w,i){var l=Math.max(0,Math.min(1,(p*(n+3)-i)/3)),o=+(l*l*(3-2*l)).toFixed(3);if(o!==w._o){w._o=o;w.style.color='rgb('+Math.round(90+(w._e[0]-90)*o)+','+Math.round(96+(w._e[1]-96)*o)+','+Math.round(107+(w._e[2]-107)*o)+')'}})}
 function set(v){var d=innerWidth>820,M=d?24:12,R=d?24:16;if(v<.001)v=0;bg.classList.toggle('full',v===0);bg.style.setProperty('--m',(M*v).toFixed(2)+'px');bg.style.setProperty('--r',(R*v).toFixed(2)+'px')}
 function tick(t){raf=0;var dt=last?Math.min(64,t-last):16;last=t;if(cur==null)cur=tgt;cur+=(tgt-cur)*(1-Math.exp(-dt/70));if(Math.abs(tgt-cur)<.001)cur=tgt;set(cur);if(cur!==tgt)raf=requestAnimationFrame(tick);else last=0}
 function kick(){measure();if(!raf)raf=requestAnimationFrame(tick)}
 addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);measure();cur=tgt;set(cur)})();
+/* live spend chart: deterministic looping governance story, one rAF loop, everything lerps */
+(function(){var viz=document.querySelector('#s-stmt .fband-viz');if(!viz)return;var cv=viz.querySelector('canvas'),x=cv.getContext('2d'),RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var B=50,W=4.94,DT=.35,F='Inter,system-ui,sans-serif',
+K=[41.7,41.2,41.3,41.8,42.7,42.6,44.2,42.1,46.6,46.1,47.9,47.4,46.9,46.8,47.5,46.6,45.3,43.8,49.1,48.1,47.5,48.3,47.0,48.3,47.6,47.0,41.2,43.0,41.7,41.2,41.2,43.0,43.6,44.7,45.0,46.9,46.4,45.9,44.8,45.4,46.1,43.8,41.7,43.0,44.6,44.7,44.7,46.0,44.8,44.7,41.2,43.4,44.0,43.5,44.8,43.8,44.3,43.9,42.1,41.8,43.8,44.1,45.3,43.4,43.7,43.5,44.2,42.7,43.5,44.2,45.4,45.7,45.8,47.5,44.7,44.4,44.9,45.1,45.2,43.5],N=K.length,LOOP=N*DT,
+E={2:['IBAN detected in prompt','f'],10:['Spend capped','a'],18:['Client PII blocked','b'],26:['KYC check passed','a'],34:['Card number flagged','f'],42:['Trade instruction blocked','b'],50:['Within limit','a'],58:['Drift flagged','f'],66:['Model over budget blocked','b'],74:['Guardrail applied','a']},DC={f:'#F5B544',b:'#FB7185',a:'#2DD4BF'},
+clk=0,intro=RM?1:0,started=RM,vis=false,raf=0,lt=0,cw=0,ch=0,dpr=1,ph=0,dv=0,lo=0,hi=0,ev=[],nextK=1,cnt=1284,cd=1284;
+function kv(i){return K[((i%N)+N)%N]}
+function f(t){var u=t/DT,i=Math.floor(u),s=u-i,p0=kv(i-1),p1=kv(i),p2=kv(i+1),p3=kv(i+2),s2=s*s,s3=s2*s;return .5*(2*p1+(-p0+p2)*s+(2*p0-5*p1+4*p2-p3)*s2+(-p0+3*p1-3*p2+p3)*s3)}
+var lo_t,hi_t;function rangeT(){var m=1e9;for(var t=0;t<=LOOP;t+=.05)m=Math.min(m,f(t));var s=Math.max(5,B-m);lo_t=m-s*.55;hi_t=B+s*.12}
+function size(){var r=viz.getBoundingClientRect();dpr=Math.min(3,window.devicePixelRatio||1);cw=Math.round(r.width);ch=Math.round(r.width*280/600);cv.style.height=ch+'px';cv.width=cw*dpr;cv.height=ch*dpr;draw()}
+function fmt(n){return '£'+Math.round(n*40).toLocaleString('en-GB')+'/hr'}
+function rr(X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
+function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
+function draw(){if(!cw)return;x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,cw,ch);
+ x.font='500 12px '+F;var pw=Math.ceil(x.measureText('£0,000/hr').width)+16,L=2,R=cw-pw-16,T=24,Bt=ch-10,Y=function(q){return Bt-(q-lo)/(hi-lo)*(Bt-T)},X=function(t){return R-(clk-t)/W*(R-L)};
+ var by=Math.round(Y(B))+.5;x.save();x.globalAlpha=Math.min(1,intro*1.4);x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=1;x.setLineDash([4,5]);x.beginPath();x.moveTo(L,by);x.lineTo(cw-2,by);x.stroke();x.setLineDash([]);x.fillStyle='rgba(255,255,255,.35)';x.textBaseline='bottom';x.fillText('Budget',L,by-6);x.restore();
+ var cx=L+(R-L)*ease(intro),C=[],st=(R-L)/W*0+1.5;for(var px=L;px<cx;px+=st){C.push([px,Y(f(clk-(R-px)/(R-L)*W))])}C.push([cx,Y(f(clk-(R-cx)/(R-L)*W))]);if(C.length<2)return;var tip=C[C.length-1];
+ var g=x.createLinearGradient(L,0,R,0);g.addColorStop(0,'#7A66FF');g.addColorStop(1,'#C9C1FF');
+ x.beginPath();x.moveTo(C[0][0],C[0][1]);C.forEach(function(s){x.lineTo(s[0],s[1])});x.lineTo(tip[0],Bt+10);x.lineTo(C[0][0],Bt+10);x.closePath();var fg=x.createLinearGradient(0,T,0,Bt+10);fg.addColorStop(0,'rgba(122,102,255,.22)');fg.addColorStop(1,'rgba(122,102,255,0)');x.fillStyle=fg;x.fill();
+ x.save();x.beginPath();x.moveTo(C[0][0],C[0][1]);C.forEach(function(s){x.lineTo(s[0],s[1])});x.lineJoin='round';x.lineCap='round';x.strokeStyle=g;x.lineWidth=2;x.shadowColor='rgba(122,102,255,.55)';x.shadowBlur=10;x.stroke();x.restore();
+ ev.forEach(function(e){var ex=X(e.t),ey=Y(f(e.t)),a=e.a;if(a<=.01||ex<L)return;x.save();x.globalAlpha=a;var dc=DC[e.k];x.fillStyle=dc;x.beginPath();x.arc(ex,ey,3.5,0,7);x.fill();x.font='500 12px '+F;var w=Math.ceil(x.measureText(e.s).width)+30,h=24,qx,qy;if(e.dx==null){qx=Math.max(L,Math.min(R-w,ex-w/2));var my=ey;for(var q=qx-6;q<=qx+w+6;q+=3){if(q<=R)my=Math.min(my,Y(f(clk-(R-q)/(R-L)*W)))}qy=Math.max(2,my-h-10);e.dx=qx-ex;e.dy=qy-ey}qx=ex+e.dx;qy=ey+e.dy;var fa=Math.max(0,Math.min(1,(qx-L-2)/18));if(fa<=0){x.restore();return}x.globalAlpha=a*fa;if(ey-qy-h>12){x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=1;x.beginPath();x.moveTo(Math.round(ex)+.5,qy+h);x.lineTo(Math.round(ex)+.5,ey-5);x.stroke()}rr(qx+.5,qy+.5,w-1,h-1,6);x.fillStyle='rgba(17,17,17,.92)';x.fill();x.strokeStyle='rgba(255,255,255,.14)';x.lineWidth=1;x.stroke();x.fillStyle=dc;x.beginPath();x.arc(qx+11,qy+h/2,3,0,7);x.fill();x.fillStyle='#FFFFFF';x.textBaseline='middle';x.fillText(e.s,qx+20,qy+h/2+.5);x.restore()});
+ var pu=.5+.5*Math.sin(ph*2.2);x.fillStyle='rgba(157,143,255,'+(.16+.18*pu).toFixed(3)+')';x.beginPath();x.arc(tip[0],tip[1],8+5*pu,0,7);x.fill();x.fillStyle='#FFFFFF';x.beginPath();x.arc(tip[0],tip[1],3.5,0,7);x.fill();
+ x.save();x.globalAlpha=Math.min(1,intro*1.4);x.font='500 12px '+F;x.textBaseline='alphabetic';var cy=ch-4;x.fillStyle='#60A5FA';x.beginPath();x.arc(L+3,cy-4,3,0,7);x.fill();x.fillStyle='#8A8F98';var lab='Audit trail \u00b7 ';x.fillText(lab,L+12,cy);var nx=L+12+x.measureText(lab).width,ns=Math.round(cd).toLocaleString('en-GB');x.fillStyle='#FFFFFF';x.fillText(ns,nx,cy);x.fillStyle='#8A8F98';x.fillText(' events logged',nx+x.measureText(ns).width,cy);x.restore();
+ if(intro>=1){var vh=22,vy=Math.max(by+4,Math.min(Bt-vh,tip[1]-vh/2));x.fillStyle='#FFFFFF';rr(tip[0]+10,vy,pw,vh,11);x.fill();x.fillStyle='#0A0B10';x.textBaseline='middle';x.font='500 12px '+F;x.fillText(fmt(dv),tip[0]+18,vy+vh/2+.5)}}
+function frame(t){raf=0;var dt=lt?Math.min(.05,(t-lt)/1000):.016;lt=t;ph+=dt;var k=1-Math.pow(.92,dt*60);
+ if(intro<1){intro=Math.min(1,intro+dt/1);if(intro>=1)started=1}else{clk+=dt;while(clk>=nextK*DT){var j=((nextK%N)+N)%N;if(E[j]){ev.forEach(function(o){o.b=Math.min(o.b,clk-2.2)});ev.push({t:nextK*DT,s:E[j][0],k:E[j][1],b:clk,a:0});cnt++}nextK++}}
+ dv+=(f(clk)-dv)*k;cd+=(cnt-cd)*k;rangeT();if(lo_t<lo)lo=lo_t;else lo+=(lo_t-lo)*k;if(hi_t>hi)hi=hi_t;else hi+=(hi_t-hi)*k;
+ ev.forEach(function(e){var ta=clk-e.b<2.2?1:0;e.a+=(ta-e.a)*k*(ta?1.2:2)});ev=ev.filter(function(e){return clk-e.b<4});
+ draw();if(vis&&!document.hidden)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&vis&&!document.hidden){lt=0;raf=requestAnimationFrame(frame)}}
+clk=2*DT-.01;nextK=2;dv=f(clk);rangeT();lo=lo_t;hi=hi_t;size();addEventListener('resize',size);
+if(RM){clk=51*DT;dv=f(clk);rangeT();lo=lo_t;hi=hi_t;ev.push({t:50*DT,s:E[50][0],k:E[50][1],b:clk,a:1});draw();return}
+if('IntersectionObserver' in window){new IntersectionObserver(function(es){es.forEach(function(e){vis=e.isIntersecting;if(vis)go();else if(raf){cancelAnimationFrame(raf);raf=0}})},{threshold:.35}).observe(viz)}else{vis=true;go()}
+document.addEventListener('visibilitychange',go);if(document.fonts)document.fonts.ready.then(draw)})();
 </script>
 
 <section class="paper split" id="s-press"><div class="w">
- <div class="stm"><h2 class="st-t">Your obligations apply to AI. <span class="st-s">Consumer Duty, SM&amp;CR and resilience rules cover it today.</span></h2><a class="btn bi stm-b" href="contact.html" data-open-demo>Book a demo ›</a></div>
+ <div class="stm"><h2 class="st-t">The FCA expects governed AI. <span class="st-s">Consumer Duty and SM&amp;CR apply to every model.</span></h2><a class="btn bi stm-b" href="contact.html" data-open-demo>Book a demo ›</a></div>
 </div></section>
 
 <section class="band" id="s-asset" data-nav-dark><div class="w feat">
@@ -945,7 +977,7 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 </div></section>
 
 <section class="paper" id="s-ev"><div class="w">
- <div class="stm"><h2 class="st-t">Built for everyone accountable. <span class="st-s">One view for the board, risk and compliance, and internal audit.</span></h2><a class="btn bi stm-b" href="diagnostic.html">Start assessment ›</a></div>
+ <div class="stm"><h2 class="st-t">Built for financial firms. <span class="st-s">Enforce policy in real time. Audit-ready evidence comes standard.</span></h2><a class="btn bi stm-b" href="diagnostic.html">Start assessment ›</a></div>
 </div></section>
 
 <section class="band" id="s-mon" data-nav-dark><div class="w feat feat--flip">
