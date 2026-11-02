@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  RegAnchor governed access to Amazon Bedrock (template v1). Creates one IAM role that RegAnchor
+  can assume, only with your external ID, to send Anthropic Claude requests on your behalf and list
+  the Claude models available to this account. Usage is billed to this AWS account as normal.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Provided by RegAnchor (do not change)
+        Parameters:
+          - ExternalId
+          - ConnectionRef
+          - RegAnchorAccountId
+    ParameterLabels:
+      ExternalId:
+        default: External ID
+      ConnectionRef:
+        default: Connection reference
+      RegAnchorAccountId:
+        default: RegAnchor AWS account
+
+Parameters:
+  ExternalId:
+    Type: String
+    Description: Unique to your RegAnchor connection. RegAnchor must present it to use the role.
+    AllowedPattern: '^ra-[a-f0-9]{40}$'
+    ConstraintDescription: Use the external ID shown in RegAnchor.
+  ConnectionRef:
+    Type: String
+    Description: Short reference that links this role to one RegAnchor connection.
+    AllowedPattern: '^[a-z0-9]{8}$'
+    ConstraintDescription: Use the connection reference shown in RegAnchor.
+  RegAnchorAccountId:
+    Type: String
+    Description: The AWS account RegAnchor connects from.
+    AllowedPattern: '^\d{12}$'
+
+Resources:
+  RegAnchorBedrockRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'RegAnchorBedrock-${ConnectionRef}'
+      Description: RegAnchor governed access to Anthropic models on Amazon Bedrock.
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: RegAnchorWithExternalId
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:${AWS::Partition}:iam::${RegAnchorAccountId}:root'
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref ExternalId
+      Policies:
+        - PolicyName: InvokeAnthropicModels
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: InvokeClaude
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:bedrock:*::foundation-model/anthropic.*'
+                  - !Sub 'arn:${AWS::Partition}:bedrock:::foundation-model/anthropic.*'
+                  - !Sub 'arn:${AWS::Partition}:bedrock:*:${AWS::AccountId}:inference-profile/*anthropic.*'
+              - Sid: ListModels
+                Effect: Allow
+                Action:
+                  - bedrock:ListFoundationModels
+                  - bedrock:GetFoundationModel
+                  - bedrock:ListInferenceProfiles
+                  - bedrock:GetInferenceProfile
+                Resource: '*'
+      Tags:
+        - Key: ManagedBy
+          Value: RegAnchor
+        - Key: RegAnchorConnection
+          Value: !Ref ConnectionRef
+
+Outputs:
+  RoleArn:
+    Description: Paste this into RegAnchor to finish connecting.
+    Value: !GetAtt RegAnchorBedrockRole.Arn

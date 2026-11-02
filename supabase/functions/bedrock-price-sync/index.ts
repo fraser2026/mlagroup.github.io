@@ -24,6 +24,28 @@ async function authorized(supabase: SupabaseClient, req: Request): Promise<boole
   return !error && data === true
 }
 
+/** Default regions plus every region a Bedrock connection uses. */
+async function scheduledRegions(supabase: SupabaseClient): Promise<string[]> {
+  const [{ data }, { data: accounts }] = await Promise.all([
+    supabase
+      .from('provider_connections')
+      .select('metadata')
+      .eq('provider_slug', 'bedrock')
+      .neq('status', 'revoked'),
+    supabase
+      .from('org_aws_accounts')
+      .select('home_region')
+      .in('status', ['connected', 'error']),
+  ])
+  const connected = [
+    ...((data || []) as { metadata: unknown }[]).map((row) =>
+      String((row.metadata as { aws?: { region?: string } } | null)?.aws?.region || '')
+    ),
+    ...((accounts || []) as { home_region: string | null }[]).map((row) => String(row.home_region || '')),
+  ].filter((r) => REGION_PATTERN.test(r))
+  return [...new Set([...DEFAULT_REGIONS, ...connected])].slice(0, MAX_REGIONS)
+}
+
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   if (!res.ok) throw new Error(`AWS price list returned ${res.status} for ${new URL(url).pathname}`)
@@ -78,7 +100,7 @@ Deno.serve(async (req) => {
     if (!(await authorized(supabase, req))) return json({ ok: false, error: 'Not authorised' }, 401)
 
     const body = await req.json().catch(() => ({}))
-    const regions = body.regions === undefined ? DEFAULT_REGIONS : body.regions
+    const regions = body.regions === undefined ? await scheduledRegions(supabase) : body.regions
     if (!Array.isArray(regions) || regions.length === 0 || regions.length > MAX_REGIONS
       || !regions.every((r) => typeof r === 'string' && REGION_PATTERN.test(r))) {
       return json({ ok: false, error: `Regions must be 1 to ${MAX_REGIONS} AWS region codes.` }, 400)

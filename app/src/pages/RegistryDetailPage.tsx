@@ -74,6 +74,7 @@ import {
   type GatewaySummary,
 } from '../lib/gateway'
 import { AssetFormFields } from './AssetFormFields'
+import { BedrockConnection } from './BedrockConnection'
 import { GatewayActivity } from './GatewayActivity'
 import styles from './RegistryDetailPage.module.css'
 
@@ -336,7 +337,7 @@ export function RegistryDetailPage() {
           ? sb
               .from('provider_connections')
               .select(
-                'id,status,provider_slug,last_verified_at,last_error,credential_secret_id,admin_credential_secret_id,metadata',
+                'id,status,provider_slug,last_verified_at,last_error,credential_secret_id,admin_credential_secret_id,org_aws_account_id,metadata',
               )
               .eq('asset_id', id)
               .eq('provider_slug', connectorSlug)
@@ -500,6 +501,8 @@ export function RegistryDetailPage() {
   const providerRow = providers.find((p) => p.slug === provider)
   const connectorReady = !!providerRow?.connector_available
   const isAnthropic = provider === 'anthropic'
+  const isBedrock = provider === 'bedrock'
+  const showConnIntro = !provider || (!connectorReady && !isBedrock)
   const hasOrgAdmin = !!orgCred?.admin_credential_secret_id
   const hasLegacyAdmin = !!conn?.admin_credential_secret_id
   const hasAdmin = hasOrgAdmin || hasLegacyAdmin
@@ -820,7 +823,12 @@ export function RegistryDetailPage() {
   }
 
   const railItems =
-    tab === 'connection'
+    tab === 'connection' && isBedrock
+      ? [
+          { id: 'connection', label: 'Connection' },
+          { id: 'models', label: 'Models' },
+        ]
+      : tab === 'connection'
       ? [
           { id: 'connection', label: 'Connection' },
           { id: 'usage', label: 'Usage' },
@@ -1208,12 +1216,8 @@ export function RegistryDetailPage() {
       {tab === 'connection' ? (
         <Section
           id="connection"
-          title={!provider || !connectorReady ? 'Connection' : undefined}
-          description={
-            !provider || !connectorReady
-              ? 'Attach the runtime key this asset uses, then verify connectivity.'
-              : undefined
-          }
+          title={showConnIntro ? 'Connection' : undefined}
+          description={showConnIntro ? 'Attach the runtime key this asset uses, then verify connectivity.' : undefined}
         >
           {!provider ? (
             <EmptyState
@@ -1226,6 +1230,16 @@ export function RegistryDetailPage() {
                   </Button>
                 ) : undefined
               }
+            />
+          ) : isBedrock ? (
+            <BedrockConnection
+              assetId={id || ''}
+              assetModel={asset?.model_name}
+              assetModelLabel={modelDisplayName(provider, asset?.model_name) || undefined}
+              conn={conn}
+              canManage={canDeleteRegistry}
+              onChanged={refresh}
+              onToast={pushToast}
             />
           ) : !connectorReady ? (
             <EmptyState

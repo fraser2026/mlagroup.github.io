@@ -64,6 +64,8 @@ Goal: writing feels **settled and useful**, not decorative.
 | Supporting line | One short sentence under the title, muted tertiary. |
 | Meta / descriptions | Field labels secondary; values ink. Dates tertiary. |
 | Scores / big numerals | **Inter** via `--ra-font-num` / `.ra-num` / `<RaNum>` — same face as portal product UI. Tabular figures. IBM Plex is wordmark / marketing only, not in-app scores. Do not invent a second poster type scale inside tables. |
+| Identifiers read in lists | IDs, region codes (`eu-west-2`), role names, account numbers, chart axis numbers: **Inter** via `--ra-font-num`, medium, tabular figures, 13px in key/value lists (11px minimum on charts). Colour carries the hierarchy (`--ra-text-2` beside a plain-language name). Never monospace: it renders thin on Windows. |
+| Code people copy | Snippets, endpoints, env variable names, key/token prefixes, recovery codes, inline code: `--ra-font-mono`, medium weight. The only place monospace belongs. |
 
 | Provider / vendor names | Official brand casing via `labelProvider()` (OpenAI, Anthropic, AWS Bedrock, Microsoft Foundry). Never raw slugs. **Model provider** ≠ cloud infrastructure (Azure/AWS/GCP) ≠ interface (MCP / API / Gateway). |
 

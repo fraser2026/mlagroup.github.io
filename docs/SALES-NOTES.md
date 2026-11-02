@@ -10,6 +10,8 @@ Rules for entries:
 
 ## 2 Nov 2026
 
+- **Connect your AWS accounts for Claude on Amazon Bedrock.** Connect each AWS account once through a guided CloudFormation setup that creates a narrowly scoped role, then choose which account and region each Bedrock asset uses. RegAnchor shows the Claude models each account can use in that region.
+  - Limits: Anthropic Claude models only. Bedrock requests are not yet monitored, priced or budgeted through the RegAnchor gateway. Each AWS account is connected separately; AWS Organizations roll-out is guidance only.
 - **See exactly what an agent did with its tools.** The prompt viewer shows each tool the model used, what it asked the tool for, and what came back, step by step, for normal and streamed replies.
   - Limits: needs prompt capture switched on, and only owners and admins can open it. Every view is audited.
 
@@ -34,5 +36,6 @@ Rules for entries:
 
 ## Coming, do not market yet
 
-- AWS Bedrock route, so agents running on Bedrock can be monitored the same way.
+- AWS Bedrock route, so agents running on Bedrock get the same monitoring, budgets and data protection through the RegAnchor gateway.
+- Agent and run tracking, so a multi-agent task shows as one trail with every model call, cost and control outcome.
 - Supplier AI integration standard: what to require from AI suppliers, by risk tier, so a firm can monitor and control a supplier's AI used on its behalf.

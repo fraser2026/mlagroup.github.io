@@ -1,0 +1,135 @@
+.wrap {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ra-line);
+}
+
+.item {
+  display: grid;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ra-line);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
+.sub {
+  font-family: var(--ra-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.usage {
+  font-family: var(--ra-font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
+.rename {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.renameInput {
+  width: min(260px, 100%);
+}
+
+.confirm {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-canvas);
+}
+
+.confirmTitle {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
+.confirmBody {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  line-height: 1.45;
+  color: var(--ra-text-2);
+}
+
+.confirmActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.footerActions {
+  display: flex;
+  gap: 8px;
+}
+
+.setup {
+  min-width: 0;
+}
+
+.quiet {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+/* Narrow space (side rail open, small screens): usage hides, actions move under the name. */
+@container (max-width: 640px) {
+  .row {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+  }
+
+  .usage {
+    display: none;
+  }
+
+  .actions {
+    grid-column: 2 / -1;
+  }
+}

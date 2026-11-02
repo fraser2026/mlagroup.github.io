@@ -20,6 +20,7 @@ import { personDisplayName } from '../lib/accountLabel'
 import { MEMBER_ROLE_LABELS, PLAN_LABELS } from '../lib/stripe'
 import { fmtDate } from '../lib/rpc'
 import { sb } from '../lib/supabase'
+import { OrgAwsAccounts } from './OrgAwsAccounts'
 import styles from './OrganisationPage.module.css'
 
 const PROVIDER_ADMIN_DOCS_URL = 'https://platform.claude.com/docs/en/api/administration-api'
@@ -227,7 +228,7 @@ export function OrganisationPage() {
       <PageFrame>
         <PageHeader
           title={orgTitle}
-          description="Workspace identity, subscription, provider admin keys, and members."
+          description="Workspace identity, subscription, provider admin keys, AWS accounts, and members."
         />
         <BrandLoader fill label="Loading organisation" />
       </PageFrame>
@@ -240,12 +241,13 @@ export function OrganisationPage() {
         { id: 'workspace', label: 'Workspace' },
         { id: 'subscription', label: 'Subscription' },
         { id: 'providers', label: 'Providers' },
+        { id: 'aws', label: 'AWS accounts' },
         { id: 'members', label: 'Members' },
       ]}
     >
       <PageHeader
         title={orgTitle}
-        description="Workspace identity, subscription, provider admin keys, and members."
+        description="Workspace identity, subscription, provider admin keys, AWS accounts, and members."
       />
 
       <section id="workspace" className={styles.block} aria-labelledby="org-workspace-title">
@@ -441,6 +443,27 @@ export function OrganisationPage() {
               ) : null}
             </div>
           )}
+        </div>
+      </section>
+
+      <section id="aws" className={styles.block} aria-labelledby="org-aws-title">
+        <div className={styles.blockCopy}>
+          <h2 id="org-aws-title" className={styles.blockTitle}>
+            AWS accounts
+          </h2>
+          <p className={styles.blockDesc}>
+            Connect each AWS account once. Amazon Bedrock assets then choose the account and region they run in.
+          </p>
+        </div>
+        <div className={`${styles.blockBody} ${styles.blockBodyWide}`}>
+          {org?.id ? (
+            <OrgAwsAccounts
+              orgId={org.id}
+              userId={session?.user?.id}
+              canManage={canDeleteRegistry}
+              accessToken={session?.access_token}
+            />
+          ) : null}
         </div>
       </section>
 

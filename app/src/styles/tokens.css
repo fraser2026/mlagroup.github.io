@@ -53,6 +53,10 @@
   --ra-font-brand: 'IBM Plex Sans', var(--ra-font);
   /* Product numerals — same face as portal UI (Inter). Plex stays for wordmark / marketing only. */
   --ra-font-num: var(--ra-font);
+  /* Code people copy (snippets, endpoints, env names, key prefixes, recovery codes). Identifiers read in
+     lists (IDs, regions, role names, axis numbers) use --ra-font-num instead. Cascadia renders fuller than
+     Consolas on Windows. */
+  --ra-font-mono: 'Cascadia Mono', 'Cascadia Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --ra-font-features: 'ss01', 'cv01', 'cv02', 'cv03', 'cv04', 'cv11';
   --ra-fs-display: 1.75rem;
   --ra-fs-title: 1.35rem;

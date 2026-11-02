@@ -871,6 +871,34 @@ export function formatAuditPlain(
           ? `Live API check failed for ${labelProvider(String(c.provider_slug || ''))} on ${systemName}`
           : `Live API check passed for ${labelProvider(String(c.provider_slug || ''))} on ${systemName}`
       break
+    case 'aws_connected': {
+      const region = String(c.region || '')
+      const account = /^\d{12}$/.test(String(c.account_id || '')) ? ` ${c.account_id}` : ''
+      text =
+        c.method === 'api_key'
+          ? `Connected a Bedrock API key (${region}) for ${systemName}`
+          : `Connected AWS account${account} (${region}) for ${systemName}`
+      break
+    }
+    case 'aws_verified':
+      text =
+        c.verification_ok === false
+          ? `AWS connection check failed for ${systemName}`
+          : `AWS connection check passed for ${systemName}`
+      break
+    case 'aws_linked': {
+      const account = String(c.account_label || 'an AWS account')
+      text = `Linked ${account} (${String(c.region || '')}) to ${systemName}`
+      break
+    }
+    case 'aws_unlinked':
+      text = `Removed the AWS account from ${systemName}`
+      break
+    case 'aws_disconnected':
+      text = c.account_label
+        ? `Disconnected ${String(c.account_label)} from the organisation, which removed it from ${systemName}`
+        : `Disconnected AWS from ${systemName}`
+      break
     case 'provider_insights_refreshed':
       text = `Refreshed governance insights for ${systemName} (${c.window_days || 30}-day window)`
       break

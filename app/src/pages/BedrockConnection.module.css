@@ -1,0 +1,346 @@
+/* Amazon Bedrock connection: full-width setup card with models below; side by side from 900px. */
+.grid > .main {
+  grid-column: 1 / -1;
+}
+
+@container (min-width: 900px) {
+  .grid > .main {
+    grid-column: span 2;
+  }
+}
+
+.wrap {
+  display: grid;
+  gap: 12px;
+}
+
+.kv {
+  grid-template-columns: 96px minmax(0, 1fr);
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Identifiers (region codes, role names) use the product face; monospace renders thin on Windows. */
+.code {
+  margin-left: 6px;
+  font-family: var(--ra-font-num);
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--ra-text-2);
+}
+
+/* Setup steps */
+.steps {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+  padding-bottom: 20px;
+}
+
+.step:last-child {
+  padding-bottom: 0;
+}
+
+.step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  bottom: 4px;
+  left: 10.5px;
+  width: 1px;
+  background: var(--ra-border);
+}
+
+.stepNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--ra-border-field);
+  border-radius: 50%;
+  font-family: var(--ra-font-num);
+  font-size: 11px;
+  font-weight: var(--ra-fw-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--ra-text-2);
+  background: var(--ra-surface);
+}
+
+.stepBody {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.stepTitle {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+}
+
+.stepHint {
+  margin: -4px 0 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  line-height: 1.45;
+  color: var(--ra-text-2);
+}
+
+.region,
+.name {
+  max-width: 320px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+/* ARN feedback under the input */
+.arnState {
+  min-height: 18px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+}
+
+.arnOk {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ra-text-2);
+}
+
+.arnOk span {
+  color: var(--ra-ink);
+}
+
+.okIcon {
+  color: var(--ra-ok);
+}
+
+.quiet {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+/* Details for the client's AWS team */
+.details {
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-canvas);
+}
+
+.details > summary {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.details > summary::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 8px 2px 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 120ms ease;
+}
+
+.details[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+.details > summary:hover {
+  color: var(--ra-ink);
+}
+
+.details[open] > summary {
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.details > :not(summary) {
+  margin-left: 12px;
+  margin-right: 12px;
+}
+
+.detailList {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 8px 12px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+}
+
+.detailList dt {
+  color: var(--ra-text-2);
+}
+
+.detailList dd {
+  margin: 0;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--ra-ink);
+}
+
+.mono {
+  font-family: var(--ra-font-num);
+  font-weight: var(--ra-fw-medium);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.copyRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--ra-radius-control);
+  background: none;
+  color: var(--ra-text-2);
+  cursor: pointer;
+}
+
+.copyBtn:hover {
+  border-color: var(--ra-border);
+  color: var(--ra-blurple-fg);
+}
+
+.permTitle {
+  padding-top: 12px;
+  border-top: 1px solid var(--ra-border);
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
+.perms {
+  margin-top: 6px;
+  margin-bottom: 8px;
+  padding-left: 16px;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  line-height: 1.6;
+  color: var(--ra-text-2);
+}
+
+.details > .stepHint:last-child {
+  margin: 0 12px 12px;
+}
+
+/* Footer links */
+.foot {
+  align-items: center;
+}
+
+.linkBtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-blurple-fg);
+  cursor: pointer;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Models card */
+.count {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-2);
+}
+
+.models {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.model {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  border-bottom: 1px solid var(--ra-border);
+}
+
+.model:last-child {
+  border-bottom: 0;
+}
+
+.modelName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-ink);
+}
+
+.routes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  max-width: 60%;
+  gap: 4px;
+}
+
+.route {
+  padding: 1px 6px;
+  border: 1px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  font-size: 11px;
+  font-weight: var(--ra-fw-medium);
+  line-height: 16px;
+  color: var(--ra-text-2);
+}

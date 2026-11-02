@@ -33,6 +33,8 @@ Same weight (`--ra-fw-medium`). Hierarchy is **colour + size only**. Never mute 
 | Primary (module titles, provider names, asset names, values, model line) | `--ra-ink` | as designed |
 | Secondary (field labels, metric labels, supporting body under a title) | `--ra-text-2` | 12–13px |
 | Tertiary (dates, placeholders, quiet asides) | `--ra-text-3` | ≤12px |
+| Identifiers read in lists (IDs, region codes, role names, account numbers, chart axes) | `--ra-text-2` beside a plain name, or `--ra-ink` alone | 13px in lists, ≥11px on charts; Inter via `--ra-font-num`, tabular. Never monospace |
+| Code people copy (snippets, endpoints, env names, key prefixes, recovery codes) | as designed | `--ra-font-mono`, medium. The only monospace use |
 | Metric numerals (scores, %, counts, L-codes, date/time figures) | `--ra-ink` | as designed; **Inter** via `--ra-font-num` / `.ra-num` / `<RaNum>` + tabular (portal face). Same digit face as UI — not IBM Plex. Plex is wordmark / marketing only. |
 
 **Dark mode:** ink is white. If a screen looks “all grey”, primary content was muted by mistake. Fix colour roles; do not thin weights. Supporting copy stays `--ra-text-2`, not tertiary.
