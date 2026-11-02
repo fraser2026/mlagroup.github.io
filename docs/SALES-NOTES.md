@@ -10,8 +10,8 @@ Rules for entries:
 
 ## 2 Nov 2026
 
-- **Monitor and budget Claude on Amazon Bedrock through the RegAnchor gateway.** Agents running Claude on Bedrock in your own AWS account send requests through RegAnchor, and every request is recorded and priced at AWS's rate for that region, with the AWS account, region and route shown. Bedrock spend counts towards the same monthly budgets and hard limits as Anthropic spend.
-  - Limits: Anthropic Claude models only. Prices are AWS list prices, not yet reconciled against your AWS bill. Data protection checks on Bedrock requests are not yet verified, so do not claim them. The AWS account needs Anthropic's use case form and one first call to the model by an AWS admin before the gateway can use it.
+- **Monitor and budget Claude on Amazon Bedrock through the RegAnchor gateway.** Agents running Claude on Bedrock in your own AWS account send requests through RegAnchor, and every request is recorded and priced at AWS's rate for that region, with the AWS account, region and route shown. Bedrock spend counts towards the same monthly budgets and hard limits as Anthropic spend, and your data protection policies check prompts and responses the same way.
+  - Limits: Anthropic Claude models only. Prices are AWS list prices, not yet reconciled against your AWS bill. Data protection applies once the organisation is routed through Cloudflare AI Gateway. The AWS account needs Anthropic's use case form and one first call to the model by an AWS admin before the gateway can use it.
 - **Connect your AWS accounts for Claude on Amazon Bedrock.** Connect each AWS account once through a guided CloudFormation setup that creates a narrowly scoped role, then choose which account and region each Bedrock asset uses. RegAnchor shows the Claude models each account can use in that region.
   - Limits: Anthropic Claude models only. Each AWS account is connected separately; AWS Organizations roll-out is guidance only.
 - **See exactly what an agent did with its tools.** The prompt viewer shows each tool the model used, what it asked the tool for, and what came back, step by step, for normal and streamed replies.
@@ -38,7 +38,6 @@ Rules for entries:
 
 ## Coming, do not market yet
 
-- Data protection checks verified on Amazon Bedrock requests through the RegAnchor gateway.
 - Bedrock spend reconciled against your AWS bill (AWS Cost Explorer).
 - Agent and run tracking, so a multi-agent task shows as one trail with every model call, cost and control outcome.
 - Supplier AI integration standard: what to require from AI suppliers, by risk tier, so a firm can monitor and control a supplier's AI used on its behalf.
