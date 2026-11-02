@@ -1413,6 +1413,10 @@ export function RegistryDetailPage() {
                             </ul>
                           </div>
                         ) : null}
+                        <p className={styles.connHint}>
+                          Anthropic&apos;s own usage report, a few minutes behind and updated when an admin refreshes.
+                          Live request figures are on the Monitoring page.
+                        </p>
                       </>
                     )}
                   </div>

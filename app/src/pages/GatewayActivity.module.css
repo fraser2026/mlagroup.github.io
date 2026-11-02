@@ -345,6 +345,58 @@ a.rankName:hover {
   color: var(--ra-text-2);
 }
 
+.turnMeta {
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+  color: var(--ra-text-3);
+}
+
+.toolStep {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-left: 2px solid var(--ra-border);
+  border-radius: var(--ra-radius-control);
+  background: var(--ra-surface);
+}
+
+.toolStepHead {
+  font-size: 13px;
+  font-weight: var(--ra-fw-medium);
+  letter-spacing: -0.01em;
+  color: var(--ra-ink);
+  overflow-wrap: anywhere;
+}
+
+.toolStepVerb {
+  color: var(--ra-text-2);
+}
+
+.toolArgs {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--ra-fw-medium);
+}
+
+.toolArgs > div {
+  display: grid;
+  grid-template-columns: minmax(80px, max-content) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.toolArgs dt {
+  color: var(--ra-text-2);
+}
+
+.toolArgs dd {
+  margin: 0;
+  color: var(--ra-ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .turnText {
   margin: 0;
   max-height: 280px;

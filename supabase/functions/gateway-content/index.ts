@@ -17,19 +17,55 @@ async function gunzip(file: Blob): Promise<string> {
   return await new Response(file.stream().pipeThrough(new DecompressionStream('gzip'))).text()
 }
 
-function textFromSse(sse: string): string {
-  let text = ''
-  for (const block of sse.split(/\r?\n\r?\n/)) {
-    const line = block.split(/\r?\n/).find((l) => l.startsWith('data:'))
+const TOOL_BLOCKS = ['tool_use', 'server_tool_use', 'mcp_tool_use']
+
+type StreamBlock = {
+  type: string
+  text?: string
+  id?: string
+  name?: string
+  server_name?: string
+  input?: unknown
+  json?: string
+}
+
+/** Rebuild a streamed reply into the same content blocks a non-streamed reply returns. */
+function blocksFromSse(sse: string): Omit<StreamBlock, 'json'>[] {
+  const blocks: StreamBlock[] = []
+  for (const chunk of sse.split(/\r?\n\r?\n/)) {
+    const line = chunk.split(/\r?\n/).find((l) => l.startsWith('data:'))
     if (!line) continue
     try {
-      const event = JSON.parse(line.slice(5).trim()) as { type?: string; delta?: { type?: string; text?: string } }
-      if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') text += event.delta.text || ''
+      const event = JSON.parse(line.slice(5).trim()) as {
+        type?: string
+        index?: number
+        delta?: { type?: string; text?: string; partial_json?: string }
+        content_block?: { type?: string; text?: string; id?: string; name?: string; server_name?: string }
+      }
+      const index = typeof event.index === 'number' ? event.index : blocks.length
+      const cb = event.content_block
+      if (event.type === 'content_block_start' && cb?.type) {
+        blocks[index] = TOOL_BLOCKS.includes(cb.type)
+          ? { type: cb.type, id: cb.id, name: cb.name, server_name: cb.server_name, json: '' }
+          : cb.type === 'text'
+            ? { type: 'text', text: cb.text || '' }
+            : { type: cb.type }
+      } else if (event.type === 'content_block_delta' && blocks[index]) {
+        if (event.delta?.type === 'text_delta') blocks[index].text = (blocks[index].text || '') + (event.delta.text || '')
+        if (event.delta?.type === 'input_json_delta') blocks[index].json = (blocks[index].json || '') + (event.delta.partial_json || '')
+      }
     } catch {
       // ignore partial or non-JSON lines
     }
   }
-  return text
+  return blocks.filter(Boolean).map(({ json, ...block }) => {
+    if (json === undefined) return block
+    try {
+      return { ...block, input: JSON.parse(json || '{}') }
+    } catch {
+      return { ...block, input: json }
+    }
+  })
 }
 
 Deno.serve(async (req) => {
@@ -98,8 +134,8 @@ Deno.serve(async (req) => {
       captured_at: document.captured_at || null,
       streamed: !!document.streamed,
       request: document.request ?? null,
-      response: document.streamed ? null : document.response ?? null,
-      response_text: document.streamed ? textFromSse(sse) : null,
+      response: document.streamed ? { content: blocksFromSse(sse) } : document.response ?? null,
+      response_text: null,
     })
   } catch (error) {
     if (error instanceof Response) {

@@ -8,6 +8,11 @@ Rules for entries:
 - One bold headline, one or two plain sentences on what the client gets. No hype, no em dashes, sentence case.
 - Add a "Limits" line when a claim needs a qualifier to stay accurate. Accuracy beats reach: our buyers answer to the FCA and MFSA.
 
+## 2 Nov 2026
+
+- **See exactly what an agent did with its tools.** The prompt viewer shows each tool the model used, what it asked the tool for, and what came back, step by step, for normal and streamed replies.
+  - Limits: needs prompt capture switched on, and only owners and admins can open it. Every view is audited.
+
 ## 31 Oct 2026
 
 - **See every model and tool your AI agents use.** RegAnchor lists the models and tools behind each agent, including MCP servers, with when each was first and last used. After a 7-day learning period it alerts you the moment an agent starts using a model or tool it has not used before.

@@ -85,18 +85,111 @@ function num(n: unknown) {
   return Number(n) || 0
 }
 
-type Block = { type?: string; text?: string }
+type Block = {
+  type?: string
+  text?: string
+  id?: string
+  tool_use_id?: string
+  name?: string
+  server_name?: string
+  input?: unknown
+  content?: unknown
+  is_error?: boolean
+}
 type Message = { role?: string; content?: string | Block[] }
+
+const TOOL_CALL_BLOCKS = ['tool_use', 'server_tool_use', 'mcp_tool_use']
 
 function textOf(content: unknown): string {
   if (typeof content === 'string') return content
   if (Array.isArray(content)) {
     return (content as Block[])
-      .map((b) => (b?.type === 'text' ? b.text || '' : b?.type ? `[${b.type.replace(/_/g, ' ')}]` : ''))
+      .map((b) => (b?.type === 'text' ? b.text || '' : ''))
       .filter(Boolean)
       .join('\n\n')
   }
   return ''
+}
+
+function toolCallName(b: Block) {
+  const name = b.name || 'tool'
+  return b.type === 'mcp_tool_use' && b.server_name ? `${name} · MCP ${b.server_name}` : name
+}
+
+function argValue(v: unknown) {
+  if (v == null) return 'None'
+  return typeof v === 'string' ? v : JSON.stringify(v)
+}
+
+function blockLabel(type: string) {
+  const words = type.replace(/_/g, ' ')
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
+/** Tool names by call id, so a result in a later turn can say which tool it came from. */
+function toolNamesById(blocks: unknown[]): Record<string, string> {
+  const names: Record<string, string> = {}
+  for (const b of blocks as Block[]) {
+    if (b?.id && b.type && TOOL_CALL_BLOCKS.includes(b.type)) names[b.id] = toolCallName(b)
+  }
+  return names
+}
+
+function hasVisibleContent(content: unknown) {
+  if (typeof content === 'string') return content.trim().length > 0
+  return Array.isArray(content) && (content as Block[]).some((b) => (b?.type === 'text' ? !!b.text?.trim() : !!b?.type))
+}
+
+function TurnContent({ content, toolNames }: { content: unknown; toolNames: Record<string, string> }) {
+  if (typeof content === 'string') return content ? <pre className={styles.turnText}>{content}</pre> : null
+  if (!Array.isArray(content)) return null
+  return (
+    <>
+      {(content as Block[]).map((b, i) => {
+        if (!b?.type) return null
+        if (b.type === 'text') return b.text ? <pre key={i} className={styles.turnText}>{b.text}</pre> : null
+        if (TOOL_CALL_BLOCKS.includes(b.type)) {
+          const args = b.input && typeof b.input === 'object' && !Array.isArray(b.input) ? Object.entries(b.input) : []
+          return (
+            <div key={i} className={styles.toolStep}>
+              <span className={styles.toolStepHead}>
+                <span className={styles.toolStepVerb}>Used</span> {toolCallName(b)}
+              </span>
+              {args.length ? (
+                <dl className={styles.toolArgs}>
+                  {args.map(([k, v]) => (
+                    <div key={k}>
+                      <dt>{k}</dt>
+                      <dd>{argValue(v)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : typeof b.input === 'string' && b.input ? (
+                <pre className={styles.turnText}>{b.input}</pre>
+              ) : null}
+            </div>
+          )
+        }
+        if (b.type.endsWith('tool_result')) {
+          const from = (b.tool_use_id && toolNames[b.tool_use_id]) || (b.type === 'tool_result' ? 'tool' : blockLabel(b.type.replace(/_tool_result$/, '')))
+          const result = textOf(b.content)
+          return (
+            <div key={i} className={styles.toolStep}>
+              <span className={styles.toolStepHead}>
+                <span className={styles.toolStepVerb}>{b.is_error ? 'Error from' : 'Result from'}</span> {from}
+              </span>
+              {result ? <pre className={styles.turnText}>{result}</pre> : null}
+            </div>
+          )
+        }
+        return (
+          <span key={i} className={styles.turnMeta}>
+            {blockLabel(b.type)}
+          </span>
+        )
+      })}
+    </>
+  )
 }
 
 type CapturedContent = {
@@ -549,6 +642,10 @@ function RequestDrawer({
   const lines = e?.cost_breakdown?.lines || {}
   const shownLines = COST_LINES.filter((l) => num(lines[l.key]) > 0)
   const detections = dlpDetections(e?.dlp)
+  const toolNames = toolNamesById([
+    ...(content?.request?.messages || []).flatMap((m) => (Array.isArray(m.content) ? m.content : [])),
+    ...(content?.response?.content || []),
+  ])
   const called = e?.tools_called || []
   const tools = [...new Set([...called, ...(e?.tools_offered || [])])].map((raw) => ({
     raw,
@@ -785,14 +882,18 @@ function RequestDrawer({
                 {(content.request?.messages || []).map((m, i) => (
                   <div key={i} className={styles.turn}>
                     <span className={styles.turnRole}>{m.role === 'assistant' ? 'Assistant' : 'User'}</span>
-                    <pre className={styles.turnText}>{textOf(m.content)}</pre>
+                    <TurnContent content={m.content} toolNames={toolNames} />
                   </div>
                 ))}
                 <div className={styles.turn}>
                   <span className={styles.turnRole}>Response</span>
-                  <pre className={styles.turnText}>
-                    {content.response_text || textOf(content.response?.content) || 'No text in the response.'}
-                  </pre>
+                  {hasVisibleContent(content.response?.content) ? (
+                    <TurnContent content={content.response?.content} toolNames={toolNames} />
+                  ) : content.response_text ? (
+                    <pre className={styles.turnText}>{content.response_text}</pre>
+                  ) : (
+                    <span className={styles.turnMeta}>Nothing in the response.</span>
+                  )}
                 </div>
                 <p className={styles.hint}>This view was recorded in the asset audit log.</p>
               </div>
