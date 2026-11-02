@@ -56,6 +56,8 @@ export type TempCredentials = {
 
 export type ClaudeModel = {
   id: string
+  /** Model ID exactly as AWS lists it. Older models end in a version (:0), newer ones do not. */
+  model_id?: string
   name: string
   in_region: boolean
   profiles: string[]
@@ -233,8 +235,10 @@ export async function listClaudeModels(caller: Caller, region: string): Promise<
   for (const m of fm.modelSummaries || []) {
     if (!m.modelId?.startsWith('anthropic.') || m.modelLifecycle?.status === 'LEGACY') continue
     const id = m.modelId.replace(/:\d+$/, '')
+    if (models.has(id)) continue
     models.set(id, {
       id,
+      model_id: m.modelId,
       name: m.modelName || id,
       in_region: (m.inferenceTypesSupported || []).includes('ON_DEMAND'),
       profiles: [],
@@ -287,9 +291,10 @@ export function accessTestModel(models: ClaudeModel[], region: string): string |
   const geo = geoProfile(region)
   const ranked = [...models].sort((a, b) => tierRank(a) - tierRank(b) || b.id.localeCompare(a.id))
   for (const m of ranked) {
-    if (m.in_region) return `${m.id}:0`
-    if (geo && m.profiles.includes(geo)) return `${geo}.${m.id}:0`
-    if (m.profiles.includes('global')) return `global.${m.id}:0`
+    const id = m.model_id || m.id
+    if (m.in_region) return id
+    if (geo && m.profiles.includes(geo)) return `${geo}.${id}`
+    if (m.profiles.includes('global')) return `global.${id}`
   }
   return null
 }
