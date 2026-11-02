@@ -11,6 +11,7 @@ import {
   accountAccess,
   accountTitle,
   fmtAccountId,
+  isModelUnavailable,
   isUsableAccount,
   loadAwsAccounts,
   loadAwsAccountUsage,
@@ -79,6 +80,7 @@ const ACCESS_LABEL: Record<string, string> = {
   use_case_form: 'Use case form needed',
   marketplace: 'First call needed in AWS',
   not_permitted: 'Role cannot call Claude',
+  model_unavailable: 'Models not available to this account',
   unknown: 'Could not confirm',
 }
 
@@ -265,6 +267,13 @@ export function BedrockConnection({
 
                 {linked.last_error ? <Notice tone="risk">{linked.last_error}</Notice> : null}
                 {linkedRegion ? <AwsAccessNotice access={models?.access} region={linkedRegion} /> : null}
+                {linkedRegion && isModelUnavailable(models, assetModel) ? (
+                  <Notice tone="warn" title={`${assetModelLabel || assetModel} is not available to this AWS account`}>
+                    AWS lists it in {regionName(linkedRegion)} but refused a test call from this account, so requests
+                    from this asset that use it will fail. Ask AWS for access in the Bedrock model catalog, or set the
+                    asset to a model the account can use.
+                  </Notice>
+                ) : null}
                 {error ? <Notice tone="risk">{error}</Notice> : null}
 
                 {canManage ? (
@@ -410,11 +419,15 @@ export function BedrockConnection({
                 {models.models.map((m) => (
                   <li key={m.id} className={styles.model}>
                     <span className={styles.modelName}>{m.name}</span>
-                    <span className={styles.routes}>
-                      {modelRoutes(m).map((r) => (
-                        <span key={r} className={styles.route}>{r}</span>
-                      ))}
-                    </span>
+                    {isModelUnavailable(models, m.id) ? (
+                      <span className={styles.unavailable}>Not available to this account</span>
+                    ) : (
+                      <span className={styles.routes}>
+                        {modelRoutes(m).map((r) => (
+                          <span key={r} className={styles.route}>{r}</span>
+                        ))}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

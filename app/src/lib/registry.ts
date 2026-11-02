@@ -120,6 +120,7 @@ const ASSET_MODELS: Record<string, { id: string; label: string }[]> = {
     { id: 'anthropic.claude-opus-5', label: 'Claude Opus 5 (Bedrock)' },
     { id: 'anthropic.claude-sonnet-5', label: 'Claude Sonnet 5 (Bedrock)' },
     { id: 'anthropic.claude-fable-5-1', label: 'Claude Fable 5.1 (Bedrock)' },
+    { id: 'anthropic.claude-haiku-4-5-20251001-v1', label: 'Claude Haiku 4.5 (Bedrock)' },
     { id: 'amazon.nova-2-pro', label: 'Amazon Nova 2 Pro' },
     { id: 'meta.llama-4-70b', label: 'Meta Llama 4 70B' },
     OTHER_MODEL,

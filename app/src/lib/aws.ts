@@ -36,10 +36,21 @@ export type BedrockModel = {
 
 /** Result of the one-token test call RegAnchor makes when an account or region is connected or checked. */
 export type ModelAccess = {
-  status: 'ready' | 'use_case_form' | 'marketplace' | 'not_permitted' | 'unknown'
+  status: 'ready' | 'use_case_form' | 'marketplace' | 'not_permitted' | 'model_unavailable' | 'unknown'
   model: string | null
   message: string | null
   checked_at: string
+  /** Models AWS lists in the region but said are not available to this account. */
+  unavailable?: string[]
+}
+
+/** Bare model id from an invoke ID or asset model: drops the eu./global. prefix and any :N version. */
+export function bareModelId(value: string): string {
+  return value.replace(/^(?:[a-z]{2,4}(?:-gov)?|global)\.(?=anthropic\.)/, '').replace(/:\d+$/, '')
+}
+
+export function isModelUnavailable(entry: RegionModels | null | undefined, model: string | null | undefined): boolean {
+  return !!model && !!entry?.access?.unavailable?.includes(bareModelId(model))
 }
 
 export type RegionModels = { models: BedrockModel[]; checked_at: string; access?: ModelAccess }
@@ -140,6 +151,13 @@ export function accessStep(access: ModelAccess | undefined, region: string): Acc
       title: `AWS has not finished enabling Claude in ${where}`,
       body: 'The first Claude call on an account creates an AWS Marketplace subscription, which the RegAnchor role is not allowed to do. An AWS administrator needs to send one message to a Claude model in the Bedrock playground. Then check the connection again.',
       link: { href: bedrockConsole(region, 'chat-playground'), label: 'Open the Bedrock playground' },
+    }
+  }
+  if (access.status === 'model_unavailable') {
+    return {
+      title: `AWS has not made the Claude models tested available to this account in ${where}`,
+      body: 'Amazon Bedrock lists models an account cannot always use. Ask AWS for access to the model your agents need from the Bedrock model catalog, then check the connection again.',
+      link: { href: bedrockConsole(region, 'model-catalog'), label: 'Open the Bedrock model catalog' },
     }
   }
   if (access.status === 'not_permitted') {

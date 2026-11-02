@@ -270,8 +270,23 @@ export async function listClaudeModels(caller: Caller, region: string): Promise<
   return usable.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 60)
 }
 
-export type AccessStatus = 'ready' | 'use_case_form' | 'marketplace' | 'not_permitted' | 'unknown'
-export type AccessCheck = { status: AccessStatus; model: string | null; message: string | null; checked_at: string }
+export type AccessStatus = 'ready' | 'use_case_form' | 'marketplace' | 'not_permitted' | 'model_unavailable' | 'unknown'
+export type AccessCheck = {
+  status: AccessStatus
+  model: string | null
+  message: string | null
+  checked_at: string
+  /** Models AWS lists in the region but said are not available to this account, by model id. */
+  unavailable?: string[]
+}
+
+const MAX_ACCESS_ATTEMPTS = 3
+const MODEL_UNAVAILABLE_RE = /not available for this account|identifier is invalid|end of (its )?life|no longer available|legacy/i
+
+/** Bare model id from an invoke ID: drops the eu./us./global. profile prefix and any :N version. */
+export function bareModelId(value: string): string {
+  return value.replace(/^(?:[a-z]{2,4}(?:-gov)?|global)\.(?=anthropic\.)/, '').replace(/:\d+$/, '')
+}
 
 function geoProfile(region: string): string {
   if (region.startsWith('eu-')) return 'eu'
@@ -286,28 +301,63 @@ function tierRank(m: ClaudeModel): number {
   return name.includes('haiku') ? 0 : name.includes('sonnet') ? 1 : 2
 }
 
-/** Cheapest callable model ID for the region: Haiku first, newest first, in-region before geographic before global. */
-export function accessTestModel(models: ClaudeModel[], region: string): string | null {
+function invokeId(m: ClaudeModel, region: string): string | null {
   const geo = geoProfile(region)
-  const ranked = [...models].sort((a, b) => tierRank(a) - tierRank(b) || b.id.localeCompare(a.id))
-  for (const m of ranked) {
-    const id = m.model_id || m.id
-    if (m.in_region) return id
-    if (geo && m.profiles.includes(geo)) return `${geo}.${id}`
-    if (m.profiles.includes('global')) return `global.${id}`
-  }
+  const id = m.model_id || m.id
+  if (m.in_region) return id
+  if (geo && m.profiles.includes(geo)) return `${geo}.${id}`
+  if (m.profiles.includes('global')) return `global.${id}`
   return null
+}
+
+/**
+ * Models to try, in order: the asset's own model when it is listed, then the cheapest (Haiku first,
+ * newest first). Each with the route to call it by: in-region, then geographic, then global.
+ */
+export function accessTestModels(
+  models: ClaudeModel[],
+  region: string,
+  prefer?: string | null,
+): { id: string; invoke: string }[] {
+  const preferred = prefer ? bareModelId(prefer) : ''
+  const ranked = [...models].sort((a, b) =>
+    Number(b.id === preferred) - Number(a.id === preferred) || tierRank(a) - tierRank(b) || b.id.localeCompare(a.id)
+  )
+  return ranked.flatMap((m) => {
+    const invoke = invokeId(m, region)
+    return invoke ? [{ id: m.id, invoke }] : []
+  })
 }
 
 /**
  * Sends a one-token Claude request so onboarding blockers (Anthropic's use case form, the AWS
  * Marketplace subscription created by the first call) show up at connect time, not on the first real call.
+ * AWS lists models an account cannot use, so a model-level refusal moves on to the next candidate.
  */
-export async function checkModelAccess(caller: Caller, region: string, models: ClaudeModel[]): Promise<AccessCheck> {
+export async function checkModelAccess(
+  caller: Caller,
+  region: string,
+  models: ClaudeModel[],
+  prefer?: string | null,
+): Promise<AccessCheck> {
   const checked_at = new Date().toISOString()
-  const model = accessTestModel(models, region)
-  if (!model) return { status: 'unknown', model: null, message: 'No Claude model to test in this region.', checked_at }
+  const candidates = accessTestModels(models, region, prefer).slice(0, MAX_ACCESS_ATTEMPTS)
+  if (!candidates.length) return { status: 'unknown', model: null, message: 'No Claude model to test in this region.', checked_at }
 
+  const unavailable: string[] = []
+  let last: AccessCheck | null = null
+  for (const c of candidates) {
+    const result = await testCall(caller, region, c.invoke)
+    if (result.status !== 'model_unavailable') {
+      return { ...result, model: c.invoke, checked_at, ...(unavailable.length ? { unavailable } : {}) }
+    }
+    unavailable.push(c.id)
+    last = { ...result, model: c.invoke, checked_at }
+  }
+  return { ...last!, unavailable }
+}
+
+async function testCall(caller: Caller, region: string, model: string): Promise<Pick<AccessCheck, 'status' | 'message'>> {
   const url = `https://bedrock-runtime.${region}.amazonaws.com/model/${model}/converse`
   const init: RequestInit = {
     method: 'POST',
@@ -331,11 +381,11 @@ export async function checkModelAccess(caller: Caller, region: string, models: C
       res = await timed(fetch(url, { ...init, headers: { ...init.headers, Authorization: `Bearer ${caller.apiKey}` } }))
     }
   } catch (err) {
-    return { status: 'unknown', model, message: err instanceof Error ? err.message : 'Could not reach AWS.', checked_at }
+    return { status: 'unknown', message: err instanceof Error ? err.message : 'Could not reach AWS.' }
   }
 
   const text = await res.text()
-  if (res.ok || res.status === 429) return { status: 'ready', model, message: null, checked_at }
+  if (res.ok || res.status === 429) return { status: 'ready', message: null }
 
   let message = ''
   try {
@@ -344,10 +394,11 @@ export async function checkModelAccess(caller: Caller, region: string, models: C
   } catch { /* not JSON */ }
   message = message.slice(0, 400)
   const lower = message.toLowerCase()
-  if (lower.includes('use case')) return { status: 'use_case_form', model, message, checked_at }
-  if (lower.includes('marketplace')) return { status: 'marketplace', model, message, checked_at }
-  if (res.status === 403) return { status: 'not_permitted', model, message, checked_at }
-  return { status: 'unknown', model, message: message || `Amazon Bedrock returned ${res.status}.`, checked_at }
+  if (lower.includes('use case')) return { status: 'use_case_form', message }
+  if (lower.includes('marketplace')) return { status: 'marketplace', message }
+  if (MODEL_UNAVAILABLE_RE.test(message)) return { status: 'model_unavailable', message }
+  if (res.status === 403) return { status: 'not_permitted', message }
+  return { status: 'unknown', message: message || `Amazon Bedrock returned ${res.status}.` }
 }
 
 export function quickCreateUrl(p: {

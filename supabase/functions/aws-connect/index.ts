@@ -24,6 +24,7 @@ import {
   type AccessCheck,
   assumeRole,
   AwsConnectError,
+  bareModelId,
   BEDROCK_REGIONS,
   type Caller,
   checkModelAccess,
@@ -156,11 +157,23 @@ async function saveAccount(supabase: SupabaseClient, id: string, patch: Record<s
   return data as Account
 }
 
-/** Lists Claude models in the region, then makes a one-token test call. A failed test call is reported, not thrown. */
-async function checkRegion(caller: Caller, region: string, at: string): Promise<RegionModels> {
+/**
+ * Lists Claude models in the region, then makes a one-token test call, trying the asset's model first.
+ * A failed test call is reported, not thrown. Models found unavailable earlier stay flagged until one succeeds.
+ */
+async function checkRegion(
+  caller: Caller,
+  region: string,
+  at: string,
+  opts: { prefer?: string | null; previous?: RegionModels } = {},
+): Promise<RegionModels> {
   const models = await listClaudeModels(caller, region)
-  const access = await checkModelAccess(caller, region, models)
-  return { models, checked_at: at, access }
+  const access = await checkModelAccess(caller, region, models, opts.prefer)
+  const working = access.status === 'ready' && access.model ? bareModelId(access.model) : ''
+  const listed = new Set(models.map((m) => m.id))
+  const unavailable = [...new Set([...(opts.previous?.access?.unavailable || []), ...(access.unavailable || [])])]
+    .filter((id) => id !== working && listed.has(id))
+  return { models, checked_at: at, access: { ...access, ...(unavailable.length ? { unavailable } : {}) } }
 }
 
 function withRegion(a: Account, region: string, entry: RegionModels): ModelsByRegion {
@@ -270,6 +283,11 @@ Deno.serve(async (req) => {
     const orgId = asset ? asset.org_id : parseUuid(body.org_id, 'Organisation')
     if (asset && body.org_id && body.org_id !== asset.org_id) fail(400, 'This asset belongs to another organisation.')
     await assertOrgAdmin(supabase, user.id, orgId)
+    let assetModel: string | null = null
+    if (asset) {
+      const { data } = await supabase.from('ai_systems').select('model_name').eq('id', asset.id).maybeSingle()
+      assetModel = (data as { model_name?: string | null } | null)?.model_name || null
+    }
 
     const accountAudit = (name: string, a: Account, changes: Record<string, unknown>) =>
       writeAudit(supabase, {
@@ -370,7 +388,10 @@ Deno.serve(async (req) => {
       try {
         const creds = await assumeRole(arn, account.external_id, `reganchor-verify-${account.connection_ref}`)
         const now = new Date().toISOString()
-        const entry = await checkRegion({ creds }, account.home_region, now)
+        const entry = await checkRegion({ creds }, account.home_region, now, {
+          prefer: assetModel,
+          previous: account.models?.[account.home_region],
+        })
         const saved = await saveAccount(supabase, account.id, {
           status: 'connected',
           method: 'role',
@@ -418,7 +439,7 @@ Deno.serve(async (req) => {
       const now = new Date().toISOString()
       let entry: RegionModels
       try {
-        entry = await checkRegion({ apiKey }, region, now)
+        entry = await checkRegion({ apiKey }, region, now, { prefer: assetModel })
       } catch (err) {
         if (!(err instanceof AwsConnectError)) throw err
         fail(400, err.message, err.code)
@@ -485,7 +506,7 @@ Deno.serve(async (req) => {
         let total = 0
         const access: Record<string, string | undefined> = {}
         for (const region of regions) {
-          const entry = await checkRegion(caller, region, now)
+          const entry = await checkRegion(caller, region, now, { prefer: assetModel, previous: models[region] })
           models = { ...models, [region]: entry }
           total = Math.max(total, entry.models.length)
           access[region] = entry.access?.status
@@ -559,7 +580,7 @@ Deno.serve(async (req) => {
       if (!account.models?.[region]) {
         try {
           const caller = await callerFor(supabase, account, 'link')
-          const entry = await checkRegion(caller, region, new Date().toISOString())
+          const entry = await checkRegion(caller, region, new Date().toISOString(), { prefer: assetModel })
           current = await saveAccount(supabase, account.id, { models: withRegion(account, region, entry) })
         } catch (err) {
           if (!(err instanceof AwsConnectError)) throw err
