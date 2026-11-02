@@ -1,6 +1,6 @@
 # Supplier AI integration standard
 
-How a client firm governs and monitors AI that a supplier runs on its behalf, using RegAnchor. Written for RegAnchor (MLA Group Ltd) to use with clients and their suppliers. Draft, 2026-10-31.
+How a client firm governs and monitors AI that a supplier runs on its behalf, using RegAnchor. Written for RegAnchor (MLA Group Ltd) to use with clients and their suppliers. Draft, 2026-10-31; updated 2026-11-02 (Enforced does not depend on whose cloud runs the model).
 
 Example: a wealth firm (the client) uses an AI product from a supplier, and the supplier calls Anthropic models directly or through AWS Bedrock.
 
@@ -23,7 +23,7 @@ Oversight is set per supplier by risk tier. The client writes the required integ
 |---|---|---|
 | Low | Internal productivity, no client data, no client outcomes | Attested |
 | Material | Processes client personal or financial data, or supports staff decisions | Reported or Observed |
-| Critical | Produces client-facing output, advice, suitability or onboarding decisions, or runs at scale without human review | Enforced, or Observed with enforcement in the client's own cloud |
+| Critical | Produces client-facing output, advice, suitability or onboarding decisions, or runs at scale without human review | Enforced, with Observed or invoice reconciliation as the bypass cross-check |
 
 The tier is recorded in the RegAnchor assessment for the supplier's asset and reviewed at least yearly, and whenever the supplier changes model, provider or use.
 
@@ -58,11 +58,15 @@ The supplier runs the AI in the client's own cloud account, so the client alread
 
 ### 4. Enforced
 
-The supplier sends the client's AI requests through the RegAnchor gateway.
+The supplier sends the client's AI requests through the RegAnchor gateway. This does not depend on whose cloud account runs the model: the gateway forwards each request to the model in whichever account holds it.
 
 - In RegAnchor: every request is authenticated per agent, priced, checked against budgets and data loss prevention rules, and can be refused; spend is reconciled with the provider's own figures; full audit trail. Everything in the Monitoring page today.
-- Limit: RegAnchor is in the request path, so the client and supplier agree a fail mode (fail open sends requests direct and records it; fail closed refuses them), and RegAnchor must meet the client's processor requirements (see RegAnchor's obligations).
-- Status: available for Anthropic's API. AWS Bedrock route planned (see `docs/CLOUDFLARE-AI-GATEWAY.md`, Bedrock route).
+- Where the model runs:
+  - Supplier's account (the usual case for a software vendor). Anthropic API: the supplier's Anthropic key is stored against the client's agent in RegAnchor. AWS Bedrock: the supplier deploys RegAnchor's CloudFormation role in its AWS account, a cross-account role with an external ID unique to the client that allows invoking approved Claude models and nothing else. The supplier keeps paying its provider as today.
+  - Client's account. The client connects its own Anthropic key or AWS account the same way, and pays the provider directly. Observed can then run alongside as the bypass check.
+- Limit: RegAnchor is in the request path, so the client and supplier agree a fail mode (fail open sends requests direct and records it; fail closed refuses them), and RegAnchor must meet the client's processor requirements (see RegAnchor's obligations). The supplier changes its configuration for the client's tenant (see the technical spec).
+- Limit: when the supplier's account serves many customers, its provider bill cannot show on its own whether all of the client's traffic went through the gateway. Require per-customer usage tagging (clause 10) so the client's share can be reconciled.
+- Status: available for Anthropic's API and for Claude on AWS Bedrock (verified 2026-11-02, see `docs/CLOUDFLARE-AI-GATEWAY.md`, Bedrock route). Bedrock requests use Anthropic's Messages format with Bedrock model IDs; suppliers calling Bedrock through the AWS SDK (Converse or InvokeModel) need a code change until the gateway accepts those formats.
 
 ## Contract clauses for the client firm
 
@@ -77,10 +81,13 @@ Plain-language starting points for the client's supplier agreement. They are not
 7. **Logs and audit.** The supplier keeps request logs for the client for an agreed period and provides them, or access to them, on request and to the client's regulators.
 8. **Evidence.** The supplier provides updated certifications and the subprocessor list at least yearly, and on material change.
 9. **Exit.** On termination, the supplier provides logs and reasonable help to move the service.
+10. **Usage tagging.** Where the supplier runs models in an account shared with other customers, it tags the client's model usage separately (for example an AWS application inference profile with a cost allocation tag for the client) and provides that tagged usage and cost, or read-only access to it, so the client can reconcile it with gateway records.
 
-## Technical spec for suppliers (Enforced, Anthropic API)
+## Technical spec for suppliers (Enforced)
 
-For the supplier's engineering team. Available now.
+For the supplier's engineering team. Available now for Anthropic's API and for Claude on AWS Bedrock.
+
+For Bedrock, the client first connects the AWS account that runs the model (the supplier's or its own) and links it to the agent, and the supplier sends Bedrock model IDs in the `model` field (for example `eu.anthropic.claude-haiku-4-5-20251001-v1:0`). Before the first request, the AWS account needs Anthropic's use case form submitted and one call to each Claude model by an AWS administrator, which creates the AWS Marketplace subscription that RegAnchor's role is deliberately not allowed to create.
 
 1. The client registers the supplier's product as an agent in RegAnchor and mints a gateway token on its Connection tab. The token is shown once; the client gives it to the supplier through a secure channel.
 2. For the client's tenant only, the supplier replaces the Anthropic address with the RegAnchor gateway address shown on the Connection tab, and sends the token as `Authorization: Bearer <token>` (or `x-reganchor-gateway-token` if the client library cannot set `Authorization`). The official Anthropic SDKs and Claude Code do this with `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN`.
@@ -103,16 +110,16 @@ What a client's security review will ask of RegAnchor as a processor in the requ
 
 ## Checking the supplier is not bypassing
 
-- Enforced and Observed together: compare gateway records with the client's own provider or AWS bills. RegAnchor's reconciliation already does this for Anthropic; AWS cost reconciliation comes with the Bedrock route.
+- Enforced and Observed together: compare gateway records with the provider or AWS bills for the account that runs the model. RegAnchor's reconciliation already does this for Anthropic; AWS Cost Explorer reconciliation is to build. In a supplier's shared account, compare against the client's tagged usage (clause 10).
 - Reported: compare the feed with the supplier's invoices to the client.
 - All levels: a yearly supplier attestation that all model use for the client is covered.
 
 ## First questions to ask a supplier
 
-1. Does the product run in our cloud account or yours?
-2. Which model providers and infrastructure does it use, and where is our data processed and stored?
-3. Can you send all our model traffic through our governance gateway, or export usage and audit logs (API, security monitoring feed or file)?
+1. Can you send all our model traffic through our governance gateway? If not, can you export usage and audit logs (API, security monitoring feed or file)?
+2. Does the product run the models in our cloud account or yours, and if yours, is that account shared with other customers?
+3. Which model providers and infrastructure does it use, and where is our data processed and stored?
 4. Is our data used for training, and how long is it kept?
 5. What certifications do you hold, and what are your incident and model change notice terms?
 
-The first answer decides between Observed and Enforced.
+The first answer decides the level: yes means Enforced, logs only means Reported. The second decides the set-up, not the level: who connects the provider key or AWS role to RegAnchor, who pays the provider, whether Observed can run alongside as the bypass check (our account), and whether usage tagging is needed (a shared supplier account).
