@@ -10,6 +10,8 @@ Rules for entries:
 
 ## 2 Nov 2026
 
+- **Limit each AI agent to the models you have approved.** Approve the models each agent may use, and RegAnchor checks every request through the gateway against that list. Requests for any other model are flagged and recorded, or blocked before they reach the provider, depending on the organisation's setting, and every approval and change is in the audit log.
+  - Limits: requests must go through the RegAnchor gateway (Anthropic and Claude on Amazon Bedrock today). Agents with no approved models are not checked. Flag is the default; blocking must be switched on by an owner or admin.
 - **Know Claude on Bedrock works before your agents call it.** When you connect or check an AWS account, RegAnchor makes a one-token test call to Claude in each region in use. If AWS still needs Anthropic's use case form or a first call by an AWS admin, the account shows that step with a link to the right page in the AWS console.
   - Limits: Anthropic Claude models only. AWS bills each test call at a fraction of a cent.
 - **Monitor and budget Claude on Amazon Bedrock through the RegAnchor gateway.** Agents running Claude on Bedrock in your own AWS account send requests through RegAnchor, and every request is recorded and priced at AWS's rate for that region, with the AWS account, region and route shown. Bedrock spend counts towards the same monthly budgets and hard limits as Anthropic spend, and your data protection policies check prompts and responses the same way.

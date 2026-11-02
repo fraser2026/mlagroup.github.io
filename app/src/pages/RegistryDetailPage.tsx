@@ -77,6 +77,7 @@ import { regionName } from '../lib/aws'
 import { AssetFormFields } from './AssetFormFields'
 import { BedrockConnection } from './BedrockConnection'
 import { GatewayActivity } from './GatewayActivity'
+import { GatewayApprovedModels } from './GatewayApprovedModels'
 import styles from './RegistryDetailPage.module.css'
 
 type Conn = {
@@ -1023,6 +1024,20 @@ export function RegistryDetailPage() {
               ) : null}
             </div>
 
+            {org?.id && id ? (
+              <GatewayApprovedModels
+                orgId={org.id}
+                assetId={id}
+                provider={provider}
+                assetModel={asset.model_name}
+                seenModels={(gatewaySummary?.models || []).map((m) => m.model).filter(Boolean)}
+                mode={gatewaySettings?.unapproved_model_action === 'block' ? 'block' : 'flag'}
+                canManage={canDeleteRegistry}
+                accessToken={session?.access_token}
+                onToast={pushToast}
+              />
+            ) : null}
+
             <div className={styles.cardSection}>
               <div className={styles.connBlockHead}>
                 <span className={styles.sectionLabel}>Traffic</span>
@@ -1047,10 +1062,14 @@ export function RegistryDetailPage() {
                   </div>
                 </div>
                 <div className={styles.gwTile}>
-                  <div className={styles.connMetaLabel}>DLP findings</div>
+                  <div className={styles.connMetaLabel}>Policy findings</div>
                   <div className={styles.gwValue}>
                     <CountUp
-                      value={(Number(gatewaySummary?.totals.flagged) || 0) + (Number(gatewaySummary?.totals.blocked) || 0)}
+                      value={
+                        (Number(gatewaySummary?.totals.flagged) || 0) +
+                        (Number(gatewaySummary?.totals.blocked) || 0) +
+                        (Number(gatewaySummary?.totals.unapproved) || 0)
+                      }
                       format={(n) => Math.round(n).toLocaleString('en-GB')}
                     />
                   </div>

@@ -981,6 +981,21 @@ export function formatAuditPlain(
       }
       break
     }
+    case 'gateway_model_approved':
+    case 'gateway_model_approval_removed': {
+      const model = String(c.model_id || c.model_key || 'a model')
+      text = entry.action === 'gateway_model_approved'
+        ? `Approved ${model} for ${systemName}`
+        : `Removed ${model} from the approved models for ${systemName}${c.remaining === 0 ? '; requests are no longer checked' : ''}`
+      break
+    }
+    case 'gateway_model_action_changed': {
+      const v = (c.unapproved_model_action || {}) as { to?: string }
+      text = v.to === 'block'
+        ? 'Set requests for unapproved models to be blocked'
+        : 'Set requests for unapproved models to be flagged and allowed'
+      break
+    }
     case 'gateway_content_viewed':
       text = `Viewed captured prompt and response for a gateway request on ${systemName}`
       break

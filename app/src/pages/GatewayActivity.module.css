@@ -80,6 +80,20 @@
   white-space: nowrap;
 }
 
+.modelCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.modelCell > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .quiet {
   color: var(--ra-text-3);
 }

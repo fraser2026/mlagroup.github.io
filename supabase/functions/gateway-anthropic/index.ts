@@ -74,6 +74,7 @@ type Outcome =
   | 'blocked_dlp_response'
   | 'blocked_budget'
   | 'blocked_unpriced_model'
+  | 'blocked_unapproved_model'
   | 'rate_limited'
   | 'provider_error'
   | 'gateway_error'
@@ -120,6 +121,8 @@ type EventContext = {
   captureContent: boolean
   rawRequest: string
   toolsOffered: string[]
+  /** Null when the agent has no approved models or the check could not run. */
+  modelApproved: boolean | null
 }
 
 type EventResult = {
@@ -138,8 +141,9 @@ type DlpHeader = { action?: string; findings?: unknown[] }
 
 type Enforcement = {
   allowed: boolean
-  reason?: 'budget_reached' | 'unpriced_model'
+  reason?: 'budget_reached' | 'unpriced_model' | 'unapproved_model'
   scope?: 'agent' | 'organisation'
+  model_approved?: boolean | null
 }
 
 const DEFAULT_SETTINGS: GatewaySettings = {
@@ -247,6 +251,10 @@ async function checkEnforcement(
 }
 
 function enforcementMessage(enforcement: Enforcement, model: string): string {
+  if (enforcement.reason === 'unapproved_model') {
+    return `This agent is not approved to use ${model.slice(0, 100)} in RegAnchor. Use one of its approved models, ` +
+      'or ask an owner or admin to approve this one.'
+  }
   if (enforcement.reason === 'unpriced_model') {
     return `RegAnchor has no verified price for ${model.slice(0, 100)}, so its spend cannot be measured against a ` +
       'blocking budget. Use a priced model, or ask an owner or admin to set the budget to monitor only.'
@@ -660,6 +668,7 @@ async function recordEvent(supabase: Supabase, ctx: EventContext, result: EventR
     content_path: contentPath,
     tools_offered: ctx.toolsOffered,
     tools_called: usage.tools_called,
+    model_approved: ctx.modelApproved,
   })
   if (error) console.error('gateway event insert failed', error.message)
 
@@ -913,6 +922,7 @@ Deno.serve(async (req) => {
       captureContent: settings.capture_content,
       rawRequest: rawBody,
       toolsOffered: offeredTools(body),
+      modelApproved: typeof enforcement?.model_approved === 'boolean' ? enforcement.model_approved : null,
     }
     const failClosed = settings.route_via_ai_gateway && settings.fail_mode === 'closed'
 
@@ -930,12 +940,18 @@ Deno.serve(async (req) => {
     }
     if (enforcement && !enforcement.allowed) {
       ctx.route = 'none'
-      const unpriced = enforcement.reason === 'unpriced_model'
+      const reason = enforcement.reason === 'unpriced_model' || enforcement.reason === 'unapproved_model'
+        ? enforcement.reason
+        : 'budget_reached'
       await record({
-        outcome: unpriced ? 'blocked_unpriced_model' : 'blocked_budget',
+        outcome: reason === 'unpriced_model'
+          ? 'blocked_unpriced_model'
+          : reason === 'unapproved_model'
+            ? 'blocked_unapproved_model'
+            : 'blocked_budget',
         httpStatus: 403,
-        errorType: unpriced ? 'unpriced_model' : 'budget_reached',
-        errorCode: unpriced ? null : enforcement.scope || null,
+        errorType: reason,
+        errorCode: reason === 'budget_reached' ? enforcement.scope || null : null,
         usage: emptyUsage(model),
       })
       return anthropicError('permission_error', enforcementMessage(enforcement, model), 403, ctx.id)

@@ -6,10 +6,19 @@ import { useAuth } from '../auth/AuthProvider'
 import { loadGatewaySettings, type GatewaySettings } from '../lib/gateway'
 import { GatewayActivity } from './GatewayActivity'
 import { GatewayBudgets } from './GatewayBudgets'
+import { GatewayControls } from './GatewayControls'
 import { GatewayInventory } from './GatewayInventory'
 import { GatewayPricing } from './GatewayPricing'
 import { GatewayReconciliation } from './GatewayReconciliation'
 import styles from './GatewayPage.module.css'
+
+const DEFAULT_SETTINGS: GatewaySettings = {
+  route_via_ai_gateway: false,
+  fail_mode: 'open',
+  capture_content: false,
+  content_retention_days: 30,
+  event_retention_days: 400,
+}
 
 export function GatewayPage() {
   const { org, session, canDeleteRegistry } = useAuth()
@@ -32,7 +41,7 @@ export function GatewayPage() {
   }, [org?.id])
 
   const description =
-    'Requests from your AI agents through the RegAnchor gateway: spend, models and tools, data loss prevention and outcomes.'
+    'Requests from your AI agents through the RegAnchor gateway: approved models, spend, models and tools, data loss prevention and outcomes.'
 
   if (!org?.id || !ready) {
     return (
@@ -69,6 +78,10 @@ export function GatewayPage() {
           </dd>
         </div>
         <div>
+          <dt>Models not approved</dt>
+          <dd>{settings?.unapproved_model_action === 'block' ? 'Block' : 'Flag and allow'}</dd>
+        </div>
+        <div>
           <dt>Request records</dt>
           <dd>Kept {settings?.event_retention_days ?? 400} days</dd>
         </div>
@@ -80,6 +93,18 @@ export function GatewayPage() {
           AI Gateway is enabled for this organisation.
         </Notice>
       ) : null}
+
+      <Section id="controls" title="Approved models">
+        <GatewayControls
+          orgId={org.id}
+          mode={settings?.unapproved_model_action === 'block' ? 'block' : 'flag'}
+          canManage={canDeleteRegistry}
+          accessToken={session?.access_token}
+          onModeChange={(value) =>
+            setSettings((s) => ({ ...(s || DEFAULT_SETTINGS), unapproved_model_action: value }))
+          }
+        />
+      </Section>
 
       <Section id="budgets" title="Budgets">
         <GatewayBudgets orgId={org.id} canManage={canDeleteRegistry} accessToken={session?.access_token} />

@@ -61,6 +61,7 @@ type Props = {
 const FILTERS: { value: EventFilter; label: string }[] = [
   { value: 'all', label: 'All requests' },
   { value: 'dlp', label: 'DLP findings' },
+  { value: 'unapproved', label: 'Models not approved' },
   { value: 'issues', label: 'Issues' },
 ]
 
@@ -291,16 +292,19 @@ export function GatewayActivity({
         },
         {
           id: 'dlp',
-          label: 'DLP findings',
-          value: (num(t.flagged) + num(t.blocked)).toLocaleString('en-GB'),
-          hint: num(t.blocked) ? `${num(t.blocked)} blocked` : num(t.flagged) ? 'Flagged, not blocked' : undefined,
+          label: 'Policy findings',
+          value: (num(t.flagged) + num(t.blocked) + num(t.unapproved)).toLocaleString('en-GB'),
+          hint: [
+            num(t.flagged) + num(t.blocked) ? `${num(t.flagged) + num(t.blocked)} DLP` : '',
+            num(t.unapproved) ? `${num(t.unapproved)} model not approved` : '',
+          ].filter(Boolean).join(', ') || undefined,
         },
         {
           id: 'issues',
           label: 'Issues',
           value: (num(t.errors) + num(t.rate_limited)).toLocaleString('en-GB'),
           hint: num(t.policy_blocked)
-            ? `${num(t.policy_blocked)} refused by budget`
+            ? `${num(t.policy_blocked)} refused by policy`
             : num(t.fallback)
               ? `${num(t.fallback)} sent direct`
               : undefined,
@@ -332,6 +336,7 @@ export function GatewayActivity({
           <>
             {num(d.requests).toLocaleString('en-GB')} {num(d.requests) === 1 ? 'request' : 'requests'}
             {num(d.dlp) ? <div>{num(d.dlp)} DLP</div> : null}
+            {num(d.unapproved) ? <div>{num(d.unapproved)} model not approved</div> : null}
             {num(d.issues) ? <div>{num(d.issues)} {num(d.issues) === 1 ? 'issue' : 'issues'}</div> : null}
           </>
         ) : undefined,
@@ -370,7 +375,10 @@ export function GatewayActivity({
         meta: orgScope ? undefined : { flex: true },
         size: orgScope ? 160 : undefined,
         cell: ({ row }) => (
-          <span className={styles.primary}>{prettyModel(provider, row.original.model || row.original.request_model)}</span>
+          <span className={styles.modelCell}>
+            <span className={styles.primary}>{prettyModel(provider, row.original.model || row.original.request_model)}</span>
+            {row.original.model_approved === false ? <StatusLabel tone="warn">Not approved</StatusLabel> : null}
+          </span>
         ),
       },
       {
@@ -539,7 +547,13 @@ export function GatewayActivity({
             loading ? null : (
               <EmptyState
                 title={
-                  filter === 'dlp' ? 'No DLP findings' : filter === 'issues' ? 'No issues' : 'No gateway requests yet'
+                  filter === 'dlp'
+                    ? 'No DLP findings'
+                    : filter === 'unapproved'
+                      ? 'No requests for models outside the approved list'
+                      : filter === 'issues'
+                        ? 'No issues'
+                        : 'No gateway requests yet'
                 }
                 body={
                   filter === 'all'
@@ -706,6 +720,18 @@ function RequestDrawer({
                 {requestedOther ? (
                   <span className={styles.quiet}> (requested {prettyModel(provider, e.request_model)})</span>
                 ) : null}
+              </dd>
+              <dt>Model approval</dt>
+              <dd>
+                {e.model_approved === true ? (
+                  'Approved for this agent'
+                ) : e.model_approved === false ? (
+                  <StatusLabel tone={e.outcome === 'blocked_unapproved_model' ? 'risk' : 'warn'}>
+                    {e.outcome === 'blocked_unapproved_model' ? 'Not approved, blocked' : 'Not approved, flagged'}
+                  </StatusLabel>
+                ) : (
+                  <span className={styles.quiet}>Not checked</span>
+                )}
               </dd>
               <dt>Provider</dt>
               <dd>{labelProvider(e.provider)}</dd>
