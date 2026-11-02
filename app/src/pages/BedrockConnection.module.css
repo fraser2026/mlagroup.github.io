@@ -1,11 +1,22 @@
 /* Amazon Bedrock connection: full-width setup card with models below; side by side from 900px. */
-.grid > .main {
+.grid > .main,
+.grid > .modelsCard,
+.gatewaySlot {
   grid-column: 1 / -1;
+}
+
+.gatewaySlot {
+  display: grid;
+  min-width: 0;
 }
 
 @container (min-width: 900px) {
   .grid > .main {
     grid-column: span 2;
+  }
+
+  .grid > .modelsCard {
+    grid-column: auto;
   }
 }
 

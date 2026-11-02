@@ -16,8 +16,10 @@ import {
 import type { Metric, UsageBar } from '../ui'
 import { invokeEdge } from '../lib/edge'
 import { fmtProviderTokens, labelProvider } from '../lib/registry'
+import { regionName } from '../lib/aws'
 import {
   GATEWAY_WINDOWS,
+  bedrockRouteLabel,
   costStatusHint,
   costStatusLabel,
   dlpDetections,
@@ -653,7 +655,9 @@ function RequestDrawer({
     called: called.includes(raw),
   }))
   const model = e ? prettyModel(provider, e.model || e.request_model) : ''
-  const requestedOther = e?.request_model && e.model && e.request_model !== e.model
+  const onBedrock = e?.infrastructure === 'aws_bedrock'
+  const requestedOther =
+    e?.request_model && e.model && prettyModel(provider, e.request_model) !== prettyModel(provider, e.model)
 
   const usageRows: [string, number | null | undefined][] = e
     ? [
@@ -705,6 +709,18 @@ function RequestDrawer({
               </dd>
               <dt>Provider</dt>
               <dd>{labelProvider(e.provider)}</dd>
+              {onBedrock ? (
+                <>
+                  <dt>Infrastructure</dt>
+                  <dd>
+                    {labelProvider('bedrock')}
+                    <span className={styles.quiet}>
+                      {' '}
+                      · {regionName(e.aws_region)} · {bedrockRouteLabel(e.request_model)}
+                    </span>
+                  </dd>
+                </>
+              ) : null}
               <dt>Token</dt>
               <dd>
                 {tokenName ||
@@ -766,6 +782,11 @@ function RequestDrawer({
                   : ''}
                 {num(e.cost_breakdown.region_multiplier) > 1
                   ? `, region ×${e.cost_breakdown.region_multiplier}`
+                  : ''}
+                {e.cost_breakdown.source === 'aws_bedrock'
+                  ? `. Amazon Bedrock list price for ${regionName(e.cost_breakdown.region)}, ${
+                      e.cost_breakdown.scope === 'global' ? 'global' : 'in-Region and geographic'
+                    } rate`
                   : ''}
                 .
               </p>
@@ -920,7 +941,7 @@ function RequestDrawer({
               <dd>
                 <CopyValue value={e.id} />
               </dd>
-              <dt>{labelProvider(e.provider)}</dt>
+              <dt>{onBedrock ? 'AWS request' : labelProvider(e.provider)}</dt>
               <dd>
                 <CopyValue value={e.provider_request_id} />
               </dd>

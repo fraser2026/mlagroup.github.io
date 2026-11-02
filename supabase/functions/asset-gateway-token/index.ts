@@ -57,8 +57,9 @@ Deno.serve(async (req) => {
     const asset = await loadAsset(supabase, assetId)
     await assertOrgAdmin(supabase, user.id, asset.org_id)
 
-    if (asset.provider_slug !== 'anthropic') {
-      return json({ ok: false, error: 'Gateway tokens are available only for Anthropic assets.' }, 400)
+    const onBedrock = asset.provider_slug === 'bedrock'
+    if (asset.provider_slug !== 'anthropic' && !onBedrock) {
+      return json({ ok: false, error: 'Gateway tokens are available for Anthropic and Amazon Bedrock assets.' }, 400)
     }
 
     if (action === 'list') {
@@ -72,15 +73,28 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'mint') {
-      const { data: connection } = await supabase
-        .from('provider_connections')
-        .select('id,credential_secret_id,status')
-        .eq('asset_id', asset.id)
-        .eq('provider_slug', 'anthropic')
-        .eq('status', 'connected')
-        .maybeSingle()
-      if (!connection?.credential_secret_id) {
-        return json({ ok: false, error: 'Connect and verify an Anthropic runtime API key before minting a gateway token.' }, 400)
+      if (onBedrock) {
+        const { data: connection } = await supabase
+          .from('provider_connections')
+          .select('id,org_aws_account_id')
+          .eq('asset_id', asset.id)
+          .eq('provider_slug', 'bedrock')
+          .eq('status', 'connected')
+          .maybeSingle()
+        if (!connection?.org_aws_account_id) {
+          return json({ ok: false, error: 'Link a connected AWS account to this asset before minting a gateway token.' }, 400)
+        }
+      } else {
+        const { data: connection } = await supabase
+          .from('provider_connections')
+          .select('id,credential_secret_id,status')
+          .eq('asset_id', asset.id)
+          .eq('provider_slug', 'anthropic')
+          .eq('status', 'connected')
+          .maybeSingle()
+        if (!connection?.credential_secret_id) {
+          return json({ ok: false, error: 'Connect and verify an Anthropic runtime API key before minting a gateway token.' }, 400)
+        }
       }
 
       const { count } = await supabase

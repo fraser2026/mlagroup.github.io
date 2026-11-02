@@ -26,10 +26,28 @@ export function fmtUsdFull(value: number | string | null | undefined): string {
   return `$${(Number.isFinite(n) ? n : 0).toFixed(8)}`
 }
 
+const BEDROCK_CLAUDE_ID = /^(?:([a-z][a-z-]*)\.)?anthropic\.(.+)$/
+
+/** Claude on Bedrock: "eu.anthropic.claude-haiku-4-5-20251001-v1:0" -> "claude-haiku-4-5". */
+export function bedrockBaseModel(id: string): string | null {
+  const m = id.match(BEDROCK_CLAUDE_ID)
+  return m ? m[2].replace(/:\d+$/, '').replace(/-v\d+$/, '').replace(/-\d{8}$/, '') : null
+}
+
+/** How a Bedrock request was routed, from the inference profile prefix on the requested model. */
+export function bedrockRouteLabel(requestModel?: string | null): string {
+  const prefix = requestModel?.match(BEDROCK_CLAUDE_ID)?.[1]
+  if (!prefix) return 'In-Region'
+  if (prefix === 'global') return 'Global cross-Region'
+  return `${prefix.toUpperCase()} cross-Region`
+}
+
 export function prettyModel(provider: string, id?: string | null) {
   if (!id) return 'Model'
   const known = modelDisplayName(provider, id)
   if (known && known !== id) return known
+  const base = bedrockBaseModel(id)
+  if (base) return prettyModel('anthropic', base)
   const parts = id.replace(/-\d{8}$/, '').split('-')
   const words: string[] = []
   const nums: string[] = []
@@ -63,6 +81,9 @@ export type GatewayEvent = {
   asset_id: string
   token_id?: string | null
   provider: string
+  infrastructure?: 'anthropic_api' | 'aws_bedrock' | string | null
+  org_aws_account_id?: string | null
+  aws_region?: string | null
   environment?: string | null
   route: string
   outcome: GatewayOutcome | string
@@ -97,6 +118,9 @@ export type GatewayEvent = {
     input_per_mtok?: number
     output_per_mtok?: number
     region_multiplier?: number
+    source?: 'aws_bedrock' | string
+    region?: string
+    scope?: 'regional' | 'global' | string
     agreement?: { id: string; discount_pct: number; contract_usd: number }
   } | null
   provider_request_id?: string | null
@@ -109,7 +133,7 @@ export type GatewayEvent = {
 }
 
 export const GATEWAY_EVENT_COLUMNS =
-  'id,created_at,org_id,asset_id,token_id,provider,environment,route,outcome,http_status,error_type,error_code,streamed,latency_ms,duration_ms,request_model,model,input_tokens,output_tokens,cache_write_5m_tokens,cache_write_1h_tokens,cache_read_tokens,thinking_tokens,web_search_requests,web_fetch_requests,code_execution_requests,service_tier,inference_geo,speed,cost_usd,contract_cost_usd,price_agreement_id,cost_status,cost_breakdown,provider_request_id,aig_log_id,dlp_action,dlp,content_captured,tools_offered,tools_called'
+  'id,created_at,org_id,asset_id,token_id,provider,infrastructure,org_aws_account_id,aws_region,environment,route,outcome,http_status,error_type,error_code,streamed,latency_ms,duration_ms,request_model,model,input_tokens,output_tokens,cache_write_5m_tokens,cache_write_1h_tokens,cache_read_tokens,thinking_tokens,web_search_requests,web_fetch_requests,code_execution_requests,service_tier,inference_geo,speed,cost_usd,contract_cost_usd,price_agreement_id,cost_status,cost_breakdown,provider_request_id,aig_log_id,dlp_action,dlp,content_captured,tools_offered,tools_called'
 
 export type GatewaySummary = {
   since: string

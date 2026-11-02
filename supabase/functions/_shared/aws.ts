@@ -104,7 +104,12 @@ async function timed(input: Promise<Response>): Promise<Response> {
   }
 }
 
-export async function assumeRole(roleArn: string, externalId: string, sessionName: string): Promise<TempCredentials> {
+export async function assumeRole(
+  roleArn: string,
+  externalId: string,
+  sessionName: string,
+  durationSeconds = 900,
+): Promise<TempCredentials> {
   const cfg = brokerConfig()
   if (!cfg.accessKeyId || !cfg.secretAccessKey) {
     throw new AwsConnectError('not_configured', 'AWS connections are not set up on RegAnchor yet. Contact RegAnchor support.')
@@ -122,7 +127,7 @@ export async function assumeRole(roleArn: string, externalId: string, sessionNam
     RoleArn: roleArn,
     RoleSessionName: sessionName,
     ExternalId: externalId,
-    DurationSeconds: '900',
+    DurationSeconds: String(Math.min(3600, Math.max(900, Math.floor(durationSeconds)))),
   })
   const res = await timed(client.fetch(`https://sts.${cfg.stsRegion}.amazonaws.com/`, {
     method: 'POST',

@@ -73,6 +73,7 @@ import {
   type GatewaySettings,
   type GatewaySummary,
 } from '../lib/gateway'
+import { regionName } from '../lib/aws'
 import { AssetFormFields } from './AssetFormFields'
 import { BedrockConnection } from './BedrockConnection'
 import { GatewayActivity } from './GatewayActivity'
@@ -424,7 +425,7 @@ export function RegistryDetailPage() {
       setAssigneeNames({})
     }
 
-    if (session.access_token && sys.provider_slug === 'anthropic') {
+    if (session.access_token && (sys.provider_slug === 'anthropic' || sys.provider_slug === 'bedrock')) {
       try {
         const tokenRes = await invokeEdge<{ tokens?: GatewayToken[] }>(
           'asset-gateway-token',
@@ -502,6 +503,7 @@ export function RegistryDetailPage() {
   const connectorReady = !!providerRow?.connector_available
   const isAnthropic = provider === 'anthropic'
   const isBedrock = provider === 'bedrock'
+  const gatewayCapable = isAnthropic || isBedrock
   const showConnIntro = !provider || (!connectorReady && !isBedrock)
   const hasOrgAdmin = !!orgCred?.admin_credential_secret_id
   const hasLegacyAdmin = !!conn?.admin_credential_secret_id
@@ -867,6 +869,227 @@ export function RegistryDetailPage() {
       </PageFrame>
     )
   }
+
+  const bedrockRegion = (conn?.metadata as { aws?: { region?: string } } | null | undefined)?.aws?.region || ''
+  const bedrockExample = /^(?:[a-z][a-z-]*\.)?anthropic\./.test(asset.model_name || '')
+    ? asset.model_name
+    : 'global.anthropic.claude-sonnet-5'
+
+  const gatewayCard = (
+    <section className={styles.connCard} id="gateway">
+      <header className={styles.cardHead}>
+        <span className={styles.cardTitle}>Gateway</span>
+        {gatewayCapable ? (
+          <StatusLabel tone={activeTokens.length ? 'ok' : 'neutral'}>
+            {activeTokens.length
+              ? `${activeTokens.length} active ${activeTokens.length === 1 ? 'token' : 'tokens'}`
+              : 'No tokens'}
+          </StatusLabel>
+        ) : null}
+      </header>
+      <div className={styles.cardBody}>
+        {!gatewayCapable ? (
+          <p className={styles.connHint}>
+            Governed Messages routing is available when this asset uses Anthropic or Amazon Bedrock.
+          </p>
+        ) : (
+          <>
+            <p className={styles.connHint}>
+              Route Messages through RegAnchor with an <code className={styles.inlineCode}>ra_gw_</code> token.{' '}
+              {gatewaySettings?.capture_content
+                ? `Prompts and responses are captured for this organisation and kept ${gatewaySettings.content_retention_days} days.`
+                : 'Only metadata is recorded. Prompts and responses are not stored.'}
+            </p>
+            {isBedrock ? (
+              <p className={styles.connHint}>
+                Use a Bedrock model ID, for example <code className={styles.inlineCode}>{bedrockExample}</code>.
+                {bedrockRegion ? ` Requests run in your AWS account in ${regionName(bedrockRegion)}.` : ''}
+              </p>
+            ) : null}
+            <div className={styles.endpointRow}>
+              <code className={styles.endpoint} title={GATEWAY_MESSAGES_URL}>
+                {GATEWAY_MESSAGES_URL.replace(/^https:\/\//, '')}
+              </code>
+              <Button variant="ghost" size="sm" onClick={() => void copyText(GATEWAY_MESSAGES_URL)}>
+                Copy
+              </Button>
+            </div>
+
+            <div className={styles.cardSection}>
+              <div className={styles.sectionLabel}>Tokens</div>
+              {activeTokens.length ? (
+                <ul className={styles.tokenList}>
+                  {activeTokens.map((t) =>
+                    renameId === t.id ? (
+                      <li key={t.id} className={styles.tokenRow}>
+                        <input
+                          className={clsx(styles.input, styles.tokenRename)}
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') void renameToken(t.id)
+                            if (e.key === 'Escape') setRenameId('')
+                          }}
+                          maxLength={80}
+                          aria-label="Token name"
+                          autoFocus
+                        />
+                        <div className={styles.tokenActions}>
+                          <Button
+                            size="sm"
+                            pending={busy === `rename-${t.id}`}
+                            disabled={!renameValue.trim()}
+                            onClick={() => void renameToken(t.id)}
+                          >
+                            Save
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setRenameId('')}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </li>
+                    ) : (
+                      <li key={t.id} className={styles.tokenRow}>
+                        <div className={styles.tokenMain}>
+                          <span className={styles.tokenLabel}>{t.label || 'Gateway token'}</span>
+                          {t.created_at ? (
+                            <span className={styles.connDate}>Created {fmtDateTime(t.created_at)}</span>
+                          ) : null}
+                          <span className={styles.connDate}>
+                            {t.last_used_at ? `Last used ${relativeAgo(t.last_used_at)}` : 'Not used yet'}
+                            {tokenRequests[t.id]
+                              ? ` · ${tokenRequests[t.id].toLocaleString('en-GB')} ${tokenRequests[t.id] === 1 ? 'request' : 'requests'} ${summaryWindowLabel}`
+                              : ''}
+                          </span>
+                        </div>
+                        {canDeleteRegistry ? (
+                          <div className={styles.tokenActions}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setRenameId(t.id)
+                                setRenameValue(t.label || '')
+                              }}
+                            >
+                              Rename
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              pending={busy === `revoke-${t.id}`}
+                              onClick={() => void revokeToken(t.id)}
+                            >
+                              Revoke
+                            </Button>
+                          </div>
+                        ) : null}
+                      </li>
+                    ),
+                  )}
+                </ul>
+              ) : (
+                <p className={styles.connHint}>No active tokens yet.</p>
+              )}
+              {!connected ? (
+                <p className={styles.connHint}>
+                  {isBedrock
+                    ? 'Link a connected AWS account before minting a token.'
+                    : 'Connect and verify the runtime key before minting a token.'}
+                </p>
+              ) : canDeleteRegistry ? (
+                <div className={styles.mintRow}>
+                  <input
+                    className={styles.input}
+                    value={tokenLabel}
+                    onChange={(e) => setTokenLabel(e.target.value)}
+                    placeholder="Name, for example Production or Staging"
+                    maxLength={80}
+                    aria-label="Gateway token name"
+                  />
+                  <Button size="sm" onClick={() => void mintToken()} pending={busy === 'mint'}>
+                    Mint token
+                  </Button>
+                </div>
+              ) : null}
+              {onceToken ? (
+                <div className={styles.once}>
+                  <div className={styles.onceLabel}>Copy now. This token will not be shown again.</div>
+                  <code className={styles.onceCode}>{onceToken}</code>
+                  <Button variant="ghost" size="sm" onClick={() => void copyText(onceToken)}>
+                    Copy token
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+
+            <div className={styles.cardSection}>
+              <div className={styles.connBlockHead}>
+                <span className={styles.sectionLabel}>Traffic</span>
+                <a href="#gateway-activity" className={styles.cardLink}>
+                  View activity
+                </a>
+              </div>
+              <div className={styles.gwTiles}>
+                <div className={styles.gwTile}>
+                  <div className={styles.connMetaLabel}>Requests</div>
+                  <div className={styles.gwValue}>
+                    <CountUp
+                      value={Number(gatewaySummary?.totals.requests) || 0}
+                      format={(n) => Math.round(n).toLocaleString('en-GB')}
+                    />
+                  </div>
+                </div>
+                <div className={styles.gwTile}>
+                  <div className={styles.connMetaLabel}>Spend</div>
+                  <div className={styles.gwValue} title={fmtUsdFull(gatewaySummary?.totals.cost_usd)}>
+                    {fmtUsdExact(gatewaySummary?.totals.cost_usd)}
+                  </div>
+                </div>
+                <div className={styles.gwTile}>
+                  <div className={styles.connMetaLabel}>DLP findings</div>
+                  <div className={styles.gwValue}>
+                    <CountUp
+                      value={(Number(gatewaySummary?.totals.flagged) || 0) + (Number(gatewaySummary?.totals.blocked) || 0)}
+                      format={(n) => Math.round(n).toLocaleString('en-GB')}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      {gatewayCapable ? (
+        <footer className={styles.cardFoot}>
+          <span>{summaryDays <= 1 ? 'Last 24 hours' : `Last ${summaryDays} days`}</span>
+          <span>Metered by RegAnchor</span>
+        </footer>
+      ) : null}
+    </section>
+  )
+
+  const gatewayActivity =
+    gatewayCapable && org?.id && id ? (
+      <section className={styles.activity} id="gateway-activity">
+        <header className={styles.activityHead}>
+          <h3 className={styles.activityTitle}>Gateway activity</h3>
+          <p className={styles.connHint}>
+            Every request through this asset&apos;s gateway tokens, with exact cost, DLP result and outcome.
+          </p>
+        </header>
+        <GatewayActivity
+          orgId={org.id}
+          assetId={id}
+          provider={provider}
+          tokenNames={tokenNames}
+          settings={gatewaySettings}
+          canViewContent={canDeleteRegistry}
+          accessToken={session?.access_token}
+          onSummary={setGatewaySummary}
+        />
+      </section>
+    ) : null
 
   return (
     <PageFrame railItems={railItems}>
@@ -1240,6 +1463,8 @@ export function RegistryDetailPage() {
               canManage={canDeleteRegistry}
               onChanged={refresh}
               onToast={pushToast}
+              gateway={gatewayCard}
+              activity={gatewayActivity}
             />
           ) : !connectorReady ? (
             <EmptyState
@@ -1442,218 +1667,10 @@ export function RegistryDetailPage() {
                   ) : null}
                 </section>
 
-                <section className={styles.connCard} id="gateway">
-                  <header className={styles.cardHead}>
-                    <span className={styles.cardTitle}>Gateway</span>
-                    {isAnthropic ? (
-                      <StatusLabel tone={activeTokens.length ? 'ok' : 'neutral'}>
-                        {activeTokens.length
-                          ? `${activeTokens.length} active ${activeTokens.length === 1 ? 'token' : 'tokens'}`
-                          : 'No tokens'}
-                      </StatusLabel>
-                    ) : null}
-                  </header>
-                  <div className={styles.cardBody}>
-                    {!isAnthropic ? (
-                      <p className={styles.connHint}>
-                        Governed Messages routing is available when this asset uses Anthropic.
-                      </p>
-                    ) : (
-                      <>
-                        <p className={styles.connHint}>
-                          Route Messages through RegAnchor with an <code className={styles.inlineCode}>ra_gw_</code>{' '}
-                          token.{' '}
-                          {gatewaySettings?.capture_content
-                            ? `Prompts and responses are captured for this organisation and kept ${gatewaySettings.content_retention_days} days.`
-                            : 'Only metadata is recorded. Prompts and responses are not stored.'}
-                        </p>
-                        <div className={styles.endpointRow}>
-                          <code className={styles.endpoint} title={GATEWAY_MESSAGES_URL}>
-                            {GATEWAY_MESSAGES_URL.replace(/^https:\/\//, '')}
-                          </code>
-                          <Button variant="ghost" size="sm" onClick={() => void copyText(GATEWAY_MESSAGES_URL)}>
-                            Copy
-                          </Button>
-                        </div>
-
-                        <div className={styles.cardSection}>
-                          <div className={styles.sectionLabel}>Tokens</div>
-                          {activeTokens.length ? (
-                            <ul className={styles.tokenList}>
-                              {activeTokens.map((t) =>
-                                renameId === t.id ? (
-                                  <li key={t.id} className={styles.tokenRow}>
-                                    <input
-                                      className={clsx(styles.input, styles.tokenRename)}
-                                      value={renameValue}
-                                      onChange={(e) => setRenameValue(e.target.value)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') void renameToken(t.id)
-                                        if (e.key === 'Escape') setRenameId('')
-                                      }}
-                                      maxLength={80}
-                                      aria-label="Token name"
-                                      autoFocus
-                                    />
-                                    <div className={styles.tokenActions}>
-                                      <Button
-                                        size="sm"
-                                        pending={busy === `rename-${t.id}`}
-                                        disabled={!renameValue.trim()}
-                                        onClick={() => void renameToken(t.id)}
-                                      >
-                                        Save
-                                      </Button>
-                                      <Button variant="ghost" size="sm" onClick={() => setRenameId('')}>
-                                        Cancel
-                                      </Button>
-                                    </div>
-                                  </li>
-                                ) : (
-                                  <li key={t.id} className={styles.tokenRow}>
-                                    <div className={styles.tokenMain}>
-                                      <span className={styles.tokenLabel}>{t.label || 'Gateway token'}</span>
-                                      {t.created_at ? (
-                                        <span className={styles.connDate}>Created {fmtDateTime(t.created_at)}</span>
-                                      ) : null}
-                                      <span className={styles.connDate}>
-                                        {t.last_used_at
-                                          ? `Last used ${relativeAgo(t.last_used_at)}`
-                                          : 'Not used yet'}
-                                        {tokenRequests[t.id]
-                                          ? ` · ${tokenRequests[t.id].toLocaleString('en-GB')} ${tokenRequests[t.id] === 1 ? 'request' : 'requests'} ${summaryWindowLabel}`
-                                          : ''}
-                                      </span>
-                                    </div>
-                                    {canDeleteRegistry ? (
-                                      <div className={styles.tokenActions}>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => {
-                                            setRenameId(t.id)
-                                            setRenameValue(t.label || '')
-                                          }}
-                                        >
-                                          Rename
-                                        </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          pending={busy === `revoke-${t.id}`}
-                                          onClick={() => void revokeToken(t.id)}
-                                        >
-                                          Revoke
-                                        </Button>
-                                      </div>
-                                    ) : null}
-                                  </li>
-                                ),
-                              )}
-                            </ul>
-                          ) : (
-                            <p className={styles.connHint}>No active tokens yet.</p>
-                          )}
-                          {!connected ? (
-                            <p className={styles.connHint}>Connect and verify the runtime key before minting a token.</p>
-                          ) : canDeleteRegistry ? (
-                            <div className={styles.mintRow}>
-                              <input
-                                className={styles.input}
-                                value={tokenLabel}
-                                onChange={(e) => setTokenLabel(e.target.value)}
-                                placeholder="Name, for example Production or Staging"
-                                maxLength={80}
-                                aria-label="Gateway token name"
-                              />
-                              <Button size="sm" onClick={() => void mintToken()} pending={busy === 'mint'}>
-                                Mint token
-                              </Button>
-                            </div>
-                          ) : null}
-                          {onceToken ? (
-                            <div className={styles.once}>
-                              <div className={styles.onceLabel}>Copy now. This token will not be shown again.</div>
-                              <code className={styles.onceCode}>{onceToken}</code>
-                              <Button variant="ghost" size="sm" onClick={() => void copyText(onceToken)}>
-                                Copy token
-                              </Button>
-                            </div>
-                          ) : null}
-                        </div>
-
-                        <div className={styles.cardSection}>
-                          <div className={styles.connBlockHead}>
-                            <span className={styles.sectionLabel}>Traffic</span>
-                            <a href="#gateway-activity" className={styles.cardLink}>
-                              View activity
-                            </a>
-                          </div>
-                          <div className={styles.gwTiles}>
-                            <div className={styles.gwTile}>
-                              <div className={styles.connMetaLabel}>Requests</div>
-                              <div className={styles.gwValue}>
-                                <CountUp
-                                  value={Number(gatewaySummary?.totals.requests) || 0}
-                                  format={(n) => Math.round(n).toLocaleString('en-GB')}
-                                />
-                              </div>
-                            </div>
-                            <div className={styles.gwTile}>
-                              <div className={styles.connMetaLabel}>Spend</div>
-                              <div
-                                className={styles.gwValue}
-                                title={fmtUsdFull(gatewaySummary?.totals.cost_usd)}
-                              >
-                                {fmtUsdExact(gatewaySummary?.totals.cost_usd)}
-                              </div>
-                            </div>
-                            <div className={styles.gwTile}>
-                              <div className={styles.connMetaLabel}>DLP findings</div>
-                              <div className={styles.gwValue}>
-                                <CountUp
-                                  value={
-                                    (Number(gatewaySummary?.totals.flagged) || 0) +
-                                    (Number(gatewaySummary?.totals.blocked) || 0)
-                                  }
-                                  format={(n) => Math.round(n).toLocaleString('en-GB')}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  {isAnthropic ? (
-                    <footer className={styles.cardFoot}>
-                      <span>{summaryDays <= 1 ? 'Last 24 hours' : `Last ${summaryDays} days`}</span>
-                      <span>Metered by RegAnchor</span>
-                    </footer>
-                  ) : null}
-                </section>
+                {gatewayCard}
               </div>
 
-              {isAnthropic && org?.id && id ? (
-                <section className={styles.activity} id="gateway-activity">
-                  <header className={styles.activityHead}>
-                    <h3 className={styles.activityTitle}>Gateway activity</h3>
-                    <p className={styles.connHint}>
-                      Every request through this asset&apos;s gateway tokens, with exact cost, DLP result and outcome.
-                    </p>
-                  </header>
-                  <GatewayActivity
-                    orgId={org.id}
-                    assetId={id}
-                    provider={provider}
-                    tokenNames={tokenNames}
-                    settings={gatewaySettings}
-                    canViewContent={canDeleteRegistry}
-                    accessToken={session?.access_token}
-                    onSummary={setGatewaySummary}
-                  />
-                </section>
-              ) : null}
+              {gatewayActivity}
             </div>
           )}
         </Section>

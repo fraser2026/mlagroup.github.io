@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { clsx } from 'clsx'
 import { Button, Notice, SelectMenu, StatusLabel } from '../ui'
@@ -41,6 +41,10 @@ type Props = {
   canManage: boolean
   onChanged: () => Promise<void> | void
   onToast: (text: string) => void
+  /** Gateway card shown beside the connection once an account is linked. */
+  gateway?: ReactNode
+  /** Gateway activity shown below the cards once an account is linked. */
+  activity?: ReactNode
 }
 
 type View = 'linked' | 'choose' | 'setup'
@@ -59,7 +63,17 @@ function plural(n: number, one: string, many: string) {
   return `${n} ${n === 1 ? one : many}`
 }
 
-export function BedrockConnection({ assetId, assetModel, assetModelLabel, conn, canManage, onChanged, onToast }: Props) {
+export function BedrockConnection({
+  assetId,
+  assetModel,
+  assetModelLabel,
+  conn,
+  canManage,
+  onChanged,
+  onToast,
+  gateway,
+  activity,
+}: Props) {
   const { org, session } = useAuth()
   const orgId = org?.id || ''
   const accessToken = session?.access_token
@@ -365,7 +379,7 @@ export function BedrockConnection({ assetId, assetModel, assetModelLabel, conn, 
           )}
         </section>
 
-        <section className={page.connCard} id="models">
+        <section className={clsx(page.connCard, styles.modelsCard)} id="models">
           <header className={page.cardHead}>
             <span className={page.cardTitle}>Claude models</span>
             {models?.models.length ? <span className={clsx(styles.count, page.kvNum)}>{models.models.length}</span> : null}
@@ -399,7 +413,10 @@ export function BedrockConnection({ assetId, assetModel, assetModelLabel, conn, 
             </footer>
           ) : null}
         </section>
+
+        {linked && current === 'linked' && gateway ? <div className={styles.gatewaySlot}>{gateway}</div> : null}
       </div>
+      {linked && current === 'linked' ? activity : null}
     </div>
   )
 }

@@ -1,18 +1,22 @@
 /**
- * RegAnchor — Governed Anthropic Messages gateway (self-contained deploy).
- * Authenticates an asset capability, resolves the Vault runtime key, routes
- * through Cloudflare AI Gateway when the organisation is enrolled, and records
- * every request (allowed, blocked or failed) in gateway_request_events.
+ * RegAnchor — Governed Anthropic Messages gateway.
+ * Authenticates an asset capability and sends the request to the asset's infrastructure:
+ * Anthropic's API with the Vault runtime key, or Amazon Bedrock's Anthropic Messages endpoint in
+ * the client's AWS account (assumed role, SigV4, or a Bedrock API key). Routes through Cloudflare
+ * AI Gateway when the organisation is enrolled, and records every request (allowed, blocked or
+ * failed) in gateway_request_events.
  * Prompt and response content are stored only for organisations that opt in,
  * in the private gateway-content bucket; Cloudflare never keeps payloads.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { AwsClient } from 'https://esm.sh/aws4fetch@1.0.20'
+import { assumeRole, AwsConnectError, type TempCredentials } from '../_shared/aws.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
     'authorization, content-type, anthropic-version, anthropic-beta, x-reganchor-gateway-token',
-  'Access-Control-Expose-Headers': 'x-reganchor-event-id, request-id',
+  'Access-Control-Expose-Headers': 'x-reganchor-event-id, request-id, x-amzn-requestid',
 }
 
 const ANTHROPIC_MESSAGES_URL = 'https://api.anthropic.com/v1/messages'
@@ -28,9 +32,41 @@ const AIG_MESSAGES_URL =
   `https://gateway.ai.cloudflare.com/v1/${AIG_ACCOUNT_ID}/${AIG_GATEWAY_ID}/anthropic/v1/messages`
 const ENVIRONMENT = Deno.env.get('GATEWAY_ENVIRONMENT') || 'production'
 
+// Claude on Bedrock: optional inference profile (eu., us., global.), then anthropic.<model>.
+const BEDROCK_MODEL_RE = /^(?:[a-z][a-z-]*\.)?anthropic\.[a-z0-9][a-z0-9.:_-]*$/i
+const AWS_REGION_RE = /^[a-z]{2}(-[a-z]+)+-\d$/
+const ROLE_SESSION_SECONDS = 3600
+const ROLE_REFRESH_MS = 5 * 60_000
+// Signature or key rejections on the AI Gateway path mean Cloudflare altered the request, not
+// that the client's credentials are wrong, so the request is retried direct under fail open.
+const BEDROCK_AUTH_ERRORS = new Set([
+  'InvalidSignatureException',
+  'IncompleteSignatureException',
+  'MissingAuthenticationTokenException',
+  'UnrecognizedClientException',
+  'SignatureDoesNotMatch',
+])
+
 type Supabase = ReturnType<typeof getServiceClient>
 
 type Route = 'ai_gateway' | 'direct' | 'direct_fallback' | 'none'
+
+type Infrastructure = 'anthropic_api' | 'aws_bedrock'
+
+type AwsAccount = {
+  id: string
+  method: 'role' | 'api_key'
+  role_arn: string | null
+  external_id: string
+  connection_ref: string
+  home_region: string
+}
+
+type Upstream = {
+  directUrl: string
+  aiGatewayUrl: string
+  headers: Headers
+}
 
 type Outcome =
   | 'success'
@@ -73,6 +109,9 @@ type EventContext = {
   assetId: string
   tokenId: string
   providerApiKeyId: string | null
+  infrastructure: Infrastructure
+  awsAccountId: string | null
+  awsRegion: string | null
   requestModel: string
   streamed: boolean
   route: Route
@@ -190,11 +229,15 @@ async function checkEnforcement(
   orgId: string,
   assetId: string,
   model: string,
+  infrastructure: Infrastructure,
+  awsRegion: string | null,
 ): Promise<Enforcement | null> {
   const { data, error } = await supabase.rpc('gateway_enforcement_check', {
     p_org_id: orgId,
     p_asset_id: assetId,
     p_model: model,
+    p_infrastructure: infrastructure,
+    p_aws_region: awsRegion,
   })
   if (error || !data || typeof data !== 'object' || typeof (data as Enforcement).allowed !== 'boolean') {
     console.error('gateway enforcement check failed', error?.message || 'no result')
@@ -226,10 +269,9 @@ function ensurePartitions(supabase: Supabase) {
   )
 }
 
-function providerHeaders(req: Request, apiKey: string): Headers {
+function messagesHeaders(req: Request): Headers {
   const headers = new Headers({
     'Content-Type': 'application/json',
-    'x-api-key': apiKey,
     'anthropic-version': req.headers.get('anthropic-version') || ANTHROPIC_VERSION,
   })
   const beta = req.headers.get('anthropic-beta')
@@ -237,8 +279,116 @@ function providerHeaders(req: Request, apiKey: string): Headers {
   return headers
 }
 
-function aiGatewayHeaders(req: Request, apiKey: string, ctx: EventContext): Headers {
-  const headers = providerHeaders(req, apiKey)
+function providerHeaders(req: Request, apiKey: string): Headers {
+  const headers = messagesHeaders(req)
+  headers.set('x-api-key', apiKey)
+  return headers
+}
+
+const roleSessions = new Map<string, Promise<{ creds: TempCredentials; expiresAt: number }>>()
+
+/** Temporary credentials for the client's RegAnchor role, reused until five minutes before expiry. */
+async function roleCredentials(account: AwsAccount): Promise<TempCredentials> {
+  const key = `${account.id}:${account.role_arn}`
+  const cached = roleSessions.get(key)
+  if (cached) {
+    try {
+      const session = await cached
+      if (session.expiresAt - Date.now() > ROLE_REFRESH_MS) return session.creds
+    } catch {
+      // assume the role again below
+    }
+  }
+  const pending = assumeRole(
+    account.role_arn || '',
+    account.external_id,
+    `reganchor-gateway-${account.connection_ref}`,
+    ROLE_SESSION_SECONDS,
+  ).then((creds) => ({ creds, expiresAt: Date.parse(creds.expiration) || Date.now() + 15 * 60_000 }))
+  roleSessions.set(key, pending)
+  pending.catch(() => {
+    if (roleSessions.get(key) === pending) roleSessions.delete(key)
+  })
+  return (await pending).creds
+}
+
+function bedrockUrls(region: string) {
+  return {
+    directUrl: `https://bedrock-runtime.${region}.amazonaws.com/anthropic/v1/messages`,
+    aiGatewayUrl:
+      `https://gateway.ai.cloudflare.com/v1/${AIG_ACCOUNT_ID}/${AIG_GATEWAY_ID}/aws-bedrock/bedrock-runtime/${region}/anthropic/v1/messages`,
+  }
+}
+
+/** Headers for Bedrock's Anthropic Messages endpoint, signed for the AWS URL (Cloudflare forwards them unchanged). */
+async function bedrockUpstream(
+  supabase: Supabase,
+  req: Request,
+  account: AwsAccount,
+  region: string,
+  body: string,
+): Promise<Upstream> {
+  const urls = bedrockUrls(region)
+  const base = messagesHeaders(req)
+  if (account.method === 'api_key') {
+    const { data, error } = await supabase.rpc('org_aws_account_read_secret', { p_account_id: account.id })
+    if (error || !data) throw new AwsConnectError('invalid_key', 'The stored Bedrock API key is missing.')
+    base.set('x-api-key', String(data))
+    return { ...urls, headers: base }
+  }
+  const creds = await roleCredentials(account)
+  const client = new AwsClient({
+    accessKeyId: creds.accessKeyId,
+    secretAccessKey: creds.secretAccessKey,
+    sessionToken: creds.sessionToken,
+    service: 'bedrock',
+    region,
+    retries: 0,
+  })
+  const signed = await client.sign(urls.directUrl, { method: 'POST', headers: base, body })
+  return { ...urls, headers: new Headers(signed.headers) }
+}
+
+function awsErrorType(upstream: Response, body: string): string | null {
+  const header = upstream.headers.get('x-amzn-errortype')?.split(':')[0]
+  if (header) return header
+  try {
+    const type = (JSON.parse(body) as { __type?: string }).__type
+    return type ? String(type).split('#').pop() || null : null
+  } catch {
+    return null
+  }
+}
+
+const ERROR_TYPE_BY_STATUS: Record<number, string> = {
+  400: 'invalid_request_error',
+  401: 'authentication_error',
+  403: 'permission_error',
+  404: 'not_found_error',
+  413: 'request_too_large',
+  429: 'rate_limit_error',
+  529: 'overloaded_error',
+}
+
+/** Bedrock errors not already in Anthropic's shape are wrapped so Anthropic SDKs read them. */
+function bedrockErrorBody(status: number, body: string, awsType: string | null): string {
+  const type = ERROR_TYPE_BY_STATUS[status] || (status >= 500 ? 'api_error' : 'invalid_request_error')
+  let message = ''
+  try {
+    const parsed = JSON.parse(body) as { type?: string; error?: { type?: string }; message?: string; Message?: string }
+    if (parsed.type === 'error' && parsed.error?.type) return body
+    message = String(parsed.message || parsed.Message || '').slice(0, 500)
+  } catch {
+    // not JSON
+  }
+  return JSON.stringify({
+    type: 'error',
+    error: { type, message: message ? `Amazon Bedrock: ${message}` : `Amazon Bedrock returned an error (${awsType || status}).` },
+  })
+}
+
+function aiGatewayHeaders(base: Headers, ctx: EventContext): Headers {
+  const headers = new Headers(base)
   headers.set('cf-aig-authorization', `Bearer ${AIG_TOKEN}`)
   headers.set('cf-aig-collect-log-payload', 'false')
   headers.set('cf-aig-metadata', JSON.stringify({
@@ -255,7 +405,7 @@ function responseHeaders(upstream: Response, eventId: string): Headers {
   const headers = new Headers(corsHeaders)
   headers.set('Content-Type', upstream.headers.get('content-type') || 'application/json')
   headers.set('x-reganchor-event-id', eventId)
-  for (const name of ['request-id', 'x-request-id', 'retry-after', 'cache-control']) {
+  for (const name of ['request-id', 'x-request-id', 'x-amzn-requestid', 'retry-after', 'cache-control']) {
     const value = upstream.headers.get(name)
     if (value) headers.set(name, value)
   }
@@ -386,11 +536,11 @@ function parseDlp(upstream: Response): DlpHeader | null {
 }
 
 /**
- * Errors raised by AI Gateway itself (not by Anthropic) come without an
- * Anthropic request-id and use Cloudflare's error envelope.
+ * Errors raised by AI Gateway itself (not by the provider) come without a
+ * provider request ID and use Cloudflare's error envelope.
  */
 function aiGatewayErrorCode(upstream: Response, body: string): number | null {
-  if (upstream.headers.get('request-id')) return null
+  if (upstream.headers.get('request-id') || upstream.headers.get('x-amzn-requestid')) return null
   try {
     const parsed = JSON.parse(body) as { error?: Array<{ code?: number }> | { code?: number } }
     const errors = Array.isArray(parsed.error) ? parsed.error : parsed.error ? [parsed.error] : []
@@ -474,6 +624,9 @@ async function recordEvent(supabase: Supabase, ctx: EventContext, result: EventR
     asset_id: ctx.assetId,
     token_id: ctx.tokenId,
     provider: 'anthropic',
+    infrastructure: ctx.infrastructure,
+    org_aws_account_id: ctx.awsAccountId,
+    aws_region: ctx.awsRegion,
     endpoint: 'messages',
     environment: ENVIRONMENT,
     route: ctx.route,
@@ -671,28 +824,72 @@ Deno.serve(async (req) => {
       .eq('id', tokenRow.asset_id)
       .eq('org_id', tokenRow.org_id)
       .maybeSingle()
-    if (!asset || asset.deleted_at || asset.provider_slug !== 'anthropic') {
+    if (!asset || asset.deleted_at || (asset.provider_slug !== 'anthropic' && asset.provider_slug !== 'bedrock')) {
       return anthropicError('permission_error', 'Gateway asset is unavailable', 403)
     }
+    const onBedrock = asset.provider_slug === 'bedrock'
 
-    const { data: connection } = await supabase
-      .from('provider_connections')
-      .select('id,credential_secret_id,status,runtime_api_key_id')
-      .eq('asset_id', asset.id)
-      .eq('provider_slug', 'anthropic')
-      .eq('status', 'connected')
-      .maybeSingle()
-    if (!connection?.credential_secret_id) {
-      return anthropicError('permission_error', 'Anthropic runtime connection is unavailable', 403)
+    let apiKey: string | null = null
+    let providerApiKeyId: string | null = null
+    let awsAccount: AwsAccount | null = null
+    let awsRegion: string | null = null
+
+    if (onBedrock) {
+      if (!BEDROCK_MODEL_RE.test(model)) {
+        return anthropicError(
+          'invalid_request_error',
+          'This agent runs on Amazon Bedrock. Use a Bedrock model ID for Claude, for example ' +
+            'eu.anthropic.claude-haiku-4-5-20251001-v1:0.',
+          400,
+        )
+      }
+      const { data: connection } = await supabase
+        .from('provider_connections')
+        .select('id,status,org_aws_account_id,metadata')
+        .eq('asset_id', asset.id)
+        .eq('provider_slug', 'bedrock')
+        .in('status', ['connected', 'error'])
+        .maybeSingle()
+      const { data: account } = connection?.org_aws_account_id
+        ? await supabase
+          .from('org_aws_accounts')
+          .select('id,method,role_arn,external_id,connection_ref,home_region')
+          .eq('id', connection.org_aws_account_id)
+          .eq('org_id', asset.org_id)
+          .in('status', ['connected', 'error'])
+          .maybeSingle()
+        : { data: null }
+      const region = String((connection?.metadata as { aws?: { region?: string } } | null)?.aws?.region ||
+        account?.home_region || '')
+      const usable = account && (account.method === 'api_key' || (account.method === 'role' && account.role_arn))
+      if (!usable || !AWS_REGION_RE.test(region)) {
+        return anthropicError('permission_error', 'The Amazon Bedrock connection for this agent is unavailable.', 403)
+      }
+      awsAccount = account as AwsAccount
+      awsRegion = region
+    } else {
+      const { data: connection } = await supabase
+        .from('provider_connections')
+        .select('id,credential_secret_id,status,runtime_api_key_id')
+        .eq('asset_id', asset.id)
+        .eq('provider_slug', 'anthropic')
+        .eq('status', 'connected')
+        .maybeSingle()
+      if (!connection?.credential_secret_id) {
+        return anthropicError('permission_error', 'Anthropic runtime connection is unavailable', 403)
+      }
+      apiKey = await readApiSecret(supabase, connection.id)
+      if (!apiKey) {
+        return anthropicError('permission_error', 'Anthropic runtime connection is unavailable', 403)
+      }
+      providerApiKeyId = connection.runtime_api_key_id || null
     }
-    const [apiKey, settings, enforcement] = await Promise.all([
-      readApiSecret(supabase, connection.id),
+
+    const infrastructure: Infrastructure = onBedrock ? 'aws_bedrock' : 'anthropic_api'
+    const [settings, enforcement] = await Promise.all([
       loadSettings(supabase, asset.org_id),
-      checkEnforcement(supabase, asset.org_id, asset.id, model),
+      checkEnforcement(supabase, asset.org_id, asset.id, model, infrastructure, awsRegion),
     ])
-    if (!apiKey) {
-      return anthropicError('permission_error', 'Anthropic runtime connection is unavailable', 403)
-    }
 
     const useAiGateway = settings.route_via_ai_gateway && AIG_TOKEN.length > 0
     if (settings.route_via_ai_gateway && !useAiGateway) {
@@ -704,7 +901,10 @@ Deno.serve(async (req) => {
       orgId: asset.org_id,
       assetId: asset.id,
       tokenId: tokenRow.id,
-      providerApiKeyId: connection.runtime_api_key_id || null,
+      providerApiKeyId,
+      infrastructure,
+      awsAccountId: awsAccount?.id || null,
+      awsRegion,
       requestModel: model,
       streamed: body.stream === true,
       route: useAiGateway ? 'ai_gateway' : 'direct',
@@ -741,12 +941,40 @@ Deno.serve(async (req) => {
       return anthropicError('permission_error', enforcementMessage(enforcement, model), 403, ctx.id)
     }
 
+    let target: Upstream
+    if (awsAccount && awsRegion) {
+      try {
+        target = await bedrockUpstream(supabase, req, awsAccount, awsRegion, rawBody)
+      } catch (error) {
+        const code = error instanceof AwsConnectError ? error.code : 'aws_error'
+        const ours = code === 'not_configured' || code === 'broker_rejected'
+        ctx.route = 'none'
+        ctx.latencyMs = Math.round(performance.now() - ctx.startedAt)
+        await record({
+          outcome: ours ? 'gateway_error' : 'provider_error',
+          httpStatus: ours ? 503 : code === 'timeout' ? 504 : 403,
+          errorType: code,
+          usage: emptyUsage(model),
+        })
+        if (ours) return anthropicError('api_error', 'RegAnchor could not sign in to AWS. Try again shortly.', 503, ctx.id)
+        if (code === 'timeout') return anthropicError('api_error', 'AWS did not respond in time. Try again shortly.', 504, ctx.id)
+        return anthropicError(
+          'permission_error',
+          'RegAnchor could not use the AWS access for this agent. An owner or admin can check the AWS account in RegAnchor.',
+          403,
+          ctx.id,
+        )
+      }
+    } else {
+      target = { directUrl: ANTHROPIC_MESSAGES_URL, aiGatewayUrl: AIG_MESSAGES_URL, headers: providerHeaders(req, apiKey || '') }
+    }
+
     let upstream: Response | null = null
     if (useAiGateway) {
       try {
-        upstream = await fetch(AIG_MESSAGES_URL, {
+        upstream = await fetch(target.aiGatewayUrl, {
           method: 'POST',
-          headers: aiGatewayHeaders(req, apiKey, ctx),
+          headers: aiGatewayHeaders(target.headers, ctx),
           body: rawBody,
         })
       } catch (error) {
@@ -757,7 +985,11 @@ Deno.serve(async (req) => {
       if (upstream && !upstream.ok) {
         const errorBody = await upstream.clone().text()
         const code = aiGatewayErrorCode(upstream, errorBody)
-        if (code !== null) {
+        const awsType = onBedrock ? awsErrorType(upstream, errorBody) : null
+        if (code === null && awsType && BEDROCK_AUTH_ERRORS.has(awsType) && (upstream.status === 401 || upstream.status === 403)) {
+          console.error('ai gateway bedrock request rejected by AWS', upstream.status, awsType)
+          upstream = null
+        } else if (code !== null) {
           ctx.latencyMs = Math.round(performance.now() - ctx.startedAt)
           const dlp = parseDlp(upstream)
           const aigLogId = upstream.headers.get('cf-aig-log-id')
@@ -813,9 +1045,9 @@ Deno.serve(async (req) => {
     }
 
     if (!upstream) {
-      upstream = await fetch(ANTHROPIC_MESSAGES_URL, {
+      upstream = await fetch(target.directUrl, {
         method: 'POST',
-        headers: providerHeaders(req, apiKey),
+        headers: target.headers,
         body: rawBody,
       })
     }
@@ -824,14 +1056,21 @@ Deno.serve(async (req) => {
     const headers = responseHeaders(upstream, ctx.id)
     const dlp = parseDlp(upstream)
     const aigLogId = upstream.headers.get('cf-aig-log-id')
-    const providerRequestId = upstream.headers.get('request-id')
+    const providerRequestId = upstream.headers.get('request-id') || upstream.headers.get('x-amzn-requestid')
 
     if (!upstream.ok || !upstream.body) {
-      const errorBody = await upstream.text()
+      let errorBody = await upstream.text()
+      let errorType = anthropicErrorType(errorBody)
+      if (onBedrock) {
+        const awsType = awsErrorType(upstream, errorBody)
+        errorType = errorType || awsType
+        errorBody = bedrockErrorBody(upstream.status, errorBody, awsType)
+        headers.set('Content-Type', 'application/json')
+      }
       await record({
         outcome: upstream.status === 429 ? 'rate_limited' : 'provider_error',
         httpStatus: upstream.status,
-        errorType: anthropicErrorType(errorBody),
+        errorType,
         usage: emptyUsage(model),
         providerRequestId,
         aigLogId,
