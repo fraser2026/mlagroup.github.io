@@ -34,6 +34,16 @@ export type BedrockModel = {
   profiles: string[]
 }
 
+/** Result of the one-token test call RegAnchor makes when an account or region is connected or checked. */
+export type ModelAccess = {
+  status: 'ready' | 'use_case_form' | 'marketplace' | 'not_permitted' | 'unknown'
+  model: string | null
+  message: string | null
+  checked_at: string
+}
+
+export type RegionModels = { models: BedrockModel[]; checked_at: string; access?: ModelAccess }
+
 /** An AWS account connected once for the organisation and shared by its Bedrock assets. */
 export type AwsAccount = {
   id: string
@@ -46,7 +56,7 @@ export type AwsAccount = {
   connection_ref: string
   role_arn: string | null
   template_version: string | null
-  models: Record<string, { models: BedrockModel[]; checked_at: string }> | null
+  models: Record<string, RegionModels> | null
   created_by?: string | null
   connected_at: string | null
   last_verified_at: string | null
@@ -106,6 +116,42 @@ export function accountAccess(a: Pick<AwsAccount, 'method'>): string {
 
 export function regionModels(a: AwsAccount | null | undefined, region: string | null | undefined) {
   return (a && region && a.models?.[region]) || null
+}
+
+export type AccessStep = { title: string; body: string; link?: { href: string; label: string } }
+
+function bedrockConsole(region: string, page: 'model-catalog' | 'chat-playground'): string {
+  return `https://${region}.console.aws.amazon.com/bedrock/home?region=${region}#/${page}`
+}
+
+/** What someone with AWS console access must do before Claude calls succeed in the region. Null when ready or not yet tested. */
+export function accessStep(access: ModelAccess | undefined, region: string): AccessStep | null {
+  if (!access || access.status === 'ready') return null
+  const where = regionName(region)
+  if (access.status === 'use_case_form') {
+    return {
+      title: `Claude is not enabled on this AWS account in ${where}`,
+      body: "Anthropic asks each AWS account for use case details once. In Amazon Bedrock, open any Claude model in the model catalog and submit the form. Approval is usually instant. Then check the connection again.",
+      link: { href: bedrockConsole(region, 'model-catalog'), label: 'Open the Bedrock model catalog' },
+    }
+  }
+  if (access.status === 'marketplace') {
+    return {
+      title: `AWS has not finished enabling Claude in ${where}`,
+      body: 'The first Claude call on an account creates an AWS Marketplace subscription, which the RegAnchor role is not allowed to do. An AWS administrator needs to send one message to a Claude model in the Bedrock playground. Then check the connection again.',
+      link: { href: bedrockConsole(region, 'chat-playground'), label: 'Open the Bedrock playground' },
+    }
+  }
+  if (access.status === 'not_permitted') {
+    return {
+      title: `The RegAnchor role cannot call Claude in ${where}`,
+      body: `AWS refused a test call to ${access.model || 'Claude'}. Check the stack was created from the RegAnchor template unchanged and that no organisation policy blocks Amazon Bedrock.${access.message ? ` AWS said: ${access.message}` : ''}`,
+    }
+  }
+  return {
+    title: `RegAnchor could not confirm Claude works in ${where}`,
+    body: `${access.message || 'The test call did not complete.'} Check the connection again in a few minutes.`,
+  }
 }
 
 const ROLE_ARN_RE = /^arn:(aws|aws-cn|aws-us-gov):iam::(\d{12}):role\/(?:[\w+=,.@-]+\/)*(RegAnchorBedrock-([a-z0-9]{8}))$/

@@ -266,6 +266,85 @@ export async function listClaudeModels(caller: Caller, region: string): Promise<
   return usable.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 60)
 }
 
+export type AccessStatus = 'ready' | 'use_case_form' | 'marketplace' | 'not_permitted' | 'unknown'
+export type AccessCheck = { status: AccessStatus; model: string | null; message: string | null; checked_at: string }
+
+function geoProfile(region: string): string {
+  if (region.startsWith('eu-')) return 'eu'
+  if (region.startsWith('us-')) return 'us'
+  if (region.startsWith('ap-')) return 'apac'
+  if (region.startsWith('ca-')) return 'ca'
+  return ''
+}
+
+function tierRank(m: ClaudeModel): number {
+  const name = `${m.name} ${m.id}`.toLowerCase()
+  return name.includes('haiku') ? 0 : name.includes('sonnet') ? 1 : 2
+}
+
+/** Cheapest callable model ID for the region: Haiku first, newest first, in-region before geographic before global. */
+export function accessTestModel(models: ClaudeModel[], region: string): string | null {
+  const geo = geoProfile(region)
+  const ranked = [...models].sort((a, b) => tierRank(a) - tierRank(b) || b.id.localeCompare(a.id))
+  for (const m of ranked) {
+    if (m.in_region) return `${m.id}:0`
+    if (geo && m.profiles.includes(geo)) return `${geo}.${m.id}:0`
+    if (m.profiles.includes('global')) return `global.${m.id}:0`
+  }
+  return null
+}
+
+/**
+ * Sends a one-token Claude request so onboarding blockers (Anthropic's use case form, the AWS
+ * Marketplace subscription created by the first call) show up at connect time, not on the first real call.
+ */
+export async function checkModelAccess(caller: Caller, region: string, models: ClaudeModel[]): Promise<AccessCheck> {
+  const checked_at = new Date().toISOString()
+  const model = accessTestModel(models, region)
+  if (!model) return { status: 'unknown', model: null, message: 'No Claude model to test in this region.', checked_at }
+
+  const url = `https://bedrock-runtime.${region}.amazonaws.com/model/${model}/converse`
+  const init: RequestInit = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: [{ role: 'user', content: [{ text: 'Reply with OK.' }] }], inferenceConfig: { maxTokens: 1 } }),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  }
+  let res: Response
+  try {
+    if ('creds' in caller) {
+      const client = new AwsClient({
+        accessKeyId: caller.creds.accessKeyId,
+        secretAccessKey: caller.creds.secretAccessKey,
+        sessionToken: caller.creds.sessionToken,
+        service: 'bedrock',
+        region,
+        retries: 0,
+      })
+      res = await timed(client.fetch(url, init))
+    } else {
+      res = await timed(fetch(url, { ...init, headers: { ...init.headers, Authorization: `Bearer ${caller.apiKey}` } }))
+    }
+  } catch (err) {
+    return { status: 'unknown', model, message: err instanceof Error ? err.message : 'Could not reach AWS.', checked_at }
+  }
+
+  const text = await res.text()
+  if (res.ok || res.status === 429) return { status: 'ready', model, message: null, checked_at }
+
+  let message = ''
+  try {
+    const body = JSON.parse(text) as { message?: string; Message?: string }
+    message = String(body.message || body.Message || '')
+  } catch { /* not JSON */ }
+  message = message.slice(0, 400)
+  const lower = message.toLowerCase()
+  if (lower.includes('use case')) return { status: 'use_case_form', model, message, checked_at }
+  if (lower.includes('marketplace')) return { status: 'marketplace', model, message, checked_at }
+  if (res.status === 403) return { status: 'not_permitted', model, message, checked_at }
+  return { status: 'unknown', model, message: message || `Amazon Bedrock returned ${res.status}.`, checked_at }
+}
+
 export function quickCreateUrl(p: {
   region: string
   templateUrl: string

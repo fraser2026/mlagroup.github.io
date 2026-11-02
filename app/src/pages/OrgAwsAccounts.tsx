@@ -5,6 +5,7 @@ import { Button, EmptyState, Notice, StatusLabel } from '../ui'
 import { BrandIcon } from '../icons/BrandIcon'
 import { invokeEdge } from '../lib/edge'
 import {
+  accessStep,
   accountAccess,
   accountTitle,
   fmtAccountId,
@@ -14,6 +15,7 @@ import {
   regionName,
   type AwsAccount,
 } from '../lib/aws'
+import { AwsAccessNotice } from './AwsAccessNotice'
 import { AwsAccountSetup } from './AwsAccountSetup'
 import page from './RegistryDetailPage.module.css'
 import styles from './OrgAwsAccounts.module.css'
@@ -27,6 +29,11 @@ type Props = {
 
 function plural(n: number, one: string, many: string) {
   return `${n} ${n === 1 ? one : many}`
+}
+
+/** Regions where the last test call found a step to take in AWS. */
+function blockedRegions(a: AwsAccount) {
+  return Object.entries(a.models || {}).filter(([region, entry]) => accessStep(entry.access, region))
 }
 
 /** Organisation page: AWS accounts connected once and shared by Amazon Bedrock assets. */
@@ -77,8 +84,10 @@ export function OrgAwsAccounts({ orgId, userId, canManage, accessToken }: Props)
 
   const check = (a: AwsAccount) =>
     run(`check:${a.id}`, a.id, async () => {
-      await call({ action: 'check', account: a.id })
-      return `${accountTitle(a)} checked. RegAnchor can reach Amazon Bedrock with it.`
+      const res = await call<{ account: AwsAccount }>({ action: 'check', account: a.id })
+      return blockedRegions(res.account).length
+        ? `${accountTitle(a)} checked. RegAnchor can reach Amazon Bedrock, but Claude needs one more step in AWS.`
+        : `${accountTitle(a)} checked. RegAnchor can reach Amazon Bedrock and call Claude with it.`
     })
 
   const saveName = (a: AwsAccount) =>
@@ -112,6 +121,7 @@ export function OrgAwsAccounts({ orgId, userId, canManage, accessToken }: Props)
           {usable.map((a) => {
             const n = usage[a.id] || 0
             const isRenaming = renaming?.id === a.id
+            const blocked = blockedRegions(a)
             return (
               <li key={a.id} className={styles.item}>
                 <div className={styles.row}>
@@ -153,8 +163,8 @@ export function OrgAwsAccounts({ orgId, userId, canManage, accessToken }: Props)
                     </div>
                   </div>
                   <span className={styles.usage}>{n ? plural(n, 'asset', 'assets') : 'Not used yet'}</span>
-                  <StatusLabel tone={a.status === 'error' ? 'risk' : 'ok'}>
-                    {a.status === 'error' ? 'Needs attention' : 'Connected'}
+                  <StatusLabel tone={a.status === 'error' ? 'risk' : blocked.length ? 'warn' : 'ok'}>
+                    {a.status === 'error' ? 'Needs attention' : blocked.length ? 'Action needed in AWS' : 'Connected'}
                   </StatusLabel>
                   {canManage && !isRenaming ? (
                     <div className={styles.actions}>
@@ -172,6 +182,9 @@ export function OrgAwsAccounts({ orgId, userId, canManage, accessToken }: Props)
                 </div>
 
                 {a.last_error ? <Notice tone="risk">{a.last_error}</Notice> : null}
+                {a.status !== 'error'
+                  ? blocked.map(([region, entry]) => <AwsAccessNotice key={region} access={entry.access} region={region} />)
+                  : null}
                 {error?.id === a.id ? <Notice tone="risk">{error.text}</Notice> : null}
 
                 {confirming === a.id ? (

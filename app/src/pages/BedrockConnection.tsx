@@ -7,6 +7,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { invokeEdge } from '../lib/edge'
 import { connectionLabel, labelProvider } from '../lib/registry'
 import {
+  accessStep,
   accountAccess,
   accountTitle,
   fmtAccountId,
@@ -19,6 +20,7 @@ import {
   regionName,
   type AwsAccount,
 } from '../lib/aws'
+import { AwsAccessNotice } from './AwsAccessNotice'
 import { AwsAccountSetup } from './AwsAccountSetup'
 import page from './RegistryDetailPage.module.css'
 import styles from './BedrockConnection.module.css'
@@ -61,6 +63,23 @@ function fmtDateTime(iso: string) {
 
 function plural(n: number, one: string, many: string) {
   return `${n} ${n === 1 ? one : many}`
+}
+
+function checkedToast(account: AwsAccount, region: string | null, lead: string) {
+  const entry = regionModels(account, region)
+  const n = entry?.models.length || 0
+  if (region && accessStep(entry?.access, region)) {
+    return `${lead} ${plural(n, 'Claude model', 'Claude models')} listed, but Claude needs one more step in AWS.`
+  }
+  return `${lead} ${plural(n, 'Claude model', 'Claude models')} available.`
+}
+
+const ACCESS_LABEL: Record<string, string> = {
+  ready: 'Test call succeeded',
+  use_case_form: 'Use case form needed',
+  marketplace: 'First call needed in AWS',
+  not_permitted: 'Role cannot call Claude',
+  unknown: 'Could not confirm',
 }
 
 export function BedrockConnection({
@@ -159,8 +178,7 @@ export function BedrockConnection({
       if (!linked) return
       const res = await call<{ account: AwsAccount }>({ action: 'check', account: linked.id, region: linkedRegion })
       await Promise.all([loadAccounts(), onChanged()])
-      const n = regionModels(res.account, linkedRegion)?.models.length || 0
-      onToast(`Connection checked. ${plural(n, 'Claude model', 'Claude models')} available.`)
+      onToast(checkedToast(res.account, linkedRegion, 'Connection checked.'))
     })
 
   const remove = () =>
@@ -175,8 +193,7 @@ export function BedrockConnection({
   async function connected(account: AwsAccount) {
     await Promise.all([loadAccounts(), onChanged()])
     setView(null)
-    const n = regionModels(account, account.home_region)?.models.length || 0
-    onToast(`${accountTitle(account)} connected. ${plural(n, 'Claude model', 'Claude models')} available.`)
+    onToast(checkedToast(account, account.home_region, `${accountTitle(account)} connected.`))
   }
 
   const statusTone = linked ? (conn?.status === 'error' || linked.status === 'error' ? 'risk' : 'ok') : 'warn'
@@ -242,9 +259,12 @@ export function BedrockConnection({
                       ? fmtDateTime(models?.checked_at || linked.last_verified_at || '')
                       : 'Not yet'}
                   </dd>
+                  <dt>Claude</dt>
+                  <dd>{models?.access ? ACCESS_LABEL[models.access.status] : 'Not tested yet'}</dd>
                 </dl>
 
                 {linked.last_error ? <Notice tone="risk">{linked.last_error}</Notice> : null}
+                {linkedRegion ? <AwsAccessNotice access={models?.access} region={linkedRegion} /> : null}
                 {error ? <Notice tone="risk">{error}</Notice> : null}
 
                 {canManage ? (

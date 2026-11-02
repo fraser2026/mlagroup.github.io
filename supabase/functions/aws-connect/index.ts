@@ -21,10 +21,12 @@ import {
   writeAudit,
 } from '../_shared/provider-connection.ts'
 import {
+  type AccessCheck,
   assumeRole,
   AwsConnectError,
   BEDROCK_REGIONS,
   type Caller,
+  checkModelAccess,
   type ClaudeModel,
   listClaudeModels,
   parseRoleArn,
@@ -36,7 +38,8 @@ import {
 const PROVIDER = 'bedrock'
 const MAX_CHECK_REGIONS = 5
 
-type ModelsByRegion = Record<string, { models: ClaudeModel[]; checked_at: string }>
+type RegionModels = { models: ClaudeModel[]; checked_at: string; access?: AccessCheck }
+type ModelsByRegion = Record<string, RegionModels>
 
 type Account = {
   id: string
@@ -153,8 +156,15 @@ async function saveAccount(supabase: SupabaseClient, id: string, patch: Record<s
   return data as Account
 }
 
-function withModels(a: Account, region: string, models: ClaudeModel[], at: string): ModelsByRegion {
-  return { ...(a.models || {}), [region]: { models, checked_at: at } }
+/** Lists Claude models in the region, then makes a one-token test call. A failed test call is reported, not thrown. */
+async function checkRegion(caller: Caller, region: string, at: string): Promise<RegionModels> {
+  const models = await listClaudeModels(caller, region)
+  const access = await checkModelAccess(caller, region, models)
+  return { models, checked_at: at, access }
+}
+
+function withRegion(a: Account, region: string, entry: RegionModels): ModelsByRegion {
+  return { ...(a.models || {}), [region]: entry }
 }
 
 async function callerFor(supabase: SupabaseClient, a: Account, purpose: string): Promise<Caller> {
@@ -359,8 +369,8 @@ Deno.serve(async (req) => {
 
       try {
         const creds = await assumeRole(arn, account.external_id, `reganchor-verify-${account.connection_ref}`)
-        const models = await listClaudeModels({ creds }, account.home_region)
         const now = new Date().toISOString()
+        const entry = await checkRegion({ creds }, account.home_region, now)
         const saved = await saveAccount(supabase, account.id, {
           status: 'connected',
           method: 'role',
@@ -372,11 +382,15 @@ Deno.serve(async (req) => {
           connected_at: account.connected_at || now,
           last_verified_at: now,
           last_error: null,
-          models: withModels(account, account.home_region, models, now),
+          models: withRegion(account, account.home_region, entry),
         })
         await syncLinkedAssets(supabase, saved.id, { status: 'connected', last_verified_at: now, last_error: null })
         await ensureRegionPrices(supabase, saved.home_region)
-        await accountAudit('aws_account_connected', saved, { region: saved.home_region, models: models.length })
+        await accountAudit('aws_account_connected', saved, {
+          region: saved.home_region,
+          models: entry.models.length,
+          model_access: entry.access?.status,
+        })
         if (asset) {
           await linkAsset(supabase, asset, saved, saved.home_region, user.id)
           await assetAudit(asset, 'aws_linked', linkedChanges(saved, saved.home_region))
@@ -401,15 +415,15 @@ Deno.serve(async (req) => {
       const apiKey = String(body.api_key || '').trim()
       if (apiKey.length < 20 || apiKey.length > 4096 || /\s/.test(apiKey)) fail(400, 'Paste the full Bedrock API key.')
 
-      let models: ClaudeModel[]
+      const now = new Date().toISOString()
+      let entry: RegionModels
       try {
-        models = await listClaudeModels({ apiKey }, region)
+        entry = await checkRegion({ apiKey }, region, now)
       } catch (err) {
         if (!(err instanceof AwsConnectError)) throw err
         fail(400, err.message, err.code)
       }
 
-      const now = new Date().toISOString()
       const { data, error } = await supabase
         .from('org_aws_accounts')
         .insert({
@@ -420,7 +434,7 @@ Deno.serve(async (req) => {
           home_region: region,
           external_id: `ra-${randomHex(20)}`,
           connection_ref: randomRef(),
-          models: { [region]: { models, checked_at: now } },
+          models: { [region]: entry },
           connected_by: user.id,
           created_by: user.id,
           connected_at: now,
@@ -441,7 +455,11 @@ Deno.serve(async (req) => {
       }
 
       await ensureRegionPrices(supabase, region)
-      await accountAudit('aws_account_connected', saved, { region, models: models.length })
+      await accountAudit('aws_account_connected', saved, {
+        region,
+        models: entry.models.length,
+        model_access: entry.access?.status,
+      })
       if (asset) {
         await linkAsset(supabase, asset, saved, region, user.id)
         await assetAudit(asset, 'aws_linked', linkedChanges(saved, region))
@@ -465,10 +483,12 @@ Deno.serve(async (req) => {
         const now = new Date().toISOString()
         let models = account.models || {}
         let total = 0
+        const access: Record<string, string | undefined> = {}
         for (const region of regions) {
-          const list = await listClaudeModels(caller, region)
-          models = { ...models, [region]: { models: list, checked_at: now } }
-          total = Math.max(total, list.length)
+          const entry = await checkRegion(caller, region, now)
+          models = { ...models, [region]: entry }
+          total = Math.max(total, entry.models.length)
+          access[region] = entry.access?.status
         }
         const saved = await saveAccount(supabase, account.id, {
           status: 'connected',
@@ -477,7 +497,7 @@ Deno.serve(async (req) => {
           models,
         })
         await syncLinkedAssets(supabase, saved.id, { status: 'connected', last_verified_at: now, last_error: null })
-        await accountAudit('aws_account_checked', saved, { verification_ok: true, regions, models: total })
+        await accountAudit('aws_account_checked', saved, { verification_ok: true, regions, models: total, model_access: access })
         if (asset) await assetAudit(asset, 'aws_verified', { verification_ok: true, method: saved.method, region: regions[0], models: total })
         return json({ ok: true, account: publicAccount(saved) })
       } catch (err) {
@@ -539,10 +559,8 @@ Deno.serve(async (req) => {
       if (!account.models?.[region]) {
         try {
           const caller = await callerFor(supabase, account, 'link')
-          const list = await listClaudeModels(caller, region)
-          current = await saveAccount(supabase, account.id, {
-            models: withModels(account, region, list, new Date().toISOString()),
-          })
+          const entry = await checkRegion(caller, region, new Date().toISOString())
+          current = await saveAccount(supabase, account.id, { models: withRegion(account, region, entry) })
         } catch (err) {
           if (!(err instanceof AwsConnectError)) throw err
           fail(400, err.message, err.code)

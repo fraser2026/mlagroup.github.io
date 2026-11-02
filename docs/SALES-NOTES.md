@@ -10,6 +10,8 @@ Rules for entries:
 
 ## 2 Nov 2026
 
+- **Know Claude on Bedrock works before your agents call it.** When you connect or check an AWS account, RegAnchor makes a one-token test call to Claude in each region in use. If AWS still needs Anthropic's use case form or a first call by an AWS admin, the account shows that step with a link to the right page in the AWS console.
+  - Limits: Anthropic Claude models only. AWS bills each test call at a fraction of a cent.
 - **Monitor and budget Claude on Amazon Bedrock through the RegAnchor gateway.** Agents running Claude on Bedrock in your own AWS account send requests through RegAnchor, and every request is recorded and priced at AWS's rate for that region, with the AWS account, region and route shown. Bedrock spend counts towards the same monthly budgets and hard limits as Anthropic spend, and your data protection policies check prompts and responses the same way.
   - Limits: Anthropic Claude models only. Prices are AWS list prices, not yet reconciled against your AWS bill. Data protection applies once the organisation is routed through Cloudflare AI Gateway. The AWS account needs Anthropic's use case form and one first call to the model by an AWS admin before the gateway can use it.
 - **Connect your AWS accounts for Claude on Amazon Bedrock.** Connect each AWS account once through a guided CloudFormation setup that creates a narrowly scoped role, then choose which account and region each Bedrock asset uses. RegAnchor shows the Claude models each account can use in that region.
