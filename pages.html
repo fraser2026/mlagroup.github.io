@@ -899,6 +899,11 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 #ph .ph-d{font-size:var(--fs-32);line-height:1.15}
 #ph .ph-d .ph-t{align-self:start;text-wrap:wrap;min-height:2.3em} /* reserve two title lines (2 x 1.15) so grey text starts at one offset */
 #ph .ph-d .ph-s{margin-top:0;align-self:start}}
+
+/* closing CTA: bottom space was held for the removed light; buttons now sit a balanced distance above the footer */
+#cl div.cl-wrap{padding-bottom:0}
+@media (min-width:821px){#ph div.ph-wrap{padding-bottom:148px}}
+@media (max-width:820px){#ph div.ph-wrap{padding-bottom:58px}}
 </style>
 <section class="ph" id="ph" data-nav-dark aria-label="Our philosophy">
   <div class="ph-bg" aria-hidden="true"><div class="ph-stick"></div></div>
