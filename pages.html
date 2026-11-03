@@ -870,7 +870,14 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 #ph .ph-d{font-size:var(--fs-36);line-height:1.15;max-width:none}
 #ph .ph-d .ph-t{text-wrap:balance}
 #ph .ph-d .ph-s{margin-top:24px;font-family:var(--font-body);font-size:var(--fs-20);line-height:1.55;letter-spacing:-.008em;max-width:560px;text-wrap:pretty;color:var(--ph-g2)}
-#ph{--ph-g2:rgba(247,246,244,.6)}}
+#ph{--ph-g2:rgba(247,246,244,.6)}
+/* 2x2 alignment: each card is a 2-row subgrid, so titles in a row share one height and grey text starts level */
+#ph .ph-grid2{grid-template-rows:repeat(2,auto auto)}
+#ph .ph-grid2>.ph-ch{display:grid;grid-template-columns:1fr;grid-row:span 2;grid-template-rows:subgrid;row-gap:24px;align-content:start}
+#ph .ph-grid2>.ph-ch>.ph-d{display:contents}
+#ph .ph-d{font-size:var(--fs-32);line-height:1.15}
+#ph .ph-d .ph-t{align-self:start;text-wrap:wrap}
+#ph .ph-d .ph-s{margin-top:0;align-self:start}}
 </style>
 <section class="ph" id="ph" data-nav-dark aria-label="Our philosophy">
   <div class="ph-bg" aria-hidden="true"><div class="ph-stick"></div></div>
@@ -882,7 +889,7 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
     </article>
     <article class="ph-ch">
       <h2 class="ph-st ph-m"><span class="ph-t si">Accountable from day&nbsp;one</span><span class="ph-s si">Discovery, risk, controls, evidence and monitoring in one connected system, from first use case to production.</span></h2>
-      <h2 class="ph-st ph-d"><span class="ph-t si">From first use case to production, with accountability built&nbsp;in</span><span class="ph-s si">Discovery, risk assessment, controls, policy, evidence, monitoring and reporting in one connected system. Know what you run, understand the risk it carries, and keep the evidence behind each decision ready for the people who will ask.</span></h2>
+      <h2 class="ph-st ph-d"><span class="ph-t si">Accountable from first use case to production</span><span class="ph-s si">Discovery, risk assessment, controls, policy, evidence, monitoring and reporting in one connected system. Know what you run, understand the risk it carries, and keep the evidence behind each decision ready for the people who will ask.</span></h2>
     </article>
     <article class="ph-ch">
       <h2 class="ph-st ph-m"><span class="ph-t si">Governance that runs with your&nbsp;AI</span><span class="ph-s si">The record builds as the work happens and policy is enforced while AI runs, so nothing is left for audit week.</span></h2>
