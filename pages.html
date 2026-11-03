@@ -249,10 +249,12 @@ button.btn{font-family:inherit;cursor:pointer}
    and it is the last thing in the page, so the bottom of the g is the bottom edge of the page */
 .footer-mark{display:block;margin-top:clamp(28px,3.4vw,48px);color:var(--on-dark);line-height:0}
 .footer-mark svg{display:block;width:100%;height:auto;overflow:hidden}
-@media (min-width:821px) and (max-width:1180px){.f-brand{grid-column:1/9}.f-cols{grid-column:9/21}}
+@media (min-width:821px) and (max-width:1180px){.f-brand{grid-column:1/21}.f-cols{grid-column:1/21;margin-top:56px}}
+@media (min-width:1181px){.f-brand{grid-column:1/8}.f-cols{grid-column:8/21}}
+@media (min-width:821px) and (max-width:1180px){.site-footer .f-cols{grid-template-columns:repeat(4,1fr);column-gap:24px}}
 @media (min-width:821px){.f-col a{white-space:nowrap}
   /* Get in touch shows on desktop too, as a fourth footer column */
-  .f-cols{grid-template-columns:repeat(4,auto);justify-content:space-between}.f-cols .f-contact{display:block}.f-contact__email{white-space:nowrap}}
+  .f-cols{grid-template-columns:repeat(4,max-content);column-gap:56px;justify-content:end}.f-cols .f-contact{display:block}.f-contact__email{white-space:nowrap}}
 /* phone tap targets: 44px hit areas, no visual change (padding offset by negative margin) */
 @media (max-width:820px){.f-col a,.f-contact__email{display:inline-block;padding:8px 0;margin:-8px 0}#mission .ms-fw-e{display:inline-block;padding:12.5px 0;margin:-12.5px 0}}
 @media (max-width:820px){
@@ -1021,28 +1023,39 @@ addEventListener('resize',fit);document.fonts&&document.fonts.addEventListener&&
     <div class="f-col">
       <h4>Product</h4>
       <ul>
-        <li><a href="diagnostic.html">Risk Diagnostic</a></li>
-        <li><a href="https://app.reganchor.com/login">Platform</a></li>
+        <li><a href="product-tour.html#registry">Discovery</a></li>
+        <li><a href="product-tour.html#assessments">Risk</a></li>
+        <li><a href="product-tour.html#mla">Governance</a></li>
+        <li><a href="product-tour.html#assessments">Assurance</a></li>
+        <li><a href="product-tour.html#dark">Monitoring</a></li>
+        <li><a href="product-tour.html#dossiers">Disclosure</a></li>
+        <li><a href="product-tour.html">Product tour</a></li>
         <li><a href="pricing.html">Pricing</a></li>
-        <li><a href="verify.html">Verify Certificate</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4>Solutions</h4>
+      <ul>
+        <li><a href="financial-services.html">Financial services</a></li>
+        <li><a href="legal-professional-services.html">Legal &amp; professional services</a></li>
+        <li><a href="healthcare.html">Healthcare</a></li>
+        <li><a href="public-sector.html">Public sector</a></li>
+        <li><a href="manufacturing-logistics.html">Manufacturing &amp; logistics</a></li>
+        <li><a href="ai-digital.html">AI &amp; digital</a></li>
+        <li><a href="startups.html">Startups</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="trust.html">Trust</a></li>
         <li><a href="methodology.html">Methodology</a></li>
-      </ul>
-    </div>
-    <div class="f-col">
-      <h4>Frameworks</h4>
-      <ul>
-        <li><a href="#">EU AI Act</a></li>
-        <li><a href="#">UK GDPR</a></li>
-        <li><a href="#">FCA Guidance</a></li>
-        <li><a href="#">ISO/IEC 42001</a></li>
-      </ul>
-    </div>
-    <div class="f-col">
-      <h4>Company</h4>
-      <ul>
+        <li><a href="/partner">Partner with us</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="support.html">Get support</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+        <li><a href="diagnostic.html">Risk diagnostic</a></li>
         <li><a href="#">About</a></li>
-        <li><a href="contact.html">Contact</a></li>
-        <li><a href="security.html">Security</a></li>
         <li><a href="privacy.html">Privacy Policy</a></li>
         <li><a href="terms.html">Terms</a></li>
         <li><a href="cookies.html">Cookies</a></li>
