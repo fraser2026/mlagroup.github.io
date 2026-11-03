@@ -196,6 +196,13 @@ button.btn{font-family:inherit;cursor:pointer}
   #registry .copy h2{margin-bottom:16px}
 }
 @media (max-width:600px){:root{--x-gutter:20px}}
+/* phone landscape (same trigger as the Financial services hero): headline left, lede + button on the right like desktop */
+@media (min-width:600px) and (max-width:820px) and (max-height:500px){
+  .hero .intro{display:grid;grid-template-columns:repeat(20,1fr);column-gap:16px;align-items:end;gap:0 16px;padding:116px 0 56px}
+  .hero h1{grid-column:1/13}
+  .hero-side{grid-column:14/21;max-width:none}
+}
+
 /* header over the dark footer: switch to a dark glass so it never reads as muddy grey */
 .nav.on-dark .bar{background:rgba(26,30,40,.58);border-color:rgba(247,246,244,.10);box-shadow:0 12px 32px -14px rgba(0,0,0,.5)}
 .nav .logo img{transition:filter .3s var(--x-ease)}
