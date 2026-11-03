@@ -696,9 +696,10 @@ function measure(){var vh=innerHeight,r=dg.getBoundingClientRect();
   else{tE=hb;tS=tE+W} // space shorter than the diagram: end as its top reaches the header's bottom edge
   target=Math.max(0,Math.min(1,(tS-r.top)/(tS-tE)))}
  else target=(vh*.62-r.top)/M.sc; // mobile: steps light as they cross a reading line at 62% of the viewport
- [[st,words],[st2,words2]].forEach(function(g){var st=g[0],words=g[1];
+ M.tmax=Math.max(M.tmax==null?-1e9:M.tmax,target);target=M.tmax; // latch: the diagram never dims once lit
+ [[st,words,1],[st2,words2,0]].forEach(function(g){var st=g[0],words=g[1],latch=g[2]; // statement latches; 'intake and audit' line stays reversible
  if(words.length){var sr=st.getBoundingClientRect(),a=vh*.92,b=vh*.36,ws=Math.max(0,Math.min(1,(a-sr.top)/(a-b))),n=words.length;
-   words.forEach(function(w,i){var l=Math.max(0,Math.min(1,(ws*(n+3)-i)/3)),o=+(.24+.76*l*l*(3-2*l)).toFixed(3);if(o!==w._o){w._o=o;w.style.opacity=o}})}})}
+   words.forEach(function(w,i){var l=Math.max(0,Math.min(1,(ws*(n+3)-i)/3)),o=+(.24+.76*l*l*(3-2*l)).toFixed(3);if(latch)o=Math.max(o,w._o);if(o!==w._o){w._o=o;w.style.opacity=o}})}})}
 function ksFor(v){return M.steps.map(function(S,i){return M.H?(v*7.6-i):(v-S.y0)/Math.max(1,S.y1-S.y0)})} // desktop: seven steps in sequence; mobile: by position
 function tick(t){raf=0;var dt=lastT?Math.min(64,t-lastT):16;lastT=t;
  if(M.cur==null)M.cur=target;M.cur+=(target-M.cur)*(1-Math.exp(-dt/70)); /* light 70ms smoothing so the lighting feels attached to the scroll (desktop and mobile) */if(Math.abs(target-M.cur)<(M.H?.0005:.3))M.cur=target; // eased, reversible follow
