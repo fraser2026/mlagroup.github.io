@@ -271,6 +271,9 @@ button.btn{font-family:inherit;cursor:pointer}
 /* mobile-only contact block in the empty cell beside Company; existing footer styles only; hidden on desktop */
 /* footer status: outlined like the framework box, neutral white dot with a soft white glow */
 .site-footer .f-status{display:flex;align-items:center;gap:10px;width:fit-content;min-height:44px;margin-top:24px;padding:0 14px;border:1px solid var(--ph-nav-rule);border-radius:var(--r-6);font-family:var(--font-body);font-weight:400;font-size:var(--fs-15);line-height:1.2;color:var(--on-dark);white-space:nowrap;transition:border-color .2s}
+.site-footer a.f-status{flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;padding:14px}
+.site-footer .f-status__mk{display:block;width:32px;height:auto;opacity:.12}
+.site-footer .f-status__ln{display:flex;align-items:center;gap:10px}
 .site-footer .f-status:hover,.site-footer .f-status:focus-visible{border-color:currentColor}
 .site-footer .f-status__dot{position:relative;flex:none;width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
 .site-footer .f-status__dot::after{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid currentColor;opacity:0;animation:f-pulse 2.4s cubic-bezier(.16,1,.3,1) infinite}
@@ -1071,7 +1074,7 @@ addEventListener('resize',fit);document.fonts&&document.fonts.addEventListener&&
     <div class="f-contact">
       <h4>Get in touch</h4>
       <a class="f-contact__email" href="mailto:hello@reganchor.com">hello@reganchor.com</a>
-      <a class="f-status" href="trust.html"><span class="f-status__dot" aria-hidden="true"></span>All systems operational</a>
+      <a class="f-status" href="trust.html"><svg class="f-status__mk" viewBox="0 0 92.5 54" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.14,37h-.14v17H0V0h15.19c12.2,0,23.81,3.980,23.81,18.31,0,7.96-5.33,13.25-12.12,16l14.31,19.69h-15.94l-12.11-17ZM13,12v15h3.32c5.7,0,9.66-2.88,9.66-7.93,0-4.69-3.39-7.07-9.81-7.07h-3.17Z"/><path fill="currentColor" d="M64.36,0h-12.74l-20.92,54h13.46l13.83-13.150,13.41,13.15h13.88L64.36,0ZM49.82,37.9c3.24-8.89,6.81-18.71,8.03-22.05,1.17,3.25,4.71,13.09,7.92,22.01-4.68-3.6-11.27-3.58-15.950.04Z"/></svg><span class="f-status__ln"><span class="f-status__dot" aria-hidden="true"></span>All systems operational</span></a>
     </div>
       </div>
     </div>
