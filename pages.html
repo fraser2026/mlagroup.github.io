@@ -140,11 +140,6 @@ button.btn{font-family:inherit;cursor:pointer}
   .lb{padding:12px}.shot .zoom{display:none}
 }
 @media (max-width:359px){.hero .hwrap h1{font-size:44px}} /* small phones: keep 'AI Governance' on one line */
-/* closing CTA: faint neutral-white grid under the buttons, full width, cells slowly light */
-#cl .cl-wrap{position:relative;isolation:isolate}
-#cl .cl-wrap>canvas.cx{position:absolute;z-index:-1;pointer-events:none;bottom:0;-webkit-mask-image:radial-gradient(ellipse 60% 85% at 50% 40%,#000 0%,rgba(0,0,0,.7) 55%,transparent 100%);mask-image:radial-gradient(ellipse 60% 85% at 50% 40%,#000 0%,rgba(0,0,0,.7) 55%,transparent 100%)}
-@media (min-width:821px){#cl .cl-wrap{padding-bottom:280px}}
-@media (max-width:820px){#cl .cl-wrap{padding-bottom:220px}}
 </style>
 <style>
 /* ===== New style (fractile-style system): floating header, hero (+ registry lead-in) ===== */
@@ -1227,16 +1222,5 @@ addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(cur)hide(na
 desk.addEventListener('change',function(){hide();setMenu(false)});
 })();
 </script>
-<script>(()=>{const w=document.querySelector('#cl .cl-wrap'),bt=w&&w.querySelector('.cl-side');if(!w||!bt)return;const c=document.createElement('canvas');c.className='cx';c.setAttribute('aria-hidden','true');w.prepend(c);
-const g=c.getContext('2d'),dpr=Math.min(devicePixelRatio||1,2),red=matchMedia('(prefers-reduced-motion: reduce)').matches;let S,W,H,cols,rows,N,cells=[];
-const rnd=(s=>()=>(s=(s*16807)%2147483647)/2147483647)(7);
-function size(){const vw=document.documentElement.clientWidth,wr=w.getBoundingClientRect(),br=bt.getBoundingClientRect();c.style.left=(-wr.left)+'px';c.style.width=vw+'px';c.style.top=(br.top-wr.top+br.height/2)+'px';
-const r=c.getBoundingClientRect();W=r.width;H=r.height;c.width=W*dpr;c.height=H*dpr;g.setTransform(dpr,0,0,dpr,0,0);S=vw<700?16:22;cols=Math.ceil(W/S);rows=Math.ceil(H/S);N=Math.round(cols*rows*.15);cells=[];for(let i=0;i<N;i++)spawn(0,rnd())}
-function spawn(t,ph){const hi=rnd()<.18;cells.push({x:Math.floor(rnd()*cols),y:Math.floor(rnd()*rows),d:4000+rnd()*4000,a:hi?.32:.06+rnd()*.06,t0:0});const k=cells[cells.length-1];k.t0=t-(ph||0)*k.d}
-function draw(t){g.clearRect(0,0,W,H);const ox=(W%S)/2;
-cells=cells.filter(k=>t-k.t0<k.d);while(cells.length<N)spawn(t,0);for(const k of cells){const p=(t-k.t0)/k.d,a=Math.sin(Math.PI*p)**2*k.a;g.fillStyle='rgba(255,255,255,'+a.toFixed(4)+')';g.fillRect(ox+k.x*S+1,k.y*S+1,S-1,S-1)}
-g.globalCompositeOperation='destination-out';const fz=g.createLinearGradient(0,0,0,90);fz.addColorStop(0,'rgba(0,0,0,1)');fz.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=fz;g.fillRect(0,0,W,90);g.globalCompositeOperation='source-over';
-if(!red&&!window.__ctaFreeze)requestAnimationFrame(draw)}
-window.__ctaDraw=draw;size();let to;addEventListener('resize',()=>{clearTimeout(to);to=setTimeout(size,150)});draw(red?3000:performance.now())})()</script>
 </body>
 </html>
