@@ -99,8 +99,8 @@ verify_jwt = false
 # Signed-in organisation owner/admin; authorization is checked in-function and every change is audited.
 verify_jwt = true
 
-[functions.gateway-controls]
-# Signed-in organisation owner/admin; authorization is checked in-function and every change is audited.
+[functions.gateway-guardrails]
+# Signed-in organisation member (list) or owner/admin (changes, tests); checked in-function, changes and tests are audited.
 verify_jwt = true
 
 [functions.gateway-pricing]

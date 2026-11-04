@@ -8,10 +8,18 @@ Rules for entries:
 - One bold headline, one or two plain sentences on what the client gets. No hype, no em dashes, sentence case.
 - Add a "Limits" line when a claim needs a qualifier to stay accurate. Accuracy beats reach: our buyers answer to the FCA and MFSA.
 
+## 4 Nov 2026
+
+- **Switch, test and prove every AI guardrail in one place.** The Guardrails tab in Monitoring lists every control on your agents' requests. Each one can be set to off, flag or block, tested on the spot with a real request sent as one of your agents, and opened to the requests where it fired, with the governance control it is evidence for. Every change and test is in the audit log.
+  - Limits: applies to requests through the RegAnchor gateway (Anthropic and Claude on Amazon Bedrock today). Calls made straight to the provider are not covered. Test requests are labelled and left out of spend, budgets and reports.
+- **Check prompts and responses for harmful content, prompt injection and sensitive data.** Through your organisation's own Cloudflare AI Gateway, RegAnchor checks prompts, responses or both for financial information, national identifiers, prompt injection and 14 harmful content categories, including specialised financial advice, privacy and defamation.
+  - Limits: adds about half a second per request, and checking responses holds back a streamed reply until it has been checked. Content categories are judged by a safety model that supports English and seven other languages, and it can miss or over-flag. Cloudflare bills the checks as Workers AI usage. A change to these checks takes up to about a minute to apply everywhere. If the organisation sends requests direct while Cloudflare is unavailable, these checks do not apply to those requests.
+- **Pause an agent at once.** Owners and admins can refuse every request from one agent, with a written reason, from the Guardrails tab or the asset page, and resume it later. Both are audited.
+- **Control which models agents use, and add your own rules.** Each agent may only call the model in its registry entry plus any extra models you allow, an organisation-wide blocked list stops models you have not assessed, and your own phrases or patterns, such as a client account number format, can be flagged or blocked in prompts.
+  - Limits: your own rules check prompts, not responses. Agents with no model in their registry entry and no extra models are not checked for model use.
+
 ## 2 Nov 2026
 
-- **Limit each AI agent to the models you have approved.** Approve the models each agent may use, and RegAnchor checks every request through the gateway against that list. Requests for any other model are flagged and recorded, or blocked before they reach the provider, depending on the organisation's setting, and every approval and change is in the audit log.
-  - Limits: requests must go through the RegAnchor gateway (Anthropic and Claude on Amazon Bedrock today). Agents with no approved models are not checked. Flag is the default; blocking must be switched on by an owner or admin.
 - **Know Claude on Bedrock works before your agents call it.** When you connect or check an AWS account, RegAnchor makes a one-token test call to Claude in each region in use. If AWS still needs Anthropic's use case form or a first call by an AWS admin, the account shows that step with a link to the right page in the AWS console.
   - Limits: Anthropic Claude models only. AWS bills each test call at a fraction of a cent.
 - **Monitor and budget Claude on Amazon Bedrock through the RegAnchor gateway.** Agents running Claude on Bedrock in your own AWS account send requests through RegAnchor, and every request is recorded and priced at AWS's rate for that region, with the AWS account, region and route shown. Bedrock spend counts towards the same monthly budgets and hard limits as Anthropic spend, and your data protection policies check prompts and responses the same way.

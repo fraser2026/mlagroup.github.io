@@ -1,4 +1,5 @@
 import type { StatusTone } from '../ui'
+import type { GuardrailHit } from './guardrails'
 import { modelDisplayName } from './registry'
 import { sb } from './supabase'
 
@@ -68,6 +69,11 @@ export type GatewayOutcome =
   | 'blocked_budget'
   | 'blocked_unpriced_model'
   | 'blocked_unapproved_model'
+  | 'blocked_model_policy'
+  | 'blocked_agent_paused'
+  | 'blocked_custom_rule'
+  | 'blocked_guardrail_prompt'
+  | 'blocked_guardrail_response'
 
 export type DlpFinding = {
   check?: 'REQUEST' | 'RESPONSE' | string
@@ -131,12 +137,15 @@ export type GatewayEvent = {
   content_captured?: boolean | null
   tools_offered?: string[] | null
   tools_called?: string[] | null
-  /** Null when the agent had no approved models or the check could not run. */
+  /** Null when the registered model guardrail was off, or the agent has no registered model. */
   model_approved?: boolean | null
+  guardrail_hits?: GuardrailHit[] | null
+  /** A guardrail test from the Guardrails tab, kept out of spend and summaries. */
+  is_check?: boolean
 }
 
 export const GATEWAY_EVENT_COLUMNS =
-  'id,created_at,org_id,asset_id,token_id,provider,infrastructure,org_aws_account_id,aws_region,environment,route,outcome,http_status,error_type,error_code,streamed,latency_ms,duration_ms,request_model,model,input_tokens,output_tokens,cache_write_5m_tokens,cache_write_1h_tokens,cache_read_tokens,thinking_tokens,web_search_requests,web_fetch_requests,code_execution_requests,service_tier,inference_geo,speed,cost_usd,contract_cost_usd,price_agreement_id,cost_status,cost_breakdown,provider_request_id,aig_log_id,dlp_action,dlp,content_captured,tools_offered,tools_called,model_approved'
+  'id,created_at,org_id,asset_id,token_id,provider,infrastructure,org_aws_account_id,aws_region,environment,route,outcome,http_status,error_type,error_code,streamed,latency_ms,duration_ms,request_model,model,input_tokens,output_tokens,cache_write_5m_tokens,cache_write_1h_tokens,cache_read_tokens,thinking_tokens,web_search_requests,web_fetch_requests,code_execution_requests,service_tier,inference_geo,speed,cost_usd,contract_cost_usd,price_agreement_id,cost_status,cost_breakdown,provider_request_id,aig_log_id,dlp_action,dlp,content_captured,tools_offered,tools_called,model_approved,guardrail_hits,is_check'
 
 export type GatewaySummary = {
   since: string
@@ -146,9 +155,12 @@ export type GatewaySummary = {
     flagged: number
     blocked: number
     policy_blocked: number
-    /** Requests for a model outside the agent's approved list, flagged or blocked. */
+    /** Requests for a model other than the agent's registered or extra models, flagged or blocked. */
     unapproved?: number
     unapproved_blocked?: number
+    /** Requests where at least one guardrail flagged or blocked. */
+    guardrail_hits?: number
+    guardrail_blocked?: number
     rate_limited: number
     errors: number
     aborted: number
@@ -165,7 +177,7 @@ export type GatewaySummary = {
     latency_p95_ms: number | null
     last_request_at: string | null
   }
-  daily: { day: string; requests: number; cost_usd: number; dlp: number; unapproved?: number; issues: number }[]
+  daily: { day: string; requests: number; cost_usd: number; dlp: number; unapproved?: number; guardrails?: number; issues: number }[]
   models: { model: string; requests: number; cost_usd: number; input_tokens: number; output_tokens: number }[]
   assets: {
     asset_id: string
@@ -174,6 +186,7 @@ export type GatewaySummary = {
     cost_usd: number
     dlp: number
     unapproved?: number
+    guardrails?: number
     issues: number
     last_request_at: string
   }[]
@@ -187,10 +200,12 @@ export type GatewaySettings = {
   capture_content: boolean
   content_retention_days: number
   event_retention_days: number
-  unapproved_model_action?: 'flag' | 'block' | string
+  /** The organisation's own Cloudflare AI Gateway, once a Cloudflare guardrail has been switched on. */
+  cf_gateway_id?: string | null
 }
 
-export type EventFilter = 'all' | 'dlp' | 'unapproved' | 'issues'
+/** Every filter except checks leaves guardrail tests out. */
+export type EventFilter = 'all' | 'dlp' | 'guardrails' | 'checks' | 'issues'
 
 /** Matches the summary's issue count: errors and rate limits, not DLP blocks or client cancellations. */
 const ISSUE_OUTCOMES = ['provider_error', 'gateway_error', 'stream_error', 'rate_limited']
@@ -221,6 +236,8 @@ export async function loadGatewayEvents(opts: {
   assetId?: string | null
   days: number
   filter: EventFilter
+  /** With the guardrails filter: only requests where this guardrail fired. */
+  guardrail?: string | null
   before?: string | null
   limit?: number
 }) {
@@ -229,12 +246,17 @@ export async function loadGatewayEvents(opts: {
     .select(GATEWAY_EVENT_COLUMNS)
     .eq('org_id', opts.orgId)
     .gte('created_at', sinceIso(opts.days))
+    .eq('is_check', opts.filter === 'checks')
     .order('created_at', { ascending: false })
     .limit(opts.limit ?? 50)
   if (opts.assetId) q = q.eq('asset_id', opts.assetId)
   if (opts.before) q = q.lt('created_at', opts.before)
   if (opts.filter === 'dlp') q = q.not('dlp_action', 'is', null)
-  if (opts.filter === 'unapproved') q = q.eq('model_approved', false)
+  if (opts.filter === 'guardrails') {
+    q = opts.guardrail
+      ? q.contains('guardrail_hits', JSON.stringify([{ key: opts.guardrail }]))
+      : q.not('guardrail_hits', 'is', null)
+  }
   if (opts.filter === 'issues') q = q.in('outcome', ISSUE_OUTCOMES)
   const { data, error } = await q
   if (error) throw new Error(error.message)
@@ -244,99 +266,10 @@ export async function loadGatewayEvents(opts: {
 export async function loadGatewaySettings(orgId: string): Promise<GatewaySettings | null> {
   const { data } = await sb
     .from('org_gateway_settings')
-    .select('route_via_ai_gateway,fail_mode,capture_content,content_retention_days,event_retention_days,unapproved_model_action')
+    .select('route_via_ai_gateway,fail_mode,capture_content,content_retention_days,event_retention_days,cf_gateway_id')
     .eq('org_id', orgId)
     .maybeSingle()
   return (data as GatewaySettings | null) || null
-}
-
-export type ApprovedModel = { id: string; model_key: string; model_id: string; created_at: string }
-
-export async function loadApprovedModels(assetId: string): Promise<ApprovedModel[]> {
-  const { data, error } = await sb
-    .from('gateway_approved_models')
-    .select('id,model_key,model_id,created_at')
-    .eq('asset_id', assetId)
-    .order('created_at', { ascending: true })
-  if (error) throw new Error(error.message)
-  return (data as ApprovedModel[]) || []
-}
-
-export type AgentModelControl = {
-  asset_id: string
-  name: string
-  approved: { model_key: string; model_id: string }[]
-  /** Requests in the window for a model outside the approved list, as recorded at the time. */
-  unapproved_requests: number
-  unapproved_blocked: number
-  unapproved_models: string[]
-  /** Called a model through the gateway in the window. */
-  active: boolean
-}
-
-export const MODEL_CONTROL_DAYS = 30
-
-/** Approved models and recent unapproved requests per agent, for agents with approvals or recent traffic. */
-export async function loadModelControls(orgId: string) {
-  const since = sinceIso(MODEL_CONTROL_DAYS)
-  const [approvals, inventory, unapproved] = await Promise.all([
-    sb.from('gateway_approved_models').select('asset_id,model_key,model_id,created_at').eq('org_id', orgId).order('created_at'),
-    sb
-      .from('gateway_inventory')
-      .select('asset_id')
-      .eq('org_id', orgId)
-      .eq('kind', 'model')
-      .gte('last_seen_at', since)
-      .limit(1000),
-    sb
-      .from('gateway_request_events')
-      .select('asset_id,request_model,model,outcome')
-      .eq('org_id', orgId)
-      .eq('model_approved', false)
-      .gte('created_at', since)
-      .order('created_at', { ascending: false })
-      .limit(1000),
-  ])
-  if (approvals.error) throw new Error(approvals.error.message)
-  if (inventory.error) throw new Error(inventory.error.message)
-  if (unapproved.error) throw new Error(unapproved.error.message)
-  const byAgent = new Map<string, AgentModelControl>()
-  const agent = (id: string) => {
-    let row = byAgent.get(id)
-    if (!row) {
-      row = { asset_id: id, name: '', approved: [], unapproved_requests: 0, unapproved_blocked: 0, unapproved_models: [], active: false }
-      byAgent.set(id, row)
-    }
-    return row
-  }
-  for (const a of (approvals.data || []) as { asset_id: string; model_key: string; model_id: string }[]) {
-    agent(a.asset_id).approved.push({ model_key: a.model_key, model_id: a.model_id })
-  }
-  for (const i of (inventory.data || []) as { asset_id: string }[]) agent(i.asset_id).active = true
-  const events = (unapproved.data || []) as { asset_id: string; request_model: string | null; model: string | null; outcome: string }[]
-  for (const e of events) {
-    const row = agent(e.asset_id)
-    row.active = true
-    row.unapproved_requests += 1
-    if (e.outcome === 'blocked_unapproved_model') row.unapproved_blocked += 1
-    const m = e.request_model || e.model
-    if (m && !row.unapproved_models.some((x) => gatewayModelKey(x) === gatewayModelKey(m))) row.unapproved_models.push(m)
-  }
-  const ids = [...byAgent.keys()]
-  if (ids.length) {
-    const { data } = await sb.from('ai_systems').select('id,name').eq('org_id', orgId).is('deleted_at', null).in('id', ids)
-    const names = new Map(((data || []) as { id: string; name: string | null }[]).map((s) => [s.id, s.name || 'Unnamed agent']))
-    for (const id of ids) {
-      const name = names.get(id)
-      if (name) agent(id).name = name
-      else byAgent.delete(id)
-    }
-  }
-  return {
-    agents: [...byAgent.values()].sort((a, b) => a.name.localeCompare(b.name)),
-    /** More unapproved requests than were read: counts are a lower bound. */
-    capped: events.length >= 1000,
-  }
 }
 
 /**
@@ -682,6 +615,11 @@ const OUTCOME: Record<string, { label: string; tone: StatusTone }> = {
   blocked_budget: { label: 'Blocked, budget', tone: 'risk' },
   blocked_unpriced_model: { label: 'Blocked, unpriced model', tone: 'risk' },
   blocked_unapproved_model: { label: 'Blocked, model not approved', tone: 'risk' },
+  blocked_model_policy: { label: 'Blocked, model policy', tone: 'risk' },
+  blocked_agent_paused: { label: 'Blocked, agent paused', tone: 'risk' },
+  blocked_custom_rule: { label: 'Blocked, your rule', tone: 'risk' },
+  blocked_guardrail_prompt: { label: 'Blocked, guardrail on prompt', tone: 'risk' },
+  blocked_guardrail_response: { label: 'Blocked, guardrail on response', tone: 'risk' },
 }
 
 export function outcomeLabel(outcome?: string | null) {

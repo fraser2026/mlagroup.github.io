@@ -77,7 +77,7 @@ import { regionName } from '../lib/aws'
 import { AssetFormFields } from './AssetFormFields'
 import { BedrockConnection } from './BedrockConnection'
 import { GatewayActivity } from './GatewayActivity'
-import { GatewayApprovedModels } from './GatewayApprovedModels'
+import { AssetGuardrails } from './AssetGuardrails'
 import styles from './RegistryDetailPage.module.css'
 
 type Conn = {
@@ -447,9 +447,10 @@ export function RegistryDetailPage() {
     setLoading(false)
   }
 
+  const userId = session?.user?.id
   useEffect(() => {
     void refresh()
-  }, [id, session, org?.id])
+  }, [id, userId, org?.id])
 
   useEffect(() => {
     void loadProviderCatalog().then(setProviders)
@@ -1025,14 +1026,10 @@ export function RegistryDetailPage() {
             </div>
 
             {org?.id && id ? (
-              <GatewayApprovedModels
+              <AssetGuardrails
                 orgId={org.id}
                 assetId={id}
-                provider={provider}
-                assetModel={asset.model_name}
-                seenModels={(gatewaySummary?.models || []).map((m) => m.model).filter(Boolean)}
-                mode={gatewaySettings?.unapproved_model_action === 'block' ? 'block' : 'flag'}
-                canManage={canDeleteRegistry}
+                assetName={asset.name}
                 accessToken={session?.access_token}
                 onToast={pushToast}
               />
@@ -1062,14 +1059,13 @@ export function RegistryDetailPage() {
                   </div>
                 </div>
                 <div className={styles.gwTile}>
-                  <div className={styles.connMetaLabel}>Policy findings</div>
+                  <div className={styles.connMetaLabel}>Guardrail findings</div>
                   <div className={styles.gwValue}>
                     <CountUp
-                      value={
-                        (Number(gatewaySummary?.totals.flagged) || 0) +
-                        (Number(gatewaySummary?.totals.blocked) || 0) +
-                        (Number(gatewaySummary?.totals.unapproved) || 0)
-                      }
+                      value={Math.max(
+                        Number(gatewaySummary?.totals.guardrail_hits) || 0,
+                        (Number(gatewaySummary?.totals.flagged) || 0) + (Number(gatewaySummary?.totals.blocked) || 0),
+                      )}
                       format={(n) => Math.round(n).toLocaleString('en-GB')}
                     />
                   </div>

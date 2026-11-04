@@ -17,6 +17,7 @@ import type { Metric, UsageBar } from '../ui'
 import { invokeEdge } from '../lib/edge'
 import { fmtProviderTokens, labelProvider } from '../lib/registry'
 import { regionName } from '../lib/aws'
+import { guardrailLabel } from '../lib/guardrails'
 import {
   GATEWAY_WINDOWS,
   bedrockRouteLabel,
@@ -56,13 +57,19 @@ type Props = {
   canViewContent: boolean
   accessToken?: string
   onSummary?: (summary: GatewaySummary | null) => void
+  /** Set by the parent to open the list on a filter, for example from a guardrail's count. */
+  filter?: EventFilter
+  /** With the guardrails filter: only requests where this guardrail fired. */
+  guardrail?: string | null
+  onFilterChange?: (filter: EventFilter) => void
 }
 
 const FILTERS: { value: EventFilter; label: string }[] = [
   { value: 'all', label: 'All requests' },
+  { value: 'guardrails', label: 'Guardrails' },
   { value: 'dlp', label: 'DLP findings' },
-  { value: 'unapproved', label: 'Models not approved' },
   { value: 'issues', label: 'Issues' },
+  { value: 'checks', label: 'Guardrail tests' },
 ]
 
 const PAGE = 50
@@ -212,10 +219,15 @@ export function GatewayActivity({
   canViewContent,
   accessToken,
   onSummary,
+  filter: filterProp,
+  guardrail = null,
+  onFilterChange,
 }: Props) {
   const orgScope = !assetId
   const [days, setDays] = useState(30)
-  const [filter, setFilter] = useState<EventFilter>('all')
+  const [localFilter, setLocalFilter] = useState<EventFilter>('all')
+  const filter = filterProp ?? localFilter
+  const setFilter = onFilterChange ?? setLocalFilter
   const [summary, setSummary] = useState<GatewaySummary | null>(null)
   const [events, setEvents] = useState<GatewayEvent[]>([])
   const [hasMore, setHasMore] = useState(false)
@@ -231,7 +243,7 @@ export function GatewayActivity({
     setError('')
     Promise.all([
       loadGatewaySummary(orgId, assetId, days),
-      loadGatewayEvents({ orgId, assetId, days, filter, limit: PAGE }),
+      loadGatewayEvents({ orgId, assetId, days, filter, guardrail, limit: PAGE }),
     ])
       .then(([s, rows]) => {
         if (cancelled) return
@@ -253,14 +265,14 @@ export function GatewayActivity({
     }
     // onSummary is a parent callback; reloading on its identity would loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId, assetId, days, filter, reloadKey])
+  }, [orgId, assetId, days, filter, guardrail, reloadKey])
 
   async function loadMore() {
     const last = events[events.length - 1]
     if (!last) return
     setMoreBusy(true)
     try {
-      const rows = await loadGatewayEvents({ orgId, assetId, days, filter, before: last.created_at, limit: PAGE })
+      const rows = await loadGatewayEvents({ orgId, assetId, days, filter, guardrail, before: last.created_at, limit: PAGE })
       setEvents((prev) => [...prev, ...rows])
       setHasMore(rows.length === PAGE)
     } catch (e) {
@@ -292,11 +304,11 @@ export function GatewayActivity({
         },
         {
           id: 'dlp',
-          label: 'Policy findings',
-          value: (num(t.flagged) + num(t.blocked) + num(t.unapproved)).toLocaleString('en-GB'),
+          label: 'Guardrail findings',
+          value: Math.max(num(t.guardrail_hits), num(t.flagged) + num(t.blocked)).toLocaleString('en-GB'),
           hint: [
+            num(t.blocked) + num(t.guardrail_blocked) ? `${num(t.blocked) + num(t.guardrail_blocked)} blocked` : '',
             num(t.flagged) + num(t.blocked) ? `${num(t.flagged) + num(t.blocked)} DLP` : '',
-            num(t.unapproved) ? `${num(t.unapproved)} model not approved` : '',
           ].filter(Boolean).join(', ') || undefined,
         },
         {
@@ -335,8 +347,9 @@ export function GatewayActivity({
         detail: d ? (
           <>
             {num(d.requests).toLocaleString('en-GB')} {num(d.requests) === 1 ? 'request' : 'requests'}
-            {num(d.dlp) ? <div>{num(d.dlp)} DLP</div> : null}
-            {num(d.unapproved) ? <div>{num(d.unapproved)} model not approved</div> : null}
+            {Math.max(num(d.guardrails), num(d.dlp)) ? (
+              <div>{Math.max(num(d.guardrails), num(d.dlp))} guardrail findings</div>
+            ) : null}
             {num(d.issues) ? <div>{num(d.issues)} {num(d.issues) === 1 ? 'issue' : 'issues'}</div> : null}
           </>
         ) : undefined,
@@ -377,7 +390,8 @@ export function GatewayActivity({
         cell: ({ row }) => (
           <span className={styles.modelCell}>
             <span className={styles.primary}>{prettyModel(provider, row.original.model || row.original.request_model)}</span>
-            {row.original.model_approved === false ? <StatusLabel tone="warn">Not approved</StatusLabel> : null}
+            {row.original.is_check ? <StatusLabel tone="neutral">Guardrail test</StatusLabel> : null}
+            {row.original.model_approved === false ? <StatusLabel tone="warn">Not registered</StatusLabel> : null}
           </span>
         ),
       },
@@ -391,18 +405,32 @@ export function GatewayActivity({
         ),
       },
       {
-        id: 'dlp',
-        header: 'DLP',
-        accessorFn: (e) => e.dlp_action || '',
-        size: 130,
-        cell: ({ row }) =>
-          row.original.dlp_action ? (
+        id: 'guardrails',
+        header: 'Guardrails',
+        accessorFn: (e) => (e.guardrail_hits || []).length || (e.dlp_action ? 1 : 0),
+        size: 150,
+        cell: ({ row }) => {
+          const hits = row.original.guardrail_hits || []
+          if (hits.length) {
+            const blocked = hits.some((h) => h.action === 'BLOCK')
+            const names = [...new Set(hits.map((h) => guardrailLabel(h.key)))]
+            return (
+              <span className={styles.ellipsis} title={names.join(', ')}>
+                <StatusLabel tone={blocked ? 'risk' : 'warn'}>
+                  {blocked ? 'Blocked' : 'Flagged'}
+                  {names.length === 1 ? `, ${names[0]}` : `, ${names.length} guardrails`}
+                </StatusLabel>
+              </span>
+            )
+          }
+          return row.original.dlp_action ? (
             <StatusLabel tone={row.original.dlp_action === 'BLOCK' ? 'risk' : 'warn'}>
-              {row.original.dlp_action === 'BLOCK' ? 'Blocked' : 'Flagged'}
+              {row.original.dlp_action === 'BLOCK' ? 'Blocked, DLP' : 'Flagged, DLP'}
             </StatusLabel>
           ) : (
-            <span className={styles.quiet}>{row.original.route === 'ai_gateway' ? 'None' : 'Not checked'}</span>
-          ),
+            <span className={styles.quiet}>None</span>
+          )
+        },
       },
       {
         id: 'tokens',
@@ -466,6 +494,11 @@ export function GatewayActivity({
           ))}
         </div>
         <div className={styles.toolbarEnd}>
+          {filter === 'guardrails' && guardrail ? (
+            <Button variant="ghost" size="sm" onClick={() => setFilter('guardrails')} title="Show every guardrail">
+              {guardrailLabel(guardrail)} only, clear
+            </Button>
+          ) : null}
           <span className={styles.meta}>{capture}</span>
           <SelectMenu
             className={styles.window}
@@ -508,7 +541,9 @@ export function GatewayActivity({
                   </Link>
                   <span className={styles.rankMeta}>
                     {num(a.requests).toLocaleString('en-GB')} req
-                    {num(a.dlp) ? <StatusLabel tone="warn">{num(a.dlp)} DLP</StatusLabel> : null}
+                    {Math.max(num(a.guardrails), num(a.dlp)) ? (
+                      <StatusLabel tone="warn">{Math.max(num(a.guardrails), num(a.dlp))} findings</StatusLabel>
+                    ) : null}
                   </span>
                   <span className={styles.num} title={fmtUsdFull(a.cost_usd)}>
                     {fmtUsdExact(a.cost_usd)}
@@ -549,18 +584,24 @@ export function GatewayActivity({
                 title={
                   filter === 'dlp'
                     ? 'No DLP findings'
-                    : filter === 'unapproved'
-                      ? 'No requests for models outside the approved list'
-                      : filter === 'issues'
-                        ? 'No issues'
-                        : 'No gateway requests yet'
+                    : filter === 'guardrails'
+                      ? guardrail
+                        ? `${guardrailLabel(guardrail)} has not fired`
+                        : 'No guardrail findings'
+                      : filter === 'checks'
+                        ? 'No guardrail tests'
+                        : filter === 'issues'
+                          ? 'No issues'
+                          : 'No gateway requests yet'
                 }
                 body={
                   filter === 'all'
                     ? orgScope
                       ? 'Requests appear here once an agent calls the RegAnchor gateway with its token.'
                       : 'Requests appear here once this asset calls the gateway with one of its tokens.'
-                    : `Nothing in the selected window.`
+                    : filter === 'checks'
+                      ? 'Tests run from the Guardrails tab appear here. They are left out of spend and every other view.'
+                      : `Nothing in the selected window.`
                 }
               />
             )
@@ -721,18 +762,34 @@ function RequestDrawer({
                   <span className={styles.quiet}> (requested {prettyModel(provider, e.request_model)})</span>
                 ) : null}
               </dd>
-              <dt>Model approval</dt>
+              <dt>Guardrails</dt>
               <dd>
-                {e.model_approved === true ? (
-                  'Approved for this agent'
-                ) : e.model_approved === false ? (
-                  <StatusLabel tone={e.outcome === 'blocked_unapproved_model' ? 'risk' : 'warn'}>
-                    {e.outcome === 'blocked_unapproved_model' ? 'Not approved, blocked' : 'Not approved, flagged'}
-                  </StatusLabel>
+                {e.guardrail_hits?.length ? (
+                  <ul className={styles.hitList}>
+                    {e.guardrail_hits.map((h, i) => (
+                      <li key={`${h.key}-${h.check}-${i}`}>
+                        <StatusLabel tone={h.action === 'BLOCK' ? 'risk' : 'warn'}>
+                          {h.action === 'BLOCK' ? 'Blocked' : 'Flagged'}
+                        </StatusLabel>{' '}
+                        {guardrailLabel(h.key)}
+                        <span className={styles.quiet}>
+                          {' '}
+                          · {h.check === 'RESPONSE' ? 'response' : 'prompt'} ·{' '}
+                          {h.source === 'cloudflare' ? 'Cloudflare AI Gateway' : 'RegAnchor gateway'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 ) : (
-                  <span className={styles.quiet}>Not checked</span>
+                  <span className={styles.quiet}>None fired</span>
                 )}
               </dd>
+              {e.is_check ? (
+                <>
+                  <dt>Recorded as</dt>
+                  <dd>Guardrail test, left out of spend and summaries</dd>
+                </>
+              ) : null}
               <dt>Provider</dt>
               <dd>{labelProvider(e.provider)}</dd>
               {onBedrock ? (

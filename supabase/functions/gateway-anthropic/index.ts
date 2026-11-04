@@ -7,10 +7,22 @@
  * failed) in gateway_request_events.
  * Prompt and response content are stored only for organisations that opt in,
  * in the private gateway-content bucket; Cloudflare never keeps payloads.
+ *
+ * Guardrails: pause, blocked models, registered model and budgets are checked in the database;
+ * custom rules are matched here; Cloudflare-enforced guardrails run on the organisation's own AI
+ * Gateway. Guardrail tests from gateway-guardrails arrive signed in x-reganchor-check instead of
+ * with a gateway token, and are recorded with is_check so they stay out of spend.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { AwsClient } from 'https://esm.sh/aws4fetch@1.0.20'
 import { assumeRole, AwsConnectError, type TempCredentials } from '../_shared/aws.ts'
+import {
+  dlpHits,
+  type GuardrailHit,
+  GUARDRAIL_BY_KEY,
+  guardrailKeyForCategory,
+  verifyCheck,
+} from '../_shared/guardrails.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,9 +40,12 @@ const CONTENT_BUCKET = 'gateway-content'
 const AIG_ACCOUNT_ID = Deno.env.get('CF_AIG_ACCOUNT_ID') || '40074a03408bb2b183c964e22d1e2bea'
 const AIG_GATEWAY_ID = Deno.env.get('CF_AIG_GATEWAY_ID') || 'reganchor-governance'
 const AIG_TOKEN = Deno.env.get('CF_AIG_TOKEN') || ''
-const AIG_MESSAGES_URL =
-  `https://gateway.ai.cloudflare.com/v1/${AIG_ACCOUNT_ID}/${AIG_GATEWAY_ID}/anthropic/v1/messages`
+/** Reads guardrail results from AI Gateway logs (AI Gateway Read). */
+const AIG_ADMIN_TOKEN = Deno.env.get('CF_AIG_ADMIN_TOKEN') || ''
+const CHECK_SECRET = Deno.env.get('GATEWAY_CHECK_SECRET') || ''
 const ENVIRONMENT = Deno.env.get('GATEWAY_ENVIRONMENT') || 'production'
+/** Prompt text scanned by custom rules. */
+const MAX_RULE_SCAN_CHARS = 200_000
 
 // Claude on Bedrock: optional inference profile (eu., us., global.), then anthropic.<model>.
 const BEDROCK_MODEL_RE = /^(?:[a-z][a-z-]*\.)?anthropic\.[a-z0-9][a-z0-9.:_-]*$/i
@@ -75,6 +90,11 @@ type Outcome =
   | 'blocked_budget'
   | 'blocked_unpriced_model'
   | 'blocked_unapproved_model'
+  | 'blocked_model_policy'
+  | 'blocked_agent_paused'
+  | 'blocked_custom_rule'
+  | 'blocked_guardrail_prompt'
+  | 'blocked_guardrail_response'
   | 'rate_limited'
   | 'provider_error'
   | 'gateway_error'
@@ -85,6 +105,10 @@ type GatewaySettings = {
   route_via_ai_gateway: boolean
   fail_mode: 'open' | 'closed'
   capture_content: boolean
+  /** The organisation's own Cloudflare AI Gateway; null uses the shared one. */
+  cf_gateway_id: string | null
+  /** Cloudflare content and prompt injection guardrails that are on, by key. */
+  cf_modes: Map<string, 'flag' | 'block'>
 }
 
 type UsageDetail = {
@@ -108,7 +132,11 @@ type EventContext = {
   id: string
   orgId: string
   assetId: string
-  tokenId: string
+  /** Null for guardrail tests, which are signed by gateway-guardrails instead. */
+  tokenId: string | null
+  isCheck: boolean
+  /** Guardrails that fired so far: enforcement and custom rules, then Cloudflare results. */
+  hits: GuardrailHit[]
   providerApiKeyId: string | null
   infrastructure: Infrastructure
   awsAccountId: string | null
@@ -139,17 +167,32 @@ type EventResult = {
 
 type DlpHeader = { action?: string; findings?: unknown[] }
 
+type CustomRule = { id: string; label: string; match_type: 'phrase' | 'pattern'; pattern: string }
+
 type Enforcement = {
   allowed: boolean
-  reason?: 'budget_reached' | 'unpriced_model' | 'unapproved_model'
+  reason?: 'budget_reached' | 'unpriced_model' | 'unapproved_model' | 'agent_paused' | 'blocked_model' | 'unregistered_model'
   scope?: 'agent' | 'organisation'
   model_approved?: boolean | null
+  hits?: GuardrailHit[]
+  custom_rules?: { mode: 'flag' | 'block'; rules: CustomRule[] }
 }
 
 const DEFAULT_SETTINGS: GatewaySettings = {
   route_via_ai_gateway: false,
   fail_mode: 'open',
   capture_content: false,
+  cf_gateway_id: null,
+  cf_modes: new Map(),
+}
+
+const OUTCOME_BY_REASON: Record<NonNullable<Enforcement['reason']>, Outcome> = {
+  budget_reached: 'blocked_budget',
+  unpriced_model: 'blocked_unpriced_model',
+  unapproved_model: 'blocked_unapproved_model',
+  agent_paused: 'blocked_agent_paused',
+  blocked_model: 'blocked_model_policy',
+  unregistered_model: 'blocked_model_policy',
 }
 
 let partitionsCheckedAt = 0
@@ -210,20 +253,32 @@ async function readApiSecret(supabase: Supabase, connectionId: string) {
 }
 
 async function loadSettings(supabase: Supabase, orgId: string): Promise<GatewaySettings> {
-  const { data, error } = await supabase
-    .from('org_gateway_settings')
-    .select('route_via_ai_gateway,fail_mode,capture_content')
-    .eq('org_id', orgId)
-    .maybeSingle()
+  const [{ data, error }, guardrails] = await Promise.all([
+    supabase
+      .from('org_gateway_settings')
+      .select('route_via_ai_gateway,fail_mode,capture_content,cf_gateway_id')
+      .eq('org_id', orgId)
+      .maybeSingle(),
+    supabase
+      .from('org_guardrails')
+      .select('key,mode')
+      .eq('org_id', orgId)
+      .neq('mode', 'off')
+      .or('key.like.content_s%,key.eq.prompt_injection'),
+  ])
   if (error) {
     console.error('gateway settings read failed', error.message)
     return DEFAULT_SETTINGS
   }
   if (!data) return DEFAULT_SETTINGS
+  const cfModes = new Map<string, 'flag' | 'block'>()
+  for (const row of guardrails.data || []) cfModes.set(row.key, row.mode === 'block' ? 'block' : 'flag')
   return {
     route_via_ai_gateway: data.route_via_ai_gateway === true,
     fail_mode: data.fail_mode === 'closed' ? 'closed' : 'open',
     capture_content: data.capture_content === true,
+    cf_gateway_id: data.cf_gateway_id || null,
+    cf_modes: cfModes,
   }
 }
 
@@ -251,9 +306,15 @@ async function checkEnforcement(
 }
 
 function enforcementMessage(enforcement: Enforcement, model: string): string {
-  if (enforcement.reason === 'unapproved_model') {
-    return `This agent is not approved to use ${model.slice(0, 100)} in RegAnchor. Use one of its approved models, ` +
-      'or ask an owner or admin to approve this one.'
+  if (enforcement.reason === 'agent_paused') {
+    return 'This agent is paused in RegAnchor. Requests are refused until an owner or admin resumes it.'
+  }
+  if (enforcement.reason === 'blocked_model') {
+    return `Your organisation has blocked ${model.slice(0, 100)} in RegAnchor. Use a different model.`
+  }
+  if (enforcement.reason === 'unregistered_model' || enforcement.reason === 'unapproved_model') {
+    return `${model.slice(0, 100)} is not this agent's registered model in RegAnchor. Use its registered model, ` +
+      'or ask an owner or admin to update the registration.'
   }
   if (enforcement.reason === 'unpriced_model') {
     return `RegAnchor has no verified price for ${model.slice(0, 100)}, so its spend cannot be measured against a ` +
@@ -320,11 +381,14 @@ async function roleCredentials(account: AwsAccount): Promise<TempCredentials> {
   return (await pending).creds
 }
 
-function bedrockUrls(region: string) {
+function aiGatewayBase(gatewayId: string | null) {
+  return `https://gateway.ai.cloudflare.com/v1/${AIG_ACCOUNT_ID}/${gatewayId || AIG_GATEWAY_ID}`
+}
+
+function bedrockUrls(region: string, gatewayId: string | null) {
   return {
     directUrl: `https://bedrock-runtime.${region}.amazonaws.com/anthropic/v1/messages`,
-    aiGatewayUrl:
-      `https://gateway.ai.cloudflare.com/v1/${AIG_ACCOUNT_ID}/${AIG_GATEWAY_ID}/aws-bedrock/bedrock-runtime/${region}/anthropic/v1/messages`,
+    aiGatewayUrl: `${aiGatewayBase(gatewayId)}/aws-bedrock/bedrock-runtime/${region}/anthropic/v1/messages`,
   }
 }
 
@@ -335,8 +399,9 @@ async function bedrockUpstream(
   account: AwsAccount,
   region: string,
   body: string,
+  gatewayId: string | null,
 ): Promise<Upstream> {
-  const urls = bedrockUrls(region)
+  const urls = bedrockUrls(region, gatewayId)
   const base = messagesHeaders(req)
   if (account.method === 'api_key') {
     const { data, error } = await supabase.rpc('org_aws_account_read_secret', { p_account_id: account.id })
@@ -402,7 +467,7 @@ function aiGatewayHeaders(base: Headers, ctx: EventContext): Headers {
   headers.set('cf-aig-metadata', JSON.stringify({
     org_id: ctx.orgId,
     asset_id: ctx.assetId,
-    token_id: ctx.tokenId,
+    token_id: ctx.tokenId || 'check',
     event_id: ctx.id,
     environment: ENVIRONMENT,
   }))
@@ -559,6 +624,155 @@ function aiGatewayErrorCode(upstream: Response, body: string): number | null {
   }
 }
 
+/** Text the caller sent: the system prompt and every text block in the messages. */
+function promptText(body: Record<string, unknown>): string {
+  const parts: string[] = []
+  const add = (value: unknown) => {
+    if (typeof value === 'string') parts.push(value)
+    else if (Array.isArray(value)) {
+      for (const block of value) {
+        if (typeof block === 'string') parts.push(block)
+        else if (block && typeof block === 'object') {
+          const b = block as { type?: string; text?: unknown; content?: unknown }
+          if (typeof b.text === 'string') parts.push(b.text)
+          if (b.type === 'tool_result') add(b.content)
+        }
+      }
+    }
+  }
+  add(body.system)
+  for (const message of body.messages as Array<{ content?: unknown }>) add(message?.content)
+  return parts.join('\n').slice(0, MAX_RULE_SCAN_CHARS)
+}
+
+function matchCustomRules(text: string, rules: CustomRule[]): CustomRule[] {
+  const lower = text.toLowerCase()
+  return rules.filter((rule) => {
+    if (rule.match_type === 'phrase') return lower.includes(rule.pattern.toLowerCase())
+    try {
+      return new RegExp(rule.pattern, 'i').test(text)
+    } catch {
+      return false
+    }
+  })
+}
+
+const SAFE_VALUES = new Set(['safe', 'pass', 'passed', 'allow', 'allowed', 'ignore', 'none', 'false', '0'])
+
+/**
+ * Categories Cloudflare reported in a log's guardrails field, by direction. The field's layout is
+ * not documented, so codes are read wherever they appear, skipping entries marked safe.
+ */
+function categoriesFromLog(value: unknown): Array<{ category: string; check: 'REQUEST' | 'RESPONSE' }> {
+  const found = new Map<string, 'REQUEST' | 'RESPONSE'>()
+  const codeRe = /\b(S(?:1[0-4]|[1-9])|P1)\b/gi
+  const visit = (node: unknown, path: string) => {
+    const check = /response|output/i.test(path) ? 'RESPONSE' : 'REQUEST'
+    if (typeof node === 'string') {
+      if (SAFE_VALUES.has(node.trim().toLowerCase())) return
+      for (const m of node.matchAll(codeRe)) found.set(`${m[1].toUpperCase()}:${check}`, check)
+      return
+    }
+    if (Array.isArray(node)) {
+      node.forEach((item, i) => visit(item, `${path}.${i}`))
+      return
+    }
+    if (node && typeof node === 'object') {
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        const code = k.match(/^(S(?:1[0-4]|[1-9])|P1)$/i)?.[1]
+        if (code) {
+          const safe = v === false || v === 0 || v === null || (typeof v === 'string' && SAFE_VALUES.has(v.trim().toLowerCase()))
+          if (!safe) found.set(`${code.toUpperCase()}:${check}`, check)
+        } else {
+          visit(v, `${path}.${k}`)
+        }
+      }
+    }
+  }
+  visit(value, '')
+  return [...found.keys()].map((k) => {
+    const [category, check] = k.split(':')
+    return { category, check: check as 'REQUEST' | 'RESPONSE' }
+  })
+}
+
+type AigLog = { guardrails?: unknown; dlp_action?: string | null; dlp_profiles?: unknown[] | null }
+
+/** One AI Gateway log entry (metadata only; payload collection is off). Retries until ready() or attempts run out. */
+async function fetchAigLog(
+  gatewayId: string,
+  logId: string,
+  attempts: number,
+  ready: (log: AigLog) => boolean = () => true,
+): Promise<AigLog | null> {
+  if (!AIG_ADMIN_TOKEN) return null
+  let last: AigLog | null = null
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 1000 * attempt))
+    try {
+      const res = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${AIG_ACCOUNT_ID}/ai-gateway/gateways/${gatewayId}/logs/${logId}`,
+        { headers: { Authorization: `Bearer ${AIG_ADMIN_TOKEN}` }, signal: AbortSignal.timeout(5000) },
+      )
+      if (res.status === 404) continue
+      if (!res.ok) return last
+      last = ((await res.json()) as { result?: AigLog }).result || {}
+      if (ready(last)) return last
+    } catch {
+      // try again
+    }
+  }
+  return last
+}
+
+/**
+ * DLP findings from the log. Cloudflare's block response carries no cf-aig-dlp header, and its error
+ * code can say response when the log shows the prompt was blocked, so the log is the record.
+ */
+function dlpFromLog(log: AigLog | null): DlpHeader | null {
+  if (!log?.dlp_action || !Array.isArray(log.dlp_profiles) || !log.dlp_profiles.length) return null
+  return { action: log.dlp_action, findings: log.dlp_profiles }
+}
+
+function dlpBlockOutcome(dlp: DlpHeader | null, code: number): Outcome {
+  const checks = new Set((dlp?.findings || []).map((f) => (f as { check?: string })?.check))
+  if (checks.has('REQUEST')) return 'blocked_dlp_request'
+  if (checks.has('RESPONSE')) return 'blocked_dlp_response'
+  return code === 2029 ? 'blocked_dlp_request' : 'blocked_dlp_response'
+}
+
+/** Guardrail results for one request, read from the organisation's AI Gateway log. */
+async function fetchGuardrailHits(
+  gatewayId: string,
+  logId: string,
+  modes: Map<string, 'flag' | 'block'>,
+  blockedCheck: 'REQUEST' | 'RESPONSE' | null,
+  attempts: number,
+): Promise<GuardrailHit[]> {
+  const log = await fetchAigLog(gatewayId, logId, attempts, (l) => !blockedCheck || categoriesFromLog(l.guardrails).length > 0)
+  const hits: GuardrailHit[] = []
+  for (const { category, check } of categoriesFromLog(log?.guardrails)) {
+    const key = guardrailKeyForCategory(category)
+    if (!key) continue
+    const mode = modes.get(key)
+    const action = blockedCheck === check && mode === 'block' ? 'BLOCK' : 'FLAG'
+    hits.push({ key, action, check, source: 'cloudflare', detail: category })
+  }
+  return hits
+}
+
+function mergeHits(...lists: GuardrailHit[][]): GuardrailHit[] {
+  const seen = new Set<string>()
+  const out: GuardrailHit[] = []
+  for (const hit of lists.flat()) {
+    const id = `${hit.key}:${hit.action}:${hit.check}:${hit.detail || ''}`
+    if (seen.has(id)) continue
+    seen.add(id)
+    out.push(hit)
+  }
+  return out
+}
+
 function anthropicErrorType(body: string): string | null {
   try {
     const parsed = JSON.parse(body) as { error?: { type?: string } }
@@ -626,6 +840,7 @@ async function recordEvent(supabase: Supabase, ctx: EventContext, result: EventR
 
   const usage = result.usage
   const dlpAction = result.dlp?.action === 'BLOCK' || result.dlp?.action === 'FLAG' ? result.dlp.action : null
+  const hits = mergeHits(ctx.hits, dlpHits(result.dlp))
   const { error } = await supabase.from('gateway_request_events').insert({
     id: ctx.id,
     org_id: ctx.orgId,
@@ -669,8 +884,11 @@ async function recordEvent(supabase: Supabase, ctx: EventContext, result: EventR
     tools_offered: ctx.toolsOffered,
     tools_called: usage.tools_called,
     model_approved: ctx.modelApproved,
+    guardrail_hits: hits.length ? hits : null,
+    is_check: ctx.isCheck,
   })
   if (error) console.error('gateway event insert failed', error.message)
+  if (ctx.isCheck || !ctx.tokenId) return
 
   const usedAt = new Date()
   const { error: tokenError } = await supabase
@@ -790,7 +1008,8 @@ Deno.serve(async (req) => {
   }
 
   const token = gatewayToken(req)
-  if (!/^ra_gw_[A-Za-z0-9_-]{40,}$/.test(token)) {
+  const checkHeader = (req.headers.get('x-reganchor-check') || '').trim()
+  if (!checkHeader && !/^ra_gw_[A-Za-z0-9_-]{40,}$/.test(token)) {
     return anthropicError('authentication_error', 'Invalid gateway token', 401)
   }
 
@@ -816,23 +1035,32 @@ Deno.serve(async (req) => {
     const supabase = getServiceClient()
     ensurePartitions(supabase)
 
-    const tokenHash = await sha256(token)
-    const { data: tokenRow } = await supabase
-      .from('asset_gateway_tokens')
-      .select('id,asset_id,org_id')
-      .eq('token_hash', tokenHash)
-      .is('revoked_at', null)
-      .maybeSingle()
-    if (!tokenRow) {
-      return anthropicError('authentication_error', 'Invalid gateway token', 401)
+    let tokenRow: { id: string | null; asset_id: string; org_id: string | null }
+    if (checkHeader) {
+      const checkedAsset = await verifyCheck(CHECK_SECRET, checkHeader, rawBody)
+      if (!checkedAsset) return anthropicError('authentication_error', 'Invalid guardrail test signature', 401)
+      tokenRow = { id: null, asset_id: checkedAsset, org_id: null }
+    } else {
+      const tokenHash = await sha256(token)
+      const { data } = await supabase
+        .from('asset_gateway_tokens')
+        .select('id,asset_id,org_id')
+        .eq('token_hash', tokenHash)
+        .is('revoked_at', null)
+        .maybeSingle()
+      if (!data) {
+        return anthropicError('authentication_error', 'Invalid gateway token', 401)
+      }
+      tokenRow = data
     }
+    const isCheck = tokenRow.id === null
 
-    const { data: asset } = await supabase
+    let assetQuery = supabase
       .from('ai_systems')
       .select('id,org_id,provider_slug,deleted_at')
       .eq('id', tokenRow.asset_id)
-      .eq('org_id', tokenRow.org_id)
-      .maybeSingle()
+    if (tokenRow.org_id) assetQuery = assetQuery.eq('org_id', tokenRow.org_id)
+    const { data: asset } = await assetQuery.maybeSingle()
     if (!asset || asset.deleted_at || (asset.provider_slug !== 'anthropic' && asset.provider_slug !== 'bedrock')) {
       return anthropicError('permission_error', 'Gateway asset is unavailable', 403)
     }
@@ -910,6 +1138,8 @@ Deno.serve(async (req) => {
       orgId: asset.org_id,
       assetId: asset.id,
       tokenId: tokenRow.id,
+      isCheck,
+      hits: Array.isArray(enforcement?.hits) ? enforcement.hits : [],
       providerApiKeyId,
       infrastructure,
       awsAccountId: awsAccount?.id || null,
@@ -936,31 +1166,57 @@ Deno.serve(async (req) => {
         errorType: 'enforcement_unavailable',
         usage: emptyUsage(model),
       })
-      return anthropicError('api_error', 'Budget checks are temporarily unavailable, so this request was not sent.', 503, ctx.id)
+      return anthropicError('api_error', 'Guardrail and budget checks are temporarily unavailable, so this request was not sent.', 503, ctx.id)
     }
     if (enforcement && !enforcement.allowed) {
       ctx.route = 'none'
-      const reason = enforcement.reason === 'unpriced_model' || enforcement.reason === 'unapproved_model'
-        ? enforcement.reason
-        : 'budget_reached'
+      const reason = enforcement.reason && enforcement.reason in OUTCOME_BY_REASON ? enforcement.reason : 'budget_reached'
       await record({
-        outcome: reason === 'unpriced_model'
-          ? 'blocked_unpriced_model'
-          : reason === 'unapproved_model'
-            ? 'blocked_unapproved_model'
-            : 'blocked_budget',
+        outcome: OUTCOME_BY_REASON[reason],
         httpStatus: 403,
         errorType: reason,
         errorCode: reason === 'budget_reached' ? enforcement.scope || null : null,
         usage: emptyUsage(model),
       })
-      return anthropicError('permission_error', enforcementMessage(enforcement, model), 403, ctx.id)
+      return anthropicError('permission_error', enforcementMessage({ ...enforcement, reason }, model), 403, ctx.id)
     }
 
+    const rules = enforcement?.custom_rules
+    if (rules && Array.isArray(rules.rules) && rules.rules.length) {
+      const matched = matchCustomRules(promptText(body), rules.rules)
+      if (matched.length) {
+        const action = rules.mode === 'block' ? 'BLOCK' : 'FLAG'
+        ctx.hits = mergeHits(ctx.hits, matched.map((rule) => ({
+          key: 'custom_rules',
+          action,
+          check: 'REQUEST' as const,
+          source: 'reganchor' as const,
+          detail: rule.label,
+        })))
+        if (action === 'BLOCK') {
+          ctx.route = 'none'
+          await record({
+            outcome: 'blocked_custom_rule',
+            httpStatus: 403,
+            errorType: 'custom_rule',
+            errorCode: matched[0].id,
+            usage: emptyUsage(model),
+          })
+          return anthropicError(
+            'permission_error',
+            `Request blocked by your organisation's rule "${matched[0].label}" in RegAnchor.`,
+            403,
+            ctx.id,
+          )
+        }
+      }
+    }
+
+    const gatewayId = settings.cf_gateway_id
     let target: Upstream
     if (awsAccount && awsRegion) {
       try {
-        target = await bedrockUpstream(supabase, req, awsAccount, awsRegion, rawBody)
+        target = await bedrockUpstream(supabase, req, awsAccount, awsRegion, rawBody, gatewayId)
       } catch (error) {
         const code = error instanceof AwsConnectError ? error.code : 'aws_error'
         const ours = code === 'not_configured' || code === 'broker_rejected'
@@ -982,7 +1238,33 @@ Deno.serve(async (req) => {
         )
       }
     } else {
-      target = { directUrl: ANTHROPIC_MESSAGES_URL, aiGatewayUrl: AIG_MESSAGES_URL, headers: providerHeaders(req, apiKey || '') }
+      target = {
+        directUrl: ANTHROPIC_MESSAGES_URL,
+        aiGatewayUrl: `${aiGatewayBase(gatewayId)}/anthropic/v1/messages`,
+        headers: providerHeaders(req, apiKey || ''),
+      }
+    }
+
+    // Guardrail results are only in the Cloudflare log, read for the organisation's own gateway.
+    const guardrailGateway = gatewayId && AIG_ADMIN_TOKEN && settings.cf_modes.size > 0 ? gatewayId : null
+    const followUpGuardrails = (
+      logId: string | null,
+      recorded: Promise<void>,
+      dlpHeader: DlpHeader | null,
+      blockedCheck: 'REQUEST' | 'RESPONSE' | null = null,
+    ) => {
+      if (!guardrailGateway || !logId || isCheck) return
+      background(recorded.then(async () => {
+        const found = await fetchGuardrailHits(guardrailGateway, logId, settings.cf_modes, blockedCheck, 3)
+        if (!found.length) return
+        const resolved = found.some((h) => h.action === 'BLOCK')
+        ctx.hits = mergeHits(ctx.hits.filter((h) => !(resolved && h.key === 'cloudflare_guardrail')), found)
+        const { error } = await supabase
+          .from('gateway_request_events')
+          .update({ guardrail_hits: mergeHits(ctx.hits, dlpHits(dlpHeader)) })
+          .eq('id', ctx.id)
+        if (error) console.error('guardrail result update failed', error.message)
+      }))
     }
 
     let upstream: Response | null = null
@@ -1007,11 +1289,16 @@ Deno.serve(async (req) => {
           upstream = null
         } else if (code !== null) {
           ctx.latencyMs = Math.round(performance.now() - ctx.startedAt)
-          const dlp = parseDlp(upstream)
+          let dlp = parseDlp(upstream)
           const aigLogId = upstream.headers.get('cf-aig-log-id')
           if (code === 2029 || code === 2030) {
-            const outcome: Outcome = code === 2029 ? 'blocked_dlp_request' : 'blocked_dlp_response'
-            await record({
+            const logGateway = gatewayId || AIG_GATEWAY_ID
+            const needsLog = !dlp?.findings?.length && !!aigLogId && !!AIG_ADMIN_TOKEN
+            if (needsLog && isCheck) {
+              dlp = dlpFromLog(await fetchAigLog(logGateway, aigLogId!, 4, (l) => !!l.dlp_action)) || dlp
+            }
+            const outcome = dlpBlockOutcome(dlp, code)
+            const recorded = record({
               outcome,
               httpStatus: upstream.status,
               errorType: 'dlp_blocked',
@@ -1020,11 +1307,63 @@ Deno.serve(async (req) => {
               aigLogId,
               dlp,
             })
+            await recorded
+            if (needsLog && !isCheck) {
+              background(recorded.then(async () => {
+                const found = dlpFromLog(await fetchAigLog(logGateway, aigLogId!, 3, (l) => !!l.dlp_action))
+                if (!found) return
+                const { error } = await supabase
+                  .from('gateway_request_events')
+                  .update({
+                    dlp: found,
+                    dlp_action: found.action === 'BLOCK' || found.action === 'FLAG' ? found.action : null,
+                    outcome: dlpBlockOutcome(found, code),
+                    guardrail_hits: mergeHits(ctx.hits, dlpHits(found)),
+                  })
+                  .eq('id', ctx.id)
+                if (error) console.error('dlp result update failed', error.message)
+              }))
+            }
             return anthropicError(
               'invalid_request_error',
-              code === 2029
+              outcome === 'blocked_dlp_request'
                 ? 'Request blocked by your organisation\'s data protection policy.'
                 : 'Response blocked by your organisation\'s data protection policy.',
+              400,
+              ctx.id,
+            )
+          }
+          if (code === 2016 || code === 2017) {
+            const check = code === 2016 ? 'REQUEST' : 'RESPONSE'
+            const found = gatewayId && aigLogId
+              ? await fetchGuardrailHits(gatewayId, aigLogId, settings.cf_modes, check, isCheck ? 4 : 1)
+              : []
+            const blocking = [...settings.cf_modes].filter(([key, mode]) =>
+              mode === 'block' && (check === 'REQUEST' || GUARDRAIL_BY_KEY.get(key)?.cfCategory !== 'P1')
+            )
+            const fallback: GuardrailHit[] = found.some((h) => h.action === 'BLOCK') ? [] : [{
+              key: blocking.length === 1 ? blocking[0][0] : 'cloudflare_guardrail',
+              action: 'BLOCK',
+              check,
+              source: 'cloudflare',
+            }]
+            ctx.hits = mergeHits(ctx.hits, found, fallback)
+            const recorded = record({
+              outcome: code === 2016 ? 'blocked_guardrail_prompt' : 'blocked_guardrail_response',
+              httpStatus: upstream.status,
+              errorType: 'guardrail_blocked',
+              errorCode: String(code),
+              usage: emptyUsage(model),
+              aigLogId,
+              dlp,
+            })
+            await recorded
+            if (!found.length) followUpGuardrails(aigLogId, recorded, dlp, check)
+            return anthropicError(
+              'invalid_request_error',
+              code === 2016
+                ? 'Request blocked by your organisation\'s AI guardrails.'
+                : 'Response blocked by your organisation\'s AI guardrails.',
               400,
               ctx.id,
             )
@@ -1098,8 +1437,8 @@ Deno.serve(async (req) => {
     if (ctx.streamed) {
       headers.set('Content-Type', upstream.headers.get('content-type') || 'text/event-stream')
       const usage = emptyUsage(model)
-      const stream = meteredStream(upstream.body, ctx, usage, (outcome, errorType, captured) =>
-        record({
+      const stream = meteredStream(upstream.body, ctx, usage, (outcome, errorType, captured) => {
+        const recorded = record({
           outcome,
           httpStatus: upstream!.status,
           errorType,
@@ -1109,7 +1448,9 @@ Deno.serve(async (req) => {
           dlp,
           responseContent: captured,
         })
-      )
+        followUpGuardrails(aigLogId, recorded, dlp)
+        return recorded
+      })
       return new Response(stream, { status: upstream.status, headers })
     }
 
@@ -1123,6 +1464,9 @@ Deno.serve(async (req) => {
     } catch {
       // usage unavailable; recorded with zero tokens and flagged by pricing
     }
+    if (isCheck && guardrailGateway && aigLogId) {
+      ctx.hits = mergeHits(ctx.hits, await fetchGuardrailHits(guardrailGateway, aigLogId, settings.cf_modes, null, 4))
+    }
     const recorded = record({
       outcome: 'success',
       httpStatus: upstream.status,
@@ -1132,8 +1476,9 @@ Deno.serve(async (req) => {
       dlp,
       responseContent: ctx.captureContent ? responseBody : null,
     })
-    if (ctx.captureContent && hasWaitUntil()) background(recorded)
+    if (ctx.captureContent && hasWaitUntil() && !isCheck) background(recorded)
     else await recorded
+    followUpGuardrails(aigLogId, recorded, dlp)
     return new Response(responseBody, { status: upstream.status, headers })
   } catch (error) {
     if (error instanceof SyntaxError) {

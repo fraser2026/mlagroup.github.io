@@ -1,4 +1,5 @@
 import { personDisplayName } from './accountLabel'
+import { guardrailLabel } from './guardrails'
 import { sb } from './supabase'
 
 export const TIER_LABELS: Record<string, string> = {
@@ -983,10 +984,63 @@ export function formatAuditPlain(
     }
     case 'gateway_model_approved':
     case 'gateway_model_approval_removed': {
-      const model = String(c.model_id || c.model_key || 'a model')
+      const model = modelDisplayName('anthropic', String(c.model_id || c.model_key || 'a model'))
       text = entry.action === 'gateway_model_approved'
-        ? `Approved ${model} for ${systemName}`
-        : `Removed ${model} from the approved models for ${systemName}${c.remaining === 0 ? '; requests are no longer checked' : ''}`
+        ? `Allowed ${model} as an extra model for ${systemName}`
+        : `Removed ${model} from the extra models allowed for ${systemName}`
+      break
+    }
+    case 'gateway_guardrail_changed': {
+      const name = guardrailLabel(String(c.guardrail || ''))
+      const mode = (c.mode || {}) as { from?: string; to?: string }
+      const applies = (c.applies_to || {}) as { from?: string; to?: string }
+      const modeWord = (m?: string) => (m === 'block' ? 'block' : m === 'flag' ? 'flag' : 'off')
+      const where = (a?: string) => (a === 'both' ? 'prompts and responses' : a === 'response' ? 'responses' : 'prompts')
+      const rate = (c.config || {}) as { limit?: number; interval?: number }
+      if (mode.to === 'off') {
+        text = `Switched off the ${name} guardrail`
+      } else if (mode.from === mode.to && applies.from !== applies.to) {
+        text = `Set the ${name} guardrail to check ${where(applies.to)}`
+      } else {
+        text = `Set the ${name} guardrail to ${modeWord(mode.to)}${applies.to && c.guardrail !== 'rate_limit' && applies.to !== 'prompt' ? ` on ${where(applies.to)}` : ''}`
+      }
+      if (rate.limit) {
+        text += `, ${Number(rate.limit).toLocaleString('en-GB')} requests per ${rate.interval === 3600 ? 'hour' : rate.interval === 300 ? '5 minutes' : 'minute'}`
+      }
+      break
+    }
+    case 'gateway_agent_paused':
+      text = `Paused ${systemName}: ${String(c.reason || '')}`
+      break
+    case 'gateway_agent_resumed':
+      text = `Resumed ${systemName}`
+      break
+    case 'gateway_model_blocked':
+    case 'gateway_model_unblocked': {
+      const model = modelDisplayName('anthropic', String(c.model_id || c.model_key || 'a model'))
+      text = entry.action === 'gateway_model_blocked'
+        ? `Added ${model} to the blocked models`
+        : `Removed ${model} from the blocked models`
+      break
+    }
+    case 'gateway_rule_added':
+    case 'gateway_rule_removed':
+      text = entry.action === 'gateway_rule_added'
+        ? `Added the rule "${String(c.label || '')}"`
+        : `Removed the rule "${String(c.label || '')}"`
+      break
+    case 'gateway_guardrail_tested': {
+      const verdict = String(c.verdict || '')
+      const result = verdict === 'blocked'
+        ? 'blocked'
+        : verdict === 'flagged'
+          ? 'flagged'
+          : verdict === 'allowed'
+            ? 'allowed'
+            : verdict === 'stopped_by_other'
+              ? 'stopped by another guardrail'
+              : 'did not complete'
+      text = `Tested the ${guardrailLabel(String(c.guardrail || ''))} guardrail as ${systemName}: ${result}`
       break
     }
     case 'gateway_model_action_changed': {
