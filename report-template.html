@@ -382,13 +382,13 @@ const SN = {
   s7: 'Operational controls and resilience',
 };
 const BASIS = {
-  s1: 'EU AI Act Art. 9 and 16, ICO Accountability Framework',
+  s1: 'EU AI Act Art. 6 and Annex III, ICO Accountability Framework',
   s2: 'FCA SM&CR, EU AI Act Art. 26(2), ICO Accountability Framework',
   s3: 'UK GDPR Art. 30, EU AI Act Art. 10',
   s4: 'UK GDPR Arts. 22A to 22D, EU AI Act Art. 14, FCA SM&CR',
-  s5: 'UK GDPR Art. 13, 14 and 22, EU AI Act Art. 12',
-  s6: 'UK GDPR Art. 35, EU AI Act Art. 9, FCA DP5/22',
-  s7: 'EU AI Act Art. 72 and 73, FCA PS7/21',
+  s5: 'UK GDPR Arts. 13, 14 and 22A to 22D, EU AI Act Art. 12',
+  s6: 'UK GDPR Art. 35, EU AI Act Art. 9, FCA AI approach',
+  s7: 'EU AI Act Art. 26(5), FCA SYSC 15A',
 };
 const CATEGORY_LABEL = {
   auto: 'Automated decision support',
@@ -457,7 +457,7 @@ const PREMIUM = {
     moderate: 'Compliance obligations are understood but coverage is incomplete and monitoring is not formalised. Reactive compliance creates gaps between obligation and practice.',
     low: 'Regulatory obligations are mapped against current AI deployments and maintained as a live register. DPIAs are completed for qualifying systems. Add horizon scanning to track emerging obligations.' },
   s7: { concept: 'The silent failure risk',
-    critical: 'No operational monitoring or incident response exists for AI systems. Performance degradation, output errors and system failures cannot be detected, escalated or remediated. EU AI Act Article 72 requires post-market monitoring for high-risk systems.',
+    critical: 'No operational monitoring or incident response exists for AI systems. Performance degradation, output errors and system failures cannot be detected, escalated or remediated. EU AI Act Article 26(5) requires deployers of high-risk systems to monitor their operation.',
     high: 'Minimal monitoring exists but lacks defined thresholds, documented escalation pathways and AI-specific failure detection. Monitoring without thresholds cannot trigger escalation.',
     moderate: 'Basic operational monitoring exists but lacks the formal structure, defined thresholds and documented escalation pathways required to satisfy regulatory expectations.',
     low: 'Operational controls and monitoring are established with defined thresholds and documented escalation. Schedule quarterly performance reviews and test incident response.' },
@@ -482,7 +482,7 @@ const REGS_DEFAULT = [
   { reg: 'UK GDPR', art: 'Art. 35', obl: 'Data Protection Impact Assessment for high-risk AI processing', type: 'M', pen: 'Up to GBP 8.7M or 2% of global turnover', dl: 'Immediate' },
   { reg: 'UK GDPR', art: 'Arts. 22A to 22D', obl: 'Safeguards for significant automated decisions', type: 'M', pen: 'Up to GBP 17.5M or 4% of global turnover', dl: 'Immediate' },
   { reg: 'UK GDPR', art: 'Art. 13 and 14', obl: 'Inform individuals of AI-assisted decisions', type: 'M', pen: 'Up to GBP 17.5M or 4% of global turnover', dl: 'Immediate' },
-  { reg: 'FCA SM&CR', art: 'PS7/21', obl: 'Named Senior Manager accountability for AI-driven customer outcomes', type: 'M', pen: 'Individual sanctions and prohibition', dl: 'Immediate' },
+  { reg: 'FCA', art: 'SM&CR', obl: 'Named Senior Manager accountability for AI-driven customer outcomes', type: 'M', pen: 'Individual sanctions, including prohibition from regulated activity', dl: 'Immediate' },
   { reg: 'ISO/IEC 42001', art: 'Sections 6 to 9', obl: 'AI management system: risk assessment, monitoring and evaluation', type: 'A', pen: 'Certification benchmark', dl: 'Ongoing' },
 ];
 
@@ -919,7 +919,7 @@ const PREVIEW_REPORT = {
   section_scores: { s1: 44, s2: 50, s3: 42, s4: 31, s5: 47, s6: 37, s7: 60 },
   priority_flags: [{ id: 'pf_oversight', label: 'No documented human review of AI-assisted decisions affecting individuals', basis: 'UK GDPR Arts. 22A to 22D, EU AI Act Art. 14' }],
   regime_flags: [
-    { basis: 'FCA SM&CR, DP5/22', label: 'FCA regulated: SM&CR requires named Senior Manager accountability for AI governance' },
+    { basis: 'FCA SM&CR, FCA AI approach', label: 'FCA regulated: SM&CR requires named Senior Manager accountability for AI governance' },
     { basis: 'UK GDPR Art. 35', label: 'ICO registered: a DPIA is mandatory for high-risk AI processing of personal data' },
   ],
   selected_categories: ['auto', 'profile', 'credit'],

@@ -1,6 +1,6 @@
 # Platform alignment plan: regulation to evidence, end to end
 
-Status: phase 0 shipped 6 Nov 2026 (library corrected, methodology version published the same day). Phase 1 in progress: steps 1a (registry schema and seed) and 1b (Control Centre Requirements page) shipped 6 Nov; 1c (readers switch) shipped 6 Nov; 1d (citation check) built 6 Nov with 24 known findings awaiting content decisions. Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
+Status: phase 0 shipped 6 Nov 2026 (library corrected, methodology version published the same day). Phase 1 in progress: steps 1a (registry schema and seed) and 1b (Control Centre Requirements page) shipped 6 Nov; 1c (readers switch) shipped 6 Nov; 1d (citation check) built 6 Nov and its findings fixed; two cited documents await draft approval. Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
 
 Goal: a client can take RegAnchor to an audit and every claim is current, cited to the law as it stands today, and backed by evidence that is either uploaded and reviewed or measured automatically from monitoring.
 
@@ -230,7 +230,8 @@ Phase 1 does not fetch or watch anything. Captured text is filled once by a one-
 1d built 6 Nov 2026:
 
 - `scripts/reg-export.mjs` writes the approved registry to `scripts/data/reg-registry.json` (read-only CLI query; rerun after registry changes). `scripts/check-citations.mjs` scans the public pages, `js/`, `app/src` and the edge functions for article citations (EU AI Act, UK and EU GDPR, DORA), FCA and PRA codes (SS, PS, DP, FG, SYSC, PRIN, DISP) and named guidance with a year. It fails when a citation is not an approved requirement or is past its `effective_to`. Runs first in the app `prebuild`. MLA Group's own legal pages and retired design studies are skipped.
-- `scripts/data/citation-baseline.json` holds the 24 findings present on 6 Nov (38 occurrences), so the build fails only on new ones while these wait for a content decision:
+- First run found 24 distinct findings (38 occurrences). Fraser chose to fix the copy and add the missing current documents as drafts. Fixed the same day in `index.html`, `pages.html`, `methodology.html`, `diagnostic.html`, `generate-pdf.html`, `report.html` and `report-template.html`; `supabase/migrations/20261106190000_reg_cited_guidance_drafts.sql` adds FCA PS22/9, PRA SS2/21 and the ICO guidance on AI and data protection as drafts, and moves the "no AI inventory" flag from Article 9 to Article 6 and the FCA AI approach. `scripts/data/citation-baseline.json` now holds only the PS22/9 and SS2/21 mentions, which clear when those drafts are approved and `scripts/reg-export.mjs` is rerun.
+- What the first run found:
   - FCA DP5/22, a 2022 discussion paper, in 13 places including the homepage line "Aligned with FCA DP5/22".
   - PS7/21 and SS1/21 presented as FCA rules; both are PRA documents (outsourcing; operational resilience). The FCA equivalents in the registry are SYSC 8 and SYSC 15A.
   - EU AI Act Articles 16, 72 and 73, provider duties, cited to deployers in the report template and methodology page. The deployer duty is Article 26(5).

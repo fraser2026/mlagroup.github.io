@@ -756,9 +756,9 @@ const HIGH_RISK_ADDITIONS = {
 const PRIORITY_FLAG_RULES = [
   { id: 'pf_governance',   condition: () => (S.q2_1 || 0) === 0, label: 'No named AI governance owner: accountability gap', basis: 'FCA SM&CR; EU AI Act Art. 26(2)', severity: 'critical' },
   { id: 'pf_oversight',    condition: () => (S.q4_1 || 0) === 0, label: 'No human oversight of AI decisions: UK GDPR automated decision safeguards not evidenced', basis: 'UK GDPR Arts. 22A to 22D; EU AI Act Art. 14', severity: 'critical' },
-  { id: 'pf_dpia',         condition: () => (S.q6_1 || 0) === 0, label: 'No DPIA conducted: ICO enforcement priority where personal data is processed', basis: 'UK GDPR Art.35; ICO AI Guidance 2023', severity: 'critical' },
+  { id: 'pf_dpia',         condition: () => (S.q6_1 || 0) === 0, label: 'No DPIA conducted: ICO enforcement priority where personal data is processed', basis: 'UK GDPR Art. 35; ICO guidance on AI and data protection', severity: 'critical' },
   { id: 'pf_transparency', condition: () => (S.q6_2 || 0) === 0, label: 'Individuals not informed of AI-assisted decisions: transparency obligation likely breached', basis: 'UK GDPR Art.13/14', severity: 'high' },
-  { id: 'pf_no_inventory', condition: () => (S.q1_1 || 0) === 0, label: 'No AI inventory: scope of regulatory exposure cannot be determined', basis: 'EU AI Act Art.9; FCA DP5/22', severity: 'high' },
+  { id: 'pf_no_inventory', condition: () => (S.q1_1 || 0) === 0, label: 'No AI inventory: scope of regulatory exposure cannot be determined', basis: 'EU AI Act Art. 6 & Annex III; FCA AI approach', severity: 'high' },
   { id: 'pf_no_policy',    condition: () => (S.q2_4 || 0) === 0, label: 'No AI use policies in place: unmanaged operational and legal risk', basis: 'ICO Accountability Framework; FCA SYSC 4', severity: 'high' }
 ];
 
@@ -809,7 +809,7 @@ const BAND_RECS = {
 };
 
 const SECTOR_RECS = {
-  'Financial Services':            'Review your AI governance framework against FCA DP5/22 and ensure named Senior Manager accountability is documented for all AI-driven customer outcomes under SM&CR.',
+  'Financial Services':            'Review your AI governance framework against the FCA\'s AI approach and ensure named Senior Manager accountability is documented for all AI-driven customer outcomes under SM&CR.',
   'Healthcare & Life Sciences':    'Assess whether any AI systems in clinical pathways require DCB0129 clinical safety assessment and NHS DTAC compliance. These obligations apply regardless of procurement route.',
   'Legal & Professional Services': 'Review SRA AI Guidance (2024) obligations, including client disclosure requirements where AI is used in client-facing work, and ensure your indemnity position covers AI-related errors.',
   'Retail & E-commerce':           'Audit customer profiling and personalisation AI for GDPR compliance and ICO profiling guidance. Where automated decisions affect eligibility, review the UK GDPR automated decision safeguards (Articles 22A to 22D).',
@@ -979,7 +979,7 @@ function calcResults() {
   const regimeFlags = [];
   document.querySelectorAll('#screen-prescreen .cb.selected').forEach(el => {
     const txt = el.textContent.trim();
-    if (txt.includes('FCA'))                        regimeFlags.push({ label:'FCA regulated: SM&CR requires named Senior Manager accountability for AI governance', basis:'FCA SM&CR, DP5/22' });
+    if (txt.includes('FCA'))                        regimeFlags.push({ label:'FCA regulated: SM&CR requires named Senior Manager accountability for AI governance', basis:'FCA SM&CR, FCA AI approach' });
     if (txt.includes('ICO') || txt.includes('GDPR')) regimeFlags.push({ label:'ICO/GDPR registered: DPIA is mandatory for high-risk AI processing of personal data', basis:'UK GDPR Art.35' });
     if (txt.includes('NHS') || txt.includes('CQC'))  regimeFlags.push({ label:'NHS/CQC: Clinical AI pathways require DCB0129 safety assessment and NHS DTAC compliance', basis:'NHS DTAC, DCB0129' });
     if (txt.includes('SRA'))                         regimeFlags.push({ label:'SRA regulated: client disclosure and competence obligations apply to AI-assisted legal work', basis:'SRA AI Guidance 2024' });
