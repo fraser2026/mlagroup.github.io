@@ -6,6 +6,7 @@ import { AdminLayout } from './layout/AdminLayout'
 import { HomePage } from './pages/HomePage'
 import { ControlsCataloguePage } from './pages/ControlsCataloguePage'
 import { FrameworksCataloguePage } from './pages/FrameworksCataloguePage'
+import { RequirementsPage } from './pages/RequirementsPage'
 import { MappingsPage } from './pages/MappingsPage'
 import { PoliciesCataloguePage } from './pages/PoliciesCataloguePage'
 import { DiagnosticScoringPage } from './pages/DiagnosticScoringPage'
@@ -32,6 +33,7 @@ export default function App() {
           >
             <Route index element={<HomePage />} />
             <Route path="controls" element={<ControlsCataloguePage />} />
+            <Route path="requirements" element={<RequirementsPage />} />
             <Route path="frameworks" element={<FrameworksCataloguePage />} />
             <Route path="mappings" element={<MappingsPage />} />
             <Route path="policies" element={<PoliciesCataloguePage />} />
