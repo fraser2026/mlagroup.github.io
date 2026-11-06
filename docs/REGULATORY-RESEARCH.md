@@ -2,6 +2,8 @@
 
 Status: research, 4 Nov 2026. Not legal advice. Article references were checked against the sources linked in section 7 where marked "checked"; the rest are from working knowledge and should be checked before they are used in marketing or reports.
 
+Where each section of this document is being built: [PLATFORM-ALIGNMENT-PLAN.md](PLATFORM-ALIGNMENT-PLAN.md) section 5. Errors 1 to 5 in section 1 were corrected on 6 Nov 2026 (phase 0).
+
 Purpose:
 
 1. Record what has changed in the law since the methodology and risk diagnostic were built (March 2026).

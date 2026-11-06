@@ -1,6 +1,6 @@
 # Platform alignment plan: regulation to evidence, end to end
 
-Status: plan for discussion, 6 Nov 2026. Nothing here is built. Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
+Status: phase 0 shipped 6 Nov 2026 (library corrected, methodology version published the same day). Phase 1 in progress: step 1a (registry schema and seed) applied 6 Nov. Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
 
 Goal: a client can take RegAnchor to an audit and every claim is current, cited to the law as it stands today, and backed by evidence that is either uploaded and reviewed or measured automatically from monitoring.
 
@@ -150,7 +150,7 @@ Each phase is shippable on its own and leaves the product in a better state. Siz
 - Publish a new methodology version so dossiers cite the corrected catalogue.
 - Outcome: what clients see today is correct. Production data change, needs approval.
 
-Drafted 6 Nov, not applied:
+Shipped 6 Nov 2026. Both migrations applied, static pages corrected, app, admin and dossier function deployed, methodology version published in Control Centre. The question banks were also brought up to date in `20261106120000_question_banks_current_law.sql` (insurance pricing added to the diagnostic, identity checks no longer counted as biometrics, safeguard wording for Articles 22A to 22D).
 
 - `supabase/migrations/20261106090000_library_corrections_phase0.sql`: corrects obligations in place (ids unchanged, so the 481 per-asset status rows and all mappings keep their links); renames keys `fca_fg24_5` to `fca_ai_approach`, `fca_ss1_23` to `pra_ss1_23`, `ukgdpr_art22` to `ukgdpr_art22a_d`; fixes the Article 27 description, which omitted credit scoring and life and health insurance deployers (the main financial services case); adds `eugdpr_art22` mapped to control 5; removes em dashes from obligation copy; updates assessment section s3 and the diagnostic overview rows; widens the framework check to allow `eu_gdpr` and `pra`.
 - App: "Other safety checks" group (Defamation and Intellectual property moved into it), no evidence label on those rows; framework labels for EU GDPR and PRA in the app, admin and dossier function.
@@ -167,15 +167,50 @@ Further errors found while drafting, in the diagnostic overview table and the st
 | UK GDPR "Art. 22" throughout findings, section bases and transparency text | `report.html`, `report-template.html`, `system-report.html`, `methodology.html` (root and legacy), `generate-report.js` | Articles 22A to 22D for UK decisions from 5 Feb 2026; EU GDPR Article 22 for EU data subjects. |
 | Claims to check before reuse: "FCA AI Update (2025) explicitly states firms must identify a named individual"; "SM&CR Prescribed Responsibility 24"; "PS7/21" as the SM&CR accountability source; "Commission classification guidance (February 2026)" | `report.html` | Not verified. Remove or re-source. The FCA AI Update was published in April 2024. |
 
-The static pages hold about 80 regulatory lines across ten files, most of them duplicated between the repo root (public site) and `app/public/legacy/` (app). Correcting them by hand is the backwards loop this plan is meant to end, so the recommendation is: fix the penalty figures, the August 2026 deadline language and the Article 27 misuse by hand now (they are wrong in a way a client's lawyer would notice), and move the rest to registry-rendered text in phase 1.
+The static pages hold about 80 regulatory lines across ten files, most of them duplicated between the repo root (public site) and `app/public/legacy/` (app). Correcting them by hand is the backwards loop this plan is meant to end, so the penalty figures, the August 2026 deadline language and the Article 27 misuse were fixed by hand in phase 0, and the rest moves to registry-rendered text or the citation check in phase 1.
+
+Left for later phases on purpose: new diagnostic questions (the scoring maximums are hard-coded, so they wait for a versioned questionnaire in phase 4), and the missing regimes in research section 1 error 6 (seeded in phase 1, mapped to controls after review).
 
 ### Phase 1: requirement registry (medium)
 
 - New catalogue tables: sources (official identifier, URL, feed), requirements (clause key, captured text, hash, applies to, risk tiers, `effective_from`, `effective_to`), and requirement mappings (to controls, assessment questions, guardrails, report sentences).
-- Migrate the 21 obligations, `diagnostic_regs` and section bases into it; fill the reserved `control_requirement_map.requirement_id`.
+- Migrate the 22 obligations, `diagnostic_regs` and section bases into it; fill the reserved `control_requirement_map.requirement_id`.
 - Report generator, diagnostic and assessment render citations from the registry.
 - Build-time citation check: fails when code or a page cites something not in the registry or past its `effective_to`.
 - Outcome: one place to change a citation.
+
+Current state (checked 6 Nov): 22 active obligations in `compliance_frameworks` (13 EU AI Act, 5 UK GDPR, 2 FCA, 1 PRA, 1 EU GDPR), 9 `diagnostic_regs` rows, 8 free-text section bases, 0 of 21 map rows with `requirement_id` filled. Ten places read these tables: the dossier and report functions, `generate-report.js`, `report-template.html`, `assessment.html` and `portal-registry.js` (root and legacy), the app Frameworks pages, and four admin pages.
+
+Design, following section 3:
+
+- **Schema `reg`, not exposed to the API.** Tables `reg.sources` and `reg.requirements`. Nothing in `reg` references `public`.
+- **`reg.sources`:** key, title, issuer (EU, UK Parliament, FCA, PRA, ICO, EDPB), jurisdiction, official identifier (ELI or legislation.gov.uk URI), URL, feed URL, licence, kind (law, rule, guidance, supervisory statement).
+- **`reg.requirements`:** stable key in official form (for example `eu_ai_act:art26(6)`), source, citation in long and short form, title, summary in our words, **evidence expected** (the middle column of research section 3), applies to (provider, deployer, controller, financial institution), jurisdictions, risk tiers, `effective_from`, `effective_to`, `superseded_by`, status (in force, pending, repealed), penalty tier, and captured text with hash, retrieval date and licence.
+- **Read surface in `public`:** a few functions, readable by signed-in users and by the anonymous diagnostic: requirements as of a date, one requirement by key, and requirements for a list of keys. Phase 2 adds "changes since a baseline". These are the future external API.
+- **Mappings stay RegAnchor's.** `compliance_frameworks.requirement_id`, `control_requirement_map.requirement_id` (already reserved), `diagnostic_regs.requirement_id`, and a new `assessment_section_requirements` table. All point into `reg`, never the reverse.
+- **Additive first.** Existing tables and readers keep working while readers move to the registry one at a time. `compliance_frameworks` becomes RegAnchor's view of the law (which requirements it uses, with its own guidance text), not a second copy of the citation.
+
+Seed, from the research:
+
+- The 22 obligations, 9 diagnostic rows and 8 section bases, de-duplicated into requirements.
+- Every requirement row in research section 3, with its evidence expected.
+- The missing regimes in research section 1 error 6 (DORA, SYSC 8, SYSC 15A, DISP, FG21/1), plus Article 4, Article 4a, Article 5 including the item applying from 2 Dec 2026, and the DUAA transfer test. Seeded but not mapped to controls or shown to clients until reviewed in Control Centre.
+- Sources from research section 7, with ELI and legislation.gov.uk identifiers.
+
+Steps, each shippable:
+
+1. **1a, schema and seed.** Migration creates `reg`, the read functions and the link columns, and seeds sources and requirements. Nothing reads it yet. No client-visible change.
+2. **1b, Control Centre page.** Requirements list and edit in `admin/`, showing what links to each requirement (obligations, map rows, diagnostic rows, sections).
+3. **1c, readers switch.** Dossier and report functions, `generate-report.js`, the app Frameworks pages and assessment section bases render citations from the registry. Methodology snapshot includes requirements.
+4. **1d, citation check.** A build script exports the registry to a JSON file and scans pages and code for citations (Article, Art., SS, FG, SYSC, PRIN patterns). It fails on a citation that is not in the registry or past its `effective_to`. Runs in the app prebuild; the static marketing pages are checked rather than rendered.
+
+Phase 1 does not fetch or watch anything. Captured text is filled once by a one-off script; watching is phase 3.
+
+1a applied 6 Nov 2026 (verified: 34 approved requirements readable by signed-in users and the anonymous diagnostic through the read functions; `reg` itself refuses direct access; 481 `system_compliance` rows unchanged):
+
+- `supabase/migrations/20261106140000_reg_requirement_registry.sql`: schema, read functions, links, and a seed of 16 sources and 65 requirements (34 approved because RegAnchor already cites them, 31 drafts from the research).
+- `supabase/migrations/20261106140100_reg_captured_text.sql`: verbatim text for 51 requirements, generated by `scripts/reg-capture-text.mjs`. EU text comes from the Publications Office (CELLAR) by CELEX number, because EUR-Lex pages answer scripts with a bot challenge; the AI Act is the consolidated version of 27 Jul 2026, which includes the Omnibus. UK text comes from legislation.gov.uk, including UK GDPR Article 22 as it stood on 4 Feb 2026. FCA, PRA, ICO and ISO items hold a link and summary only.
+- Dry run on production inside a rolled-back transaction: all 22 obligations and 21 map rows link to a requirement, 38 citations created, old UK Article 22 returned for January 2026 and not for today.
 
 ### Phase 2: baselines and client change notices (small to medium)
 
@@ -198,6 +233,8 @@ The static pages hold about 80 regulatory lines across ten files, most of them d
 - Trigger rules replaced: controls assigned by applicability; scores kept as maturity only.
 - Control assignment moves server-side (a database function or edge function), out of browser code.
 - Existing assessments migrated by mapping today's answers to facts where possible; the rest flagged for a short re-scope.
+- Scoping facts from the research: prohibited-practice screen including the 2 Dec 2026 item (research 3), significant automated decision with the four UK safeguards and the EU Article 22 exception recorded separately (research gap 3), Annex III 5(b) and 5(c) triggering the FRIA, Article 26 duties and the Article 86 explanation route (research gap 4), accountable senior manager per asset (research gap 6), provider instructions and intended purpose (Art. 26(1)), workers' representatives notice (Art. 26(7)).
+- Versioned questionnaire: the diagnostic and asset assessment get these questions in a new version with rebuilt scoring, so old reports keep their version.
 - Outcome: the right controls for the right assets, independent of how confidently a client answers.
 
 ### Phase 5: evidence spine and automated control tests (large, highest commercial value)
@@ -208,6 +245,7 @@ The static pages hold about 80 regulatory lines across ten files, most of them d
 - Dossiers and reports include automated evidence with dates.
 - Incident record (research gap 1) so control 10 can be tested.
 - Merge `system_compliance` into the control assignment model; retire the older usage tables once nothing reads them.
+- From the research: model version change alert (gap 7) and scheduled guardrail tests (gap 8) as the first automated tests; region and transfer guardrail with a transfer report per asset (gap 2); DPIA and FRIA attached and dated on the asset; provider terms linked to assets; validation records per model version (SS1/23); red-team test records (Art. 15); complaints linked to assets and gateway events (DISP); provider concentration view and fallback plan (SYSC 8, SYSC 15A); AI providers exported in DORA register-of-information shape, and DORA classification fields on the incident record.
 - Outcome: controls show "operating, last tested 2 hours ago" instead of "evidence uploaded in March".
 
 ### Phase 6: questionnaire answering (medium)
@@ -220,6 +258,7 @@ The static pages hold about 80 regulatory lines across ten files, most of them d
 
 - Flag checks after the request via a queue; Block in the request path with measured-latency notice; response checks after the request by default.
 - Can run in parallel with phases 1 to 3, since it is independent of the registry.
+- From the research: outcome sampling of customer-facing conversations for Consumer Duty, vulnerability signals (FG21/1) and AI disclosure (Art. 50) (gap 5); wider data loss checks covering names, addresses and special category data; a finance-specific advice check alongside S6. All run after the request, so they add no delay.
 
 ### Suggested order
 
@@ -227,9 +266,28 @@ Phase 0 now. Phases 1 and 2 together next, because they fix the drift problem yo
 
 ---
 
-## 5. Decisions needed
+## 5. Research coverage
 
-1. Approve phase 0 (production data corrections and a new methodology version).
+Where each part of [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md) lands, so none of it is left behind.
+
+| Research section | Where it goes |
+|---|---|
+| 1. What changed since March, and errors 1 to 5 | Phase 0, shipped. Later changes arrive through the phase 3 watcher. |
+| 1. Error 6, missing regimes | Phase 1 seed; mapped to controls after review |
+| 2. Who our clients are (deployer or provider, Annex III points) | Phase 1 `applies_to` and risk tiers; phase 4 scoping facts |
+| 3. Supervisor evidence tables | Phase 1 seed (requirement and evidence expected per row); each gap column item is assigned in phases 4, 5 or 7 above |
+| 4. Guardrails, regulatory versus other | Phase 0 (app labels); phase 5 (links move into registry mappings); phase 7 (after-request design) |
+| 5. Gaps 1, 2, 7, 8 | Phase 5 |
+| 5. Gaps 3, 4, 6 | Phase 4 |
+| 5. Gap 5 | Phase 7 |
+| 6. Keeping the library current | Phases 1 to 3. "How to start small" steps 1 and 4 are phase 1; steps 2 and 3 are phase 3; "build or buy" is decision 4 below |
+| 7. Sources | Phase 1 seed for `reg.sources` |
+
+---
+
+## 6. Decisions needed
+
+1. Phase 0: approved and shipped 6 Nov 2026.
 2. Whether existing clients' controls should be re-derived by applicability in phase 4, which will assign some controls they currently do not have (correct, but visible to them).
 3. Whether Flag-after-request (phase 7) should become the default for all organisations or opt-in first.
 4. Whether to price a commercial regulatory feed (for example CUBE or Corlytics) once phase 3 shows the real change volume.
