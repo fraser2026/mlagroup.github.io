@@ -1,0 +1,817 @@
+{
+  "requirements": [
+    {
+      "citation": "EU AI Act Annex III, point 4",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:annex3(4)",
+      "kind": "classification",
+      "review_state": "approved",
+      "short_citation": "Annex III(4)",
+      "source": "eu_ai_act",
+      "title": "Employment and workers management"
+    },
+    {
+      "citation": "EU AI Act Annex III, point 5(b)",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:annex3(5)(b)",
+      "kind": "classification",
+      "review_state": "approved",
+      "short_citation": "Annex III(5)(b)",
+      "source": "eu_ai_act",
+      "title": "Creditworthiness and credit scoring"
+    },
+    {
+      "citation": "EU AI Act Annex III, point 5(c)",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:annex3(5)(c)",
+      "kind": "classification",
+      "review_state": "approved",
+      "short_citation": "Annex III(5)(c)",
+      "source": "eu_ai_act",
+      "title": "Life and health insurance risk assessment and pricing"
+    },
+    {
+      "citation": "EU AI Act Article 10",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art10",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 10",
+      "source": "eu_ai_act",
+      "title": "Data and data governance"
+    },
+    {
+      "citation": "EU AI Act Article 11",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art11",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 11",
+      "source": "eu_ai_act",
+      "title": "Technical documentation"
+    },
+    {
+      "citation": "EU AI Act Article 12",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art12",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 12",
+      "source": "eu_ai_act",
+      "title": "Record-keeping"
+    },
+    {
+      "citation": "EU AI Act Article 13",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art13",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 13",
+      "source": "eu_ai_act",
+      "title": "Transparency and provision of information to deployers"
+    },
+    {
+      "citation": "EU AI Act Article 14",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art14",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 14",
+      "source": "eu_ai_act",
+      "title": "Human oversight"
+    },
+    {
+      "citation": "EU AI Act Article 15",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art15",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 15",
+      "source": "eu_ai_act",
+      "title": "Accuracy, robustness and cybersecurity"
+    },
+    {
+      "citation": "EU AI Act Article 17",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art17",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 17",
+      "source": "eu_ai_act",
+      "title": "Quality management system"
+    },
+    {
+      "citation": "EU AI Act Article 26",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art26",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 26",
+      "source": "eu_ai_act",
+      "title": "Obligations of deployers of high-risk AI systems"
+    },
+    {
+      "citation": "EU AI Act Article 26(1)",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art26(1)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 26(1)",
+      "source": "eu_ai_act",
+      "title": "Use according to the instructions for use"
+    },
+    {
+      "citation": "EU AI Act Article 26(11)",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art26(11)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 26(11)",
+      "source": "eu_ai_act",
+      "title": "Inform affected persons"
+    },
+    {
+      "citation": "EU AI Act Article 26(2)",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art26(2)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 26(2)",
+      "source": "eu_ai_act",
+      "title": "Assign human oversight"
+    },
+    {
+      "citation": "EU AI Act Article 26(5)",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art26(5)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 26(5)",
+      "source": "eu_ai_act",
+      "title": "Monitor operation and report serious incidents"
+    },
+    {
+      "citation": "EU AI Act Article 26(6)",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art26(6)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 26(6)",
+      "source": "eu_ai_act",
+      "title": "Keep logs for at least six months"
+    },
+    {
+      "citation": "EU AI Act Article 26(7)",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art26(7)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 26(7)",
+      "source": "eu_ai_act",
+      "title": "Inform workers and their representatives"
+    },
+    {
+      "citation": "EU AI Act Article 26(9)",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art26(9)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 26(9)",
+      "source": "eu_ai_act",
+      "title": "Use provider information for the DPIA"
+    },
+    {
+      "citation": "EU AI Act Article 27",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art27",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 27",
+      "source": "eu_ai_act",
+      "title": "Fundamental rights impact assessment"
+    },
+    {
+      "citation": "EU AI Act Article 4",
+      "effective_from": "2025-02-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art4",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 4",
+      "source": "eu_ai_act",
+      "title": "AI literacy"
+    },
+    {
+      "citation": "EU AI Act Article 4a",
+      "effective_from": "2026-07-27",
+      "effective_to": null,
+      "key": "eu_ai_act:art4a",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 4a",
+      "source": "eu_ai_act",
+      "title": "Special category data for bias detection"
+    },
+    {
+      "citation": "EU AI Act Article 5",
+      "effective_from": "2025-02-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art5",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 5",
+      "source": "eu_ai_act",
+      "title": "Prohibited AI practices"
+    },
+    {
+      "citation": "EU AI Act Article 50",
+      "effective_from": "2026-08-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art50",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 50",
+      "source": "eu_ai_act",
+      "title": "Transparency obligations for certain AI systems"
+    },
+    {
+      "citation": "EU AI Act Article 50(1)",
+      "effective_from": "2026-08-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art50(1)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 50(1)",
+      "source": "eu_ai_act",
+      "title": "Disclose AI interaction"
+    },
+    {
+      "citation": "EU AI Act Article 50(2)",
+      "effective_from": "2026-08-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art50(2)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 50(2)",
+      "source": "eu_ai_act",
+      "title": "Mark AI-generated content"
+    },
+    {
+      "citation": "EU AI Act Article 50(4)",
+      "effective_from": "2026-08-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art50(4)",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 50(4)",
+      "source": "eu_ai_act",
+      "title": "Disclose deepfakes and AI-generated public text"
+    },
+    {
+      "citation": "EU AI Act Article 6 and Annex III",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art6",
+      "kind": "classification",
+      "review_state": "approved",
+      "short_citation": "Art. 6 & Annex III",
+      "source": "eu_ai_act",
+      "title": "Classification of high-risk AI systems"
+    },
+    {
+      "citation": "EU AI Act Article 86",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art86",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 86",
+      "source": "eu_ai_act",
+      "title": "Right to explanation of individual decision-making"
+    },
+    {
+      "citation": "EU AI Act Article 9",
+      "effective_from": "2027-12-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art9",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 9",
+      "source": "eu_ai_act",
+      "title": "Risk management system"
+    },
+    {
+      "citation": "EU AI Act Article 99",
+      "effective_from": "2025-08-02",
+      "effective_to": null,
+      "key": "eu_ai_act:art99",
+      "kind": "penalty",
+      "review_state": "approved",
+      "short_citation": "Art. 99",
+      "source": "eu_ai_act",
+      "title": "Penalties"
+    },
+    {
+      "citation": "DORA Article 17",
+      "effective_from": "2025-01-17",
+      "effective_to": null,
+      "key": "eu_dora:art17",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 17",
+      "source": "eu_dora",
+      "title": "ICT-related incident management process"
+    },
+    {
+      "citation": "DORA Article 19",
+      "effective_from": "2025-01-17",
+      "effective_to": null,
+      "key": "eu_dora:art19",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 19",
+      "source": "eu_dora",
+      "title": "Reporting of major ICT-related incidents"
+    },
+    {
+      "citation": "DORA Article 28",
+      "effective_from": "2025-01-17",
+      "effective_to": null,
+      "key": "eu_dora:art28",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 28",
+      "source": "eu_dora",
+      "title": "ICT third-party risk management"
+    },
+    {
+      "citation": "EU GDPR Article 22",
+      "effective_from": "2018-05-25",
+      "effective_to": null,
+      "key": "eu_gdpr:art22",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 22",
+      "source": "eu_gdpr",
+      "title": "Automated individual decision-making"
+    },
+    {
+      "citation": "EU GDPR Article 32",
+      "effective_from": "2018-05-25",
+      "effective_to": null,
+      "key": "eu_gdpr:art32",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 32",
+      "source": "eu_gdpr",
+      "title": "Security of processing"
+    },
+    {
+      "citation": "EU GDPR Article 35",
+      "effective_from": "2018-05-25",
+      "effective_to": null,
+      "key": "eu_gdpr:art35",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 35",
+      "source": "eu_gdpr",
+      "title": "Data protection impact assessment"
+    },
+    {
+      "citation": "EU GDPR Article 5",
+      "effective_from": "2018-05-25",
+      "effective_to": null,
+      "key": "eu_gdpr:art5",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 5",
+      "source": "eu_gdpr",
+      "title": "Principles relating to processing of personal data"
+    },
+    {
+      "citation": "EU GDPR Chapter V",
+      "effective_from": "2018-05-25",
+      "effective_to": null,
+      "key": "eu_gdpr:chapter5",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Ch. V",
+      "source": "eu_gdpr",
+      "title": "Transfers of personal data to third countries"
+    },
+    {
+      "citation": "FCA AI Update (April 2024) and AI approach",
+      "effective_from": "2024-04-22",
+      "effective_to": null,
+      "key": "fca:ai_approach",
+      "kind": "expectation",
+      "review_state": "approved",
+      "short_citation": "FCA AI approach",
+      "source": "fca_ai_approach",
+      "title": "FCA approach to AI in financial services"
+    },
+    {
+      "citation": "FCA AI in financial services: good practice and areas for improvement",
+      "effective_from": null,
+      "effective_to": null,
+      "key": "fca:ai_good_practice",
+      "kind": "expectation",
+      "review_state": "approved",
+      "short_citation": "FCA AI good practice",
+      "source": "fca_ai_good_practice",
+      "title": "FCA good practice on AI"
+    },
+    {
+      "citation": "FCA DISP 1",
+      "effective_from": null,
+      "effective_to": null,
+      "key": "fca:disp1",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "DISP 1",
+      "source": "fca_handbook",
+      "title": "Complaint handling"
+    },
+    {
+      "citation": "FCA FG21/1",
+      "effective_from": "2021-02-23",
+      "effective_to": null,
+      "key": "fca:fg21_1",
+      "kind": "expectation",
+      "review_state": "approved",
+      "short_citation": "FG21/1",
+      "source": "fca_fg21_1",
+      "title": "Fair treatment of vulnerable customers"
+    },
+    {
+      "citation": "FCA Consumer Duty (PRIN 2A)",
+      "effective_from": "2023-07-31",
+      "effective_to": null,
+      "key": "fca:prin2a",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "PRIN 2A",
+      "source": "fca_handbook",
+      "title": "Consumer Duty"
+    },
+    {
+      "citation": "FCA Senior Managers and Certification Regime (SM&CR)",
+      "effective_from": "2019-12-09",
+      "effective_to": null,
+      "key": "fca:smcr",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "SM&CR",
+      "source": "fca_handbook",
+      "title": "Senior manager accountability"
+    },
+    {
+      "citation": "FCA SYSC 15A",
+      "effective_from": "2022-03-31",
+      "effective_to": null,
+      "key": "fca:sysc15a",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "SYSC 15A",
+      "source": "fca_handbook",
+      "title": "Operational resilience"
+    },
+    {
+      "citation": "FCA SYSC 4",
+      "effective_from": null,
+      "effective_to": null,
+      "key": "fca:sysc4",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "SYSC 4",
+      "source": "fca_handbook",
+      "title": "General organisational requirements"
+    },
+    {
+      "citation": "FCA SYSC 8",
+      "effective_from": null,
+      "effective_to": null,
+      "key": "fca:sysc8",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "SYSC 8",
+      "source": "fca_handbook",
+      "title": "Outsourcing"
+    },
+    {
+      "citation": "ICO Accountability Framework",
+      "effective_from": null,
+      "effective_to": null,
+      "key": "ico:accountability_framework",
+      "kind": "expectation",
+      "review_state": "approved",
+      "short_citation": "ICO Accountability Framework",
+      "source": "ico_accountability",
+      "title": "Accountability framework"
+    },
+    {
+      "citation": "ISO/IEC 42001:2023 clauses 6 to 9",
+      "effective_from": "2023-12-18",
+      "effective_to": null,
+      "key": "iso_42001:cl6-9",
+      "kind": "benchmark",
+      "review_state": "approved",
+      "short_citation": "Clauses 6-9",
+      "source": "iso_42001",
+      "title": "AI management system: planning, support, operation and evaluation"
+    },
+    {
+      "citation": "PRA SS1/23",
+      "effective_from": "2024-05-17",
+      "effective_to": null,
+      "key": "pra:ss1_23",
+      "kind": "expectation",
+      "review_state": "approved",
+      "short_citation": "SS1/23",
+      "source": "pra_ss1_23",
+      "title": "Model risk management principles for banks"
+    },
+    {
+      "citation": "Data Protection Act 2018 section 164A",
+      "effective_from": "2026-06-19",
+      "effective_to": null,
+      "key": "uk_dpa_2018:s164a",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "s.164A",
+      "source": "uk_dpa_2018",
+      "title": "Complaints to controllers"
+    },
+    {
+      "citation": "Financial Services and Markets Act 2000 section 19",
+      "effective_from": "2001-12-01",
+      "effective_to": null,
+      "key": "uk_fsma_2000:s19",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "s.19",
+      "source": "uk_fsma_2000",
+      "title": "The general prohibition"
+    },
+    {
+      "citation": "UK GDPR Articles 13 and 14",
+      "effective_from": "2021-01-01",
+      "effective_to": null,
+      "key": "uk_gdpr:art13-14",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Arts. 13-14",
+      "source": "uk_gdpr",
+      "title": "Information to be provided to data subjects"
+    },
+    {
+      "citation": "UK GDPR Article 22 (before 5 February 2026)",
+      "effective_from": "2021-01-01",
+      "effective_to": "2026-02-04",
+      "key": "uk_gdpr:art22",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 22",
+      "source": "uk_gdpr",
+      "title": "Automated individual decision-making (replaced)"
+    },
+    {
+      "citation": "UK GDPR Articles 22A to 22D",
+      "effective_from": "2026-02-05",
+      "effective_to": null,
+      "key": "uk_gdpr:art22a-22d",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Arts. 22A to 22D",
+      "source": "uk_gdpr",
+      "title": "Automated decision-making safeguards"
+    },
+    {
+      "citation": "UK GDPR Article 22B",
+      "effective_from": "2026-02-05",
+      "effective_to": null,
+      "key": "uk_gdpr:art22b",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 22B",
+      "source": "uk_gdpr",
+      "title": "Restrictions on decisions based on special category data"
+    },
+    {
+      "citation": "UK GDPR Article 22C",
+      "effective_from": "2026-02-05",
+      "effective_to": null,
+      "key": "uk_gdpr:art22c",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 22C",
+      "source": "uk_gdpr",
+      "title": "Safeguards for automated decision-making"
+    },
+    {
+      "citation": "UK GDPR Article 25",
+      "effective_from": "2021-01-01",
+      "effective_to": null,
+      "key": "uk_gdpr:art25",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 25",
+      "source": "uk_gdpr",
+      "title": "Data protection by design and by default"
+    },
+    {
+      "citation": "UK GDPR Article 28",
+      "effective_from": "2021-01-01",
+      "effective_to": null,
+      "key": "uk_gdpr:art28",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 28",
+      "source": "uk_gdpr",
+      "title": "Processors"
+    },
+    {
+      "citation": "UK GDPR Article 30",
+      "effective_from": "2021-01-01",
+      "effective_to": null,
+      "key": "uk_gdpr:art30",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 30",
+      "source": "uk_gdpr",
+      "title": "Records of processing activities"
+    },
+    {
+      "citation": "UK GDPR Article 32",
+      "effective_from": "2021-01-01",
+      "effective_to": null,
+      "key": "uk_gdpr:art32",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 32",
+      "source": "uk_gdpr",
+      "title": "Security of processing"
+    },
+    {
+      "citation": "UK GDPR Article 35",
+      "effective_from": "2021-01-01",
+      "effective_to": null,
+      "key": "uk_gdpr:art35",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 35",
+      "source": "uk_gdpr",
+      "title": "Data protection impact assessment"
+    },
+    {
+      "citation": "UK GDPR Article 5",
+      "effective_from": "2021-01-01",
+      "effective_to": null,
+      "key": "uk_gdpr:art5",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 5",
+      "source": "uk_gdpr",
+      "title": "Principles relating to processing of personal data"
+    },
+    {
+      "citation": "UK GDPR Article 6",
+      "effective_from": "2021-01-01",
+      "effective_to": null,
+      "key": "uk_gdpr:art6",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Art. 6",
+      "source": "uk_gdpr",
+      "title": "Lawfulness of processing"
+    },
+    {
+      "citation": "UK GDPR Chapter V",
+      "effective_from": "2021-01-01",
+      "effective_to": null,
+      "key": "uk_gdpr:chapter5",
+      "kind": "obligation",
+      "review_state": "approved",
+      "short_citation": "Ch. V",
+      "source": "uk_gdpr",
+      "title": "Transfers of personal data outside the UK"
+    }
+  ],
+  "sources": [
+    {
+      "jurisdiction": "EU",
+      "key": "eu_ai_act",
+      "short_title": "EU AI Act",
+      "title": "Regulation (EU) 2024/1689 (Artificial Intelligence Act)"
+    },
+    {
+      "jurisdiction": "EU",
+      "key": "eu_ai_omnibus",
+      "short_title": "AI Omnibus",
+      "title": "Regulation (EU) 2026/1744 (AI Omnibus), amending the AI Act"
+    },
+    {
+      "jurisdiction": "EU",
+      "key": "eu_gdpr",
+      "short_title": "EU GDPR",
+      "title": "Regulation (EU) 2016/679 (EU GDPR)"
+    },
+    {
+      "jurisdiction": "EU",
+      "key": "eu_dora",
+      "short_title": "DORA",
+      "title": "Regulation (EU) 2022/2554 (Digital Operational Resilience Act)"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "uk_gdpr",
+      "short_title": "UK GDPR",
+      "title": "UK GDPR (retained Regulation (EU) 2016/679 as amended)"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "uk_duaa_2025",
+      "short_title": "DUAA 2025",
+      "title": "Data (Use and Access) Act 2025"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "uk_si_2026_82",
+      "short_title": "SI 2026/82",
+      "title": "SI 2026/82, Data (Use and Access) Act 2025 (Commencement No. 6) Regulations"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "uk_dpa_2018",
+      "short_title": "DPA 2018",
+      "title": "Data Protection Act 2018"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "uk_fsma_2000",
+      "short_title": "FSMA 2000",
+      "title": "Financial Services and Markets Act 2000"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "fca_handbook",
+      "short_title": "FCA",
+      "title": "FCA Handbook"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "fca_ai_approach",
+      "short_title": "FCA",
+      "title": "FCA AI Update (April 2024) and AI approach"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "fca_ai_good_practice",
+      "short_title": "FCA",
+      "title": "FCA, AI in financial services: good practice and areas for improvement"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "fca_fg21_1",
+      "short_title": "FCA",
+      "title": "FCA FG21/1, Guidance for firms on the fair treatment of vulnerable customers"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "pra_ss1_23",
+      "short_title": "PRA",
+      "title": "PRA SS1/23, Model risk management principles for banks"
+    },
+    {
+      "jurisdiction": "UK",
+      "key": "ico_accountability",
+      "short_title": "ICO",
+      "title": "ICO Accountability Framework"
+    },
+    {
+      "jurisdiction": "INT",
+      "key": "iso_42001",
+      "short_title": "ISO/IEC 42001",
+      "title": "ISO/IEC 42001:2023, AI management systems"
+    }
+  ]
+}

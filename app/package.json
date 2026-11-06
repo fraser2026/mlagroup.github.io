@@ -6,7 +6,7 @@
   "scripts": {
     "predev": "node scripts/copy-portal.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/copy-portal.mjs",
+    "prebuild": "node ../scripts/check-citations.mjs && node scripts/copy-portal.mjs",
     "build": "tsc -p tsconfig.app.json --noEmit && vite build",
     "preview": "vite preview",
     "copy-portal": "node scripts/copy-portal.mjs"
