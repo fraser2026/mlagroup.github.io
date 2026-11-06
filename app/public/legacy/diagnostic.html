@@ -177,13 +177,14 @@
         </div>
         <div class="q-block">
           <div class="q-label">Which of the following categories apply to your AI systems?</div>
-          <div class="q-hint">These categories align with EU AI Act Annex III high-risk classifications. Select all that apply. Selections affect your exposure score.</div>
+          <div class="q-hint">Some of these are high-risk uses under EU AI Act Annex III (credit scoring, life and health insurance pricing, recruitment and HR, biometric identification); others bring UK GDPR automated decision and FCA Consumer Duty obligations. Select all that apply. Selections affect your exposure score.</div>
           <div class="options" id="q1_2">
             <label class="option cb" onclick="toggleCb(this)" data-val="auto"><span class="option-dot"></span>Automated decision support affecting individuals</label>
             <label class="option cb" onclick="toggleCb(this)" data-val="profile"><span class="option-dot"></span>Customer profiling or segmentation</label>
-            <label class="option cb" onclick="toggleCb(this)" data-val="credit"><span class="option-dot"></span>Customer eligibility or credit scoring</label>
+            <label class="option cb" onclick="toggleCb(this)" data-val="credit"><span class="option-dot"></span>Creditworthiness assessment or credit scoring of individuals</label>
+            <label class="option cb" onclick="toggleCb(this)" data-val="insurance"><span class="option-dot"></span>Life or health insurance risk assessment or pricing</label>
             <label class="option cb" onclick="toggleCb(this)" data-val="hr"><span class="option-dot"></span>HR or recruitment support</label>
-            <label class="option cb" onclick="toggleCb(this)" data-val="bio"><span class="option-dot"></span>Biometric or identity verification</label>
+            <label class="option cb" onclick="toggleCb(this)" data-val="bio"><span class="option-dot"></span>Biometric identification or categorisation (not simple identity checks)</label>
             <label class="option cb" onclick="toggleCb(this)" data-val="health"><span class="option-dot"></span>Health or safety related outputs</label>
             <label class="option cb" onclick="toggleCb(this)" data-val="none"><span class="option-dot"></span>None of the above: AI is used only for internal operational tasks</label>
           </div>
@@ -403,7 +404,7 @@
           </div>
         </div>
         <div class="q-block">
-          <div class="q-label">Can a specific AI-assisted decision be traced back to its source inputs, the model version that produced it, and the logic applied: for any decision made in the past 12 months?</div>
+          <div class="q-label">Can a specific AI-assisted decision be traced back to its source inputs, the model version that produced it, and the logic applied, for any decision made in the past 12 months?</div>
           <div class="options" id="q5_4">
             <label class="option" onclick="pick(this,'q5_4',3)"><span class="option-dot"></span>Always: full traceability across all AI-assisted decisions</label>
             <label class="option" onclick="pick(this,'q5_4',2)"><span class="option-dot"></span>In most cases: some decisions can be traced but not all</label>
@@ -444,7 +445,7 @@
           </div>
         </div>
         <div class="q-block">
-          <div class="q-label">Are individuals informed: at the point of interaction or decision: when automated or AI-assisted processes are used in ways that materially affect them?</div>
+          <div class="q-label">Are individuals informed, at the point of interaction or decision, when automated or AI-assisted processes are used in ways that materially affect them?</div>
           <div class="options" id="q6_2">
             <label class="option" onclick="pick(this,'q6_2',3)"><span class="option-dot"></span>Yes: always, with documented transparency notices</label>
             <label class="option" onclick="pick(this,'q6_2',1)"><span class="option-dot"></span>Partially: in some contexts but not comprehensively</label>
@@ -452,7 +453,7 @@
           </div>
         </div>
         <div class="q-block">
-          <div class="q-label">Is there a documented process allowing individuals to request human review of, or formally challenge, an AI-assisted decision that affects them?</div>
+          <div class="q-label">Is there a documented process allowing individuals to make representations about, request human review of, or contest an AI-assisted decision that affects them?</div>
           <div class="options" id="q6_3">
             <label class="option" onclick="pick(this,'q6_3',3)"><span class="option-dot"></span>Yes: formally documented, with defined timescales and named responsible function</label>
             <label class="option" onclick="pick(this,'q6_3',1)"><span class="option-dot"></span>Limited process exists: requests can be made but the process is not documented</label>
@@ -469,7 +470,7 @@
           </div>
         </div>
         <div class="q-block">
-          <div class="q-label">Are individuals able to exercise their data rights in relation to AI-assisted decisions, including the right to explanation, objection, and erasure?</div>
+          <div class="q-label">Are individuals able to exercise their data rights in relation to AI-assisted decisions, including access to meaningful information about the logic involved, objection, and erasure?</div>
           <div class="options" id="q6_5">
             <label class="option" onclick="pick(this,'q6_5',3)"><span class="option-dot"></span>Yes: all applicable rights supported with documented processes and response timescales</label>
             <label class="option" onclick="pick(this,'q6_5',1)"><span class="option-dot"></span>Partially: some rights accommodated but not all, or processes are informal</label>
@@ -556,9 +557,9 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // ═══════════════════════════════════════════════════════════════════
 
 const FRAMEWORK = {
-  version:    '2.0.0',
-  date:       'February 2026',
-  nextReview: 'August 2026'
+  version:    '2.1.0',
+  date:       'November 2026',
+  nextReview: 'February 2027'
 };
 
 const WEIGHTS = {
@@ -746,18 +747,19 @@ const HIGH_RISK_ADDITIONS = {
   auto:    { s4: 2 },
   profile: { s6: 2 },
   credit:  { s4: 2, s6: 2 },
+  insurance: { s4: 2, s6: 2 },
   hr:      { s4: 2 },
   bio:     { s4: 2, s5: 2 },
   health:  { s4: 2, s5: 2, s6: 2 }
 };
 
 const PRIORITY_FLAG_RULES = [
-  { id: 'pf_governance',   condition: () => (S.q2_1 || 0) === 0, label: 'No named AI governance owner: accountability gap', basis: 'FCA SM&CR; EU AI Act Art.27', severity: 'critical' },
-  { id: 'pf_oversight',    condition: () => (S.q4_1 || 0) === 0, label: 'No human oversight of AI decisions: potential UK GDPR Art.22 violation', basis: 'UK GDPR Art.22; EU AI Act Art.14', severity: 'critical' },
+  { id: 'pf_governance',   condition: () => (S.q2_1 || 0) === 0, label: 'No named AI governance owner: accountability gap', basis: 'FCA SM&CR; EU AI Act Art. 26(2)', severity: 'critical' },
+  { id: 'pf_oversight',    condition: () => (S.q4_1 || 0) === 0, label: 'No human oversight of AI decisions: UK GDPR automated decision safeguards not evidenced', basis: 'UK GDPR Arts. 22A to 22D; EU AI Act Art. 14', severity: 'critical' },
   { id: 'pf_dpia',         condition: () => (S.q6_1 || 0) === 0, label: 'No DPIA conducted: ICO enforcement priority where personal data is processed', basis: 'UK GDPR Art.35; ICO AI Guidance 2023', severity: 'critical' },
   { id: 'pf_transparency', condition: () => (S.q6_2 || 0) === 0, label: 'Individuals not informed of AI-assisted decisions: transparency obligation likely breached', basis: 'UK GDPR Art.13/14', severity: 'high' },
   { id: 'pf_no_inventory', condition: () => (S.q1_1 || 0) === 0, label: 'No AI inventory: scope of regulatory exposure cannot be determined', basis: 'EU AI Act Art.9; FCA DP5/22', severity: 'high' },
-  { id: 'pf_no_policy',    condition: () => (S.q2_4 || 0) === 0, label: 'No AI use policies in place: unmanaged operational and legal risk', basis: 'ICO Accountability Framework; EU AI Act Art.27', severity: 'high' }
+  { id: 'pf_no_policy',    condition: () => (S.q2_4 || 0) === 0, label: 'No AI use policies in place: unmanaged operational and legal risk', basis: 'ICO Accountability Framework; FCA SYSC 4', severity: 'high' }
 ];
 
 const RISK_BANDS = [
@@ -792,13 +794,13 @@ const BAND_RECS = {
   ],
   lowmod: [
     'Document any remaining informal governance arrangements. Verbal accountability cannot be demonstrated to a regulator',
-    'Conduct an EU AI Act scope assessment to determine which obligations apply from August 2026',
+    'Conduct an EU AI Act scope assessment to determine which obligations apply now and which from 2 December 2027',
     'Close identified gaps in explainability and audit trail capability before regulatory obligations mature',
     'Formalise training records for staff who review or rely on AI-generated outputs',
     'Schedule an annual external review of your governance framework against updated regulatory guidance'
   ],
   low: [
-    'Maintain currency with EU AI Act implementation. High-risk obligations apply from August 2026',
+    'Maintain currency with EU AI Act implementation. High-risk obligations for Annex III uses apply from 2 December 2027',
     'Ensure new AI deployments are automatically subject to your existing inventory and DPIA process',
     'Continue scheduled bias and fairness testing as models evolve and data distributions shift',
     'Consider ISO/IEC 42001 certification to formally evidence governance maturity to clients and regulators',
@@ -810,11 +812,11 @@ const SECTOR_RECS = {
   'Financial Services':            'Review your AI governance framework against FCA DP5/22 and ensure named Senior Manager accountability is documented for all AI-driven customer outcomes under SM&CR.',
   'Healthcare & Life Sciences':    'Assess whether any AI systems in clinical pathways require DCB0129 clinical safety assessment and NHS DTAC compliance. These obligations apply regardless of procurement route.',
   'Legal & Professional Services': 'Review SRA AI Guidance (2024) obligations, including client disclosure requirements where AI is used in client-facing work, and ensure your indemnity position covers AI-related errors.',
-  'Retail & E-commerce':           'Audit customer profiling and personalisation AI for GDPR compliance and ICO profiling guidance. Where automated decisions affect eligibility, review UK GDPR Art.22 obligations.',
+  'Retail & E-commerce':           'Audit customer profiling and personalisation AI for GDPR compliance and ICO profiling guidance. Where automated decisions affect eligibility, review the UK GDPR automated decision safeguards (Articles 22A to 22D).',
   'Technology & SaaS':             'Clarify whether your AI deployments create provider obligations under the EU AI Act. If you supply AI-enabled services to EU customers, conformity assessment requirements may apply.',
   'Public Sector / Government':    "Review AI systems against ICO's public authority guidance and ensure compliance with the AI Act's specific obligations for public sector deployment.",
   'Education':                     "Ensure any AI used in assessment, student profiling, or admissions is reviewed against ICO children's data guidance and the Equality Act 2010.",
-  'Manufacturing & Logistics':     'Identify any AI systems that interact with physical safety systems. These may qualify as high-risk under EU AI Act safety provisions and require conformity assessment before August 2026.',
+  'Manufacturing & Logistics':     'Identify any AI systems that interact with physical safety systems. These may qualify as high-risk under the EU AI Act and require conformity assessment before the obligations apply: 2 December 2027 for Annex III uses such as critical infrastructure, and 2 August 2028 for AI in products covered by EU product safety law.',
   'Other':                         'Conduct a sector mapping exercise to identify which regulatory regimes apply to your specific AI use cases.'
 };
 

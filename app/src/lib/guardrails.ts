@@ -12,8 +12,8 @@ export type GuardrailDef = {
   label: string
   line: string
   enforcedBy: 'reganchor' | 'cloudflare'
-  /** Governance control (1 to 12) this guardrail produces evidence for. */
-  evidence: number
+  /** Governance control (1 to 12) this guardrail produces evidence for. Other safety checks have none. */
+  evidence?: number
   modes: GuardrailMode[]
   appliesTo: AppliesTo[]
   test: boolean
@@ -37,7 +37,7 @@ export const EVIDENCE_CONTROLS: Record<number, string> = {
 const FLAG_BLOCK: GuardrailMode[] = ['off', 'flag', 'block']
 const BOTH: AppliesTo[] = ['prompt', 'response', 'both']
 
-function content(n: number, label: string, line: string, evidence: number, group: GuardrailGroup, test = false): GuardrailDef {
+function content(n: number, label: string, line: string, evidence: number | undefined, group: GuardrailGroup, test = false): GuardrailDef {
   return {
     key: `content_s${n}`,
     label,
@@ -144,8 +144,6 @@ export const GUARDRAILS: GuardrailDef[] = [
   },
   content(6, 'Specialised advice', 'Financial, medical or legal advice that should come from a qualified person.', 5, 'cloudflare', true),
   content(7, 'Privacy', 'Requests for, or disclosure of, personal information about individuals.', 7, 'cloudflare', true),
-  content(5, 'Defamation', 'False statements that could damage the reputation of a person or a company.', 10, 'cloudflare', true),
-  content(8, 'Intellectual property', 'Reproducing copyrighted or proprietary material.', 1, 'cloudflare', true),
   {
     key: 'rate_limit',
     label: 'Rate limit',
@@ -157,16 +155,18 @@ export const GUARDRAILS: GuardrailDef[] = [
     test: false,
     group: 'cloudflare',
   },
-  content(1, 'Violent crimes', 'Content that enables or encourages violent crime.', 10, 'more'),
-  content(2, 'Non-violent crimes', 'Content that enables fraud, theft, hacking or other non-violent crime.', 10, 'more'),
-  content(3, 'Sex-related crimes', 'Content that enables or encourages sex-related crime.', 10, 'more'),
-  content(4, 'Child sexual exploitation', 'Any content that sexualises children.', 10, 'more'),
-  content(9, 'Indiscriminate weapons', 'Content that enables chemical, biological, nuclear or explosive weapons.', 10, 'more'),
-  content(10, 'Hate', 'Content that demeans people for a protected characteristic.', 10, 'more'),
-  content(11, 'Suicide and self-harm', 'Content that encourages suicide or self-harm.', 10, 'more'),
-  content(12, 'Sexual content', 'Sexually explicit content.', 10, 'more'),
-  content(13, 'Elections', 'False information about voting, candidates or election processes.', 6, 'more'),
-  content(14, 'Code interpreter abuse', 'Attempts to misuse code execution tools.', 9, 'more'),
+  content(5, 'Defamation', 'False statements that could damage the reputation of a person or a company.', undefined, 'more', true),
+  content(8, 'Intellectual property', 'Reproducing copyrighted or proprietary material.', undefined, 'more', true),
+  content(1, 'Violent crimes', 'Content that enables or encourages violent crime.', undefined, 'more'),
+  content(2, 'Non-violent crimes', 'Content that enables fraud, theft, hacking or other non-violent crime.', undefined, 'more'),
+  content(3, 'Sex-related crimes', 'Content that enables or encourages sex-related crime.', undefined, 'more'),
+  content(4, 'Child sexual exploitation', 'Any content that sexualises children.', undefined, 'more'),
+  content(9, 'Indiscriminate weapons', 'Content that enables chemical, biological, nuclear or explosive weapons.', undefined, 'more'),
+  content(10, 'Hate', 'Content that demeans people for a protected characteristic.', undefined, 'more'),
+  content(11, 'Suicide and self-harm', 'Content that encourages suicide or self-harm.', undefined, 'more'),
+  content(12, 'Sexual content', 'Sexually explicit content.', undefined, 'more'),
+  content(13, 'Elections', 'False information about voting, candidates or election processes.', undefined, 'more'),
+  content(14, 'Code interpreter abuse', 'Attempts to misuse code execution tools.', undefined, 'more'),
 ]
 
 export const GUARDRAIL_BY_KEY = new Map(GUARDRAILS.map((g) => [g.key, g]))
@@ -182,7 +182,11 @@ export const GUARDRAIL_GROUPS: { id: GuardrailGroup; label: string; line: string
     label: 'Cloudflare AI Gateway',
     line: 'Checked by your organisation\u2019s own Cloudflare AI Gateway on the prompt, the response or both. Content categories most relevant to financial services come first.',
   },
-  { id: 'more', label: 'More categories', line: 'The remaining harmful content categories, also checked by Cloudflare.' },
+  {
+    id: 'more',
+    label: 'Other safety checks',
+    line: 'Further harmful content categories, also checked by Cloudflare. Useful protections, but not evidence for a governance control.',
+  },
 ]
 
 export function enforcedByLabel(def: GuardrailDef) {
@@ -190,6 +194,7 @@ export function enforcedByLabel(def: GuardrailDef) {
 }
 
 export function evidenceLabel(def: GuardrailDef) {
+  if (def.evidence == null) return null
   return `${def.evidence}. ${EVIDENCE_CONTROLS[def.evidence] || 'Governance control'}`
 }
 

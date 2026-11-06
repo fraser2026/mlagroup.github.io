@@ -8,6 +8,13 @@ Rules for entries:
 - One bold headline, one or two plain sentences on what the client gets. No hype, no em dashes, sentence case.
 - Add a "Limits" line when a claim needs a qualifier to stay accurate. Accuracy beats reach: our buyers answer to the FCA and MFSA.
 
+## 6 Nov 2026
+
+- **Regulatory library updated to the law as it stands in November 2026.** Controls, assessments and reports now cite UK GDPR Articles 22A to 22D (in force since 5 February 2026), the EU AI Act dates set by the AI Omnibus (high-risk duties for credit scoring and insurance pricing from 2 December 2027), the final AI Act penalty levels, and the full scope of the fundamental rights impact assessment. EU GDPR and PRA expectations now appear as their own frameworks.
+  - Limits: assessments and dossiers completed before this update keep the wording they were issued with.
+- **Sharper high-risk screening in the AI governance diagnostic.** The diagnostic now asks about life and health insurance pricing, and no longer treats simple identity checks as high-risk biometric use, so the exposure score reflects how the EU AI Act actually classifies financial services AI.
+- **Guardrails show which checks are governance evidence.** Checks that support a governance control say which one. General safety checks, such as hate, violence or defamation, sit under "Other safety checks" and are not presented as control evidence.
+
 ## 4 Nov 2026
 
 - **Switch, test and prove every AI guardrail in one place.** The Guardrails tab in Monitoring lists every control on your agents' requests. Each one can be set to off, flag or block, tested on the spot with a real request sent as one of your agents, and opened to the requests where it fired, with the governance control it is evidence for. Every change and test is in the audit log.

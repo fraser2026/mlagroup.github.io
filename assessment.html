@@ -181,7 +181,7 @@ let currentUser=null,currentOrg=null,systemData=null;
 function isPaidTier(){return currentOrg&&(currentOrg.plan==='essentials'||currentOrg.plan==='professional')&&currentOrg.subscription_status==='active'}
 
 // ═══ QUESTIONNAIRE DEFINITION ════════════════════════════════
-const VER='1.0.0';
+const VER='1.1.0';
 const WEIGHTS={s1:0.10,s2:0.20,s3:0.15,s4:0.15,s5:0.15,s6:0.15,s7:0.10};
 let SECTIONS=[
 {id:'s1',title:'System Purpose & Classification',desc:'Establishing the intended use, impact scope, and regulatory exposure of this AI system.',reg:'EU AI Act Annex III, Article 6',questions:[
@@ -234,7 +234,7 @@ let SECTIONS=[
     {l:'No formal policy',s:0},
     {l:'Don\u2019t know',s:0}]}
 ]},
-{id:'s3',title:'Transparency & Explainability',desc:'Evaluating whether AI interactions are disclosed, decisions can be explained, and outputs are traceable.',reg:'EU AI Act Articles 13, 50; UK GDPR Article 22',questions:[
+{id:'s3',title:'Transparency & Explainability',desc:'Evaluating whether AI interactions are disclosed, decisions can be explained, and outputs are traceable.',reg:'EU AI Act Articles 13, 50; UK GDPR Articles 22A to 22D; EU GDPR Article 22',questions:[
   {id:'q3_1',text:'Are end users informed that they are interacting with or affected by an AI system?',options:[
     {l:'Yes: clear disclosure at the point of interaction',s:3},
     {l:'Partially: disclosed in terms of service but not at point of use',s:1},
@@ -246,7 +246,7 @@ let SECTIONS=[
     {l:'Limited: explanations possible only in certain cases',s:1},
     {l:'No: the system is a black box',s:0}]},
   {id:'q3_3',text:'Are inputs, outputs, and confidence scores logged for audit and review?',options:[
-    {l:'Yes: comprehensive logging with defined retention period',s:3},
+    {l:'Yes: comprehensive logging, retained for at least six months',s:3},
     {l:'Partially: some outputs logged but not systematically',s:2},
     {l:'No logging in place',s:0},
     {l:'Don\u2019t know',s:0}]},
@@ -255,7 +255,7 @@ let SECTIONS=[
     {l:'Partially: informal processes exist but are not documented',s:1},
     {l:'No fallback mechanisms defined',s:0}]}
 ]},
-{id:'s4',title:'Human Oversight',desc:'Assessing whether human judgement is integrated into AI-driven processes and whether oversight is effective.',reg:'EU AI Act Article 14',questions:[
+{id:'s4',title:'Human Oversight',desc:'Assessing whether human judgement is integrated into AI-driven processes and whether oversight is effective.',reg:'EU AI Act Articles 14 and 26(2); UK GDPR Articles 22A to 22D',questions:[
   {id:'q4_1',text:'Are high-impact outputs reviewed by a human before action is taken?',options:[
     {l:'Yes: mandatory human review for all high-impact outputs with documented protocols',s:3},
     {l:'Conditionally: based on defined risk thresholds',s:2},
@@ -294,9 +294,9 @@ let SECTIONS=[
     {l:'Yes: version control with documented change rationale and rollback capability',s:3},
     {l:'Partially: some version tracking but not comprehensive',s:2},
     {l:'No version control or change management',s:0},
-    {l:'Not applicable: using a fixed third-party model',s:2}]}
+    {l:'Third-party model: version pinned and provider changes reviewed',s:2}]}
 ]},
-{id:'s6',title:'Accountability & Documentation',desc:'Assessing whether governance roles, documentation, and audit capabilities are in place.',reg:'EU AI Act Articles 9, 11, 17',questions:[
+{id:'s6',title:'Accountability & Documentation',desc:'Assessing whether governance roles, documentation, and audit capabilities are in place.',reg:'EU AI Act Articles 9, 11, 17 (providers) and 26 (deployers); FCA SM&CR',questions:[
   {id:'q6_1',text:'Is there a named individual responsible for the governance of this AI system?',options:[
     {l:'Yes: named system owner with documented responsibilities and reporting line',s:3},
     {l:'Yes: informally understood but not documented',s:1},
@@ -315,7 +315,7 @@ let SECTIONS=[
     {l:'No audit trail maintained',s:0},
     {l:'Don\u2019t know',s:0}]}
 ]},
-{id:'s7',title:'Third-Party & Supply Chain',desc:'Evaluating governance of external AI providers, vendor contracts, and supply chain transparency.',reg:'EU AI Act Article 26',questions:[
+{id:'s7',title:'Third-Party & Supply Chain',desc:'Evaluating governance of external AI providers, vendor contracts, and supply chain transparency.',reg:'EU AI Act Article 26; FCA SYSC 8 (outsourcing); DORA (EU financial entities)',questions:[
   {id:'q7_1',text:'Is this AI system developed in-house, provided by a third party, or a hybrid?',hint:'Third-party systems carry additional deployer obligations under the EU AI Act.',options:[
     {l:'Fully in-house: developed and maintained internally',s:3},
     {l:'Hybrid: built on third-party foundation with internal customisation',s:2},

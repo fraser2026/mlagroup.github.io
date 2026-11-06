@@ -30,7 +30,9 @@ const corsHeaders = {
 const FRAMEWORK_LABELS: Record<string, string> = {
   eu_ai_act: 'EU AI Act',
   uk_gdpr: 'UK GDPR',
+  eu_gdpr: 'EU GDPR',
   fca: 'FCA expectations',
+  pra: 'PRA expectations',
 }
 
 const ACTIVITY_KEEP = new Set([

@@ -383,9 +383,9 @@ const SN = {
 };
 const BASIS = {
   s1: 'EU AI Act Art. 9 and 16, ICO Accountability Framework',
-  s2: 'FCA SM&CR, EU AI Act Art. 27, ICO Accountability Framework',
+  s2: 'FCA SM&CR, EU AI Act Art. 26(2), ICO Accountability Framework',
   s3: 'UK GDPR Art. 30, EU AI Act Art. 10',
-  s4: 'UK GDPR Art. 22, EU AI Act Art. 14, FCA SM&CR',
+  s4: 'UK GDPR Arts. 22A to 22D, EU AI Act Art. 14, FCA SM&CR',
   s5: 'UK GDPR Art. 13, 14 and 22, EU AI Act Art. 12',
   s6: 'UK GDPR Art. 35, EU AI Act Art. 9, FCA DP5/22',
   s7: 'EU AI Act Art. 72 and 73, FCA PS7/21',
@@ -393,9 +393,10 @@ const BASIS = {
 const CATEGORY_LABEL = {
   auto: 'Automated decision support',
   profile: 'Customer profiling',
-  credit: 'Eligibility or credit scoring',
+  credit: 'Creditworthiness or credit scoring',
+  insurance: 'Life or health insurance pricing',
   hr: 'HR or recruitment',
-  bio: 'Biometric or identity verification',
+  bio: 'Biometric identification or categorisation',
   health: 'Health or safety outputs',
 };
 
@@ -416,7 +417,7 @@ const SEVERITY = {
 
 const FD = {
   pf_governance: { section: 's2', severity: 'critical', impact: 'The absence of a named AI governance owner creates a structural accountability gap. Under the EU AI Act and FCA operational resilience expectations, clear documented ownership is a baseline requirement. In any enforcement investigation, this is the first question asked: who is accountable?', rec: 'Appoint a named individual as AI governance lead with a documented mandate, a defined scope covering all AI systems in use, and a formal reporting line to board or senior executive level.' },
-  pf_oversight: { section: 's4', severity: 'critical', impact: 'Automated decisions affecting individuals without adequate human review create direct regulatory exposure. UK GDPR Article 22 imposes specific requirements where decisions are solely automated. EU AI Act Article 14 makes human oversight mandatory for high-risk AI systems.', rec: 'Implement mandatory human review protocols for all AI-assisted decisions that materially affect individuals. Document the protocol, define what constitutes a high-impact outcome, name the review function and maintain records.' },
+  pf_oversight: { section: 's4', severity: 'critical', impact: 'Automated decisions affecting individuals without adequate human review create direct regulatory exposure. UK GDPR Articles 22A to 22D permit significant decisions based solely on automated processing only with safeguards, including human intervention and the right to contest. EU AI Act Article 14 makes human oversight mandatory for high-risk AI systems.', rec: 'Implement mandatory human review protocols for all AI-assisted decisions that materially affect individuals. Document the protocol, define what constitutes a high-impact outcome, name the review function and maintain records.' },
   pf_dpia: { section: 's6', severity: 'critical', impact: 'A Data Protection Impact Assessment is a legal requirement under UK GDPR Article 35 for AI systems involving systematic or high-risk processing of personal data. The absence of a required DPIA is an ICO enforcement priority.', rec: 'Commission DPIAs for all AI systems processing personal data, prioritising those making or informing decisions about individuals. Engage your DPO or external privacy counsel.' },
   pf_transparency: { section: 's6', severity: 'high', impact: 'UK GDPR Articles 13 and 14 require proactive disclosure when automated processes materially affect individuals. The ICO has been explicit that generic privacy policy references are insufficient. Transparency must be layered, timely and decision-specific.', rec: 'Audit all individual-facing processes involving AI-assisted decisions. Implement layered transparency notices at the point of interaction.' },
   pf_no_inventory: { section: 's1', severity: 'high', impact: 'Without a documented AI inventory, the organisation cannot determine its regulatory scope, demonstrate governance readiness, or identify which systems require enhanced controls. Regulators treat the absence of an inventory as evidence that governance has not been implemented.', rec: 'Conduct an immediate AI inventory audit covering all systems in operational use, under active development, or embedded in third-party tools.' },
@@ -441,12 +442,12 @@ const PREMIUM = {
     moderate: 'Data lineage documentation exists for some AI systems but is not comprehensive or consistently applied. Gaps create uneven compliance risk across the AI portfolio.',
     low: 'Data quality controls and lineage documentation are established and consistently applied across AI systems in scope. Keep documentation current as models are retrained or data sources change.' },
   s4: { concept: 'The absent brake',
-    critical: 'No documented human oversight exists for AI-assisted decisions. Where AI systems inform or determine decisions affecting individuals, no process ensures meaningful human review. This is a binary compliance position under UK GDPR Article 22 and EU AI Act Article 14.',
+    critical: 'No documented human oversight exists for AI-assisted decisions. Where AI systems inform or determine decisions affecting individuals, no process ensures meaningful human review. Without it, the safeguards required by UK GDPR Articles 22A to 22D and EU AI Act Article 14 cannot be evidenced.',
     high: 'Human review occurs informally for some AI-assisted decisions but no documented protocol exists. Override authority is undefined and escalation pathways are absent. Informal review cannot be evidenced to regulators.',
     moderate: 'Human review processes exist for some AI-assisted decisions but are not formalised, consistently applied, or documented to the standard required for regulatory purposes.',
     low: 'Human oversight protocols are documented and consistently applied for AI-assisted decisions affecting individuals. Override authority is defined and records are maintained. Test override capability periodically.' },
   s5: { concept: 'The black box problem',
-    critical: 'No transparency or explainability framework exists. Individuals affected by AI-driven decisions receive no information about the logic, significance or consequences of automated processing, and there is no route to respond to explanation requests under UK GDPR Article 22.',
+    critical: 'No transparency or explainability framework exists. Individuals affected by AI-driven decisions receive no information about the logic, significance or consequences of automated processing, and there is no route for individuals to make representations, obtain human review or contest decisions under UK GDPR Articles 22A to 22D.',
     high: 'Limited transparency measures exist but no systematic framework ensures consistent disclosure across AI systems. Explanation capability is absent or untested.',
     moderate: 'Some explainability mechanisms exist but are not systematically documented or consistently applied across all AI systems that affect individuals.',
     low: 'Transparency and explainability mechanisms are documented and operational. Processes exist to respond to explanation requests. Review transparency notices when systems change.' },
@@ -467,26 +468,26 @@ const RM = {
   s2: { owner: 'Board or CEO', del: 'Governance appointment and policy', actions: ['Appoint a named AI oversight lead with a documented mandate', 'Establish a board-level AI governance reporting line', 'Draft, ratify and publish an AI use policy with named owners', 'Record the appointment in role documentation and circulate internally'] },
   s3: { owner: 'Data or CISO', del: 'Data lineage documentation', actions: ['Map data provenance for all AI systems processing personal data', 'Implement data version control and lineage logging', 'Document training datasets, versions and update cadence', 'Set data quality thresholds and monitor for breaches'] },
   s4: { owner: 'Operations or risk', del: 'Human oversight protocol', actions: ['Define human review triggers for decisions affecting individuals', 'Document override protocols and escalation pathways', 'Name the review function for each decision type', 'Test and document override capability'] },
-  s5: { owner: 'Legal or compliance', del: 'Transparency framework', actions: ['Audit individual-facing AI processes for transparency obligations', 'Implement layered transparency notices at the point of interaction', 'Document the explainability method for each AI system', 'Set up a process for explanation requests under Article 22'] },
+  s5: { owner: 'Legal or compliance', del: 'Transparency framework', actions: ['Audit individual-facing AI processes for transparency obligations', 'Implement layered transparency notices at the point of interaction', 'Document the explainability method for each AI system', 'Set up a process for information, human review and challenge requests under UK GDPR Articles 22A to 22D'] },
   s6: { owner: 'Legal or compliance', del: 'Regulatory obligation register', actions: ['Map applicable regulatory obligations against current AI use', 'Commission DPIAs for high-risk processing of personal data', 'Confirm EU AI Act Annex III scope with external counsel', 'Monitor regulatory change across applicable frameworks'] },
   s7: { owner: 'Technology or risk', del: 'Operational resilience protocol', actions: ['Monitor model performance against defined drift thresholds', 'Establish an AI incident response pathway with named contacts', 'Set recovery time objectives for AI-dependent services', 'Run a quarterly performance review with documented outputs'] },
 };
 
 // Fallback only. Live renders inject REPORT_DATA._regs from diagnostic_regs (Control Centre).
 const REGS_DEFAULT = [
-  { reg: 'EU AI Act', art: 'Art. 6 and Annex III', obl: 'Risk classification and registration of high-risk AI systems', type: 'M', pen: 'Up to EUR 30M or 6% of global turnover', dl: 'Aug 2026' },
-  { reg: 'EU AI Act', art: 'Art. 14', obl: 'Human oversight measures for high-risk AI systems', type: 'M', pen: 'Up to EUR 30M or 6% of global turnover', dl: 'Aug 2026' },
-  { reg: 'EU AI Act', art: 'Art. 12 and 13', obl: 'Transparency to deployers and automatic event logging', type: 'M', pen: 'Up to EUR 15M or 3% of global turnover', dl: 'Aug 2026' },
-  { reg: 'EU AI Act', art: 'Art. 27', obl: 'Fundamental rights impact assessment by deployers', type: 'M', pen: 'Up to EUR 15M or 3% of global turnover', dl: 'Aug 2026' },
-  { reg: 'UK GDPR', art: 'Art. 35', obl: 'Data Protection Impact Assessment for high-risk AI processing', type: 'M', pen: 'Up to GBP 17.5M or 4% of global turnover', dl: 'Immediate' },
-  { reg: 'UK GDPR', art: 'Art. 22', obl: 'Safeguards for solely automated decision-making', type: 'M', pen: 'Up to GBP 17.5M or 4% of global turnover', dl: 'Immediate' },
+  { reg: 'EU AI Act', art: 'Art. 6 and Annex III', obl: 'Risk classification and registration of high-risk AI systems', type: 'M', pen: 'Up to EUR 15M or 3% of global turnover', dl: '2 Dec 2027' },
+  { reg: 'EU AI Act', art: 'Art. 14', obl: 'Human oversight measures for high-risk AI systems', type: 'M', pen: 'Up to EUR 15M or 3% of global turnover', dl: '2 Dec 2027' },
+  { reg: 'EU AI Act', art: 'Art. 12 and 13', obl: 'Transparency to deployers and automatic event logging', type: 'M', pen: 'Up to EUR 15M or 3% of global turnover', dl: '2 Dec 2027' },
+  { reg: 'EU AI Act', art: 'Art. 27', obl: 'Fundamental rights impact assessment by deployers', type: 'M', pen: 'Up to EUR 15M or 3% of global turnover', dl: '2 Dec 2027' },
+  { reg: 'UK GDPR', art: 'Art. 35', obl: 'Data Protection Impact Assessment for high-risk AI processing', type: 'M', pen: 'Up to GBP 8.7M or 2% of global turnover', dl: 'Immediate' },
+  { reg: 'UK GDPR', art: 'Arts. 22A to 22D', obl: 'Safeguards for significant automated decisions', type: 'M', pen: 'Up to GBP 17.5M or 4% of global turnover', dl: 'Immediate' },
   { reg: 'UK GDPR', art: 'Art. 13 and 14', obl: 'Inform individuals of AI-assisted decisions', type: 'M', pen: 'Up to GBP 17.5M or 4% of global turnover', dl: 'Immediate' },
   { reg: 'FCA SM&CR', art: 'PS7/21', obl: 'Named Senior Manager accountability for AI-driven customer outcomes', type: 'M', pen: 'Individual sanctions and prohibition', dl: 'Immediate' },
   { reg: 'ISO/IEC 42001', art: 'Sections 6 to 9', obl: 'AI management system: risk assessment, monitoring and evaluation', type: 'A', pen: 'Certification benchmark', dl: 'Ongoing' },
 ];
 
 const OUTLOOK = [
-  { t: 'EU AI Act enforcement timeline', p: 'High-risk obligations under the EU AI Act take full effect in August 2026. Organisations without documented governance, conformity assessment preparation and registered AI systems face potential enforcement from the AI Office and national supervisory authorities. Foundational structures should be in place within the first phase of the roadmap.' },
+  { t: 'EU AI Act enforcement timeline', p: 'High-risk obligations under the EU AI Act apply to Annex III uses from 2 December 2027, following the AI Omnibus. Organisations without documented governance, conformity assessment preparation and registered AI systems face potential enforcement from the AI Office and national supervisory authorities. Foundational structures should be in place within the first phase of the roadmap.' },
   { t: 'ICO regulatory posture', p: 'The Information Commissioner\'s Office has signalled increasing scrutiny of automated decision-making and AI-driven data processing. Organisations that cannot demonstrate DPIAs, lawful basis assessments and transparency mechanisms face elevated enforcement risk.' },
   { t: 'Sector-specific trajectory', p: 'Regulated industries face compounding obligations as sector regulators overlay AI expectations onto existing compliance frameworks. Financial services firms face FCA expectations under SM&CR for named accountability. Legal and professional services firms face SRA guidance on disclosing AI use to clients.' },
   { t: 'Board-level accountability', p: 'Enforcement across all jurisdictions points to an expectation of board-level visibility and documented accountability for AI governance decisions. Establishing board-level governance is the highest-priority recommendation of this assessment.' },
@@ -632,7 +633,7 @@ function buildFindings(raw) {
   const cats = (raw.selected_categories || []).filter((c) => c && c !== 'none');
   if (cats.length) {
     list.push({
-      label: 'High-risk AI use detected. EU AI Act Annex III obligations apply from August 2026',
+      label: 'High-risk AI use detected. EU AI Act Annex III obligations apply from 2 December 2027',
       basis: `EU AI Act Annex III: ${cats.map((c) => CATEGORY_LABEL[c] || c).join(', ')}`,
       section: 's1', severity: 'critical',
       impact: 'AI systems in Annex III categories are subject to mandatory conformity assessment, technical documentation, human oversight under Article 14 and logging under Article 12.',
@@ -916,7 +917,7 @@ const PREVIEW_REPORT = {
   adjusted_score: 43,
   risk_band: 'high',
   section_scores: { s1: 44, s2: 50, s3: 42, s4: 31, s5: 47, s6: 37, s7: 60 },
-  priority_flags: [{ id: 'pf_oversight', label: 'No documented human review of AI-assisted decisions affecting individuals', basis: 'UK GDPR Art. 22, EU AI Act Art. 14' }],
+  priority_flags: [{ id: 'pf_oversight', label: 'No documented human review of AI-assisted decisions affecting individuals', basis: 'UK GDPR Arts. 22A to 22D, EU AI Act Art. 14' }],
   regime_flags: [
     { basis: 'FCA SM&CR, DP5/22', label: 'FCA regulated: SM&CR requires named Senior Manager accountability for AI governance' },
     { basis: 'UK GDPR Art. 35', label: 'ICO registered: a DPIA is mandatory for high-risk AI processing of personal data' },

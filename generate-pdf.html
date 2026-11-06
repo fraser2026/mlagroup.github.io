@@ -258,7 +258,7 @@ function showSuccessIOS(blobUrl, filename) {
   document.getElementById('back-btn').className = 'btn btn-ghost';
 }
 
-var _FW = { version: '2.0.0', date: 'February 2026', nextReview: 'August 2026' };
+var _FW = { version: '2.1.0', date: 'November 2026', nextReview: 'February 2027' };
 
 var _W = { s1:0.14, s2:0.20, s3:0.10, s4:0.16, s5:0.16, s6:0.18, s7:0.06 };
 
@@ -318,13 +318,13 @@ var _BR = {
   ],
   lowmod:[
     'Document any remaining informal governance arrangements - verbal accountability cannot be demonstrated to a regulator',
-    'Conduct an EU AI Act scope assessment to determine which obligations apply from August 2026',
+    'Conduct an EU AI Act scope assessment to determine which obligations apply now and which from 2 December 2027',
     'Close identified gaps in explainability and audit trail capability before regulatory obligations mature',
     'Formalise training records for staff who review or rely on AI-generated outputs',
     'Schedule an annual external review of your governance framework against updated regulatory guidance'
   ],
   low:[
-    'Maintain currency with EU AI Act implementation - high-risk obligations apply from August 2026',
+    'Maintain currency with EU AI Act implementation. High-risk obligations for Annex III uses apply from 2 December 2027',
     'Ensure new AI deployments are automatically subject to your existing inventory and DPIA process',
     'Continue scheduled bias and fairness testing as models evolve and data distributions shift',
     'Consider ISO/IEC 42001 certification to formally evidence governance maturity to clients and regulators',
@@ -336,11 +336,11 @@ var _SR = {
   'Financial Services':'Review your AI governance framework against FCA DP5/22 and ensure named Senior Manager accountability is documented for all AI-driven customer outcomes under SM&CR.',
   'Healthcare & Life Sciences':'Assess whether any AI systems in clinical pathways require DCB0129 clinical safety assessment and NHS DTAC compliance - these obligations apply regardless of procurement route.',
   'Legal & Professional Services':'Review SRA AI Guidance (2024) obligations - including client disclosure requirements where AI is used in client-facing work - and ensure your indemnity position covers AI-related errors.',
-  'Retail & E-commerce':'Audit customer profiling and personalisation AI for GDPR compliance and ICO profiling guidance. Where automated decisions affect eligibility, review UK GDPR Art.22 obligations.',
+  'Retail & E-commerce':'Audit customer profiling and personalisation AI for GDPR compliance and ICO profiling guidance. Where automated decisions affect eligibility, review the UK GDPR automated decision safeguards (Articles 22A to 22D).',
   'Technology & SaaS':'Clarify whether your AI deployments create provider obligations under the EU AI Act. If you supply AI-enabled services to EU customers, conformity assessment requirements may apply.',
   'Public Sector / Government':'Review AI systems against ICO public authority guidance and ensure compliance with the AI Act obligations for public sector deployment.',
   'Education':'Ensure any AI used in assessment, student profiling, or admissions is reviewed against ICO guidance and the Equality Act 2010.',
-  'Manufacturing & Logistics':'Identify any AI systems that interact with physical safety systems - these may qualify as high-risk under EU AI Act safety provisions and require conformity assessment before August 2026.',
+  'Manufacturing & Logistics':'Identify any AI systems that interact with physical safety systems - these may qualify as high-risk under the EU AI Act and require conformity assessment before the obligations apply: 2 December 2027 for Annex III uses such as critical infrastructure, and 2 August 2028 for AI in products covered by EU product safety law.',
   'Other':'Conduct a sector mapping exercise to identify which regulatory regimes apply to your specific AI use cases.'
 };
 
@@ -352,7 +352,7 @@ var _FD = {
   },
   pf_oversight:{
     section:'Human Oversight & Controls', severity:'critical',
-    impact:'Automated or AI-assisted decisions affecting individuals without adequate human review create direct regulatory exposure. UK GDPR Article 22 imposes specific requirements where decisions are solely automated and produce legal or similarly significant effects. The EU AI Act Article 14 makes human oversight a mandatory technical and organisational requirement for high-risk AI systems.',
+    impact:'Automated or AI-assisted decisions affecting individuals without adequate human review create direct regulatory exposure. UK GDPR Articles 22A to 22D permit significant decisions based solely on automated processing only with safeguards, including human intervention and the right to contest. The EU AI Act Article 14 makes human oversight a mandatory technical and organisational requirement for high-risk AI systems.',
     rec:'Implement mandatory human review protocols for all AI-assisted decisions that materially affect individuals. Document the protocol, define what constitutes a high-impact outcome, name the review function, and maintain records of reviews conducted. Where AI outputs are acted upon without human review, restrict that workflow until controls are in place.'
   },
   pf_dpia:{
@@ -363,7 +363,7 @@ var _FD = {
   pf_transparency:{
     section:'Compliance & Legal Alignment', severity:'high',
     impact:'UK GDPR Articles 13 and 14 require that individuals are proactively informed when automated or AI-assisted processes are used in ways that materially affect them. The ICO has been explicit that generic privacy policy references are insufficient - transparency must be layered, timely, and meaningful.',
-    rec:'Audit all customer and individual-facing processes that involve AI-assisted decisions. For each, implement a transparency notice at the point of interaction. Document these notices and review them against the ICO layered transparency guidance. Where automated decisions are solely automated, specific Art.22 disclosure is required.'
+    rec:'Audit all customer and individual-facing processes that involve AI-assisted decisions. For each, implement a transparency notice at the point of interaction. Document these notices and review them against the ICO layered transparency guidance. Where significant decisions are solely automated, the information and challenge safeguards in UK GDPR Articles 22A to 22D apply.'
   },
   pf_no_inventory:{
     section:'AI Inventory & Classification', severity:'high',
@@ -490,7 +490,7 @@ function generatePortalPDF(row) {
       findings.push({label:'Elevated uncertainty: '+R.uncertaintyCount+' questions answered without sufficient confidence',basis:'Risk band elevated per framework uncertainty threshold',section:'Assessment Integrity',severity:'moderate',impact:'Uncertainty about whether controls exist is treated by regulators as equivalent to the absence of those controls.',rec:'Conduct an internal governance stocktake to establish the factual position on each uncertain area.'});
     }
     if (R.selectedCategories&&R.selectedCategories.length>0&&R.selectedCategories.indexOf('none')===-1) {
-      findings.push({label:'High-risk AI category detected - EU AI Act Annex III obligations apply from August 2026',basis:'EU AI Act Annex III; Categories: '+R.selectedCategories.join(', '),section:'AI Inventory & Classification',severity:'critical',impact:'AI systems in Annex III categories are subject to mandatory conformity assessments, technical documentation, human oversight under Article 14, and logging under Article 12.',rec:'Conduct a formal EU AI Act scoping assessment for each high-risk category identified and prioritise conformity assessment preparation.'});
+      findings.push({label:'High-risk AI category detected. EU AI Act Annex III obligations apply from 2 December 2027',basis:'EU AI Act Annex III; Categories: '+R.selectedCategories.join(', '),section:'AI Inventory & Classification',severity:'critical',impact:'AI systems in Annex III categories are subject to mandatory conformity assessments, technical documentation, human oversight under Article 14, and logging under Article 12.',rec:'Conduct a formal EU AI Act scoping assessment for each high-risk category identified and prioritise conformity assessment preparation.'});
     }
 
     var br=_BR[bc]||_BR.moderate, sr=_SR[sector]||'';
@@ -727,8 +727,8 @@ function generatePortalPDF(row) {
     y+=10;
     y=sh(doc,W,M,nv,'A.4  Regulatory Framework Alignment',y);
     var regs=[
-      ['EU AI Act','Risk classification, Annex III high-risk obligations, conformity assessments, human oversight (Art.14), logging (Art.12), transparency (Art.13). In force August 2024; high-risk obligations August 2026.'],
-      ['UK GDPR / Data Protection Act 2018','Automated decision-making (Art.22), Data Protection Impact Assessments (Art.35), data subject rights (Ch.III), lawful basis, accountability principle (Art.5(2)).'],
+      ['EU AI Act','Risk classification, Annex III high-risk obligations, conformity assessments, human oversight (Art.14), logging (Art.12), transparency (Art.13). In force August 2024; applies generally from August 2026; high-risk obligations for Annex III uses from 2 December 2027.'],
+      ['UK GDPR / Data Protection Act 2018','Automated decision-making (Arts. 22A to 22D), Data Protection Impact Assessments (Art.35), data subject rights (Ch.III), lawful basis, accountability principle (Art.5(2)).'],
       ['FCA Operational Resilience','AI governance expectations (DP5/22), Senior Manager accountability under SM&CR, Consumer Duty outcomes (PS22/9), third-party AI risk management (SS2/21).'],
       ['ICO Guidance on AI & Data Protection','Transparency and explainability of AI decisions, profiling obligations, accountability framework, DPIA requirements for high-risk AI processing.'],
       ['ISO/IEC 42001','AI management system standard. Governance best practice benchmark covering risk classification, roles, data management, monitoring, and incident response.']

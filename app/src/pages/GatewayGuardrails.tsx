@@ -736,7 +736,8 @@ export function GatewayGuardrails({ orgId, accessToken, settings, onOpenActivity
                         </span>
                         <span className={styles.line}>{def.line}</span>
                         <span className={styles.facts}>
-                          Enforced by {enforcedByLabel(def)} · Evidence for {evidenceLabel(def)}
+                          Enforced by {enforcedByLabel(def)}
+                          {evidenceLabel(def) ? ` · Evidence for ${evidenceLabel(def)}` : ''}
                           {row?.inherited ? ' · Flagged on the shared gateway' : ''}
                         </span>
                         {expandable ? (

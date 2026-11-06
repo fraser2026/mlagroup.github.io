@@ -46,9 +46,17 @@ const BUILTIN_META: Record<string, { name: string; description: string }> = {
     name: 'UK GDPR',
     description: 'Data protection obligations that apply when AI systems process personal data.',
   },
+  eu_gdpr: {
+    name: 'EU GDPR',
+    description: 'Data protection obligations for AI systems that process personal data of people in the EU.',
+  },
   fca: {
     name: 'FCA expectations',
     description: 'Conduct and operational resilience expectations for AI in regulated financial services.',
+  },
+  pra: {
+    name: 'PRA expectations',
+    description: 'Prudential expectations for banks and building societies, including model risk management.',
   },
 }
 
