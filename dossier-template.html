@@ -1035,6 +1035,20 @@ table.data .ev-summary.quiet {
   line-height: 1.45;
 }
 
+.ref-when {
+  display: block;
+  font-size: var(--t-small);
+  color: var(--text-2);
+}
+
+.ref-link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
 .empty {
   padding: 16px 0;
   color: var(--text-3);
@@ -1563,7 +1577,8 @@ function governanceBasisCell(ctrl) {
       const title = m.requirement_title || '';
       const head = [fw, art].filter(Boolean).join(', ');
       const line = head && title ? `${head}: ${title}` : head || title || 'Mapped requirement';
-      return `<div>${x(line)}${m.is_primary ? ' (primary)' : ''}</div>`;
+      const notes = [m.is_primary ? 'primary' : '', m.applies_from ? `applies from ${fmtShort(m.applies_from)}` : ''].filter(Boolean);
+      return `<div>${x(line)}${notes.length ? x(` (${notes.join(', ')})`) : ''}</div>`;
     }).join('');
   }
   if (ctrl.is_org_level) return 'Internal governance requirement';
@@ -1884,12 +1899,34 @@ function render(D) {
       </tr></thead><tbody>
       ${rows.map((o) => `<tr>
           <td>${x(o.obligation_title)}</td>
-          <td class="num">${x(blank(o.article_reference))}</td>
+          <td class="num">${x(blank(o.article_reference))}${o.applies_from ? `<span class="ref-when">Applies from ${x(fmtShort(o.applies_from))}</span>` : ''}</td>
           <td class="num">${o.asset_count || 0}</td>
           <td>${statusMixStack(o.statuses)}</td>
         </tr>`).join('')}
       </tbody></table>`;
   }
+
+  const references = frameworks.references || [];
+  const refStatus = (r) => r.status === 'pending'
+    ? `Applies from ${fmtShort(r.effective_from)}`
+    : r.status === 'repealed' ? `Repealed ${fmtShort(r.effective_to)}` : 'In force';
+  const refHost = (url) => {
+    try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; }
+  };
+  const referencesHtml = references.length
+    ? `<span class="sub-label">Regulatory references</span>
+      <table class="data"><thead><tr>
+        <th>Reference</th><th>Requirement</th><th>Status</th><th>Official text</th>
+      </tr></thead><tbody>
+      ${references.map((r) => `<tr>
+          <td>${x(r.citation)}</td>
+          <td>${x(r.title)}</td>
+          <td class="num">${x(refStatus(r))}</td>
+          <td>${r.official_url && refHost(r.official_url) ? `<a class="ref-link" href="${x(r.official_url)}">${x(refHost(r.official_url))}</a>` : 'Not recorded'}</td>
+        </tr>`).join('')}
+      </tbody></table>
+      <p class="note-line">References, dates and links come from RegAnchor's reviewed requirement registry as at the export date.</p>`
+    : '';
 
   const policyRows = policies.slice(0, 40).map((p) => `<tr>
     <td>${x(p.title)}</td>
@@ -1905,6 +1942,7 @@ function render(D) {
     <h1 class="page-title">6. Frameworks, regulations and policies</h1>
     <p class="sec-intro">Mapped requirements linked to AI assets in RegAnchor, with article, regulation or guidance references where recorded.</p>
     ${obligations.length ? fwHtml : empty('No framework requirements are currently mapped against AI assets for this organisation.')}
+    ${referencesHtml}
     ${customFw.length ? `<span class="sub-label">Custom frameworks</span>
       <table class="data"><thead><tr><th>Framework</th><th>Status</th><th>Source</th></tr></thead>
       <tbody>${customFw.map((f) => `<tr>
@@ -1950,7 +1988,8 @@ function render(D) {
       ? (c.mapped_requirements || []).map((m) => {
           const head = [m.framework_name, m.article_reference].filter(Boolean).join(', ');
           const title = m.requirement_title || '';
-          return head && title ? `${head}: ${title}` : head || title;
+          const line = head && title ? `${head}: ${title}` : head || title;
+          return m.applies_from ? `${line} (applies from ${fmtShort(m.applies_from)})` : line;
         }).join('; ')
       : 'No external requirement currently mapped.';
     return `<div class="ctrl-block keep">
@@ -2402,9 +2441,14 @@ const PREVIEW_DOSSIER = {
     custom: [],
     custom_controls: [],
     obligations: [
-      { framework: 'eu_ai_act', framework_label: 'EU AI Act', obligation_title: 'Human oversight measures', article_reference: 'Article 14', asset_count: 2, statuses: { partial: 1, not_started: 1 } },
-      { framework: 'eu_ai_act', framework_label: 'EU AI Act', obligation_title: 'Risk management system', article_reference: 'Article 9', asset_count: 1, statuses: { in_progress: 1 } },
-      { framework: 'uk_gdpr', framework_label: 'UK GDPR', obligation_title: 'Automated decision-making safeguards', article_reference: 'UK GDPR Articles 22A to 22D', asset_count: 1, statuses: { met: 1 } },
+      { framework: 'eu_ai_act', framework_label: 'EU AI Act', obligation_title: 'Human oversight measures', article_reference: 'Article 14', requirement_key: 'eu_ai_act:art14', applies_from: '2027-12-02', asset_count: 2, statuses: { partial: 1, not_started: 1 } },
+      { framework: 'eu_ai_act', framework_label: 'EU AI Act', obligation_title: 'Risk management system', article_reference: 'Article 9', requirement_key: 'eu_ai_act:art9', applies_from: '2027-12-02', asset_count: 1, statuses: { in_progress: 1 } },
+      { framework: 'uk_gdpr', framework_label: 'UK GDPR', obligation_title: 'Automated decision-making safeguards', article_reference: 'Articles 22A to 22D', requirement_key: 'uk_gdpr:art22a-22d', applies_from: null, asset_count: 1, statuses: { met: 1 } },
+    ],
+    references: [
+      { key: 'eu_ai_act:art9', framework_label: 'EU AI Act', citation: 'EU AI Act Article 9', title: 'Risk management system', status: 'pending', effective_from: '2027-12-02', effective_to: null, official_url: 'https://eur-lex.europa.eu/eli/reg/2024/1689/oj', source_title: 'Regulation (EU) 2024/1689 (Artificial Intelligence Act)' },
+      { key: 'eu_ai_act:art14', framework_label: 'EU AI Act', citation: 'EU AI Act Article 14', title: 'Human oversight', status: 'pending', effective_from: '2027-12-02', effective_to: null, official_url: 'https://eur-lex.europa.eu/eli/reg/2024/1689/oj', source_title: 'Regulation (EU) 2024/1689 (Artificial Intelligence Act)' },
+      { key: 'uk_gdpr:art22a-22d', framework_label: 'UK GDPR', citation: 'UK GDPR Articles 22A to 22D', title: 'Automated decision-making safeguards', status: 'in_force', effective_from: '2026-02-05', effective_to: null, official_url: 'https://www.legislation.gov.uk/eur/2016/679/contents', source_title: 'UK GDPR (retained Regulation (EU) 2016/679 as amended)' },
     ],
   },
   controls: [

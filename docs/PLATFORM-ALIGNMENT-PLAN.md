@@ -1,6 +1,6 @@
 # Platform alignment plan: regulation to evidence, end to end
 
-Status: phase 0 shipped 6 Nov 2026 (library corrected, methodology version published the same day). Phase 1 in progress: steps 1a (registry schema and seed) and 1b (Control Centre Requirements page) shipped 6 Nov. Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
+Status: phase 0 shipped 6 Nov 2026 (library corrected, methodology version published the same day). Phase 1 in progress: steps 1a (registry schema and seed) and 1b (Control Centre Requirements page) shipped 6 Nov; 1c (readers switch) shipped 6 Nov. Next: 1d (citation check). Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
 
 Goal: a client can take RegAnchor to an audit and every claim is current, cited to the law as it stands today, and backed by evidence that is either uploaded and reviewed or measured automatically from monitoring.
 
@@ -217,6 +217,15 @@ Phase 1 does not fetch or watch anything. Captured text is filled once by a one-
 - `supabase/migrations/20261106160000_reg_admin_review.sql`: admin-only functions to list all requirements with their links, edit wording and dates, approve, return to draft or retire, and read the history. Every edit and decision is written to `reg.review_log` with who, when, what changed and an optional note. Also links the remaining three diagnostic priority flags (41 citations in total).
 - Control Centre, Methodology, Requirements (`admin/src/pages/RequirementsPage.tsx`): filter by review state and source, search, CSV export; drawer with review actions, wording, links, the verbatim text and history. Captured text is read-only.
 - For 1d: the diagnostic flags cite "ICO AI Guidance 2023" (DPIA flag) and "FCA DP5/22" (AI inventory flag), neither in the registry. The AI inventory flag also cites Article 9, a provider duty, for an inventory gap.
+
+1c shipped 6 Nov 2026, after Fraser approved all 65 requirements (first sync updated 9 obligation references, 9 diagnostic rows and 7 section bases; 481 `system_compliance` rows unchanged):
+
+- `supabase/migrations/20261106180000_reg_citation_sync.sql`. RegAnchor keeps its display copies (obligation article references, the diagnostic regulatory table, assessment section bases) and `public.reg_sync_citations()` derives them from approved requirements. It runs after every registry edit or review decision, daily at 00:05 UTC so pending dates roll into force, and once at apply. The registry is the only place a citation, penalty or date is edited; the copies are read-only in Control Centre where a row is linked.
+- Composition rules. Obligation references drop the framework name, which every reader prints beside them ("UK GDPR Article 5" becomes "Article 5", so the dossier no longer prints "UK GDPR, UK GDPR Article 5"). Section bases group by source and add a role where the duty is one-sided ("EU AI Act Articles 9, 11 and 17 (providers) and Article 26 (deployers); FCA SM&CR"). Diagnostic rows take regime, article, penalty and deadline from the primary requirement; deadline is the effective date while pending, "Immediate" once in force, "Ongoing" for benchmarks.
+- Corrections that fall out of the sync: diagnostic "PS7/21 & PRs" becomes "SM&CR" under regime "FCA", ISO "Sections 6-9" becomes "Clauses 6-9", UK GDPR transparency "Art. 13-14" becomes "Arts. 13-14", and penalties use the registry wording.
+- Dossier (generator 2.7.0): each obligation and mapped requirement carries its registry key and, while pending, "applies from"; section 6 gains a regulatory references table (citation, requirement, in force or applies from, official text link). The catalogue hash now covers the requirements behind the obligations.
+- Methodology publish snapshot version 2 includes approved requirements (citation, summary, dates, captured text hash, reviewed at) and all citations. The next publish freezes the registry baseline phase 2 needs.
+- Not changed: no new control mappings; registry requirements that RegAnchor does not use stay out of client views. `generate-report.js`, the report function, `assessment.html` and the app Frameworks pages read the synced copies, so they pick up registry wording without code changes. Hard-coded fallbacks in static pages (`report.html`, `diagnostic.html` flags) are left for the 1d check.
 
 ### Phase 2: baselines and client change notices (small to medium)
 

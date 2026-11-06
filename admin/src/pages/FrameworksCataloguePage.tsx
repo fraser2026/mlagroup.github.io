@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   BrandLoader,
   Button,
@@ -25,6 +26,7 @@ type FrameworkRow = {
   obligation_description: string | null
   guidance_text: string | null
   article_reference: string | null
+  requirement_id: string | null
   display_order: number | null
   is_active: boolean | null
 }
@@ -74,7 +76,7 @@ export function FrameworksCataloguePage() {
       const { data, error: qErr } = await sb
         .from('compliance_frameworks')
         .select(
-          'id,framework,obligation_key,obligation_title,obligation_description,guidance_text,article_reference,display_order,is_active',
+          'id,framework,obligation_key,obligation_title,obligation_description,guidance_text,article_reference,requirement_id,display_order,is_active',
         )
         .order('framework', { ascending: true })
         .order('display_order', { ascending: true })
@@ -146,7 +148,7 @@ export function FrameworksCataloguePage() {
           obligation_title: draft.obligation_title,
           obligation_description: draft.obligation_description,
           guidance_text: draft.guidance_text,
-          article_reference: draft.article_reference,
+          ...(draft.requirement_id ? {} : { article_reference: draft.article_reference }),
           is_active: draft.is_active,
         })
         .eq('id', draft.id)
@@ -281,14 +283,24 @@ export function FrameworksCataloguePage() {
                 onChange={(e) => patchDraft({ obligation_title: e.target.value })}
               />
             </label>
-            <label className={styles.label}>
-              Article reference
-              <input
-                className={styles.input}
-                value={draft.article_reference || ''}
-                onChange={(e) => patchDraft({ article_reference: e.target.value })}
-              />
-            </label>
+            {draft.requirement_id ? (
+              <div className={styles.label}>
+                Article reference
+                <span className={styles.fixed}>{draft.article_reference || 'Not set'}</span>
+                <span className={styles.fixedHint}>
+                  From the requirement registry. Edit it in <Link to="/requirements">Requirements</Link>.
+                </span>
+              </div>
+            ) : (
+              <label className={styles.label}>
+                Article reference
+                <input
+                  className={styles.input}
+                  value={draft.article_reference || ''}
+                  onChange={(e) => patchDraft({ article_reference: e.target.value })}
+                />
+              </label>
+            )}
             <label className={styles.label}>
               Description
               <textarea

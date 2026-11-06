@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   BrandLoader,
   Button,
@@ -37,6 +38,15 @@ const TYPE_OPTIONS = [
   { value: 'A', label: 'Advisory' },
 ]
 
+function FixedField({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div className={styles.label}>
+      {label}
+      <span className={styles.fixed}>{value || 'Not set'}</span>
+    </div>
+  )
+}
+
 function regCsvRow(row: RegRow) {
   return [
     row.regime,
@@ -57,6 +67,7 @@ export function DiagnosticRegsPage() {
   })
 
   const [rows, setRows] = useState<RegRow[]>([])
+  const [linkedIds, setLinkedIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -70,12 +81,17 @@ export function DiagnosticRegsPage() {
     setLoading(true)
     setError('')
     try {
-      const { data, error: qErr } = await sb
-        .from('diagnostic_regs')
-        .select('id,regime,article,obligation,requirement_type,penalty,deadline,display_order,is_active')
-        .order('display_order', { ascending: true })
+      const [{ data, error: qErr }, { data: cites, error: cErr }] = await Promise.all([
+        sb
+          .from('diagnostic_regs')
+          .select('id,regime,article,obligation,requirement_type,penalty,deadline,display_order,is_active')
+          .order('display_order', { ascending: true }),
+        sb.from('requirement_citations').select('target_key').eq('target_type', 'diagnostic_reg'),
+      ])
       if (qErr) throw qErr
+      if (cErr) throw cErr
       setRows((data as RegRow[]) || [])
+      setLinkedIds(new Set((cites || []).map((c) => String(c.target_key))))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load diagnostic regs.')
     } finally {
@@ -137,12 +153,16 @@ export function DiagnosticRegsPage() {
       const { data, error: uErr } = await sb
         .from('diagnostic_regs')
         .update({
-          regime: draft.regime.trim(),
-          article: draft.article.trim(),
+          ...(linkedIds.has(draft.id)
+            ? {}
+            : {
+                regime: draft.regime.trim(),
+                article: draft.article.trim(),
+                penalty: draft.penalty?.trim() || null,
+                deadline: draft.deadline?.trim() || null,
+              }),
           obligation: draft.obligation.trim(),
           requirement_type: draft.requirement_type === 'A' ? 'A' : 'M',
-          penalty: draft.penalty?.trim() || null,
-          deadline: draft.deadline?.trim() || null,
           display_order: Number(draft.display_order) || 0,
           is_active: draft.is_active !== false,
           updated_at: new Date().toISOString(),
@@ -252,22 +272,52 @@ export function DiagnosticRegsPage() {
         {notice && !dirty ? <Notice tone="quiet">{notice}</Notice> : null}
         {draft ? (
           <div className={styles.form}>
-            <label className={styles.label}>
-              Regime
-              <input
-                className={styles.input}
-                value={draft.regime}
-                onChange={(e) => patchDraft({ regime: e.target.value })}
-              />
-            </label>
-            <label className={styles.label}>
-              Article
-              <input
-                className={styles.input}
-                value={draft.article}
-                onChange={(e) => patchDraft({ article: e.target.value })}
-              />
-            </label>
+            {linkedIds.has(draft.id) ? (
+              <>
+                <FixedField label="Regime" value={draft.regime} />
+                <FixedField label="Article" value={draft.article} />
+                <FixedField label="Penalty" value={draft.penalty} />
+                <FixedField label="Deadline" value={draft.deadline} />
+                <span className={styles.fixedHint}>
+                  From the requirement registry. Edit these in <Link to="/requirements">Requirements</Link>.
+                </span>
+              </>
+            ) : (
+              <>
+                <label className={styles.label}>
+                  Regime
+                  <input
+                    className={styles.input}
+                    value={draft.regime}
+                    onChange={(e) => patchDraft({ regime: e.target.value })}
+                  />
+                </label>
+                <label className={styles.label}>
+                  Article
+                  <input
+                    className={styles.input}
+                    value={draft.article}
+                    onChange={(e) => patchDraft({ article: e.target.value })}
+                  />
+                </label>
+                <label className={styles.label}>
+                  Penalty
+                  <input
+                    className={styles.input}
+                    value={draft.penalty || ''}
+                    onChange={(e) => patchDraft({ penalty: e.target.value })}
+                  />
+                </label>
+                <label className={styles.label}>
+                  Deadline
+                  <input
+                    className={styles.input}
+                    value={draft.deadline || ''}
+                    onChange={(e) => patchDraft({ deadline: e.target.value })}
+                  />
+                </label>
+              </>
+            )}
             <label className={styles.label}>
               Obligation
               <textarea
@@ -286,22 +336,6 @@ export function DiagnosticRegsPage() {
                 onChange={(value) => patchDraft({ requirement_type: value })}
               />
             </div>
-            <label className={styles.label}>
-              Penalty
-              <input
-                className={styles.input}
-                value={draft.penalty || ''}
-                onChange={(e) => patchDraft({ penalty: e.target.value })}
-              />
-            </label>
-            <label className={styles.label}>
-              Deadline
-              <input
-                className={styles.input}
-                value={draft.deadline || ''}
-                onChange={(e) => patchDraft({ deadline: e.target.value })}
-              />
-            </label>
             <label className={styles.label}>
               Display order
               <input

@@ -648,7 +648,7 @@ serve(async (req) => {
     const assetIdList = assets.map((a) => a.id)
 
     // Methodology catalogue (Control Centre SoT) — hashed separately from org snapshot.
-    const [catalogueControlsRes, catalogueFrameworksRes, catalogueMapsRes] = await Promise.all([
+    const [catalogueControlsRes, catalogueFrameworksRes, catalogueMapsRes, obligationRequirementsRes] = await Promise.all([
       supabase
         .from('governance_controls')
         .select(
@@ -670,7 +670,28 @@ serve(async (req) => {
         )
         .eq('is_active', true)
         .order('display_order'),
+      supabase.rpc('reg_obligation_requirements'),
     ])
+
+    type RegRequirement = {
+      requirement_key: string
+      citation: string
+      short_citation: string
+      title: string
+      status: 'in_force' | 'pending' | 'repealed'
+      effective_from: string | null
+      effective_to: string | null
+      official_url: string | null
+      source_title: string
+      captured_hash: string | null
+    }
+    const requirementByObligationId = new Map<string, RegRequirement>()
+    for (const r of (obligationRequirementsRes.data || []) as Array<RegRequirement & { obligation_id: string }>) {
+      const { obligation_id, ...req } = r
+      requirementByObligationId.set(String(obligation_id), req)
+    }
+    const appliesFrom = (req: RegRequirement | undefined) =>
+      req && req.status === 'pending' ? req.effective_from : null
 
     const catalogueControls = [...(catalogueControlsRes.data || [])].sort((a, b) =>
       String(a.id).localeCompare(String(b.id)),
@@ -681,11 +702,15 @@ serve(async (req) => {
     const catalogueMaps = [...(catalogueMapsRes.data || [])].sort((a, b) =>
       String(a.id).localeCompare(String(b.id)),
     )
+    const catalogueRequirements = [...requirementByObligationId.entries()]
+      .map(([obligation_id, r]) => ({ obligation_id, ...r }))
+      .sort((a, b) => a.obligation_id.localeCompare(b.obligation_id))
     const catalogueHash = await sha16({
-      version: 1,
+      version: 2,
       controls: catalogueControls,
       frameworks: catalogueFrameworks,
       maps: catalogueMaps,
+      requirements: catalogueRequirements,
     })
 
     const { data: currentMethodology } = await supabase
@@ -703,6 +728,7 @@ serve(async (req) => {
           framework_label: FRAMEWORK_LABELS[String(cf.framework || '')] || String(cf.framework || '').replace(/_/g, ' '),
           obligation_title: String(cf.obligation_title || 'Obligation'),
           article_reference: cf.article_reference ? String(cf.article_reference) : null,
+          requirement: requirementByObligationId.get(String(cf.id)),
         },
       ]),
     )
@@ -897,6 +923,8 @@ serve(async (req) => {
       framework_label: string
       obligation_title: string
       article_reference: string | null
+      requirement_key: string | null
+      applies_from: string | null
       obligation_description: string | null
       asset_count: number
       statuses: Record<string, number>
@@ -910,12 +938,15 @@ serve(async (req) => {
       let agg = obMap.get(oid)
       if (!agg) {
         const fw = cf.framework
+        const req = requirementByObligationId.get(oid)
         agg = {
           obligation_id: oid,
           framework: fw,
           framework_label: FRAMEWORK_LABELS[fw] || fw.replace(/_/g, ' '),
           obligation_title: cf.obligation_title,
           article_reference: cf.article_reference,
+          requirement_key: req?.requirement_key || null,
+          applies_from: appliesFrom(req),
           obligation_description: cf.obligation_description,
           asset_count: 0,
           statuses: {},
@@ -967,6 +998,8 @@ serve(async (req) => {
             framework_name: ob?.framework_label || null,
             requirement_title: ob?.obligation_title || null,
             article_reference: ob?.article_reference || null,
+            requirement_key: ob?.requirement?.requirement_key || null,
+            applies_from: appliesFrom(ob?.requirement),
             is_primary: Boolean(m.is_primary),
             interpretation_note: m.interpretation_note ? String(m.interpretation_note) : null,
             source: 'catalogue' as const,
@@ -979,6 +1012,8 @@ serve(async (req) => {
           framework_name: fc.framework_name,
           requirement_title: fc.title,
           article_reference: null as string | null,
+          requirement_key: null as string | null,
+          applies_from: null as string | null,
           is_primary: false,
           interpretation_note: null as string | null,
           status: fc.status,
@@ -991,6 +1026,30 @@ serve(async (req) => {
         mapped_requirements: [...catalogueMapped, ...customMapped],
       }
     })
+
+    // Every registry requirement this dossier cites, for the regulatory references table.
+    const citedKeys = new Set<string>([
+      ...obligations.map((o) => o.requirement_key),
+      ...controlsEnriched.flatMap((c) => c.mapped_requirements.map((m) => m.requirement_key)),
+    ].filter((k): k is string => Boolean(k)))
+    const regulatoryReferences = [...new Map(
+      [...requirementByObligationId.entries()]
+        .filter(([, r]) => citedKeys.has(r.requirement_key))
+        .map(([oid, r]) => [r.requirement_key, {
+          key: r.requirement_key,
+          framework_label: obligationMetaById.get(oid)?.framework_label || null,
+          citation: r.citation,
+          title: r.title,
+          status: r.status,
+          effective_from: r.effective_from,
+          effective_to: r.effective_to,
+          official_url: r.official_url,
+          source_title: r.source_title,
+        }] as const),
+    ).values()].sort((a, b) =>
+      String(a.framework_label).localeCompare(String(b.framework_label)) ||
+      a.citation.localeCompare(b.citation, 'en', { numeric: true }),
+    )
 
     const ctrlDone = controlsEnriched.filter((c) => isDoneStatus(c.status)).length
     const ctrlInProgress = controlsEnriched.filter((c) => isInProgressStatus(c.status)).length
@@ -1136,6 +1195,7 @@ serve(async (req) => {
         custom: frameworksRes.data || [],
         custom_controls: customFrameworkControls,
         obligations,
+        references: regulatoryReferences,
       },
       controls: controlsEnriched,
       evidence,
@@ -1168,7 +1228,7 @@ serve(async (req) => {
         methodology_version_id: currentMethodology?.id || null,
         methodology_version_label: currentMethodology?.version_label || null,
         methodology_catalogue_hash: currentMethodology?.catalogue_hash || null,
-        generator_version: '2.6.0',
+        generator_version: '2.7.0',
         requested_by: user.id,
       },
     }
