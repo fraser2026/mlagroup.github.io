@@ -1,6 +1,6 @@
 # Platform alignment plan: regulation to evidence, end to end
 
-Status: phase 0 shipped 6 Nov 2026 (library corrected, methodology version published the same day). Phase 1 in progress: steps 1a (registry schema and seed) and 1b (Control Centre Requirements page) shipped 6 Nov; 1c (readers switch) shipped 6 Nov; 1d (citation check) built 6 Nov and its findings fixed; two cited documents await draft approval. Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
+Status: phase 0 shipped 6 Nov 2026 (library corrected, methodology version published the same day). Phase 1 in progress: steps 1a (registry schema and seed) and 1b (Control Centre Requirements page) shipped 6 Nov; 1c (readers switch) shipped 6 Nov; 1d (citation check) built 6 Nov and its findings fixed; the three cited documents added as drafts were approved 7 Nov. Phase 2 (baselines, change notices, regulatory horizon) shipped 9 Nov; dossier and Reports page notices next. Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
 
 Goal: a client can take RegAnchor to an audit and every claim is current, cited to the law as it stands today, and backed by evidence that is either uploaded and reviewed or measured automatically from monitoring.
 
@@ -225,7 +225,7 @@ Phase 1 does not fetch or watch anything. Captured text is filled once by a one-
 - Corrections that fall out of the sync: diagnostic "PS7/21 & PRs" becomes "SM&CR" under regime "FCA", ISO "Sections 6-9" becomes "Clauses 6-9", UK GDPR transparency "Art. 13-14" becomes "Arts. 13-14", and penalties use the registry wording.
 - Dossier (generator 2.7.0): each obligation and mapped requirement carries its registry key and, while pending, "applies from"; section 6 gains a regulatory references table (citation, requirement, in force or applies from, official text link). The catalogue hash now covers the requirements behind the obligations.
 - Methodology publish snapshot version 2 includes approved requirements (citation, summary, dates, captured text hash, reviewed at) and all citations. The next publish freezes the registry baseline phase 2 needs.
-- Not changed: no new control mappings; registry requirements that RegAnchor does not use stay out of client views.
+- Not changed: no new control mappings; registry requirements that RegAnchor does not use stay out of client views. `generate-report.js`, the report function, `assessment.html` and the app Frameworks pages read the synced copies, so they pick up registry wording without code changes. Hard-coded fallbacks in static pages (`report.html`, `diagnostic.html` flags) are left for the 1d check.
 
 1d built 6 Nov 2026:
 
@@ -236,7 +236,8 @@ Phase 1 does not fetch or watch anything. Captured text is filled once by a one-
   - PS7/21 and SS1/21 presented as FCA rules; both are PRA documents (outsourcing; operational resilience). The FCA equivalents in the registry are SYSC 8 and SYSC 15A.
   - EU AI Act Articles 16, 72 and 73, provider duties, cited to deployers in the report template and methodology page. The deployer duty is Article 26(5).
   - Old UK GDPR Article 22 in the report template section 5 basis and the methodology page.
-  - PS22/9 (Consumer Duty policy statement; the registry cites PRIN 2A), PRA SS2/21 and "ICO AI Guidance 2023", current documents not yet in the registry. `generate-report.js`, the report function, `assessment.html` and the app Frameworks pages read the synced copies, so they pick up registry wording without code changes. Hard-coded fallbacks in static pages (`report.html`, `diagnostic.html` flags) are left for the 1d check.
+  - PS22/9 (Consumer Duty policy statement; the registry cites PRIN 2A), PRA SS2/21 and "ICO AI Guidance 2023", current documents not yet in the registry.
+- 7 Nov: Fraser approved the three drafts; registry re-exported and the baseline is empty (0 known findings).
 
 ### Phase 2: baselines and client change notices (small to medium)
 
@@ -244,6 +245,20 @@ Phase 1 does not fetch or watch anything. Captured text is filled once by a one-
 - "Changed since your baseline" notice on assets and reports, listing affected answers and controls.
 - Regulatory horizon view: pending dates (2 Dec 2026 prohibition, 2 Dec 2027 Annex III) shown per client.
 - Outcome: clients are told when the law moves under them.
+
+Client base for every surface in this plan: organisations deploying or developing AI agents in their workflows, mostly in the UK and also the EU, across regulated sectors (financial services, law, AI and digital, manufacturing and logistics, healthcare, public sector and others). Financial services is a major segment, not the only one. Client copy is addressed to the client, sector-neutral unless a requirement is sector-specific, and shows the role a duty applies to (providers, deployers, controllers, regulated firms).
+
+Phase 2 shipped 9 Nov 2026 (dry run on production first; applied, app deployed; 481 `system_compliance` rows unchanged):
+
+- `supabase/migrations/20261109170000_reg_baselines_and_changes.sql`:
+  - Article-level links for the 38 EU AI Act, EU GDPR and DORA requirements (EUR-Lex anchors, checked in the browser; the AI Act uses the consolidated text of 27 Jul 2026). Each change is written to the review log. FCA, PRA, ICO and ISO items keep their document links, which already open the exact document.
+  - `registry_assessments.methodology_version_id`, set by trigger to the current methodology version when an assessment is completed. The 42 completed assessments predate the first version (16 Sep 2026), so they stay unstamped. Dossiers already record their methodology version in the snapshot.
+  - Draft requirement `eu_ai_act:art5(1)(ba)-(bb)` (non-consensual intimate imagery and child sexual abuse material), applying from 2 Dec 2026, with the verbatim text from the consolidated Act. Article 113 is not captured, so confirm the date when approving.
+  - `asset_regulatory_changes(system_id)`: for the requirements behind an asset's latest completed assessment, its obligations and its assigned controls, what has changed since that assessment, measured by legal dates (now applies, replaced, repealed). Against a version 2 baseline it also reports wording updates and newly cited requirements. Returns the affected sections with answer counts, the affected controls and the official link. Dry run: 39 changes, all Article 50 (applies from 2 Aug 2026) for 12 assets assessed before that date.
+  - `org_regulatory_horizon(org_id)`: approved requirements applying from a future date that touch the organisation's assets, with the roles they apply to and the number of assets. Prohibitions count for every asset. Dry run: 12 EU AI Act requirements applying from 2 Dec 2027.
+- App: "Changes since your last assessment" on the asset Assessment tab (`AssetRegulatoryChanges.tsx`; paragraph rows fold into their article) and "Coming into force" on the Frameworks page (`RegulatoryHorizon.tsx`). Both are hidden when empty and use the shared `Ledger` and `DataTable`.
+- After apply: publish a new methodology version so the first version 2 baseline exists; assessments completed from then on are stamped with it.
+- Not in this step: change notices inside dossiers and on the Reports page.
 
 ### Phase 3: regulatory watcher (medium)
 

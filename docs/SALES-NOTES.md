@@ -8,6 +8,14 @@ Rules for entries:
 - One bold headline, one or two plain sentences on what the client gets. No hype, no em dashes, sentence case.
 - Add a "Limits" line when a claim needs a qualifier to stay accurate. Accuracy beats reach: our buyers answer to the FCA and MFSA.
 
+## 9 Nov 2026
+
+- **See what has changed in the law since each assessment.** Each asset lists the requirements that have come into force, been replaced or been repealed since its last assessment, with the affected answers and controls, the date and a link to the official text.
+  - Limits: covers requirements cited by the asset's assessment, obligations and controls. Completed assessments are not changed; run a new assessment to update the record.
+- **Upcoming obligations for your AI assets in one table.** The Frameworks page lists requirements that apply from a future date, who they apply to and how many of your assets they cover, such as EU AI Act high-risk duties from 2 December 2027.
+  - Limits: based on what your assessments, obligations and controls cite, not a full legal applicability review. Prohibitions are shown for every asset.
+- **EU citations link to the exact article.** EU AI Act, GDPR and DORA references open the relevant article or annex on EUR-Lex rather than the whole regulation.
+
 ## 6 Nov 2026
 
 - **Dossiers list every regulation they cite, with its status and a link to the official text.** The AI Governance Dossier now has a regulatory references table showing each cited article or rule, whether it is in force or the date it applies from, and a link to EUR-Lex, legislation.gov.uk or the regulator. Requirements that apply later, such as EU AI Act high-risk duties from 2 December 2027, are marked "applies from" wherever they appear.

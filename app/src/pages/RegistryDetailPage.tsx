@@ -78,6 +78,7 @@ import { AssetFormFields } from './AssetFormFields'
 import { BedrockConnection } from './BedrockConnection'
 import { GatewayActivity } from './GatewayActivity'
 import { AssetGuardrails } from './AssetGuardrails'
+import { AssetRegulatoryChanges } from './AssetRegulatoryChanges'
 import styles from './RegistryDetailPage.module.css'
 
 type Conn = {
@@ -1267,6 +1268,8 @@ export function RegistryDetailPage() {
               }
             />
           ) : (
+            <>
+            {id ? <AssetRegulatoryChanges systemId={id} /> : null}
             <div className={styles.assessList}>
               {assessments.map((a, i) => {
                 const band = a.risk_band || 'medium'
@@ -1381,6 +1384,7 @@ export function RegistryDetailPage() {
                 )
               })}
             </div>
+            </>
           )}
         </Section>
       ) : null}

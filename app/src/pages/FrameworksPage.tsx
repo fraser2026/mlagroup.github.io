@@ -18,6 +18,7 @@ import { usePageChrome } from '../ui/shellChrome'
 import { useAuth } from '../auth/AuthProvider'
 import { loadWorkspace, pct } from '../lib/workspace'
 import { sb } from '../lib/supabase'
+import { RegulatoryHorizon } from './RegulatoryHorizon'
 import styles from './FrameworksPage.module.css'
 
 type BuiltinFramework = {
@@ -329,6 +330,8 @@ export function FrameworksPage() {
           </div>
         )}
       </Section>
+
+      {orgId ? <RegulatoryHorizon orgId={orgId} /> : null}
 
       <Drawer
         open={createOpen}
