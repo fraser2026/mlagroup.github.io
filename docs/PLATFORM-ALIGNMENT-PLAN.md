@@ -1,6 +1,6 @@
 # Platform alignment plan: regulation to evidence, end to end
 
-Status: phase 0 shipped 6 Nov 2026 (library corrected, methodology version published the same day). Phase 1 in progress: steps 1a (registry schema and seed) and 1b (Control Centre Requirements page) shipped 6 Nov; 1c (readers switch) shipped 6 Nov; 1d (citation check) built 6 Nov and its findings fixed; the three cited documents added as drafts were approved 7 Nov. Phase 2 (baselines, change notices, regulatory horizon) shipped 9 Nov; dossier and Reports page notices next. Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
+Status: phase 0 shipped 6 Nov 2026 (library corrected, methodology version published the same day). Phase 1 in progress: steps 1a (registry schema and seed) and 1b (Control Centre Requirements page) shipped 6 Nov; 1c (readers switch) shipped 6 Nov; 1d (citation check) built 6 Nov and its findings fixed; the three cited documents added as drafts were approved 7 Nov. Phase 2 (baselines, change notices on assets, dossiers and reports, regulatory horizon) shipped 9 Nov. Companion to [REGULATORY-RESEARCH.md](REGULATORY-RESEARCH.md), which covers what the law says; this document covers how the product should hold it.
 
 Goal: a client can take RegAnchor to an audit and every claim is current, cited to the law as it stands today, and backed by evidence that is either uploaded and reviewed or measured automatically from monitoring.
 
@@ -258,7 +258,7 @@ Phase 2 shipped 9 Nov 2026 (dry run on production first; applied, app deployed; 
   - `org_regulatory_horizon(org_id)`: approved requirements applying from a future date that touch the organisation's assets, with the roles they apply to and the number of assets. Prohibitions count for every asset. Dry run: 12 EU AI Act requirements applying from 2 Dec 2027.
 - App: "Changes since your last assessment" on the asset Assessment tab (`AssetRegulatoryChanges.tsx`; paragraph rows fold into their article) and "Coming into force" on the Frameworks page (`RegulatoryHorizon.tsx`). Both are hidden when empty and use the shared `Ledger` and `DataTable`.
 - After apply: publish a new methodology version so the first version 2 baseline exists; assessments completed from then on are stamped with it.
-- Not in this step: change notices inside dossiers and on the Reports page.
+- Follow-up shipped the same day (`20261109200000_reg_change_notices_reports.sql`, generator 2.8.0): dossier section 8 lists regulatory changes since each asset's latest assessment; the Reports page shows the count per assessment with a link to the asset. The change logic moved to `reg_asset_changes` (service role only) so the dossier generator can call it; the client function keeps its access check. The same migration revoked anonymous and signed-in execute on internal registry functions (`reg_sync_citations`, `reg_compose_basis`, `reg_compose_short`, the baseline trigger function), which Supabase grants by default and `revoke ... from public` had not removed. Verified with a new Acme review dossier (RAD-B295-260CB9).
 
 ### Phase 3: regulatory watcher (medium)
 

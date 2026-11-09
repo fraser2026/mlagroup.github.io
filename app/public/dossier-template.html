@@ -2049,6 +2049,30 @@ function render(D) {
     <td><span class="status ${statusClass(a.status)}">${x(assessStatus(a.status))}</span></td>
   </tr>`).join('');
 
+  const regChanges = D.regulatory_changes || [];
+  const changeLabel = {
+    now_applies: 'Now applies', replaced: 'Replaced', repealed: 'Repealed', wording: 'Updated', added: 'Newly cited',
+  };
+  const changeAffects = (c) => [
+    ...(c.sections || []),
+    ...((c.controls || []).length ? [`${c.controls.length === 1 ? 'Control' : 'Controls'} ${c.controls.join(', ')}`] : []),
+  ].join('; ') || 'Not recorded';
+  const changesHtml = regChanges.length
+    ? `<span class="sub-label">Regulatory changes since assessment</span>
+      <table class="data"><thead><tr>
+        <th>AI asset</th><th>Assessed</th><th>Requirement</th><th>Change</th><th>Affects</th>
+      </tr></thead><tbody>
+      ${regChanges.map((c) => `<tr>
+          <td>${x(blank(c.asset_name))}</td>
+          <td class="num">${x(fmtShort(c.assessed_on))}</td>
+          <td>${x(c.citation)}${(c.includes || []).length ? `<span class="ref-when">Including ${x(c.includes.join(', '))}</span>` : ''}${c.replaces ? `<span class="ref-when">Replaces ${x(c.replaces)}</span>` : ''}${c.replaced_by ? `<span class="ref-when">Replaced by ${x(c.replaced_by)}</span>` : ''}</td>
+          <td class="num">${x(changeLabel[c.change] || pretty(c.change))}<span class="ref-when">${x(fmtShort(c.changed_on))}</span></td>
+          <td>${x(changeAffects(c))}</td>
+        </tr>`).join('')}
+      </tbody></table>
+      <p class="note-line">Requirements that came into force, were replaced or were repealed after each asset's latest completed assessment. Assessment records are not changed; a new assessment brings them up to date.</p>`
+    : '';
+
   html += `<section class="section" data-toc="8">
     ${pageHeader(dossierId)}
     <div class="section-body">
@@ -2059,6 +2083,7 @@ function render(D) {
         <th>AI asset</th><th>Date</th><th>Score</th><th>Risk band</th><th>Assessment status</th>
       </tr></thead><tbody>${assessRows}</tbody></table>`
       : empty('No assessments recorded.')}
+    ${changesHtml}
     </div>
     ${pageFooter()}
   </section>`;
@@ -2432,6 +2457,9 @@ const PREVIEW_DOSSIER = {
     { asset_name: 'Credit Decision Assistant', requested_at: '2026-08-01', completed_at: '2026-08-12', overall_score: 48, risk_band: 'high', status: 'controls_issued' },
     { asset_name: 'Support Copilot', requested_at: '2026-07-10', completed_at: '2026-07-18', overall_score: 71, risk_band: 'limited', status: 'controls_issued' },
     { asset_name: 'Doc Summariser', requested_at: '2026-09-01', status: 'submitted', overall_score: null, risk_band: null },
+  ],
+  regulatory_changes: [
+    { asset_name: 'Support Copilot', assessed_on: '2026-07-18', citation: 'EU AI Act Article 50', title: 'Transparency obligations for certain AI systems', change: 'now_applies', changed_on: '2026-08-02', includes: ['50(1)'], replaces: null, replaced_by: null, sections: ['Transparency & Explainability'], controls: ['C5'], official_url: 'https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02024R1689-20260727#art_50' },
   ],
   policies: [
     { title: 'AI Governance Policy', version: '1.2', is_active: true, published_at: '2026-06-01', linked_control_title: 'AI Governance Policy', linked_control_number: 1 },

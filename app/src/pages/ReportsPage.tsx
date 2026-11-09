@@ -42,6 +42,7 @@ type Assessment = {
   id: string
   system_id?: string | null
   requested_at?: string | null
+  completed_at?: string | null
   sector?: string | null
   overall_score?: number | null
   risk_band?: string | null
@@ -108,6 +109,7 @@ export function ReportsPage() {
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([])
   const [assessments, setAssessments] = useState<Assessment[]>([])
   const [sysNames, setSysNames] = useState<Record<string, string>>({})
+  const [changeCounts, setChangeCounts] = useState<Record<string, number>>({})
   const [paidIds, setPaidIds] = useState<Set<string>>(new Set())
   const [isPaid, setIsPaid] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -202,15 +204,21 @@ export function ReportsPage() {
       setDiagnostics((results as Diagnostic[]) || [])
 
       if (org?.id) {
-        const [{ data: assess }, { data: systems }] = await Promise.all([
+        const [{ data: assess }, { data: systems }, { data: counts }] = await Promise.all([
           sb
             .from('registry_assessments')
             .select('*')
             .eq('org_id', org.id)
             .order('requested_at', { ascending: false }),
           sb.from('ai_systems').select('id,name').eq('org_id', org.id).is('deleted_at', null),
+          sb.rpc('org_regulatory_change_counts', { p_org_id: org.id }),
         ])
         setAssessments((assess as Assessment[]) || [])
+        const byAsset: Record<string, number> = {}
+        for (const row of (counts as { system_id: string; changes: number }[] | null) || []) {
+          byAsset[row.system_id] = row.changes
+        }
+        setChangeCounts(byAsset)
         const names: Record<string, string> = {}
         ;(systems || []).forEach((s: { id: string; name?: string }) => {
           names[s.id] = s.name || 'AI system'
@@ -606,11 +614,21 @@ export function ReportsPage() {
             {assessments.map((a) => {
               const band = a.risk_band || ''
               const name = (a.system_id && sysNames[a.system_id]) || 'AI system'
+              const latestCompleted =
+                !!a.system_id &&
+                !!a.completed_at &&
+                !assessments.some(
+                  (b) => b.system_id === a.system_id && (b.completed_at || '') > (a.completed_at || ''),
+                )
+              const changes = latestCompleted && a.system_id ? changeCounts[a.system_id] || 0 : 0
+              const changeText = changes
+                ? ` · ${changes} regulatory ${changes === 1 ? 'change' : 'changes'} since this assessment`
+                : ''
               return (
                 <LedgerRow
                   key={a.id}
                   title={name}
-                  description={`${fmtDate(a.requested_at)}${a.sector ? ` · ${a.sector}` : ''}`}
+                  description={`${fmtDate(a.requested_at)}${a.sector ? ` · ${a.sector}` : ''}${changeText}`}
                   meta={
                     <div className={styles.meta}>
                       <div className={styles.score}>
@@ -624,6 +642,13 @@ export function ReportsPage() {
                         )}
                       </div>
                       <div className={styles.actions}>
+                        {changes ? (
+                          <Link to={`/registry/${a.system_id}?tab=assessment`}>
+                            <Button size="sm" variant="ghost">
+                              Review changes
+                            </Button>
+                          </Link>
+                        ) : null}
                         <a
                           href={`/legacy/system-report.html?aid=${encodeURIComponent(a.id)}`}
                           target="_blank"

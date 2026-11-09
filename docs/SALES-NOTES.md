@@ -14,6 +14,8 @@ Rules for entries:
   - Limits: covers requirements cited by the asset's assessment, obligations and controls. Completed assessments are not changed; run a new assessment to update the record.
 - **Upcoming obligations for your AI assets in one table.** The Frameworks page lists requirements that apply from a future date, who they apply to and how many of your assets they cover, such as EU AI Act high-risk duties from 2 December 2027.
   - Limits: based on what your assessments, obligations and controls cite, not a full legal applicability review. Prohibitions are shown for every asset.
+- **Dossiers and reports show regulatory changes since each assessment.** The AI Governance Dossier lists, per asset, requirements that came into force, were replaced or were repealed after its latest assessment, with the affected sections and controls. The Reports page shows the number of changes against each assessment, with a link to review them.
+  - Limits: signed dossiers keep the content they were signed with; the list appears in dossiers generated from today.
 - **EU citations link to the exact article.** EU AI Act, GDPR and DORA references open the relevant article or annex on EUR-Lex rather than the whole regulation.
 
 ## 6 Nov 2026

@@ -1060,6 +1060,66 @@ serve(async (req) => {
       asset_name: assetNames.get(String(a.system_id || '')) || null,
     }))
 
+    type RegChangeRow = {
+      requirement_key: string
+      citation: string
+      title: string
+      change: string
+      changed_on: string
+      replaces: string | null
+      replaced_by: string | null
+      sections: { title: string }[]
+      controls: { control_number: number | null; reference: string | null }[]
+      official_url: string | null
+      assessed_on: string
+    }
+    const regulatoryChanges = (
+      await Promise.all(
+        assetsWithOwners.map(async (a) => {
+          const { data, error } = await supabase.rpc('reg_asset_changes', { p_system_id: a.id })
+          if (error) console.error('[generate-dossier] reg_asset_changes', a.id, error.message)
+          const rows = (data || []) as RegChangeRow[]
+          const keys = new Set(rows.map((r) => `${r.requirement_key}|${r.change}|${r.changed_on}`))
+          const folded = rows.filter((r) => {
+            const m = r.requirement_key.match(/^(.*?)\(.+\)$/)
+            return !(m && keys.has(`${m[1]}|${r.change}|${r.changed_on}`))
+          })
+          return folded.map((r) => {
+            const parts = rows.filter(
+              (c) =>
+                c !== r &&
+                c.requirement_key.startsWith(`${r.requirement_key}(`) &&
+                c.change === r.change &&
+                c.changed_on === r.changed_on,
+            )
+            const controls = new Set<string>()
+            for (const c of [r, ...parts]) {
+              for (const k of c.controls || []) {
+                const code = k.control_number != null ? `C${k.control_number}` : k.reference
+                if (code) controls.add(code)
+              }
+            }
+            return {
+              asset_id: a.id,
+              asset_name: a.name,
+              assessed_on: r.assessed_on,
+              requirement_key: r.requirement_key,
+              citation: r.citation,
+              title: r.title,
+              change: r.change,
+              changed_on: r.changed_on,
+              replaces: r.replaces,
+              replaced_by: r.replaced_by,
+              includes: parts.map((c) => c.citation.replace(/^.*?(\d+\w*\(.+\))$/, '$1')),
+              sections: (r.sections || []).map((s) => s.title),
+              controls: [...controls],
+              official_url: r.official_url,
+            }
+          })
+        }),
+      )
+    ).flat()
+
     const evidence = evidenceRaw.map((e) => {
       const assignment = controlsEnriched.find((c) => c.id === e.control_assignment_id)
       return {
@@ -1190,6 +1250,7 @@ serve(async (req) => {
       },
       assets: assetsWithOwners,
       assessments,
+      regulatory_changes: regulatoryChanges,
       policies,
       frameworks: {
         custom: frameworksRes.data || [],
@@ -1228,7 +1289,7 @@ serve(async (req) => {
         methodology_version_id: currentMethodology?.id || null,
         methodology_version_label: currentMethodology?.version_label || null,
         methodology_catalogue_hash: currentMethodology?.catalogue_hash || null,
-        generator_version: '2.7.0',
+        generator_version: '2.8.0',
         requested_by: user.id,
       },
     }
