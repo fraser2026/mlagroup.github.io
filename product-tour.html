@@ -309,15 +309,227 @@ button.btn{font-family:inherit;cursor:pointer}
   .f-contact__email:hover,.f-contact__email:focus-visible{text-decoration-color:currentColor}
 }
 </style>
+<style>
+/* tokens needed by the shared site header (copied from financial-services.html) */
+:root{--fs-12:12px;--fs-13:13px;--fs-14:14px;--fs-15:15px;--fs-16:16px;--fs-p8:11px;--r-6:6px;--r-8:8px;--icon-arrow:16px;--icon-gap:4px;--icon-nudge:2px;--fsc-2:#fff;--fsc-5:rgba(247,246,244,.09);--fsc-7:rgba(0,0,0,.6);--fsc-17:rgba(247,246,244,.08);--fsc-18:#533afd;--fsc-19:rgba(10,14,20,.06);--fsc-22:rgba(10,14,20,.08);--fsc-23:rgba(10,14,20,.07);--fsc-31:#4330e0;--fsc-89:rgba(10,14,20,.04);--fsc-93:rgba(10,14,20,.05);--fsc-96:rgba(247,246,244,.10);--fsc-100:rgba(247,246,243,.6);--fsc-101:rgba(249,249,250,.86);--fsc-102:rgba(10,14,20,.26);--fsc-103:rgba(10,14,20,.045);--fsc-104:rgba(10,14,20,.065);--fsc-105:rgba(22,25,33,.84);--fsc-106:rgba(247,246,243,.56);--fsc-107:rgba(247,246,244,.07);--fsc-108:rgba(247,246,244,.06);--fsc-109:rgba(10,14,20,.28);--fsc-110:rgba(247,247,249,.97);--fsc-111:rgba(10,14,20,.30);--font-body:Inter,system-ui,-apple-system,sans-serif;--font-display:"Inter Tight",Inter,system-ui,sans-serif}
+</style>
+<style>.nav-links,.nav-burger,.nav-sheet,.nav-scrim{display:none}
+.nav-t{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 10px 0 12px;border:0;border-radius:var(--r-6);background:none;font-weight:500;font-size:var(--fs-14);line-height:1;font-family:var(--font-body);letter-spacing:-.005em;color:var(--ink);cursor:pointer;transition:background-color .2s,color .3s var(--x-ease)}
+.nav-t svg{flex:none;width:.7em;height:.7em;stroke-width:2.2;color:var(--ink-3);transition:transform .38s var(--x-ease),color .2s}
+.nav-t:hover,.nav-t:focus-visible,.nav-t[aria-expanded="true"]{background:var(--fsc-93);outline:none}
+.nav-t[aria-expanded="true"] svg{transform:rotate(180deg);color:var(--ink)}
+.nav.on-dark .nav-t{color:var(--on-dark)}
+.nav.on-dark .nav-t svg{color:var(--fsc-100)}
+.nav.on-dark .nav-t:hover,.nav.on-dark .nav-t:focus-visible,.nav.on-dark .nav-t[aria-expanded="true"]{background:var(--fsc-17)}
+.nav.on-dark .nav-t[aria-expanded="true"] svg{color:var(--on-dark)}
+@media (min-width:821px){.nav .bar{width:fit-content}
+.nav-links{display:flex;align-items:center;gap:2px;margin:0 28px 0 36px}}
+.nav-pop{position:absolute;top:60px;left:0;width:0;height:0;--px:0px;--py:-6px;--ps:.985;transform:translate3d(var(--px),var(--py),0) scale(var(--ps));transform-origin:50% 0;opacity:0;visibility:hidden;pointer-events:none;border-radius:var(--r-8);background:var(--fsc-101);border:1px solid var(--fsc-19);box-shadow:0 1px 2px var(--fsc-89),0 24px 48px -20px var(--fsc-102);-webkit-backdrop-filter:saturate(1.8) blur(24px);backdrop-filter:saturate(1.8) blur(24px);transition:opacity .2s ease,transform .4s var(--x-ease),width .4s var(--x-ease),height .4s var(--x-ease),visibility 0s linear .4s,background-color .4s var(--x-ease),border-color .4s var(--x-ease)}
+.nav-pop.open{opacity:1;visibility:visible;pointer-events:auto;--py:0px;--ps:1;transition:opacity .24s ease,transform .4s var(--x-ease),width .4s var(--x-ease),height .4s var(--x-ease),visibility 0s,background-color .4s var(--x-ease),border-color .4s var(--x-ease)}
+.nav-pop::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
+.pop-clip{position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit}
+.pp{position:absolute;top:0;left:0;padding:8px;--dx:0px;transform:translateX(var(--dx));opacity:0;visibility:hidden;transition:opacity .16s ease,transform .4s var(--x-ease),visibility 0s linear .4s}
+.pp.on{opacity:1;visibility:visible;transition:opacity .26s ease .06s,transform .4s var(--x-ease),visibility 0s}
+.pp-product{width:576px}
+.pp-solutions{width:576px}
+.pp-resources{width:544px}
+.pp .pn{font-weight:400;font-size:var(--fs-p8);line-height:18px;font-family:var(--font-body);color:var(--ink-3)}
+.pp .pt{display:block;font-weight:500;font-size:var(--fs-14);line-height:18px;font-family:var(--font-body);letter-spacing:-.005em;color:var(--ink)}
+.pp .pd{display:block;font-weight:400;font-size:var(--fs-13);line-height:1.45;font-family:var(--font-body);color:var(--ink-3)}
+.pp .pl{display:block;font-weight:500;font-size:var(--fs-12);line-height:1;font-family:var(--font-body);color:var(--ink-3)}
+.pr,.pf,.pcard{transition:background-color .18s,color .18s}
+.pr:hover,.pr:focus-visible,.pf:hover,.pf:focus-visible{background:var(--fsc-103);outline:none}
+.pp-foot{display:flex;justify-content:space-between;align-items:center;margin:6px 4px 0;padding-top:6px;border-top:1px solid var(--fsc-23)}
+.pf{display:inline-flex;align-items:center;gap:var(--icon-gap);height:32px;padding:0 8px;border-radius:var(--r-6);font-weight:500;font-size:var(--fs-13);line-height:1;font-family:var(--font-body);color:var(--ink)}
+.pf svg,.pgo svg{flex:none;width:var(--icon-arrow);height:var(--icon-arrow);transition:transform .3s var(--x-ease)}
+.pf:hover svg,.pcard:hover .pgo svg{transform:translateX(var(--icon-nudge))}
+.pp-split{display:grid;grid-template-columns:1fr 212px;gap:8px}
+.pp-product>.pl,.pp-solutions>.pl{padding:10px 12px 8px}
+.pr{display:flex;flex-direction:column;gap:3px;padding:10px 12px 11px;border-radius:var(--r-6)}
+.pp-ind{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.pp-ind .pr{padding:11px 12px 12px}
+.pp-resources .pr{padding:9px 12px 10px}
+.pcard{display:flex;flex-direction:column;justify-content:space-between;gap:24px;padding:16px;border-radius:var(--r-6);background:var(--fsc-89)}
+.pcard:hover,.pcard:focus-visible{background:var(--fsc-104);outline:none}
+.pcard .pl{margin-bottom:12px}
+.pcard .pt{font-size:var(--fs-15)}
+.pcard .pd{margin-top:6px}
+.pgo{display:inline-flex;align-items:center;gap:var(--icon-gap);font-weight:500;font-size:var(--fs-13);line-height:1;font-family:var(--font-body);color:var(--purple)}
+.nav.on-dark .nav-pop{background:var(--fsc-105);border-color:var(--fsc-96);box-shadow:0 24px 48px -20px var(--fsc-7)}
+.nav.on-dark .pp .pt,.nav.on-dark .pf,.nav.on-dark .pgo{color:var(--on-dark)}
+.nav.on-dark .pp .pd,.nav.on-dark .pp .pn,.nav.on-dark .pp .pl{color:var(--fsc-106)}
+.nav.on-dark .pr:hover,.nav.on-dark .pr:focus-visible,.nav.on-dark .pf:hover,.nav.on-dark .pf:focus-visible{background:var(--fsc-107)}
+.nav.on-dark .pp-foot{border-top-color:var(--fsc-96)}
+.nav.on-dark .pcard{background:var(--fsc-108)}
+.nav.on-dark .pcard:hover,.nav.on-dark .pcard:focus-visible{background:var(--fsc-5)}
+@media (max-width:820px){.nav-links,.nav-pop,.nav .nav-cta{display:none}
+.nav .bar{display:grid;grid-template-columns:1fr auto;grid-template-rows:40px minmax(0,1fr);height:54px;overflow:hidden;transition:height .55s var(--x-ease),background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
+.nav.menu-open .bar{height:calc(100vh - 32px);height:calc(100dvh - 32px)}
+.nav .logo{align-self:center}
+.nav-burger{display:inline-flex;align-items:center;gap:12px;height:40px;padding:0 12px 0 16px;border:0;border-radius:var(--r-6);background:var(--accent,var(--fsc-18));color:var(--on-accent,var(--fsc-2));font-family:inherit;font-weight:500;font-size:var(--fs-14);line-height:1;letter-spacing:-.005em;cursor:pointer;transition:background-color .2s}
+.nav-burger:hover,.nav-burger:focus-visible{background:var(--accent-hover,var(--fsc-31));outline:none}
+.nav-burger:focus-visible{box-shadow:0 0 0 2px var(--on-accent,white),0 0 0 4px var(--accent,var(--fsc-18))}
+.nav-burger .nb-ic{position:relative;display:flex;flex-direction:column;justify-content:center;gap:4px;width:14px;height:16px;flex:none}
+.nav-burger .nb-ic i{display:block;height:1.5px;background:currentColor;transform-origin:center;transition:transform .42s cubic-bezier(.34,1.45,.64,1),opacity .22s ease}
+.nav.menu-open .nav-burger .nb-ic i:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
+.nav.menu-open .nav-burger .nb-ic i:nth-child(2){opacity:0;transform:scaleX(0)}
+.nav.menu-open .nav-burger .nb-ic i:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+.nav-burger .nb-open,.nav-burger .nb-x{display:inline-block;transition:opacity .2s ease,transform .42s cubic-bezier(.34,1.45,.64,1)}
+.nav-burger .nb-lbl{display:inline-grid}
+.nav-burger .nb-lbl>*{grid-area:1/1;text-align:right}
+.nav-burger .nb-x,.nav.menu-open .nav-burger .nb-open{opacity:0;transform:translateY(4px)}
+.nav.menu-open .nav-burger .nb-x{opacity:1;transform:none}
+.nav.menu-open .bar{transition:height .62s cubic-bezier(.34,1.12,.64,1),background-color .4s var(--x-ease),box-shadow .4s var(--x-ease),border-color .4s var(--x-ease)}
+@media (prefers-reduced-motion:reduce){.nav-burger .nb-ic i,.nav-burger .nb-open,.nav-burger .nb-x,.nav.menu-open .bar{transition:none!important}}
+.nav-scrim{display:block;position:fixed;inset:0;z-index:-1;background:var(--fsc-109);opacity:0;pointer-events:none;transition:opacity .45s var(--x-ease)}
+.nav:not(.menu-open) .nav-scrim{display:none}
+.nav.menu-open .nav-scrim{opacity:1;pointer-events:auto}
+@starting-style{.nav.menu-open .nav-scrim{opacity:0}}
+.nav.menu-open .bar{background:var(--fsc-110);border-color:var(--fsc-23);box-shadow:0 1px 2px var(--fsc-89),0 24px 48px -20px var(--fsc-111)}
+.nav.menu-open .logo img{filter:none}
+.nav-sheet{display:flex;grid-column:1/-1;align-self:stretch;min-height:0;overflow:hidden}
+.ns-in{display:flex;flex-direction:column;flex:1;min-height:0}
+.ns-scroll{flex:1;min-height:0;overflow:hidden;overscroll-behavior:contain;scrollbar-width:none;padding:6px 4px 16px;-webkit-mask-image:linear-gradient(#000 calc(100% - 20px),transparent);mask-image:linear-gradient(#000 calc(100% - 20px),transparent)}
+.ns-scroll::-webkit-scrollbar{display:none}
+.nav.menu-open .ns-scroll{overflow-y:auto}
+.ns-g{border-top:1px solid var(--fsc-23)}
+.ns-g:last-child{border-bottom:1px solid var(--fsc-23)}
+.ns-g,.ns-foot{opacity:0;transform:translateY(-6px);transition:opacity .2s ease,transform .45s var(--x-ease)}
+.nav.menu-open .ns-g,.nav.menu-open .ns-foot{opacity:1;transform:none;transition:opacity .35s ease,transform .5s var(--x-ease)}
+.nav.menu-open .ns-g:nth-child(1){transition-delay:.06s}
+.nav.menu-open .ns-g:nth-child(2){transition-delay:.1s}
+.nav.menu-open .ns-g:nth-child(3){transition-delay:.14s}
+.nav.menu-open .ns-g:nth-child(4){transition-delay:.18s}
+.nav.menu-open .ns-foot{transition-delay:.24s}
+.ns-t{display:flex;width:100%;align-items:center;justify-content:space-between;height:56px;padding:0 10px;border:0;background:none;font-weight:400;font-size:var(--fs-p12);line-height:1;font-family:var(--font-display);letter-spacing:-.012em;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ns-t svg{flex:none;width:.67em;height:.67em;color:var(--ink-3);transition:transform .45s var(--x-ease),color .2s}
+.ns-t[aria-expanded="true"] svg{transform:rotate(180deg);color:var(--ink)}
+.ns-p{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--x-ease)}
+.ns-g.open .ns-p{grid-template-rows:1fr}
+.ns-p>div{min-height:0;overflow:hidden}
+.ns-p ul{list-style:none;padding:0 0 12px}
+.ns-p a{display:flex;align-items:baseline;gap:14px;padding:10px;border-radius:var(--r-6);font-weight:400;font-size:var(--fs-16);line-height:1.25;font-family:var(--font-body);color:var(--ink-2);-webkit-tap-highlight-color:transparent;transition:background-color .18s,color .18s}
+.ns-p a:hover,.ns-p a:active,.ns-p a:focus-visible{background:var(--fsc-103);color:var(--ink);outline:none}
+.ns-foot{flex:none;display:grid;gap:8px;padding:4px 4px 4px}
+.ns-signin,.ns-cta{display:flex;align-items:center;justify-content:center;height:48px;border-radius:var(--r-6);font-weight:500;font-size:var(--fs-15);line-height:1;font-family:var(--font-body);letter-spacing:-.005em;-webkit-tap-highlight-color:transparent;transition:background-color .2s}
+.ns-signin{background:var(--fsc-93);color:var(--ink)}
+.ns-signin:hover,.ns-signin:active{background:var(--fsc-22)}
+.ns-cta{background:var(--purple);color:var(--fsc-2)}
+.ns-cta:hover,.ns-cta:active{background:var(--purple-d)}}
+@media (prefers-reduced-motion:reduce){.nav-pop,.pp,.nav-t svg,.nav-sheet,.ns-p,.ns-g,.ns-foot,.ns-t svg,.nav-scrim{transition:none!important}}</style>
+
 </head>
 <body>
 
-<header class="nav" id="nav">
+<header class="nav li li--fade" id="nav" style="--i:0">
+  <div class="nav-scrim" aria-hidden="true"></div>
   <div class="bar">
     <a href="index.html" class="logo" aria-label="RegAnchor home"><img src="brand/wordmark-text.svg?v=a3" alt="RegAnchor" width="193" height="36"></a>
+    <nav class="nav-links" aria-label="Main">
+      <button type="button" class="nav-t" data-menu="product" aria-expanded="false" aria-controls="pp-product">Product <svg class="i-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M2.8 5.1 8 10.3 13.2 5.1"/></svg></button>
+      <button type="button" class="nav-t" data-menu="solutions" aria-expanded="false" aria-controls="pp-solutions">Solutions <svg class="i-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M2.8 5.1 8 10.3 13.2 5.1"/></svg></button>
+      <button type="button" class="nav-t" data-menu="resources" aria-expanded="false" aria-controls="pp-resources">Resources <svg class="i-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M2.8 5.1 8 10.3 13.2 5.1"/></svg></button>
+    </nav>
     <div class="nav-right">
       <a href="https://app.reganchor.com/login" class="nav-signin">Sign in</a>
-      <a href="diagnostic.html" class="btn btn-primary btn-sm">Get started</a>
+      <a href="contact.html" class="btn btn-primary btn-sm nav-cta" data-open-demo>Book a demo</a>
+      <button type="button" class="nav-burger" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><span class="nb-lbl" aria-hidden="true"><span class="nb-open">Menu</span><span class="nb-x">Close</span></span><span class="nb-ic" aria-hidden="true"><i></i><i></i><i></i></span></button>
+    </div>
+    <div class="nav-sheet" id="navSheet" inert>
+      <div class="ns-in"><div class="ns-scroll">
+        <div class="ns-g">
+          <button type="button" class="ns-t" aria-expanded="false">Product <svg class="i-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M2.8 5.1 8 10.3 13.2 5.1"/></svg></button>
+          <div class="ns-p"><div><ul>
+            <li><a href="product-tour.html#registry">Discovery</a></li>
+            <li><a href="product-tour.html#assessments">Risk</a></li>
+            <li><a href="product-tour.html#mla">Governance</a></li>
+            <li><a href="product-tour.html#assessments">Assurance</a></li>
+            <li><a href="product-tour.html#dark">Monitoring</a></li>
+            <li><a href="product-tour.html#dossiers">Disclosure</a></li>
+            <li><a href="product-tour.html">Product tour</a></li>
+          </ul></div></div>
+        </div>
+        <div class="ns-g">
+          <button type="button" class="ns-t" aria-expanded="false">Solutions <svg class="i-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M2.8 5.1 8 10.3 13.2 5.1"/></svg></button>
+          <div class="ns-p"><div><ul>
+            <li><a href="financial-services.html">Financial services</a></li>
+            <li><a href="legal.html">Legal &amp; professional services</a></li>
+            <li><a href="healthcare.html">Healthcare</a></li>
+            <li><a href="public-sector.html">Public sector</a></li>
+            <li><a href="manufacturing-logistics.html">Manufacturing &amp; logistics</a></li>
+            <li><a href="ai-digital.html">AI &amp; digital</a></li>
+            <li><a href="frameworks.html">Frameworks</a></li>
+            <li><a href="startups.html">Startups</a></li>
+          </ul></div></div>
+        </div>
+        <div class="ns-g">
+          <button type="button" class="ns-t" aria-expanded="false">Resources <svg class="i-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M2.8 5.1 8 10.3 13.2 5.1"/></svg></button>
+          <div class="ns-p"><div><ul>
+            <li><a href="trust.html">Trust</a></li>
+            <li><a href="methodology.html">Methodology</a></li>
+            <li><a href="/partner">Partner with us</a></li>
+            <li><a href="docs.html">Docs</a></li>
+            <li><a href="support.html">Get support</a></li>
+            <li><a href="changelog.html">Changelog</a></li>
+            <li><a href="diagnostic.html">Risk diagnostic</a></li>
+          </ul></div></div>
+        </div>
+        <div class="ns-g ns-solo"><a class="ns-t" href="pricing.html">Pricing</a></div>
+      </div>
+      <div class="ns-foot">
+        <a href="https://app.reganchor.com/login" class="ns-signin">Sign in</a>
+        <a href="contact.html" class="ns-cta" data-open-demo>Book a demo</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="nav-pop" id="navPop">
+    <div class="pop-clip">
+      <div class="pp pp-product" id="pp-product">
+        <span class="pl">From intake to audit</span>
+        <div class="pp-ind">
+          <a class="pr" href="product-tour.html#registry"><span class="pt">Discovery</span><span class="pd">Find and register every AI system, agent and model.</span></a>
+          <a class="pr" href="product-tour.html#assessments"><span class="pt">Risk</span><span class="pd">Score initial and residual risk across key domains.</span></a>
+          <a class="pr" href="product-tour.html#mla"><span class="pt">Governance</span><span class="pd">Link controls and policies to the evidence behind them.</span></a>
+          <a class="pr" href="product-tour.html#assessments"><span class="pt">Assurance</span><span class="pd">Test, validate and evaluate AI before and after launch.</span></a>
+          <a class="pr" href="product-tour.html#dark"><span class="pt">Monitoring</span><span class="pd">Track usage, cost and providers through one gateway.</span></a>
+          <a class="pr" href="product-tour.html#dossiers"><span class="pt">Disclosure</span><span class="pd">Share evidence securely with auditors, procurement and reviewers.</span></a>
+        </div>
+        <div class="pp-foot">
+          <a class="pf" href="product-tour.html">Take the product tour <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
+          <a class="pf" href="pricing.html">Pricing <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
+        </div>
+      </div>
+      <div class="pp pp-solutions" id="pp-solutions">
+        <span class="pl">Who we serve</span>
+        <div class="pp-ind">
+          <a class="pr" href="financial-services.html"><span class="pt">Financial services</span><span class="pd">Model risk, SM&amp;CR accountability and Consumer Duty.</span></a>
+          <a class="pr" href="legal.html"><span class="pt">Legal &amp; professional services</span><span class="pd">Client confidentiality and professional standards.</span></a>
+          <a class="pr" href="healthcare.html"><span class="pt">Healthcare</span><span class="pd">Clinical safety, DTAC and patient data.</span></a>
+          <a class="pr" href="public-sector.html"><span class="pt">Public sector</span><span class="pd">Transparency, procurement and public accountability.</span></a>
+          <a class="pr" href="manufacturing-logistics.html"><span class="pt">Manufacturing &amp; logistics</span><span class="pd">Operational AI across sites, fleets and supply chains.</span></a>
+          <a class="pr" href="ai-digital.html"><span class="pt">AI &amp; digital</span><span class="pd">Ship AI products with governance built in.</span></a>
+        </div>
+        <div class="pp-foot">
+          <a class="pf" href="frameworks.html">Explore frameworks <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
+          <a class="pf" href="startups.html">Startups <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></a>
+        </div>
+      </div>
+      <div class="pp pp-resources" id="pp-resources">
+        <div class="pp-split">
+          <div>
+            <a class="pr" href="trust.html"><span class="pt">Trust</span><span class="pd">Security, data processing and supplier documents.</span></a>
+            <a class="pr" href="methodology.html"><span class="pt">Methodology</span><span class="pd">How we score risk and cite regulation.</span></a>
+            <a class="pr" href="/partner"><span class="pt">Partner with us</span><span class="pd">Build, resell or integrate with RegAnchor.</span></a>
+            <a class="pr" href="docs.html"><span class="pt">Docs</span><span class="pd">Guides, API reference and integrations.</span></a>
+            <a class="pr" href="support.html"><span class="pt">Get support</span><span class="pd">Help with your workspace and account.</span></a>
+            <a class="pr" href="changelog.html"><span class="pt">Changelog</span><span class="pd">New features, improvements and fixes.</span></a>
+          </div>
+          <a class="pcard" href="diagnostic.html">
+            <span><span class="pl">Free</span><span class="pt">Risk diagnostic</span><span class="pd">Score your AI governance against regulation in under 20 minutes.</span></span>
+            <span class="pgo">Start diagnostic <svg class="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" aria-hidden="true"><path d="M6 2.8 10.8 8 6 13.2"/></svg></span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -325,7 +537,7 @@ button.btn{font-family:inherit;cursor:pointer}
 <main class="fs">
 <style>
 /* ===== solutions-page format (financial-services.html / legal.html): hero, › feature blocks, closing; values copied from those pages ===== */
-.fs{--font-body:Inter,system-ui,-apple-system,sans-serif;--font-display:"Inter Tight",Inter,system-ui,sans-serif;--fs-14:14px;--fs-15:15px;--fs-16:16px;--fs-18:18px;--fs-48:48px;--fs-80:80px;--fs-p1:56px;--fs-p5:26px;--fs-p11:40px;--fs-p12:21px;--fs-p13:17px;--fs-p14:clamp(17px,14px + .79vw,22px);--fs-p15:clamp(26px,21.6px + 1.13vw,38px);--fs-p16:22px;--fs-p17:clamp(22px,22px + (100vw - 360px)*.0286,24px);--fs-p18:44px;--fs-p19:34px;--r-6:6px;--r-12:12px;--icon-arrow:16px;--paper:#F7F6F4;--ink:#0A0E14;--ink-2:#3D4350;--od:#F7F6F4;--od2:rgba(247,246,243,.72);--bp:#533AFD;--fsc-1:#000;--fsc-2:#fff;--fsc-3:#eeeef1;--fsc-18:#0A0E14;--fsc-66:#ffffff;--fsc-67:#425466;--fsc-68:#1a1f2b;--fsc-69:#a3a8b3;--fsc-71:#6b7280;--fsc-72:#f2f2f2;--fsc-73:#8a8f98;--fsc-74:#0a0e14;--pt-rule:rgba(10,14,20,.09);--pt-uline:rgba(10,14,20,.28);--pt-uline-d:rgba(242,242,242,.32);--pt-glow-a:rgba(255,255,255,.12);--pt-glow-b:rgba(255,255,255,.04);--pt-btn-d:rgba(255,255,255,.10);--pt-btn-dh:rgba(255,255,255,.16);--pt-btn-gh:#E4E4E8;--pt-btn-ih:#1B2130;--pt-scrim:rgba(10,14,20,.28);--pt-line:rgba(10,14,20,.06);--pt-line-2:rgba(10,14,20,.08);--pt-sh1:rgba(10,14,20,.04);--pt-sh2:rgba(10,14,20,.22);--pt-close-h:#E4E4E8}
+.fs{--font-body:Inter,system-ui,-apple-system,sans-serif;--font-display:"Inter Tight",Inter,system-ui,sans-serif;--fs-14:14px;--fs-15:15px;--fs-16:16px;--fs-18:18px;--fs-48:48px;--fs-80:80px;--fs-p1:56px;--fs-p5:26px;--fs-p11:40px;--fs-p12:21px;--fs-p13:17px;--fs-p14:clamp(17px,14px + .79vw,22px);--fs-p15:clamp(26px,21.6px + 1.13vw,38px);--fs-p16:22px;--fs-p17:clamp(22px,22px + (100vw - 360px)*.0286,24px);--fs-p18:44px;--fs-p19:34px;--r-6:6px;--r-12:12px;--icon-arrow:16px;--paper:#F7F6F4;--ink:#0A0E14;--ink-2:#3D4350;--od:#F7F6F4;--od2:rgba(247,246,243,.72);--bp:#533AFD;--fsc-1:#000;--fsc-2:#fff;--fsc-3:#eeeef1;--fsc-15:#8f7bff;--fsc-18:#533afd;--fsc-51:rgba(247,246,244,.1);--fsc-66:#ffffff;--fsc-67:#425466;--fsc-68:#1a1f2b;--fsc-69:#a3a8b3;--fsc-71:#6b7280;--fsc-72:#f2f2f2;--fsc-73:#8a8f98;--fsc-74:#0a0e14;--pt-rule:rgba(10,14,20,.09);--pt-uline:rgba(10,14,20,.28);--pt-uline-d:rgba(242,242,242,.32);--pt-glow-a:rgba(255,255,255,.55);--pt-glow-b:rgba(255,255,255,.18);--pt-demo-glow:rgba(255,255,255,.10);--pt-demo-edge:rgba(255,255,255,.12);--pt-btn-d:rgba(255,255,255,.10);--pt-btn-dh:rgba(255,255,255,.16);--pt-btn-gh:#E4E4E8;--pt-btn-ih:#1B2130;--pt-scrim:rgba(10,14,20,.28);--pt-line:rgba(10,14,20,.06);--pt-line-2:rgba(10,14,20,.08);--pt-sh1:rgba(10,14,20,.04);--pt-sh2:rgba(10,14,20,.22);--pt-close-h:#E4E4E8}
 .fs .w{width:min(100% - 112px,1328px);margin:0 auto}
 .fs h1,.fs h2{font-family:var(--font-display);font-weight:300;margin:0}
 .fs h1{font-size:var(--fs-80);line-height:1.06;letter-spacing:.01em;text-wrap:balance}
@@ -466,26 +678,34 @@ button.btn{font-family:inherit;cursor:pointer}
 .fs .hero h1{font-size:var(--fs-p18);line-height:1.06}
 }
 
-/* ===== product tour sections: solutions-page rhythm (white paper sections with a hairline between, one black band) ===== */
-.fs .pt-s{position:relative;background:var(--fsc-66);padding:160px 0}
-.fs .pt-s+.pt-s:not(.pt-dark):before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(100% - 112px,1328px);height:1px;background:var(--pt-rule)}
-.fs .pt-dark{background:var(--fsc-1);padding:168px 0 160px}
-.fs .pt-dark+.pt-s:before{display:none}
-.fs .pt-dark .px .px-t{color:var(--fsc-72)}
-.fs .pt-dark .px .px-s{color:var(--fsc-73)}
-/* › link: solutions-page link type and spacing, in ink (no violet) with a faint resting underline, the footer link treatment */
-.fs .px .px-l{color:var(--fsc-18);text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:var(--pt-uline);text-underline-offset:5px;transition:text-decoration-color .2s}
-.fs .px .px-l:hover,.fs .px .px-l:focus-visible{text-decoration:underline;text-decoration-color:currentColor}
-.fs .pt-dark .px .px-l{color:var(--fsc-72);text-decoration-color:var(--pt-uline-d)}
-.fs .pt-dark .px .px-l:hover,.fs .pt-dark .px .px-l:focus-visible{text-decoration-color:currentColor}
+/* ===== product tour sections: solutions-page rhythm (hero light, then dark / white alternating, closing CTA) ===== */
+.fs .paper{position:relative;background:var(--fsc-66);padding:160px 0;-webkit-font-smoothing:auto;-moz-osx-font-smoothing:auto}
+.fs .band{position:relative;background:var(--fsc-1);color:var(--od);padding:168px 0 160px}
+.fs .band .px .px-t{color:var(--fsc-72)}
+.fs .band .px .px-s{color:var(--fsc-73)}
+/* › links: exact FS accent — violet on paper, lighter violet on dark bands; underline on hover only */
+.fs .px .px-l{color:var(--fsc-18);text-decoration:none}
+.fs .band .px .px-l{color:var(--fsc-15)}
+.fs .px .px-l:hover,.fs .px .px-l:focus-visible{text-decoration:underline}
+/* frame demos on dark bands the way FS frames app shots, with a neutral white glow */
+.fs .band .feat-m{border-radius:var(--r-12);box-shadow:0 40px 120px var(--pt-demo-glow),0 0 0 1px var(--pt-demo-edge)}
+/* hairline between the last dark feature (monitoring) and the dark closing CTA, as on FS #s-mon */
+.fs #dark{padding-bottom:200px}
+.fs #dark:after{content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(100% - 112px,1328px);height:1px;background:var(--fsc-51)}
 .fs .btn.bi:hover,.fs .btn.bi:focus-visible{background:var(--pt-btn-ih)}
 .fs .btn.bg:hover,.fs .btn.bg:focus-visible{background:var(--pt-btn-gh)}
-/* closing: neutral secondary on black instead of the violet button; neutral white glow */
+/* closing secondary: translucent white on black (no violet button); glow is the standard CTA :before, in pure white */
 .fs .btn.bd{background:var(--pt-btn-d);color:var(--fsc-2)}
 .fs .btn.bd:hover,.fs .btn.bd:focus-visible{background:var(--pt-btn-dh)}
-@media (max-width:820px){.fs .pt-s,.fs .pt-dark{padding:96px 0}
-.fs .pt-s+.pt-s:not(.pt-dark):before{width:calc(100% - 32px)}}
-@media (min-width:600px) and (max-width:1100px){.fs .pt-s+.pt-s:not(.pt-dark):before{width:calc(100% - 70px)}}
+/* once-lit scroll-in, copied from the FS/Legal solutions pages */
+.fs .si-el{opacity:0;transform:translate3d(0,18px,0);transition:opacity 1050ms cubic-bezier(.16,1,.3,1),transform 1050ms cubic-bezier(.16,1,.3,1),filter 1050ms cubic-bezier(.16,1,.3,1);transition-delay:var(--si-d,0ms)}
+.fs .si-el.si-h{filter:blur(6px)}
+.fs .si-el.si-in{opacity:1;transform:none;filter:none}
+@media (max-width:820px){.fs .paper,.fs .band{padding:96px 0}
+.fs #dark{padding-bottom:96px}
+.fs #dark:after{width:calc(100% - 32px)}}
+@media (min-width:600px) and (max-width:1100px){.fs #dark:after{width:calc(100% - 70px)}}
+@media (prefers-reduced-motion:reduce){.fs .si-el{opacity:1;transform:none;filter:none;transition:none}}
 /* ===== feature pop-up: one card, the site's tile style ===== */
 .pop-root{position:fixed;inset:0;z-index:410;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--pt-scrim);-webkit-backdrop-filter:blur(7px) saturate(1.02);backdrop-filter:blur(7px) saturate(1.02);opacity:0;transition:opacity .24s var(--x-ease)}
 .pop-root[hidden]{display:none}
@@ -509,10 +729,10 @@ button.btn{font-family:inherit;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.pop-root,.pop{transition:none}.pop{transform:none}}
 </style>
 <section class="hero" id="top"><div class="dots" aria-hidden="true"></div><div class="w" style="position:relative;z-index:1">
- <div class="top"><p class="eb sol-eyebrow">Product tour</p><h1><span class="hl">See AI</span> <span class="hl">Governance</span> <span class="hl">in Action</span></h1><p class="lede">Register, assess, monitor and evidence AI, in one system of record.</p><div class="hb"><a class="btn bi" href="contact.html" data-open-demo>Book a demo ›</a><a class="btn bg" href="diagnostic.html">Start assessment ›</a></div></div></div></section>
+ <div class="top"><p class="eb sol-eyebrow">Product tour</p><h1><span class="hl">See AI</span> <span class="hl">Governance</span> <span class="hl">Working</span> <span class="hl">Live</span></h1><p class="lede">Register, assess, monitor and evidence AI, in one system of record.</p><div class="hb"><a class="btn bi" href="contact.html" data-open-demo>Book a demo ›</a><a class="btn bg" href="diagnostic.html">Start assessment ›</a></div></div></div></section>
 
 <!-- ============ COPY: REGISTRY ============ -->
-<section class="pt-s" id="registry">
+<section class="band" id="registry" data-nav-dark>
   <div class="w feat">
     <div class="px"><h2 class="px-t">Know every AI system you run</h2><p class="px-s">Find shadow AI, assign owners and track every system to production.</p><a class="px-l" href="#registry" data-pop="registry" aria-haspopup="dialog">Explore the registry ›</a></div>
     <div class="feat-m reveal d1"><div class="ra-reg-demo" role="img" aria-label="Registering Credit Risk Scoring Model in RegAnchor. The new asset lands in the registry as Untested, an evaluation is run and passes, and only then is its lifecycle moved from Planned to Production.">
@@ -831,7 +1051,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 </section>
 
 <!-- ============ COPY: ASSESSMENTS ============ -->
-<section class="pt-s" id="assessments">
+<section class="paper" id="assessments">
   <div class="w feat feat--flip">
     <div class="px"><h2 class="px-t">Know where your AI risk sits</h2><p class="px-s">Score each system across governance domains and map gaps to controls.</p><a class="px-l" href="#assessments" data-pop="assessments" aria-haspopup="dialog">See risk assessments ›</a></div>
     <div class="feat-m reveal d1">
@@ -927,7 +1147,7 @@ new IntersectionObserver(function(es){es.forEach(function(e){
 </section>
 
 <!-- ============ COPY: MLA ASSISTANT ============ -->
-<section class="pt-s" id="mla">
+<section class="band" id="mla" data-nav-dark>
   <div class="w feat">
     <div class="px"><h2 class="px-t">Policy written for your firm</h2><p class="px-s">MLA drafts policy and documentation from your own registered systems.</p><a class="px-l" href="#mla" data-pop="intelligence" aria-haspopup="dialog">Meet MLA ›</a></div>
     <div class="feat-m reveal d1"><div class="ra-mla-chat" role="img" aria-label="MLA, the RegAnchor policy assistant, drafting an AI governance policy for Acme">
@@ -1077,7 +1297,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 </section>
 
 <!-- ============ COPY: DOSSIERS ============ -->
-<section class="pt-s" id="dossiers">
+<section class="paper" id="dossiers">
   <div class="w feat feat--flip">
     <div class="px"><h2 class="px-t">Your AI governance, on record</h2><p class="px-s">Policies, controls and evidence in one signed-off record for your board.</p><a class="px-l" href="#dossiers" data-pop="dossiers" aria-haspopup="dialog">View a sample dossier ›</a></div>
     <div class="feat-m reveal d1">
@@ -1153,7 +1373,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 </section>
 
 <!-- ============ COPY: MONITORING ============ -->
-<section class="pt-s pt-dark" id="dark" data-nav-dark>
+<section class="band" id="dark" data-nav-dark>
   <div class="w feat">
     <div class="px"><h2 class="px-t">Control AI in real time</h2><p class="px-s">One gateway across providers. Track spend and enforce policy per request.</p><a class="px-l" href="#dark" data-pop="monitoring" aria-haspopup="dialog">See monitoring ›</a></div>
     <div class="feat-m"><div class="reveal d1 ra-dd-demo" aria-label="RegAnchor Connection tab: provider usage chart filling in with 1.84B tokens and $48,920 estimated spend, plus gateway input, output and event totals.">
@@ -1206,7 +1426,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 </section>
 
 <!-- ============ COPY: AUDITOR ACCESS ============ -->
-<section class="pt-s" id="auditor-access">
+<section class="paper" id="auditor-access">
   <div class="w feat feat--flip">
     <div class="px"><h2 class="px-t">Evidence, on your terms</h2><p class="px-s">Scoped, read-only access for auditors. Set the expiry and revoke any time.</p><a class="px-l" href="#auditor-access" data-pop="auditor" aria-haspopup="dialog">See auditor access ›</a></div>
     <div class="feat-m reveal d1">
@@ -1543,7 +1763,7 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 /* header: dark glass while it floats over the footer */
 /* also while it floats over a black band marked data-nav-dark (the mission section) */
 (function(){var n=document.getElementById('nav'),f=document.querySelector('.site-footer');if(!n||!f)return;var t=0,d=[].slice.call(document.querySelectorAll('[data-nav-dark]'));
-function u(){t=0;var b=n.querySelector('.bar').getBoundingClientRect(),m=b.top+b.height/2;n.classList.toggle('on-dark',f.getBoundingClientRect().top<m||d.some(function(e){var r=e.getBoundingClientRect();return r.top<m&&r.bottom>m}))}
+function u(){t=0;var b=n.querySelector('.bar').getBoundingClientRect(),m=b.top+Math.min(b.height,52)/2;n.classList.toggle('on-dark',f.getBoundingClientRect().top<m||d.some(function(e){var r=e.getBoundingClientRect();return r.top<m&&r.bottom>m}))}
 addEventListener('scroll',function(){if(!t)t=requestAnimationFrame(u)},{passive:true});addEventListener('resize',u);u()})();
 </script>
 <div class="pop-root fs" id="pop" hidden>
@@ -1584,6 +1804,64 @@ function fromHash(){var m=/^#pop-([\w-]+)$/.exec(location.hash);if(!m)return;var
   open(k,sec&&sec.querySelector('[data-pop]'))}
 addEventListener('hashchange',fromHash);fromHash();
 })();
+</script>
+<script>
+/* header menus: desktop hover/click panel that morphs between menus; mobile sheet with one-open accordions */
+(function(){
+var nav=document.getElementById('nav'),pop=document.getElementById('navPop');if(!nav||!pop)return;
+var trig=[].slice.call(nav.querySelectorAll('.nav-t')),order=trig.map(function(t){return t.dataset.menu}),panes={};
+order.forEach(function(k){panes[k]=document.getElementById('pp-'+k)});
+var desk=matchMedia('(min-width:821px)'),cur=null,openT=0,closeT=0,hoverAt=0;
+function trigOf(k){return nav.querySelector('.nav-t[data-menu="'+k+'"]')}
+function place(k){var p=panes[k],w=p.offsetWidth,h=p.offsetHeight,r=trigOf(k).getBoundingClientRect(),x=r.left+r.width/2-w/2;
+  x=Math.max(16,Math.min(x,document.documentElement.clientWidth-16-w));pop.style.width=w+'px';pop.style.height=h+'px';pop.style.setProperty('--px',Math.round(x)+'px')}
+function show(k){clearTimeout(openT);clearTimeout(closeT);if(k===cur)return;var p=panes[k];
+  if(!cur){order.forEach(function(o){panes[o].classList.remove('on');panes[o].style.removeProperty('--dx')});
+    pop.style.transition='none';p.style.transition='none';place(k);p.classList.add('on');pop.offsetWidth;pop.style.transition='';p.style.transition='';pop.classList.add('open')}
+  else{var dir=order.indexOf(k)>order.indexOf(cur)?1:-1,o=panes[cur];o.style.setProperty('--dx',(-dir*24)+'px');o.classList.remove('on');
+    p.style.transition='none';p.style.setProperty('--dx',(dir*24)+'px');p.offsetWidth;p.style.transition='';p.style.removeProperty('--dx');p.classList.add('on');place(k)}
+  trig.forEach(function(t){t.setAttribute('aria-expanded',String(t.dataset.menu===k))});cur=k}
+function hide(focusBack){clearTimeout(openT);clearTimeout(closeT);if(!cur)return;var t=trigOf(cur);cur=null;pop.classList.remove('open');
+  trig.forEach(function(t){t.setAttribute('aria-expanded','false')});if(focusBack)t.focus()}
+function later(){clearTimeout(openT);clearTimeout(closeT);closeT=setTimeout(hide,180)}
+trig.forEach(function(t,i){var k=t.dataset.menu;
+  t.addEventListener('pointerenter',function(e){if(e.pointerType!=='mouse'||!desk.matches)return;clearTimeout(closeT);clearTimeout(openT);
+    if(cur){show(k);hoverAt=Date.now()}else openT=setTimeout(function(){show(k);hoverAt=Date.now()},70)});
+  t.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')later()});
+  t.addEventListener('click',function(){if(cur===k){if(Date.now()-hoverAt>400)hide()}else{show(k);hoverAt=0}});
+  t.addEventListener('keydown',function(e){if(e.key==='ArrowDown'||(e.key==='Tab'&&!e.shiftKey&&cur===k)){e.preventDefault();show(k);var a=panes[k].querySelector('a');if(a)a.focus()}});
+});
+pop.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')clearTimeout(closeT)});
+pop.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')later()});
+pop.addEventListener('keydown',function(e){if(!cur)return;var links=[].slice.call(panes[cur].querySelectorAll('a')),i=links.indexOf(document.activeElement),ti=order.indexOf(cur);
+  if(e.key==='Tab'&&!e.shiftKey&&i===links.length-1){e.preventDefault();var next=trig[ti+1]||nav.querySelector('.nav-signin');hide();next.focus()}
+  else if(e.key==='Tab'&&e.shiftKey&&i===0){e.preventDefault();trigOf(cur).focus()}
+  else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();var n=links[(i+(e.key==='ArrowDown'?1:-1)+links.length)%links.length];if(n)n.focus()}});
+pop.addEventListener('click',function(e){if(e.target.closest('a'))hide()});
+nav.addEventListener('focusout',function(e){if(cur&&e.relatedTarget&&!nav.contains(e.relatedTarget))hide()});
+document.addEventListener('pointerdown',function(e){if(cur&&!nav.contains(e.target))hide()});
+addEventListener('resize',function(){if(cur)place(cur)});
+
+var burger=nav.querySelector('.nav-burger'),sheet=document.getElementById('navSheet'),groups=[].slice.call(nav.querySelectorAll('.ns-g:not(.ns-solo)')),resetT=0;
+function setGroup(g,o){g.classList.toggle('open',o);g.querySelector('.ns-t').setAttribute('aria-expanded',String(o))}
+function setMenu(o){clearTimeout(resetT);nav.classList.toggle('menu-open',o);burger.setAttribute('aria-expanded',String(o));burger.setAttribute('aria-label',o?'Close menu':'Open menu');
+  sheet.inert=!o;document.documentElement.style.overflow=o?'hidden':'';if(!o)resetT=setTimeout(function(){groups.forEach(function(g){setGroup(g,false)})},500)}
+burger.addEventListener('click',function(){setMenu(!nav.classList.contains('menu-open'))});
+nav.querySelector('.nav-scrim').addEventListener('click',function(){setMenu(false)});
+groups.forEach(function(g){g.querySelector('.ns-t').addEventListener('click',function(){var o=!g.classList.contains('open');groups.forEach(function(x){setGroup(x,x===g&&o)})})});
+sheet.addEventListener('click',function(e){if(e.target.closest('a'))setMenu(false)});
+addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(cur)hide(nav.contains(document.activeElement));if(nav.classList.contains('menu-open')){setMenu(false);burger.focus()}});
+desk.addEventListener('change',function(){hide();setMenu(false)});
+})();
+</script>
+<script>
+/* once-lit scroll-in: same observer as financial-services.html / legal.html */
+(function(){if(!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var L=[['.px-t,.stm .st-t',0,1],['.px-s',160,0],['.px-l,.cta .btns .btn',320,0]],els=[],vh=innerHeight;
+[].forEach.call(document.querySelectorAll('main.fs > section'),function(sec){if(sec.classList.contains('hero'))return;
+ L.forEach(function(l){[].forEach.call(sec.querySelectorAll(l[0]),function(e){var r=e.getBoundingClientRect();if(r.top<vh&&r.bottom>0&&scrollY<1)return;e.style.setProperty('--si-d',l[1]+'ms');e.classList.add('si-el');if(l[2])e.classList.add('si-h');els.push(e)})})});
+var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){var t=x.target.closest('section');[].forEach.call(t.querySelectorAll('.si-el:not(.si-in)'),function(e){var r=e.getBoundingClientRect();if(r.top<innerHeight)e.classList.add('si-in'),io.unobserve(e)})}})},{threshold:.18});
+void document.body.offsetHeight;els.forEach(function(e){io.observe(e)})})();
 </script>
 </body>
 </html>
