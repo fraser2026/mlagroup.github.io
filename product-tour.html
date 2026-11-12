@@ -706,6 +706,11 @@ button.btn{font-family:inherit;cursor:pointer}
 .fs #dark:after{width:calc(100% - 32px)}}
 @media (min-width:600px) and (max-width:1100px){.fs #dark:after{width:calc(100% - 70px)}}
 @media (prefers-reduced-motion:reduce){.fs .si-el{opacity:1;transform:none;filter:none;transition:none}}
+/* FS/Legal first dark section: rounded-top card that opens on scroll (no side inset, unlike home) */
+.fs #registry.band{background:var(--fsc-66);overflow:hidden}
+.fs #registry .fband-bg{position:absolute;inset:0;z-index:0;background:var(--fsc-1);pointer-events:none;-webkit-clip-path:inset(0 round var(--r,0px) var(--r,0px) 0 0);clip-path:inset(0 round var(--r,0px) var(--r,0px) 0 0)}
+.fs #registry .fband-bg.full{-webkit-clip-path:none;clip-path:none}
+.fs #registry>.w{position:relative;z-index:1}
 /* ===== feature pop-up: one card, the site's tile style ===== */
 .pop-root{position:fixed;inset:0;z-index:410;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--pt-scrim);-webkit-backdrop-filter:blur(7px) saturate(1.02);backdrop-filter:blur(7px) saturate(1.02);opacity:0;transition:opacity .24s var(--x-ease)}
 .pop-root[hidden]{display:none}
@@ -733,6 +738,7 @@ button.btn{font-family:inherit;cursor:pointer}
 
 <!-- ============ COPY: REGISTRY ============ -->
 <section class="band" id="registry" data-nav-dark>
+  <div class="fband-bg" aria-hidden="true"></div>
   <div class="w feat">
     <div class="px"><h2 class="px-t">Know every AI system you run</h2><p class="px-s">Find shadow AI, assign owners and track every system to production.</p><a class="px-l" href="#registry" data-pop="registry" aria-haspopup="dialog">Explore the registry ›</a></div>
     <div class="feat-m reveal d1"><div class="ra-reg-demo" role="img" aria-label="Registering Credit Risk Scoring Model in RegAnchor. The new asset lands in the registry as Untested, an evaluation is run and passes, and only then is its lifecycle moved from Planned to Production.">
@@ -1049,6 +1055,19 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 </div></div>
   </div>
 </section>
+<script>
+/* first dark section card: same open-on-scroll as financial-services.html / legal.html #s-stmt (radius only; no statement lighting) */
+(function(){var sec=document.getElementById('registry');if(!sec)return;var bg=sec.querySelector('.fband-bg');if(!bg)return;var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(RM){bg.classList.add('full');return}
+var cur=null,tgt=0,raf=0,last=0;function ease(x){return x<=0?0:x>=1?1:x*x*(3-2*x)}
+function measure(){var vh=innerHeight,r=sec.getBoundingClientRect(),d=innerWidth>820,end=d?.15:.2,span=vh*(1-end);
+ var a=1-ease((vh-r.top)/span);tgt=a;}
+function set(v){var d=innerWidth>820,R=d?32:20;if(v<.001)v=0;bg.classList.toggle('full',v===0);bg.style.setProperty('--r',(R*v).toFixed(2)+'px')}
+function tick(t){raf=0;var dt=last?Math.min(64,t-last):16;last=t;if(cur==null)cur=tgt;cur+=(tgt-cur)*(1-Math.exp(-dt/70));if(Math.abs(tgt-cur)<.001)cur=tgt;set(cur);if(cur!==tgt)raf=requestAnimationFrame(tick);else last=0}
+function kick(){measure();if(!raf)raf=requestAnimationFrame(tick)}
+addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);measure();cur=tgt;set(cur)})();
+</script>
+
 
 <!-- ============ COPY: ASSESSMENTS ============ -->
 <section class="paper" id="assessments">
