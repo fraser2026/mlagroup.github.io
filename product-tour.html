@@ -7,14 +7,16 @@
 <title>Product tour — RegAnchor</title>
 <meta name="description" content="A closer look at RegAnchor: the AI registry, assessments, the MLA policy assistant and board-ready dossiers.">
 <link rel="canonical" href="https://reganchor.com/product-tour.html">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500&family=Inter+Tight:wght@300;400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
+<script>(function(d){var h=d.documentElement,f=d.fonts;if(!f)return;h.classList.add('fonts-pending');var go=function(){h.classList.remove('fonts-pending')};setTimeout(go,1200);Promise.all([f.load('400 1em Inter'),f.load('400 1em "Inter Tight"')]).then(function(){return f.ready}).then(go,go)})(document)</script>
 <script src="js/ra-contact.js"></script>
 <style>
 :root{--navy:#0A0E14;--body:#374151;--muted:#6B7280;--purple:#533AFD;--purple-d:#4434E0;--border:#E4E7EC;--pale:#F6F9FC;--hover:rgba(17,17,17,.028);--max:1200px;--radius:4px;--ease:cubic-bezier(.2,.7,.2,1)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-body{font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--body);background:#fff;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+body{font-family:var(--font-body);color:var(--body);background:#fff;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
 a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%;height:auto}
 .wrap{max-width:var(--max);margin:0 auto;padding:0 32px}
@@ -100,7 +102,7 @@ button.btn{font-family:inherit;cursor:pointer}
 .modal-root.is-open{display:flex}
 .modal{width:100%;max-width:420px;background:#fff;border:1px solid var(--border);border-radius:4px;box-shadow:0 1px 2px rgba(10,14,20,.04),0 12px 32px -10px rgba(10,14,20,.14);max-height:min(90vh,640px);overflow:auto}
 .modal__head{display:flex;justify-content:space-between;padding:20px 22px 0;gap:12px}
-.modal__head h3{font-family:'IBM Plex Sans',sans-serif;font-size:1.05rem;font-weight:500;line-height:1.6;color:var(--navy)}
+.modal__head h3{font-family:var(--font-plex);font-size:1.05rem;font-weight:500;line-height:1.6;color:var(--navy)}
 .modal__head p{font-size:.78rem;color:var(--muted);margin-top:4px}
 .modal__x{border:none;background:none;font-size:1.1rem;color:var(--muted);cursor:pointer}
 .modal__body{padding:18px 22px 22px}
@@ -114,7 +116,7 @@ button.btn{font-family:inherit;cursor:pointer}
 .modal-err.is-on{display:block}
 .modal__foot{display:flex;justify-content:flex-end;gap:8px}
 .modal-success{text-align:center;padding:28px 8px 12px}
-.modal-success h4{font-family:'IBM Plex Sans',sans-serif;font-size:1.1rem;font-weight:500;color:var(--navy);margin-bottom:8px}
+.modal-success h4{font-family:var(--font-plex);font-size:1.1rem;font-weight:500;color:var(--navy);margin-bottom:8px}
 .modal-success p{font-size:.84rem;color:var(--body);margin-bottom:20px}
 /* responsive */
 @media (max-width:960px){
@@ -311,7 +313,7 @@ button.btn{font-family:inherit;cursor:pointer}
 </style>
 <style>
 /* tokens needed by the shared site header (copied from financial-services.html) */
-:root{--fs-12:12px;--fs-13:13px;--fs-14:14px;--fs-15:15px;--fs-16:16px;--fs-p8:11px;--r-6:6px;--r-8:8px;--icon-arrow:16px;--icon-gap:4px;--icon-nudge:2px;--fsc-2:#fff;--fsc-5:rgba(247,246,244,.09);--fsc-7:rgba(0,0,0,.6);--fsc-17:rgba(247,246,244,.08);--fsc-18:#533afd;--fsc-19:rgba(10,14,20,.06);--fsc-22:rgba(10,14,20,.08);--fsc-23:rgba(10,14,20,.07);--fsc-31:#4330e0;--fsc-89:rgba(10,14,20,.04);--fsc-93:rgba(10,14,20,.05);--fsc-96:rgba(247,246,244,.10);--fsc-100:rgba(247,246,243,.6);--fsc-101:rgba(249,249,250,.86);--fsc-102:rgba(10,14,20,.26);--fsc-103:rgba(10,14,20,.045);--fsc-104:rgba(10,14,20,.065);--fsc-105:rgba(22,25,33,.84);--fsc-106:rgba(247,246,243,.56);--fsc-107:rgba(247,246,244,.07);--fsc-108:rgba(247,246,244,.06);--fsc-109:rgba(10,14,20,.28);--fsc-110:rgba(247,247,249,.97);--fsc-111:rgba(10,14,20,.30);--font-body:Inter,system-ui,-apple-system,sans-serif;--font-display:"Inter Tight",Inter,system-ui,sans-serif}
+:root{--fs-12:12px;--fs-13:13px;--fs-14:14px;--fs-15:15px;--fs-16:16px;--fs-p8:11px;--r-6:6px;--r-8:8px;--icon-arrow:16px;--icon-gap:4px;--icon-nudge:2px;--fsc-2:#fff;--fsc-5:rgba(247,246,244,.09);--fsc-7:rgba(0,0,0,.6);--fsc-17:rgba(247,246,244,.08);--fsc-18:#533afd;--fsc-19:rgba(10,14,20,.06);--fsc-22:rgba(10,14,20,.08);--fsc-23:rgba(10,14,20,.07);--fsc-31:#4330e0;--fsc-89:rgba(10,14,20,.04);--fsc-93:rgba(10,14,20,.05);--fsc-96:rgba(247,246,244,.10);--fsc-100:rgba(247,246,243,.6);--fsc-101:rgba(249,249,250,.86);--fsc-102:rgba(10,14,20,.26);--fsc-103:rgba(10,14,20,.045);--fsc-104:rgba(10,14,20,.065);--fsc-105:rgba(22,25,33,.84);--fsc-106:rgba(247,246,243,.56);--fsc-107:rgba(247,246,244,.07);--fsc-108:rgba(247,246,244,.06);--fsc-109:rgba(10,14,20,.28);--fsc-110:rgba(247,247,249,.97);--fsc-111:rgba(10,14,20,.30);--font-body:Inter,system-ui,-apple-system,sans-serif;--font-display:"Inter Tight",Inter,system-ui,sans-serif;--font-plex:"IBM Plex Sans",sans-serif}
 </style>
 <style>.nav-links,.nav-burger,.nav-sheet,.nav-scrim{display:none}
 .nav-t{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 10px 0 12px;border:0;border-radius:var(--r-6);background:none;font-weight:500;font-size:var(--fs-14);line-height:1;font-family:var(--font-body);letter-spacing:-.005em;color:var(--ink);cursor:pointer;transition:background-color .2s,color .3s var(--x-ease)}
@@ -537,7 +539,7 @@ button.btn{font-family:inherit;cursor:pointer}
 <main class="fs">
 <style>
 /* ===== solutions-page format (financial-services.html / legal.html): hero, › feature blocks, closing; values copied from those pages ===== */
-.fs{--font-body:Inter,system-ui,-apple-system,sans-serif;--font-display:"Inter Tight",Inter,system-ui,sans-serif;--fs-14:14px;--fs-15:15px;--fs-16:16px;--fs-18:18px;--fs-48:48px;--fs-80:80px;--fs-p1:56px;--fs-p5:26px;--fs-p11:40px;--fs-p12:21px;--fs-p13:17px;--fs-p14:clamp(17px,14px + .79vw,22px);--fs-p15:clamp(26px,21.6px + 1.13vw,38px);--fs-p16:22px;--fs-p17:clamp(22px,22px + (100vw - 360px)*.0286,24px);--fs-p18:44px;--fs-p19:34px;--r-6:6px;--r-12:12px;--icon-arrow:16px;--paper:#F7F6F4;--ink:#0A0E14;--ink-2:#3D4350;--od:#F7F6F4;--od2:rgba(247,246,243,.72);--bp:#533AFD;--fsc-1:#000;--fsc-2:#fff;--fsc-3:#eeeef1;--fsc-15:#8f7bff;--fsc-18:#533afd;--fsc-51:rgba(247,246,244,.1);--fsc-66:#ffffff;--fsc-67:#425466;--fsc-68:#1a1f2b;--fsc-69:#a3a8b3;--fsc-71:#6b7280;--fsc-72:#f2f2f2;--fsc-73:#8a8f98;--fsc-74:#0a0e14;--pt-rule:rgba(10,14,20,.09);--pt-uline:rgba(10,14,20,.28);--pt-uline-d:rgba(242,242,242,.32);--pt-glow-a:rgba(255,255,255,.55);--pt-glow-b:rgba(255,255,255,.18);--fsc-20:rgba(143,123,255,.55);--fsc-21:rgba(83,58,253,.25);--pt-demo-glow:rgba(255,255,255,.10);--pt-demo-edge:rgba(255,255,255,.12);--pt-btn-d:rgba(255,255,255,.10);--pt-btn-dh:rgba(255,255,255,.16);--pt-btn-gh:#E4E4E8;--pt-btn-ih:#1B2130;--pt-scrim:rgba(10,14,20,.28);--pt-line:rgba(10,14,20,.06);--pt-line-2:rgba(10,14,20,.08);--pt-sh1:rgba(10,14,20,.04);--pt-sh2:rgba(10,14,20,.22);--pt-close-h:#E4E4E8}
+.fs{--font-body:Inter,system-ui,-apple-system,sans-serif;--font-display:"Inter Tight",Inter,system-ui,sans-serif;--font-plex:"IBM Plex Sans",sans-serif;--fs-14:14px;--fs-15:15px;--fs-16:16px;--fs-18:18px;--fs-48:48px;--fs-80:80px;--fs-p1:56px;--fs-p5:26px;--fs-p11:40px;--fs-p12:21px;--fs-p13:17px;--fs-p14:clamp(17px,14px + .79vw,22px);--fs-p15:clamp(26px,21.6px + 1.13vw,38px);--fs-p16:22px;--fs-p17:clamp(22px,22px + (100vw - 360px)*.0286,24px);--fs-p18:44px;--fs-p19:34px;--r-6:6px;--r-12:12px;--icon-arrow:16px;--paper:#F7F6F4;--ink:#0A0E14;--ink-2:#3D4350;--od:#F7F6F4;--od2:rgba(247,246,243,.72);--bp:#533AFD;--fsc-1:#000;--fsc-2:#fff;--fsc-3:#eeeef1;--fsc-15:#8f7bff;--fsc-18:#533afd;--fsc-51:rgba(247,246,244,.1);--fsc-66:#ffffff;--fsc-67:#425466;--fsc-68:#1a1f2b;--fsc-69:#a3a8b3;--fsc-71:#6b7280;--fsc-72:#f2f2f2;--fsc-73:#8a8f98;--fsc-74:#0a0e14;--pt-rule:rgba(10,14,20,.09);--pt-uline:rgba(10,14,20,.28);--pt-uline-d:rgba(242,242,242,.32);--pt-glow-a:rgba(255,255,255,.55);--pt-glow-b:rgba(255,255,255,.18);--fsc-20:rgba(143,123,255,.55);--fsc-21:rgba(83,58,253,.25);--pt-demo-glow:rgba(255,255,255,.10);--pt-demo-edge:rgba(255,255,255,.12);--pt-btn-d:rgba(255,255,255,.10);--pt-btn-dh:rgba(255,255,255,.16);--pt-btn-gh:#E4E4E8;--pt-btn-ih:#1B2130;--pt-scrim:rgba(10,14,20,.28);--pt-line:rgba(10,14,20,.06);--pt-line-2:rgba(10,14,20,.08);--pt-sh1:rgba(10,14,20,.04);--pt-sh2:rgba(10,14,20,.22);--pt-close-h:#E4E4E8}
 .fs .w{width:min(100% - 112px,1328px);margin:0 auto}
 .fs h1,.fs h2{font-family:var(--font-display);font-weight:300;margin:0}
 .fs h1{font-size:var(--fs-80);line-height:1.06;letter-spacing:.01em;text-wrap:balance}
@@ -678,6 +680,9 @@ button.btn{font-family:inherit;cursor:pointer}
 .fs .hero h1{font-size:var(--fs-p18);line-height:1.06}
 }
 
+/* page chrome typography: same stack, weight, rendering and features as FS/Legal */
+.fs{margin:0;color:var(--ink);font-weight:400;font-size:var(--fs-16);line-height:1.5;font-family:var(--font-body);-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+.fs h1,.fs h2,.fs .lede,.fs .hero h1,.fs .hero .lede,.nav-signin{font-feature-settings:"cv11","ss01"}
 /* ===== product tour sections: solutions-page rhythm (hero light, then dark / white alternating, closing CTA) ===== */
 .fs .paper{position:relative;background:var(--fsc-66);padding:160px 0;-webkit-font-smoothing:auto;-moz-osx-font-smoothing:auto}
 .fs .band{position:relative;background:var(--fsc-1);color:var(--od);padding:168px 0 160px}
@@ -686,7 +691,10 @@ button.btn{font-family:inherit;cursor:pointer}
 /* › links: exact FS accent — violet on paper, lighter violet on dark bands; underline on hover only */
 .fs .px .px-l{color:var(--fsc-18);text-decoration:none}
 .fs .band .px .px-l{color:var(--fsc-15)}
+.fs .px .px-l{-webkit-tap-highlight-color:transparent}
+.fs .px .px-l:focus{outline:none}
 .fs .px .px-l:hover,.fs .px .px-l:focus-visible{text-decoration:underline}
+.fs .px .px-l.no-focus-ring:focus,.fs .px .px-l.no-focus-ring:focus-visible{outline:none;text-decoration:none}
 /* frame demos on dark bands the way FS frames app shots, with a neutral white glow */
 .fs .band .feat-m{border-radius:var(--r-12);box-shadow:0 40px 120px var(--pt-demo-glow),0 0 0 1px var(--pt-demo-edge)}
 /* hairline between the last dark feature (monitoring) and the dark closing CTA, as on FS #s-mon */
@@ -746,7 +754,7 @@ button.btn{font-family:inherit;cursor:pointer}
 @font-face{font-family:'RA Inter';src:url(assets/images-page/mla/inter-ra.woff2) format('woff2');font-weight:100 900;font-display:block}
 .ra-reg-demo{--ez:cubic-bezier(.32,.72,0,1);--cam:cubic-bezier(.65,0,.35,1);--eo:cubic-bezier(.2,.8,.2,1);position:relative;display:block;width:100%}
 .ra-reg-demo .card{position:relative;width:100%;aspect-ratio:3/2;container-type:inline-size;border-radius:12px;overflow:hidden;isolation:isolate;background:radial-gradient(120% 95% at 0% 100%,#5636f7 0%,rgba(86,54,247,0) 62%),linear-gradient(95deg,#a9c5ff 0%,#9d8df2 48%,#eaa7ca 100%)}
-.ra-reg-demo .win{position:absolute;left:11.2%;top:14.4%;right:-1px;bottom:-1px;background:#fff;border-radius:1.1cqw 0 0 0;overflow:hidden;box-shadow:0 1.2cqw 4cqw rgba(30,16,90,.22),0 .2cqw .6cqw rgba(30,16,90,.08)}
+.ra-reg-demo .win{position:absolute;left:5cqw;top:5cqw;right:5cqw;bottom:5cqw;background:#fff;border-radius:1.1cqw;overflow:hidden;box-shadow:0 1.2cqw 4cqw rgba(30,16,90,.22),0 .2cqw .6cqw rgba(30,16,90,.08)}
 .ra-reg-demo .tb{position:absolute;left:0;right:0;top:0;height:3.7cqw;background:#F5F6F8;border-bottom:1px solid #E4E7EC}
 .ra-reg-demo .tb i{position:absolute;top:50%;width:.95cqw;height:.95cqw;margin-top:-.475cqw;border-radius:50%}
 .ra-reg-demo .tb i:nth-child(1){left:1.2cqw;background:#FF5F57}.ra-reg-demo .tb i:nth-child(2){left:2.75cqw;background:#FEBC2E}.ra-reg-demo .tb i:nth-child(3){left:4.3cqw;background:#28C840}
@@ -892,7 +900,7 @@ button.btn{font-family:inherit;cursor:pointer}
 }
 @media (max-width:600px){
 .ra-reg-demo .card{aspect-ratio:1150/1582}
-.ra-reg-demo .win{left:5%;top:5.6%;border-radius:2.4cqw 0 0 0}
+.ra-reg-demo .win{left:5cqw;top:5cqw;right:5cqw;bottom:5cqw;border-radius:2.4cqw}
 .ra-reg-demo .tb{height:7cqw}
 .ra-reg-demo .tb i{width:2cqw;height:2cqw;margin-top:-1cqw}
 .ra-reg-demo .tb i:nth-child(1){left:2.6cqw}.ra-reg-demo .tb i:nth-child(2){left:5.8cqw}.ra-reg-demo .tb i:nth-child(3){left:9cqw}
@@ -1078,7 +1086,7 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 <style>
 .ra-risk{position:relative;display:block;width:100%;--ink:#000;--t2:#425466;--t3:#697386;--line:#E6EBF1;--bp:#533AFD}
 .ra-risk .card{position:relative;width:100%;aspect-ratio:3/2;container-type:inline-size;border-radius:12px;overflow:hidden;isolation:isolate;background:radial-gradient(120% 95% at 0% 100%,#5636f7 0%,rgba(86,54,247,0) 62%),linear-gradient(95deg,#a9c5ff 0%,#9d8df2 48%,#eaa7ca 100%)}
-.ra-risk .win{position:absolute;left:11.2%;top:14.4%;right:-1px;bottom:-1px;background:#fff;border-radius:1.1cqw 0 0 0;overflow:hidden;box-shadow:0 1.2cqw 4cqw rgba(30,16,90,.22),0 .2cqw .6cqw rgba(30,16,90,.08)}
+.ra-risk .win{position:absolute;left:5cqw;top:5cqw;right:5cqw;bottom:5cqw;background:#fff;border-radius:1.1cqw;overflow:hidden;box-shadow:0 1.2cqw 4cqw rgba(30,16,90,.22),0 .2cqw .6cqw rgba(30,16,90,.08)}
 .ra-risk .tb{position:absolute;left:0;right:0;top:0;height:3.7cqw;background:#F5F6F8;border-bottom:1px solid #E4E7EC}
 .ra-risk .tb i{position:absolute;top:50%;width:.95cqw;height:.95cqw;margin-top:-.475cqw;border-radius:50%}
 .ra-risk .tb i:nth-child(1){left:1.2cqw;background:#FF5F57}.ra-risk .tb i:nth-child(2){left:2.75cqw;background:#FEBC2E}.ra-risk .tb i:nth-child(3){left:4.3cqw;background:#28C840}
@@ -1109,7 +1117,7 @@ addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);m
 .ra-risk.nt *{transition:none!important}
 @media (max-width:600px){
 .ra-risk .card{aspect-ratio:1150/1582}
-.ra-risk .win{left:5%;top:5.6%;border-radius:2.4cqw 0 0 0}
+.ra-risk .win{left:5cqw;top:5cqw;right:5cqw;bottom:5cqw;border-radius:2.4cqw}
 .ra-risk .tb{height:7cqw}
 .ra-risk .tb i{width:2cqw;height:2cqw;margin-top:-1cqw}
 .ra-risk .tb i:nth-child(1){left:2.6cqw}.ra-risk .tb i:nth-child(2){left:5.8cqw}.ra-risk .tb i:nth-child(3){left:9cqw}
@@ -1172,14 +1180,17 @@ new IntersectionObserver(function(es){es.forEach(function(e){
     <div class="feat-m reveal d1"><div class="ra-mla-chat" role="img" aria-label="MLA, the RegAnchor policy assistant, drafting an AI governance policy for Acme">
 <style>
 @font-face{font-family:'RA Inter';src:url(assets/images-page/mla/inter-ra.woff2) format('woff2');font-weight:100 900;font-display:block}
-.ra-mla-chat{position:relative;display:block;width:100%;aspect-ratio:1800/1350;border-radius:12px;overflow:hidden;font-family:'RA Inter',Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;contain:layout paint;isolation:isolate;background:#f3f1fb}
+.ra-mla-chat{position:relative;display:block;width:100%;aspect-ratio:1730/1325;border-radius:12px;overflow:hidden;container-type:inline-size;font-family:'RA Inter',Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;contain:layout paint;isolation:isolate;background:#f3f1fb}
+.ra-mla-chat .demo-mat{position:absolute;inset:5cqw;overflow:hidden}
+.ra-mla-chat .demo-stage{position:absolute;left:0;top:0;width:1800px;height:1350px;transform-origin:0 0}
 .ra-mla-chat picture,.ra-mla-chat picture img{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none;margin:0}
 .ra-mla-chat .S{position:absolute;left:0;top:0;width:1800px;height:1350px;transform-origin:0 0;pointer-events:none}
 .ra-mla-chat .C{position:absolute;left:70px;top:130px;width:1730px;height:1220px;overflow:hidden;contain:strict}
 .ra-mla-chat .L{position:absolute;left:0;top:2px;width:2360px;height:1498px;color:#000;font-size:28px;line-height:39.2px;font-variation-settings:'opsz' 32;font-optical-sizing:none;transition:opacity .45s}
 .ra-mla-chat .chat,.ra-mla-chat .doc{position:absolute;inset:0;contain:layout paint;isolation:isolate}
 @media (max-width:600px){
-.ra-mla-chat{aspect-ratio:1150/1582}
+.ra-mla-chat{aspect-ratio:1114/1670}
+.ra-mla-chat .demo-stage{width:1150px;height:1582px}
 .ra-mla-chat .S{width:1150px;height:1582px}
 .ra-mla-chat .C{left:36px;top:92px;width:1114px;height:1490px}
 .ra-mla-chat .L{top:2px}
@@ -1215,6 +1226,7 @@ new IntersectionObserver(function(es){es.forEach(function(e){
 .ra-mla-chat .doc div{position:absolute;font-variation-settings:'opsz' 31;left:901px;white-space:nowrap;line-height:1}
 @media (min-width:601px){.ra-mla-chat .in{top:987.6px}.ra-mla-chat .ask{top:1134px}.ra-mla-chat .doc .lo{visibility:hidden}.ra-mla-chat .doc div,.ra-mla-chat .doc .bul{transform:translateY(var(--dy,0px))}}
 </style>
+<div class="demo-mat"><div class="demo-stage">
 <picture><source media="(max-width:600px)" srcset="assets/images-page/mla/m-base-v10.jpg 1x, assets/images-page/mla/m-base-v10@2x.jpg 2x"><img src="assets/images-page/mla/d-base-v11.jpg" srcset="assets/images-page/mla/d-base-v11.jpg 1x, assets/images-page/mla/d-base-v11@2x.jpg 2x" alt="" width="900" height="675" decoding="async"></picture>
 <div class="S"><div class="C"><div class="L">
  <div class="chat">
@@ -1226,13 +1238,15 @@ new IntersectionObserver(function(es){es.forEach(function(e){
  </div>
  <div class="doc"></div>
 </div></div></div>
+</div>
+</div>
 <script>
 (function(){
 var root=document.currentScript?document.currentScript.parentNode:document.querySelector('.ra-mla-chat');if(!root||!root.classList.contains('ra-mla-chat'))root=document.querySelector('.ra-mla-chat');if(!root)return;
 function $(s){return root.querySelector(s)}
 var S=$('.S'),IN=$('.in'),PHE=$('.in .ph'),QT=$('.in .qt'),ASK=$('.ask'),UB=$('.ub'),ST=$('.st'),SP=$('.st .sp'),STT=$('.st .t'),RC=$('.rc'),RT=$('.rt'),DOC=$('.doc');
 var mq=matchMedia('(max-width:600px)');
-var lastW=0;function fit(){var w=root.clientWidth;if(!w||w===lastW)return;lastW=w;S.style.transform='scale('+(w/(mq.matches?1150:1800))+')'}
+var lastW=0;function fit(){var box=root.querySelector('.demo-mat')||root,stage=root.querySelector('.demo-stage');var w=box.clientWidth;if(!w||w===lastW)return;lastW=w;var crop=mq.matches?36:70,s=w/((mq.matches?1150:1800)-crop);var tr='translate('+(-crop*s)+'px,'+(-crop*s)+'px) scale('+s+')';if(stage)stage.style.transform=tr;else S.style.transform=tr}
 fit();if('ResizeObserver' in window)new ResizeObserver(fit).observe(root);else addEventListener('resize',fit);
 if(mq.addEventListener)mq.addEventListener('change',function(){lastW=0;fit()});
 var Q='Draft an AI governance policy for Acme.';
@@ -1323,8 +1337,8 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 <div class="ra-sign-portrait">
 <style>
 .ra-sign-portrait{--T:14.3s;--ease:cubic-bezier(.22,1,.36,1)}
-.ra-sign-portrait .card{position:relative;width:100%;max-width:1200px;aspect-ratio:1400/1800;}
-.ra-sign-portrait .screen{position:absolute;left:11.286%;top:11%;width:77.43%;height:82.89%;overflow:hidden;container-type:inline-size}
+.ra-sign-portrait .card{position:relative;width:100%;max-width:1200px;aspect-ratio:652/900;overflow:hidden;}
+.ra-sign-portrait .screen{position:absolute;left:8.435%;top:11%;width:83.129%;height:82.89%;overflow:hidden;container-type:inline-size}
 .ra-sign-portrait .scrim{position:absolute;inset:0;background:rgb(6,27,49);opacity:0;animation:rasp-scrim var(--T) infinite}
 .ra-sign-portrait .drawer{position:absolute;top:2.4cqw;right:2.4cqw;bottom:2.4cqw;aspect-ratio:960/1768;transform:translateX(110%);filter:drop-shadow(0 .5cqw 1.6cqw rgba(6,27,49,.12));will-change:transform}
 .ra-sign-portrait .drawer img{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -1363,13 +1377,13 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 @media (prefers-reduced-motion:reduce){.ra-sign-portrait *{animation:none!important}
 .ra-sign-portrait .pen path{stroke-dashoffset:0}
 .ra-sign-portrait .note{opacity:1;transform:none}}
-.ra-sign-portrait{display:block;max-width:560px;margin:0 0 0 auto;border-radius:12px;overflow:hidden;text-align:left;line-height:normal}
+.ra-sign-portrait{display:block;max-width:calc(560px * 652 / 700);margin:0 0 0 auto;border-radius:12px;overflow:hidden;text-align:left;line-height:normal}
 .ra-sign-portrait *{box-sizing:border-box}
 .ra-sign-portrait .card{max-width:none}
-.ra-sign-portrait .base{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none}
+.ra-sign-portrait .base{position:absolute;top:0;left:calc(-24 / 652 * 100%);width:calc(700 / 652 * 100%);height:100%;display:block;max-width:none}
 .ra-sign-portrait:not(.is-on) *{animation-play-state:paused!important}
 
-@media (max-width:960px){.ra-sign-portrait{margin:0 auto;max-width:480px}}
+@media (max-width:960px){.ra-sign-portrait{margin:0 auto;max-width:calc(480px * 652 / 700)}}
 @media (min-width:961px){.feature.portrait .wrap:has(.ra-sign-portrait){grid-template-columns:560px minmax(0,1fr)}}
 
 </style>
@@ -1398,8 +1412,8 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
     <div class="feat-m"><div class="reveal d1 ra-dd-demo" aria-label="RegAnchor Connection tab: provider usage chart filling in with 1.84B tokens and $48,920 estimated spend, plus gateway input, output and event totals.">
 <style>
 .ra-dd-demo{max-width:1100px;margin:0 auto}
-.ra-dd-demo .card{position:relative;width:100%;aspect-ratio:1100/520;container-type:inline-size;overflow:hidden;border-radius:12px}
-.ra-dd-demo .fr{position:absolute;left:0;top:0;width:1100px;height:520px;transform-origin:0 0;transform:scale(calc(100cqw / 1100px))}
+.ra-dd-demo .card{position:relative;width:100%;aspect-ratio:1100/560;container-type:inline-size;overflow:hidden;border-radius:12px}
+.ra-dd-demo .fr{position:absolute;left:0;top:0;width:1100px;height:520px;transform-origin:0 0;clip-path:inset(35.5px 0 0 35px);transform:translate(5cqw,5cqw) scale(calc(90cqw / 1065px)) translate(-35px,-35.5px)}
 .ra-dd-demo .fr>img{position:absolute;inset:0;width:1100px;height:520px;display:block}
 .ra-dd-demo .fin{opacity:0}
 .ra-dd-demo .stage{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transform:translate(36px,79px) scale(.746)}
@@ -1411,8 +1425,8 @@ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isInter
 .ra-dd-demo .g{height:24px;font-size:17.5px;font-weight:600;line-height:24px}
 .ra-dd-demo .fade{position:absolute;left:0;right:0;bottom:0;height:56px;z-index:3;background:linear-gradient(rgba(0,0,0,0),#000);pointer-events:none}
 .ra-dd-demo.done .fin{opacity:1}.ra-dd-demo.done .stage{display:none}
-.ra-dd-demo .mb{display:none;position:relative;width:100%;aspect-ratio:1050/732;border-radius:12px;overflow:hidden;container-type:inline-size}
-.ra-dd-demo .ms{position:absolute;left:0;top:0;width:1050px;height:732px;transform-origin:0 0;transform:scale(calc(100cqw / 1050px))}
+.ra-dd-demo .mb{display:none;position:relative;width:100%;aspect-ratio:1050/750;border-radius:12px;overflow:hidden;container-type:inline-size}
+.ra-dd-demo .ms{position:absolute;left:0;top:0;width:1050px;height:732px;transform-origin:0 0;clip-path:inset(45px 0 0 44px);transform:translate(5cqw,5cqw) scale(calc(90cqw / 1006px)) translate(-44px,-45px)}
 .ra-dd-demo .ms>img{position:absolute;inset:0;width:1050px;height:732px;display:block}
 .ra-dd-demo .mc{position:absolute;left:85px;top:330px;width:500px;height:250px}
 .ra-dd-demo .mc i{position:absolute;top:0;height:250px;background:url(assets/images-page/dev-dark/dd-m3-bars-v1.webp) no-repeat;background-size:500px 250px;clip-path:inset(100% 0 0 0);transition:clip-path 560ms cubic-bezier(.32,.72,0,1)}
@@ -1805,17 +1819,17 @@ function open(k,from){k=key(k);if(!k)return;var c=POP[k];clearTimeout(tm);
   T.textContent=c.t;P.textContent=c.p;L.innerHTML='';c.b.forEach(function(b){var li=document.createElement('li');li.innerHTML=CK;li.appendChild(document.createTextNode(b));L.appendChild(li)});
   last=from||document.activeElement;root.hidden=false;card.scrollTop=0;document.body.style.overflow='hidden';
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.add('is-open')})});card.focus({preventScroll:true})}
-function close(toDemo){if(root.hidden)return;root.classList.remove('is-open');
+function close(toDemo,fromKey){if(root.hidden)return;root.classList.remove('is-open');
   if(!demo||demo.hidden)document.body.style.overflow='';
   if(/^#pop-/.test(location.hash))history.replaceState(null,'',location.pathname+location.search);
   var r=matchMedia('(prefers-reduced-motion: reduce)').matches;tm=setTimeout(function(){root.hidden=true},r?0:240);
-  if(!toDemo&&last&&last.focus)last.focus({preventScroll:true})}
+  if(!toDemo&&last&&last.focus){if(!fromKey){last.classList.add('no-focus-ring');var clr=function(){last.classList.remove('no-focus-ring');last.removeEventListener('blur',clr);last.removeEventListener('keydown',clr)};last.addEventListener('blur',clr);last.addEventListener('keydown',clr)}last.focus({preventScroll:true})}}
 document.querySelectorAll('[data-pop]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();open(a.getAttribute('data-pop'),a)})});
 X.addEventListener('click',function(){close()});
 root.addEventListener('click',function(e){if(e.target===root)close()});
 root.querySelector('[data-pop-demo]').addEventListener('click',function(){close(true)});
 document.addEventListener('keydown',function(e){if(root.hidden)return;
-  if(e.key==='Escape'){e.preventDefault();close();return}
+  if(e.key==='Escape'){e.preventDefault();close(false,true);return}
   if(e.key==='Tab'){var f=[].slice.call(card.querySelectorAll('button,a[href]'));var a=f[0],z=f[f.length-1];
     if(e.shiftKey&&(document.activeElement===a||document.activeElement===card)){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
 function fromHash(){var m=/^#pop-([\w-]+)$/.exec(location.hash);if(!m)return;var k=key(m[1]);if(!k)return;
